@@ -1,16 +1,11 @@
 import Head from 'next/head'
-
+import { useState, useEffect } from 'react'
 export default function Baseball() {
+  const [data, setData] = useState(null);
 
-  const handleClick = async () => {
+  const loadSchedule = async () => {
     console.log('handle click');
 
-        // const url = new URL('/api/nhl')
-
-    // const params = {
-    // };
-
-    // url.search = new URLSearchParams(params).toString();
     const apiResponse = await fetch('/api/mlb', {
           method: 'GET',
           redirect: 'follow',
@@ -20,8 +15,16 @@ export default function Baseball() {
     });
     console.log('apiCall was made.');
     const json = await apiResponse.json();
-    console.log(json);
+    console.log(json.dates);
+    setData(json);
+
   }
+
+  useEffect(() => {
+      if( !data) {
+        loadSchedule();
+      }
+  }, [])
 
   return (
     <div>
@@ -32,7 +35,9 @@ export default function Baseball() {
 
       <main>
         <h1>Baseball Schedule</h1>
-         <button onClick={handleClick}>click</button>
+         <button onClick={loadSchedule}>click</button>
+
+        <div id="games-div" />
       </main>
 
       <footer> footer </footer>
