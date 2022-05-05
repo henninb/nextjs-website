@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 export default function Temperature() {
         async function toFahrenheit(event) {
             event.preventDefault()
-            let celsius = document.getElementById("celsius").value;
+            let celsius = document.getElementById("celsius").innerText
             console.log(celsius);
             let data = {
                 celsius: celsius,
@@ -26,7 +26,7 @@ export default function Temperature() {
         async function toCelsius(event) {
             event.preventDefault()
 
-            let fahrenheit = document.getElementById("fahrenheit").value;
+            let fahrenheit = document.getElementById("fahrenheit").innerText
             console.log(fahrenheit);
             let data = {
                 fahrenheit: fahrenheit,
