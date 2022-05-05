@@ -62,11 +62,11 @@ export default function Baseball() {
     });
     console.log('apiCall was made.');
     const json = await apiResponse.json();
-    //let games : any = [];
-    let games: any[] = [];
+    let games = [];
+    //let games: any[] = [];
     Object.entries(json.dates).forEach((entry) => {
          const [, value] = entry;
-         games.push(value.games)
+         games.push(value["games"])
          });
     console.log(games.flat());
     setData(games.flat());
