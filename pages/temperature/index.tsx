@@ -6,14 +6,11 @@ export default function Temperature() {
             event.preventDefault()
             let celsius = document.getElementById("celsius").innerText
             console.log(celsius);
-            let data = {
-                celsius: celsius,
-            };
-
+            console.log(`celsius=${celsius}`);
 
             const apiResponse = await fetch('/api/fahrenheit', {
                 method: 'POST',
-                redirect: 'follow',
+                body: JSON.stringify({celsius: celsius}),
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -27,17 +24,15 @@ export default function Temperature() {
             event.preventDefault()
 
             let fahrenheit = document.getElementById("fahrenheit").innerText
-            console.log(fahrenheit);
-            let data = {
-                fahrenheit: fahrenheit,
-            };
+            console.log(`fahrenheit=${fahrenheit}`);
+            //let data = {fahrenheit: fahrenheit};
             // const formData = new FormData(event.target);
             // console.log("f=" + formData.get('fahrenheit'));
             // Now you can use formData.get('foo'), for example.
 
             const apiResponse = await fetch('/api/celsius', {
                 method: 'POST',
-                redirect: 'follow',
+                body: JSON.stringify({fahrenheit: fahrenheit}),
                 headers: {
                     "Content-Type": "application/json",
                 },
