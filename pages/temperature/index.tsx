@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import {useEffect, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 
 export default function Temperature() {
     const [fahrenheitState, setFahrenheitState] = useState({
@@ -72,7 +72,21 @@ export default function Temperature() {
         console.log(result);
     }
 
+      const fetchWeather = useCallback(async () => {
+          const apiResponse = await fetch('/api/weather', {
+              method: 'GET',
+              headers: {
+                  "Content-Type": "application/json",
+              },
+          });
+          const json = await apiResponse.json();
+          console.log("weather: " + json);
+
+          }, []);
+
+
     useEffect(() => {
+        fetchWeather()
         // if( !data) {
         //   loadSchedule();
         // }
