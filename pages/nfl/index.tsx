@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import {useEffect, useState} from 'react'
 
-export default function Baseball() {
+export default function Football() {
     const [data, setData] = useState(null);
 
     function generateTable(games) {
@@ -33,42 +33,44 @@ export default function Baseball() {
         )
     }
 
-    const loadSchedule = async () => {
-        console.log('handle click');
-
-        const apiResponse = await fetch('/api/mlb', {
-            method: 'GET',
-            redirect: 'follow',
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        console.log('apiCall was made.');
-        const json = await apiResponse.json();
-        let games = [];
-        Object.entries(json.dates).forEach((entry) => {
-            const [, value] = entry;
-            games.push(value["games"])
-        });
-        console.log(games.flat());
-        setData(games.flat());
-    }
+    // const loadSchedule = async () => {
+    //     console.log('handle click');
+    //
+    //     const apiResponse = await fetch('/api/mlb', {
+    //         method: 'GET',
+    //         redirect: 'follow',
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //         },
+    //     });
+    //     console.log('apiCall was made.');
+    //     const json = await apiResponse.json();
+    //     let games = [];
+    //     //let games: any[] = [];
+    //     Object.entries(json.dates).forEach((entry) => {
+    //         const [, value] = entry;
+    //         games.push(value["games"])
+    //     });
+    //     console.log(games.flat());
+    //     setData(games.flat());
+    // }
 
     useEffect(() => {
         if (!data) {
-            loadSchedule();
+            //loadSchedule();
         }
     }, [])
 
     return (
         <div>
             <Head>
-                <title>Baseball</title>
+                <title>Football</title>
                 <meta name="description" content=""/>
             </Head>
 
             <main>
-                <h1>Baseball Schedule</h1>
+                <h1>Football Schedule</h1>
+
                 { data ? generateTable(data) : null}
             </main>
         </div>
