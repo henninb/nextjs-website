@@ -2,6 +2,7 @@ import Head from 'next/head'
 import {useCallback, useEffect, useState} from 'react'
 
 export default function Temperature() {
+    const [data, setData] = useState(null);
     const [fahrenheitState, setFahrenheitState] = useState({
         fahrenheit: 0,
         celsius: 0
@@ -12,8 +13,7 @@ export default function Temperature() {
         celsius: 0
     });
 
-
-    function handleFahrenheitChange(event) {
+    function handleFahrenheitChange(event: any) {
         if (event.target.files) {
             setFahrenheitState({...fahrenheitState, [event.target.name]: event.target.files[0]});
         } else {
@@ -21,7 +21,7 @@ export default function Temperature() {
         }
     }
 
-    function handleCelsiusChange(event) {
+    function handleCelsiusChange(event: any) {
         if (event.target.files) {
             setCelsiusState({...celsiusState, [event.target.name]: event.target.files[0]});
         } else {
@@ -29,10 +29,8 @@ export default function Temperature() {
         }
     }
 
-    async function toFahrenheit(event) {
+    async function toFahrenheit(event: any) {
         event.preventDefault()
-        //let celsius = document.getElementById("celsius").innerText
-        //console.log(celsius);
         console.log(`fahrenheit=${JSON.stringify(celsiusState)}`);
 
         const apiResponse = await fetch('/api/fahrenheit', {
@@ -47,18 +45,11 @@ export default function Temperature() {
         console.log(result);
     }
 
-    async function toCelsius(event) {
+    async function toCelsius(event: any) {
         event.preventDefault()
         //let formData = new FormData();
 
         console.log(`fahrenheit=${JSON.stringify(fahrenheitState)}`);
-
-        //let fahrenheit = document.getElementById("fahrenheit").innerText
-        //console.log(`fahrenheit=${fahrenheit}`);
-        //let data = {fahrenheit: fahrenheit};
-        // const formData = new FormData(event.target);
-        // console.log("f=" + formData.get('fahrenheit'));
-        // Now you can use formData.get('foo'), for example.
 
         const apiResponse = await fetch('/api/celsius', {
             method: 'POST',
@@ -72,24 +63,32 @@ export default function Temperature() {
         console.log(result);
     }
 
-      const fetchWeather = useCallback(async () => {
-          const apiResponse = await fetch('/api/weather', {
-              method: 'GET',
-              headers: {
-                  "Content-Type": "application/json",
-              },
-          });
-          const json = await apiResponse.json();
-          console.log("weather: " + json);
+    const fetchWeather = useCallback(async () => {
+        const apiResponse = await fetch('/api/weather', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        const json = await apiResponse.json();
+        //console.log("weather: " + JSON.stringify(json));
+        console.log("weather: " + JSON.stringify(json.observations));
+        console.log("weather: " + JSON.stringify(json.observations.flat()));
+        setData(json);
 
-          }, []);
+    }, []);
+
+    function displayWeather(weather) {
+        return (
+            <div>
+                Weather observation time: {weather.obsesrvations}
+            </div>
+        )
+    }
 
 
     useEffect(() => {
         fetchWeather()
-        // if( !data) {
-        //   loadSchedule();
-        // }
     }, [])
 
     return (
@@ -115,6 +114,11 @@ export default function Temperature() {
                         <button onClick={toFahrenheit}>toFahrenheit</button>
                     </form>
                 </div>
+
+                <h1>
+                    Weather
+                </h1>
+                { data ? displayWeather(data) : null}
 
             </main>
 
