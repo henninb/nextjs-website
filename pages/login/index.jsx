@@ -1,6 +1,7 @@
 import axios from "axios";
+import Head from 'next/head';
 // import { useNavigate } from 'react-router-dom';
-//import { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 
 export default function Login() {
   // const navigate = useNavigate(); // Step 2: Instantiate useNavigate
@@ -21,6 +22,7 @@ export default function Login() {
   const handleClick = async (event) => {
     //const { login } = AuthData();
     //const navigate = useNavigate();
+    const router = useRouter();
     console.log("login submit was clicked");
     event.preventDefault();
 
@@ -43,6 +45,7 @@ export default function Login() {
       let response = await userLogin(data);
       console.log("response: " + JSON.stringify(response));
       sessionStorage.setItem("isAuthenticated", true);
+      router.push('/');
       // navigate("/landing"); // Step 3: Navigate to the landing page
       //localStorage.setItem("isAuthenticated", true);
       //await login(email, password);
@@ -58,7 +61,10 @@ export default function Login() {
   };
 
     return (
-      <div className="login">
+      <div>
+      <Head>
+        <title>Login - Brian Henning</title>
+      </Head>
   <div className="form">
     <form name="login-form" className="login-form" action="/api/login" method="POST" data-bitwarden-watching="1">
       <div className="input-group mb-3">

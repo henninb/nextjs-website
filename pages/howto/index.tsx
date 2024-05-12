@@ -1,7 +1,12 @@
+import Head from 'next/head';
+
 export default function Howto() {
 
     return (
-        <div>
+      <div>
+        <Head>
+          <title>Howto - Brian Henning</title>
+        </Head>
             <h1>Docker</h1>
 
             list docker logs
