@@ -120,7 +120,7 @@ export default function Temperature() {
                                     </div>
                                     <hr />
                                         <div className="version-bulk-form indented">
-                                            <form action="/api/weather" accept-charset="UTF-8" data-remote="true"
+                                            <form action="/api/weather" acceptCharset="UTF-8" data-remote="true"
                                                   method="post">
                                                 <div className="form-inline">
                                                     <div className="input-group col">

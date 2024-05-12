@@ -2,16 +2,9 @@ export default async function HockeyScores(request, response) {
     // const token = request.headers.get('authorization')?.split(" ")[1] || '';
     // console.log(token);
 
-    const url = new URL('https://statsapi.mlb.com/api/v1/schedule')
+    const url = new URL('https://fixturedownload.com/feed/json/nba-2023/minnesota-timberwolves')
 
-    const params = {
-        startDate: "1/01/2024",
-        endDate: "12/31/2024",
-        gameTypes: "R",
-        sportId: 1,
-        teamId: 142,
-        hydrate: "decisions"
-    };
+    const params = {};
 
     url.search = new URLSearchParams(params).toString();
     const apiResponse = await fetch(url.toString(), {
