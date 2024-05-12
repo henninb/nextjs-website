@@ -24,6 +24,9 @@ export default function Layout({children}) {
           <a className="nav-link" href="/howto">Howto</a>
       </li>
       <li className="nav-item">
+          <a className="nav-link" href="/tools">Tools</a>
+      </li>
+      <li className="nav-item">
         <a className="nav-link" href="/temperature">Temperature</a>
       </li>
     </ul>
