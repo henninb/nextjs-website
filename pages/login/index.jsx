@@ -61,10 +61,7 @@ export default function Login() {
   };
 
     return (
-      <div>
-      <Head>
-        <title>Login - Brian Henning</title>
-      </Head>
+      <div className="login">
   <div className="form">
     <form name="login-form" className="login-form" action="/api/login" method="POST" data-bitwarden-watching="1">
       <div className="input-group mb-3">
