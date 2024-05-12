@@ -21,7 +21,7 @@ export default async function Login(request, response) {
       JWT_KEY,
     );
 
-    response.set('x-custom-brian', '1');
+    // response.set('x-custom-brian', '1');
     response.status(200).json( {
       token: token,
     });
