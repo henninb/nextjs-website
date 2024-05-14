@@ -15,6 +15,7 @@
     "axios": "^1.6.8",
     "jsonwebtoken": "^9.0.2",
     "next": "14.2.3",
+    "perimeterx-nextjs": "^0.1.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "uuid": "^9.0.1"
