@@ -1,32 +1,28 @@
 {
-  "name": "nextjs-website",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start",
-    "lint": "next lint",
     "pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@mui/material": "^5.15.18",
     "@mui/x-data-grid": "^7.5.0",
     "axios": "^1.7.0",
     "jsonwebtoken": "^9.0.2",
-    "next": "14.2.3",
+    "next": "latest",
     "perimeterx-nextjs": "^0.1.6",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.11.3",
-    "@types/node": "^20.12.12",
-    "@types/react": "^18.3.2",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.3",
-    "typescript": "^5.4.5"
+    "@types/react": "18.3.2"
   }
 }

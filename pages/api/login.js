@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 //const jwt = require('jsonwebtoken');
 import jwt from 'jsonwebtoken';
 

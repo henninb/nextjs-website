@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 export default async function Fahrenheit(request, response) {
   const { celsius } = request.body;
 

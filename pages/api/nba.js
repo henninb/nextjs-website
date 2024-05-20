@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 export default async function HockeyScores(request, response) {
     // const token = request.headers.get('authorization')?.split(" ")[1] || '';
     // console.log(token);
@@ -14,7 +16,7 @@ export default async function HockeyScores(request, response) {
             "Content-Type": "application/json",
         },
     });
-    console.log('apiCall was made.');
+    //console.log('apiCall was made.');
     const json = await apiResponse.json();
     // console.log(json);
     response.status(200).json(json)

@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 export default async function HockeyScores(request, response) {
     // const token = request.headers.get('authorization')?.split(" ")[1] || '';
     // console.log(token);
