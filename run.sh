@@ -7,5 +7,4 @@ touch .env.local
 npm install
 npm run dev
 
-
 exit 0
