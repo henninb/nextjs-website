@@ -1,25 +1,21 @@
+import {NextResponse} from 'next/server';
+
 export const runtime = 'edge';
 
-export default async function Fahrenheit(request, response) {
-  const { celsius } = request.body;
+function toFahrenheit(x) {
+  return  x * (9.0/5.0) + 32.0;
+}
 
-  // Check if Fahrenheit temperature is provided
-  if (!celsius) {
-    return response.status(400).json({ error: 'celsius temperature is required' });
+//curl -X GET http://localhost:3000/api/fahrenheit -H "Content-Type: application/json" -d '{"celsius":21}'
+export default async function GET(request) {
+  const requestBody = await request.json();
+  const celsius = requestBody.celsius;
+
+  if (celsius === undefined) {
+    return new Response(JSON.stringify({error: 'Celsius temperature is required'}), {status: 400});
   }
 
-  function toCelsius(x) {
-    return ((5.0/9.0) * (x - 32.0));
-  }
-
-  function toFahrenheit(x) {
-    return  x * (9.0/5.0) + 32.0;
-  }
-
-  // Convert Fahrenheit to Celsius
-  // const celsius = (fahrenheit - 32) * (5/9);
   const fahrenheit = toFahrenheit(celsius);
 
-  // Send the result back
-  response.status(200).json({ fahrenheit });
+  return NextResponse.json({fahrenheit});
 }
