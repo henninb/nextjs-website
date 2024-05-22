@@ -1,10 +1,13 @@
 import axios from "axios";
 import Head from 'next/head';
-// import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from '../../components/AuthContext';
 
 export default function Login() {
-  // const navigate = useNavigate(); // Step 2: Instantiate useNavigate
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const { login } = useAuth();
 
   const userLogin = async (payload) => {
     let endpoint =  '/api/login';
@@ -30,6 +33,9 @@ export default function Login() {
 
       try {
           let response = await userLogin(data); // Assuming userLogin is your auth function
+          if (response.ok) {
+            login(data.token);
+          }
           console.log("response: " + JSON.stringify(response));
           sessionStorage.setItem("isAuthenticated", true);
           router.push('/'); // Redirect to home after login

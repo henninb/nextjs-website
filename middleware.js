@@ -1,5 +1,4 @@
 import {NextResponse} from 'next/server';
-// const {perimeterx} = require("perimeterx-nextjs")
 //import {perimeterx} from 'perimeterx-nextjs';
 
 // export const runtime = 'edge';
@@ -25,3 +24,32 @@ export async function middleware(request) {
 export const config = {
   matcher: ['/nba', '/nhl'], // Apply middleware only to these routes
 };
+
+async function validateToken(token) {
+  try {
+    // Replace 'YOUR_SECRET_KEY' with your actual secret key
+    const secret = new TextEncoder().encode('your_jwt_key');
+
+    // Use jose.jwtVerify to perform validation
+    const { payload } = await jose.jwtVerify(token, secret);
+
+    // Check for required claims (optional)
+    if (!payload.userId || !payload.role) {
+      throw new Error('Missing required claims in token');
+    }
+
+    // Check for expiration (optional)
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp < now) {
+      throw new Error('Token expired');
+    }
+
+    // Token is valid, return user data from payload (optional)
+    return { username: payload.username };
+
+  } catch (error) {
+    console.error('Error validating token:', error.message);
+    // You can throw a custom error here or return a specific response object
+    throw new Error('Invalid token');
+  }
+}
