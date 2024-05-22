@@ -49,7 +49,6 @@ export default function BasketballScores() {
   const fetchBasketballSchedule = useCallback(async () => {
        try {
         const response = await axios.get("/api/nba")
-         console.log(response.data);
          setData(response.data);
        } catch(error) {
          if(error) {
@@ -65,21 +64,43 @@ export default function BasketballScores() {
   }, [fetchBasketballSchedule])
 
     return (
-      <div>
-       <h1>Wolves Basketball Scores</h1>
+<div style={{ margin: '20px', fontFamily: 'Arial, sans-serif' }}>
+  <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>
+    Wolves Basketball Scores
+  </h1>
 
-      <div style={{ height: 800, width: '100%' }}>
-      <DataGrid
-        getRowId={() => uuidv4()}
-        rows={data ? data :[]}
-        columns={columns}
-        pageSize={100}
-        rowsPerPageOptions={[100]}
-        checkboxSelection
-        disableSelectionOnClick
-      />
-      </div>
-      </div>
+  <div style={{
+    height: 800,
+    width: '100%',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    borderRadius: '8px',
+    overflow: 'hidden'
+  }}>
+    <DataGrid
+      getRowId={() => uuidv4()}
+      rows={data ? data : []}
+      columns={columns}
+      pageSize={100}
+      rowsPerPageOptions={[100]}
+      checkboxSelection
+      disableSelectionOnClick
+      sx={{
+        '& .MuiDataGrid-row:hover': {
+          backgroundColor: 'rgba(0, 120, 215, 0.1)',
+        },
+        '& .MuiDataGrid-columnHeaders': {
+          backgroundColor: '#f0f0f0',
+          color: '#000',
+          fontSize: '16px',
+          fontWeight: 'bold',
+        },
+        '& .MuiDataGrid-cell': {
+          fontSize: '14px',
+        },
+      }}
+    />
+  </div>
+</div>
     )
 }
 
