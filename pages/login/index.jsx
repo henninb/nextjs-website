@@ -19,46 +19,28 @@ export default function Login() {
     return response.data;
   };
 
+  const router = useRouter();
+
   const handleClick = async (event) => {
-    //const { login } = AuthData();
-    //const navigate = useNavigate();
-    const router = useRouter();
-    console.log("login submit was clicked");
-    event.preventDefault();
+      event.preventDefault(); // Prevent the form from submitting immediately
 
-    let email = document.getElementById("email").value;
-    console.log(email);
-    let password = document.getElementById("password").value;
-    console.log(password);
-    let data = {
-      email: email,
-      password: password,
-    };
-    console.log(data);
-    // console.log(state);
-    // console.log("send: " + JSON.stringify(data));
-    //AuthWrapper.login(email, password);
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const data = { email, password };
 
-    try {
-      //sessionStorage.removeItem(keyname)
-
-      let response = await userLogin(data);
-      console.log("response: " + JSON.stringify(response));
-      sessionStorage.setItem("isAuthenticated", true);
-      router.push('/');
-      // navigate("/landing"); // Step 3: Navigate to the landing page
-      //localStorage.setItem("isAuthenticated", true);
-      //await login(email, password);
-      //navigate("/landing")
-      //window.location.href = '/landing'
-    } catch (error) {
-      if (error.response && error.response.status === 403) {
-        const errorMessage = document.querySelector(".error-message");
-        errorMessage.innerText = "Failed login. Please check your credentials.";
+      try {
+          let response = await userLogin(data); // Assuming userLogin is your auth function
+          console.log("response: " + JSON.stringify(response));
+          sessionStorage.setItem("isAuthenticated", true);
+          router.push('/'); // Redirect to home after login
+      } catch (error) {
+          if (error.response && error.response.status === 403) {
+              const errorMessage = document.querySelector(".error-message");
+              errorMessage.innerText = "Failed login. Please check your credentials.";
+          }
+          console.log(error);
       }
-      console.log(error.data);
-    }
-  };
+    };
 
     return (
       <div className="login">
