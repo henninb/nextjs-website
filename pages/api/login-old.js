@@ -1,17 +1,14 @@
-import {NextResponse} from 'next/server';
+export const runtime = 'edge';
+//const jwt = require('jsonwebtoken');
 import jwt from 'jsonwebtoken';
 
-export const runtime = 'edge';
-
-export default async function Login(request) {
-  const requestBody = await request.json();
+export default async function Login(request, response) {
   const EMAIL = 'henninb@gmail.com'; // Replace with your email
   const PASSWORD = 'monday1'; // Replace with your password
   const JWT_KEY = 'your_jwt_key'; // Replace with your JWT key
 
-  const email = requestBody.email;
-  const password = requestBody.password;
-  // const { email, password } = request.body;
+  console.log('body:', request.body);
+  const { email, password } = request.body;
   // console.log('email:', request.body.email);
 
   if (email === EMAIL && password === PASSWORD) {
@@ -25,8 +22,13 @@ export default async function Login(request) {
       JWT_KEY,
     );
 
-    return NextResponse.json({token: token})
+    // response.set('x-custom-brian', '1');
+    response.status(200).json( {
+      token: token,
+    });
   } else {
-    return new Response(JSON.stringify({error: 'Failed login attempt.'}), {status: 403});
+    response.status(403).json({
+      message: 'failed login attempt.',
+    });
   }
 }
