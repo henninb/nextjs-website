@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }) => {
       await jwtVerify(token, encoder.encode(JWT_KEY));
       return true;
     } catch (error) {
-      //console.error('Invalid token:', error);
       console.log(`token=${token}`)
       console.log('invalid login');
       return false;
