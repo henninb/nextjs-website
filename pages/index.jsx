@@ -22,7 +22,9 @@ export default function Home() {
           </section>
 
           <section className="my-services" id="services">
-            <h2 className="section__title section__title--services">What I do</h2>
+            <h2 className="section__title section__title--services">
+              What I do
+            </h2>
             <div className="services">
               <div className="service">
                 <h3 className="service-header">
@@ -211,17 +213,26 @@ export default function Home() {
                 </a>
               </li>
               <li className="social-list__item">
-                <a className="social-list__link" href="https://twitter.com/henninb">
+                <a
+                  className="social-list__link"
+                  href="https://twitter.com/henninb"
+                >
                   <i className="fab fa-twitter"></i>
                 </a>
               </li>
               <li className="social-list__item">
-                <a className="social-list__link" href="https://github.com/henninb">
+                <a
+                  className="social-list__link"
+                  href="https://github.com/henninb"
+                >
                   <i className="fab fa-github"></i>
                 </a>
               </li>
               <li className="social-list__item">
-                <a className="social-list__link" href="https://gitlab.com/henninb">
+                <a
+                  className="social-list__link"
+                  href="https://gitlab.com/henninb"
+                >
                   <i className="fab fa-gitlab"></i>
                 </a>
               </li>

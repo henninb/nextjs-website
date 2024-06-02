@@ -35,7 +35,7 @@ export default function Login() {
       let response = await userLogin(data); // Assuming userLogin is your auth function
       if (response.ok) {
         sessionStorage.setItem("token", response.token);
-        cookie.set('token', response.token, { expires: 1 }); // Store token in cookie
+        cookie.set("token", response.token, { expires: 1 }); // Store token in cookie
         login(response.token);
       }
       console.log("response: " + JSON.stringify(response));

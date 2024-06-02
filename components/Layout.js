@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,28 +14,45 @@ export default function Layout({ children }) {
           <button className="navbar-toggler" type="button" onClick={toggleMenu}>
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`} id="navbarNav">
+          <div
+            className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}
+            id="navbarNav"
+          >
             <ul className="navbar-nav me-auto">
               <li className="nav-item active">
-                <a className="nav-link" href="/">Home</a>
+                <a className="nav-link" href="/">
+                  Home
+                </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/nba">NBA</a>
+                <a className="nav-link" href="/nba">
+                  NBA
+                </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/nhl">NHL</a>
+                <a className="nav-link" href="/nhl">
+                  NHL
+                </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/mlb">MLB</a>
+                <a className="nav-link" href="/mlb">
+                  MLB
+                </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/howto">Howto</a>
+                <a className="nav-link" href="/howto">
+                  Howto
+                </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/tools">Tools</a>
+                <a className="nav-link" href="/tools">
+                  Tools
+                </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/temperature">Temperature</a>
+                <a className="nav-link" href="/temperature">
+                  Temperature
+                </a>
               </li>
             </ul>
             <ul className="navbar-nav">

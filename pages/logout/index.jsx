@@ -1,4 +1,4 @@
-import { useAuth } from '../../components/AuthProvider';
+import { useAuth } from "../../components/AuthProvider";
 
 export default function Logout() {
   //sessionStorage.removeItem('isAuthenticated');

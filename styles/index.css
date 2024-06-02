@@ -303,7 +303,6 @@ header {
   }
 }
 
-
 /* login no border */
 .no-border {
   border: none !important;
@@ -648,58 +647,58 @@ header {
 /* hamburger overlay */
 
 @media (max-width: 768px) {
-.navbar {
-  position: relative;
-  z-index: 1000;
-}
+  .navbar {
+    position: relative;
+    z-index: 1000;
+  }
 
-.navbar-toggler {
-  z-index: 1100;
-}
+  .navbar-toggler {
+    z-index: 1100;
+  }
 
-.collapse.navbar-collapse {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-  z-index: 1050;
-  display: none;
-  flex-direction: column;
-  align-items: flex-start; /* Align items to the top left */
-  padding: 20px;
-  padding-top: 60px; /* Add padding to move the menu down slightly */
-}
+  .collapse.navbar-collapse {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+    z-index: 1050;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the top left */
+    padding: 20px;
+    padding-top: 60px; /* Add padding to move the menu down slightly */
+  }
 
-.collapse.navbar-collapse.show {
-  display: flex;
-}
+  .collapse.navbar-collapse.show {
+    display: flex;
+  }
 
-.navbar-nav {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Align items to the top left */
-  width: 100%;
-}
+  .navbar-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the top left */
+    width: 100%;
+  }
 
-.nav-item {
-  margin: 10px 0;
-  width: 100%;
-}
+  .nav-item {
+    margin: 10px 0;
+    width: 100%;
+  }
 
-.nav-link {
-  display: block;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.9); /* Light background for visibility */
-  color: var(--clr-dark);
-  text-decoration: none;
-  width: 100%;
-  text-align: left;
-}
+  .nav-link {
+    display: block;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.9); /* Light background for visibility */
+    color: var(--clr-dark);
+    text-decoration: none;
+    width: 100%;
+    text-align: left;
+  }
 
-.nav-link:hover {
-  background: rgba(255, 255, 255, 1); /* Fully opaque background on hover */
-  color: var(--clr-accent);
-}
+  .nav-link:hover {
+    background: rgba(255, 255, 255, 1); /* Fully opaque background on hover */
+    color: var(--clr-accent);
+  }
 }

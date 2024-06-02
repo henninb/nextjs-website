@@ -40,18 +40,20 @@ export default async function POST(request) {
 
       const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === "production",
         maxAge: 24 * 60 * 60, // 24 hours in seconds
-        path: '/',
+        path: "/",
       };
 
       return new Response(token, {
-    status: 200,
-    //cookie.set('token', jwtToken, { expires: 1 });
-    headers: { 'Set-Cookie': `token=${token}; Path=${cookieOptions.path}; Max-Age=${cookieOptions.maxAge}`},
-  })
+        status: 200,
+        //cookie.set('token', jwtToken, { expires: 1 });
+        headers: {
+          "Set-Cookie": `token=${token}; Path=${cookieOptions.path}; Max-Age=${cookieOptions.maxAge}`,
+        },
+      });
 
-     // return NextResponse.json({ token: token });
+      // return NextResponse.json({ token: token });
     } catch (error) {
       console.log(error);
       return NextResponse.json({ error: "Failed to generate token" });
