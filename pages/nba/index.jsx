@@ -7,7 +7,8 @@ import { useAuth } from "../../components/AuthProvider";
 export default function BasketballScores() {
   const [data, setData] = useState(null);
   const { token, login } = useAuth();
-  login(token);
+
+  //login(token);
 
   const columns = [
     {

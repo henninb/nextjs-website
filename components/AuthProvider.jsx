@@ -10,6 +10,7 @@ const JWT_KEY = "your_jwt_key"; // Replace with your JWT key
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
+  const [redirect, setRedirect] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -21,20 +22,31 @@ export const AuthProvider = ({ children }) => {
     } else {
       cookie.remove("token"); // Remove invalid token
     }
-  }, []);
+  }, [setToken]);
+
+  useEffect(() => {
+    if (redirect) {
+      router.push('/login'); // Perform redirection if needed
+    }
+  }, [redirect, router]);
 
   const login = (jwtToken) => {
     if (token && validateToken(jwtToken)) {
       console.log("valid login");
       setToken(jwtToken);
+      setRedirect(false);
+      return true;
     } else {
       //router.push('/login');
+      setRedirect(true);
+      return false;
     }
   };
 
   const logout = () => {
     setToken(null);
     cookie.remove("token"); // Remove token from cookie
+    setRedirect(true);
     //router.push('/login'); // Redirect to login page
   };
 
