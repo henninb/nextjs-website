@@ -2,7 +2,7 @@ import axios from "axios";
 import Head from "next/head";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "../../components/AuthContext";
+import { useAuth } from "../../components/AuthProvider";
 
 export default function Login() {
   const [username, setUsername] = useState("");

@@ -24,12 +24,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (jwtToken) => {
-    if (validateToken(jwtToken)) {
+    if (token && validateToken(jwtToken)) {
       console.log('valid login');
+      setToken(jwtToken);
     } else {
       router.push('/login');
     }
-    setToken(jwtToken);
   };
 
   const logout = () => {
@@ -44,23 +44,12 @@ export const AuthProvider = ({ children }) => {
       await jwtVerify(token, encoder.encode(JWT_KEY));
       return true;
     } catch (error) {
-      console.error('Invalid token:', error);
+      //console.error('Invalid token:', error);
+      console.log(`token=${token}`)
+      console.log('invalid login');
       return false;
     }
   };
-
-  // const validateToken = (token) => {
-  //   try {
-  //     // Replace 'your-secret-key' with your actual secret key
-  //     const decoded = jwt.verify(token, 'your_jwt_key');
-  //     // You can also check the expiration and other claims here if needed
-  //     return true;
-  //   } catch (error) {
-  //     //console.error('Invalid token:', error);
-  //     console.log('invalid token');
-  //     return false;
-  //   }
-  // };
 
   return (
     <AuthContext.Provider value={{ token, login, logout }}>
