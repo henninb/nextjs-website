@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+//import { cookies} from 'next/headers';
 import { SignJWT } from "jose";
 
 export const runtime = "edge";
@@ -35,8 +36,22 @@ export default async function POST(request) {
         .sign(encoder.encode(JWT_KEY));
 
       console.log(token);
+      // const cookieStore = cookies()
+      // const token1 = cookieStore.get(token);
 
-      return NextResponse.json({ token: token });
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60, // 24 hours in seconds
+        path: '/',
+      };
+
+      return new Response(token, {
+    status: 200,
+    headers: { 'Set-Cookie': `token=${token}; Path=${cookieOptions.path}; Max-Age=${cookieOptions.maxAge}`},
+  })
+
+     // return NextResponse.json({ token: token });
     } catch (error) {
       console.log(error);
       return NextResponse.json({ error: "Failed to generate token" });

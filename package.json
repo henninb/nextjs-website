@@ -13,6 +13,7 @@
     "@mui/x-data-grid": "^7.6.1",
     "axios": "^1.7.2",
     "jose": "^5.3.0",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "next": "latest",
     "perimeterx-nextjs": "^0.1.6",

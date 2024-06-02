@@ -1,16 +1,24 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import cookie from 'js-cookie';
 import { useRouter } from 'next/router';
 
-// Create the AuthContext
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const router = useRouter();
 
+  useEffect(() => {
+    // Check if there's a token in the cookies and set it in the state
+    const token = cookie.get('token');
+    if (token) {
+      setToken(token);
+    }
+  }, []);
+
   const login = (jwtToken) => {
     setToken(jwtToken);
+    cookie.set('token', jwtToken, { expires: 1 }); // Store token in cookie
   };
 
   const logout = () => {
@@ -27,4 +35,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-export default AuthProvider;
