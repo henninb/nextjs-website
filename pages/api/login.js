@@ -25,7 +25,6 @@ export default async function POST(request) {
     try {
       const jwtClaims = {
         email: email,
-        password: password,
         nbf: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 60 * 60, // Expires: Now + 1h
       };
@@ -48,6 +47,7 @@ export default async function POST(request) {
 
       return new Response(token, {
     status: 200,
+    //cookie.set('token', jwtToken, { expires: 1 });
     headers: { 'Set-Cookie': `token=${token}; Path=${cookieOptions.path}; Max-Age=${cookieOptions.maxAge}`},
   })
 
