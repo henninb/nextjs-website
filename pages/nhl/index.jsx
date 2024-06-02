@@ -61,7 +61,6 @@ export default function Hockey() {
   const fetchHockeySchedule = useCallback(async () => {
     try {
       const response = await axios.get("/api/nhl");
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       if (error) {
