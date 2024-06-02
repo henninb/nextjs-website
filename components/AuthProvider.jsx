@@ -28,14 +28,14 @@ export const AuthProvider = ({ children }) => {
       console.log('valid login');
       setToken(jwtToken);
     } else {
-      router.push('/login');
+      //router.push('/login');
     }
   };
 
   const logout = () => {
     setToken(null);
     cookie.remove('token'); // Remove token from cookie
-    router.push('/login'); // Redirect to login page
+    //router.push('/login'); // Redirect to login page
   };
 
   const validateToken = async (token) => {
