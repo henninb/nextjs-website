@@ -49,11 +49,11 @@ export default function Login() {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container vh-100 d-flex justify-content-center align-items-center">
       <Head>
         <title>Login</title>
       </Head>
-      <div className="row justify-content-center">
+      <div className="row justify-content-center w-100">
         <div className="col-md-6 col-lg-4">
           <div className="card no-border">
             <div className="card-body">
