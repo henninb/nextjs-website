@@ -1,13 +1,13 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 //const jwt = require('jsonwebtoken');
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 export default async function Login(request, response) {
-  const EMAIL = 'henninb@gmail.com'; // Replace with your email
-  const PASSWORD = 'monday1'; // Replace with your password
-  const JWT_KEY = 'your_jwt_key'; // Replace with your JWT key
+  const EMAIL = "henninb@gmail.com"; // Replace with your email
+  const PASSWORD = "monday1"; // Replace with your password
+  const JWT_KEY = "your_jwt_key"; // Replace with your JWT key
 
-  console.log('body:', request.body);
+  console.log("body:", request.body);
   const { email, password } = request.body;
   // console.log('email:', request.body.email);
 
@@ -23,12 +23,12 @@ export default async function Login(request, response) {
     );
 
     // response.set('x-custom-brian', '1');
-    response.status(200).json( {
+    response.status(200).json({
       token: token,
     });
   } else {
     response.status(403).json({
-      message: 'failed login attempt.',
+      message: "failed login attempt.",
     });
   }
 }

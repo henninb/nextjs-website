@@ -1,9 +1,5 @@
 export default function Logout() {
-
-    //sessionStorage.removeItem('isAuthenticated');
-    console.log('logout');
-    return (
-      <div>
-      </div>
-    );
-};
+  //sessionStorage.removeItem('isAuthenticated');
+  console.log("logout");
+  return <div></div>;
+}

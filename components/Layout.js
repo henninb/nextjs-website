@@ -1,7 +1,7 @@
 
 export default function Layout({children}) {
     return (
-      <header>
+      <div>
       <nav className="navbar navbar-expand-lg navbar-light primary-color">
      <div className="collapse navbar-collapse" id="navbarNav">
       <ul className="navbar-nav">
@@ -36,6 +36,6 @@ export default function Layout({children}) {
   </div>
 </nav>
         {children}
-      </header>
+      </div>
     )
     }

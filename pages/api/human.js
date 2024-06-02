@@ -1,15 +1,15 @@
 // import {NextResponse} from 'next/server';
-import { perimeterx } from 'perimeterx-nextjs';
+import { perimeterx } from "perimeterx-nextjs";
 
-export const runtime = 'edge';
+export const runtime = "edge";
 
 const pxConfig = {
   px_app_id: "PXjJ0cYtn9",
   px_cookie_secret: "sec",
   px_auth_token: "tok",
   px_module_mode: "monitor",
-  px_bypass_monitor_header: 'x-px-block',
-}
+  px_bypass_monitor_header: "x-px-block",
+};
 
 export default perimeterx(pxConfig);
 
