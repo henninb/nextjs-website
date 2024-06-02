@@ -647,6 +647,7 @@ header {
 }
 /* hamburger overlay */
 
+@media (max-width: 768px) {
 .navbar {
   position: relative;
   z-index: 1000;
@@ -700,4 +701,5 @@ header {
 .nav-link:hover {
   background: rgba(255, 255, 255, 1); /* Fully opaque background on hover */
   color: var(--clr-accent);
+}
 }
