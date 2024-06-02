@@ -646,6 +646,7 @@ header {
 }
 /* hamburger overlay */
 
+/* mobile behavior */
 @media (max-width: 768px) {
   .navbar {
     position: relative;
