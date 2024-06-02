@@ -209,6 +209,10 @@ header {
   transform: translateX(0);
 }
 
+.nav-link:hover {
+  text-decoration: underline;
+}
+
 .nav-open .nav-toggle {
   position: fixed;
 }
@@ -297,6 +301,13 @@ header {
     left: -1.5em;
     width: calc(100% + 1.5em);
   }
+}
+
+
+/* login no border */
+.no-border {
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /*  My services section  */

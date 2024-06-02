@@ -55,7 +55,7 @@ export default function Login() {
       </Head>
       <div className="row justify-content-center">
         <div className="col-md-6 col-lg-4">
-          <div className="card">
+          <div className="card no-border">
             <div className="card-body">
               <form
                 name="login-form"
