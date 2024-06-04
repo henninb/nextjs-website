@@ -7,6 +7,12 @@ export default function Layout({ children }) {
     setIsOpen(!isOpen);
   };
 
+// <i className="fas fa-hockey-puck"></i>
+// <i className="fas fa-basketball-ball"></i>
+// <i className="fas fa-football-ball"></i>
+// <i className="fas fa-baseball-ball"></i>
+
+
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-light primary-color">
@@ -59,6 +65,11 @@ export default function Layout({ children }) {
               <li className="nav-item">
                 <a className="nav-link" href="/login">
                   <i className="fa fa-user form-icon"></i>
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" href="/logout">
+                  <i className="fa fa-sign-out-alt form-icon"></i>
                 </a>
               </li>
             </ul>

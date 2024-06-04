@@ -209,6 +209,14 @@ header {
   transform: translateX(0);
 }
 
+.navbar .navbar-nav .nav-link {
+  text-transform: capitalize !important;
+}
+
+/* .nav-link { */
+/*   text-transform: capitalize !important; */
+/* } */
+
 .nav-link:hover {
   text-decoration: underline;
 }
@@ -696,10 +704,12 @@ header {
     text-decoration: none;
     width: 100%;
     text-align: left;
+    text-transform: capitalize !important;
   }
 
   .nav-link:hover {
     background: rgba(255, 255, 255, 1); /* Fully opaque background on hover */
+    text-decoration: underline;
     color: var(--clr-accent);
   }
 }
