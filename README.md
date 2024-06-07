@@ -32,7 +32,7 @@ NEXT_PUBLIC_AWS_S3_BUCKET_NAME=test
 gcloud compute firewall-rules create allow-profile-rule \
   --network default \
   --allow tcp:3000 \
-  --priority 1000 
+  --priority 1000
 
 gcloud compute firewall-rules create allow_port_3000_instance_group \
   --network default \
@@ -42,9 +42,8 @@ gcloud compute firewall-rules create allow_port_3000_instance_group \
 
 gcloud compute firewall-rules list
 
-nc -v -z 34.145.86.56 3000
-nc: connectx to 34.145.86.56 port 3000 (tcp) failed: Connection refused
 nc -v -z 35.226.225.26 3000
+nc -v -z 35.226.225.26 3001
 
 aws lambda create-function --function-name my-function \
 --zip-file fileb://function.zip --handler index.handler --runtime nodejs20.x \
