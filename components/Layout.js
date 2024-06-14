@@ -7,11 +7,10 @@ export default function Layout({ children }) {
     setIsOpen(!isOpen);
   };
 
-// <i className="fas fa-hockey-puck"></i>
-// <i className="fas fa-basketball-ball"></i>
-// <i className="fas fa-football-ball"></i>
-// <i className="fas fa-baseball-ball"></i>
-
+  // <i className="fas fa-hockey-puck"></i>
+  // <i className="fas fa-basketball-ball"></i>
+  // <i className="fas fa-football-ball"></i>
+  // <i className="fas fa-baseball-ball"></i>
 
   return (
     <div>

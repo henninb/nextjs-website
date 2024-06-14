@@ -1,4 +1,3 @@
-
 To update an existing AWS Lambda function and publish a new version, you can use the update-function-code and publish-version commands. Here's how you can do it:
 
 Update the function code:
@@ -29,14 +28,14 @@ The LambdaFunctionAssociations section should look something like this:
 json
 Copy code
 "LambdaFunctionAssociations": {
-    "Quantity": 1,
-    "Items": [
-        {
-            "LambdaFunctionARN": "arn:aws:lambda:us-east-1:123456789012:function:my-function:NEW_VERSION",
-            "EventType": "viewer-request",
-            "IncludeBody": false
-        }
-    ]
+"Quantity": 1,
+"Items": [
+{
+"LambdaFunctionARN": "arn:aws:lambda:us-east-1:123456789012:function:my-function:NEW_VERSION",
+"EventType": "viewer-request",
+"IncludeBody": false
+}
+]
 }
 Update the distribution configuration:
 You need to specify the ETag value from the response of the get-distribution-config command. This is required to make the update.
@@ -48,13 +47,14 @@ Here is a summary of the commands with placeholders for your specific values:
 
 sh
 Copy code
+
 # Step 1: Get the current distribution config
+
 aws cloudfront get-distribution-config --id YOUR_DISTRIBUTION_ID > dist-config.json
 
 # Step 2: Edit dist-config.json to update the Lambda function ARN to the latest version
 
 # Step 3: Update the distribution with the new configuration
+
 aws cloudfront update-distribution --id YOUR_DISTRIBUTION_ID --if-match YOUR_ETAG --distribution-config file://dist-config.json
 Replace YOUR_DISTRIBUTION_ID with your CloudFront distribution ID, YOUR_ETAG with the ETag value from the get-distribution-config command, and arn:aws:lambda:us-east-1:123456789012:function:my-function:NEW_VERSION with the ARN of your updated Lambda function version.
-
-

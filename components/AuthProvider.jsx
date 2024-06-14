@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (redirect) {
-      router.push('/login'); // Perform redirection if needed
+      router.push("/login"); // Perform redirection if needed
     }
   }, [redirect, router]);
 
