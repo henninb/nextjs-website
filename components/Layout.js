@@ -59,6 +59,11 @@ export default function Layout({ children }) {
                   Temperature
                 </a>
               </li>
+              <li className="nav-item">
+                <a className="nav-link" href="/lead">
+                  Lead
+                </a>
+              </li>
             </ul>
             <ul className="navbar-nav">
               <li className="nav-item">
