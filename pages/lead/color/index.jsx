@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useState } from "react";
+import { useRouter } from "next/router";
 
 export default function Color() {
-  const [color, setColor] = useState('');
+  const [color, setColor] = useState("");
   const router = useRouter();
   const { vin } = router.query;
 
@@ -15,7 +15,11 @@ export default function Color() {
     <div>
       <h1>Vehicle Color</h1>
       <form onSubmit={handleSubmit}>
-        <select value={color} onChange={(e) => setColor(e.target.value)} required>
+        <select
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          required
+        >
           <option value="">Select Color</option>
           <option value="red">Red</option>
           <option value="blue">Blue</option>
