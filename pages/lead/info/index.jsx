@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
 export default function Info() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("John Doe");
+  const [email, setEmail] = useState("john.doe@example.com");
+  const [responseMessage, setResponseMessage] = useState("");
   const router = useRouter();
   const { vin, color } = router.query;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle final submission here
     const data = {
       vin,
       color,
@@ -26,25 +26,22 @@ export default function Info() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
-        },
+        }
       );
 
       const result = await response.json();
 
       if (response.ok) {
         console.log("Lead generated successfully:", result);
-        // Optionally, you can redirect the user to a success page or show a success message
-        alert("Lead generated successfully!");
-        // router.push('/success'); // Uncomment to redirect to a success page
+        setResponseMessage("Lead generated successfully!");
       } else {
         console.error("Failed to generate lead:", result);
-        alert("Failed to generate lead");
+        setResponseMessage("Failed to generate lead.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred while generating the lead");
+      setResponseMessage("An error occurred while generating the lead.");
     }
-    // You can send the data to your server here
   };
 
   return (
@@ -67,6 +64,7 @@ export default function Info() {
         />
         <button type="submit">Submit</button>
       </form>
+      {responseMessage && <p>{responseMessage}</p>}
     </div>
   );
 }

@@ -1,1 +1,4 @@
 token
+node_modules
+.git
+.next/cache
