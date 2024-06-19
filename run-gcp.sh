@@ -2,7 +2,7 @@
 
 
 # eval "$(ssh-agent -s)"
-echo ssh add ~/.ssh/google_compute_engine
+echo ssh-add ~/.ssh/google_compute_engine
 
 TOKEN=$(cat token)
 docker context create remote-webserver --docker "host=ssh://brianhenning@35.226.225.26"
