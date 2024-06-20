@@ -18,8 +18,10 @@ export default function Info() {
     };
     console.log("Claim submitted:", data);
     try {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
       const response = await fetch(
-        "https://f5x3msep1f.execute-api.us-east-1.amazonaws.com/prod/api-lead",
+        // "https://f5x3msep1f.execute-api.us-east-1.amazonaws.com/prod/api-lead",
+         "https://api.bhenning.com/api-lead",
         {
           method: "POST",
           headers: {
