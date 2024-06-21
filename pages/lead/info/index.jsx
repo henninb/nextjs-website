@@ -18,7 +18,6 @@ export default function Info() {
     };
     console.log("Claim submitted:", data);
     try {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
       const response = await fetch("/api/lead",
         {
           method: "POST",
