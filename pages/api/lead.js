@@ -35,7 +35,7 @@ export default async function POST(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-      credentials: 'include'
+      // credentials: 'include'
     });
 
     if (!apiResponse.ok) {
