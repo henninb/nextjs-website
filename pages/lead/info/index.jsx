@@ -23,6 +23,7 @@ export default function Info() {
         {
           method: "POST",
           headers: {
+            "x-bh-test": "3",
             "Accept": "application/json",
             "Content-Type": "application/json",
           },
