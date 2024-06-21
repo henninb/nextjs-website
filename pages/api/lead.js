@@ -28,11 +28,29 @@ export default async function POST(request) {
     email,
   };
 
+  const cookies = request.headers.get('cookie');
+    if (!cookies) {
+      console.log('no cookies');
+    } else {
+      console.log('cookies found');
+      console.log(cookies);
+    }
+
+  const pxCookies = request.headers.get('x-px-cookies') || '';
+  if (!pxCookies) {
+      console.log('pxCookies not found');
+  } else {
+    console.log(pxCookies);
+  }
+
+
   try {
     const apiResponse = await fetch('https://f5x3msep1f.execute-api.us-east-1.amazonaws.com/prod/api-lead', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-bh-test': 1,
+        // ...(cookies && { 'Cookie': cookies }),
       },
       body: JSON.stringify(data),
       // credentials: 'include'
