@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 
 export default function Color() {
-  const [color, setColor] = useState("");
+  const [color, setColor] = useState("green");
   const router = useRouter();
   const { vin } = router.query;
 
@@ -23,6 +23,8 @@ export default function Color() {
           <option value="">Select Color</option>
           <option value="red">Red</option>
           <option value="blue">Blue</option>
+          <option value="pink">Pink</option>
+          <option value="white">White</option>
           <option value="green">Green</option>
           <option value="black">Black</option>
         </select>
