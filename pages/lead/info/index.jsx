@@ -1,15 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
+
+function Modal({ message, onClose }) {
+  return (
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <p>{message}</p>
+        <button onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+}
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const modalStyle = {
+  backgroundColor: "#fff",
+  padding: "20px",
+  borderRadius: "8px",
+  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+};
 
 export default function Info() {
   const [name, setName] = useState("John Doe");
   const [email, setEmail] = useState("john.doe@example.com");
   const [responseMessage, setResponseMessage] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const router = useRouter();
   const { vin, color } = router.query;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsModalVisible(true);
+    setResponseMessage("Submitting...");
+
     const data = {
       vin,
       color,
@@ -47,6 +81,9 @@ export default function Info() {
 
   const handleSubmitNew = async (e) => {
     e.preventDefault();
+    setIsModalVisible(true);
+    setResponseMessage("Submitting...");
+
     const data = {
       vin,
       color,
@@ -82,6 +119,11 @@ export default function Info() {
     }
   };
 
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setResponseMessage("");
+  };
+
   return (
     <div>
       <h1>Enter Your Information</h1>
@@ -102,7 +144,6 @@ export default function Info() {
         />
         <button type="submit">Submit</button>
       </form>
-    <div>
       <form onSubmit={handleSubmitNew}>
         <input
           type="text"
@@ -120,8 +161,9 @@ export default function Info() {
         />
         <button type="submit">Submit</button>
       </form>
-    </div>
-      {responseMessage && <p>{responseMessage}</p>}
+      {isModalVisible && (
+        <Modal message={responseMessage} onClose={handleCloseModal} />
+      )}
     </div>
   );
 }
