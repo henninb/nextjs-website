@@ -108,10 +108,10 @@ export default function Info() {
 
       if (response.ok) {
         console.log("Lead generated successfully:", result);
-        setResponseMessage("Lead generated successfully!");
+        setResponseMessage("Lead generated successfully: " + result);
       } else {
         console.error("Failed to generate lead:", result);
-        setResponseMessage("Failed to generate lead.");
+        setResponseMessage("Failed to generate lead: " + JSON.stringify(result));
       }
     } catch (error) {
       console.error("Error:", error);
@@ -126,7 +126,7 @@ export default function Info() {
 
   return (
     <div>
-      <h1>Enter Your Information</h1>
+      <h3>Wrapped - Enter Your Information</h3>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -144,6 +144,8 @@ export default function Info() {
         />
         <button type="submit">Submit</button>
       </form>
+      <br />
+      <h3>Not-Wrapped API - Enter Your Information</h3>
       <form onSubmit={handleSubmitNew}>
         <input
           type="text"
