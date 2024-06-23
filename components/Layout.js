@@ -7,23 +7,32 @@ export default function Layout({ children }) {
     setIsOpen(!isOpen);
   };
 
-  // <i className="fas fa-hockey-puck"></i>
-  // <i className="fas fa-basketball-ball"></i>
-  // <i className="fas fa-football-ball"></i>
-  // <i className="fas fa-baseball-ball"></i>
-
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-light primary-color">
-        <div className="container-fluid">
-          <button className="navbar-toggler" type="button" onClick={toggleMenu}>
+        <div className="container-fluid flex-column">
+          <div className="d-flex justify-content-center w-100 mb-2">
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <a className="nav-link" href="/login">
+                  <i className="fa fa-user form-icon"></i>
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" href="/logout">
+                  <i className="fa fa-sign-out-alt form-icon"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <button className="navbar-toggler align-self-center" type="button" onClick={toggleMenu}>
             <span className="navbar-toggler-icon"></span>
           </button>
           <div
             className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}
             id="navbarNav"
           >
-            <ul className="navbar-nav me-auto">
+            <ul className="navbar-nav mx-auto">
               <li className="nav-item active">
                 <a className="nav-link" href="/">
                   Home
@@ -62,18 +71,6 @@ export default function Layout({ children }) {
               <li className="nav-item">
                 <a className="nav-link" href="/lead">
                   Lead
-                </a>
-              </li>
-            </ul>
-            <ul className="navbar-nav">
-              <li className="nav-item">
-                <a className="nav-link" href="/login">
-                  <i className="fa fa-user form-icon"></i>
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/logout">
-                  <i className="fa fa-sign-out-alt form-icon"></i>
                 </a>
               </li>
             </ul>
