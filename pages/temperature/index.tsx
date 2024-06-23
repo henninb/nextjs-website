@@ -4,16 +4,16 @@ import { useCallback, useEffect, useState } from "react";
 export default function Temperature() {
   const [data, setData] = useState(null);
   const [fahrenheitState, setFahrenheitState] = useState({
-    fahrenheit: 0,
+    fahrenheit: 50,
     celsius: 0,
   });
 
   const [celsiusState, setCelsiusState] = useState({
     fahrenheit: 0,
-    celsius: 0,
+    celsius: 18,
   });
 
-  function handleFahrenheitChange(event: any) {
+  function handleFahrenheitChange(event) {
     if (event.target.files) {
       setFahrenheitState({
         ...fahrenheitState,
@@ -27,7 +27,7 @@ export default function Temperature() {
     }
   }
 
-  function handleCelsiusChange(event: any) {
+  function handleCelsiusChange(event) {
     if (event.target.files) {
       setCelsiusState({
         ...celsiusState,
@@ -41,7 +41,7 @@ export default function Temperature() {
     }
   }
 
-  async function toFahrenheit(event: any) {
+  async function toFahrenheit(event) {
     event.preventDefault();
     console.log(`fahrenheit=${JSON.stringify(celsiusState)}`);
 
@@ -57,7 +57,7 @@ export default function Temperature() {
     console.log(result);
   }
 
-  async function toCelsius(event: any) {
+  async function toCelsius(event) {
     event.preventDefault();
     //let formData = new FormData();
 
@@ -123,8 +123,6 @@ export default function Temperature() {
                   Fahrenheit to Celsius
                 </h3>
                 <div className="card-body">
-              
-            
                   <div className="version-bulk-form indented">
                     <form
                       action="/api/weather"
@@ -141,6 +139,7 @@ export default function Temperature() {
                             min="-500"
                             max="500"
                             placeholder="Temperature in fahrenheit"
+                            defaultValue="50"
                             className="form-control text-right"
                           />
                           <div className="input-group-append">
@@ -182,6 +181,7 @@ export default function Temperature() {
                             min="1"
                             max="500"
                             placeholder="degrees celsius"
+                            defaultValue="18"
                             className="form-control text-right"
                             onChange={handleCelsiusChange}
                           />
@@ -213,6 +213,7 @@ export default function Temperature() {
               type="text"
               name="fahrenheit"
               id="fahrenheit"
+              defaultValue="50"
               onChange={handleFahrenheitChange}
             />
             <button onClick={toCelsius}>toCelsius</button>
@@ -224,6 +225,7 @@ export default function Temperature() {
               type="text"
               name="celsius"
               id="celsius"
+              defaultValue="18"
               onChange={handleCelsiusChange}
             />
             <button onClick={toFahrenheit}>toFahrenheit</button>
