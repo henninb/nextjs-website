@@ -10,16 +10,16 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@mui/x-data-grid": "^7.6.1",
+    "@mui/x-data-grid": "^7.7.1",
     "axios": "^1.7.2",
-    "jose": "^5.3.0",
+    "jose": "^5.4.1",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "next": "latest",
     "perimeterx-nextjs": "^0.1.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "uuid": "^9.0.1"
+    "uuid": "^10.0.0"
   },
   "engines": {
     "node": ">=20"

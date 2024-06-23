@@ -52,23 +52,23 @@ export default function Info() {
     };
     console.log("Claim submitted:", data);
     try {
-      const response = await fetch("/api/lead",
-        {
-          method: "POST",
-          headers: {
-            "x-bh-test": "3",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch("/api/lead", {
+        method: "POST",
+        headers: {
+          "x-bh-test": "3",
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
       const result = await response.json();
 
       if (response.ok) {
         console.log("Lead generated successfully:" + JSON.stringify(result));
-        setResponseMessage("Lead generated successfully:" + JSON.stringify(result));
+        setResponseMessage(
+          "Lead generated successfully:" + JSON.stringify(result),
+        );
       } else {
         console.error("Failed to generate lead:" + JSON.stringify(result));
         setResponseMessage("Failed to generate lead:" + JSON.stringify(result));
@@ -97,21 +97,25 @@ export default function Info() {
         {
           method: "POST",
           headers: {
-            "Accept": "application/json",
+            Accept: "application/json",
             "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
-        }
+        },
       );
 
       const result = await response.json();
 
       if (response.ok) {
         console.log("Lead generated successfully:" + JSON.stringify(result));
-        setResponseMessage("Lead generated successfully: " + JSON.stringify(result));
+        setResponseMessage(
+          "Lead generated successfully: " + JSON.stringify(result),
+        );
       } else {
         console.error("Failed to generate lead:" + JSON.stringify(result));
-        setResponseMessage("Failed to generate lead: " + JSON.stringify(result));
+        setResponseMessage(
+          "Failed to generate lead: " + JSON.stringify(result),
+        );
       }
     } catch (error) {
       console.error("Error:", error);

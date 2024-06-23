@@ -189,8 +189,6 @@ export default function Temperature() {
           </div>
         </div>
 
-
-
         <h1>Weather in Minneapolis</h1>
         {data ? displayWeather(data) : null}
 
