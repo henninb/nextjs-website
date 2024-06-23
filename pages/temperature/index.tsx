@@ -123,15 +123,8 @@ export default function Temperature() {
                   Fahrenheit to Celsius
                 </h3>
                 <div className="card-body">
-                  <div className="row justify-content-center mt-3 mb-4">
-                    <a
-                      className="btn btn-lg btn-generate-uuid"
-                      href="/version1"
-                    >
-                      Convert fahrenheit to celsius
-                    </a>
-                  </div>
-                  <hr />
+              
+            
                   <div className="version-bulk-form indented">
                     <form
                       action="/api/weather"
