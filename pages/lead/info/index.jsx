@@ -67,10 +67,10 @@ export default function Info() {
       const result = await response.json();
 
       if (response.ok) {
-        console.log("Lead generated successfully:", result);
-        setResponseMessage("Lead generated successfully!");
+        console.log("Lead generated successfully:" + JSON.stringify(result));
+        setResponseMessage("Lead generated successfully:" + JSON.stringify(result));
       } else {
-        console.error("Failed to generate lead:", result);
+        console.error("Failed to generate lead:" + JSON.stringify(result));
         setResponseMessage("Failed to generate lead:" + JSON.stringify(result));
       }
     } catch (error) {
@@ -107,10 +107,10 @@ export default function Info() {
       const result = await response.json();
 
       if (response.ok) {
-        console.log("Lead generated successfully:", result);
-        setResponseMessage("Lead generated successfully: " + result);
+        console.log("Lead generated successfully:" + JSON.stringify(result));
+        setResponseMessage("Lead generated successfully: " + JSON.stringify(result));
       } else {
-        console.error("Failed to generate lead:", result);
+        console.error("Failed to generate lead:" + JSON.stringify(result));
         setResponseMessage("Failed to generate lead: " + JSON.stringify(result));
       }
     } catch (error) {

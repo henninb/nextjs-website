@@ -11,8 +11,13 @@ export default function Layout({ children }) {
     <div>
       <nav className="navbar navbar-expand-lg navbar-light primary-color">
         <div className="container-fluid flex-column">
-          <div className="d-flex justify-content-center w-100 mb-2">
-            <ul className="navbar-nav">
+          <div className="d-flex justify-content-between w-100 mb-2">
+            <div className="d-flex justify-content-center flex-grow-1">
+              <button className="navbar-toggler" type="button" onClick={toggleMenu}>
+                <span className="navbar-toggler-icon"></span>
+              </button>
+            </div>
+            <ul className="navbar-nav d-flex flex-row">
               <li className="nav-item">
                 <a className="nav-link" href="/login">
                   <i className="fa fa-user form-icon"></i>
@@ -25,13 +30,7 @@ export default function Layout({ children }) {
               </li>
             </ul>
           </div>
-          <button className="navbar-toggler align-self-center" type="button" onClick={toggleMenu}>
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div
-            className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}
-            id="navbarNav"
-          >
+          <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`} id="navbarNav">
             <ul className="navbar-nav mx-auto">
               <li className="nav-item active">
                 <a className="nav-link" href="/">
