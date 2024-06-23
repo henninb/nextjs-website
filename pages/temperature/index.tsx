@@ -13,38 +13,25 @@ export default function Temperature() {
     celsius: 18,
   });
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalContent, setModalContent] = useState("");
+
   function handleFahrenheitChange(event) {
-    if (event.target.files) {
-      setFahrenheitState({
-        ...fahrenheitState,
-        [event.target.name]: event.target.files[0],
-      });
-    } else {
-      setFahrenheitState({
-        ...fahrenheitState,
-        [event.target.name]: event.target.value,
-      });
-    }
+    setFahrenheitState({
+      ...fahrenheitState,
+      [event.target.name]: event.target.value,
+    });
   }
 
   function handleCelsiusChange(event) {
-    if (event.target.files) {
-      setCelsiusState({
-        ...celsiusState,
-        [event.target.name]: event.target.files[0],
-      });
-    } else {
-      setCelsiusState({
-        ...celsiusState,
-        [event.target.name]: event.target.value,
-      });
-    }
+    setCelsiusState({
+      ...celsiusState,
+      [event.target.name]: event.target.value,
+    });
   }
 
   async function toFahrenheit(event) {
     event.preventDefault();
-    console.log(`fahrenheit=${JSON.stringify(celsiusState)}`);
-
     const apiResponse = await fetch("/api/fahrenheit", {
       method: "POST",
       body: JSON.stringify(celsiusState),
@@ -54,15 +41,12 @@ export default function Temperature() {
     });
 
     const result = await apiResponse.text();
-    console.log(result);
+    setModalContent(result);
+    setModalVisible(true);
   }
 
   async function toCelsius(event) {
     event.preventDefault();
-    //let formData = new FormData();
-
-    console.log(`fahrenheit=${JSON.stringify(fahrenheitState)}`);
-
     const apiResponse = await fetch("/api/celsius", {
       method: "POST",
       body: JSON.stringify(fahrenheitState),
@@ -72,7 +56,8 @@ export default function Temperature() {
     });
 
     const result = await apiResponse.text();
-    console.log(result);
+    setModalContent(result);
+    setModalVisible(true);
   }
 
   const fetchWeather = useCallback(async () => {
@@ -83,10 +68,6 @@ export default function Temperature() {
       },
     });
     const json = await apiResponse.json();
-    //console.log("weather: " + JSON.stringify(json));
-    //console.log("weather: " + JSON.stringify(json.observations));
-    console.log("weather: " + JSON.stringify(json.observations[0]));
-    //console.log("weather: " + JSON.stringify(json.observations.flat()));
     setData(json.observations[0]);
   }, []);
 
@@ -134,18 +115,20 @@ export default function Temperature() {
                         <div className="input-group col">
                           <input
                             type="number"
-                            name="amount"
-                            id="amount1"
+                            name="fahrenheit"
+                            id="fahrenheit"
                             min="-500"
                             max="500"
                             placeholder="Temperature in fahrenheit"
                             defaultValue="50"
                             className="form-control text-right"
+                            onChange={handleFahrenheitChange}
                           />
                           <div className="input-group-append">
                             <button
                               className="btn btn-secondary"
                               type="button"
+                              onClick={toCelsius}
                               id="amount1-btn"
                             >
                               Calculate
@@ -178,7 +161,7 @@ export default function Temperature() {
                             type="number"
                             name="celsius"
                             id="celsius"
-                            min="1"
+                            min="-500"
                             max="500"
                             placeholder="degrees celsius"
                             defaultValue="18"
@@ -206,35 +189,57 @@ export default function Temperature() {
           </div>
         </div>
 
-        <div>
-          <form name="temperature-input">
-            <label>fahrenheit</label>
-            <input
-              type="text"
-              name="fahrenheit"
-              id="fahrenheit"
-              defaultValue="50"
-              onChange={handleFahrenheitChange}
-            />
-            <button onClick={toCelsius}>toCelsius</button>
-          </form>
 
-          <form name="temperature-input">
-            <label>celsius</label>
-            <input
-              type="text"
-              name="celsius"
-              id="celsius"
-              defaultValue="18"
-              onChange={handleCelsiusChange}
-            />
-            <button onClick={toFahrenheit}>toFahrenheit</button>
-          </form>
-        </div>
 
         <h1>Weather in Minneapolis</h1>
         {data ? displayWeather(data) : null}
+
+        {modalVisible && (
+          <div className="modal" style={modalStyles}>
+            <div className="modal-content" style={modalContentStyles}>
+              <span
+                className="close-button"
+                style={closeButtonStyles}
+                onClick={() => setModalVisible(false)}
+              >
+                &times;
+              </span>
+              <div>{modalContent}</div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
 }
+
+const modalStyles = {
+  position: "fixed",
+  zIndex: 1,
+  left: 0,
+  top: 0,
+  width: "100%",
+  height: "100%",
+  overflow: "auto",
+  backgroundColor: "rgb(0,0,0)",
+  backgroundColor: "rgba(0,0,0,0.4)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const modalContentStyles = {
+  backgroundColor: "#fefefe",
+  padding: "20px",
+  border: "1px solid #888",
+  width: "80%",
+  maxWidth: "500px",
+};
+
+const closeButtonStyles = {
+  color: "#aaa",
+  float: "right",
+  fontSize: "28px",
+  fontWeight: "bold",
+  cursor: "pointer",
+};
