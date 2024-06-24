@@ -5,7 +5,7 @@ const SpotifyAuth = () => {
   const authorize_endpoint = 'https://accounts.spotify.com/authorize';
   const exchange_token_endpoint = 'https://accounts.spotify.com/api/token';
   const client_id = '3eea97dee61f4fbbaa9add653fdff523';
-  const redirect_uri = 'https://vercel.bhenning.com/';
+  const redirect_uri = 'https://vercel.bhenning.com/spotifyauth';
   const scope = 'user-read-currently-playing';
 
   const [accessToken, setAccessToken] = useState(null);
