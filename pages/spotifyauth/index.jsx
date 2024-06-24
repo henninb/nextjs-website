@@ -75,7 +75,7 @@ const SpotifyAuth = () => {
         setAccessToken(data.access_token);
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('expires_at', new Date().getTime() + data.expires_in * 1000);
-        router.replace('/spotify'); // Remove query parameters
+        router.replace('/spotifyauth'); // Remove query parameters
       })
       .catch(error => console.error('Error exchanging token:', error));
   };
