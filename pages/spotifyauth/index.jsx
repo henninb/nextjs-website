@@ -101,7 +101,7 @@ const SpotifyAuth = () => {
             Logout
           </button>
           <div id="content">
-            <button id="getCurrent" onClick={getCurrentTrack}>
+            <button id="getCurrent" onClick={getPlayLists}>
               Get Current Track
             </button>
             <div id="current-track"></div>
@@ -112,10 +112,10 @@ const SpotifyAuth = () => {
   );
 };
 
-const getCurrentTrack = () => {
+const getPlayLists = () => {
   const access_token = localStorage.getItem('access_token');
   console.log(access_token);
-  fetch(`https://api.spotify.com/v1/me/playlists`, {
+  fetch('https://api.spotify.com/v1/me/playlists', {
     headers: {
       Authorization: `Bearer ${access_token}`,
     },
@@ -124,17 +124,48 @@ const getCurrentTrack = () => {
     .then(data => {
       const trackDiv = document.getElementById('current-track');
       console.log(JSON.stringify(data));
-      trackDiv.innerHTML = `
-        <h1>${data.item.id}</h1>
-        <h2>${data.items.map(artist => artist.id).join(', ')}</h2>
-        <img src="${data.item.album.images[1].url}" alt="Album Art" />
-      `;
+      if (data.items && data.items.length > 0) {
+        const playlists = data.items.map(playlist => `
+          <div>
+            <h1>Playlist ID: ${playlist.id}</h1>
+            <h2>Owner Display Name: ${playlist.owner.display_name}</h2>
+          </div>
+        `).join('');
+        trackDiv.innerHTML = playlists;
+      } else {
+        trackDiv.innerHTML = '<p>No playlists found</p>';
+      }
     })
     .catch(error => {
-      console.error('Error fetching current track:', error);
+      console.error('Error fetching playlists:', error);
       const trackDiv = document.getElementById('current-track');
-      trackDiv.innerHTML = '<p>Could not fetch current track</p>';
+      trackDiv.innerHTML = '<p>Could not fetch playlists</p>';
     });
 };
+
+// const getCurrentTrack = () => {
+//   const access_token = localStorage.getItem('access_token');
+//   console.log(access_token);
+//   fetch(`https://api.spotify.com/v1/me/playlists`, {
+//     headers: {
+//       Authorization: `Bearer ${access_token}`,
+//     },
+//   })
+//     .then(response => response.json())
+//     .then(data => {
+//       const trackDiv = document.getElementById('current-track');
+//       console.log(JSON.stringify(data));
+//       trackDiv.innerHTML = `
+//         <h1>${data.item.id}</h1>
+//         <h2>${data.items.map(artist => artist.id).join(', ')}</h2>
+//         <img src="${data.item.album.images[1].url}" alt="Album Art" />
+//       `;
+//     })
+//     .catch(error => {
+//       console.error('Error fetching current track:', error);
+//       const trackDiv = document.getElementById('current-track');
+//       trackDiv.innerHTML = '<p>Could not fetch current track</p>';
+//     });
+// };
 
 export default SpotifyAuth;
