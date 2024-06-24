@@ -115,7 +115,7 @@ const SpotifyAuth = () => {
 const getCurrentTrack = () => {
   const access_token = localStorage.getItem('access_token');
   console.log(access_token);
-  fetch(`https://api.spotify.com/v1/me/player/currently-playing`, {
+  fetch(`https://api.spotify.com/v1/me/playlists`, {
     headers: {
       Authorization: `Bearer ${access_token}`,
     },
