@@ -123,6 +123,7 @@ const getCurrentTrack = () => {
     .then(response => response.json())
     .then(data => {
       const trackDiv = document.getElementById('current-track');
+      console.log(JSON.stringify(data));
       trackDiv.innerHTML = `
         <h1>${data.item.id}</h1>
         <h2>${data.items.map(artist => artist.id).join(', ')}</h2>
