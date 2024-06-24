@@ -124,8 +124,8 @@ const getCurrentTrack = () => {
     .then(data => {
       const trackDiv = document.getElementById('current-track');
       trackDiv.innerHTML = `
-        <h1>${data.item.name}</h1>
-        <h2>${data.item.artists.map(artist => artist.name).join(', ')}</h2>
+        <h1>${data.item.id}</h1>
+        <h2>${data.items.map(artist => artist.id).join(', ')}</h2>
         <img src="${data.item.album.images[1].url}" alt="Album Art" />
       `;
     })
