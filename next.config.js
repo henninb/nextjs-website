@@ -11,17 +11,15 @@ module.exports = {
           {
             key: "Content-Security-Policy",
             value: `
-              default-src 'self';
-              script-src 'self' http://client.px-cloud.net https://henninb.github.io https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval';
-              style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com;
-              img-src 'self' data:;
+              default-src 'self' https://accounts.spotify.com https://*.spotify.com;
+              script-src 'self' http://client.px-cloud.net https://henninb.github.io https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval' https://accounts.spotify.com https://*.spotify.com;
+              style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://accounts.spotify.com https://*.spotify.com;
+              img-src 'self' data: https://accounts.spotify.com https://*.spotify.com;
               font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
-              connect-src 'self' https://api.bhenning.com https://*.execute-api.us-east-1.amazonaws.com https://*.px-cloud.net https://*.px-cdn.net https://*.pxchk.net http://client.px-cloud.net https://accounts.spotify.com;
+              connect-src 'self' https://api.bhenning.com https://*.execute-api.us-east-1.amazonaws.com https://*.px-cloud.net https://*.px-cdn.net https://*.pxchk.net http://client.px-cloud.net https://accounts.spotify.com https://*.spotify.com;
               frame-src 'none';
               object-src 'none';
-            `
-              .replace(/\s{2,}/g, " ")
-              .trim(), // Removes excess whitespace
+            `.replace(/\s{2,}/g, " ").trim(), // Removes excess whitespace
           },
         ],
       },
