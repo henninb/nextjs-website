@@ -4,7 +4,8 @@ import { useRouter } from 'next/router';
 const SpotifyAuth = () => {
   const authorize_endpoint = 'https://accounts.spotify.com/authorize';
   const exchange_token_endpoint = 'https://accounts.spotify.com/api/token';
-  const client_id = '3eea97dee61f4fbbaa9add653fdff523';
+  // const client_id = '3eea97dee61f4fbbaa9add653fdff523'; //henninb@gmail.com
+  const client_id = '2679872f57204f0683315b72a9b9a62e';
   const redirect_uri = 'https://vercel.bhenning.com/spotifyauth';
   // const redirect_uri = `${window.location.origin}/spotifyauth`;  // Dynamically set the redirect URI
   const scope = 'playlist-read-private';
