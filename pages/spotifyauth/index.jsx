@@ -107,7 +107,7 @@ const SpotifyAuth = () => {
           Playlists
         </button>
         <input type="text" id="playlistId" defaultValue="1234" placeholder="Enter playlist ID" />
-        <button id="getPlayListTracks" onClick={getPlayListTracks}>
+        <button id="getPlayListTracks" onClick={getPlaylistTracks}>
           Get Playlist Tracks
         </button>
         <div id="current-track"></div>
