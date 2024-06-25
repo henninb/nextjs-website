@@ -89,28 +89,33 @@ const SpotifyAuth = () => {
 
   return (
     <div>
-      {!accessToken ? (
-        <>
-        <button id="login-button" onClick={redirectToAuthorizeEndpoint}>
-          Login to Spotify
+  {!accessToken ? (
+    <>
+      <button id="login-button" onClick={redirectToAuthorizeEndpoint}>
+        Login to Spotify
+      </button>
+      <br />
+      https://developer.spotify.com
+    </>
+  ) : (
+    <div>
+      <button id="logout-button" onClick={handleLogout}>
+        Logout
+      </button>
+      <div id="content">
+        <button id="getCurrent" onClick={getPlayLists}>
+          Playlists
         </button>
-        <br />
-        https://developer.spotify.com
-        </>
-      ) : (
-        <div>
-          <button id="logout-button" onClick={handleLogout}>
-            Logout
-          </button>
-          <div id="content">
-            <button id="getCurrent" onClick={getPlayLists}>
-              Playlists
-            </button>
-            <div id="current-track"></div>
-          </div>
-        </div>
-      )}
+        <input type="text" id="playlistId" defaultValue="1234" placeholder="Enter playlist ID" />
+        <button id="getPlayListTracks" onClick={getPlayListTracks}>
+          Get Playlist Tracks
+        </button>
+        <div id="current-track"></div>
+      </div>
     </div>
+  )}
+</div>
+
   );
 };
 
@@ -181,29 +186,5 @@ const getPlaylistTracks = () => {
     });
 };
 
-// const getCurrentTrack = () => {
-//   const access_token = localStorage.getItem('access_token');
-//   console.log(access_token);
-//   fetch(`https://api.spotify.com/v1/me/playlists`, {
-//     headers: {
-//       Authorization: `Bearer ${access_token}`,
-//     },
-//   })
-//     .then(response => response.json())
-//     .then(data => {
-//       const trackDiv = document.getElementById('current-track');
-//       console.log(JSON.stringify(data));
-//       trackDiv.innerHTML = `
-//         <h1>${data.item.id}</h1>
-//         <h2>${data.items.map(artist => artist.id).join(', ')}</h2>
-//         <img src="${data.item.album.images[1].url}" alt="Album Art" />
-//       `;
-//     })
-//     .catch(error => {
-//       console.error('Error fetching current track:', error);
-//       const trackDiv = document.getElementById('current-track');
-//       trackDiv.innerHTML = '<p>Could not fetch current track</p>';
-//     });
-// };
 
 export default SpotifyAuth;
