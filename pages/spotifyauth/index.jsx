@@ -5,8 +5,8 @@ const SpotifyAuth = () => {
   const authorize_endpoint = 'https://accounts.spotify.com/authorize';
   const exchange_token_endpoint = 'https://accounts.spotify.com/api/token';
   const client_id = '3eea97dee61f4fbbaa9add653fdff523';
-  // const redirect_uri = 'https://vercel.bhenning.com/spotifyauth';
-  const redirect_uri = `${window.location.origin}/spotifyauth`;  // Dynamically set the redirect URI
+  const redirect_uri = 'https://vercel.bhenning.com/spotifyauth';
+  // const redirect_uri = `${window.location.origin}/spotifyauth`;  // Dynamically set the redirect URI
   const scope = 'playlist-read-private';
 
   const [accessToken, setAccessToken] = useState(null);
@@ -102,7 +102,7 @@ const SpotifyAuth = () => {
             Logout
           </button>
           <div id="content">
-            <button id="getCurrent" onClick={getPlayLists}>
+            <button id="getCurrent" onClick={getPlaylistTracks}>
               Playlists
             </button>
             <div id="current-track"></div>
@@ -141,6 +141,42 @@ const getPlayLists = () => {
       console.error('Error fetching playlists:', error);
       const trackDiv = document.getElementById('current-track');
       trackDiv.innerHTML = '<p>Could not fetch playlists</p>';
+    });
+};
+
+const getPlaylistTracks = () => {
+  const access_token = localStorage.getItem('access_token');
+  const playlist_id = '1IdWEGOcOIvIQNf664qSvL';
+
+  fetch(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  })
+    .then(response => response.json())
+    .then(data => {
+      const trackDiv = document.getElementById('current-track');
+      console.log(JSON.stringify(data));
+      if (data.items && data.items.length > 0) {
+        const tracks = data.items.map(item => {
+          const track = item.track;
+          const artists = track.artists.map(artist => artist.name).join(', ');
+          return `
+            <div>
+              <h1>Song: ${track.name}</h1>
+              <h2>Artists: ${artists}</h2>
+            </div>
+          `;
+        }).join('');
+        trackDiv.innerHTML = tracks;
+      } else {
+        trackDiv.innerHTML = '<p>No tracks found in this playlist</p>';
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching playlist tracks:', error);
+      const trackDiv = document.getElementById('current-track');
+      trackDiv.innerHTML = '<p>Could not fetch playlist tracks</p>';
     });
 };
 
