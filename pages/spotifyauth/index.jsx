@@ -103,7 +103,7 @@ const SpotifyAuth = () => {
             Logout
           </button>
           <div id="content">
-            <button id="getCurrent" onClick={getPlaylistTracks}>
+            <button id="getCurrent" onClick={getPlayLists}>
               Playlists
             </button>
             <div id="current-track"></div>
