@@ -5,7 +5,8 @@ const SpotifyAuth = () => {
   const authorize_endpoint = 'https://accounts.spotify.com/authorize';
   const exchange_token_endpoint = 'https://accounts.spotify.com/api/token';
   const client_id = '3eea97dee61f4fbbaa9add653fdff523';
-  const redirect_uri = 'https://vercel.bhenning.com/spotifyauth';
+  // const redirect_uri = 'https://vercel.bhenning.com/spotifyauth';
+  const redirect_uri = `${window.location.origin}/spotifyauth`;  // Dynamically set the redirect URI
   const scope = 'playlist-read-private';
 
   const [accessToken, setAccessToken] = useState(null);
@@ -102,7 +103,7 @@ const SpotifyAuth = () => {
           </button>
           <div id="content">
             <button id="getCurrent" onClick={getPlayLists}>
-              Get Current Track
+              Playlists
             </button>
             <div id="current-track"></div>
           </div>
