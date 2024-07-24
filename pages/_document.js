@@ -24,6 +24,7 @@ class MyDocument extends Document {
           />
           <script
             src="//client.px-cloud.net/PXjJ0cYtn9/main.min.js"
+            src="/jJ0cYtn9/init.js"
             async
           ></script>
 
