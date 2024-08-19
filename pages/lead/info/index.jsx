@@ -93,7 +93,7 @@ export default function Info() {
     console.log("Claim submitted:", data);
     try {
       const response = await fetch(
-        "https://f5x3msep1f.execute-api.us-east-1.amazonaws.com/prod/api-lead",
+        "https://g9dugr14pk.execute-api.us-east-1.amazonaws.com/prod/api-lead",
         {
           method: "POST",
           headers: {
