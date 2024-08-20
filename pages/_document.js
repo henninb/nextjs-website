@@ -26,9 +26,13 @@ class MyDocument extends Document {
             src="/jJ0cYtn9/init.js"
             async
           ></script>
+          <script
+            src="/file.js"
+          ></script>
 
           <script>
-            // PX Cookie Syncing !function()
+            // PX Cookie Syncing
+            // !function()
             {
               //window._pxCustomAbrDomains = ['amazonaws.com', 'execute-api.us-east-1.amazonaws.com']
               // Configuration
