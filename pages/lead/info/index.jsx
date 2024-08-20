@@ -113,9 +113,9 @@ export default function Info() {
         );
       } else {
         console.error("Failed to generate lead:" + JSON.stringify(result));
-        setResponseMessage(
-          "Failed to generate lead: " + JSON.stringify(result),
-        );
+        // setResponseMessage(
+          // "Failed to generate lead: " + JSON.stringify(result),
+        // );
       }
     } catch (error) {
       console.error("Error:", error);
