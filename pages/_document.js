@@ -23,13 +23,13 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/icon?family=Material+Icons"
           />
           <script
-            src="//client.px-cloud.net/PXjJ0cYtn9/main.min.js"
             src="/jJ0cYtn9/init.js"
             async
           ></script>
 
           <script>
             // PX Cookie Syncing !function()
+            window._pxCustomAbrDomains = ['amazonaws.com'];
             {
               // Configuration
               // var customCookieHeader = "x-px-cookies";
