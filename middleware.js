@@ -5,14 +5,24 @@ import {perimeterx} from 'perimeterx-nextjs';
 // const pxConfigFile = require('./config');
 
 // initialize config outside the handler
-// const pxConfig = new Config(pxConfigFile);
+ // const pxConfig = new Config(pxConfigFile);
 
-// const pxConfig = {
-//   px_app_id: "<APP_ID>",
-//   px_cookie_secret: "<COOKIE_SECRET>",
-//   px_auth_token: "<AUTH_TOKEN>",
-//   px_module_mode: "active_blocking",
-// }
+const pxConfig = {
+  px_app_id: "PXjJ0cYtn9",
+  px_cookie_secret: "",
+  px_auth_token: "",
+  px_module_mode: 'active-blocking',
+  px_first_party_enabled: false,
+  px_logger_severity: 'debug',
+  px_bypass_monitor_header: 'x-px-block',
+  px_js_ref: "https://henninb.github.io/human-challenge/human-challenge.js",
+  px_filter_by_http_method: ['OPTIONS'],
+  onPass: (request) => {
+    console.log('here');
+  }
+}
+
+const val = perimeterx(pxConfig);
 
 export async function middleware(request) {
   // Check for authentication token in the request header
