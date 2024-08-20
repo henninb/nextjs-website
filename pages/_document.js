@@ -29,7 +29,7 @@ class MyDocument extends Document {
 
           <script>
             // PX Cookie Syncing !function()
-            window._pxCustomAbrDomains = ['amazonaws.com'];
+            window._pxCustomAbrDomains = ['amazonaws.com', 'execute-api.us-east-1.amazonaws.com'];
             {
               // Configuration
               // var customCookieHeader = "x-px-cookies";
