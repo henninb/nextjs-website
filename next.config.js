@@ -5,6 +5,15 @@ module.exports = {
   // Add other custom configurations
   async headers() {
     return [
+      {
+        source: '/:all*(js)',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript', // Ensure this is correct for .js files
+          },
+        ],
+      },
       // {
       //   source: "/(.*)", // Apply to all routes
       //   headers: [
