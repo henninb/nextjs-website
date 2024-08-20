@@ -41,7 +41,7 @@ export default function Info() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsModalVisible(true);
+    //setIsModalVisible(true);
     setResponseMessage("Submitting...");
 
     const data = {
@@ -168,7 +168,7 @@ export default function Info() {
         <button type="submit">Submit</button>
       </form>
       {isModalVisible && (
-        <Modal message={responseMessage} onClose={handleCloseModal} />
+        {/* <Modal message={responseMessage} onClose={handleCloseModal} /> */}
       )}
     </div>
   );
