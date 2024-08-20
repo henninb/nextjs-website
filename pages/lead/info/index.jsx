@@ -108,14 +108,8 @@ export default function Info() {
 
       if (response.ok) {
         console.log("Lead generated successfully:" + JSON.stringify(result));
-        setResponseMessage(
-          "Lead generated successfully: " + JSON.stringify(result),
-        );
       } else {
         console.error("Failed to generate lead:" + JSON.stringify(result));
-        // setResponseMessage(
-          // "Failed to generate lead: " + JSON.stringify(result),
-        // );
       }
     } catch (error) {
       console.error("Error:", error);
@@ -131,23 +125,6 @@ export default function Info() {
   return (
     <div>
       <h3>Wrapped - Enter Your Information</h3>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter Name"
-          required
-        />
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter Email"
-          required
-        />
-        <button type="submit">Submit</button>
-      </form>
       <br />
       <h3>Not-Wrapped API - Enter Your Information</h3>
       <form onSubmit={handleSubmitNew}>
@@ -167,9 +144,6 @@ export default function Info() {
         />
         <button type="submit">Submit</button>
       </form>
-      {isModalVisible && (
-        {/* <Modal message={responseMessage} onClose={handleCloseModal} /> */}
-      )}
     </div>
   );
 }
