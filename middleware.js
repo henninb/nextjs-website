@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
-//import {perimeterx} from 'perimeterx-nextjs';
+import {perimeterx} from 'perimeterx-nextjs';
 
 // export const runtime = 'edge';
+const pxConfigFile = require('./config');
+
+// initialize config outside the handler
+const pxConfig = new Config(pxConfigFile);
 
 // const pxConfig = {
 //   px_app_id: "<APP_ID>",
