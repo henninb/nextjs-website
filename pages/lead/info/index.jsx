@@ -29,18 +29,17 @@ export default function Info() {
         },
         body: JSON.stringify(data),
       });
+      const result = await response.json();
 
       if (response.ok) {
         console.log("Lead generated successfully:" + JSON.stringify(result));
         router.push("/lead/success");  // Redirect to a success page
       } else {
-        const result = await response.json();
         console.error("Failed to generate lead:" + JSON.stringify(result));
         setError(`Failed to generate lead: ${JSON.stringify(result)}`);
       }
     } catch (error) {
       console.error("Failed to generate lead:" + error);
-      console.error("Failed to generate lead:" + JSON.stringify(error));
       setError("An error occurred while generating the lead.");
     }
   };
