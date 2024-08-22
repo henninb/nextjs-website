@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Head from 'next/head';
 
 function Modal({ message, onClose }) {
   return (
@@ -41,7 +42,7 @@ export default function Info() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    //setIsModalVisible(true);
+    setIsModalVisible(true);
     setResponseMessage("Submitting...");
 
     const data = {
@@ -124,6 +125,15 @@ export default function Info() {
 
   return (
     <div>
+         <Head>
+        <script
+          type="text/javascript"
+          integrity="sha384-MBHPie4YFudCVszzJY9HtVPk9Gw6aDksZxfvfxib8foDhGnE9A0OriRHh3kbhG3q"
+          crossOrigin="anonymous"
+          async
+          src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"
+        ></script>
+      </Head>
       <h3>Wrapped - Enter Your Information</h3>
       <br />
       <h3>Not-Wrapped API - Enter Your Information</h3>
