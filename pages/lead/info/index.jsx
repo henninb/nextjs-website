@@ -125,7 +125,7 @@ export default function Info() {
 
   return (
     <div>
-         <Head>
+       <Head>
         <script
           type="text/javascript"
           integrity="sha384-MBHPie4YFudCVszzJY9HtVPk9Gw6aDksZxfvfxib8foDhGnE9A0OriRHh3kbhG3q"
@@ -134,9 +134,7 @@ export default function Info() {
           src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"
         ></script>
       </Head>
-      <h3>Wrapped - Enter Your Information</h3>
-      <br />
-      <h3>Not-Wrapped API - Enter Your Information</h3>
+      <h3>Enter Your Information</h3>
       <form onSubmit={handleSubmitNew}>
         <input
           type="text"
@@ -145,6 +143,7 @@ export default function Info() {
           placeholder="Enter Name"
           required
         />
+        <br>
         <input
           type="email"
           value={email}
