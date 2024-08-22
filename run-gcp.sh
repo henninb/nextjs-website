@@ -6,8 +6,8 @@ echo ssh-add ~/.ssh/google_compute_engine
 echo ssh-add ~/.ssh/id_rsa_gcp
 
 TOKEN=$(cat token)
-docker context create remote-webserver --docker "host=ssh://brianhenning@35.226.225.26"
-export DOCKER_HOST=ssh://brianhenning@35.226.225.26
+docker context create remote-webserver --docker "host=ssh://brianhenning@34.136.119.9"
+export DOCKER_HOST=ssh://brianhenning@34.136.119.9
 
 npm install
 npm run build
@@ -22,6 +22,7 @@ docker run -d --name cloudflared --restart=unless-stopped cloudflare/cloudflared
 docker ps -a
 
 echo gcloud compute firewall-rules create allow-react-app-rule --allow tcp:3001
-echo gcloud compute ssh --zone "us-central1-b" "owasp-juice-shop-app" --project "sa-brian-henning"
+echo gcloud compute ssh --zone "us-central1-b" "www-bhenning-com" --project "sa-brian-henning"
+curl 'http://34.136.119.9:3001/'
 
 exit 0
