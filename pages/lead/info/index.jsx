@@ -143,7 +143,6 @@ export default function Info() {
           placeholder="Enter Name"
           required
         />
-        <br>
         <input
           type="email"
           value={email}
