@@ -35,6 +35,7 @@ export default function Info() {
         router.push("/lead/success");  // Redirect to a success page
       } else {
         const result = await response.json();
+        console.error("Failed to generate lead:" + JSON.stringify(result));
         setError(`Failed to generate lead: ${JSON.stringify(result)}`);
       }
     } catch (error) {
