@@ -54,7 +54,7 @@ export default function Payment() {
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Name on Card</label>
+          <label>Name on Card: </label>
           <input
             type="text"
             value={cardName}
@@ -65,7 +65,7 @@ export default function Payment() {
           {errors.cardName && <p style={{ color: 'red' }}>{errors.cardName}</p>}
         </div>
         <div>
-          <label>Card Number</label>
+          <label>Card Number: </label>
           <input
             type="text"
             value={cardNumber}
@@ -77,7 +77,7 @@ export default function Payment() {
           {errors.cardNumber && <p style={{ color: 'red' }}>{errors.cardNumber}</p>}
         </div>
         <div>
-          <label>Expiration Date</label>
+          <label>Expiration Date: </label>
           <input
             type="text"
             value={expDate}
@@ -89,7 +89,7 @@ export default function Payment() {
           {errors.expDate && <p style={{ color: 'red' }}>{errors.expDate}</p>}
         </div>
         <div>
-          <label>CVV</label>
+          <label>CVV: </label>
           <input
             type="text"
             value={cvv}

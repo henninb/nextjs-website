@@ -57,7 +57,8 @@ export default function Info() {
       </Head>
       <h3>Enter Your Information</h3>
       <form onSubmit={handleSubmit}>
-            <div>
+        <div>
+          <label>Name: </label>
           <input
             type="text"
             value={name}
@@ -68,6 +69,7 @@ export default function Info() {
         </div>
         <br />
         <div>
+          <label>Email: </label>
           <input
             type="email"
             value={email}
