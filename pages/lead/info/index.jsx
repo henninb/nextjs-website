@@ -57,20 +57,26 @@ export default function Info() {
       </Head>
       <h3>Enter Your Information</h3>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter Name"
-          required
-        />
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter Email"
-          required
-        />
+            <div>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter Name"
+            required
+          />
+        </div>
+        <br />
+        <div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter Email"
+            required
+          />
+        </div>
+
         <button type="submit">Submit</button>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
