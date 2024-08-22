@@ -39,6 +39,8 @@ export default function Info() {
         setError(`Failed to generate lead: ${JSON.stringify(result)}`);
       }
     } catch (error) {
+      console.error("Failed to generate lead:" + error);
+      console.error("Failed to generate lead:" + JSON.stringify(error));
       setError("An error occurred while generating the lead.");
     }
   };
