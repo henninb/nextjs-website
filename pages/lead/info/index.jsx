@@ -82,6 +82,18 @@ export default function Info() {
         <button type="submit">Submit</button>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
+
+
+          <div style={{ marginTop: '20px' }}>
+        <h3>Additional Information</h3>
+        <iframe
+          src="https://example.com"
+          width="100%"
+          height="300px"
+          style={{ border: '1px solid #ccc' }}
+          title="Additional Information"
+        ></iframe>
+      </div>
     </div>
   );
 };
