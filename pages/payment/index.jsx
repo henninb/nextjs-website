@@ -102,6 +102,14 @@ export default function Payment() {
         </div>
         <button type="submit">Submit Payment</button>
       </form>
+
+
+        <div class="payment-form">
+        <h2>Enter Your Payment Details</h2>
+        <div class="iframe-container">
+            <iframe src="https://example.com/credit-card-form"></iframe>
+        </div>
+    </div>
     </div>
   );
 }
