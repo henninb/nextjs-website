@@ -1,0 +1,110 @@
+<html>
+<div class="row">
+ <div id="PaymentInformation" class="col">
+ <div class="card bg-light mb-3">
+ <div class="card-body">
+ <div class="row">
+ <div class="col-12">
+ <div id="PaymentInformationForm">
+ 
+<div class="processing-type-credit">
+ <div class="cardType cardImageBlock mb-3 d-none">
+ <span class="acceptedCreditCards Visa"></span>
+ <span class="acceptedCreditCards MasterCard"></span>
+ <span class="acceptedCreditCards Discover"></span>
+ <span class="acceptedCreditCards Visa(debit)"></span>
+ <span class="acceptedCreditCards MasterCard(debit)"></span>
+</div>
+ 
+ <div class="cardProvider mb-3" style="display: none;">
+ <label class="form-label" for="SelectedCreditCardPaymentType">Type</label>
+ <select class="form-select disableable-drop-down" id="SelectedCreditCardPaymentType" name="SelectedCreditCardPaymentType"><option value="">Invalid</option>
+<option value="Visa">Visa</option>
+<option selected="selected" value="MasterCard">MasterCard</option>
+<option value="Discover">Discover</option>
+<option value="VisaDebit">Visa (debit)</option>
+<option value="MasterCardDebit">MasterCard (debit)</option>
+</select>
+ </div>
+ <div class="row">
+ <div class="cardName col-12 col-lg-6 mb-3">
+ <label class="form-label" for="Name">Name</label>
+ <input class="disableable form-control" placeholder="As displayed on Card" maxlength="50" disabled="disabled" required="required" type="text" data-val="true" data-val-length="The field Name must be a string with a maximum length of 50." data-val-length-max="50" data-val-regex="Name is required" data-val-regex-pattern="^((?!As displayed on Card).|
+)*$" data-val-required="The Name field is required." id="Name" name="Name" value="*****">
+ </div>
+ <div class="cardNumber col-12 col-lg-6 mb-3">
+ <label class="form-label" for="CardNumber">Card Number</label>
+ <img id="CardTypeDisplay" class="float-end" style="display: none; height: 24px; width: auto;">
+ <input type="tel" class="form-control disableable" inputmode="numeric" pattern="[0-9]{13,19}" placeholder="xxxxxxxxxxxxxxxx" disabled="disabled" required="required" data-val="true" data-val-regex="Credit Card number must be between 13 and 19 digits" data-val-regex-pattern="^([0-9]{13,19}|((\*){9,15})([0-9]{4}))$" data-val-required="The Card Number field is required." id="CardNumber" name="CardNumber" value="************">
+ </div>
+ </div>
+ <div class="row row-cols-3 align-items-end">
+ <div class="col-12 col-sm-6 col-lg-3 mb-3">
+ <label class="form-label" for="Month">
+ Exp. Date 
+ </label>
+ <select class="form-select disableable-drop-down" disabled="disabled" required="required" data-val="true" data-val-required="The Month field is required." id="Month" name="Month">
+ <option value="1">01</option>
+<option value="2">02</option>
+<option value="3">03</option>
+<option value="4">04</option>
+<option value="5">05</option>
+<option value="6">06</option>
+<option value="7">07</option>
+<option value="8">08</option>
+<option value="9">09</option>
+<option value="10">10</option>
+<option value="11">11</option>
+<option selected="selected" value="12">12</option>
+</select>
+ </div>
+ <div class="col-12 col-sm-6 col-lg-3 mb-3">
+ <select class="form-select disableable-drop-down" aria-label="Credit Card Expiration Year" disabled="disabled" required="required" data-val="true" data-val-required="The Year field is required." id="Year" name="Year">
+ <option value="2024">2024</option>
+<option value="2025">2025</option>
+<option selected="selected" value="2026">2026</option>
+<option value="2027">2027</option>
+<option value="2028">2028</option>
+<option value="2029">2029</option>
+<option value="2030">2030</option>
+<option value="2031">2031</option>
+<option value="2032">2032</option>
+<option value="2033">2033</option>
+<option value="2034">2034</option>
+</select>
+ </div>
+ <div class="code col-12 col-sm-4 col-lg-2 mb-3 d-none">
+ <label class="form-label" for="Cvv">CVV</label>
+ <input class="form-control" placeholder="3 or 4 digits" maxlength="4" disabled="disabled" required="required" type="text" data-val="true" data-val-regex="The field CVV must match the regular expression '[0-9]*'." data-val-regex-pattern="[0-9]*" id="Cvv" name="Cvv" value="">
+ </div>
+ <div class="zip col-12 col-sm-8 col-lg-4 mb-3 d-none">
+ <label class="form-label" for="Zip">Billing Address Zip Code</label>
+ <input class="disableable form-control" maxlength="10" disabled="disabled" required="required" type="text" data-val="true" data-val-length="The field Billing Address Zip Code must be a string with a maximum length of 10." data-val-length-max="10" id="Zip" name="Zip" value="">
+ </div>
+ 
+ <div class="col-12 col-lg-6 mb-3">
+ <label class="form-label">
+ Pay On 
+ </label>
+ <input class="form-control readonly-interactive" id="PaymentDate" max="2024-10-24" min="2024-08-25" name="PaymentDate" type="date" value="2024-08-25">
+ </div>
+ </div>
+</div>
+ 
+ 
+ </div>
+ </div>
+ </div>
+ 
+ </div>
+ </div>
+ <div class="row">
+ <div id="MakePaymentDisclaimer" class="col-12 mb-3 fs-7">
+ 
+ <div id="MakePaymentDisclaimerText"><p><b>Make a payment today.</b> These payments cannot be deleted or changed after they are submitted. </p> <p>Payments will be reflected in your balance today, but may take up to two business days to complete processing and post to your account. </p><p><b>Schedule a future payment.</b> These payments may be edited up until 5:00 p.m the day before the scheduled payment date. Scheduled payments will not update your balance until after the payment has been received, typically 1-2 business days after the scheduled date. Payments made on weekends and holidays will be processed the next business day.</p></div>
+ 
+ </div>
+ </div>
+ </div>
+ </div>
+</html>
