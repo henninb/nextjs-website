@@ -10,8 +10,8 @@ export const runtime = 'experimental-edge';
 
 const pxConfig = {
   px_app_id: "PXjJ0cYtn9",
-  px_cookie_secret: "",
-  px_auth_token: "",
+  px_cookie_secret: "secret",
+  px_auth_token: "token",
   px_module_mode: 'active_blocking',
   px_first_party_enabled: false,
   px_logger_severity: 'debug',
