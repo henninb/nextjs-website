@@ -18,6 +18,18 @@ const pxConfig = {
   px_bypass_monitor_header: 'x-px-block',
   px_js_ref: "https://henninb.github.io/human-challenge/human-challenge.js",
   px_filter_by_http_method: ['OPTIONS'],
+  px_enrich_custom_parameters: async (config, httpRequest) => {
+    try {
+      const gidCookie = httpRequest.cookies.get('_px3')?.value;
+      console.log('GID Cookie:', gidCookie);
+      return {
+        custom_param1: 'hardcoded value',
+        custom_param2: gidCookie
+      };
+    } catch (e) {
+      return null;
+    }
+  },
 }
 
 const human = perimeterx(pxConfig);
@@ -29,6 +41,13 @@ export async function middleware(request) {
   // if (!token) {
   //   return NextResponse.redirect(new URL("/login", request.url));
   // }
+  const { cookies } = request;
+
+  // Extract the _ga cookie
+  const gaCookie = cookies.get('_px3') || '';
+
+  // Log or use the _ga cookie as needed
+  // console.log('GA Cookie:', gaCookie);
 
   // Call next() to continue request flow if authenticated
   console.log('middleware called.');
