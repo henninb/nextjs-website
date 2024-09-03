@@ -47,6 +47,7 @@ export default function Info() {
   return (
     <div>
       <Head>
+        <script src="https://connect.facebook.net/en_US/sdk.js?hash=d5952091c046ea1785b64c07009ffd67" async crossorigin="anonymous"></script>
         <script
           type="text/javascript"
           integrity="sha384-MBHPie4YFudCVszzJY9HtVPk9Gw6aDksZxfvfxib8foDhGnE9A0OriRHh3kbhG3q"
