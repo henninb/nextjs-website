@@ -20,6 +20,12 @@ export default function Info() {
       email,
     };
 
+    const handleClick = () => {
+    window.open(
+      'https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD',
+      '_blank'
+    );
+
     try {
       const response = await fetch("https://g9dugr14pk.execute-api.us-east-1.amazonaws.com/prod/api-lead", {
         method: "POST",
@@ -98,6 +104,21 @@ export default function Info() {
       }}
       title="Donate with PayPal"
     ></iframe>
+
+        <button
+      onClick={handleClick}
+      style={{
+        padding: '10px 20px',
+        backgroundColor: '#0070ba',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        fontSize: '16px',
+      }}
+    >
+      Donate with PayPal
+    </button>
 
         <h3>Payment</h3>
         <iframe
