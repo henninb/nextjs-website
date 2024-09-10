@@ -12,7 +12,7 @@ export DOCKER_HOST=ssh://brianhenning@34.136.119.9
 npm install --only=production
 npm run build
 docker build -t react-app .
-docker save react-app | docker --context remote-webserver load
+# docker save react-app | docker --context remote-webserver load
 
 docker rm -f react-app
 docker run --name=react-app -h react-app --restart unless-stopped -p 3001:3000 -d react-app
