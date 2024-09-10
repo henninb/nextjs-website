@@ -89,7 +89,7 @@ export default function Info() {
           <div style={{ marginTop: '20px' }}>
 
         <h3>Donate</h3>
-        <iframe
+      <iframe
       src="https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD"
       style={{
         border: 'none',
@@ -100,7 +100,20 @@ export default function Info() {
     ></iframe>
 
         <h3>Payment</h3>
-        <iframe id="targetFrame" title="UCOM-SDK" src="https://prod.api.firstdata.com/ucom/v2/static/v2/index.html" frameBorder="0" scrolling="no" allowFullScreen="" referrerPolicy="strict-origin" style={{ width: '100%', overflow: 'hidden', height: '459px' }}></iframe>
+        <iframe
+        title="Payment"
+        src="https://prod.api.firstdata.com/ucom/v2/static/v2/index.html"
+        frameBorder="0"
+        scrolling="no"
+        allowFullScreen=""
+        referrerPolicy="strict-origin"
+        style={{
+          border: 'none',
+          width: '300px',
+          height: '400px',
+          overflow: 'hidden',
+        }}
+       ></iframe>
 
 
       </div>
