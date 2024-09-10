@@ -54,22 +54,6 @@ export default function Info() {
   return (
     <div>
       <Head>
-        <script type="text/javascript" async="" src="https://cdn.userway.org/remediation/2024-09-09-09-41-58/paid/remediation-tool.js"></script>
-        <script type="text/javascript" async="" src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
-        <script type="text/javascript" async="" src="https://connect.facebook.net/en_US/sdk.js" crossorigin="anonymous"></script>
-        <script type="text/javascript" async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
-        <script type="text/javascript" async="" src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></script>
-        <script type="text/javascript" async="" src="https://track.sv.rkdms.com/js/sv.js"></script>
-        <script type="text/javascript" async="" src="https://www.clarity.ms/s/0.7.45/clarity.js"></script>
-        <script type="text/javascript" async="" src="https://bat.bing.com/bat.js"></script>
-        <script type="text/javascript" async="" src="https://js.hubspot.com/web-interactives-embed.js" id="hubspot-web-interactives-loader" crossorigin="anonymous" data-loader="hs-scriptloader" data-hsjs-portal="8187955" data-hsjs-env="prod" data-hsjs-hublet="na1"></script>
-        <script
-          type="text/javascript"
-          integrity="sha384-MBHPie4YFudCVszzJY9HtVPk9Gw6aDksZxfvfxib8foDhGnE9A0OriRHh3kbhG3q"
-          crossOrigin="anonymous"
-          async
-          src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"
-        ></script>
       </Head>
       <h3>Enter Your Information</h3>
       <form onSubmit={handleSubmit}>
