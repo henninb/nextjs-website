@@ -57,7 +57,6 @@ export default function Info() {
         <script type="text/javascript" async="" src="https://connect.facebook.net/en_US/sdk.js?hash=d5952091c046ea1785b64c07009ffd67" crossorigin="anonymous"></script>
         <script type="text/javascript" async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
         <script type="text/javascript" async="" src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></script>
-        <script type="text/javascript" async="" src="https://connect.facebook.net/en_US/fbevents.js"></script>
         <script type="text/javascript" async="" src="https://track.sv.rkdms.com/js/sv.js"></script>
         <script type="text/javascript" async="" src="https://www.clarity.ms/s/0.7.45/clarity"></script>
         <script type="text/javascript" async="" src="https://bat.bing.com/bat.js"></script>
@@ -128,20 +127,6 @@ export default function Info() {
     </button>
 
         <h3>Payment</h3>
-        <iframe
-        title="Payment"
-        src="https://prod.api.firstdata.com/ucom/v2/static/v2/index.html"
-        frameBorder="0"
-        scrolling="no"
-        allowFullScreen=""
-        referrerPolicy="strict-origin"
-        style={{
-          border: 'none',
-          width: '300px',
-          height: '400px',
-          overflow: 'hidden',
-        }}
-       ></iframe>
 
 
       </div>
