@@ -9,6 +9,12 @@ export default function Info() {
   const router = useRouter();
   const { vin, color } = router.query;
 
+  const handleClick = async() => {
+    window.open(
+      'https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD',
+      '_blank'
+  )};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -20,11 +26,6 @@ export default function Info() {
       email,
     };
 
-    const handleClick = () => {
-    window.open(
-      'https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD',
-      '_blank'
-    )}
 
     try {
       const response = await fetch("https://g9dugr14pk.execute-api.us-east-1.amazonaws.com/prod/api-lead", {
