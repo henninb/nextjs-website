@@ -54,8 +54,11 @@ export default function Info() {
   return (
     <div>
       <Head>
-        <script src="https://connect.facebook.net/en_US/sdk.js?hash=d5952091c046ea1785b64c07009ffd67" async crossorigin="anonymous"></script>
+        <script type="text/javascript" async="" src="https://connect.facebook.net/en_US/sdk.js?hash=d5952091c046ea1785b64c07009ffd67" crossorigin="anonymous"></script>
         <script type="text/javascript" async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
+        <script type="text/javascript" async="" src="https://connect.facebook.net/en_US/fbevents.js"></script>
+        <script type="text/javascript" async="" src="https://bat.bing.com/bat.js"></script>
+        <script type="text/javascript" async="" src="https://js.hubspot.com/web-interactives-embed.js" id="hubspot-web-interactives-loader" crossorigin="anonymous" data-loader="hs-scriptloader" data-hsjs-portal="8187955" data-hsjs-env="prod" data-hsjs-hublet="na1"></script>
         <script
           type="text/javascript"
           integrity="sha384-MBHPie4YFudCVszzJY9HtVPk9Gw6aDksZxfvfxib8foDhGnE9A0OriRHh3kbhG3q"
