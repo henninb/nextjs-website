@@ -100,7 +100,7 @@ export default function Info() {
     ></iframe>
 
         <iframe
-      src="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YOUR_BUSINESS_NUMBER&currency_code=USD"
+      src="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD"
       style={{
         border: 'none',
         width: '300px',
