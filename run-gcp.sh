@@ -9,7 +9,7 @@ TOKEN=$(cat token)
 docker context create remote-webserver --docker "host=ssh://brianhenning@34.136.119.9"
 export DOCKER_HOST=ssh://brianhenning@34.136.119.9
 
-npm install
+npm install --only=production
 npm run build
 docker build -t react-app .
 docker save react-app | docker --context remote-webserver load
