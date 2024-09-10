@@ -53,24 +53,14 @@ export default function Payment() {
 
   return (
     <div>
-    <Head>
-        <Script type="text/javascript" async="" src="https://cdn.userway.org/remediation/2024-09-09-09-41-58/paid/remediation-tool.js"></Script>
-        <Script type="text/javascript" async="" src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></Script>
-        <Script type="text/javascript" async="" src="https://connect.facebook.net/en_US/sdk.js" crossorigin="anonymous"></Script>
-        <Script type="text/javascript" async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></Script>
-        <Script type="text/javascript" async="" src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></Script>
-        <Script type="text/javascript" async="" src="https://track.sv.rkdms.com/js/sv.js"></Script>
-        <Script type="text/javascript" async="" src="https://www.clarity.ms/s/0.7.45/clarity.js"></Script>
-        <Script type="text/javascript" async="" src="https://bat.bing.com/bat.js"></Script>
-        <Script type="text/javascript" async="" src="https://js.hubspot.com/web-interactives-embed.js" id="hubspot-web-interactives-loader" crossorigin="anonymous" data-loader="hs-scriptloader" data-hsjs-portal="8187955" data-hsjs-env="prod" data-hsjs-hublet="na1"></Script>
-        <Script
-          type="text/javascript"
-          integrity="sha384-MBHPie4YFudCVszzJY9HtVPk9Gw6aDksZxfvfxib8foDhGnE9A0OriRHh3kbhG3q"
-          crossOrigin="anonymous"
-          async
-          src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"
-        ></Script>
-      </Head>
+        <Script strategy="lazyOnload" src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></Script>
+        <Script strategy="lazyOnload" src="https://connect.facebook.net/en_US/sdk.js"></Script>
+        <Script strategy="lazyOnload" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></Script>
+        <Script strategy="lazyOnload" src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></Script>
+        <Script strategy="lazyOnload" src="https://track.sv.rkdms.com/js/sv.js"></Script>
+        <Script strategy="lazyOnload" src="https://www.clarity.ms/s/0.7.45/clarity.js"></Script>
+        <Script strategy="lazyOnload" src="https://bat.bing.com/bat.js"></Script>
+        <Script strategy="lazyOnload" src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></Script>
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
         <div>
@@ -124,12 +114,6 @@ export default function Payment() {
       </form>
 
 
-        <div className="payment-form">
-        <h2>Enter Your Payment Details</h2>
-        <div className="iframe-container">
-            <iframe src="https://example.com/credit-card-form"></iframe>
-        </div>
-    </div>
     </div>
   );
 }
