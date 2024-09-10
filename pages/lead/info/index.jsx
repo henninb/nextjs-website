@@ -48,6 +48,7 @@ export default function Info() {
     <div>
       <Head>
         <script src="https://connect.facebook.net/en_US/sdk.js?hash=d5952091c046ea1785b64c07009ffd67" async crossorigin="anonymous"></script>
+        <script type="text/javascript" async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
         <script
           type="text/javascript"
           integrity="sha384-MBHPie4YFudCVszzJY9HtVPk9Gw6aDksZxfvfxib8foDhGnE9A0OriRHh3kbhG3q"
@@ -86,7 +87,33 @@ export default function Info() {
 
 
           <div style={{ marginTop: '20px' }}>
+
+        <h3>Donate</h3>
+        <iframe
+      src="https://www.paypal.com/donate?hosted_button_id=YOUR_BUTTON_ID"
+      style={{
+        border: 'none',
+        width: '300px',
+        height: '400px',
+      }}
+      title="Donate with PayPal"
+    ></iframe>
+
+        <iframe
+      src="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YOUR_BUSINESS_NUMBER&currency_code=USD"
+      style={{
+        border: 'none',
+        width: '300px',
+        height: '400px',
+      }}
+      title="Donate with PayPal"
+    ></iframe>
+
+        <h3>Payment</h3>
+        <iframe id="targetFrame" title="UCOM-SDK" src="https://prod.api.firstdata.com/ucom/v2/static/v2/index.html" frameBorder="0" scrolling="no" allowFullScreen="" referrerPolicy="strict-origin" style={{ width: '100%', overflow: 'hidden', height: '459px' }}></iframe>
+
         <h3>Additional Information</h3>
+
         <iframe
           src="https://example.com"
           width="100%"
