@@ -54,6 +54,8 @@ export default function Info() {
   return (
     <div>
       <Head>
+        <script type="text/javascript" async="" src="https://cdn.userway.org/remediation/2024-09-09-09-41-58/paid/remediation-tool.js"></script>
+        <script type="text/javascript" async="" src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
         <script type="text/javascript" async="" src="https://connect.facebook.net/en_US/sdk.js" crossorigin="anonymous"></script>
         <script type="text/javascript" async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
         <script type="text/javascript" async="" src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></script>
