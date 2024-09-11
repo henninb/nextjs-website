@@ -5,6 +5,16 @@ module.exports = {
   // Add other custom configurations
   async headers() {
     return [
+      {
+        // Apply this header to all routes
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
       // {
       //   source: "/(.*)", // Apply to all routes
       //   headers: [
