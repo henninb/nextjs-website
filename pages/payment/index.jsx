@@ -54,11 +54,11 @@ export default function Payment() {
   return (
     <div>
      <Head>
-        <script src="https://connect.facebook.net/en_US/sdk.js"></script>
-        <script src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
-        <script src="https://track.sv.rkdms.com/js/sv.js"></script>
-        <script src="https://bat.bing.com/bat.js"></script>
-        <script src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></script>
+        <script async="" src="https://connect.facebook.net/en_US/sdk.js"></script>
+        <script async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
+        <script async="" src="https://track.sv.rkdms.com/js/sv.js"></script>
+        <script async="" src="https://bat.bing.com/bat.js"></script>
+        <script async="" src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></script>
         <script async="" src="https://sb.scorecardresearch.com/cs/6035944/beacon.js"></script>
         <script type="text/javascript" async="" src="https://static.ads-twitter.com/uwt.js"></script>
         <script type="text/javascript" async="" src="https://www.google-analytics.com/analytics.js"></script>
@@ -67,8 +67,9 @@ export default function Payment() {
         <script async="" src="https://tpp.isgengine.com/fyqkfbzv.js?st=NVZW7XPV&amp;l=ISG"></script>
         <script async="" src="https://cdn.branch.io/branch-latest.min.js"></script>
         <script type="text/javascript" async="" src="https://tags-cdn.clarivoy.com/common/read_from_config/clarivoy.js"></script>
-    {/*
+        <script async="" crossorigin="anonymous" type="text/plain" src="https://edge.fullstory.com/s/fs.js" class="optanon-category-C0002 "></script>
 
+    {/*
         <script src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
         <script async="" src="https://www.clarity.ms/s/0.7.45/clarity.js"></script>
         <script type="text/javascript" async="" src="https://cdn.krxd.net/controltag/rigf54zhi.js"></script>
