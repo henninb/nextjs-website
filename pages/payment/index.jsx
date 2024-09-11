@@ -57,7 +57,6 @@ export default function Payment() {
         <script src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
         <script src="https://connect.facebook.net/en_US/sdk.js"></script>
         <script src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
-        <script src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></script>
         <script src="https://track.sv.rkdms.com/js/sv.js"></script>
         <script src="https://www.clarity.ms/s/0.7.45/clarity.js"></script>
         <script src="https://bat.bing.com/bat.js"></script>
