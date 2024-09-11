@@ -61,6 +61,14 @@ export default function Payment() {
         <script src="https://www.clarity.ms/s/0.7.45/clarity.js"></script>
         <script src="https://bat.bing.com/bat.js"></script>
         <script src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></script>
+        <script async="" src="https://sb.scorecardresearch.com/cs/6035944/beacon.js"></script>
+        <script type="text/javascript" async="" src="https://static.ads-twitter.com/uwt.js"></script>
+        <script type="text/javascript" async="" src="https://www.google-analytics.com/analytics.js"></script>
+        <script type="text/javascript" async="" src="https://tags-cdn.clarivoy.com/common/read_from_config/clarivoy.js"></script>
+    {/*
+        <script type="text/javascript" async="" src="https://analytics.tiktok.com/i18n/pixel/events.js"></script>
+        <script src="https://js-agent.newrelic.com/nr-spa-1130.min.js"></script>
+      */}
     </Head>
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
