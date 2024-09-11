@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
-import Script from 'next/script';
+// import Script from 'next/script';
 
 export default function Payment() {
   const [cardName, setCardName] = useState('');
@@ -53,14 +53,16 @@ export default function Payment() {
 
   return (
     <div>
-        <Script strategy="lazyOnload" src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></Script>
-        <Script strategy="lazyOnload" src="https://connect.facebook.net/en_US/sdk.js"></Script>
-        <Script strategy="lazyOnload" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></Script>
-        <Script strategy="lazyOnload" src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></Script>
-        <Script strategy="lazyOnload" src="https://track.sv.rkdms.com/js/sv.js"></Script>
-        <Script strategy="lazyOnload" src="https://www.clarity.ms/s/0.7.45/clarity.js"></Script>
-        <Script strategy="lazyOnload" src="https://bat.bing.com/bat.js"></Script>
-        <Script strategy="lazyOnload" src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></Script>
+     <Head>
+        <script src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
+        <script src="https://connect.facebook.net/en_US/sdk.js"></script>
+        <script src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
+        <script src="https://snap.licdn.com/li.lms-analytics/insight.min.js"></script>
+        <script src="https://track.sv.rkdms.com/js/sv.js"></script>
+        <script src="https://www.clarity.ms/s/0.7.45/clarity.js"></script>
+        <script src="https://bat.bing.com/bat.js"></script>
+        <script src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></script>
+    </Head>
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
         <div>
