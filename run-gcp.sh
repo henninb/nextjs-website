@@ -11,6 +11,7 @@ export DOCKER_HOST=ssh://brianhenning@34.136.119.9
 
 npm install --only=production
 npm run build
+docker system prune -af
 docker build -t react-app .
 # docker save react-app | docker --context remote-webserver load
 
@@ -19,8 +20,8 @@ docker run --name=react-app -h react-app --restart unless-stopped -p 3001:3000 -
 
 docker rm -f cloudflared
 docker run -d --name cloudflared --restart=unless-stopped cloudflare/cloudflared:latest tunnel --no-autoupdate run --token ${TOKEN}
+docker system prune -af
 docker ps -a
-
 echo gcloud compute firewall-rules create allow-react-app-rule --allow tcp:3001
 echo gcloud compute ssh --zone "us-central1-b" "www-bhenning-com" --project "sa-brian-henning"
 curl 'http://34.136.119.9:3001/'
