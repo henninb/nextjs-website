@@ -9,6 +9,12 @@ export default function Payment() {
   const [cvv, setCvv] = useState('');
   const [errors, setErrors] = useState({});
 
+  const handleClick = async() => {
+    window.open(
+      'https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD',
+      '_blank'
+  )};
+
   const validateInput = () => {
     const errors = {};
     const cardNumberRegex = /^\d{16}$/;
@@ -59,15 +65,16 @@ export default function Payment() {
         <script async="" src="https://track.sv.rkdms.com/js/sv.js"></script>
         <script async="" src="https://bat.bing.com/bat.js"></script>
         <script async="" src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></script>
+        <script async="" src="//acdn.adnxs.com/dmp/up/pixie.js"></script>
         <script async="" src="https://sb.scorecardresearch.com/cs/6035944/beacon.js"></script>
-        <script type="text/javascript" async="" src="https://static.ads-twitter.com/uwt.js"></script>
-        <script type="text/javascript" async="" src="https://www.google-analytics.com/analytics.js"></script>
-        <script type="text/javascript" async="" src="https://tpp.isgengine.com/gtfyqkfbzv.js?id=G-7SXZSK4XTH&amp;l=ISG&amp;cx=c"></script>
-        <script src="https://js.hs-analytics.net/analytics/1726079100000/8187955.js" type="text/javascript" id="hs-analytics"></script>
+        <script async="" src="https://static.ads-twitter.com/uwt.js"></script>
+        <script async="" src="https://www.google-analytics.com/analytics.js"></script>
+        <script async="" src="https://tpp.isgengine.com/gtfyqkfbzv.js?id=G-7SXZSK4XTH&amp;l=ISG&amp;cx=c"></script>
+        <script src="https://js.hs-analytics.net/analytics/1726079100000/8187955.js" id="hs-analytics"></script>
         <script async="" src="https://tpp.isgengine.com/fyqkfbzv.js?st=NVZW7XPV&amp;l=ISG"></script>
         <script async="" src="https://cdn.branch.io/branch-latest.min.js"></script>
         <script type="text/javascript" async="" src="https://tags-cdn.clarivoy.com/common/read_from_config/clarivoy.js"></script>
-        <script async="" crossorigin="anonymous" type="text/plain" src="https://edge.fullstory.com/s/fs.js" class="optanon-category-C0002 "></script>
+        <script async="" crossOrigin="anonymous" type="text/plain" src="https://edge.fullstory.com/s/fs.js" className="optanon-category-C0002"></script>
 
     {/*
         <script src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
@@ -130,6 +137,20 @@ export default function Payment() {
         <button type="submit">Submit Payment</button>
       </form>
 
+     <button
+      onClick={handleClick}
+      style={{
+        padding: '10px 20px',
+        backgroundColor: '#0070ba',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        fontSize: '16px',
+      }}
+    >
+      Donate with PayPal
+    </button>
 
     </div>
   );
