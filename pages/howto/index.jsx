@@ -9,7 +9,14 @@ export default function Howto() {
       </Head>
       <h1>Howto</h1>
       <p>For detailed Docker instructions, please visit the Docker Howto page.</p>
-      <Link href="/howto/docker">Go to Docker Howto</Link>
+      <Link href="/howto/docker">Docker</Link>
+      <Link href="/howto/cloudflare">Cloudflare</Link>
+      <Link href="/howto/debian">Debian</Link>
+      <Link href="/howto/f5">F5</Link>
+      <Link href="/howto/gentoo">Gentoo</Link>
+      <Link href="/howto/nextjs">NextJS</Link>
+      <Link href="/howto/proxmox">Proxmox</Link>
+      <Link href="/howto/pfsense">pfSense</Link>
     </div>
   );
 }
