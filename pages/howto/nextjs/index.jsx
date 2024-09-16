@@ -9,5 +9,5 @@ export default function Nextjs() {
 
       <h2>NextJS Basics</h2>
     </div>
-  )
+  );
 }

@@ -1,19 +1,20 @@
-import { useState } from 'react';
-import Head from 'next/head';
+import { useState } from "react";
+import Head from "next/head";
 // import Script from 'next/script';
 
 export default function Payment() {
-  const [cardName, setCardName] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expDate, setExpDate] = useState('');
-  const [cvv, setCvv] = useState('');
+  const [cardName, setCardName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expDate, setExpDate] = useState("");
+  const [cvv, setCvv] = useState("");
   const [errors, setErrors] = useState({});
 
-  const handleClick = async() => {
+  const handleClick = async () => {
     window.open(
-      'https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD',
-      '_blank'
-  )};
+      "https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD",
+      "_blank",
+    );
+  };
 
   const validateInput = () => {
     const errors = {};
@@ -22,19 +23,19 @@ export default function Payment() {
     const cvvRegex = /^\d{3,4}$/;
 
     if (!cardName.trim()) {
-      errors.cardName = 'Cardholder name is required';
+      errors.cardName = "Cardholder name is required";
     }
 
     if (!cardNumberRegex.test(cardNumber)) {
-      errors.cardNumber = 'Card number must be 16 digits';
+      errors.cardNumber = "Card number must be 16 digits";
     }
 
     if (!expDateRegex.test(expDate)) {
-      errors.expDate = 'Expiration date must be in MM/YY format';
+      errors.expDate = "Expiration date must be in MM/YY format";
     }
 
     if (!cvvRegex.test(cvv)) {
-      errors.cvv = 'CVV must be 3 or 4 digits';
+      errors.cvv = "CVV must be 3 or 4 digits";
     }
 
     return errors;
@@ -48,7 +49,7 @@ export default function Payment() {
     } else {
       setErrors({});
       // Handle successful payment logic here
-      console.log('Payment details submitted:', {
+      console.log("Payment details submitted:", {
         cardName,
         cardNumber,
         expDate,
@@ -59,24 +60,61 @@ export default function Payment() {
 
   return (
     <div>
-     <Head>
-        <script async="" src="https://connect.facebook.net/en_US/sdk.js"></script>
-        <script async="" src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"></script>
+      <Head>
+        <script
+          async=""
+          src="https://connect.facebook.net/en_US/sdk.js"
+        ></script>
+        <script
+          async=""
+          src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"
+        ></script>
         <script async="" src="https://track.sv.rkdms.com/js/sv.js"></script>
         <script async="" src="https://bat.bing.com/bat.js"></script>
-        <script async="" src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"></script>
+        <script
+          async=""
+          src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"
+        ></script>
         <script async="" src="//acdn.adnxs.com/dmp/up/pixie.js"></script>
-        <script async="" src="https://sb.scorecardresearch.com/cs/6035944/beacon.js"></script>
+        <script
+          async=""
+          src="https://sb.scorecardresearch.com/cs/6035944/beacon.js"
+        ></script>
         <script async="" src="https://static.ads-twitter.com/uwt.js"></script>
-        <script async="" src="https://www.google-analytics.com/analytics.js"></script>
-        <script async="" src="https://tpp.isgengine.com/gtfyqkfbzv.js?id=G-7SXZSK4XTH&amp;l=ISG&amp;cx=c"></script>
-        <script src="https://js.hs-analytics.net/analytics/1726079100000/8187955.js" id="hs-analytics"></script>
-        <script async="" src="https://tpp.isgengine.com/fyqkfbzv.js?st=NVZW7XPV&amp;l=ISG"></script>
-        <script async="" src="https://cdn.branch.io/branch-latest.min.js"></script>
-        <script type="text/javascript" async="" src="https://tags-cdn.clarivoy.com/common/read_from_config/clarivoy.js"></script>
-        <script async="" crossOrigin="anonymous" type="text/plain" src="https://edge.fullstory.com/s/fs.js" className="optanon-category-C0002"></script>
+        <script
+          async=""
+          src="https://www.google-analytics.com/analytics.js"
+        ></script>
+        <script
+          async=""
+          src="https://tpp.isgengine.com/gtfyqkfbzv.js?id=G-7SXZSK4XTH&amp;l=ISG&amp;cx=c"
+        ></script>
+        <script
+          src="https://js.hs-analytics.net/analytics/1726079100000/8187955.js"
+          id="hs-analytics"
+        ></script>
+        <script
+          async=""
+          src="https://tpp.isgengine.com/fyqkfbzv.js?st=NVZW7XPV&amp;l=ISG"
+        ></script>
+        <script
+          async=""
+          src="https://cdn.branch.io/branch-latest.min.js"
+        ></script>
+        <script
+          type="text/javascript"
+          async=""
+          src="https://tags-cdn.clarivoy.com/common/read_from_config/clarivoy.js"
+        ></script>
+        <script
+          async=""
+          crossOrigin="anonymous"
+          type="text/plain"
+          src="https://edge.fullstory.com/s/fs.js"
+          className="optanon-category-C0002"
+        ></script>
 
-    {/*
+        {/*
         <script src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
         <script async="" src="https://www.clarity.ms/s/0.7.45/clarity.js"></script>
         <script type="text/javascript" async="" src="https://cdn.krxd.net/controltag/rigf54zhi.js"></script>
@@ -84,7 +122,7 @@ export default function Payment() {
         <script src="https://snippet.maze.co/maze-universal-loader.js?apiKey=9675d50a-9c96-4a95-81a0-6c32d63fc04f" async=""></script>
         <script src="https://js-agent.newrelic.com/nr-spa-1130.min.js"></script>
       */}
-    </Head>
+      </Head>
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
         <div>
@@ -96,7 +134,7 @@ export default function Payment() {
             placeholder="Cardholder Name"
             required
           />
-          {errors.cardName && <p style={{ color: 'red' }}>{errors.cardName}</p>}
+          {errors.cardName && <p style={{ color: "red" }}>{errors.cardName}</p>}
         </div>
         <div>
           <label>Card Number: </label>
@@ -108,7 +146,9 @@ export default function Payment() {
             required
             maxLength="16"
           />
-          {errors.cardNumber && <p style={{ color: 'red' }}>{errors.cardNumber}</p>}
+          {errors.cardNumber && (
+            <p style={{ color: "red" }}>{errors.cardNumber}</p>
+          )}
         </div>
         <div>
           <label>Expiration Date: </label>
@@ -120,7 +160,7 @@ export default function Payment() {
             required
             maxLength="5"
           />
-          {errors.expDate && <p style={{ color: 'red' }}>{errors.expDate}</p>}
+          {errors.expDate && <p style={{ color: "red" }}>{errors.expDate}</p>}
         </div>
         <div>
           <label>CVV: </label>
@@ -132,26 +172,25 @@ export default function Payment() {
             required
             maxLength="4"
           />
-          {errors.cvv && <p style={{ color: 'red' }}>{errors.cvv}</p>}
+          {errors.cvv && <p style={{ color: "red" }}>{errors.cvv}</p>}
         </div>
         <button type="submit">Submit Payment</button>
       </form>
 
-     <button
-      onClick={handleClick}
-      style={{
-        padding: '10px 20px',
-        backgroundColor: '#0070ba',
-        color: '#ffffff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontSize: '16px',
-      }}
-    >
-      Donate with PayPal
-    </button>
-
+      <button
+        onClick={handleClick}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#0070ba",
+          color: "#ffffff",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          fontSize: "16px",
+        }}
+      >
+        Donate with PayPal
+      </button>
     </div>
   );
 }

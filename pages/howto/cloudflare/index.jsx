@@ -9,5 +9,5 @@ export default function Cloudflare() {
 
       <h2>Cloudflare Basics</h2>
     </div>
-  )
+  );
 }

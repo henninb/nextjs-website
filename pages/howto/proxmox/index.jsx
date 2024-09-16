@@ -12,7 +12,10 @@ export default function Proxmox() {
       <main style={styles.main}>
         <section style={styles.section}>
           <h2 style={styles.commandTitle}>Update Proxmox Packages</h2>
-          <p>Keep your Proxmox installation up-to-date with the latest package updates:</p>
+          <p>
+            Keep your Proxmox installation up-to-date with the latest package
+            updates:
+          </p>
           <code style={styles.code}>apt update && apt dist-upgrade</code>
         </section>
 
@@ -45,48 +48,47 @@ export default function Proxmox() {
           <p>Get a list of all virtual machines and their statuses:</p>
           <code style={styles.code}>qm list</code>
         </section>
-
       </main>
     </div>
-  )
+  );
 }
 
 const styles = {
   header: {
-    backgroundColor: '#0070f3',
-    padding: '20px',
-    textAlign: 'center',
-    color: 'white',
+    backgroundColor: "#0070f3",
+    padding: "20px",
+    textAlign: "center",
+    color: "white",
   },
   title: {
-    margin: '0',
-    fontSize: '2.5rem',
+    margin: "0",
+    fontSize: "2.5rem",
   },
   subtitle: {
-    margin: '10px 0',
-    fontSize: '1.2rem',
+    margin: "10px 0",
+    fontSize: "1.2rem",
   },
   main: {
-    padding: '20px',
+    padding: "20px",
   },
   section: {
-    marginBottom: '20px',
+    marginBottom: "20px",
   },
   commandTitle: {
-    fontSize: '1.5rem',
-    marginBottom: '10px',
+    fontSize: "1.5rem",
+    marginBottom: "10px",
   },
   code: {
-    display: 'block',
-    backgroundColor: '#f4f4f4',
-    padding: '10px',
-    borderRadius: '5px',
-    fontFamily: 'monospace',
+    display: "block",
+    backgroundColor: "#f4f4f4",
+    padding: "10px",
+    borderRadius: "5px",
+    fontFamily: "monospace",
   },
   backLink: {
-    display: 'block',
-    marginTop: '20px',
-    textDecoration: 'none',
-    color: '#0070f3',
+    display: "block",
+    marginTop: "20px",
+    textDecoration: "none",
+    color: "#0070f3",
   },
 };

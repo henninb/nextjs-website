@@ -42,12 +42,12 @@ aws lambda create-function --function-name my-function \
 --role arn:aws:iam::123456789012:role/lambda-ex
 
 gcloud compute firewall-rules create allow-ssh-from-workstation \
-    --direction=INGRESS \
-    --priority=1000 \
-    --network=default \
-    --action=ALLOW \
-    --rules=tcp:22 \
-    --source-ranges=68.46.77.58/32
+ --direction=INGRESS \
+ --priority=1000 \
+ --network=default \
+ --action=ALLOW \
+ --rules=tcp:22 \
+ --source-ranges=68.46.77.58/32
 
 gcloud compute firewall-rules create allow-port-3000-instance-group \
  --network default \
@@ -60,6 +60,7 @@ gcloud compute firewall-rules create allow-port-80-instance-group \
 --source-ranges 0.0.0.0/0
 
 ## create new vm instance
+
 ```
 gcloud compute instances create nginx-bhenning \
     --zone=us-central1-b \
@@ -70,15 +71,18 @@ gcloud compute instances create nginx-bhenning \
 ```
 
 connect to nginx-bhenning
+
 ```
 gcloud compute ssh nginx-bhenning --zone=us-central1-b
 gcloud compute scp ./ngx_http_pxnginx_module.so nginx-bhenning:/home/brianhenning/ngx_http_pxnginx_module.so --zone=us-central1-b
 ```
 
 connect to www-bhenning-com
+
 ```
 gcloud compute ssh www-bhenning-com --zone=us-central1-b
 ```
 
 ## curl nginx
+
 http://34.170.134.90/

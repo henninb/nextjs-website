@@ -9,5 +9,5 @@ export default function Pfsense() {
 
       <h2>pfSense Basics</h2>
     </div>
-  )
+  );
 }

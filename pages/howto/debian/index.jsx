@@ -9,5 +9,5 @@ export default function Debian() {
 
       <h2>Debian Basics</h2>
     </div>
-  )
+  );
 }

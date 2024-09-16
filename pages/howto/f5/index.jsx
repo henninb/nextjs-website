@@ -9,5 +9,5 @@ export default function F5() {
 
       <h2>F5 Basics</h2>
     </div>
-  )
+  );
 }

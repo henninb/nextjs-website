@@ -9,5 +9,5 @@ export default function Gentoo() {
 
       <h2>Gentoo Basics</h2>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 export default function Tools() {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'left' }}>
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <div style={{ textAlign: "left" }}>
         <h2>Tools</h2>
         <a
           href="https://www.calculator.net"
