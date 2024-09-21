@@ -13,6 +13,10 @@ module.exports = {
             key: "X-Frame-Options",
             value: "SAMEORIGIN",
           },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;",
+          },
         ],
       },
       // {
