@@ -35,6 +35,10 @@ class MyDocument extends Document {
             integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
             crossOrigin="anonymous"
           ></script>
+
+          <script>
+           console.log('wtf');
+          </script>
         </Head>
         <body>
           <Main />
