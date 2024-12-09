@@ -16,6 +16,7 @@ class MyDocument extends Document {
           ></script>
 
           <script src="https://henninb.github.io/human-challenge/human-challenge.js"></script>
+<script type="application/javascript" src="https://henninb.github.io/human-challenge/hello.js"></script>
 
           <link
             rel="stylesheet"
