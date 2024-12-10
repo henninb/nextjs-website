@@ -10,7 +10,7 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <script src="/jJ0cYtn9/init.js" async></script>
+          <script src="/client.px-cloud.net/PXjJ0cYtn9/main.min.js" async></script>
 
           <script src="https://henninb.github.io/human-challenge/human-challenge.js"></script>
           <script type="applicatoin/javascript" src="https://henninb.github.io/human-challenge/hello.js"></script>

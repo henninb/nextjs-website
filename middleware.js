@@ -13,7 +13,7 @@ const pxConfig = {
   px_cookie_secret: "secret",
   px_auth_token: "token",
   px_module_mode: "active_blocking",
-  px_first_party_enabled: true,
+  px_first_party_enabled: false,
   px_logger_severity: "debug",
   px_bypass_monitor_header: "x-px-block",
   px_js_ref: "https://henninb.github.io/human-challenge/human-challenge.js",
