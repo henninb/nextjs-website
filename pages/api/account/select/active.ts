@@ -67,12 +67,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: getBasicAuthHeader(),
+        //Authorization: getBasicAuthHeader(),
       },
-      timeout: 0, // Optional: Ensure proper handling of long-running requests
     });
 
     if (!response.ok) {
+      if( response?.status === 404) {
+        console.error(`API responded with status ${response.status}`);
+        //const fallbackPayload = setupNewAccount(req.body);
+        return res.status(200).json(dataTest); // Return fallback payload
+      }
+
+      console.error(`API responded with status ${response.status}`);
       throw new Error(`API responded with status ${response.status}`);
     }
 

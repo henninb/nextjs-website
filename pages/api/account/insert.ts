@@ -31,34 +31,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  try {
+try {
     const payload = req.body;
     const newPayload = setupNewAccount(payload);
 
-    const response = await fetch("https://your-external-api.com/account/insert", {
+    const response = await fetch("http://localhost:3000/account/insert", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: getBasicAuthHeader(),
+        // Uncomment this when Basic Auth is enabled
+        // Authorization: getBasicAuthHeader(),
       },
       body: JSON.stringify(newPayload),
-      timeout: 0, // Optional: Ensure proper handling of long-running requests
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.error("Resource not found (404).");
-        const fallbackPayload = setupNewAccount(payload);
-        return res.status(404).json(fallbackPayload);
+      if( response?.status === 404) {
+        console.error(`API responded with status ${response.status}`);
+        const fallbackPayload = setupNewAccount(req.body);
+        return res.status(200).json(fallbackPayload); // Return fallback payload
       }
-      throw new Error(`API responded with status ${response.status}`);
+
+      console.error(`API responded with status ${response.status}`);
+      throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
     return res.status(200).json(data);
   } catch (error: any) {
     console.error("Error inserting account:", error.message);
-    return res.status(500).json({ error: "Internal server error", details: error.message });
+
+    // Return a 500 error for other unexpected errors
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.message,
+    });
   }
 }
-

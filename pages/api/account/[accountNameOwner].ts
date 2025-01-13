@@ -28,20 +28,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        Authorization: getBasicAuthHeader(),
+        //Authorization: getBasicAuthHeader(),
       },
-      timeout: 0, // Optional: Ensure proper handling of long-running requests
     });
 
     if (!response.ok) {
       if (response.status === 404) {
-        return res.status(404).json({ error: "Resource not found" });
+        const fallbackPayload = {"message": "deleted: `${accountNameOwner}`"};
+        return res.status(200).json(fallbackPayload); // Return fallback payload
+        //return res.status(404).json({ error: "Resource not found" });
       }
       throw new Error(`API responded with status ${response.status}`);
     }
 
-    const data = await response.json();
-    return res.status(200).json(data);
   } catch (error: any) {
     console.error("Error deleting account:", error.message);
     return res.status(500).json({ error: "Internal server error", details: error.message });
