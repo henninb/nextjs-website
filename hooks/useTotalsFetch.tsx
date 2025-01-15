@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import { useQuery } from '@tanstack/react-query';
 //import { basicAuth } from "../Common";
 
 const fetchTotals = async (): Promise<any> => {
@@ -38,9 +38,14 @@ const fetchTotals = async (): Promise<any> => {
 };
 
 export default function useTotalsFetch() {
-  return useQuery(["all_totals"], () => fetchTotals(), {
-    onError: (error: any) => {
-      console.log(error ? error : "error is undefined.");
-    },
+  const queryResult = useQuery<any, Error>({
+    queryKey: ['payment_required'],  // Make the key an array to support caching and refetching better
+    queryFn: fetchTotals,
   });
+
+  if (queryResult.isError) {
+    console.error("Error occurred while fetching payment_required data:", queryResult.error?.message);
+  }
+
+  return queryResult;
 }

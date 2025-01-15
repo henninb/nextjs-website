@@ -1,7 +1,8 @@
-import { useQuery } from "react-query";
+import { useQuery } from '@tanstack/react-query';
+import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
-const fetchCategoryData = async (): Promise<any> => {
+const fetchCategoryData = async (): Promise<Category[]> => {
   try {
     const response = await fetch("/api/category/select/active", {
       method: "GET",
@@ -50,10 +51,14 @@ const fetchCategoryData = async (): Promise<any> => {
 };
 
 export default function useCategoryFetch() {
-  return useQuery("category", () => fetchCategoryData(), {
-    onError: (error: any) => {
-      console.log(error ? error : "error is undefined.");
-      console.log(error.message ? error.message : "error.message is undefined.");
-    },
+  const queryResult = useQuery<Category[], Error>({
+    queryKey: ['category'],  // Make the key an array to support caching and refetching better
+    queryFn: fetchCategoryData,
   });
+
+  if (queryResult.isError) {
+    console.error("Error occurred while fetching category data:", queryResult.error?.message);
+  }
+
+  return queryResult;
 }

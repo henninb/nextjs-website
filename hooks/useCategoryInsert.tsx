@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from 'react-query';
+import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
 const insertCategory = async (categoryName: any): Promise<any> => {

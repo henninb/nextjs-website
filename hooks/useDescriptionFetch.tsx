@@ -1,7 +1,8 @@
-import { useQuery } from "react-query";
+import { useQuery } from '@tanstack/react-query';
+import Description from "../model/Description";
 //import { basicAuth } from "../Common";
 
-const fetchDescriptionData = async (): Promise<any> => {
+const fetchDescriptionData = async (): Promise<Description[]> => {
   try {
     const response = await fetch("/api/description/select/active", {
       method: "GET",
@@ -19,13 +20,13 @@ const fetchDescriptionData = async (): Promise<any> => {
           {
             descriptionId: Math.random(),
             descriptionName: 'test1',
-            activeStatus: true
+            activeStatus: true,
           },
           {
             descriptionId: Math.random(),
             descriptionName: 'test2',
-            activeStatus: true
-          }
+            activeStatus: true,
+          },
         ];
       }
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -38,21 +39,26 @@ const fetchDescriptionData = async (): Promise<any> => {
       {
         descriptionId: Math.random(),
         descriptionName: 'test1',
-        activeStatus: true
+        activeStatus: true,
       },
       {
         descriptionId: Math.random(),
         descriptionName: 'test2',
-        activeStatus: true
-      }
+        activeStatus: true,
+      },
     ];
   }
 };
 
 export default function useDescriptionFetch() {
-  return useQuery("description", () => fetchDescriptionData(), {
-    onError: (error: any) => {
-      console.log(error ? error : "error is undefined.");
-    },
+  const queryResult = useQuery<Description[], Error>({
+    queryKey: ['description'],  // Make the key an array to support caching and refetching better
+    queryFn: fetchDescriptionData,
   });
+
+  if (queryResult.isError) {
+    console.error("Error occurred while fetching description data:", queryResult.error?.message);
+  }
+
+  return queryResult;
 }
