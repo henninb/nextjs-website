@@ -55,24 +55,23 @@ const fetchAccountData = async (): Promise<any> => {
         // Uncomment and implement if authorization is required
         // "Authorization": basicAuth(),
       },
-      // fetch does not natively support timeouts; implement with AbortController if needed
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      // Uncomment the line below for debugging
-      // console.debug(JSON.stringify(data));
-      return data;
-      //throw new Error(`HTTP error! Status: ${response.status}`);
+      if (response.status === 404) {
+        console.log("Resource not found (404).", await response.json());
+        return dataTest
+      }
+      const errorDetails = await response.json();
+      throw new Error(`HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`);
     }
-
-    const data = await response.json();
-    // Uncomment the line below for debugging
-    // console.debug(JSON.stringify(data));
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching account data:", error);
-    return dataTest;
+    // return {
+    //   message: error
+    // }
+    //console.error("Error fetching account data:", error);
+    return dataTest
   }
 };
 

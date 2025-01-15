@@ -4,17 +4,17 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-//import Spinner from "@/components/Spinner";
-//import SnackbarBaseline from "@/components/SnackbarBaseline";
+import Spinner from "../components/Spinner";
+import SnackbarBaseline from "../components/SnackbarBaseline";
 // import useFetchAccount from "@/queries/useFetchAccount";
 import useFetchAccount from "../hooks/useFetchAccount";
+import useAccountInsert from "../hooks/useAccountInsert";
 // import useAccountInsert from "@/queries/useAccountInsert";
 // import useAccountDelete from "@/queries/useAccountDelete";
 // import useFetchTotals from "@/queries/useFetchTotals";
 import Account from "../model/Account";
 
-//export default AccountTable() {
-const AccountTable = () => {
+export default function AccountTable() {
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
@@ -22,52 +22,9 @@ const AccountTable = () => {
   const [accountData, setAccountData] = useState<Account | null>(null);
   const router = useRouter();
 
-//   const data = [
-//     {
-//       accountId: 1,
-//       accountNameOwner: "wfargo_brian",
-//       accountType: "debit",
-//       activeStatus: true,
-//       moniker: "0000",
-//       outstanding: 1500.25,
-//       future: 200.0,
-//       cleared: 1300.25,
-//     },
-//     {
-//       accountId: 2,
-//       accountNameOwner: "barclay-cash_brian",
-//       accountType: "credit",
-//       activeStatus: true,
-//       moniker: "0000",
-//       outstanding: 5000.75,
-//       future: 1000.0,
-//       cleared: 4000.75,
-//     },
-//     {
-//       accountId: 3,
-//       accountNameOwner: "barclay-savings_brian",
-//       accountType: "debit",
-//       activeStatus: true,
-//       moniker: "0000",
-//       outstanding: 5000.75,
-//       future: 1000.0,
-//       cleared: 4000.75,
-//     },
-//     {
-//       accountId: 4,
-//       accountNameOwner: "wellsfargo-cash_brian",
-//       accountType: "credit",
-//       activeStatus: true,
-//       moniker: "0000",
-//       outstanding: 5000.75,
-//       future: 1000.0,
-//       cleared: 4000.75,
-//     },
-//   ];
-
    const { data, isSuccess, isLoading } = useFetchAccount();
 //   const { data: totals, isSuccess: isSuccessTotals } = useFetchTotals();
-//   const { mutate: insertAccount } = useAccountInsert();
+   const { mutate: insertAccount } = useAccountInsert();
 //   const { mutate: deleteAccount } = useAccountDelete();
 
 //   useEffect(() => {
@@ -77,8 +34,9 @@ const AccountTable = () => {
 //   }, [isSuccess, isSuccessTotals]);
 
 useEffect(() => {
-    console.log('here')
-    setShowSpinner(false)
+    if ( isSuccess) {
+      setShowSpinner(false)
+    }
 })
 
   const handleButtonClickLink = (accountNameOwner: string) => {
@@ -112,7 +70,7 @@ useEffect(() => {
 
   const addRow = async (newData: Account) => {
     try {
-      //await insertAccount({ payload: newData });
+      await insertAccount({ payload: newData });
       setOpenForm(false);
     } catch (error) {
       handleError(error, "Add Account", false);
@@ -171,7 +129,7 @@ useEffect(() => {
     <div>
       <h2>Account Details</h2>
       {showSpinner ? (
-        <div />
+        <Spinner />
       ) : (
         <div>
           <IconButton onClick={() => setOpenForm(true)}>
@@ -186,9 +144,16 @@ useEffect(() => {
             rows={data}
             columns={columns}
             getRowId={(row) => row.accountId || 0}
-            //pageSizeOptions={[5, 10, 20]}
-            pagination
+            paginationModel={{ pageSize: data?.length, page: 0 }}
+            hideFooterPagination={true}
           />
+          <div>
+            <SnackbarBaseline
+              message={message}
+              state={open}
+              handleSnackbarClose={handleSnackbarClose}
+            />
+          </div>
         </div>
       )}
 
@@ -233,5 +198,3 @@ useEffect(() => {
     </div>
   );
 };
-
-export default AccountTable;

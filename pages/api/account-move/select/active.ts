@@ -57,12 +57,13 @@ const getBasicAuthHeader = () => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('handler is being called')
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const response = await fetch("https://your-external-api.com/account/select/active", {
+    const response = await fetch("http://localhost/account/select/active", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
