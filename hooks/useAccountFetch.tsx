@@ -71,18 +71,11 @@ const fetchAccountData = async (): Promise<any> => {
   }
 };
 
-export default function useFetchAccount() {
+export default function useAccountFetch() {
   return useQuery("account", () => fetchAccountData(), {
-    onError: (error: AxiosError<any>) => {
+    onError: (error: any) => {
       console.log(error ? error : "error is undefined.");
-      console.log(
-        error.response ? error.response : "error.response is undefined.",
-      );
-      console.log(
-        error.response
-          ? JSON.stringify(error.response)
-          : "error.response is undefined - cannot stringify.",
-      );
+      console.log(error.message ? error.message : "error.message is undefined.");
     },
   });
 }
