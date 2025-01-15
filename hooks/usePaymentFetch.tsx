@@ -1,5 +1,5 @@
-//import { basicAuth } from "../Common";
 import { useQuery } from "react-query";
+//import { basicAuth } from "../Common";
 
 const dataTest = [
     {

@@ -1,5 +1,5 @@
-//import { basicAuth } from "../Common";
 import { useMutation, useQueryClient } from "react-query";
+//import { basicAuth } from "../Common";
 
 const deleteAccount = async (payload: any): Promise<any> => {
   try {

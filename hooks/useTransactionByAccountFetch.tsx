@@ -1,5 +1,5 @@
-//import { basicAuth } from "../Common";
 import { useQuery } from "react-query";
+//import { basicAuth } from "../Common";
 
 const dataTest = [
   {
@@ -96,7 +96,7 @@ const fetchAccountData = async (accountNameOwner: string): Promise<any> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Account not found");
+        console.log("Account not found");
         return dataTest; // Default fallback data for 404
       }
       throw new Error(`Failed to fetch transactionsByAccount data: ${response.statusText}`);
@@ -106,7 +106,7 @@ const fetchAccountData = async (accountNameOwner: string): Promise<any> => {
     return data;
 
   } catch (error) {
-    console.error("Error fetching transactionsByAccount data:", error);
+    console.log("Error fetching transactionsByAccount data:", error);
     return dataTest; // Default fallback data on error
   }
 };
