@@ -6,12 +6,10 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../components/Spinner";
 import SnackbarBaseline from "../components/SnackbarBaseline";
-// import useFetchAccount from "@/queries/useFetchAccount";
-import useFetchAccount from "../hooks/useFetchAccount";
+import useAccountFetch from "../hooks/useAccountFetch";
 import useAccountInsert from "../hooks/useAccountInsert";
-// import useAccountInsert from "@/queries/useAccountInsert";
-// import useAccountDelete from "@/queries/useAccountDelete";
-// import useFetchTotals from "@/queries/useFetchTotals";
+import useAccountDelete from "../hooks/useAccountDelete";
+import useTotalsFetch from "../hooks/useTotalsFetch";
 import Account from "../model/Account";
 
 export default function AccountTable() {
@@ -22,34 +20,28 @@ export default function AccountTable() {
   const [accountData, setAccountData] = useState<Account | null>(null);
   const router = useRouter();
 
-   const { data, isSuccess, isLoading } = useFetchAccount();
-//   const { data: totals, isSuccess: isSuccessTotals } = useFetchTotals();
+   const { data, isSuccess, isLoading } = useAccountFetch();
+   const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
    const { mutate: insertAccount } = useAccountInsert();
-//   const { mutate: deleteAccount } = useAccountDelete();
+   const { mutate: deleteAccount } = useAccountDelete();
 
-//   useEffect(() => {
-//     if (isSuccess && isSuccessTotals) {
-//       setShowSpinner(false);
-//     }
-//   }, [isSuccess, isSuccessTotals]);
-
-useEffect(() => {
-    if ( isSuccess) {
-      setShowSpinner(false)
+  useEffect(() => {
+    if (isSuccess && isSuccessTotals) {
+      setShowSpinner(false);
     }
-})
+  }, [isSuccess, isSuccessTotals]);
 
   const handleButtonClickLink = (accountNameOwner: string) => {
     router.push(`/transactions/${accountNameOwner}`);
   };
 
-//   const handleDeleteRow = async (account: Account) => {
-//     try {
-//       await deleteAccount({ oldRow: account });
-//     } catch (error) {
-//       handleError(error, "Delete Account", false);
-//     }
-//   };
+  const handleDeleteRow = async (account: Account) => {
+    try {
+      await deleteAccount({ oldRow: account });
+    } catch (error) {
+      handleError(error, "Delete Account", false);
+    }
+  };
 
   const handleSnackbarClose = () => {
     setOpen(false);
@@ -80,7 +72,7 @@ useEffect(() => {
   const columns: GridColDef[] = [
     {
       field: "accountNameOwner",
-      headerName: "Account Name Owner",
+      headerName: "Account",
       width: 200,
       renderCell: (params) => (
         <Button onClick={() => handleButtonClickLink(params.row.accountNameOwner)}>
@@ -88,7 +80,7 @@ useEffect(() => {
         </Button>
       ),
     },
-    { field: "accountType", headerName: "Account Type", width: 150 },
+    { field: "accountType", headerName: "Type", width: 150 },
     { field: "moniker", headerName: "Moniker", width: 150 },
     {
       field: "future",
@@ -117,7 +109,7 @@ useEffect(() => {
       width: 100,
       renderCell: (params) => (
         <IconButton onClick={() => {
-            //handleDeleteRow(params.row)
+            handleDeleteRow(params.row)
             }}>
           <DeleteIcon />
         </IconButton>
@@ -135,11 +127,10 @@ useEffect(() => {
           <IconButton onClick={() => setOpenForm(true)}>
             <AddIcon />
           </IconButton>
-          <h2>
-            totals
-            {/* [${totals?.totals}] [${totals?.totalsCleared}] [${totals?.totalsOutstanding}] [
-            ${totals?.totalsFuture}] */}
-          </h2>
+          <h3>
+            [${totals?.totals}] [${totals?.totalsCleared}] [${totals?.totalsOutstanding}] [
+            ${totals?.totalsFuture}]
+          </h3>
           <DataGrid
             rows={data}
             columns={columns}

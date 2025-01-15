@@ -67,10 +67,7 @@ const fetchAccountData = async (): Promise<any> => {
     }
     return await response.json();
   } catch (error) {
-    // return {
-    //   message: error
-    // }
-    //console.error("Error fetching account data:", error);
+    console.log("Error fetching account data:", error);
     return dataTest
   }
 };
