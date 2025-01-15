@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
-const insertCategory = async (categoryName: any): Promise<any> => {
+const insertCategory = async (categoryName: string): Promise<Category> => {
   try {
     const endpoint = "/api/category/insert";
     const payload = { category: categoryName, activeStatus: true };

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import Description from "../model/Description";
 //import { basicAuth } from "../Common";
 
-const insertDescription = async (descriptionName: any): Promise<any> => {
+const insertDescription = async (descriptionName: string): Promise<Description> => {
   try {
     const endpoint = "/api/description/insert";
     const payload = { description: descriptionName, activeStatus: true };
