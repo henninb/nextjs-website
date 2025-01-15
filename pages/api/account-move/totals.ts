@@ -33,7 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         Accept: "application/json",
         Authorization: getBasicAuthHeader(),
       },
-      timeout: 0, // Optional: Manage long-running requests
     });
 
     if (!response.ok) {
