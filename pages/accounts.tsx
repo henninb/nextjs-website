@@ -22,8 +22,8 @@ export default function AccountTable() {
 
    const { data, isSuccess, isLoading } = useAccountFetch();
    const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
-   //const { mutate: insertAccount } = useAccountInsert();
-   //const { mutate: deleteAccount } = useAccountDelete();
+   const { mutate: insertAccount } = useAccountInsert();
+   const { mutate: deleteAccount } = useAccountDelete();
 
   useEffect(() => {
     if (isSuccess && isSuccessTotals) {
@@ -37,7 +37,7 @@ export default function AccountTable() {
 
   const handleDeleteRow = async (account: Account) => {
     try {
-      //await deleteAccount({ oldRow: account });
+      await deleteAccount({ oldRow: account });
     } catch (error) {
       handleError(error, "Delete Account", false);
     }
@@ -62,7 +62,7 @@ export default function AccountTable() {
 
   const addRow = async (newData: Account) => {
     try {
-      //await insertAccount({ payload: newData });
+      await insertAccount({ payload: newData });
       setOpenForm(false);
     } catch (error) {
       handleError(error, "Add Account", false);
