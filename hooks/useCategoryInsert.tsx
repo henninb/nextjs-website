@@ -52,23 +52,3 @@ export default function useCategoryInsert() {
     },
   });
 }
-
-// export default function useCategoryInsert() {
-//   const queryClient = useQueryClient();
-
-//   return useMutation(
-//     ["insertCategory"],
-//     (variables: any) => insertCategory(variables.categoryName),
-//     {
-//       onError: (error: any) => {
-//         console.log(error ? error : "error is undefined.");
-//       },
-
-//       onSuccess: (response) => {
-//         const oldData: any = queryClient.getQueryData("category");
-//         const newData = [response, ...oldData];
-//         queryClient.setQueryData("category", newData);
-//       },
-//     }
-//   );
-// }
