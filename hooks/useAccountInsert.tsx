@@ -19,7 +19,7 @@ const setupNewAccount = (payload: Account) => {
 
 const insertAccount = async (payload: Account): Promise<Account> => {
   try {
-    const endpoint = "/api/account/insert";
+    const endpoint = "https://finance.lan/api/account/insert";
     const newPayload = setupNewAccount(payload);
 
     const response = await fetch(endpoint, {
@@ -83,7 +83,6 @@ const insertAccount = async (payload: Account): Promise<Account> => {
       dateUpdated: new Date(),
       activeStatus: true,
     }
-    //return { error: "An error occurred", details: error.message };
   }
 };
 
