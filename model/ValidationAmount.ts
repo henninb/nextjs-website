@@ -1,7 +1,7 @@
 import { TransactionState } from "./TransactionState";
 
 export default interface ValidationAmount {
-  validationId?: number;
+  validationId: number;
   validationDate: Date;
   accountId?: number;
   amount: number;

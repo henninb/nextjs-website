@@ -4,13 +4,13 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Spinner from "../components/Spinner";
-import SnackbarBaseline from "../components/SnackbarBaseline";
-import useAccountFetch from "../hooks/useAccountFetch";
-import useAccountInsert from "../hooks/useAccountInsert";
-import useAccountDelete from "../hooks/useAccountDelete";
-import useTotalsFetch from "../hooks/useTotalsFetch";
-import Account from "../model/Account";
+import Spinner from "../../components/Spinner";
+import SnackbarBaseline from "../../components/SnackbarBaseline";
+import useAccountFetch from "../../hooks/useAccountFetch";
+import useAccountInsert from "../../hooks/useAccountInsert";
+import useAccountDelete from "../../hooks/useAccountDelete";
+import useTotalsFetch from "../../hooks/useTotalsFetch";
+import Account from "../../model/Account";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
@@ -104,8 +104,8 @@ export default function AccountTable() {
         params.value?.toLocaleString("en-US", { style: "currency", currency: "USD" }),
     },
     {
-      field: "actions",
-      headerName: "",
+      field: "",
+      headerName: "Actions",
       width: 100,
       renderCell: (params) => (
         <IconButton onClick={() => {

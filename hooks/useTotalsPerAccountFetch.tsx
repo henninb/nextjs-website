@@ -28,7 +28,8 @@ const fetchTotalsPerAccount = async (accountNameOwner: string): Promise<any> => 
 
   } catch (error) {
     console.log("Error fetching totalsPerAccount data:", error);
-    return  {"totalsFuture":25.45,"totalsCleared":-25.45,"totals":0.00} // Default fallback data on error
+    throw new Error("Error fetching totalsPerAccount data:", error);
+    //return  {"totalsFuture":25.45,"totalsCleared":-25.45,"totals":0.00} // Default fallback data on error
   }
 };
 

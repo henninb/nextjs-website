@@ -1,11 +1,16 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const { pathname } = router;
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  const isFinancePage = pathname.startsWith("/finance");
 
   return (
     <div>
@@ -37,83 +42,84 @@ export default function Layout({ children }) {
             id="navbarNav"
           >
             <ul className="navbar-nav mx-auto">
-              <li className="nav-item active">
-                <a
-                  className="nav-link"
-                  href="/?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  Home
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/nba?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  NBA
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/nhl?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  NHL
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/mlb?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  MLB
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/howto?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  Howto
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/tools?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  Tools
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/temperature?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  Temperature
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/lead?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  Lead
-                </a>
-              </li>
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="/payment?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                >
-                  Payment
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/spotifyauth">
-                  SpotifyAuth
-                </a>
-              </li>
+              {isFinancePage ? (
+                <>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/finance/">
+                      Home
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/finance/transfers">
+                      Transfer
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/finance/payments">
+                      Payments
+                    </a>
+                  </li>
+
+                  <li className="nav-item">
+                    <a className="nav-link" href="/finance/paymentrequired">
+                      PaymentsRequired
+                    </a>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="nav-item active">
+                    <a className="nav-link" href="/?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      Home
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/nba?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      NBA
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/nhl?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      NHL
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/mlb?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      MLB
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/howto?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      Howto
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/tools?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      Tools
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/temperature?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      Temperature
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/lead?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      Lead
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/payment?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign">
+                      Payment
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/spotifyauth">
+                      SpotifyAuth
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>

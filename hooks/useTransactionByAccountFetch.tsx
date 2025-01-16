@@ -101,7 +101,7 @@ const fetchTransactionsByAccount = async (accountNameOwner: string): Promise<Tra
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Account not found");
+        console.log("Transactions not found");
         return dataTest; // Default fallback data for 404
       }
       throw new Error(`Failed to fetch transactionsByAccount data: ${response.statusText}`);
@@ -112,7 +112,8 @@ const fetchTransactionsByAccount = async (accountNameOwner: string): Promise<Tra
 
   } catch (error) {
     console.log("Error fetching transactionsByAccount data:", error);
-    return dataTest; // Default fallback data on error
+    throw new Error("Error fetching transactionsByAccount data:", error);
+    //return dataTest; // Default fallback data on error
   }
 };
 

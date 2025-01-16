@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
+import { TransactionState } from "../model/TransactionState";
 //import { basicAuth } from "../Common";
 
 const dataTest = [
   {
-    validationId: 2085,
-    accountId: 1023,
-    validationDate: 1736459500288,
-    activeStatus: true,
-    transactionState: "cleared",
-    amount: 60.0,
-  },
+    validationId: Math.random(),
+    validationDate: new Date(),
+    accountId: 1,
+    amount: 0.0,
+    transactionState: "undefined" as TransactionState,
+    activeStatus: false
+  }
 ];
 
 const fetchValidationAmountData = async (
@@ -30,7 +31,8 @@ const fetchValidationAmountData = async (
     if (!response.ok) {
       if (response.status === 404) {
         console.error("Resource not found (404)");
-        throw new Error("Resource not found (404)");
+        //throw new Error("Resource not found (404)");
+        return dataTest
       }
       throw new Error(`Failed to fetch validation amount data: ${response.statusText}`);
     }
@@ -38,7 +40,15 @@ const fetchValidationAmountData = async (
     return response.json();
   } catch (error) {
     console.error("Error fetching validationAmount data:", error);
-    return dataTest; // Return fallback data
+    //return dataTest; // Return fallback data
+    return   {
+      validationId: Math.random(),
+      validationDate: new Date(),
+      accountId: 1,
+      amount: 0.0,
+      transactionState: "undefined" as TransactionState,
+      activeStatus: false
+    }
   }
 };
 

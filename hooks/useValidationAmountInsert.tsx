@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import ValidationAmount from "../model/ValidationAmount";
+import { TransactionState } from '../model/TransactionState';
 //import { basicAuth } from "../Common";
 
 const insertValidationAmount = async (
@@ -21,7 +22,15 @@ const insertValidationAmount = async (
     if (!response.ok) {
       if (response.status === 404) {
         console.error("Resource not found (404)");
-        throw new Error("Resource not found (404)");
+        //throw new Error("Resource not found (404)");
+        return {
+            validationId: Math.random(),
+            validationDate: new Date(),
+            accountId: 1,
+            amount: 0.0,
+            transactionState: "undefined" as TransactionState,
+            activeStatus: false
+        }
       }
       throw new Error(`Failed to insert validation amount: ${response.statusText}`);
     }

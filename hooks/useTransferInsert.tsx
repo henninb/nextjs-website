@@ -5,7 +5,7 @@ import Transfer from "../model/Transfer";
 const overRideTransferValues = (payload: Transfer) => {
   return {
     amount: payload?.amount,
-    transactionDate: payload?.transactionDate.toISOString(),
+    transactionDate: payload?.transactionDate,
   };
 };
 

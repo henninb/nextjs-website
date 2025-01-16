@@ -6,7 +6,7 @@ const setupNewPayment = (payload: Payment) => {
   return {
     accountNameOwner: payload?.accountNameOwner,
     amount: payload?.amount,
-    transactionDate: payload?.transactionDate.toISOString(),
+    transactionDate: payload?.transactionDate,
   };
 };
 
