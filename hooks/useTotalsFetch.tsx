@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 const fetchTotals = async (): Promise<any> => {
   try {
-    const response = await fetch("/api/account/totals", {
+    const response = await fetch("https://finance.lan/api/account/totals", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

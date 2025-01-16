@@ -47,7 +47,7 @@ const dataTest: Account[] = [
 
 const fetchAccountData = async (): Promise<Account[]> => {
   try {
-    const response = await fetch("/api/account/select/active", {
+    const response = await fetch("https://finance.lan/api/account/select/active", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
