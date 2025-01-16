@@ -2,8 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import Account from '../model/Account';
 //import { basicAuth } from "../Common";
 
-//import { useQuery, UseQueryResult } from '@tanstack/react-query';
-
 const dataTest: Account[] = [
   {
     accountId: 1,

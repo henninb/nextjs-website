@@ -20,8 +20,6 @@
     "perimeterx-nextjs": "^0.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-query": "^3.39.3",
-    "simplicity": "^1.1.3",
     "uuid": "^11.0.5"
   },
   "engines": {

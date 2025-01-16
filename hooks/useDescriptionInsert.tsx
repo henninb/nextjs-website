@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Description from "../model/Description";
 //import { basicAuth } from "../Common";
 
@@ -40,19 +40,15 @@ const insertDescription = async (descriptionName: string): Promise<Description> 
 export default function useDescriptionInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation(
-    ["insertDescription"],
-    (variables: any) => insertDescription(variables.descriptionName),
-    {
-      onError: (error: any) => {
-        console.log(error ? error : "error is undefined.");
-      },
-
-      onSuccess: (response) => {
-        const oldData: any = queryClient.getQueryData("description");
-        const newData = [response, ...(oldData || [])];
-        queryClient.setQueryData("description", newData);
-      },
+  return useMutation({
+    mutationFn: (variables: { descriptionName: string }) =>
+      insertDescription(variables.descriptionName),
+    onError: (error: unknown) => {
+      console.error(error || "An unknown error occurred.");
     },
-  );
+    onSuccess: (newDescription) => {
+      const oldData: Description[] = queryClient.getQueryData(["description"]) || [];
+      queryClient.setQueryData(["description"], [newDescription, ...oldData]);
+    },
+  });
 }

@@ -1,7 +1,7 @@
-import { useQuery } from "react-query";
+import { useQuery } from '@tanstack/react-query';
 //import { basicAuth } from "../Common";
 
-const fetchTotalsPerAccount = async (accountNameOwner: any): Promise<any> => {
+const fetchTotalsPerAccount = async (accountNameOwner: string): Promise<any> => {
   try {
     const response = await fetch(
       "/api/transaction/account/totals/" + accountNameOwner,
@@ -32,14 +32,14 @@ const fetchTotalsPerAccount = async (accountNameOwner: any): Promise<any> => {
   }
 };
 
-export default function useTotalsPerAccountFetch(accountNameOwner: any) {
-  return useQuery(
-    ["totals", accountNameOwner],
-    () => fetchTotalsPerAccount(accountNameOwner),
-    {
-      onError: (error: Error) => {
-        console.log(error ? error.message : "Error is undefined.");
-      },
-    }
-  );
+export default function useTotalsPerAccountFetch(accountNameOwner: string) {
+  const queryResult =  useQuery({
+    queryKey: ["totals", accountNameOwner],
+    queryFn: () => fetchTotalsPerAccount(accountNameOwner),
+  });
+  if (queryResult.isError) {
+    console.error("Error occurred while fetching account_totals data:", queryResult.error?.message);
+  }
+
+  return queryResult;
 }

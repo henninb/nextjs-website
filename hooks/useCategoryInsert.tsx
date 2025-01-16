@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
@@ -40,19 +40,35 @@ const insertCategory = async (categoryName: string): Promise<Category> => {
 export default function useCategoryInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation(
-    ["insertCategory"],
-    (variables: any) => insertCategory(variables.categoryName),
-    {
-      onError: (error: any) => {
-        console.log(error ? error : "error is undefined.");
-      },
-
-      onSuccess: (response) => {
-        const oldData: any = queryClient.getQueryData("category");
-        const newData = [response, ...oldData];
-        queryClient.setQueryData("category", newData);
-      },
-    }
-  );
+  return useMutation({
+    mutationFn: (variables: { categoryName: string }) =>
+      insertCategory(variables.categoryName),
+    onError: (error: unknown) => {
+      console.error(error || "An unknown error occurred.");
+    },
+    onSuccess: (newCategory) => {
+      const oldData: Category[] = queryClient.getQueryData(["category"]) || [];
+      queryClient.setQueryData(["category"], [newCategory, ...oldData]);
+    },
+  });
 }
+
+// export default function useCategoryInsert() {
+//   const queryClient = useQueryClient();
+
+//   return useMutation(
+//     ["insertCategory"],
+//     (variables: any) => insertCategory(variables.categoryName),
+//     {
+//       onError: (error: any) => {
+//         console.log(error ? error : "error is undefined.");
+//       },
+
+//       onSuccess: (response) => {
+//         const oldData: any = queryClient.getQueryData("category");
+//         const newData = [response, ...oldData];
+//         queryClient.setQueryData("category", newData);
+//       },
+//     }
+//   );
+// }

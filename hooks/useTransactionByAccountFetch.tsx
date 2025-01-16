@@ -1,5 +1,4 @@
-import { useQuery } from 'react-query';
-//import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import Transaction from "../model/Transaction";
 //import { basicAuth } from "../Common";
 
@@ -117,28 +116,14 @@ const fetchTransactionsByAccount = async (accountNameOwner: string): Promise<Tra
   }
 };
 
-
-// export default function useTransactionByAccountFetch(accountNameOwner: string) {
-//   const queryResult = useQuery<Transaction[], Error>({
-//     queryKey: ['transaction', accountNameOwner],
-//     queryFn: fetchTransactionsByAccount,
-//   });
-
-//   if (queryResult.isError) {
-//     console.error("Error occurred while fetching transaction data:", queryResult.error?.message);
-//   }
-
-//   return queryResult;
-// }
-
 export default function useTransactionByAccountFetch(accountNameOwner: string) {
-  return useQuery(
-    ["accounts", accountNameOwner],
-    () => fetchTransactionsByAccount(accountNameOwner),
-    {
-      onError: (error: Error) => {
-        console.log(error ? error.message : "Error is undefined.");
-      },
-    }
-  );
+  const queryResult =  useQuery({
+    queryKey: ["accounts", accountNameOwner],
+    queryFn: () => fetchTransactionsByAccount(accountNameOwner),
+  });
+  if (queryResult.isError) {
+    console.error("Error occurred while fetching transaction data:", queryResult.error?.message);
+  }
+
+  return queryResult;
 }

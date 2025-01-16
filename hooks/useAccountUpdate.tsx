@@ -59,30 +59,3 @@ export default function useAccountUpdate() {
     },
   });
 }
-
-// export default function useAccountUpdate() {
-//   const queryClient = useQueryClient();
-
-//   return useMutation(
-//     ["updateAccount"],
-//     (variables: any) => updateAccount(variables.oldRow, variables.newRow),
-//     {
-//       onError: (error: any) => {
-//         console.log(error ? error : "error is undefined.");
-//       },
-
-//       onSuccess: (response: any) => {
-//         const oldData = queryClient.getQueryData<Account[]>("account");
-
-//         if (oldData) {
-//           // Combine the response with the existing data
-//           const newData = [response, ...oldData];
-//           queryClient.setQueryData("account", newData);
-//         } else {
-//           // If no old data, initialize with the new response
-//           queryClient.setQueryData("account", [response]);
-//         }
-//       },
-//     }
-//   );
-// }
