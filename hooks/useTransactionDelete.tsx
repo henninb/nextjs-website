@@ -8,7 +8,7 @@ const getAccountKey = (accountNameOwner: string) => [
   
 const deleteTransaction = async (payload: Transaction): Promise<any> => {
   try {
-    const endpoint = "/api/transaction/delete/" + payload.guid;
+    const endpoint = "https://finance.lan/api/transaction/delete/" + payload.guid;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

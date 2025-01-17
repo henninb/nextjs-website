@@ -88,7 +88,7 @@ const dataTest: Transaction[] = [
 const fetchTransactionsByAccount = async (accountNameOwner: string): Promise<Transaction[]> => {
   try {
     const response = await fetch(
-      `/api/transaction/account/select/${accountNameOwner}`,
+      `https://finance.lan/api/transaction/account/select/${accountNameOwner}`,
       {
         method: "GET",
         headers: {

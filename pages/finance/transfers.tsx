@@ -120,8 +120,6 @@ export default function transfers() {
             rows={data || []}
             columns={columns}
             getRowId={(row) => row.transferId || 0}
-            paginationModel={{ pageSize: data?.length, page: 0 }}
-            hideFooterPagination={true}
           />
           <div>
             <SnackbarBaseline

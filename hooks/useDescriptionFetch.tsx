@@ -4,7 +4,7 @@ import Description from "../model/Description";
 
 const fetchDescriptionData = async (): Promise<Description[]> => {
   try {
-    const response = await fetch("/api/description/select/active", {
+    const response = await fetch("https://finance.lan/api/description/select/active", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

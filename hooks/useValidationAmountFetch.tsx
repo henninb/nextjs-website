@@ -16,7 +16,7 @@ const dataTest = [
 const fetchValidationAmountData = async (
   accountNameOwner: string
 ): Promise<any> => {
-  const endpoint = `/api/validation/amount/select/${accountNameOwner}/cleared`;
+  const endpoint = `https://finance.lan/api/validation/amount/select/${accountNameOwner}/cleared`;
 
   try {
     const response = await fetch(endpoint, {

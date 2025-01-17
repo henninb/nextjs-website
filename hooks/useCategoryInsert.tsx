@@ -4,7 +4,7 @@ import Category from "../model/Category";
 
 const insertCategory = async (categoryName: string): Promise<Category> => {
   try {
-    const endpoint = "/api/category/insert";
+    const endpoint = "https://finance.lan/api/category/insert";
     const payload = { category: categoryName, activeStatus: true };
 
     const response = await fetch(endpoint, {

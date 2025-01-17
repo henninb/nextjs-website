@@ -4,7 +4,7 @@ import Parameter from "../model/Parameter";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
   try {
-    const response = await fetch("/api/parm/select/active", {
+    const response = await fetch("https://finance.lan/api/parm/select/active", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

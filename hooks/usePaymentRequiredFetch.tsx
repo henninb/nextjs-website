@@ -31,7 +31,7 @@ const dataTest = [
 
 const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
   try {
-    const response = await fetch("/api/transaction/payment/required", {
+    const response = await fetch("https://finance.lan/api/transaction/payment/required", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

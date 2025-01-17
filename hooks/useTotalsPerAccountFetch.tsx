@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 const fetchTotalsPerAccount = async (accountNameOwner: string): Promise<any> => {
   try {
     const response = await fetch(
-      "/api/transaction/account/totals/" + accountNameOwner,
+      "https://finance.lan/api/transaction/account/totals/" + accountNameOwner,
       {
         method: "GET",
         headers: {

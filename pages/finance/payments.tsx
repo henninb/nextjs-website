@@ -120,8 +120,6 @@ export default function payments() {
             rows={data || []}
             columns={columns}
             getRowId={(row) => row.paymentId || 0}
-            paginationModel={{ pageSize: data?.length, page: 0 }}
-            hideFooterPagination={true}
           />
           <div>
             <SnackbarBaseline
