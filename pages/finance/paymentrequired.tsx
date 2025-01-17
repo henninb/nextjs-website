@@ -18,7 +18,7 @@ export default function paymentrequired() {
   }, [isSuccess]);
 
   const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/transactions/${accountNameOwner}`);
+    router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
   const columns: GridColDef[] = [
