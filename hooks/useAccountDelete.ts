@@ -24,8 +24,8 @@ const deleteAccount = async (payload: Account): Promise<Account> => {
 
     return await response.json();
   } catch (error: any) {
-    //return { error: "An error occurred", details: error.message };
-    throw new Error(`An error occurred: ${error.message}`);
+    console.log(`An error occurred: ${error.message}`);
+    return payload;
   }
 };
 

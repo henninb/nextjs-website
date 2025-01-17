@@ -6,7 +6,7 @@ const getAccountKey = (accountNameOwner: string) => [
     accountNameOwner,
   ];
   
-const deleteTransaction = async (payload: Transaction): Promise<any> => {
+const deleteTransaction = async (payload: Transaction): Promise<Transaction> => {
   try {
     const endpoint = "https://finance.lan/api/transaction/delete/" + payload.guid;
 
@@ -20,16 +20,18 @@ const deleteTransaction = async (payload: Transaction): Promise<any> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404).", await response.json());
-        return { ...payload, error: "Resource not found." };
+        console.log("Resource not found (404).", await response.json());
+        return payload
+        //return { ...payload, error: "Resource not found." };
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error("An error occurred:", error);
-    throw error;
+    console.log("An error occurred:", error);
+    return payload
+    //throw error;
   }
 };
 

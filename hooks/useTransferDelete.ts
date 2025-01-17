@@ -16,7 +16,7 @@ const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404).", await response.json());
+        console.log("Resource not found (404).", await response.json());
         return payload;
       }
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -26,8 +26,8 @@ const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
   } catch (error) {
     console.error("Error deleting transfer:", error);
     //return JSON.stringify(payload);
-    console.error("An error occurred:", error);
-    throw error;
+    console.log("An error occurred:", error);
+    return payload
   }
 };
 

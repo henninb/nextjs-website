@@ -17,15 +17,16 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error("Parameter not found (404). Check the parameter name.");
+        console.log("Parameter not found (404). Check the parameter name.");
+        return payload
       }
       throw new Error(`An error occurred: ${response.statusText}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error in deleteParameter:", error);
-    throw error;
+    console.log("Error in deleteParameter:", error);
+    return payload
   }
 };
 
