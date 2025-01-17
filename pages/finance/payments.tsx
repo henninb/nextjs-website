@@ -30,7 +30,7 @@ export default function payments() {
   }, [isSuccess]);
 
   const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/transactions/${accountNameOwner}`);
+    router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
   const handleDeleteRow = async (payment: Payment) => {

@@ -32,7 +32,7 @@ export default function AccountTable() {
   }, [isSuccess, isSuccessTotals]);
 
   const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/transactions/${accountNameOwner}`);
+    router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
   const handleDeleteRow = async (account: Account) => {
