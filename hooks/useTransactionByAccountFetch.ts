@@ -112,8 +112,8 @@ const fetchTransactionsByAccount = async (accountNameOwner: string): Promise<Tra
 
   } catch (error) {
     console.log("Error fetching transactionsByAccount data:", error);
-    throw new Error("Error fetching transactionsByAccount data:", error);
-    //return dataTest; // Default fallback data on error
+    //throw new Error("Error fetching transactionsByAccount data:", error);
+    return dataTest; // Default fallback data on error
   }
 };
 

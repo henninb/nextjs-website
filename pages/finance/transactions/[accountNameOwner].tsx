@@ -343,13 +343,13 @@ export default function TransactionTable() {
       ) : (
         <div>
 
-<h2>{`[ ${currencyFormat(
+<h3>{`[ ${currencyFormat(
   noNaN(totals?.["totals"] ?? 0),
 )} ] [ ${currencyFormat(
   noNaN(totals?.["totalsCleared"] ?? 0),
 )} ]  [ ${currencyFormat(
   noNaN(totals?.["totalsOutstanding"] ?? 0),
-)} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h2>
+)} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h3>
           <IconButton 
               onClick={() => {
                 setOpenForm(true)
@@ -376,7 +376,7 @@ export default function TransactionTable() {
             {" - "}{" "}
             {validationData?.validationDate
               ? epochToDate(
-                  validationData?.validationDate,
+                  validationData?.validationDate.getTime(),
                 ).toLocaleString()
               : "1970-01-01T00:00:00:000Z"}
           </Button>

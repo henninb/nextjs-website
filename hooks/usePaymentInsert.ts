@@ -27,21 +27,23 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.error("Resource not found (404).", await response.json());
-        return {
-          paymentId: Math.random(), // Generate unique ID
-          accountNameOwner: payload.accountNameOwner,
-          transactionDate: payload.transactionDate,
-          amount: payload.amount,
-          activeStatus: true,
-        };
+        return payload
+        // return {
+        //   paymentId: Math.random(), // Generate unique ID
+        //   accountNameOwner: payload.accountNameOwner,
+        //   transactionDate: payload.transactionDate,
+        //   amount: payload.amount,
+        //   activeStatus: true,
+        // };
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error("An error occurred:", error);
-    throw error;
+    console.log("An error occurred:", error);
+    //throw error;
+    return payload
   }
 };
 
@@ -60,4 +62,3 @@ export default function usePaymentInsert() {
     },
   });
 }
-

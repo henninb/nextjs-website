@@ -71,7 +71,7 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
 
 export default function usePaymentFetch() {
   const queryResult = useQuery<Payment[], Error>({
-    queryKey: ['payment'],  // Make the key an array to support caching and refetching better
+    queryKey: ['payment'],
     queryFn: fetchPaymentData,
   });
 

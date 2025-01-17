@@ -56,7 +56,7 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
 
 export default function useTransferFetch() {
   const queryResult = useQuery<Transfer[], Error>({
-    queryKey: ['transfer'],  // Make the key an array to support caching and refetching better
+    queryKey: ['transfer'],
     queryFn: fetchTransferData,
   });
 

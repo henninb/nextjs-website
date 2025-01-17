@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { TransactionState } from "../model/TransactionState";
+import ValidationAmount from "../model/ValidationAmount";
 //import { basicAuth } from "../Common";
 
-const dataTest = [
+const dataTest = //[
   {
     validationId: Math.random(),
     validationDate: new Date(),
@@ -11,11 +12,11 @@ const dataTest = [
     transactionState: "undefined" as TransactionState,
     activeStatus: false
   }
-];
+//];
 
 const fetchValidationAmountData = async (
   accountNameOwner: string
-): Promise<any> => {
+): Promise<ValidationAmount> => {
   const endpoint = `https://finance.lan/api/validation/amount/select/${accountNameOwner}/cleared`;
 
   try {
@@ -30,7 +31,7 @@ const fetchValidationAmountData = async (
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404)");
+        console.log("Resource not found (404)");
         //throw new Error("Resource not found (404)");
         return dataTest
       }
@@ -39,7 +40,7 @@ const fetchValidationAmountData = async (
 
     return response.json();
   } catch (error) {
-    console.error("Error fetching validationAmount data:", error);
+    console.log("Error fetching validationAmount data:", error);
     //return dataTest; // Return fallback data
     return   {
       validationId: Math.random(),
