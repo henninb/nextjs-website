@@ -120,6 +120,8 @@ export default function transfers() {
             rows={data || []}
             columns={columns}
             getRowId={(row) => row.transferId || 0}
+            checkboxSelection={false}
+            rowSelection={false}
           />
           <div>
             <SnackbarBaseline

@@ -137,6 +137,8 @@ export default function AccountTable() {
             getRowId={(row) => row.accountId || 0}
             paginationModel={{ pageSize: data?.length, page: 0 }}
             hideFooterPagination={true}
+            checkboxSelection={false}
+            rowSelection={false}
           />
           <div>
             <SnackbarBaseline

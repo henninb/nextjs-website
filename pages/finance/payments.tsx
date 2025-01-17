@@ -120,6 +120,8 @@ export default function payments() {
             rows={data || []}
             columns={columns}
             getRowId={(row) => row.paymentId || 0}
+            checkboxSelection={false}
+            rowSelection={false}
           />
           <div>
             <SnackbarBaseline

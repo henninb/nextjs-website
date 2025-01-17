@@ -99,6 +99,8 @@ export default function paymentrequired() {
             rows={data || []}
             paginationModel={{ pageSize: data?.length, page: 0 }}
             hideFooterPagination={true}
+            checkboxSelection={false}
+            rowSelection={false}
             getRowId={(row) => row.accountNameOwner}
           />
         </div>
