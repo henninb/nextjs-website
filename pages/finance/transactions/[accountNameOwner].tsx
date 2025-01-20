@@ -32,7 +32,7 @@ import DeleteIcon from '@mui/icons-material/DeleteRounded';
 import EditIcon from '@mui/icons-material/CreateRounded';
 import AddIcon from '@mui/icons-material/AddRounded';
 import AttachMoneyRounded from '@mui/icons-material/AttachMoneyRounded'
-import { epochToDate,currencyFormat,noNaN } from '../../../components/Common';
+import { epochToDate,currencyFormat,noNaN, formatDate } from '../../../components/Common';
 
 export default function TransactionTable() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -89,6 +89,19 @@ export default function TransactionTable() {
     setOpenSnackbar(true);
     console.error(errorMsg);
   };
+
+  const formatDateToLocal = (date) => {
+    const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is zero-based
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    return formatter.format(date);
+  }
 
   const handlerToUpdateTransactionState = async(guid: string, transactionState: TransactionState) => {
     await updateTransactionState({
@@ -374,11 +387,7 @@ export default function TransactionTable() {
                 })
               : "$0.00"}{" "}
             {" - "}{" "}
-            {validationData?.validationDate
-              ? epochToDate(
-                  validationData?.validationDate.getTime(),
-                ).toLocaleString()
-              : "1970-01-01T00:00:00:000Z"}
+            {formatDate(validationData?.validationDate)}
           </Button>
 
 

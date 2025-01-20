@@ -2,22 +2,27 @@ export const convertUTCDateToLocalDate = (date: Date) => {
   return new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
 };
 
-export const formatDate = (date: Date) => {
-  let month = "" + (date.getMonth() + 1);
-  let day = "" + date.getDate();
-  const year = date.getFullYear();
+export const formatDate = (date: Date): string => {
+  //const isDate = date instanceof Date;
+  if( date instanceof Date ) {
+    let month = "" + (date.getMonth() + 1);
+    let day = "" + date.getDate();
+    const year = date.getFullYear();
 
-  month = ("0" + month).slice(-2);
-  day = ("0" + day).slice(-2);
+    month = ("0" + month).slice(-2);
+    day = ("0" + day).slice(-2);
 
-  return [year, month, day].join("-");
+    return [year, month, day].join("-");
+  } else {
+    return formatDate(new Date(date))
+  }
 };
 
 // export const fetchTimeZone = () => {
 //   return process.env.REACT_APP_TIMEZONE;
 // };
 
-export const currencyFormat = (inputData: string) => {
+export const currencyFormat = (inputData: string): string => {
   inputData = parseFloat(inputData).toFixed(2);
   return inputData.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
