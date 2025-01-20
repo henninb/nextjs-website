@@ -4,7 +4,8 @@ import Payment from "../model/Payment";
 
 const deletePayment = async (payload: Payment): Promise<Payment> => {
   try {
-    const endpoint = "https://finance.lan/api/payment/delete/" + payload.paymentId;
+    const endpoint =
+      "https://finance.lan/api/payment/delete/" + payload.paymentId;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -26,7 +27,7 @@ const deletePayment = async (payload: Payment): Promise<Payment> => {
   } catch (error) {
     console.error("Error deleting payment:", error);
     console.log("An error occurred:", error);
-    return payload
+    return payload;
   }
 };
 
@@ -35,7 +36,8 @@ export default function usePaymentDelete() {
 
   return useMutation({
     mutationKey: ["deletePayment"],
-    mutationFn: (variables: { oldRow: Payment }) => deletePayment(variables.oldRow),
+    mutationFn: (variables: { oldRow: Payment }) =>
+      deletePayment(variables.oldRow),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },

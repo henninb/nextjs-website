@@ -20,10 +20,10 @@ export default function AccountTable() {
   const [accountData, setAccountData] = useState<Account | null>(null);
   const router = useRouter();
 
-   const { data, isSuccess, isLoading } = useAccountFetch();
-   const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
-   const { mutate: insertAccount } = useAccountInsert();
-   const { mutate: deleteAccount } = useAccountDelete();
+  const { data, isSuccess, isLoading } = useAccountFetch();
+  const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
+  const { mutate: insertAccount } = useAccountInsert();
+  const { mutate: deleteAccount } = useAccountDelete();
 
   useEffect(() => {
     if (isSuccess && isSuccessTotals) {
@@ -48,12 +48,11 @@ export default function AccountTable() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage =
-      error.response
-        ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-            error.response.data
-          )}`
-        : `${moduleName}: Failure`;
+    const errorMessage = error.response
+      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
+          error.response.data,
+        )}`
+      : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
     setOpen(true);
@@ -75,7 +74,9 @@ export default function AccountTable() {
       headerName: "Account",
       width: 200,
       renderCell: (params) => (
-        <Button onClick={() => handleButtonClickLink(params.row.accountNameOwner)}>
+        <Button
+          onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
+        >
           {params.row.accountNameOwner}
         </Button>
       ),
@@ -87,30 +88,41 @@ export default function AccountTable() {
       headerName: "Future",
       width: 150,
       renderCell: (params) =>
-        params.value?.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        params.value?.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        }),
     },
     {
       field: "outstanding",
       headerName: "Outstanding",
       width: 150,
       renderCell: (params) =>
-        params.value?.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        params.value?.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        }),
     },
     {
       field: "cleared",
       headerName: "Cleared",
       width: 150,
       renderCell: (params) =>
-        params.value?.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        params.value?.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        }),
     },
     {
       field: "",
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
-        <IconButton onClick={() => {
-            handleDeleteRow(params.row)
-            }}>
+        <IconButton
+          onClick={() => {
+            handleDeleteRow(params.row);
+          }}
+        >
           <DeleteIcon />
         </IconButton>
       ),
@@ -128,8 +140,8 @@ export default function AccountTable() {
             <AddIcon />
           </IconButton>
           <h3>
-            [${totals?.totals}] [${totals?.totalsCleared}] [${totals?.totalsOutstanding}] [
-            ${totals?.totalsFuture}]
+            [${totals?.totals}] [${totals?.totalsCleared}] [$
+            {totals?.totalsOutstanding}] [ ${totals?.totalsFuture}]
           </h3>
           <DataGrid
             rows={data}
@@ -151,7 +163,14 @@ export default function AccountTable() {
       )}
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
-        <Box sx={{ width: 400, padding: 4, backgroundColor: "white", margin: "auto" }}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+          }}
+        >
           <h3>{accountData ? "Edit Account" : "Add New Account"}</h3>
           <TextField
             label="Account Name Owner"
@@ -159,7 +178,10 @@ export default function AccountTable() {
             margin="normal"
             value={accountData?.accountNameOwner || ""}
             onChange={(e) =>
-              setAccountData((prev) => ({ ...prev, accountNameOwner: e.target.value }))
+              setAccountData((prev) => ({
+                ...prev,
+                accountNameOwner: e.target.value,
+              }))
             }
           />
           <TextField
@@ -168,7 +190,10 @@ export default function AccountTable() {
             margin="normal"
             value={accountData?.accountType || ""}
             onChange={(e) =>
-              setAccountData((prev: any) => ({ ...prev, accountType: e.target.value }))
+              setAccountData((prev: any) => ({
+                ...prev,
+                accountType: e.target.value,
+              }))
             }
           />
           <TextField
@@ -177,7 +202,10 @@ export default function AccountTable() {
             margin="normal"
             value={accountData?.moniker || ""}
             onChange={(e) =>
-              setAccountData((prev: any) => ({ ...prev, moniker: e.target.value }))
+              setAccountData((prev: any) => ({
+                ...prev,
+                moniker: e.target.value,
+              }))
             }
           />
           <Button
@@ -190,4 +218,4 @@ export default function AccountTable() {
       </Modal>
     </div>
   );
-};
+}

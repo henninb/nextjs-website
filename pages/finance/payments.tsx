@@ -46,12 +46,11 @@ export default function payments() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage =
-      error.response
-        ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-            error.response.data
-          )}`
-        : `${moduleName}: Failure`;
+    const errorMessage = error.response
+      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
+          error.response.data,
+        )}`
+      : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
     setOpen(true);
@@ -73,7 +72,9 @@ export default function payments() {
       headerName: "Account",
       width: 200,
       renderCell: (params) => (
-        <Button onClick={() => handleButtonClickLink(params.row.accountNameOwner)}>
+        <Button
+          onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
+        >
           {params.row.accountNameOwner}
         </Button>
       ),
@@ -88,7 +89,10 @@ export default function payments() {
       headerName: "Amount",
       width: 150,
       renderCell: (params) =>
-        params.value?.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        params.value?.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        }),
     },
     {
       field: "",
@@ -134,7 +138,14 @@ export default function payments() {
       )}
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
-        <Box sx={{ width: 400, padding: 4, backgroundColor: "white", margin: "auto" }}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+          }}
+        >
           <h3>{paymentData ? "Edit Payment" : "Add New Payment"}</h3>
           <TextField
             label="Account Name Owner"
@@ -142,7 +153,10 @@ export default function payments() {
             margin="normal"
             value={paymentData?.accountNameOwner || ""}
             onChange={(e) =>
-              setPaymentData((prev) => ({ ...prev, accountNameOwner: e.target.value }))
+              setPaymentData((prev) => ({
+                ...prev,
+                accountNameOwner: e.target.value,
+              }))
             }
           />
           <TextField
@@ -152,7 +166,10 @@ export default function payments() {
             type="date"
             value={paymentData?.transactionDate || ""}
             onChange={(e) =>
-              setPaymentData((prev: any) => ({ ...prev, transactionDate: e.target.value }))
+              setPaymentData((prev: any) => ({
+                ...prev,
+                transactionDate: e.target.value,
+              }))
             }
           />
           <TextField
@@ -161,13 +178,16 @@ export default function payments() {
             margin="normal"
             type="number"
             slotProps={{
-                htmlInput: {
-                  step: "0.01", // Allow decimal inputs
-                },
+              htmlInput: {
+                step: "0.01", // Allow decimal inputs
+              },
             }}
             value={paymentData?.amount ?? ""}
             onChange={(e) =>
-              setPaymentData((prev) => ({ ...prev, amount: parseFloat(e.target.value) }))
+              setPaymentData((prev) => ({
+                ...prev,
+                amount: parseFloat(e.target.value),
+              }))
             }
           />
           <Button

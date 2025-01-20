@@ -46,12 +46,11 @@ export default function transfers() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage =
-      error.response
-        ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-            error.response.data
-          )}`
-        : `${moduleName}: Failure`;
+    const errorMessage = error.response
+      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
+          error.response.data,
+        )}`
+      : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
     setOpen(true);
@@ -74,9 +73,9 @@ export default function transfers() {
       width: 200,
     },
     {
-        field: "destinationAccount",
-        headerName: "Destination Account",
-        width: 200,
+      field: "destinationAccount",
+      headerName: "Destination Account",
+      width: 200,
     },
     {
       field: "transactionDate",
@@ -88,7 +87,10 @@ export default function transfers() {
       headerName: "Amount",
       width: 150,
       renderCell: (params) =>
-        params.value?.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        params.value?.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        }),
     },
     {
       field: "",
@@ -134,7 +136,14 @@ export default function transfers() {
       )}
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
-        <Box sx={{ width: 400, padding: 4, backgroundColor: "white", margin: "auto" }}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+          }}
+        >
           <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>
           <TextField
             label="Source Account"
@@ -142,7 +151,10 @@ export default function transfers() {
             margin="normal"
             value={transferData?.sourceAccount || ""}
             onChange={(e) =>
-              setTransferData((prev) => ({ ...prev, sourceAccount: e.target.value }))
+              setTransferData((prev) => ({
+                ...prev,
+                sourceAccount: e.target.value,
+              }))
             }
           />
           <TextField
@@ -151,7 +163,10 @@ export default function transfers() {
             margin="normal"
             value={transferData?.destinationAccount || ""}
             onChange={(e) =>
-              setTransferData((prev) => ({ ...prev, destinationAccount: e.target.value }))
+              setTransferData((prev) => ({
+                ...prev,
+                destinationAccount: e.target.value,
+              }))
             }
           />
           <TextField
@@ -161,7 +176,10 @@ export default function transfers() {
             type="date"
             value={transferData?.transactionDate || ""}
             onChange={(e) =>
-              setTransferData((prev: any) => ({ ...prev, transactionDate: e.target.value }))
+              setTransferData((prev: any) => ({
+                ...prev,
+                transactionDate: e.target.value,
+              }))
             }
           />
           <TextField
@@ -170,13 +188,16 @@ export default function transfers() {
             margin="normal"
             type="number"
             slotProps={{
-                htmlInput: {
-                  step: "0.01", // Allow decimal inputs
-                },
+              htmlInput: {
+                step: "0.01", // Allow decimal inputs
+              },
             }}
             value={transferData?.amount ?? ""}
             onChange={(e) =>
-              setTransferData((prev) => ({ ...prev, amount: parseFloat(e.target.value) }))
+              setTransferData((prev) => ({
+                ...prev,
+                amount: parseFloat(e.target.value),
+              }))
             }
           />
           <Button

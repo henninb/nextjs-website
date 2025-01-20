@@ -1,17 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
 const fetchCategoryData = async (): Promise<Category[]> => {
   try {
-    const response = await fetch("https://finance.lan/api/category/select/active", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        //Authorization: basicAuth(),
+    const response = await fetch(
+      "https://finance.lan/api/category/select/active",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          //Authorization: basicAuth(),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -19,12 +22,12 @@ const fetchCategoryData = async (): Promise<Category[]> => {
         return [
           {
             categoryId: Math.random(),
-            categoryName: 'test1',
+            categoryName: "test1",
             activeStatus: true,
           },
           {
             categoryId: Math.random(),
-            categoryName: 'test2',
+            categoryName: "test2",
             activeStatus: true,
           },
         ];
@@ -38,12 +41,12 @@ const fetchCategoryData = async (): Promise<Category[]> => {
     return [
       {
         categoryId: Math.random(),
-        categoryName: 'test1',
+        categoryName: "test1",
         activeStatus: true,
       },
       {
         categoryId: Math.random(),
-        categoryName: 'test2',
+        categoryName: "test2",
         activeStatus: true,
       },
     ];
@@ -52,12 +55,15 @@ const fetchCategoryData = async (): Promise<Category[]> => {
 
 export default function useCategoryFetch() {
   const queryResult = useQuery<Category[], Error>({
-    queryKey: ['category'],  // Make the key an array to support caching and refetching better
+    queryKey: ["category"], // Make the key an array to support caching and refetching better
     queryFn: fetchCategoryData,
   });
 
   if (queryResult.isError) {
-    console.error("Error occurred while fetching category data:", queryResult.error?.message);
+    console.error(
+      "Error occurred while fetching category data:",
+      queryResult.error?.message,
+    );
   }
 
   return queryResult;

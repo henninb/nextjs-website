@@ -26,7 +26,7 @@ const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.error("Resource not found (404).", await response.json());
-        return payload
+        return payload;
         // return {
         //   transferId: Math.random(), // Generate unique ID
         //   sourceAccount: payload.sourceAccount,
@@ -43,7 +43,7 @@ const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
   } catch (error) {
     console.log("An error occurred:", error);
     //throw error;
-    return payload
+    return payload;
   }
 };
 
@@ -52,13 +52,14 @@ export default function useTransferInsert() {
 
   return useMutation({
     mutationKey: ["insertTransfer"],
-    mutationFn: (variables: { payload: Transfer }) => insertTransfer(variables.payload),
+    mutationFn: (variables: { payload: Transfer }) =>
+      insertTransfer(variables.payload),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },
     onSuccess: (newTransfer) => {
-        const oldData: any = queryClient.getQueryData(["transfer"]) || [];
-        queryClient.setQueryData(["transfer"], [newTransfer, ...oldData]);
+      const oldData: any = queryClient.getQueryData(["transfer"]) || [];
+      queryClient.setQueryData(["transfer"], [newTransfer, ...oldData]);
     },
   });
 }

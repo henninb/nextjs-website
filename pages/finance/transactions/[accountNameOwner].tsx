@@ -1,53 +1,58 @@
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
 import { Box, Button, Modal, IconButton } from "@mui/material";
 import Select from "@mui/material/Select";
-import MenuItem from '@mui/material/MenuItem';
+import MenuItem from "@mui/material/MenuItem";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import Spinner from '../../../components/Spinner';
+import Spinner from "../../../components/Spinner";
 //import { useNavigate, useMatch, PathMatch } from "react-router-dom";
 //import { currencyFormat, epochToDate } from "./Common";
-import SnackbarBaseline from '../../../components/SnackbarBaseline';
+import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import { v4 as uuidv4 } from 'uuid';
-import useTotalsFetch from '../../../hooks/useTotalsFetch';
-import useTransactionByAccountFetch from '../../../hooks/useTransactionByAccountFetch';
-import useTransactionUpdate from '../../../hooks/useTransactionUdate';
-import useTransactionStateUpdate from '../../../hooks/useTransactionStateUpdate';
-import useTransactionInsert from '../../../hooks/useTransactionInsert';
-import useTransactionDelete from '../../../hooks/useTransactionDelete';
-import useTotalsPerAccountFetch from '../../../hooks/useTotalsPerAccountFetch';
-import useValidationAmountFetch from '../../../hooks/useValidationAmountFetch';
-import useValidationAmountInsert from '../../../hooks/useValidationAmountInsert';
-import { AccountType } from '../../../model/AccountType';
-import Transaction from '../../../model/Transaction';
-import { TransactionState } from '../../../model/TransactionState';
-import { TransactionType } from '../../../model/TransactionType';
-import { ReoccurringType } from '../../../model/ReoccurringType';
-import ValidationAmount from '../../../model/ValidationAmount';
-import DeleteIcon from '@mui/icons-material/DeleteRounded';
-import EditIcon from '@mui/icons-material/CreateRounded';
-import AddIcon from '@mui/icons-material/AddRounded';
-import AttachMoneyRounded from '@mui/icons-material/AttachMoneyRounded'
-import { epochToDate,currencyFormat,noNaN, formatDate } from '../../../components/Common';
+import { v4 as uuidv4 } from "uuid";
+import useTotalsFetch from "../../../hooks/useTotalsFetch";
+import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
+import useTransactionUpdate from "../../../hooks/useTransactionUdate";
+import useTransactionStateUpdate from "../../../hooks/useTransactionStateUpdate";
+import useTransactionInsert from "../../../hooks/useTransactionInsert";
+import useTransactionDelete from "../../../hooks/useTransactionDelete";
+import useTotalsPerAccountFetch from "../../../hooks/useTotalsPerAccountFetch";
+import useValidationAmountFetch from "../../../hooks/useValidationAmountFetch";
+import useValidationAmountInsert from "../../../hooks/useValidationAmountInsert";
+import { AccountType } from "../../../model/AccountType";
+import Transaction from "../../../model/Transaction";
+import { TransactionState } from "../../../model/TransactionState";
+import { TransactionType } from "../../../model/TransactionType";
+import { ReoccurringType } from "../../../model/ReoccurringType";
+import ValidationAmount from "../../../model/ValidationAmount";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
+import EditIcon from "@mui/icons-material/CreateRounded";
+import AddIcon from "@mui/icons-material/AddRounded";
+import AttachMoneyRounded from "@mui/icons-material/AttachMoneyRounded";
+import {
+  epochToDate,
+  currencyFormat,
+  noNaN,
+  formatDate,
+} from "../../../components/Common";
 
 export default function TransactionTable() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [openForm, setOpenForm] = useState<boolean>(false); 
+  const [openForm, setOpenForm] = useState<boolean>(false);
 
   const router = useRouter();
-  const { accountNameOwner } : any = router.query;
+  const { accountNameOwner }: any = router.query;
 
   const [transactionData, setTransactionData] = useState({
     transactionDate: new Date(), // Default to today's date
     accountNameOwner: accountNameOwner,
-    reoccurringType: "onetime" as ReoccurringType,  // Default to "onetime"
-    amount: 0.0,                 // Default to 0.0
+    reoccurringType: "onetime" as ReoccurringType, // Default to "onetime"
+    amount: 0.0, // Default to 0.0
     transactionState: "outstanding" as TransactionState, // Default to "outstanding"
     transactionType: "undefined" as TransactionType,
     guid: uuidv4(),
@@ -62,16 +67,19 @@ export default function TransactionTable() {
   //const accountNameOwner = routeMatch?.params?.account || "default";
 
   const { data, isSuccess } = useTransactionByAccountFetch(accountNameOwner);
-  const { data: totals, isSuccess: isSuccessTotals } = useTotalsPerAccountFetch(accountNameOwner);
-  const { data: validationData, isSuccess: isSuccessValidationTotals } = useValidationAmountFetch(accountNameOwner);
+  const { data: totals, isSuccess: isSuccessTotals } =
+    useTotalsPerAccountFetch(accountNameOwner);
+  const { data: validationData, isSuccess: isSuccessValidationTotals } =
+    useValidationAmountFetch(accountNameOwner);
 
-  const { mutate: updateTransactionState } = useTransactionStateUpdate(accountNameOwner);
+  const { mutate: updateTransactionState } =
+    useTransactionStateUpdate(accountNameOwner);
   const { mutate: updateTransaction } = useTransactionUpdate();
   const { mutate: deleteTransaction } = useTransactionDelete();
   const { mutate: insertTransaction } = useTransactionInsert(accountNameOwner);
   const { mutate: insertValidationAmount } = useValidationAmountInsert();
 
-  const transactionStates = ['outstanding', 'future', 'cleared'];
+  const transactionStates = ["outstanding", "future", "cleared"];
 
   useEffect(() => {
     if (isSuccess && isSuccessTotals && isSuccessValidationTotals) {
@@ -92,23 +100,26 @@ export default function TransactionTable() {
 
   const formatDateToLocal = (date) => {
     const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is zero-based
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Month is zero-based
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
     return formatter.format(date);
-  }
+  };
 
-  const handlerToUpdateTransactionState = async(guid: string, transactionState: TransactionState) => {
+  const handlerToUpdateTransactionState = async (
+    guid: string,
+    transactionState: TransactionState,
+  ) => {
     await updateTransactionState({
       guid: guid,
       transactionState: transactionState,
     });
-  }
+  };
 
   const handleInsertNewValidationData = async (
     accountNameOwner: string,
@@ -150,7 +161,11 @@ export default function TransactionTable() {
       notes: "",
     };
     try {
-      await insertTransaction({ accountNameOwner, newRow, isFutureTransaction: false });
+      await insertTransaction({
+        accountNameOwner,
+        newRow,
+        isFutureTransaction: false,
+      });
     } catch (error) {
       handleError(error, "handleAddRow");
     }
@@ -197,22 +212,20 @@ export default function TransactionTable() {
       valueGetter: (params: string) => {
         //console.log("date-in:" + params)
         const utcDate = new Date(params);
-        const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
+        const localDate = new Date(
+          utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
+        );
         //console.log("localDate: " + localDate);
         return localDate;
       },
       editable: true,
     },
     {
-      field: 'description',
-      headerName: 'Description',
+      field: "description",
+      headerName: "Description",
       width: 180,
       editable: true,
-      renderCell: (params) => (
-        <div>
-          {params.value}
-        </div>
-      ),
+      renderCell: (params) => <div>{params.value}</div>,
       // renderEditCell: (params: any) => (
       //   <TextField
       //     value={params.value || ''}
@@ -221,8 +234,8 @@ export default function TransactionTable() {
       // ),
     },
     {
-      field: 'category',
-      headerName: 'Category',
+      field: "category",
+      headerName: "Category",
       width: 150,
       editable: true,
     },
@@ -240,36 +253,41 @@ export default function TransactionTable() {
       cellClassName: "nowrap",
     },
     {
-      field: 'transactionState',
-      headerName: 'transactionState',
+      field: "transactionState",
+      headerName: "transactionState",
       width: 275,
       editable: true,
       renderCell: (params: any) => {
         const handleStateChange = (newState: TransactionState) => {
-          const transactionGuid = params.row.guid; 
-          console.log("parms: " + params.row.guid );
-          handlerToUpdateTransactionState(transactionGuid, newState)
+          const transactionGuid = params.row.guid;
+          console.log("parms: " + params.row.guid);
+          handlerToUpdateTransactionState(transactionGuid, newState);
           // Optionally update the backend or DataGrid API here
           console.log(`State changed to: ${newState}`);
         };
-    
+
         return (
           <Box>
             {transactionStates.map((option: any) => (
               <Button
                 key={option}
-                variant={params.value === option ? 'contained' : 'outlined'}
+                variant={params.value === option ? "contained" : "outlined"}
                 onClick={() => handleStateChange(option)}
                 size="small"
-                sx={{ 
+                sx={{
                   marginRight: 1,
-                  color: params.value === option ? 'white' : 'primary.main',
-                  backgroundColor: params.value === option ? 'primary.main' : 'transparent',
-                  borderColor: params.value === option ? 'transparent' : 'primary.main', // Border color matches text
-              '&:hover': {
-                backgroundColor: params.value === option ? 'primary.dark' : 'primary.light',
-                color: params.value === option ? 'white' : 'primary.main',
-              },
+                  color: params.value === option ? "white" : "primary.main",
+                  backgroundColor:
+                    params.value === option ? "primary.main" : "transparent",
+                  borderColor:
+                    params.value === option ? "transparent" : "primary.main", // Border color matches text
+                  "&:hover": {
+                    backgroundColor:
+                      params.value === option
+                        ? "primary.dark"
+                        : "primary.light",
+                    color: params.value === option ? "white" : "primary.main",
+                  },
                 }}
               >
                 {option}
@@ -280,10 +298,10 @@ export default function TransactionTable() {
       },
     },
     {
-      field: 'transactionType',
-      headerName: 'Type',
+      field: "transactionType",
+      headerName: "Type",
       width: 180,
-      renderCell: (params: any) => params.value || 'undefined',
+      renderCell: (params: any) => params.value || "undefined",
       // renderEditCell: (params) => (
       //   <SelectTransactionType
       //     currentValue={params.value || 'undefined'}
@@ -292,14 +310,14 @@ export default function TransactionTable() {
       // ),
     },
     {
-      field: 'reoccurringType',
-      headerName: 'Reoccur',
+      field: "reoccurringType",
+      headerName: "Reoccur",
       width: 150,
-      renderCell: (params: any) => params.value || 'undefined',
+      renderCell: (params: any) => params.value || "undefined",
     },
     {
-      field: 'notes',
-      headerName: 'Notes',
+      field: "notes",
+      headerName: "Notes",
       width: 180,
       editable: true,
     },
@@ -326,13 +344,13 @@ export default function TransactionTable() {
       width: 120,
       renderCell: (params) => {
         const { id } = params.row;
-      
+
         return (
           <div>
             <IconButton
-                onClick={() => {
-                  setOpenForm(true);
-                }}
+              onClick={() => {
+                setOpenForm(true);
+              }}
             >
               <EditIcon />
             </IconButton>
@@ -345,40 +363,41 @@ export default function TransactionTable() {
             </IconButton>
           </div>
         );
-      }
+      },
     },
   ];
 
   return (
-    <Box><h2>{`${accountNameOwner}`}</h2>
+    <Box>
+      <h2>{`${accountNameOwner}`}</h2>
       {showSpinner ? (
         <Spinner />
       ) : (
         <div>
-
-<h3>{`[ ${currencyFormat(
-  noNaN(totals?.["totals"] ?? 0),
-)} ] [ ${currencyFormat(
-  noNaN(totals?.["totalsCleared"] ?? 0),
-)} ]  [ ${currencyFormat(
-  noNaN(totals?.["totalsOutstanding"] ?? 0),
-)} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h3>
-          <IconButton 
-              onClick={() => {
-                setOpenForm(true)
-                return handleAddRow
-                }
-              } 
-              style={{ marginLeft: 8 }}>
-              <AddIcon />
+          <h3>{`[ ${currencyFormat(
+            noNaN(totals?.["totals"] ?? 0),
+          )} ] [ ${currencyFormat(
+            noNaN(totals?.["totalsCleared"] ?? 0),
+          )} ]  [ ${currencyFormat(
+            noNaN(totals?.["totalsOutstanding"] ?? 0),
+          )} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h3>
+          <IconButton
+            onClick={() => {
+              setOpenForm(true);
+              return handleAddRow;
+            }}
+            style={{ marginLeft: 8 }}
+          >
+            <AddIcon />
           </IconButton>
 
           <Button
             onClick={() => {
-              console.log('insertNewValidationData(accountNameOwner, "cleared")')
-              handleInsertNewValidationData(accountNameOwner, "cleared")
-              }
-            }
+              console.log(
+                'insertNewValidationData(accountNameOwner, "cleared")',
+              );
+              handleInsertNewValidationData(accountNameOwner, "cleared");
+            }}
           >
             {validationData?.amount
               ? validationData?.amount.toLocaleString("en-US", {
@@ -386,18 +405,16 @@ export default function TransactionTable() {
                   currency: "USD",
                 })
               : "$0.00"}{" "}
-            {" - "}{" "}
-            {formatDate(validationData?.validationDate)}
+            {" - "} {formatDate(validationData?.validationDate)}
           </Button>
 
-
-        <DataGrid 
-         rows={data || []} 
-         columns={columns}
-         getRowId={(row) => row.transactionId || 0}
-         checkboxSelection={false}
-         rowSelection={false}
-        />
+          <DataGrid
+            rows={data || []}
+            columns={columns}
+            getRowId={(row) => row.transactionId || 0}
+            checkboxSelection={false}
+            rowSelection={false}
+          />
         </div>
       )}
 
@@ -407,32 +424,39 @@ export default function TransactionTable() {
         message={message}
       />
 
-{/* Form Overlay for Adding/Editing Transaction */}
-<Modal
-  open={openForm}
-  onClose={() => setOpenForm(false)}
-  aria-labelledby="transaction-form-modal"
-  aria-describedby="transaction-form-modal-description"
->
-  <Box
-    sx={{
-      width: 400,
-      padding: 4,
-      backgroundColor: "white",
-      margin: "auto",
-      top: "20%",
-    }}
-  >
-    <h3>{transactionData ? "Edit Transaction" : "Add New Transaction"}</h3>
+      {/* Form Overlay for Adding/Editing Transaction */}
+      <Modal
+        open={openForm}
+        onClose={() => setOpenForm(false)}
+        aria-labelledby="transaction-form-modal"
+        aria-describedby="transaction-form-modal-description"
+      >
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            top: "20%",
+          }}
+        >
+          <h3>
+            {transactionData ? "Edit Transaction" : "Add New Transaction"}
+          </h3>
 
-    <LocalizationProvider dateAdapter={AdapterMoment}>
-      <DatePicker
-        label="Transaction Date"
-        onChange={(newValue) => setTransactionData((prev: any) => ({ ...prev, transactionDate: newValue }))}
-      />
-    </LocalizationProvider>
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <DatePicker
+              label="Transaction Date"
+              onChange={(newValue) =>
+                setTransactionData((prev: any) => ({
+                  ...prev,
+                  transactionDate: newValue,
+                }))
+              }
+            />
+          </LocalizationProvider>
 
-    {/* <TextField
+          {/* <TextField
       label="GUID"
       //value={transactionData?.guid || ""}
       value={uuidv4()}
@@ -446,33 +470,33 @@ export default function TransactionTable() {
       margin="normal"
     /> */}
 
-    <TextField
-      label="Description"
-      value={transactionData?.description || ""}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          description: e.target.value,
-        }))
-      }
-      fullWidth
-      margin="normal"
-    />
+          <TextField
+            label="Description"
+            value={transactionData?.description || ""}
+            onChange={(e) =>
+              setTransactionData((prev: any) => ({
+                ...prev,
+                description: e.target.value,
+              }))
+            }
+            fullWidth
+            margin="normal"
+          />
 
-    <TextField
-      label="Category"
-      value={transactionData?.category || ""}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          category: e.target.value,
-        }))
-      }
-      fullWidth
-      margin="normal"
-    />
+          <TextField
+            label="Category"
+            value={transactionData?.category || ""}
+            onChange={(e) =>
+              setTransactionData((prev: any) => ({
+                ...prev,
+                category: e.target.value,
+              }))
+            }
+            fullWidth
+            margin="normal"
+          />
 
-    {/* <Select
+          {/* <Select
       label="Category"
       value={transactionData?.category || ""}
       onChange={(e: any) =>
@@ -491,45 +515,45 @@ export default function TransactionTable() {
       ))}
     </Select> */}
 
-    <TextField
-      label="Amount"
-      //value={transactionData?.amount || ""}
-      value={transactionData?.amount ?? ""}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          amount: parseFloat(e.target.value) || 0,
-        }))
-      }
-      fullWidth
-      margin="normal"
-      type="number"
-      slotProps={{
-        htmlInput: {
-          step: "0.01", // Allow decimal inputs
-        },
-      }}
-    />
+          <TextField
+            label="Amount"
+            //value={transactionData?.amount || ""}
+            value={transactionData?.amount ?? ""}
+            onChange={(e) =>
+              setTransactionData((prev: any) => ({
+                ...prev,
+                amount: parseFloat(e.target.value) || 0,
+              }))
+            }
+            fullWidth
+            margin="normal"
+            type="number"
+            slotProps={{
+              htmlInput: {
+                step: "0.01", // Allow decimal inputs
+              },
+            }}
+          />
 
-    <Select
-      label="Transaction State"
-      value={transactionData?.transactionState || ""}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          transactionState: e.target.value,
-        }))
-      }
-      fullWidth
-    >
-      {transactionStates.map((state) => (
-        <MenuItem key={state} value={state}>
-          {state}
-        </MenuItem>
-      ))}
-    </Select>
+          <Select
+            label="Transaction State"
+            value={transactionData?.transactionState || ""}
+            onChange={(e) =>
+              setTransactionData((prev: any) => ({
+                ...prev,
+                transactionState: e.target.value,
+              }))
+            }
+            fullWidth
+          >
+            {transactionStates.map((state) => (
+              <MenuItem key={state} value={state}>
+                {state}
+              </MenuItem>
+            ))}
+          </Select>
 
-    {/* <TextField
+          {/* <TextField
       label="Transaction Type"
       value={transactionData?.transactionType || ""}
       onChange={(e) =>
@@ -541,58 +565,57 @@ export default function TransactionTable() {
       fullWidth
     /> */}
 
-    <Select
-      label="Reoccurring Type"
-      value={transactionData?.reoccurringType || "onetime"}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          reoccurringType: e.target.value,
-        }))
-      }
-      fullWidth
-    >
-      <MenuItem value="onetime">One-Time</MenuItem>
-      <MenuItem value="weekly">Weekly</MenuItem>
-      <MenuItem value="monthly">Monthly</MenuItem>
-    </Select>
+          <Select
+            label="Reoccurring Type"
+            value={transactionData?.reoccurringType || "onetime"}
+            onChange={(e) =>
+              setTransactionData((prev: any) => ({
+                ...prev,
+                reoccurringType: e.target.value,
+              }))
+            }
+            fullWidth
+          >
+            <MenuItem value="onetime">One-Time</MenuItem>
+            <MenuItem value="weekly">Weekly</MenuItem>
+            <MenuItem value="monthly">Monthly</MenuItem>
+          </Select>
 
-    <TextField
-      label="Notes"
-      value={transactionData?.notes || ""}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          notes: e.target.value,
-        }))
-      }
-      fullWidth
-      margin="normal"
-      multiline
-      rows={3}
-    />
+          <TextField
+            label="Notes"
+            value={transactionData?.notes || ""}
+            onChange={(e) =>
+              setTransactionData((prev: any) => ({
+                ...prev,
+                notes: e.target.value,
+              }))
+            }
+            fullWidth
+            margin="normal"
+            multiline
+            rows={3}
+          />
 
-    <div>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => transactionData && addRow(transactionData)}
-        style={{ marginTop: 16 }}
-      >
-        {transactionData ? "Update" : "Add"}
-      </Button>
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={() => setOpenForm(false)}
-        style={{ marginTop: 16, marginLeft: 8 }}
-      >
-        Cancel
-      </Button>
-    </div>
-  </Box>
-</Modal>
-
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => transactionData && addRow(transactionData)}
+              style={{ marginTop: 16 }}
+            >
+              {transactionData ? "Update" : "Add"}
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setOpenForm(false)}
+              style={{ marginTop: 16, marginLeft: 8 }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </Box>
+      </Modal>
     </Box>
   );
 }

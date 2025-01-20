@@ -10,13 +10,13 @@ export type TransactionInsertType = {
 };
 
 const getAccountKey = (accountNameOwner: string) => [
-    "accounts",
-    accountNameOwner,
-  ];
+  "accounts",
+  accountNameOwner,
+];
 
 const setupNewTransaction = (
   payload: Transaction,
-  accountNameOwner: string
+  accountNameOwner: string,
 ): Transaction => {
   return {
     guid: uuidv4(),
@@ -38,7 +38,7 @@ const setupNewTransaction = (
 const insertTransaction = async (
   accountNameOwner: string,
   payload: Transaction,
-  isFutureTransaction: boolean
+  isFutureTransaction: boolean,
 ): Promise<any> => {
   let endpoint = "https://finance.lan/api/transaction/insert";
   if (isFutureTransaction) {
@@ -62,7 +62,7 @@ const insertTransaction = async (
       if (response.status === 404) {
         console.log("Endpoint not found:", endpoint);
         //throw new Error("Resource not found (404)");
-        return  payload
+        return payload;
       }
       throw new Error(`Failed to insert transaction: ${response.statusText}`);
     }
@@ -73,7 +73,7 @@ const insertTransaction = async (
   } catch (error) {
     console.log("Error inserting transaction:", error);
     // throw error; // Allow react-query to handle it
-    return   payload
+    return payload;
   }
 };
 
@@ -86,7 +86,7 @@ export default function useTransactionInsert(accountNameOwner: string) {
       insertTransaction(
         accountNameOwner,
         variables.newRow,
-        variables.isFutureTransaction
+        variables.isFutureTransaction,
       ),
     onError: (error: any) => {
       console.error(`Mutation error: ${error.message}`);

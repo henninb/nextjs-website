@@ -4,7 +4,8 @@ import Transfer from "../model/Transfer";
 
 const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
   try {
-    const endpoint = "https://finance.lan/api/transfer/delete/" + payload.transferId;
+    const endpoint =
+      "https://finance.lan/api/transfer/delete/" + payload.transferId;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -27,7 +28,7 @@ const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
     console.error("Error deleting transfer:", error);
     //return JSON.stringify(payload);
     console.log("An error occurred:", error);
-    return payload
+    return payload;
   }
 };
 
@@ -36,7 +37,8 @@ export default function useTransferDelete() {
 
   return useMutation({
     mutationKey: ["deleteTransfer"],
-    mutationFn: (variables: { oldRow: Transfer }) => deleteTransfer(variables.oldRow),
+    mutationFn: (variables: { oldRow: Transfer }) =>
+      deleteTransfer(variables.oldRow),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },

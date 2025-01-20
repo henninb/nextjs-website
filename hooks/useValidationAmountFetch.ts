@@ -3,19 +3,20 @@ import { TransactionState } from "../model/TransactionState";
 import ValidationAmount from "../model/ValidationAmount";
 //import { basicAuth } from "../Common";
 
-const dataTest = //[
+const dataTest =
+  //[
   {
     validationId: Math.random(),
     validationDate: new Date(),
     accountId: 1,
     amount: 0.0,
     transactionState: "undefined" as TransactionState,
-    activeStatus: false
-  }
+    activeStatus: false,
+  };
 //];
 
 const fetchValidationAmountData = async (
-  accountNameOwner: string
+  accountNameOwner: string,
 ): Promise<ValidationAmount> => {
   const endpoint = `https://finance.lan/api/validation/amount/select/${accountNameOwner}/cleared`;
 
@@ -33,34 +34,39 @@ const fetchValidationAmountData = async (
       if (response.status === 404) {
         console.log("Resource not found (404)");
         //throw new Error("Resource not found (404)");
-        return dataTest
+        return dataTest;
       }
-      throw new Error(`Failed to fetch validation amount data: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch validation amount data: ${response.statusText}`,
+      );
     }
 
     return response.json();
   } catch (error) {
     console.log("Error fetching validationAmount data:", error);
     //return dataTest; // Return fallback data
-    return   {
+    return {
       validationId: Math.random(),
       validationDate: new Date(),
       accountId: 1,
       amount: 0.0,
       transactionState: "undefined" as TransactionState,
-      activeStatus: false
-    }
+      activeStatus: false,
+    };
   }
 };
 
 export default function useValidationAmountFetch(accountNameOwner: string) {
-    const queryResult = useQuery({
+  const queryResult = useQuery({
     queryKey: ["validationAmount", accountNameOwner],
     queryFn: () => fetchValidationAmountData(accountNameOwner),
   });
 
   if (queryResult.isError) {
-    console.error("Error occurred while fetching validationAmount data:", queryResult.error?.message);
+    console.error(
+      "Error occurred while fetching validationAmount data:",
+      queryResult.error?.message,
+    );
   }
 
   return queryResult;

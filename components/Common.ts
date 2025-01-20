@@ -4,7 +4,7 @@ export const convertUTCDateToLocalDate = (date: Date) => {
 
 export const formatDate = (date: Date): string => {
   //const isDate = date instanceof Date;
-  if( date instanceof Date ) {
+  if (date instanceof Date) {
     let month = "" + (date.getMonth() + 1);
     let day = "" + date.getDate();
     const year = date.getFullYear();
@@ -14,7 +14,7 @@ export const formatDate = (date: Date): string => {
 
     return [year, month, day].join("-");
   } else {
-    return formatDate(new Date(date))
+    return formatDate(new Date(date));
   }
 };
 

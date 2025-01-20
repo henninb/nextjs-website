@@ -2,13 +2,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 
 const getAccountKey = (accountNameOwner: string) => [
-    "accounts",
-    accountNameOwner,
-  ];
-  
-const deleteTransaction = async (payload: Transaction): Promise<Transaction> => {
+  "accounts",
+  accountNameOwner,
+];
+
+const deleteTransaction = async (
+  payload: Transaction,
+): Promise<Transaction> => {
   try {
-    const endpoint = "https://finance.lan/api/transaction/delete/" + payload.guid;
+    const endpoint =
+      "https://finance.lan/api/transaction/delete/" + payload.guid;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -21,7 +24,7 @@ const deleteTransaction = async (payload: Transaction): Promise<Transaction> => 
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Resource not found (404).", await response.json());
-        return payload
+        return payload;
         //return { ...payload, error: "Resource not found." };
       }
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -30,7 +33,7 @@ const deleteTransaction = async (payload: Transaction): Promise<Transaction> => 
     return await response.json();
   } catch (error) {
     console.log("An error occurred:", error);
-    return payload
+    return payload;
     //throw error;
   }
 };
@@ -40,7 +43,8 @@ export default function useTransactionDelete() {
 
   return useMutation({
     mutationKey: ["deleteTransaction"],
-    mutationFn: (variables: { oldRow: Transaction }) => deleteTransaction(variables.oldRow),
+    mutationFn: (variables: { oldRow: Transaction }) =>
+      deleteTransaction(variables.oldRow),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },

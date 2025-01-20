@@ -10,10 +10,16 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <script src="//client.px-cloud.net/PXjJ0cYtn9/main.min.js" async></script>
+          <script
+            src="//client.px-cloud.net/PXjJ0cYtn9/main.min.js"
+            async
+          ></script>
 
           <script src="https://henninb.github.io/human-challenge/human-challenge.js"></script>
-          <script type="applicatoin/javascript" src="https://henninb.github.io/human-challenge/hello.js"></script>
+          <script
+            type="applicatoin/javascript"
+            src="https://henninb.github.io/human-challenge/hello.js"
+          ></script>
 
           <link
             rel="stylesheet"
@@ -34,9 +40,7 @@ class MyDocument extends Document {
             crossOrigin="anonymous"
           ></script>
 
-          <script>
-           console.log('wtf');
-          </script>
+          <script>console.log('wtf');</script>
         </Head>
         <body>
           <Main />

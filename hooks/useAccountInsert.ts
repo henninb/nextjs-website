@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
 //import { basicAuth } from "../Common";
 
@@ -52,12 +52,14 @@ const insertAccount = async (payload: Account): Promise<Account> => {
         };
       }
       const errorDetails = await response.json();
-      throw new Error(`HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`);
+      throw new Error(
+        `HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`,
+      );
     }
 
     return await response.json();
   } catch (error: any) {
-    console.log( {
+    console.log({
       accountId: Math.random(),
       accountNameOwner: payload.accountNameOwner,
       accountType: payload.accountType,
@@ -82,7 +84,7 @@ const insertAccount = async (payload: Account): Promise<Account> => {
       dateAdded: new Date(),
       dateUpdated: new Date(),
       activeStatus: true,
-    }
+    };
   }
 };
 
@@ -90,15 +92,18 @@ export default function useAccountInsert() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['insertAccount'],
-    mutationFn: (variables: { payload: Account }) => insertAccount(variables.payload),
+    mutationKey: ["insertAccount"],
+    mutationFn: (variables: { payload: Account }) =>
+      insertAccount(variables.payload),
     onError: (error: any) => {
-      console.error(error ? error : 'Error is undefined.');
+      console.error(error ? error : "Error is undefined.");
     },
     onSuccess: (response: Account) => {
-      const oldData: Account[] | undefined = queryClient.getQueryData(['account']);
+      const oldData: Account[] | undefined = queryClient.getQueryData([
+        "account",
+      ]);
       const newData = oldData ? [response, ...oldData] : [response];
-      queryClient.setQueryData(['account'], newData);
+      queryClient.setQueryData(["account"], newData);
     },
   });
 }

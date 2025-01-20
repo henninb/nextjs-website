@@ -27,7 +27,7 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.error("Resource not found (404).", await response.json());
-        return payload
+        return payload;
         // return {
         //   paymentId: Math.random(), // Generate unique ID
         //   accountNameOwner: payload.accountNameOwner,
@@ -43,7 +43,7 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
   } catch (error) {
     console.log("An error occurred:", error);
     //throw error;
-    return payload
+    return payload;
   }
 };
 
@@ -52,13 +52,14 @@ export default function usePaymentInsert() {
 
   return useMutation({
     mutationKey: ["insertPayment"],
-    mutationFn: (variables: { payload: Payment }) => insertPayment(variables.payload),
+    mutationFn: (variables: { payload: Payment }) =>
+      insertPayment(variables.payload),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },
     onSuccess: (newPayment) => {
-        const oldData: any = queryClient.getQueryData(["paymnet"]) || [];
-        queryClient.setQueryData(["payment"], [newPayment, ...oldData]);
+      const oldData: any = queryClient.getQueryData(["paymnet"]) || [];
+      queryClient.setQueryData(["payment"], [newPayment, ...oldData]);
     },
   });
 }
