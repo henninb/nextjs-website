@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+export const runtime = "edge";
+
 // Fallback totals data for testing or in case of an error
 const fallbackData = {
   totalsFuture: "-2055.70",

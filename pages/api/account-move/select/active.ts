@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+export const runtime = "edge";
+
 // Sample data for fallback in case of an error or for testing
 const dataTest = [
   {

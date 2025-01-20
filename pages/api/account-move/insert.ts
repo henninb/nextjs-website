@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+export const runtime = "edge";
+
 // Helper function to get Basic Auth header securely
 const getBasicAuthHeader = () => {
   const username = process.env.BASIC_AUTH_USERNAME;
