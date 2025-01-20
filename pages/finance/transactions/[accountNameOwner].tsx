@@ -350,7 +350,7 @@ export default function TransactionTable() {
   ];
 
   return (
-    <Box>
+    <Box><h2>{`${accountNameOwner}`}</h2>
       {showSpinner ? (
         <Spinner />
       ) : (
