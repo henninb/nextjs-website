@@ -15,7 +15,7 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { v4 as uuidv4 } from "uuid";
 import useTotalsFetch from "../../../hooks/useTotalsFetch";
 import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
-import useTransactionUpdate from "../../../hooks/useTransactionUdate";
+import useTransactionUpdate from "../../../hooks/useTransactionUpdate";
 import useTransactionStateUpdate from "../../../hooks/useTransactionStateUpdate";
 import useTransactionInsert from "../../../hooks/useTransactionInsert";
 import useTransactionDelete from "../../../hooks/useTransactionDelete";
