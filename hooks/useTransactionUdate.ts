@@ -39,7 +39,7 @@ const updateTransaction = async (
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404).", await response.json());
+        console.log("Resource not found (404).", await response.json());
         return newData;
       }
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,7 +47,7 @@ const updateTransaction = async (
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating transaction:", error);
+    console.log("Error updating transaction:", error);
     return newData;
   }
 };

@@ -42,7 +42,7 @@ const changeTransactionState = async (
     });
 
     if (response.status === 404) {
-      console.error("Resource not found (404).");
+      console.log("Resource not found (404).");
       return dataTest; // Return fallback data for 404
     }
 
@@ -54,7 +54,7 @@ const changeTransactionState = async (
 
     return await response.json();
   } catch (error: any) {
-    console.error("Error updating transaction state:", error.message);
+    console.log("Error updating transaction state:", error.message);
     return dataTest; // Return fallback data on error
   }
 };
