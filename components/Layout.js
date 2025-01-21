@@ -65,6 +65,17 @@ export default function Layout({ children }) {
                       PaymentsRequired
                     </a>
                   </li>
+
+                  <li className="nav-item">
+                    <a className="nav-link" href="/finance/categories">
+                      Categories
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/finance/descriptions">
+                      Descriptions
+                    </a>
+                  </li>
                 </>
               ) : (
                 <>

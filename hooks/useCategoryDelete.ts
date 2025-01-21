@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Parameter from "../model/Parameter";
+import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
-
-const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
+const deleteCategory = async (payload: Category): Promise<Category> => {
   try {
-    const endpoint = `https://finance.lan/api/parm/delete/${payload.parameterName}`;
+    const endpoint = `https://finance.lan/api/category/delete/${payload.categoryName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -17,36 +16,36 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Parameter not found (404). Check the parameter name.");
-        return payload
+        console.log("Category not found (404). Check the category name.");
+        return payload;
       }
       throw new Error(`An error occurred: ${response.statusText}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.log("Error in deleteParameter:", error);
-    return payload
+    console.log("Error in deleteCategory:", error);
+    return payload;
   }
 };
 
-export default function useParameterDelete() {
+export default function useCategoryDelete() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["deleteParameter"],
-    mutationFn: (variables: any) => deleteParameter(variables.payload),
+    mutationKey: ["deleteCategory"],
+    mutationFn: (variables: any) => deleteCategory(variables.oldRow),
     onError: (error) => {
       console.error("Mutation error:", error);
     },
     onSuccess: (response, variables) => {
       console.log("Delete was successful.", response);
 
-      const oldData: any = queryClient.getQueryData(["parameter"]) || [];
+      const oldData: any = queryClient.getQueryData(["category"]) || [];
       const newData = oldData.filter(
-        (item) => item.parameterName !== variables.oldRow.parameterName
+        (item) => item.categoryName !== variables.oldRow.categoryName
       );
-      queryClient.setQueryData(["parameter"], newData);
+      queryClient.setQueryData(["category"], newData);
     },
   });
 }
