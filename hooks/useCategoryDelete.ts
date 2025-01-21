@@ -34,7 +34,7 @@ export default function useCategoryDelete() {
 
   return useMutation({
     mutationKey: ["deleteCategory"],
-    mutationFn: (variables: { oldRow: Category }) => deleteCategory(variables.oldRow),
+    mutationFn: (variables: Category) => deleteCategory(variables),
     onError: (error) => {
       console.error("Mutation error:", error);
     },
@@ -43,7 +43,7 @@ export default function useCategoryDelete() {
 
       const oldData: any = queryClient.getQueryData(["category"]) || [];
       const newData = oldData.filter(
-        (item) => item.categoryName !== variables.oldRow.categoryName
+        (item) => item.categoryName !== variables.categoryName
       );
       queryClient.setQueryData(["category"], newData);
     },

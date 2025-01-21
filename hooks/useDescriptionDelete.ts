@@ -2,11 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 //import { basicAuth } from "../Common";
 
-const descriptionDelete = async (oldRow: Description): Promise<Description> => {
-  console.log("Old data:", oldRow);
-
-
-
+const deleteDescription = async (oldRow: Description): Promise<Description> => {
   try {
     const endpoint = `https://finance.lan/api/description/delete/${oldRow.descriptionName}`;
 
@@ -29,7 +25,7 @@ const descriptionDelete = async (oldRow: Description): Promise<Description> => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error in deleteDescription:", error);
+    console.log("Error in deleteDescription:", error);
     return oldRow;
   }
 };
@@ -39,7 +35,7 @@ export default function useDescriptionDelete() {
 
   return useMutation({
     mutationKey: ["deleteDescription"],
-    mutationFn: (variables: { oldRow: Description }) => descriptionDelete(variables.oldRow),
+    mutationFn: (variables: Description) => deleteDescription(variables),
     onError: (error) => {
       console.error("Mutation error:", error);
     },
@@ -48,7 +44,7 @@ export default function useDescriptionDelete() {
 
       const oldData: any = queryClient.getQueryData(["description"]) || [];
       const newData = oldData.filter(
-        (item) => item.descriptionName !== variables.oldRow.descriptionName
+        (item) => item.descriptionName !== variables.descriptionName
       );
       queryClient.setQueryData(["description"], newData);
     },

@@ -30,8 +30,7 @@ export default function descriptions() {
 
   const handleDeleteRow = async (description: Description) => {
     try {
-        JSON.stringify("oldRow: " + description)
-      await deleteDescription({ oldRow: description });
+      await deleteDescription(description);
     } catch (error) {
       handleError(error, "Delete Description", false);
     }

@@ -24,7 +24,6 @@ const deletePayment = async (payload: Payment): Promise<Payment> => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error deleting payment:", error);
     console.log("An error occurred:", error);
     return payload
   }

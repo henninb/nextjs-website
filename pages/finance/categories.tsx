@@ -30,7 +30,7 @@ export default function Categories() {
 
   const handleDeleteRow = async (category: Category) => {
     try {
-      await deleteCategory({ oldRow: category });
+      await deleteCategory(category);
     } catch (error) {
       handleError(error, "Delete Category", false);
     }
