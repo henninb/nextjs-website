@@ -34,7 +34,7 @@ export default function useCategoryDelete() {
 
   return useMutation({
     mutationKey: ["deleteCategory"],
-    mutationFn: (variables: any) => deleteCategory(variables.oldRow),
+    mutationFn: (variables: { oldRow: Category }) => deleteCategory(variables.oldRow),
     onError: (error) => {
       console.error("Mutation error:", error);
     },

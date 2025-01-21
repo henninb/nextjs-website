@@ -2,9 +2,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 //import { basicAuth } from "../Common";
 
-const deleteDescription = async (payload: Description): Promise<Description> => {
+const descriptionDelete = async (oldRow: Description): Promise<Description> => {
+  console.log("Old data:", oldRow);
+
+
+
   try {
-    const endpoint = `https://finance.lan/api/description/delete/${payload.descriptionName}`;
+    const endpoint = `https://finance.lan/api/description/delete/${oldRow.descriptionName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -18,7 +22,7 @@ const deleteDescription = async (payload: Description): Promise<Description> => 
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Description not found (404). Check the description name.");
-        return payload;
+        return oldRow;
       }
       throw new Error(`An error occurred: ${response.statusText}`);
     }
@@ -26,7 +30,7 @@ const deleteDescription = async (payload: Description): Promise<Description> => 
     return await response.json();
   } catch (error) {
     console.error("Error in deleteDescription:", error);
-    return payload;
+    return oldRow;
   }
 };
 
@@ -35,7 +39,7 @@ export default function useDescriptionDelete() {
 
   return useMutation({
     mutationKey: ["deleteDescription"],
-    mutationFn: (variables: any) => deleteDescription(variables.oldRow),
+    mutationFn: (variables: { oldRow: Description }) => descriptionDelete(variables.oldRow),
     onError: (error) => {
       console.error("Mutation error:", error);
     },

@@ -56,9 +56,9 @@ export default function usePaymentInsert() {
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },
-    onSuccess: (newPayment) => {
-        const oldData: any = queryClient.getQueryData(["paymnet"]) || [];
-        queryClient.setQueryData(["payment"], [newPayment, ...oldData]);
+  onSuccess: (newPayment) => {
+      const oldData: any = queryClient.getQueryData(["payment"]) || [];
+      queryClient.setQueryData(["payment"], [newPayment, ...oldData]);
     },
   });
 }

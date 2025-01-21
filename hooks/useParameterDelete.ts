@@ -35,7 +35,8 @@ export default function useParameterDelete() {
 
   return useMutation({
     mutationKey: ["deleteParameter"],
-    mutationFn: (variables: any) => deleteParameter(variables.payload),
+    //mutationFn: (variables: any) => deleteParameter(variables.payload),
+    mutationFn: (variables: Parameter) => deleteParameter(variables),
     onError: (error) => {
       console.error("Mutation error:", error);
     },
@@ -44,7 +45,7 @@ export default function useParameterDelete() {
 
       const oldData: any = queryClient.getQueryData(["parameter"]) || [];
       const newData = oldData.filter(
-        (item) => item.parameterName !== variables.oldRow.parameterName
+        (item) => item.parameterName !== variables.parameterName
       );
       queryClient.setQueryData(["parameter"], newData);
     },
