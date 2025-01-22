@@ -1,8 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 //import { basicAuth } from "../Common";
 
-const insertDescription = async (descriptionName: string): Promise<Description> => {
+const insertDescription = async (
+  descriptionName: string,
+): Promise<Description> => {
   try {
     const endpoint = "https://finance.lan/api/description/insert";
     const payload = { description: descriptionName, activeStatus: true };
@@ -54,7 +56,8 @@ export default function useDescriptionInsert() {
       console.error(error || "An unknown error occurred.");
     },
     onSuccess: (newDescription) => {
-      const oldData: Description[] = queryClient.getQueryData(["description"]) || [];
+      const oldData: Description[] =
+        queryClient.getQueryData(["description"]) || [];
       queryClient.setQueryData(["description"], [newDescription, ...oldData]);
     },
   });

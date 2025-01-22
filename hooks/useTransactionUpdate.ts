@@ -2,22 +2,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 //import { basicAuth } from "../Common";
 
-const getTotalsKey = (accountNameOwner: string) => [
-    "totals",
-    accountNameOwner,
-  ];
+const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
 
 const getAccountKey = (accountNameOwner: string) => [
-    "accounts",
-    accountNameOwner,
-  ];  
+  "accounts",
+  accountNameOwner,
+];
 
 const updateTransaction = async (
   newData: Transaction,
   oldData: Transaction,
 ): Promise<Transaction> => {
   try {
-    const endpoint = "https://finance.lan/api/transaction/update/" + oldData.guid;
+    const endpoint =
+      "https://finance.lan/api/transaction/update/" + oldData.guid;
 
     if (newData.receiptImage !== undefined) {
       newData["receiptImage"].image = newData["receiptImage"].image.replace(
@@ -66,13 +64,12 @@ export default function useTransactionUpdate() {
       const oldData: any = queryClient.getQueryData(
         getAccountKey(variables.oldRow.accountNameOwner),
       );
-      let newData :any;
+      let newData: any;
       if (
-        variables.oldRow.accountNameOwner ===
-        variables.newRow.accountNameOwner
+        variables.oldRow.accountNameOwner === variables.newRow.accountNameOwner
       ) {
         const dataUpdate = [...oldData];
-        const index = variables.oldRow.transactionId;
+        const index: any = variables.oldRow.transactionId;
         dataUpdate[index] = variables.newRow;
         newData = [...dataUpdate];
         //TODO: update accountTotals if amounts are different
@@ -84,8 +81,7 @@ export default function useTransactionUpdate() {
             "totals" + variables.oldRow.transactionState;
           const newTransactionStateKey =
             "totals" + variables.newRow.transactionState;
-          const difference =
-            variables.newRow.amount - variables.oldRow.amount;
+          const difference = variables.newRow.amount - variables.oldRow.amount;
           totals.totals += difference;
           if (
             variables.newRow.transactionState ===
@@ -112,7 +108,7 @@ export default function useTransactionUpdate() {
         }
       } else {
         const dataDelete = [...oldData];
-        const index = variables.oldRow.transactionId;
+        const index: any = variables.oldRow.transactionId;
         dataDelete.splice(index, 1);
         newData = [...dataDelete];
         //TODO: add to other accountNameOwner list

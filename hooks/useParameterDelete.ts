@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 //import { basicAuth } from "../Common";
 
-
 const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
     const endpoint = `https://finance.lan/api/parm/delete/${payload.parameterName}`;
@@ -18,7 +17,7 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Parameter not found (404). Check the parameter name.");
-        return payload
+        return payload;
       }
       throw new Error(`An error occurred: ${response.statusText}`);
     }
@@ -26,7 +25,7 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
     return await response.json();
   } catch (error) {
     console.log("Error in deleteParameter:", error);
-    return payload
+    return payload;
   }
 };
 
@@ -45,7 +44,7 @@ export default function useParameterDelete() {
 
       const oldData: any = queryClient.getQueryData(["parameter"]) || [];
       const newData = oldData.filter(
-        (item) => item.parameterName !== variables.parameterName
+        (item: any) => item.parameterName !== variables.parameterName
       );
       queryClient.setQueryData(["parameter"], newData);
     },

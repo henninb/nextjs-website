@@ -14,7 +14,7 @@ module.exports = {
             value: "SAMEORIGIN",
           },
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;",
           },
         ],

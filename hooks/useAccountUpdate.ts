@@ -1,10 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 //import { basicAuth } from "../Common";
 import Account from "../model/Account";
 
 const updateAccount = async (
   oldRow: Account,
-  newRow: Account
+  newRow: Account,
 ): Promise<Account> => {
   try {
     let endpoint = `/api/account/update/${oldRow.accountNameOwner}`;
@@ -33,29 +33,32 @@ const updateAccount = async (
   }
 };
 
-
 export default function useAccountUpdate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['updateAccount'],
+    mutationKey: ["updateAccount"],
     mutationFn: (variables: { oldRow: Account; newRow: Account }) =>
       updateAccount(variables.oldRow, variables.newRow),
     onError: (error: any) => {
-      console.error(error ? error : 'Error is undefined.');
+      console.error(error ? error : "Error is undefined.");
     },
     onSuccess: (response: Account) => {
-      const oldData: Account[] | undefined = queryClient.getQueryData(['account']);
+      const oldData: Account[] | undefined = queryClient.getQueryData([
+        "account",
+      ]);
 
       if (oldData) {
         // Update the existing data with the response
         const newData = oldData.map((account) =>
-          account.accountNameOwner === response.accountNameOwner ? response : account
+          account.accountNameOwner === response.accountNameOwner
+            ? response
+            : account,
         );
-        queryClient.setQueryData(['account'], newData);
+        queryClient.setQueryData(["account"], newData);
       } else {
         // If no old data, initialize with the new response
-        queryClient.setQueryData(['account'], [response]);
+        queryClient.setQueryData(["account"], [response]);
       }
     },
   });

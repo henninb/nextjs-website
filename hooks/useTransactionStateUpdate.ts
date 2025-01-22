@@ -48,7 +48,7 @@ const changeTransactionState = async (
 
     if (!response.ok) {
       throw new Error(
-        `Failed to update transaction state: ${response.statusText}`
+        `Failed to update transaction state: ${response.statusText}`,
       );
     }
 
@@ -59,28 +59,28 @@ const changeTransactionState = async (
   }
 };
 
-
 export default function useTransactionStateUpdate(accountNameOwner: string) {
-    const queryClient = useQueryClient();
-  
-    return useMutation({
-      mutationKey: ["transactionState"],
-      mutationFn: (variables: { guid: string; transactionState: TransactionState }) =>
-        changeTransactionState(variables.guid, variables.transactionState),
-      onError: (error: any) => {
-        console.error(`Error occurred during mutation: ${error.message}`);
-      },
-      onSuccess: (response: Transaction) => {
-        const oldData: Transaction[] =
-          queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
-        const newData = oldData.map((element) =>
-          element.guid === response.guid
-            ? { ...element, transactionState: response.transactionState }
-            : element
-        );
-  
-        queryClient.setQueryData(getAccountKey(accountNameOwner), newData);
-      },
-    });
-  }
+  const queryClient = useQueryClient();
 
+  return useMutation({
+    mutationKey: ["transactionState"],
+    mutationFn: (variables: {
+      guid: string;
+      transactionState: TransactionState;
+    }) => changeTransactionState(variables.guid, variables.transactionState),
+    onError: (error: any) => {
+      console.error(`Error occurred during mutation: ${error.message}`);
+    },
+    onSuccess: (response: Transaction) => {
+      const oldData: Transaction[] =
+        queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
+      const newData = oldData.map((element) =>
+        element.guid === response.guid
+          ? { ...element, transactionState: response.transactionState }
+          : element,
+      );
+
+      queryClient.setQueryData(getAccountKey(accountNameOwner), newData);
+    },
+  });
+}

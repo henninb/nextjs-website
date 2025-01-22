@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
 //import { basicAuth } from "../Common";
 
@@ -32,22 +32,23 @@ const deleteAccount = async (payload: Account): Promise<Account> => {
 export default function useAccountDelete() {
   const queryClient = useQueryClient();
 
-  return useMutation(
-    {
-      mutationKey: ['deleteAccount'],
-      mutationFn: (variables: { oldRow: Account }) => deleteAccount(variables.oldRow),
-      onError: (error: any) => {
-        console.error(error ? error : 'Error is undefined.');
-      },
-      onSuccess: (response, variables) => {
-        const oldData: Account[] | undefined = queryClient.getQueryData(['account']);
-        if (oldData) {
-          const newData = oldData.filter(
-            (t: Account) => t.accountId !== variables.oldRow.accountId
-          );
-          queryClient.setQueryData(['account'], newData);
-        }
-      },
-    }
-  );
+  return useMutation({
+    mutationKey: ["deleteAccount"],
+    mutationFn: (variables: { oldRow: Account }) =>
+      deleteAccount(variables.oldRow),
+    onError: (error: any) => {
+      console.error(error ? error : "Error is undefined.");
+    },
+    onSuccess: (response, variables) => {
+      const oldData: Account[] | undefined = queryClient.getQueryData([
+        "account",
+      ]);
+      if (oldData) {
+        const newData = oldData.filter(
+          (t: Account) => t.accountId !== variables.oldRow.accountId,
+        );
+        queryClient.setQueryData(["account"], newData);
+      }
+    },
+  });
 }

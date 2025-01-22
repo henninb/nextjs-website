@@ -1,11 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ValidationAmount from "../model/ValidationAmount";
-import { TransactionState } from '../model/TransactionState';
+import { TransactionState } from "../model/TransactionState";
 //import { basicAuth } from "../Common";
 
 const insertValidationAmount = async (
   accountNameOwner: string,
-  payload: ValidationAmount
+  payload: ValidationAmount,
 ): Promise<ValidationAmount> => {
   const endpoint = `https://finance.lan/api/validation/amount/insert/${accountNameOwner}`;
 
@@ -24,15 +24,17 @@ const insertValidationAmount = async (
         console.error("Resource not found (404)");
         //throw new Error("Resource not found (404)");
         return {
-            validationId: Math.random(),
-            validationDate: new Date(),
-            accountId: 1,
-            amount: 0.0,
-            transactionState: "undefined" as TransactionState,
-            activeStatus: false
-        }
+          validationId: Math.random(),
+          validationDate: new Date(),
+          accountId: 1,
+          amount: 0.0,
+          transactionState: "undefined" as TransactionState,
+          activeStatus: false,
+        };
       }
-      throw new Error(`Failed to insert validation amount: ${response.statusText}`);
+      throw new Error(
+        `Failed to insert validation amount: ${response.statusText}`,
+      );
     }
 
     return response.json();
@@ -45,8 +47,8 @@ const insertValidationAmount = async (
       accountId: 1,
       amount: 0.0,
       transactionState: "undefined" as TransactionState,
-      activeStatus: false
-    }
+      activeStatus: false,
+    };
   }
 };
 
@@ -55,8 +57,10 @@ export default function useValidationAmountInsert() {
 
   return useMutation({
     mutationKey: ["insertValidationAmount"],
-    mutationFn: (variables: { accountNameOwner: string; payload: ValidationAmount }) =>
-      insertValidationAmount(variables.accountNameOwner, variables.payload),
+    mutationFn: (variables: {
+      accountNameOwner: string;
+      payload: ValidationAmount;
+    }) => insertValidationAmount(variables.accountNameOwner, variables.payload),
     onError: (error: unknown) => {
       console.error("Error during mutation:", error);
     },
@@ -64,7 +68,7 @@ export default function useValidationAmountInsert() {
       console.log("Mutation successful:", JSON.stringify(response));
       queryClient.setQueryData(
         ["validationAmount", variables.accountNameOwner],
-        response
+        response,
       );
     },
   });

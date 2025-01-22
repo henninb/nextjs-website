@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 //import { basicAuth } from "../Common";
 
-
 const insertParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
     const endpoint = "https://finance.lan/api/parm/insert";
@@ -41,13 +40,14 @@ export default function useParameterInsert() {
 
   return useMutation({
     mutationKey: ["insertParameter"],
-    mutationFn: (variables: { payload: Parameter }) => insertParameter(variables.payload),
+    mutationFn: (variables: { payload: Parameter }) =>
+      insertParameter(variables.payload),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },
     onSuccess: (newParameter) => {
-        const oldData: any = queryClient.getQueryData(["parameter"]) || [];
-        queryClient.setQueryData(["parameter"], [newParameter, ...oldData]);
+      const oldData: any = queryClient.getQueryData(["parameter"]) || [];
+      queryClient.setQueryData(["parameter"], [newParameter, ...oldData]);
     },
   });
 }

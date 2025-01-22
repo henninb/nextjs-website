@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 //import { basicAuth } from "../Common";
 
@@ -16,12 +16,14 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Data not found (404)");
-        return [{
-          parameterId: Math.random(),
-          parameterName: "payment_account", 
-          parameterValue: "wfargo_brian",
-          activeStatus: true
-        }];
+        return [
+          {
+            parameterId: Math.random(),
+            parameterName: "payment_account",
+            parameterValue: "wfargo_brian",
+            activeStatus: true,
+          },
+        ];
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -32,23 +34,28 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     return data;
   } catch (error) {
     console.log("Error fetching parameters data:", error);
-    return [{
-      parameterId: Math.random(),
-      parameterName: "payment_account", 
-      parameterValue: "wfargo_brian",
-      activeStatus: true
-    }];
+    return [
+      {
+        parameterId: Math.random(),
+        parameterName: "payment_account",
+        parameterValue: "wfargo_brian",
+        activeStatus: true,
+      },
+    ];
   }
 };
 
 export default function useParameterFetch() {
   const queryResult = useQuery<Parameter[], Error>({
-    queryKey: ['parameter'],  // Make the key an array to support caching and refetching better
+    queryKey: ["parameter"], // Make the key an array to support caching and refetching better
     queryFn: fetchParameterData,
   });
 
   if (queryResult.isError) {
-    console.error("Error occurred while fetching parameter data:", queryResult.error?.message);
+    console.error(
+      "Error occurred while fetching parameter data:",
+      queryResult.error?.message,
+    );
   }
 
   return queryResult;
