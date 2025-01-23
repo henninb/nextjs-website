@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -10,6 +9,7 @@ import useFetchCategory from "../../hooks/useCategoryFetch";
 import useCategoryInsert from "../../hooks/useCategoryInsert";
 import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
+import useCategoryUpdate from "../../hooks/useCategoryUpdate";
 
 export default function Categories() {
   const [message, setMessage] = useState("");
@@ -20,6 +20,7 @@ export default function Categories() {
 
   const { data, isSuccess, isLoading } = useFetchCategory();
   const { mutate: insertCategory } = useCategoryInsert();
+  const { mutate: updateCategory } = useCategoryUpdate();
   const { mutate: deleteCategory } = useCategoryDelete();
 
   useEffect(() => {
@@ -41,12 +42,11 @@ export default function Categories() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage =
-      error.response
-        ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-            error.response.data
-          )}`
-        : `${moduleName}: Failure`;
+    const errorMessage = error.response
+      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
+          error.response.data,
+        )}`
+      : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
     setOpen(true);
@@ -67,13 +67,13 @@ export default function Categories() {
       field: "categoryName",
       headerName: "Name",
       width: 200,
-      editable: true
+      editable: true,
     },
     {
       field: "activeStatus",
       headerName: "Status",
       width: 300,
-      editable: true
+      editable: true,
     },
     {
       field: "",
@@ -107,6 +107,13 @@ export default function Categories() {
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}
             rowSelection={false}
+            processRowUpdate={(newRow: Category, oldRow: Category) => {
+              // Handle row update here
+              console.log("Row updating:", newRow);
+              updateCategory({ oldCategory: oldRow, newCategory: newRow });
+              console.log("Row updated:", newRow);
+              return newRow; // Return the updated row
+            }}
           />
           <div>
             <SnackbarBaseline
@@ -119,7 +126,14 @@ export default function Categories() {
       )}
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
-        <Box sx={{ width: 400, padding: 4, backgroundColor: "white", margin: "auto" }}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+          }}
+        >
           <h3>{categoryData ? "Edit Category" : "Add New Category"}</h3>
           <TextField
             label="Name"
@@ -136,7 +150,10 @@ export default function Categories() {
             margin="normal"
             value={categoryData?.activeStatus || ""}
             onChange={(e) =>
-              setCategoryData((prev: any) => ({ ...prev, description: e.target.value }))
+              setCategoryData((prev: any) => ({
+                ...prev,
+                description: e.target.value,
+              }))
             }
           />
           <Button

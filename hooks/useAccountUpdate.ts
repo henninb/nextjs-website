@@ -28,8 +28,8 @@ const updateAccount = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`)
-    return newRow
+    console.log(`An error occurred: ${error.message}`);
+    return newRow;
   }
 };
 

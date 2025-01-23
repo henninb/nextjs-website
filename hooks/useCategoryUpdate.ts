@@ -3,7 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 
 const updateCategory = async (
-  oldCategory: Category, newCategory: Category
+  oldCategory: Category,
+  newCategory: Category,
 ): Promise<Category> => {
   const endpoint = `https://finance.lan/api/parm/update/${oldCategory.categoryName}`;
   try {
@@ -24,7 +25,7 @@ const updateCategory = async (
 
     if (!response.ok) {
       throw new Error(
-        `Failed to update transaction state: ${response.statusText}`
+        `Failed to update transaction state: ${response.statusText}`,
       );
     }
 
@@ -40,8 +41,13 @@ export default function useCategoryUpdate() {
 
   return useMutation({
     mutationKey: ["categoryUpdate"],
-    mutationFn: ({ oldCategory, newCategory }: { oldCategory: Category; newCategory: Category }) =>
-      updateCategory(oldCategory, newCategory),
+    mutationFn: ({
+      oldCategory,
+      newCategory,
+    }: {
+      oldCategory: Category;
+      newCategory: Category;
+    }) => updateCategory(oldCategory, newCategory),
     onError: (error: any) => {
       console.error(`Error occurred during mutation: ${error.message}`);
     },
@@ -51,7 +57,7 @@ export default function useCategoryUpdate() {
         const newData = oldData.map((element) =>
           element.categoryName === updatedCategory.categoryName
             ? { ...element, ...updatedCategory }
-            : element
+            : element,
         );
 
         queryClient.setQueryData(["category"], newData);

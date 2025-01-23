@@ -2,9 +2,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 
-
 const updateParameter = async (
-  oldParameter: Parameter, newParameter: Parameter
+  oldParameter: Parameter,
+  newParameter: Parameter,
 ): Promise<Parameter> => {
   const endpoint = `https://finance.lan/api/parm/update/${oldParameter.parameterName}`;
   try {
@@ -25,7 +25,7 @@ const updateParameter = async (
 
     if (!response.ok) {
       throw new Error(
-        `Failed to update transaction state: ${response.statusText}`
+        `Failed to update transaction state: ${response.statusText}`,
       );
     }
 
@@ -37,26 +37,31 @@ const updateParameter = async (
 };
 
 export default function useParameterUpdate() {
-    const queryClient = useQueryClient();
-  
-    return useMutation({
-      mutationKey: ["parameterUpdate"],
-      mutationFn: ({ oldParameter, newParameter }: { oldParameter: Parameter; newParameter: Parameter }) =>
-        updateParameter(oldParameter, newParameter),
-      onError: (error: any) => {
-        console.error(`Error occurred during mutation: ${error.message}`);
-      },
-      onSuccess: (updatedParameter: Parameter) => {
-        const oldData = queryClient.getQueryData<Parameter[]>(["parameter"]);
-        if (oldData) {
-          const newData = oldData.map((element) =>
-            element.parameterName === updatedParameter.parameterName
-              ? { ...element, ...updatedParameter }
-              : element
-          );
-  
-          queryClient.setQueryData(["parameter"], newData);
-        }
-      },
-    });
-  }
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ["parameterUpdate"],
+    mutationFn: ({
+      oldParameter,
+      newParameter,
+    }: {
+      oldParameter: Parameter;
+      newParameter: Parameter;
+    }) => updateParameter(oldParameter, newParameter),
+    onError: (error: any) => {
+      console.error(`Error occurred during mutation: ${error.message}`);
+    },
+    onSuccess: (updatedParameter: Parameter) => {
+      const oldData = queryClient.getQueryData<Parameter[]>(["parameter"]);
+      if (oldData) {
+        const newData = oldData.map((element) =>
+          element.parameterName === updatedParameter.parameterName
+            ? { ...element, ...updatedParameter }
+            : element,
+        );
+
+        queryClient.setQueryData(["parameter"], newData);
+      }
+    },
+  });
+}

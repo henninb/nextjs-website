@@ -3,7 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 
 const updateDescription = async (
-  oldDescription: Description, newDescription: Description
+  oldDescription: Description,
+  newDescription: Description,
 ): Promise<Description> => {
   const endpoint = `https://finance.lan/api/parm/update/${oldDescription.descriptionName}`;
   try {
@@ -24,7 +25,7 @@ const updateDescription = async (
 
     if (!response.ok) {
       throw new Error(
-        `Failed to update transaction state: ${response.statusText}`
+        `Failed to update transaction state: ${response.statusText}`,
       );
     }
 
@@ -40,8 +41,13 @@ export default function useDescriptionUpdate() {
 
   return useMutation({
     mutationKey: ["descriptionUpdate"],
-    mutationFn: ({ oldDescription, newDescription }: { oldDescription: Description; newDescription: Description }) =>
-      updateDescription(oldDescription, newDescription),
+    mutationFn: ({
+      oldDescription,
+      newDescription,
+    }: {
+      oldDescription: Description;
+      newDescription: Description;
+    }) => updateDescription(oldDescription, newDescription),
     onError: (error: any) => {
       console.error(`Error occurred during mutation: ${error.message}`);
     },
@@ -51,7 +57,7 @@ export default function useDescriptionUpdate() {
         const newData = oldData.map((element) =>
           element.descriptionName === updatedDescription.descriptionName
             ? { ...element, ...updatedDescription }
-            : element
+            : element,
         );
 
         queryClient.setQueryData(["description"], newData);

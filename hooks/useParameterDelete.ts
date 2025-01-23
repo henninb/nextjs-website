@@ -44,7 +44,7 @@ export default function useParameterDelete() {
 
       const oldData: any = queryClient.getQueryData(["parameter"]) || [];
       const newData = oldData.filter(
-        (item: any) => item.parameterName !== variables.parameterName
+        (item: any) => item.parameterName !== variables.parameterName,
       );
       queryClient.setQueryData(["parameter"], newData);
     },

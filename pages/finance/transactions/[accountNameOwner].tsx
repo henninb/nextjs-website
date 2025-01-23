@@ -13,7 +13,6 @@ import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { v4 as uuidv4 } from "uuid";
-import useTotalsFetch from "../../../hooks/useTotalsFetch";
 import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
 import useTransactionUpdate from "../../../hooks/useTransactionUpdate";
 import useTransactionStateUpdate from "../../../hooks/useTransactionStateUpdate";
@@ -186,11 +185,14 @@ export default function TransactionTable() {
     }
   };
 
-  const updateRow = (newData: any, oldData: any): Promise<any> => {
+  const updateRow = (
+    newRow: Transaction,
+    oldRow: Transaction,
+  ): Promise<any> => {
     return new Promise((resolve, reject) => {
       setTimeout(async () => {
         try {
-          updateTransaction({ newRow: newData, oldRow: oldData });
+          updateTransaction({ newRow: newRow, oldRow: oldRow });
           resolve("success");
         } catch (error) {
           handleError(error, "updateRow");
@@ -414,6 +416,14 @@ export default function TransactionTable() {
             getRowId={(row) => row.transactionId || 0}
             checkboxSelection={false}
             rowSelection={false}
+            processRowUpdate={(newRow: Transaction, oldRow: Transaction) => {
+              // Handle row update here
+              console.log("Row updating:", newRow);
+              updateTransaction({ newRow: newRow, oldRow: oldRow });
+              //updateRow(newRow, oldRow);
+              console.log("Row updated:", newRow);
+              return newRow; // Return the updated row
+            }}
           />
         </div>
       )}

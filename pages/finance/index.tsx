@@ -11,6 +11,7 @@ import useAccountInsert from "../../hooks/useAccountInsert";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
+import useAccountUpdate from "../../hooks/useAccountUpdate";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
@@ -23,6 +24,7 @@ export default function AccountTable() {
   const { data, isSuccess, isLoading } = useAccountFetch();
   const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
   const { mutate: insertAccount } = useAccountInsert();
+  const { mutate: updateAccount } = useAccountUpdate();
   const { mutate: deleteAccount } = useAccountDelete();
 
   useEffect(() => {
@@ -42,6 +44,16 @@ export default function AccountTable() {
       handleError(error, "Delete Account", false);
     }
   };
+
+  // const handlerToUpdateAccount = async (
+  //   oldRow: Account,
+  //   newRow: Account,
+  // ) => {
+  //   await updateAccount({
+  //     oldRow: oldRow,
+  //       newRow: newRow,
+  //   });
+  // };
 
   const handleSnackbarClose = () => {
     setOpen(false);
@@ -81,8 +93,8 @@ export default function AccountTable() {
         </Button>
       ),
     },
-    { field: "accountType", headerName: "Type", width: 150 },
-    { field: "moniker", headerName: "Moniker", width: 150 },
+    { field: "accountType", headerName: "Type", width: 150, editable: true },
+    { field: "moniker", headerName: "Moniker", width: 150, editable: true },
     {
       field: "future",
       headerName: "Future",
@@ -151,6 +163,13 @@ export default function AccountTable() {
             hideFooterPagination={true}
             checkboxSelection={false}
             rowSelection={false}
+            processRowUpdate={(newRow: Account, oldRow: Account) => {
+              // Handle row update here
+              console.log("Row updating:", newRow);
+              updateAccount({ newRow: newRow, oldRow: oldRow });
+              console.log("Row updated:", newRow);
+              return newRow; // Return the updated row
+            }}
           />
           <div>
             <SnackbarBaseline

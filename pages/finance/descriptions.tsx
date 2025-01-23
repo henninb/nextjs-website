@@ -10,16 +10,20 @@ import useFetchDescription from "../../hooks/useDescriptionFetch";
 import useDescriptionInsert from "../../hooks/useDescriptionInsert";
 import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
+import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
 
 export default function descriptions() {
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
-  const [descriptionData, setDescriptionData] = useState<Description | null>(null);
+  const [descriptionData, setDescriptionData] = useState<Description | null>(
+    null,
+  );
 
   const { data, isSuccess, isLoading } = useFetchDescription();
   const { mutate: insertDescription } = useDescriptionInsert();
+  const { mutate: updateDescription } = useDescriptionUpdate();
   const { mutate: deleteDescription } = useDescriptionDelete();
 
   useEffect(() => {
@@ -41,12 +45,11 @@ export default function descriptions() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage =
-      error.response
-        ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-            error.response.data
-          )}`
-        : `${moduleName}: Failure`;
+    const errorMessage = error.response
+      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
+          error.response.data,
+        )}`
+      : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
     setOpen(true);
@@ -107,6 +110,17 @@ export default function descriptions() {
             getRowId={(row) => row.descriptionId || 0}
             checkboxSelection={false}
             rowSelection={false}
+            processRowUpdate={(newRow: Description, oldRow: Description) => {
+              // Handle row update here
+              console.log("Row updating:", newRow);
+              updateDescription({
+                oldDescription: oldRow,
+                newDescription: newRow,
+              });
+              //updateRow(newRow, oldRow);
+              console.log("Row updated:", newRow);
+              return newRow; // Return the updated row
+            }}
           />
           <div>
             <SnackbarBaseline
@@ -119,15 +133,27 @@ export default function descriptions() {
       )}
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
-        <Box sx={{ width: 400, padding: 4, backgroundColor: "white", margin: "auto" }}>
-          <h3>{descriptionData ? "Edit Description" : "Add New Description"}</h3>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+          }}
+        >
+          <h3>
+            {descriptionData ? "Edit Description" : "Add New Description"}
+          </h3>
           <TextField
             label="Name"
             fullWidth
             margin="normal"
             value={descriptionData?.descriptionName || ""}
             onChange={(e) =>
-              setDescriptionData((prev) => ({ ...prev, descriptionName: e.target.value }))
+              setDescriptionData((prev) => ({
+                ...prev,
+                descriptionName: e.target.value,
+              }))
             }
           />
           <TextField
@@ -136,7 +162,10 @@ export default function descriptions() {
             margin="normal"
             value={descriptionData?.activeStatus || ""}
             onChange={(e) =>
-              setDescriptionData((prev: any) => ({ ...prev, activeStatus: e.target.value }))
+              setDescriptionData((prev: any) => ({
+                ...prev,
+                activeStatus: e.target.value,
+              }))
             }
           />
           <Button
