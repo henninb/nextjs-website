@@ -5,7 +5,7 @@ import Account from "../model/Account";
 const dataTest: Account[] = [
   {
     accountId: 1,
-    accountNameOwner: "wfargo_brian",
+    accountNameOwner: "wfargo-savings_brian",
     accountType: "debit",
     activeStatus: true,
     moniker: "0000",
@@ -39,9 +39,9 @@ const dataTest: Account[] = [
     accountType: "credit",
     activeStatus: true,
     moniker: "0000",
-    outstanding: 5000.75,
-    future: 1000.0,
-    cleared: 4000.75,
+    outstanding: 5.75,
+    future: 10.24,
+    cleared: 4.75,
   },
 ];
 
@@ -63,7 +63,7 @@ const fetchAccountData = async (): Promise<Account[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Resource not found (404).", await response.json());
-        return dataTest; // Return mock data on 404
+        //return dataTest; // Return mock data on 404
       }
       const errorDetails = await response.json();
       throw new Error(
@@ -71,15 +71,15 @@ const fetchAccountData = async (): Promise<Account[]> => {
       );
     }
     return await response.json();
-  } catch (error) {
+  } catch (error: any) {
     console.log("Error fetching account data:", error);
-    return dataTest; // Return mock data if there's an error
+    return dataTest;
   }
 };
 
 export default function useAccountFetch() {
   const queryResult = useQuery<Account[], Error>({
-    queryKey: ["account"], // Make the key an array to support caching and refetching better
+    queryKey: ["account"],
     queryFn: fetchAccountData,
   });
 

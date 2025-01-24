@@ -19,18 +19,6 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Resource not found (404).");
-        return [
-          {
-            descriptionId: Math.random(),
-            descriptionName: "test1",
-            activeStatus: true,
-          },
-          {
-            descriptionId: Math.random(),
-            descriptionName: "test2",
-            activeStatus: true,
-          },
-        ];
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -40,13 +28,13 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
     console.log("Error fetching description data:", error);
     return [
       {
-        descriptionId: Math.random(),
-        descriptionName: "test1",
+        descriptionId: 1,
+        descriptionName: "direct deposit",
         activeStatus: true,
       },
       {
-        descriptionId: Math.random(),
-        descriptionName: "test2",
+        descriptionId: 2,
+        descriptionName: "xfinity",
         activeStatus: true,
       },
     ];

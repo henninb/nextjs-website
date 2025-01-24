@@ -25,16 +25,7 @@ const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404).", await response.json());
-        return payload;
-        // return {
-        //   transferId: Math.random(), // Generate unique ID
-        //   sourceAccount: payload.sourceAccount,
-        //   destinationAccount: payload.destinationAccount,
-        //   transactionDate: payload.transactionDate,
-        //   amount: payload.amount,
-        //   activeStatus: true,
-        // };
+        console.log("Resource not found (404).");
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -42,7 +33,6 @@ const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
     return await response.json();
   } catch (error) {
     console.log("An error occurred:", error);
-    //throw error;
     return payload;
   }
 };

@@ -10,6 +10,7 @@ import useFetchPayment from "../../hooks/usePaymentFetch";
 import usePaymentInsert from "../../hooks/usePaymentInsert";
 import usePaymentDelete from "../../hooks/usePaymentDelete";
 import Payment from "../../model/Payment";
+import { formatDate } from "../../components/Common";
 
 export default function payments() {
   const [message, setMessage] = useState("");
@@ -68,6 +69,14 @@ export default function payments() {
 
   const columns: GridColDef[] = [
     {
+      field: "transactionDate",
+      headerName: "Transaction Date",
+      width: 200,
+      renderCell: (params) => {
+        return formatDate(params.value);
+      },
+    },
+    {
       field: "accountNameOwner",
       headerName: "Account",
       width: 200,
@@ -78,11 +87,6 @@ export default function payments() {
           {params.row.accountNameOwner}
         </Button>
       ),
-    },
-    {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 200,
     },
     {
       field: "amount",
@@ -98,7 +102,7 @@ export default function payments() {
       field: "",
       headerName: "Actions",
       width: 100,
-      renderCell: (params) => (
+      renderCell: (params: any) => (
         <IconButton
           onClick={() => {
             handleDeleteRow(params.row);

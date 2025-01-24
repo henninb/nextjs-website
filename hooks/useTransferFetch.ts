@@ -38,8 +38,7 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Data not found (404)");
-        return dataTest;
+        console.log("Resource not found (404)");
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

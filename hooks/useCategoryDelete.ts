@@ -17,7 +17,6 @@ const deleteCategory = async (payload: Category): Promise<Category> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Category not found (404). Check the category name.");
-        return payload;
       }
       throw new Error(`An error occurred: ${response.statusText}`);
     }

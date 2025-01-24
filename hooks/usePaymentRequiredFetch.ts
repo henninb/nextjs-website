@@ -46,7 +46,6 @@ const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("404 error: Payment required data not found.");
-        return dataTest; // You can return an empty array or any default value for a 404
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

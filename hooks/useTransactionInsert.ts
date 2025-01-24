@@ -60,9 +60,7 @@ const insertTransaction = async (
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Endpoint not found:", endpoint);
-        //throw new Error("Resource not found (404)");
-        return payload;
+        console.log("Resource not found (404)");
       }
       throw new Error(`Failed to insert transaction: ${response.statusText}`);
     }
@@ -72,7 +70,6 @@ const insertTransaction = async (
     return data;
   } catch (error) {
     console.log("Error inserting transaction:", error);
-    // throw error; // Allow react-query to handle it
     return payload;
   }
 };

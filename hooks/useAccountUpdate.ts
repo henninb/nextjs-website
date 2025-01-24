@@ -21,7 +21,6 @@ const updateAccount = async (
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Resource not found (404).", await response.json());
-        return newRow; // React to 404 specifically
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }

@@ -1,0 +1,22 @@
+[
+  {
+    "descriptionId": 1,
+    "descriptionName": "direct deposit",
+    "activeStatus": true
+  },
+  {
+    "descriptionId": 2,
+    "descriptionName": "xfinity",
+    "activeStatus": true
+  },
+  {
+    "descriptionId": 3,
+    "descriptionName": "aldi",
+    "activeStatus": true
+  },
+  {
+    "descriptionId": 4,
+    "descriptionName": "olive garden",
+    "activeStatus": true
+  }
+]

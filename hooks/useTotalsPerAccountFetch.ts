@@ -19,8 +19,7 @@ const fetchTotalsPerAccount = async (
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Account not found");
-        return { totalsFuture: 25.45, totalsCleared: -25.45, totals: 0.0 }; // Default fallback data for 404
+        console.log("Resource not found (404).");
       }
       throw new Error(
         `Failed to fetch totalsPerAccount: ${response.statusText}`,
@@ -31,8 +30,7 @@ const fetchTotalsPerAccount = async (
     return data;
   } catch (error) {
     console.log("Error fetching totalsPerAccount data:", error);
-    //throw new Error("Error fetching totalsPerAccount data:", error);
-    return { totalsFuture: 25.45, totalsCleared: -25.45, totals: 0.0 }; // Default fallback data on error
+    return { totalsFuture: 25.45, totalsCleared: -25.45, totals: 0.0 };
   }
 };
 

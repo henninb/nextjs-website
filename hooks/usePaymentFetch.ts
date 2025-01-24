@@ -54,7 +54,6 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Data not found (404)");
-        return dataTest;
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

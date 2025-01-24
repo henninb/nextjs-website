@@ -19,18 +19,6 @@ const fetchCategoryData = async (): Promise<Category[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Resource not found (404).");
-        return [
-          {
-            categoryId: Math.random(),
-            categoryName: "test1",
-            activeStatus: true,
-          },
-          {
-            categoryId: Math.random(),
-            categoryName: "test2",
-            activeStatus: true,
-          },
-        ];
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -40,13 +28,13 @@ const fetchCategoryData = async (): Promise<Category[]> => {
     console.log("Error fetching category data:", error);
     return [
       {
-        categoryId: Math.random(),
-        categoryName: "test1",
+        categoryId: 1,
+        categoryName: "paycheck",
         activeStatus: true,
       },
       {
-        categoryId: Math.random(),
-        categoryName: "test2",
+        categoryId: 2,
+        categoryName: "utilities",
         activeStatus: true,
       },
     ];

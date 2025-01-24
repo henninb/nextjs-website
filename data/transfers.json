@@ -1,0 +1,22 @@
+[
+  {
+    "transferId": 1,
+    "sourceAccount": "barclay-savings_brian",
+    "destinationAccount": "wellsfargo-cash_brian",
+    "transactionDate": "2025-01-04T00:00:00.000Z",
+    "amount": 3.0,
+    "guidSource": "00a8a750-cc3d-4c24-9263-c85af59cab64",
+    "guidDestination": "00a8a750-cc3d-4c24-9263-c85af59cab64",
+    "activeStatus": true
+  },
+  {
+    "transferId": 2,
+    "sourceAccount": "barclay-savings_brian",
+    "destinationAccount": "wellsfargo-cash_brian",
+    "transactionDate": "2025-01-04T00:00:00.000Z",
+    "amount": 2.0,
+    "guidSource": "00a8a750-cc3d-4c24-9263-c85af59cab64",
+    "guidDestination": "00a8a750-cc3d-4c24-9263-c85af59cab64",
+    "activeStatus": true
+  }
+]

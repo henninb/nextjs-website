@@ -16,14 +16,6 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Data not found (404)");
-        return [
-          {
-            parameterId: Math.random(),
-            parameterName: "payment_account",
-            parameterValue: "wfargo_brian",
-            activeStatus: true,
-          },
-        ];
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -38,7 +30,7 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
       {
         parameterId: Math.random(),
         parameterName: "payment_account",
-        parameterValue: "wfargo_brian",
+        parameterValue: "wfargo-savings_brian",
         activeStatus: true,
       },
     ];

@@ -23,9 +23,7 @@ const deleteTransaction = async (
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
-        return payload;
-        //return { ...payload, error: "Resource not found." };
+        console.log("Resource not found (404).");
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -55,7 +53,10 @@ export default function useTransactionDelete() {
         getAccountKey(variables.oldRow.accountNameOwner),
       );
       if (!oldData) {
-        console.log("No data found for key:", getAccountKey(variables.oldRow.accountNameOwner));
+        console.log(
+          "No data found for key:",
+          getAccountKey(variables.oldRow.accountNameOwner),
+        );
         return;
       }
 

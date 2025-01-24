@@ -20,7 +20,6 @@ const updateDescription = async (
 
     if (response.status === 404) {
       console.log("Resource not found (404).");
-      return newDescription; // Return fallback data for 404
     }
 
     if (!response.ok) {

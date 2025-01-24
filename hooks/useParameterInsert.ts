@@ -17,21 +17,20 @@ const insertParameter = async (payload: Parameter): Promise<Parameter> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404).", await response.json());
-        return {
-          parameterId: Math.random(), // Generate unique ID
-          parameterName: payload.parameterName,
-          parameterValue: payload.parameterValue,
-          activeStatus: true,
-        };
+        console.log("Resource not found (404).", await response.json());
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error("An error occurred:", error);
-    throw error;
+    console.log("An error occurred:", error);
+    return {
+      parameterId: Math.random(),
+      parameterName: payload.parameterName,
+      parameterValue: payload.parameterValue,
+      activeStatus: true,
+    };
   }
 };
 

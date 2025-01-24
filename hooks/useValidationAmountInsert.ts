@@ -21,16 +21,7 @@ const insertValidationAmount = async (
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404)");
-        //throw new Error("Resource not found (404)");
-        return {
-          validationId: Math.random(),
-          validationDate: new Date(),
-          accountId: 1,
-          amount: 0.0,
-          transactionState: "undefined" as TransactionState,
-          activeStatus: false,
-        };
+        console.log("Resource not found (404)");
       }
       throw new Error(
         `Failed to insert validation amount: ${response.statusText}`,
@@ -40,7 +31,6 @@ const insertValidationAmount = async (
     return response.json();
   } catch (error) {
     console.log("An error occurred while inserting validation amount:", error);
-    //throw error;
     return {
       validationId: Math.random(),
       validationDate: new Date(),

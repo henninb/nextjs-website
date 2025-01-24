@@ -24,6 +24,9 @@ const updatePayment = async (
     }
 
     if (!response.ok) {
+      if (response.status === 404) {
+        console.log("404 error: data not found.");
+      }
       throw new Error(`Failed to update payment state: ${response.statusText}`);
     }
 

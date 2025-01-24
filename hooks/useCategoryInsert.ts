@@ -18,14 +18,7 @@ const insertCategory = async (categoryName: string): Promise<Category> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.error("Resource not found (404).", await response.json());
-        return {
-          categoryId: Math.random(),
-          categoryName: categoryName,
-          activeStatus: true,
-          dateAdded: new Date(),
-          dateUpdated: new Date(),
-        };
+        console.log("Resource not found (404).", await response.json());
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -33,7 +26,6 @@ const insertCategory = async (categoryName: string): Promise<Category> => {
     return await response.json();
   } catch (error: any) {
     console.log("An error occurred:", error);
-    //throw error;
     return {
       categoryId: Math.random(),
       categoryName: categoryName,

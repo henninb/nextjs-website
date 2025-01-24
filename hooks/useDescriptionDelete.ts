@@ -18,7 +18,6 @@ const deleteDescription = async (oldRow: Description): Promise<Description> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Description not found (404). Check the description name.");
-        return oldRow;
       }
       throw new Error(`An error occurred: ${response.statusText}`);
     }

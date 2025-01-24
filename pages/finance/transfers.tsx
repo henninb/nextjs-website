@@ -10,6 +10,7 @@ import useFetchTransfer from "../../hooks/useTransferFetch";
 import useTransferInsert from "../../hooks/useTransferInsert";
 import useTransferDelete from "../../hooks/useTransferDelete";
 import Transfer from "../../model/Transfer";
+import { formatDate } from "../../components/Common";
 
 export default function transfers() {
   const [message, setMessage] = useState("");
@@ -68,24 +69,31 @@ export default function transfers() {
 
   const columns: GridColDef[] = [
     {
+      field: "transactionDate",
+      headerName: "Transaction Date",
+      width: 200,
+      renderCell: (params) => {
+        return formatDate(params.value);
+      },
+    },
+    {
       field: "sourceAccount",
       headerName: "Source Account",
       width: 200,
+      editable: true,
     },
     {
       field: "destinationAccount",
       headerName: "Destination Account",
       width: 200,
+      editable: true,
     },
-    {
-      field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 200,
-    },
+
     {
       field: "amount",
       headerName: "Amount",
       width: 150,
+      editable: true,
       renderCell: (params) =>
         params.value?.toLocaleString("en-US", {
           style: "currency",

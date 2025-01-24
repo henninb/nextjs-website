@@ -14,13 +14,7 @@ const fetchTotals = async (): Promise<any> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
-        return {
-          totalsFuture: "-205.70",
-          totalsCleared: "15287.53",
-          totals: "152326.56",
-          totalsOutstanding: "150.73",
-        };
+        console.log("Resource not found (404).");
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
