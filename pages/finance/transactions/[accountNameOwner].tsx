@@ -264,10 +264,14 @@ export default function TransactionTable() {
         const handleStateChange = (newState: TransactionState) => {
           //const transactionGuid = params.row.guid;
           //console.log("parms: " + params.row.guid);
-          const oldRow: Transaction = params.row
+          const oldRow: Transaction = params.row;
           params.row.transactionState = newState;
           //handlerToUpdateTransactionState(transactionGuid, newState);
-          updateTransaction({newRow: params.row, oldRow: oldRow, options: { isStateUpdate: true }})
+          updateTransaction({
+            newRow: params.row,
+            oldRow: oldRow,
+            options: { isStateUpdate: true },
+          });
           // Optionally update the backend or DataGrid API here
           console.log(`State changed to: ${newState}`);
         };

@@ -24,9 +24,7 @@ const updatePayment = async (
     }
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to update payment state: ${response.statusText}`,
-      );
+      throw new Error(`Failed to update payment state: ${response.statusText}`);
     }
 
     return await response.json();

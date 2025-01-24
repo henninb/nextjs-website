@@ -61,8 +61,11 @@ export default function useTransactionUpdate() {
 
   return useMutation({
     mutationKey: ["updateTransaction"],
-    mutationFn: (variables: { newRow: Transaction; oldRow: Transaction;options?: UpdateTransactionOptions }) =>
-      updateTransaction(variables.newRow, variables.oldRow),
+    mutationFn: (variables: {
+      newRow: Transaction;
+      oldRow: Transaction;
+      options?: UpdateTransactionOptions;
+    }) => updateTransaction(variables.newRow, variables.oldRow),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },

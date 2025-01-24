@@ -49,9 +49,16 @@ export default function useTransactionDelete() {
       console.log(error ? error : "error is undefined.");
     },
     onSuccess: (response, variables) => {
-      const oldData: any = queryClient.getQueryData(
+      //console.log("Fetching transactions for key:", ["accounts", variables.oldRow.accountNameOwner]);
+      //console.log("Deleting transaction with key:", getAccountKey(variables.oldRow.accountNameOwner));
+      const oldData: [Transaction] = queryClient.getQueryData(
         getAccountKey(variables.oldRow.accountNameOwner),
       );
+      if (!oldData) {
+        console.log("No data found for key:", getAccountKey(variables.oldRow.accountNameOwner));
+        return;
+      }
+
       const newData = oldData.filter(
         (t: Transaction) => t.transactionId !== variables.oldRow.transactionId,
       );

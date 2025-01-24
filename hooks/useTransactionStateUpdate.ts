@@ -74,15 +74,15 @@ export default function useTransactionStateUpdate(accountNameOwner: string) {
     onSuccess: (response: Transaction) => {
       const oldData: Transaction[] =
         queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
-        const newData = oldData.map((element) => {
-          console.log(
-            `Processing element with transactionState: ${element.transactionState} and response.transactionState: ${response.transactionState}`
-          );
-          return element.transactionState === response.transactionState
-            ? { ...element, transactionState: response.transactionState }
-            : element;
-        });
-      // const newData = oldData.map((element) => 
+      const newData = oldData.map((element) => {
+        console.log(
+          `Processing element with transactionState: ${element.transactionState} and response.transactionState: ${response.transactionState}`,
+        );
+        return element.transactionState === response.transactionState
+          ? { ...element, transactionState: response.transactionState }
+          : element;
+      });
+      // const newData = oldData.map((element) =>
       //   element.transactionState === response.transactionState
       //     ? { ...element, transactionState: response.transactionState }
       //     : element,
