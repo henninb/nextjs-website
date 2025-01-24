@@ -6,7 +6,7 @@ const updateDescription = async (
   oldDescription: Description,
   newDescription: Description,
 ): Promise<Description> => {
-  const endpoint = `https://finance.lan/api/parm/update/${oldDescription.descriptionName}`;
+  const endpoint = `https://finance.lan/api/description/update/${oldDescription.descriptionName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
@@ -54,7 +54,7 @@ export default function useDescriptionUpdate() {
     onSuccess: (updatedDescription: Description) => {
       const oldData = queryClient.getQueryData<Description[]>(["description"]);
       if (oldData) {
-        const newData = oldData.map((element) =>
+        const newData = oldData.map((element: Description) =>
           element.descriptionName === updatedDescription.descriptionName
             ? { ...element, ...updatedDescription }
             : element,

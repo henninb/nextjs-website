@@ -44,7 +44,7 @@ export default function useDescriptionDelete() {
 
       const oldData: any = queryClient.getQueryData(["description"]) || [];
       const newData = oldData.filter(
-        (item) => item.descriptionName !== variables.descriptionName,
+        (item: Description) => item.descriptionName !== variables.descriptionName,
       );
       queryClient.setQueryData(["description"], newData);
     },

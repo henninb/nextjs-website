@@ -31,6 +31,7 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import EditIcon from "@mui/icons-material/CreateRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import AttachMoneyRounded from "@mui/icons-material/AttachMoneyRounded";
+import { UpdateTransactionOptions } from "../../../model/UpdateTransactionOptions";
 import {
   epochToDate,
   currencyFormat,
@@ -185,22 +186,22 @@ export default function TransactionTable() {
     }
   };
 
-  const updateRow = (
-    newRow: Transaction,
-    oldRow: Transaction,
-  ): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      setTimeout(async () => {
-        try {
-          updateTransaction({ newRow: newRow, oldRow: oldRow });
-          resolve("success");
-        } catch (error) {
-          handleError(error, "updateRow");
-          reject();
-        }
-      }, 1000);
-    });
-  };
+  // const updateRow = (
+  //   newRow: Transaction,
+  //   oldRow: Transaction,
+  // ): Promise<any> => {
+  //   return new Promise((resolve, reject) => {
+  //     setTimeout(async () => {
+  //       try {
+  //         updateTransaction({ newRow: newRow, oldRow: oldRow });
+  //         resolve("success");
+  //       } catch (error) {
+  //         handleError(error, "updateRow");
+  //         reject();
+  //       }
+  //     }, 1000);
+  //   });
+  // };
 
   const columns: GridColDef[] = [
     {
@@ -258,12 +259,15 @@ export default function TransactionTable() {
       field: "transactionState",
       headerName: "transactionState",
       width: 275,
-      editable: true,
+      //editable: true,
       renderCell: (params: any) => {
         const handleStateChange = (newState: TransactionState) => {
-          const transactionGuid = params.row.guid;
-          console.log("parms: " + params.row.guid);
-          handlerToUpdateTransactionState(transactionGuid, newState);
+          //const transactionGuid = params.row.guid;
+          //console.log("parms: " + params.row.guid);
+          const oldRow: Transaction = params.row
+          params.row.transactionState = newState;
+          //handlerToUpdateTransactionState(transactionGuid, newState);
+          updateTransaction({newRow: params.row, oldRow: oldRow, options: { isStateUpdate: true }})
           // Optionally update the backend or DataGrid API here
           console.log(`State changed to: ${newState}`);
         };
@@ -349,13 +353,13 @@ export default function TransactionTable() {
 
         return (
           <div>
-            <IconButton
+            {/* <IconButton
               onClick={() => {
                 setOpenForm(true);
               }}
             >
               <EditIcon />
-            </IconButton>
+            </IconButton> */}
             <IconButton
               onClick={() => {
                 handleDeleteRow(params.row);

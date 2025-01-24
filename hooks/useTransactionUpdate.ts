@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
+import { UpdateTransactionOptions } from "../model/UpdateTransactionOptions";
 //import { basicAuth } from "../Common";
 
 const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
@@ -9,9 +10,14 @@ const getAccountKey = (accountNameOwner: string) => [
   accountNameOwner,
 ];
 
+// type UpdateTransactionOptions = {
+//   isStateUpdate?: boolean; // Add this option
+// };
+
 const updateTransaction = async (
   newData: Transaction,
   oldData: Transaction,
+  options?: UpdateTransactionOptions,
 ): Promise<Transaction> => {
   try {
     const endpoint =
@@ -55,7 +61,7 @@ export default function useTransactionUpdate() {
 
   return useMutation({
     mutationKey: ["updateTransaction"],
-    mutationFn: (variables: { newRow: Transaction; oldRow: Transaction }) =>
+    mutationFn: (variables: { newRow: Transaction; oldRow: Transaction;options?: UpdateTransactionOptions }) =>
       updateTransaction(variables.newRow, variables.oldRow),
     onError: (error) => {
       console.log(error ? error : "error is undefined.");

@@ -14,7 +14,7 @@ const dataTest: Transaction = {
   description: "balance adjustment",
   category: "none",
   amount: 1.99,
-  transactionState: "outstanding",
+  transactionState: "future",
   activeStatus: true,
   reoccurringType: "onetime",
   notes: "",
@@ -74,11 +74,19 @@ export default function useTransactionStateUpdate(accountNameOwner: string) {
     onSuccess: (response: Transaction) => {
       const oldData: Transaction[] =
         queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
-      const newData = oldData.map((element) =>
-        element.guid === response.guid
-          ? { ...element, transactionState: response.transactionState }
-          : element,
-      );
+        const newData = oldData.map((element) => {
+          console.log(
+            `Processing element with transactionState: ${element.transactionState} and response.transactionState: ${response.transactionState}`
+          );
+          return element.transactionState === response.transactionState
+            ? { ...element, transactionState: response.transactionState }
+            : element;
+        });
+      // const newData = oldData.map((element) => 
+      //   element.transactionState === response.transactionState
+      //     ? { ...element, transactionState: response.transactionState }
+      //     : element,
+      // );
 
       queryClient.setQueryData(getAccountKey(accountNameOwner), newData);
     },

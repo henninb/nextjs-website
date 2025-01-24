@@ -53,7 +53,7 @@ export default function useTransactionDelete() {
         getAccountKey(variables.oldRow.accountNameOwner),
       );
       const newData = oldData.filter(
-        (t: any) => t.transactionId !== variables.oldRow.transactionId,
+        (t: Transaction) => t.transactionId !== variables.oldRow.transactionId,
       );
       queryClient.setQueryData(
         getAccountKey(variables.oldRow.accountNameOwner),

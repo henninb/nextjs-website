@@ -44,7 +44,7 @@ export default function useAccountDelete() {
         "account",
       ]);
       if (oldData) {
-        const newData = oldData.filter(
+        const newData: Account[] = oldData.filter(
           (t: Account) => t.accountId !== variables.oldRow.accountId,
         );
         queryClient.setQueryData(["account"], newData);

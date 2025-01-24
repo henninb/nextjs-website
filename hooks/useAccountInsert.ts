@@ -95,7 +95,7 @@ export default function useAccountInsert() {
     mutationKey: ["insertAccount"],
     mutationFn: (variables: { payload: Account }) =>
       insertAccount(variables.payload),
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error(error ? error : "Error is undefined.");
     },
     onSuccess: (response: Account) => {
