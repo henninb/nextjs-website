@@ -128,8 +128,8 @@ export default function AccountTable() {
 
     {
       field: "activeStatus",
-      headerName: "isActive",
-      width: 50,
+      headerName: "Active",
+      width: 75,
       editable: true
     },
     {
