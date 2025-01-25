@@ -102,7 +102,7 @@ export default function Categories() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data || []}
+            rows={data?.filter(row => row != null) || []}
             columns={columns}
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}

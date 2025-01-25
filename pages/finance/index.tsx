@@ -125,6 +125,13 @@ export default function AccountTable() {
           currency: "USD",
         }),
     },
+
+    {
+      field: "activeStatus",
+      headerName: "isActive",
+      width: 50,
+      editable: true
+    },
     {
       field: "",
       headerName: "Actions",
@@ -156,7 +163,7 @@ export default function AccountTable() {
             {totals?.totalsOutstanding}] [ ${totals?.totalsFuture}]
           </h3>
           <DataGrid
-            rows={data}
+            rows={data?.filter(row => row != null) || []}
             columns={columns}
             getRowId={(row) => row.accountId || 0}
             paginationModel={{ pageSize: data?.length, page: 0 }}

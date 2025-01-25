@@ -96,7 +96,7 @@ export default function paymentrequired() {
         <div data-testid="payment-required-table">
           <DataGrid
             columns={columns}
-            rows={data || []}
+            rows={data?.filter(row => row != null) || []}
             paginationModel={{ pageSize: data?.length, page: 0 }}
             hideFooterPagination={true}
             checkboxSelection={false}

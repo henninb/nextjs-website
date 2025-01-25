@@ -125,7 +125,7 @@ export default function payments() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data || []}
+            rows={data?.filter(row => row != null) || []}
             columns={columns}
             getRowId={(row) => row.paymentId || 0}
             checkboxSelection={false}
