@@ -421,7 +421,11 @@ export default function TransactionTable() {
           <DataGrid
             rows={data || []}
             columns={columns}
-            getRowId={(row) => row.transactionId || 0}
+            getRowId={(row) => {
+
+              return row?.transactionId || Math.random()
+            }}
+            //getRowId={(row) => row.transactionId || 0}
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={(newRow: Transaction, oldRow: Transaction) => {
