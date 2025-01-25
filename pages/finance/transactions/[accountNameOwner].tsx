@@ -378,7 +378,7 @@ export default function TransactionTable() {
           </Button>
 
           <DataGrid
-            rows={data?.filter(row => row != null) || []}
+            rows={data?.filter((row) => row != null) || []}
             columns={columns}
             getRowId={(row) => {
               console.log("row:" + row);

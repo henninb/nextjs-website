@@ -105,7 +105,7 @@ export default function descriptions() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data?.filter(row => row != null) || []}
+            rows={data?.filter((row) => row != null) || []}
             columns={columns}
             getRowId={(row) => row.descriptionId || 0}
             checkboxSelection={false}

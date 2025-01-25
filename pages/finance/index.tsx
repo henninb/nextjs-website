@@ -130,7 +130,7 @@ export default function AccountTable() {
       field: "activeStatus",
       headerName: "Active",
       width: 75,
-      editable: true
+      editable: true,
     },
     {
       field: "",
@@ -163,7 +163,7 @@ export default function AccountTable() {
             {totals?.totalsOutstanding}] [ ${totals?.totalsFuture}]
           </h3>
           <DataGrid
-            rows={data?.filter(row => row != null) || []}
+            rows={data?.filter((row) => row != null) || []}
             columns={columns}
             getRowId={(row) => row.accountId || 0}
             paginationModel={{ pageSize: data?.length, page: 0 }}
