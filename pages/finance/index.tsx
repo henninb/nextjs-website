@@ -125,12 +125,21 @@ export default function AccountTable() {
           currency: "USD",
         }),
     },
-
     {
       field: "activeStatus",
       headerName: "Active",
       width: 75,
       editable: true,
+    },
+    {
+      field: "validationDate",
+      headerName: "Validation Date",
+      width: 150,
+      type: "date",
+      valueGetter: (params) => new Date(params),
+      renderCell: (params) => {
+        return params?.value?.toLocaleDateString("en-US");
+      },
     },
     {
       field: "",

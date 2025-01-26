@@ -10,6 +10,7 @@ export default interface Account {
   future: number;
   cleared: number;
   dateClosed?: Date;
+  validationDate?: Date;
   dateAdded?: Date;
   dateUpdated?: Date;
 }

@@ -72,6 +72,7 @@ export default function transfers() {
       field: "transactionDate",
       headerName: "Transaction Date",
       width: 200,
+      valueGetter: (params) => new Date(params),
       renderCell: (params) => {
         return formatDate(params.value);
       },

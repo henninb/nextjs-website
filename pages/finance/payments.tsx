@@ -72,6 +72,7 @@ export default function payments() {
       field: "transactionDate",
       headerName: "Transaction Date",
       width: 200,
+      valueGetter: (params) => new Date(params),
       renderCell: (params) => {
         return formatDate(params.value);
       },
@@ -152,7 +153,7 @@ export default function payments() {
         >
           <h3>{paymentData ? "Edit Payment" : "Add New Payment"}</h3>
           <TextField
-            label="Account Name Owner"
+            label="Account"
             fullWidth
             margin="normal"
             value={paymentData?.accountNameOwner || ""}

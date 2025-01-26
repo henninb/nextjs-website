@@ -7,7 +7,8 @@
     "moniker": "0000",
     "outstanding": 1500.25,
     "future": 200.0,
-    "cleared": 1300.25
+    "cleared": 1300.25,
+    "validationDate": "2024-10-31"
   },
   {
     "accountId": 2,
@@ -17,7 +18,8 @@
     "moniker": "0000",
     "outstanding": 5000.75,
     "future": 1000.0,
-    "cleared": 4000.75
+    "cleared": 4000.75,
+    "validationDate": "2024-10-31"
   },
   {
     "accountId": 3,
@@ -27,7 +29,8 @@
     "moniker": "0000",
     "outstanding": 5000.75,
     "future": 1000.0,
-    "cleared": 4000.75
+    "cleared": 4000.75,
+    "validationDate": "2024-10-31"
   },
   {
     "accountId": 4,
@@ -37,6 +40,7 @@
     "moniker": "0000",
     "outstanding": 5.75,
     "future": 10.24,
-    "cleared": 4.75
+    "cleared": 4.75,
+    "validationDate": "2024-10-31"
   }
 ]

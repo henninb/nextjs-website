@@ -90,6 +90,7 @@ export default function paymentrequired() {
       headerName: "Validation Date",
       width: 150,
       type: "date",
+      valueGetter: (params) => new Date(params),
       renderCell: (params) => {
         return params?.value?.toLocaleDateString("en-US");
       },

@@ -4,28 +4,26 @@ import PaymentRequired from "../model/PaymentRequired";
 
 const dataTest = [
   {
-    accountNameOwner: "wfargo-cc_brian",
+    accountId: 2,
+    accountNameOwner: "barclay-cash_brian",
     accountType: "credit",
+    activeStatus: true,
     moniker: "0000",
-    future: 200.0,
-    outstanding: 1500.25,
-    cleared: 1300.25,
-  },
-  {
-    accountNameOwner: "chase_susan",
-    accountType: "credit",
-    moniker: "0000",
-    future: 1000.0,
     outstanding: 5000.75,
+    future: 1000.0,
     cleared: 4000.75,
+    validationDate: "2024-10-31",
   },
   {
-    accountNameOwner: "boa_michael",
+    accountId: 4,
+    accountNameOwner: "wellsfargo-cash_brian",
     accountType: "credit",
+    activeStatus: true,
     moniker: "0000",
-    future: 0.0,
-    outstanding: 0.0,
-    cleared: 1.0,
+    outstanding: 5.75,
+    future: 10.24,
+    cleared: 4.75,
+    validationDate: "2024-10-31",
   },
 ];
 

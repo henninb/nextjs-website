@@ -5,4 +5,5 @@ export default interface PaymentRequired {
   future: number;
   outstanding: number;
   cleared: number;
+  validationDate?: string;
 }
