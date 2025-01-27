@@ -9,7 +9,7 @@ export default function paymentrequired() {
   const [showSpinner, setShowSpinner] = useState(true);
   const router = useRouter();
 
-  const { data, isSuccess, isLoading } = useFetchPaymentRequired();
+  const { data, isSuccess } = useFetchPaymentRequired();
 
   useEffect(() => {
     if (isSuccess) {

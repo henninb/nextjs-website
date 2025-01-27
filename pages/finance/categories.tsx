@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
+import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -17,6 +17,8 @@ export default function Categories() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   const { data, isSuccess, isLoading } = useFetchCategory();
   const { mutate: insertCategory } = useCategoryInsert();
@@ -29,11 +31,17 @@ export default function Categories() {
     }
   }, [isSuccess]);
 
-  const handleDeleteRow = async (category: Category) => {
-    try {
-      await deleteCategory(category);
-    } catch (error) {
-      handleError(error, "Delete Category", false);
+  const handleDeleteRow = async () => {
+    if (selectedCategory) {
+      try {
+        await deleteCategory(selectedCategory);
+        setMessage("Category deleted successfully.");
+      } catch (error) {
+        handleError(error, "Delete Category failure.", false);
+      } finally {
+        setConfirmDelete(false);
+        setSelectedCategory(null);
+      }
     }
   };
 
@@ -82,7 +90,8 @@ export default function Categories() {
       renderCell: (params) => (
         <IconButton
           onClick={() => {
-            handleDeleteRow(params.row);
+            setSelectedCategory(params.row);
+            setConfirmDelete(true);
           }}
         >
           <DeleteIcon />
@@ -124,6 +133,37 @@ export default function Categories() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Delete Modal */}
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Confirm Deletion</Typography>
+          <Typography>
+            Are you sure you want to delete the category "
+            {JSON.stringify(selectedCategory)}"?
+          </Typography>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+              Delete
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmDelete(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
         <Box

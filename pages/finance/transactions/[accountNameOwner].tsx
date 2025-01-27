@@ -2,20 +2,17 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
-import { Box, Button, Modal, IconButton } from "@mui/material";
+import { Box, Button, Modal, IconButton,Typography } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Spinner from "../../../components/Spinner";
-//import { useNavigate, useMatch, PathMatch } from "react-router-dom";
-//import { currencyFormat, epochToDate } from "./Common";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { v4 as uuidv4 } from "uuid";
 import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
 import useTransactionUpdate from "../../../hooks/useTransactionUpdate";
-import useTransactionStateUpdate from "../../../hooks/useTransactionStateUpdate";
 import useTransactionInsert from "../../../hooks/useTransactionInsert";
 import useTransactionDelete from "../../../hooks/useTransactionDelete";
 import useTotalsPerAccountFetch from "../../../hooks/useTotalsPerAccountFetch";
@@ -31,7 +28,7 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import EditIcon from "@mui/icons-material/CreateRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import AttachMoneyRounded from "@mui/icons-material/AttachMoneyRounded";
-import { UpdateTransactionOptions } from "../../../model/UpdateTransactionOptions";
+
 import {
   epochToDate,
   currencyFormat,
@@ -42,8 +39,11 @@ import {
 export default function TransactionTable() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
+  const [open, setOpen] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openForm, setOpenForm] = useState<boolean>(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -72,8 +72,8 @@ export default function TransactionTable() {
   const { data: validationData, isSuccess: isSuccessValidationTotals } =
     useValidationAmountFetch(accountNameOwner);
 
-  const { mutate: updateTransactionState } =
-    useTransactionStateUpdate(accountNameOwner);
+  // const { mutate: updateTransactionState } =
+  //   useTransactionStateUpdate(accountNameOwner);
   const { mutate: updateTransaction } = useTransactionUpdate();
   const { mutate: deleteTransaction } = useTransactionDelete();
   const { mutate: insertTransaction } = useTransactionInsert(accountNameOwner);
@@ -89,13 +89,25 @@ export default function TransactionTable() {
 
   const handleSnackbarClose = () => setOpenSnackbar(false);
 
-  const handleError = (error: any, moduleName: any) => {
-    const errorMsg = error.response
-      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(error.response.data)}`
+  // const handleError = (error: any, moduleName: any) => {
+  //   const errorMsg = error.response
+  //     ? `${moduleName}: ${error.response.status} - ${JSON.stringify(error.response.data)}`
+  //     : `${moduleName}: Failure`;
+  //   setMessage(errorMsg);
+  //   setOpenSnackbar(true);
+  //   console.error(errorMsg);
+  // };
+
+  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
+    const errorMessage = error.response
+      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
+          error.response.data,
+        )}`
       : `${moduleName}: Failure`;
-    setMessage(errorMsg);
-    setOpenSnackbar(true);
-    console.error(errorMsg);
+
+    setMessage(errorMessage);
+    setOpen(true);
+    if (throwIt) throw error;
   };
 
   const handleInsertNewValidationData = async (
@@ -118,8 +130,18 @@ export default function TransactionTable() {
     });
   };
 
-  const handleDeleteRow = (transaction: Transaction) => {
-    deleteTransaction({ oldRow: transaction });
+  const handleDeleteRow = async () => {
+    if (selectedTransaction) {
+      try {
+        await deleteTransaction({ oldRow: selectedTransaction });
+        setMessage("Transaction deleted successfully.");
+      } catch (error) {
+        handleError(error, "Delete Transaction failure.", false);
+      } finally {
+        setConfirmDelete(false);
+        setSelectedTransaction(null);
+      }
+    }
   };
 
   const handleAddRow = async () => {
@@ -144,7 +166,7 @@ export default function TransactionTable() {
         isFutureTransaction: false,
       });
     } catch (error) {
-      handleError(error, "handleAddRow");
+      handleError(error, "handleAddRow", false);
     }
   };
 
@@ -158,7 +180,7 @@ export default function TransactionTable() {
 
       return "success";
     } catch (error) {
-      handleError(error, "addRow");
+      handleError(error, "addRow", false);
       throw error;
     }
   };
@@ -173,7 +195,6 @@ export default function TransactionTable() {
         return params.value.toLocaleDateString("en-US");
       },
       valueGetter: (params: string) => {
-        //console.log("date-in:" + params)
         const utcDate = new Date(params);
         const localDate = new Date(
           utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
@@ -312,8 +333,6 @@ export default function TransactionTable() {
       sortable: false,
       width: 120,
       renderCell: (params) => {
-        const { id } = params.row;
-
         return (
           <div>
             {/* <IconButton
@@ -325,7 +344,8 @@ export default function TransactionTable() {
             </IconButton> */}
             <IconButton
               onClick={() => {
-                handleDeleteRow(params.row);
+               setSelectedTransaction(params.row);
+               setConfirmDelete(true);
               }}
             >
               <DeleteIcon />
@@ -404,6 +424,37 @@ export default function TransactionTable() {
         onClose={handleSnackbarClose}
         message={message}
       />
+
+      {/* Confirmation Modal */}
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Confirm Deletion</Typography>
+          <Typography>
+            Are you sure you want to delete the transaction "
+            {JSON.stringify(selectedTransaction)}"?
+          </Typography>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+              Delete
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmDelete(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       {/* Form Overlay for Adding/Editing Transaction */}
       <Modal

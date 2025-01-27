@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
+import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -18,6 +18,8 @@ export default function payments() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const router = useRouter();
 
   const { data, isSuccess, isLoading } = useFetchPayment();
@@ -34,11 +36,17 @@ export default function payments() {
     router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
-  const handleDeleteRow = async (payment: Payment) => {
-    try {
-      await deletePayment({ oldRow: payment });
-    } catch (error) {
-      handleError(error, "Delete Payment", false);
+  const handleDeleteRow = async () => {
+    if (selectedPayment) {
+      try {
+        await deletePayment({ oldRow:selectedPayment });
+        setMessage("Payment deleted successfully.");
+      } catch (error) {
+        handleError(error, "Delete Payment failure.", false);
+      } finally {
+        setConfirmDelete(false);
+        setSelectedPayment(null);
+      }
     }
   };
 
@@ -106,7 +114,8 @@ export default function payments() {
       renderCell: (params: any) => (
         <IconButton
           onClick={() => {
-            handleDeleteRow(params.row);
+            setSelectedPayment(params.row);
+            setConfirmDelete(true);
           }}
         >
           <DeleteIcon />
@@ -141,6 +150,37 @@ export default function payments() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Delete Modal */}
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Confirm Deletion</Typography>
+          <Typography>
+            Are you sure you want to delete the payment "
+            {JSON.stringify(selectedPayment)}"?
+          </Typography>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+              Delete
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmDelete(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
         <Box

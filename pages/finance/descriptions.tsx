@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
+import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -17,6 +17,8 @@ export default function descriptions() {
   const [open, setOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedDescription, setSelectedDescription] = useState<Description | null>(null);
   const [descriptionData, setDescriptionData] = useState<Description | null>(
     null,
   );
@@ -32,11 +34,17 @@ export default function descriptions() {
     }
   }, [isSuccess]);
 
-  const handleDeleteRow = async (description: Description) => {
-    try {
-      await deleteDescription(description);
-    } catch (error) {
-      handleError(error, "Delete Description", false);
+  const handleDeleteRow = async () => {
+    if (selectedDescription) {
+      try {
+        await deleteDescription(selectedDescription);
+        setMessage("Description deleted successfully.");
+      } catch (error) {
+        handleError(error, "Delete Description failure.", false);
+      } finally {
+        setConfirmDelete(false);
+        setSelectedDescription(null);
+      }
     }
   };
 
@@ -85,7 +93,9 @@ export default function descriptions() {
       renderCell: (params) => (
         <IconButton
           onClick={() => {
-            handleDeleteRow(params.row);
+            //handleDeleteRow(params.row);
+            setSelectedDescription(params.row);
+            setConfirmDelete(true);
           }}
         >
           <DeleteIcon />
@@ -131,6 +141,37 @@ export default function descriptions() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Delete Modal */}
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Confirm Deletion</Typography>
+          <Typography>
+            Are you sure you want to delete the description "
+            {JSON.stringify(selectedDescription)}"?
+          </Typography>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+              Delete
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmDelete(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
         <Box

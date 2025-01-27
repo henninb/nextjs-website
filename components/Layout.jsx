@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import SelectNavigateAccounts from "./SelectNavigateAccounts";
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,6 +76,9 @@ export default function Layout({ children }) {
                     <a className="nav-link" href="/finance/descriptions">
                       Descriptions
                     </a>
+                  </li>
+                  <li className="nav-item">
+                    <SelectNavigateAccounts></SelectNavigateAccounts>
                   </li>
                 </>
               ) : (

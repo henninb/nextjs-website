@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
+import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -18,6 +18,8 @@ export default function transfers() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
   const [transferData, setTransferData] = useState<Transfer | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
   const router = useRouter();
 
   const { data, isSuccess, isLoading } = useFetchTransfer();
@@ -34,11 +36,17 @@ export default function transfers() {
     router.push(`/transactions/${accountNameOwner}`);
   };
 
-  const handleDeleteRow = async (transfer: Transfer) => {
-    try {
-      await deleteTransfer({ oldRow: transfer });
-    } catch (error) {
-      handleError(error, "Delete Transfer", false);
+  const handleDeleteRow = async () => {
+    if (selectedTransfer) {
+      try {
+        await deleteTransfer({ oldRow:selectedTransfer });
+        setMessage("Transfer deleted successfully.");
+      } catch (error) {
+        handleError(error, "Delete Transfer failure.", false);
+      } finally {
+        setConfirmDelete(false);
+        setSelectedTransfer(null);
+      }
     }
   };
 
@@ -108,7 +116,8 @@ export default function transfers() {
       renderCell: (params) => (
         <IconButton
           onClick={() => {
-            handleDeleteRow(params.row);
+            setSelectedTransfer(params.row);
+            setConfirmDelete(true);
           }}
         >
           <DeleteIcon />
@@ -143,6 +152,38 @@ export default function transfers() {
           </div>
         </div>
       )}
+
+
+      {/* Confirmation Delete Modal */}
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Confirm Deletion</Typography>
+          <Typography>
+            Are you sure you want to delete the transfer "
+            {JSON.stringify(selectedTransfer)}"?
+          </Typography>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+              Delete
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmDelete(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
         <Box

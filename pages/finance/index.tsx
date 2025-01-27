@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
+//import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
+import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
 import useAccountFetch from "../../hooks/useAccountFetch";
@@ -12,6 +14,7 @@ import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
+import useAccountRename from "../../hooks/useAccountRename";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
@@ -19,6 +22,12 @@ export default function AccountTable() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editedAccountName, setEditedAccountName] = useState("");
+  const [accountBeingEdited, setAccountBeingEdited] = useState<Account | null>(null);
+
   const router = useRouter();
 
   const { data, isSuccess, isLoading } = useAccountFetch();
@@ -26,6 +35,30 @@ export default function AccountTable() {
   const { mutate: insertAccount } = useAccountInsert();
   const { mutate: updateAccount } = useAccountUpdate();
   const { mutate: deleteAccount } = useAccountDelete();
+  const { mutate: renameAccount } = useAccountRename();
+
+const handleEditAccount = (account: Account) => {
+  setAccountBeingEdited(account);
+  setEditedAccountName(account.accountNameOwner);
+  setEditModalOpen(true);
+};
+
+const handleRenameAccount = () => {
+  if (accountBeingEdited) {
+    renameAccount(
+      { oldAccountName: accountBeingEdited.accountNameOwner, newAccountName: editedAccountName },
+      {
+        onSuccess: () => {
+          setMessage("Account name updated successfully.");
+          setEditModalOpen(false);
+        },
+        onError: (error) => {
+          handleError(error, "Rename Account", false);
+        },
+      }
+    );
+  }
+};
 
   useEffect(() => {
     if (isSuccess && isSuccessTotals) {
@@ -37,23 +70,19 @@ export default function AccountTable() {
     router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
-  const handleDeleteRow = async (account: Account) => {
-    try {
-      await deleteAccount({ oldRow: account });
-    } catch (error) {
-      handleError(error, "Delete Account", false);
+  const handleDeleteRow = async () => {
+    if (selectedAccount) {
+      try {
+        await deleteAccount({ oldRow: selectedAccount });
+        setMessage("Account deleted successfully.");
+      } catch (error) {
+        handleError(error, "Delete Account", false);
+      } finally {
+        setConfirmDelete(false);
+        setSelectedAccount(null);
+      }
     }
   };
-
-  // const handlerToUpdateAccount = async (
-  //   oldRow: Account,
-  //   newRow: Account,
-  // ) => {
-  //   await updateAccount({
-  //     oldRow: oldRow,
-  //       newRow: newRow,
-  //   });
-  // };
 
   const handleSnackbarClose = () => {
     setOpen(false);
@@ -84,13 +113,24 @@ export default function AccountTable() {
     {
       field: "accountNameOwner",
       headerName: "Account",
-      width: 200,
+      width: 250,
       renderCell: (params) => (
+        <div>
         <Button
           onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
         >
           {params.row.accountNameOwner}
         </Button>
+
+        <IconButton
+          onClick={() => {
+            handleEditAccount(params.row)
+          }}
+        >
+          <EditIcon />
+        </IconButton>
+       </div>
+        
       ),
     },
     { field: "accountType", headerName: "Type", width: 150, editable: true },
@@ -148,7 +188,8 @@ export default function AccountTable() {
       renderCell: (params) => (
         <IconButton
           onClick={() => {
-            handleDeleteRow(params.row);
+            setSelectedAccount(params.row);
+            setConfirmDelete(true);
           }}
         >
           <DeleteIcon />
@@ -197,6 +238,71 @@ export default function AccountTable() {
         </div>
       )}
 
+<Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+  <Box
+    sx={{
+      width: 400,
+      padding: 4,
+      backgroundColor: "white",
+      margin: "auto",
+      marginTop: "20%",
+    }}
+  >
+    <Typography variant="h6">Edit Account Name</Typography>
+    <TextField
+      label="Account Name Owner"
+      fullWidth
+      margin="normal"
+      value={editedAccountName}
+      onChange={(e) => setEditedAccountName(e.target.value)}
+    />
+    <Box mt={2} display="flex" justifyContent="space-between">
+      <Button variant="contained" color="primary" onClick={handleRenameAccount}>
+        Save
+      </Button>
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={() => setEditModalOpen(false)}
+      >
+        Cancel
+      </Button>
+    </Box>
+  </Box>
+</Modal>
+
+      {/* Confirmation Deleting Modal */}
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Confirm Deletion</Typography>
+          <Typography>
+            Are you sure you want to delete the account "
+            {selectedAccount?.accountNameOwner}"?
+          </Typography>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+              Delete
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmDelete(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Adding Modal */}
       <Modal open={openForm} onClose={() => setOpenForm(false)}>
         <Box
           sx={{
@@ -208,7 +314,7 @@ export default function AccountTable() {
         >
           <h3>{accountData ? "Edit Account" : "Add New Account"}</h3>
           <TextField
-            label="Account Name Owner"
+            label="Account"
             fullWidth
             margin="normal"
             value={accountData?.accountNameOwner || ""}
