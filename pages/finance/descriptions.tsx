@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  TextField,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -18,7 +25,8 @@ export default function descriptions() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [selectedDescription, setSelectedDescription] = useState<Description | null>(null);
+  const [selectedDescription, setSelectedDescription] =
+    useState<Description | null>(null);
   const [descriptionData, setDescriptionData] = useState<Description | null>(
     null,
   );
@@ -159,7 +167,11 @@ export default function descriptions() {
             {JSON.stringify(selectedDescription)}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteRow}
+            >
               Delete
             </Button>
             <Button

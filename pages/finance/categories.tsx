@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  TextField,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -17,8 +24,10 @@ export default function Categories() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [openForm, setOpenForm] = useState(false);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
-    const [confirmDelete, setConfirmDelete] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
 
   const { data, isSuccess, isLoading } = useFetchCategory();
   const { mutate: insertCategory } = useCategoryInsert();
@@ -151,7 +160,11 @@ export default function Categories() {
             {JSON.stringify(selectedCategory)}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteRow}
+            >
               Delete
             </Button>
             <Button

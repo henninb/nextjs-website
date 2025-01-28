@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  TextField,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -19,7 +26,9 @@ export default function transfers() {
   const [openForm, setOpenForm] = useState(false);
   const [transferData, setTransferData] = useState<Transfer | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
+  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
+    null,
+  );
   const router = useRouter();
 
   const { data, isSuccess, isLoading } = useFetchTransfer();
@@ -39,7 +48,7 @@ export default function transfers() {
   const handleDeleteRow = async () => {
     if (selectedTransfer) {
       try {
-        await deleteTransfer({ oldRow:selectedTransfer });
+        await deleteTransfer({ oldRow: selectedTransfer });
         setMessage("Transfer deleted successfully.");
       } catch (error) {
         handleError(error, "Delete Transfer failure.", false);
@@ -153,7 +162,6 @@ export default function transfers() {
         </div>
       )}
 
-
       {/* Confirmation Delete Modal */}
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
         <Box
@@ -171,7 +179,11 @@ export default function transfers() {
             {JSON.stringify(selectedTransfer)}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteRow}
+            >
               Delete
             </Button>
             <Button

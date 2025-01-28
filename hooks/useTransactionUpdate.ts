@@ -68,65 +68,65 @@ export default function useTransactionUpdate() {
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },
+
     onSuccess: (response, variables) => {
       const oldData: any = queryClient.getQueryData(
         getAccountKey(variables.oldRow.accountNameOwner),
       );
+      
       let newData: any;
-      if (
-        variables.oldRow.accountNameOwner === variables.newRow.accountNameOwner
-      ) {
-        const dataUpdate = [...oldData];
-        const index: any = variables.oldRow.transactionId;
-        dataUpdate[index] = variables.newRow;
+      
+      // Ensure the index is based on guid instead of transactionId
+      const updatedRow = variables.newRow;
+      
+      if (variables.oldRow.accountNameOwner === variables.newRow.accountNameOwner) {
+        const dataUpdate = oldData.map((row: Transaction) =>
+          row.guid === updatedRow.guid ? updatedRow : row
+        );
+    
         newData = [...dataUpdate];
-        //TODO: update accountTotals if amounts are different
+    
+        // Update totals if amounts have changed
         if (variables.oldRow.amount !== variables.newRow.amount) {
           const totals: any = queryClient.getQueryData(
             getTotalsKey(variables.newRow.accountNameOwner),
           );
-          const oldTransactionStateKey =
-            "totals" + variables.oldRow.transactionState;
-          const newTransactionStateKey =
-            "totals" + variables.newRow.transactionState;
+          
+          const oldTransactionStateKey = "totals" + variables.oldRow.transactionState;
+          const newTransactionStateKey = "totals" + variables.newRow.transactionState;
           const difference = variables.newRow.amount - variables.oldRow.amount;
+    
           totals.totals += difference;
-          if (
-            variables.newRow.transactionState ===
-            variables.oldRow.transactionState
-          ) {
+    
+          if (variables.newRow.transactionState === variables.oldRow.transactionState) {
             totals[newTransactionStateKey] += difference;
-            queryClient.setQueryData(
-              getTotalsKey(variables.newRow.accountNameOwner),
-              totals,
-            );
           } else {
-            totals[oldTransactionStateKey] =
-              totals[oldTransactionStateKey] - variables.oldRow.amount;
-            totals[newTransactionStateKey] =
-              totals[newTransactionStateKey] +
-              variables.oldRow.amount +
-              difference;
-            console.log(JSON.stringify(totals));
-            queryClient.setQueryData(
-              getTotalsKey(variables.newRow.accountNameOwner),
-              totals,
-            );
+            totals[oldTransactionStateKey] -= variables.oldRow.amount;
+            totals[newTransactionStateKey] += variables.oldRow.amount + difference;
           }
+    
+          queryClient.setQueryData(
+            getTotalsKey(variables.newRow.accountNameOwner),
+            totals,
+          );
         }
       } else {
-        const dataDelete = [...oldData];
-        const index: any = variables.oldRow.transactionId;
-        dataDelete.splice(index, 1);
+        // If the account has changed, remove the old row
+        const dataDelete = oldData.filter(
+          (row: Transaction) => row.guid !== variables.oldRow.guid
+        );
+    
         newData = [...dataDelete];
-        //TODO: add to other accountNameOwner list
-        //TODO: update accountTotals (subtract)
+    
+        // Update totals if needed (subtract from old account totals)
+        // Potentially handle adding to new account totals if necessary
       }
-
+    
+      // Set the updated data back to query client
       queryClient.setQueryData(
         getAccountKey(variables.oldRow.accountNameOwner),
         newData,
       );
-    },
+    }
   });
 }

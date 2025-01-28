@@ -2,7 +2,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 //import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
-import { Box, Button, IconButton, Modal, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Modal,
+  TextField,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,7 +33,9 @@ export default function AccountTable() {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editedAccountName, setEditedAccountName] = useState("");
-  const [accountBeingEdited, setAccountBeingEdited] = useState<Account | null>(null);
+  const [accountBeingEdited, setAccountBeingEdited] = useState<Account | null>(
+    null,
+  );
 
   const router = useRouter();
 
@@ -37,28 +46,31 @@ export default function AccountTable() {
   const { mutate: deleteAccount } = useAccountDelete();
   const { mutate: renameAccount } = useAccountRename();
 
-const handleEditAccount = (account: Account) => {
-  setAccountBeingEdited(account);
-  setEditedAccountName(account.accountNameOwner);
-  setEditModalOpen(true);
-};
+  const handleEditAccount = (account: Account) => {
+    setAccountBeingEdited(account);
+    setEditedAccountName(account.accountNameOwner);
+    setEditModalOpen(true);
+  };
 
-const handleRenameAccount = () => {
-  if (accountBeingEdited) {
-    renameAccount(
-      { oldAccountName: accountBeingEdited.accountNameOwner, newAccountName: editedAccountName },
-      {
-        onSuccess: () => {
-          setMessage("Account name updated successfully.");
-          setEditModalOpen(false);
+  const handleRenameAccount = () => {
+    if (accountBeingEdited) {
+      renameAccount(
+        {
+          oldAccountName: accountBeingEdited.accountNameOwner,
+          newAccountName: editedAccountName,
         },
-        onError: (error) => {
-          handleError(error, "Rename Account", false);
+        {
+          onSuccess: () => {
+            setMessage("Account name updated successfully.");
+            setEditModalOpen(false);
+          },
+          onError: (error) => {
+            handleError(error, "Rename Account", false);
+          },
         },
-      }
-    );
-  }
-};
+      );
+    }
+  };
 
   useEffect(() => {
     if (isSuccess && isSuccessTotals) {
@@ -116,21 +128,20 @@ const handleRenameAccount = () => {
       width: 250,
       renderCell: (params) => (
         <div>
-        <Button
-          onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
-        >
-          {params.row.accountNameOwner}
-        </Button>
+          <Button
+            onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
+          >
+            {params.row.accountNameOwner}
+          </Button>
 
-        <IconButton
-          onClick={() => {
-            handleEditAccount(params.row)
-          }}
-        >
-          <EditIcon />
-        </IconButton>
-       </div>
-        
+          <IconButton
+            onClick={() => {
+              handleEditAccount(params.row);
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+        </div>
       ),
     },
     { field: "accountType", headerName: "Type", width: 150, editable: true },
@@ -238,38 +249,42 @@ const handleRenameAccount = () => {
         </div>
       )}
 
-<Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
-  <Box
-    sx={{
-      width: 400,
-      padding: 4,
-      backgroundColor: "white",
-      margin: "auto",
-      marginTop: "20%",
-    }}
-  >
-    <Typography variant="h6">Edit Account Name</Typography>
-    <TextField
-      label="Account Name Owner"
-      fullWidth
-      margin="normal"
-      value={editedAccountName}
-      onChange={(e) => setEditedAccountName(e.target.value)}
-    />
-    <Box mt={2} display="flex" justifyContent="space-between">
-      <Button variant="contained" color="primary" onClick={handleRenameAccount}>
-        Save
-      </Button>
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={() => setEditModalOpen(false)}
-      >
-        Cancel
-      </Button>
-    </Box>
-  </Box>
-</Modal>
+      <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Edit Account Name</Typography>
+          <TextField
+            label="Account Name Owner"
+            fullWidth
+            margin="normal"
+            value={editedAccountName}
+            onChange={(e) => setEditedAccountName(e.target.value)}
+          />
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleRenameAccount}
+            >
+              Save
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setEditModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       {/* Confirmation Deleting Modal */}
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
@@ -288,7 +303,11 @@ const handleRenameAccount = () => {
             {selectedAccount?.accountNameOwner}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteRow}
+            >
               Delete
             </Button>
             <Button

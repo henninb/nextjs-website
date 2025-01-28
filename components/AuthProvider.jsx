@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { jwtVerify } from "jose";
 
 // Create the AuthContext
-const AuthContext = createContext('');
+const AuthContext = createContext("");
 
 const JWT_KEY = "your_jwt_key"; // Replace with your JWT key
 

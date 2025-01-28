@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
-import { Box, Button, Modal, IconButton,Typography } from "@mui/material";
+import { Box, Button, Modal, IconButton, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -43,7 +43,8 @@ export default function TransactionTable() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -240,47 +241,28 @@ export default function TransactionTable() {
       field: "transactionState",
       headerName: "transactionState",
       width: 275,
-      //editable: true,
       renderCell: (params: any) => {
         const handleStateChange = (newState: TransactionState) => {
-          //const transactionGuid = params.row.guid;
-          //console.log("parms: " + params.row.guid);
-          const oldRow: Transaction = params.row;
-          params.row.transactionState = newState;
+          // Avoid directly mutating `params.row`
+          const updatedRow = { ...params.row, transactionState: newState };
+          
+          // Update the row in the database
           updateTransaction({
-            newRow: params.row,
-            oldRow: oldRow,
-            options: { isStateUpdate: true },
+            newRow: updatedRow,
+            oldRow: params.row,
           });
-          // Optionally update the backend or DataGrid API here
-          console.log(`State changed to: ${newState}`);
         };
 
         return (
-          <Box>
-            {transactionStates.map((option: any) => (
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            {transactionStates.map((state) => (
               <Button
-                key={option}
-                variant={params.value === option ? "contained" : "outlined"}
-                onClick={() => handleStateChange(option)}
+                key={state}
                 size="small"
-                sx={{
-                  marginRight: 1,
-                  color: params.value === option ? "white" : "primary.main",
-                  backgroundColor:
-                    params.value === option ? "primary.main" : "transparent",
-                  borderColor:
-                    params.value === option ? "transparent" : "primary.main", // Border color matches text
-                  "&:hover": {
-                    backgroundColor:
-                      params.value === option
-                        ? "primary.dark"
-                        : "primary.light",
-                    color: params.value === option ? "white" : "primary.main",
-                  },
-                }}
+                variant={params.row.transactionState === state ? "contained" : "outlined"}
+                onClick={() => handleStateChange(state as TransactionState)}
               >
-                {option}
+                {state}
               </Button>
             ))}
           </Box>
@@ -344,8 +326,8 @@ export default function TransactionTable() {
             </IconButton> */}
             <IconButton
               onClick={() => {
-               setSelectedTransaction(params.row);
-               setConfirmDelete(true);
+                setSelectedTransaction(params.row);
+                setConfirmDelete(true);
               }}
             >
               <DeleteIcon />
@@ -442,7 +424,11 @@ export default function TransactionTable() {
             {JSON.stringify(selectedTransaction)}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteRow}
+            >
               Delete
             </Button>
             <Button
