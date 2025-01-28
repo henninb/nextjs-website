@@ -245,7 +245,7 @@ export default function TransactionTable() {
         const handleStateChange = (newState: TransactionState) => {
           // Avoid directly mutating `params.row`
           const updatedRow = { ...params.row, transactionState: newState };
-          
+
           // Update the row in the database
           updateTransaction({
             newRow: updatedRow,
@@ -254,12 +254,20 @@ export default function TransactionTable() {
         };
 
         return (
-          <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             {transactionStates.map((state) => (
               <Button
                 key={state}
                 size="small"
-                variant={params.row.transactionState === state ? "contained" : "outlined"}
+                variant={
+                  params.row.transactionState === state
+                    ? "contained"
+                    : "outlined"
+                }
                 onClick={() => handleStateChange(state as TransactionState)}
               >
                 {state}
