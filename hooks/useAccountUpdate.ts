@@ -43,22 +43,38 @@ export default function useAccountUpdate() {
       console.error(error ? error : "Error is undefined.");
     },
     onSuccess: (response: Account) => {
-      const oldData: Account[] | undefined = queryClient.getQueryData([
-        "account",
-      ]);
-
+      const oldData: Account[] | undefined = queryClient.getQueryData(["account"]);
+    
       if (oldData) {
-        // Update the existing data with the response
+        // Use a stable identifier like accountId to find and update the account
         const newData = oldData.map((account) =>
-          account.accountNameOwner === response.accountNameOwner
-            ? response
-            : account,
+          account.accountId === response.accountId ? response : account
         );
+    
         queryClient.setQueryData(["account"], newData);
       } else {
         // If no old data, initialize with the new response
         queryClient.setQueryData(["account"], [response]);
       }
-    },
+    }
+
+    // onSuccess: (response: Account) => {
+    //   const oldData: Account[] | undefined = queryClient.getQueryData([
+    //     "account",
+    //   ]);
+
+    //   if (oldData) {
+    //     // Update the existing data with the response
+    //     const newData = oldData.map((account) =>
+    //       account.accountNameOwner === response.accountNameOwner
+    //         ? response
+    //         : account,
+    //     );
+    //     queryClient.setQueryData(["account"], newData);
+    //   } else {
+    //     // If no old data, initialize with the new response
+    //     queryClient.setQueryData(["account"], [response]);
+    //   }
+    // },
   });
 }

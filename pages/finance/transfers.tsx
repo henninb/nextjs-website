@@ -8,6 +8,7 @@ import {
   Modal,
   TextField,
   Typography,
+  Autocomplete,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,6 +19,8 @@ import useTransferInsert from "../../hooks/useTransferInsert";
 import useTransferDelete from "../../hooks/useTransferDelete";
 import Transfer from "../../model/Transfer";
 import { formatDate } from "../../components/Common";
+import useAccountFetch from "../../hooks/useAccountFetch";
+import Account from "../../model/Account";
 
 export default function transfers() {
   const [message, setMessage] = useState("");
@@ -34,6 +37,7 @@ export default function transfers() {
   const { data, isSuccess, isLoading } = useFetchTransfer();
   const { mutate: insertTransfer } = useTransferInsert();
   const { mutate: deleteTransfer } = useTransferDelete();
+  const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
 
   useEffect(() => {
     if (isSuccess) {
@@ -207,7 +211,43 @@ export default function transfers() {
           }}
         >
           <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>
-          <TextField
+
+
+<Autocomplete
+  options={
+    isSuccessAccounts
+      ? accounts.filter((account) => account.accountType === "debit")
+      : []
+  }
+  getOptionLabel={(account: Account) => account.accountNameOwner || ""}
+  isOptionEqualToValue={(option, value) =>
+    option.accountNameOwner === value?.accountNameOwner
+  }
+  value={
+    transferData?.sourceAccount
+      ? accounts.find(
+          (account) => account.accountNameOwner === transferData.sourceAccount
+        ) || null
+      : null
+  }
+  onChange={(event, newValue) =>
+    setTransferData((prev) => ({
+      ...prev,
+      sourceAccount: newValue ? newValue.accountNameOwner : "",
+    }))
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="SourceAccount"
+      fullWidth
+      margin="normal"
+      placeholder="Select a source account"
+    />
+  )}
+/>
+
+          {/* <TextField
             label="Source Account"
             fullWidth
             margin="normal"
@@ -218,8 +258,8 @@ export default function transfers() {
                 sourceAccount: e.target.value,
               }))
             }
-          />
-          <TextField
+          /> */}
+          {/* <TextField
             label="DestinationAccount"
             fullWidth
             margin="normal"
@@ -230,7 +270,43 @@ export default function transfers() {
                 destinationAccount: e.target.value,
               }))
             }
-          />
+          /> */}
+
+
+<Autocomplete
+  options={
+    isSuccessAccounts
+      ? accounts.filter((account) => account.accountType === "debit")
+      : []
+  }
+  getOptionLabel={(account: Account) => account.accountNameOwner || ""}
+  isOptionEqualToValue={(option, value) =>
+    option.accountNameOwner === value?.accountNameOwner
+  }
+  value={
+    transferData?.destinationAccount
+      ? accounts.find(
+          (account) => account.accountNameOwner === transferData.destinationAccount
+        ) || null
+      : null
+  }
+  onChange={(event, newValue) =>
+    setTransferData((prev) => ({
+      ...prev,
+      destinationAccount: newValue ? newValue.accountNameOwner : "",
+    }))
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="DestinationAccount"
+      fullWidth
+      margin="normal"
+      placeholder="Select a destination account"
+    />
+  )}
+/>
+
           <TextField
             label="Transaction Date"
             fullWidth

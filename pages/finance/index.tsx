@@ -44,7 +44,7 @@ export default function AccountTable() {
   const { mutate: insertAccount } = useAccountInsert();
   const { mutate: updateAccount } = useAccountUpdate();
   const { mutate: deleteAccount } = useAccountDelete();
-  const { mutate: renameAccount } = useAccountRename();
+  //const { mutate: renameAccount } = useAccountRename();
 
   const handleEditAccount = (account: Account) => {
     setAccountBeingEdited(account);
@@ -54,21 +54,39 @@ export default function AccountTable() {
 
   const handleRenameAccount = () => {
     if (accountBeingEdited) {
-      renameAccount(
-        {
-          oldAccountName: accountBeingEdited.accountNameOwner,
-          newAccountName: editedAccountName,
+
+      const updatedAccount = { ...accountBeingEdited, accountNameOwner: editedAccountName };
+      console.log("updatedAccount: " + JSON.stringify(updatedAccount))
+      console.log("accountBeingEdited: " + JSON.stringify(accountBeingEdited))
+      updateAccount({
+        oldRow: accountBeingEdited, newRow: updatedAccount
+      },
+      {
+        onSuccess: () => {
+          setMessage("Account name updated successfully.");
+          setEditModalOpen(false);
         },
-        {
-          onSuccess: () => {
-            setMessage("Account name updated successfully.");
-            setEditModalOpen(false);
-          },
-          onError: (error) => {
-            handleError(error, "Rename Account", false);
-          },
+        onError: (error) => {
+          handleError(error, "Rename Account", false);
         },
-      );
+      },
+      )
+
+      // renameAccount(
+      //   {
+      //     oldAccountName: accountBeingEdited.accountNameOwner,
+      //     newAccountName: editedAccountName,
+      //   },
+      //   {
+      //     onSuccess: () => {
+      //       setMessage("Account name updated successfully.");
+      //       setEditModalOpen(false);
+      //     },
+      //     onError: (error) => {
+      //       handleError(error, "Rename Account", false);
+      //     },
+      //   },
+      // );
     }
   };
 

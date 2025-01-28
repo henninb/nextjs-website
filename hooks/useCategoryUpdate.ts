@@ -53,8 +53,9 @@ export default function useCategoryUpdate() {
     onSuccess: (updatedCategory: Category) => {
       const oldData = queryClient.getQueryData<Category[]>(["category"]);
       if (oldData) {
+        // Use a stable identifier (e.g., categoryId) for matching and updating
         const newData = oldData.map((element) =>
-          element.categoryName === updatedCategory.categoryName
+          element.categoryId === updatedCategory.categoryId
             ? { ...element, ...updatedCategory }
             : element,
         );
@@ -62,5 +63,17 @@ export default function useCategoryUpdate() {
         queryClient.setQueryData(["category"], newData);
       }
     },
+    // onSuccess: (updatedCategory: Category) => {
+    //   const oldData = queryClient.getQueryData<Category[]>(["category"]);
+    //   if (oldData) {
+    //     const newData = oldData.map((element) =>
+    //       element.categoryName === updatedCategory.categoryName
+    //         ? { ...element, ...updatedCategory }
+    //         : element,
+    //     );
+
+    //     queryClient.setQueryData(["category"], newData);
+    //   }
+    // },
   });
 }

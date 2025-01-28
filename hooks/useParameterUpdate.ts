@@ -53,14 +53,27 @@ export default function useParameterUpdate() {
     onSuccess: (updatedParameter: Parameter) => {
       const oldData = queryClient.getQueryData<Parameter[]>(["parameter"]);
       if (oldData) {
+        // Use a stable identifier (e.g., parameterId) for matching and updating
         const newData = oldData.map((element) =>
-          element.parameterName === updatedParameter.parameterName
+          element.parameterId === updatedParameter.parameterId
             ? { ...element, ...updatedParameter }
             : element,
         );
-
+    
         queryClient.setQueryData(["parameter"], newData);
       }
-    },
+    }
+    // onSuccess: (updatedParameter: Parameter) => {
+    //   const oldData = queryClient.getQueryData<Parameter[]>(["parameter"]);
+    //   if (oldData) {
+    //     const newData = oldData.map((element) =>
+    //       element.parameterName === updatedParameter.parameterName
+    //         ? { ...element, ...updatedParameter }
+    //         : element,
+    //     );
+
+    //     queryClient.setQueryData(["parameter"], newData);
+    //   }
+    // },
   });
 }

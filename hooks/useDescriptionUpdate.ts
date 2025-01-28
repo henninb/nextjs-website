@@ -53,8 +53,9 @@ export default function useDescriptionUpdate() {
     onSuccess: (updatedDescription: Description) => {
       const oldData = queryClient.getQueryData<Description[]>(["description"]);
       if (oldData) {
-        const newData = oldData.map((element: Description) =>
-          element.descriptionName === updatedDescription.descriptionName
+        // Use a stable identifier (e.g., categoryId) for matching and updating
+        const newData = oldData.map((element) =>
+          element.descriptionId === updatedDescription.descriptionId
             ? { ...element, ...updatedDescription }
             : element,
         );
@@ -62,5 +63,17 @@ export default function useDescriptionUpdate() {
         queryClient.setQueryData(["description"], newData);
       }
     },
+    // onSuccess: (updatedDescription: Description) => {
+    //   const oldData = queryClient.getQueryData<Description[]>(["description"]);
+    //   if (oldData) {
+    //     const newData = oldData.map((element: Description) =>
+    //       element.descriptionName === updatedDescription.descriptionName
+    //         ? { ...element, ...updatedDescription }
+    //         : element,
+    //     );
+
+    //     queryClient.setQueryData(["description"], newData);
+    //   }
+    // },
   });
 }

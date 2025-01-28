@@ -8,6 +8,7 @@ import {
   Modal,
   TextField,
   Typography,
+  Autocomplete
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,6 +19,8 @@ import usePaymentInsert from "../../hooks/usePaymentInsert";
 import usePaymentDelete from "../../hooks/usePaymentDelete";
 import Payment from "../../model/Payment";
 import { formatDate } from "../../components/Common";
+import useAccountFetch from "../../hooks/useAccountFetch";
+import Account from "../../model/Account";
 
 export default function payments() {
   const [message, setMessage] = useState("");
@@ -30,11 +33,12 @@ export default function payments() {
   const router = useRouter();
 
   const { data, isSuccess, isLoading } = useFetchPayment();
+  const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
   const { mutate: insertPayment } = usePaymentInsert();
   const { mutate: deletePayment } = usePaymentDelete();
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && isSuccessAccounts) {
       setShowSpinner(false);
     }
   }, [isSuccess]);
@@ -108,8 +112,15 @@ export default function payments() {
       field: "amount",
       headerName: "Amount",
       width: 150,
-      renderCell: (params) =>
-        params.value?.toLocaleString("en-US", {
+      editable: true,
+      // renderCell: (params) =>
+      //   params.value?.toLocaleString("en-US", {
+      //     style: "currency",
+      //     currency: "USD",
+      //   }),
+      
+      valueFormatter: (params: number) =>
+        params.toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
         }),
@@ -203,18 +214,41 @@ export default function payments() {
           }}
         >
           <h3>{paymentData ? "Edit Payment" : "Add New Payment"}</h3>
-          <TextField
-            label="Account"
-            fullWidth
-            margin="normal"
-            value={paymentData?.accountNameOwner || ""}
-            onChange={(e) =>
-              setPaymentData((prev) => ({
-                ...prev,
-                accountNameOwner: e.target.value,
-              }))
-            }
-          />
+<Autocomplete
+  options={
+    isSuccessAccounts
+      ? accounts.filter((account) => account.accountType === "credit")
+      : []
+  }
+  getOptionLabel={(account: Account) => account.accountNameOwner || ""}
+  isOptionEqualToValue={(option, value) =>
+    option.accountNameOwner === value?.accountNameOwner
+  }
+  value={
+    paymentData?.accountNameOwner
+      ? accounts.find(
+          (account) => account.accountNameOwner === paymentData.accountNameOwner
+        ) || null
+      : null
+  }
+  onChange={(event, newValue) =>
+    setPaymentData((prev) => ({
+      ...prev,
+      accountNameOwner: newValue ? newValue.accountNameOwner : "",
+    }))
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Account"
+      fullWidth
+      margin="normal"
+      placeholder="Select or search an account"
+    />
+  )}
+/>
+
+
           <TextField
             label="Transaction Date"
             fullWidth
@@ -228,6 +262,9 @@ export default function payments() {
               }))
             }
           />
+
+
+    
           <TextField
             label="Amount"
             fullWidth
