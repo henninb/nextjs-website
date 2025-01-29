@@ -5,6 +5,7 @@ import TextField from "@mui/material/TextField";
 import { Box, Button, Modal, IconButton, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import Autocomplete from "@mui/material/Autocomplete";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
@@ -18,8 +19,11 @@ import useTransactionDelete from "../../../hooks/useTransactionDelete";
 import useTotalsPerAccountFetch from "../../../hooks/useTotalsPerAccountFetch";
 import useValidationAmountFetch from "../../../hooks/useValidationAmountFetch";
 import useValidationAmountInsert from "../../../hooks/useValidationAmountInsert";
+import useAccountFetch from "../../../hooks/useAccountFetch";
+import useDescriptionFetch from "../../../hooks/useDescriptionFetch";
 import { AccountType } from "../../../model/AccountType";
 import Transaction from "../../../model/Transaction";
+import Account from "../../../model/Account";
 import { TransactionState } from "../../../model/TransactionState";
 import { TransactionType } from "../../../model/TransactionType";
 import { ReoccurringType } from "../../../model/ReoccurringType";
@@ -28,7 +32,7 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import EditIcon from "@mui/icons-material/CreateRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import AttachMoneyRounded from "@mui/icons-material/AttachMoneyRounded";
-import SwapVert from "@mui/icons-material/SwapVert"
+import SwapVert from "@mui/icons-material/SwapVert";
 
 import {
   epochToDate,
@@ -36,15 +40,16 @@ import {
   noNaN,
   formatDate,
 } from "../../../components/Common";
+import useCategoryFetch from "../../../hooks/useCategoryFetch";
 
 export default function TransactionTable() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(false);
-  const [moveAccount, setMoveAccount] = useState(false)
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [showModalMove, setShowModalMove] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [openForm, setOpenForm] = useState<boolean>(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showModalAdd, setShowModalAdd] = useState<boolean>(false);
+  const [confirmDelete, setShowModalDelete] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
 
@@ -74,12 +79,15 @@ export default function TransactionTable() {
     useTotalsPerAccountFetch(accountNameOwner);
   const { data: validationData, isSuccess: isSuccessValidationTotals } =
     useValidationAmountFetch(accountNameOwner);
+  const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
+  const { data: categories, isSuccess: isSuccessCategories } =
+    useCategoryFetch();
+  const { data: descrptions, isSuccess: isSuccessDescriptions } =
+    useDescriptionFetch();
 
-  // const { mutate: updateTransactionState } =
-  //   useTransactionStateUpdate(accountNameOwner);
   const { mutate: updateTransaction } = useTransactionUpdate();
   const { mutate: deleteTransaction } = useTransactionDelete();
-  const { mutate: insertTransaction } = useTransactionInsert(accountNameOwner);
+  const { mutateAsync: insertTransaction } = useTransactionInsert(accountNameOwner);
   const { mutate: insertValidationAmount } = useValidationAmountInsert();
 
   const transactionStates = ["outstanding", "future", "cleared"];
@@ -92,15 +100,6 @@ export default function TransactionTable() {
 
   const handleSnackbarClose = () => setOpenSnackbar(false);
 
-  // const handleError = (error: any, moduleName: any) => {
-  //   const errorMsg = error.response
-  //     ? `${moduleName}: ${error.response.status} - ${JSON.stringify(error.response.data)}`
-  //     : `${moduleName}: Failure`;
-  //   setMessage(errorMsg);
-  //   setOpenSnackbar(true);
-  //   console.error(errorMsg);
-  // };
-
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
     const errorMessage = error.response
       ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
@@ -109,11 +108,11 @@ export default function TransactionTable() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
-    setOpen(true);
+    setShowSnackbar(true);
     if (throwIt) throw error;
   };
 
-  const handleInsertNewValidationData = async (
+  const handleInsertNewValidationData = (
     accountNameOwner: string,
     transactionState: TransactionState,
   ) => {
@@ -133,6 +132,16 @@ export default function TransactionTable() {
     });
   };
 
+  const handleMoveRow = async (transaction: Transaction) => {
+    // console.log(JSON.stringify(transaction))
+
+    // updateTransaction({
+    //   newRow: updatedRow,
+    //   oldRow: params.row,
+    // });
+  }
+
+
   const handleDeleteRow = async () => {
     if (selectedTransaction) {
       try {
@@ -141,7 +150,7 @@ export default function TransactionTable() {
       } catch (error) {
         handleError(error, "Delete Transaction failure.", false);
       } finally {
-        setConfirmDelete(false);
+        setShowModalDelete(false);
         setSelectedTransaction(null);
       }
     }
@@ -173,15 +182,15 @@ export default function TransactionTable() {
     }
   };
 
-  const addRow = async (newData: Transaction): Promise<string> => {
+  const addRow = async(newData: Transaction): Promise<Transaction> => {
     try {
-      await insertTransaction({
+      const result = await insertTransaction({
         accountNameOwner: newData.accountNameOwner,
         newRow: newData,
         isFutureTransaction: false,
       });
 
-      return "success";
+      return result;
     } catch (error) {
       handleError(error, "addRow", false);
       throw error;
@@ -213,12 +222,6 @@ export default function TransactionTable() {
       width: 180,
       editable: true,
       renderCell: (params) => <div>{params.value}</div>,
-      // renderEditCell: (params: any) => (
-      //   <TextField
-      //     value={params.value || ''}
-      //     onChange={(e: any) => params.api.getCellEditorInstances().forEach((editor: any) => editor.setValue(e.target.value))}
-      //   />
-      // ),
     },
     {
       field: "category",
@@ -284,12 +287,12 @@ export default function TransactionTable() {
       headerName: "Type",
       width: 180,
       renderCell: (params: any) => params.value || "undefined",
-      // renderEditCell: (params) => (
-      //   <SelectTransactionType
-      //     currentValue={params.value || 'undefined'}
-      //     //onChange={(newValue: any) => params.api.getCellEditorInstances().forEach((editor : any) => editor.setValue(newValue))}
-      //   />
-      // ),
+    },
+    {
+      field: "accountType",
+      headerName: "AccountType",
+      width: 150,
+      renderCell: (params: any) => params.value || "undefined",
     },
     {
       field: "reoccurringType",
@@ -313,7 +316,8 @@ export default function TransactionTable() {
           <div>
             <IconButton
               onClick={() => {
-                setMoveAccount(true)
+                setSelectedTransaction(params.row)
+                setShowModalMove(true)
               }}
             >
               <SwapVert />
@@ -321,7 +325,7 @@ export default function TransactionTable() {
             <IconButton
               onClick={() => {
                 setSelectedTransaction(params.row);
-                setConfirmDelete(true);
+                setShowModalDelete(true);
               }}
             >
               <DeleteIcon />
@@ -348,7 +352,7 @@ export default function TransactionTable() {
           )} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h3>
           <IconButton
             onClick={() => {
-              setOpenForm(true);
+              setShowModalAdd(true);
               return handleAddRow;
             }}
             style={{ marginLeft: 8 }}
@@ -376,20 +380,12 @@ export default function TransactionTable() {
           <DataGrid
             rows={data?.filter((row) => row != null) || []}
             columns={columns}
-            getRowId={(row) => {
-              console.log("row:" + row);
-              return row.transactionId || Math.random();
-            }}
-            //getRowId={(row) => row.transactionId || 0}
+            getRowId={(row) => row.transactionId || 0}
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={(newRow: Transaction, oldRow: Transaction) => {
-              // Handle row update here
-              console.log("Row updating:", newRow);
               updateTransaction({ newRow: newRow, oldRow: oldRow });
-              //updateRow(newRow, oldRow);
-              console.log("Row updated:", newRow);
-              return newRow; // Return the updated row
+              return newRow;
             }}
           />
         </div>
@@ -402,7 +398,7 @@ export default function TransactionTable() {
       />
 
       {/* Confirmation Modal */}
-      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+      <Modal open={confirmDelete} onClose={() => setShowModalDelete(false)}>
         <Box
           sx={{
             width: 400,
@@ -428,7 +424,7 @@ export default function TransactionTable() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setConfirmDelete(false)}
+              onClick={() => setShowModalDelete(false)}
             >
               Cancel
             </Button>
@@ -438,8 +434,8 @@ export default function TransactionTable() {
 
       {/* Form Overlay for Adding/Editing Transaction */}
       <Modal
-        open={openForm}
-        onClose={() => setOpenForm(false)}
+        open={showModalAdd}
+        onClose={() => setShowModalAdd(false)}
         aria-labelledby="transaction-form-modal"
         aria-describedby="transaction-form-modal-description"
       >
@@ -468,68 +464,55 @@ export default function TransactionTable() {
             />
           </LocalizationProvider>
 
-          {/* <TextField
-      label="GUID"
-      //value={transactionData?.guid || ""}
-      value={uuidv4()}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          guid: e.target.value,
-        }))
-      }
-      fullWidth
-      margin="normal"
-    /> */}
-
-          <TextField
-            label="Description"
+          <Autocomplete
+            freeSolo
+            options={
+              isSuccessDescriptions
+                ? descrptions.map((d) => d.descriptionName)
+                : []
+            }
             value={transactionData?.description || ""}
-            onChange={(e) =>
+            onChange={(_, newValue) =>
               setTransactionData((prev: any) => ({
                 ...prev,
-                description: e.target.value,
+                description: newValue,
               }))
             }
-            fullWidth
-            margin="normal"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Description"
+                fullWidth
+                margin="normal"
+              />
+            )}
           />
 
-          <TextField
-            label="Category"
+          <Autocomplete
+            freeSolo
+            options={
+              isSuccessCategories ? categories.map((c) => c.categoryName) : []
+            }
             value={transactionData?.category || ""}
-            onChange={(e) =>
+            onChange={(_, newValue) =>
               setTransactionData((prev: any) => ({
                 ...prev,
-                category: e.target.value,
+                category: newValue, // Allows selection from the list or free input
               }))
             }
-            fullWidth
-            margin="normal"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Category"
+                fullWidth
+                margin="normal"
+              />
+            )}
           />
 
-          {/* <Select
-      label="Category"
-      value={transactionData?.category || ""}
-      onChange={(e: any) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          category: e.target.value,
-        }))
-      }
-      fullWidth
-      //margin="normal"
-    >
-      {categories.map((category) => (
-        <MenuItem key={category} value={category}>
-          {category}
-        </MenuItem>
-      ))}
-    </Select> */}
 
           <TextField
             label="Amount"
-            //value={transactionData?.amount || ""}
             value={transactionData?.amount ?? ""}
             onChange={(e) =>
               setTransactionData((prev: any) => ({
@@ -564,18 +547,6 @@ export default function TransactionTable() {
               </MenuItem>
             ))}
           </Select>
-
-          {/* <TextField
-      label="Transaction Type"
-      value={transactionData?.transactionType || ""}
-      onChange={(e) =>
-        setTransactionData((prev: any) => ({
-          ...prev,
-          transactionType: e.target.value,
-        }))
-      }
-      fullWidth
-    /> */}
 
           <Select
             label="Reoccurring Type"
@@ -620,7 +591,7 @@ export default function TransactionTable() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setOpenForm(false)}
+              onClick={() => setShowModalAdd(false)}
               style={{ marginTop: 16, marginLeft: 8 }}
             >
               Cancel
@@ -629,49 +600,77 @@ export default function TransactionTable() {
         </Box>
       </Modal>
 
+      <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
 
-
-      <Modal open={moveAccount} onClose={() => console.log('')}>
-      <Box
-        sx={{
-          width: 400,
-          padding: 4,
-          backgroundColor: "white",
-          margin: "auto",
-          marginTop: "20%",
-        }}
-      >
-
-        <TextField
-            label="New AccountNameOwner"
-            value={transactionData?.accountNameOwner || ""}
-            onChange={(e) =>
-              setTransactionData((prev: any) => ({
+          <Autocomplete
+            options={
+              isSuccessAccounts && isSuccess
+                ? accounts.filter(
+                    (account) =>
+                      account.accountType === transactionData.accountType,
+                  )
+                : []
+            }
+            getOptionLabel={(account: Account) =>
+              account.accountNameOwner || ""
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.accountNameOwner === value?.accountNameOwner
+            }
+            value={
+              transactionData?.accountNameOwner
+                ? accounts.find(
+                    (account) =>
+                      account.accountNameOwner ===
+                      transactionData.accountNameOwner,
+                  ) || null
+                : null
+            }
+            onChange={(event, newValue) =>
+              setTransactionData((prev) => ({
                 ...prev,
-                accountNameOwner: e.target.value,
+                accountNameOwner: newValue ? newValue.accountNameOwner : "",
+                accountId: newValue ? newValue.accountId : 0,
               }))
             }
-            fullWidth
-            margin="normal"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="New AccountNameOwner"
+                fullWidth
+                margin="normal"
+                placeholder="Select a new account..."
+              />
+            )}
           />
 
-        <Box mt={2} display="flex" justifyContent="space-between">
-          <Button variant="contained" color="primary" onClick={() => console.log('save')}>
-            Save
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={() => setMoveAccount(false)}>
-            Cancel
-          </Button>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => transactionData && handleMoveRow(transactionData)}
+            >
+              Save
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setShowModalMove(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Modal>
-
-
+      </Modal>
     </Box>
-
-
-    
-
-
   );
 }

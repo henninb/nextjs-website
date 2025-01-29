@@ -200,23 +200,23 @@ export default function AccountTable() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
-       <Box>
-        <IconButton
-        onClick={() => {
-          handleEditAccount(params.row);
-        }}
-      >
-        <EditIcon />
-      </IconButton>
+        <Box>
+          <IconButton
+            onClick={() => {
+              handleEditAccount(params.row);
+            }}
+          >
+            <EditIcon />
+          </IconButton>
 
-        <IconButton
-          onClick={() => {
-            setSelectedAccount(params.row);
-            setShowModelDelete(true);
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
+          <IconButton
+            onClick={() => {
+              setSelectedAccount(params.row);
+              setShowModelDelete(true);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
         </Box>
       ),
     },

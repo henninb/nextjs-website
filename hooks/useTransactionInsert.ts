@@ -39,7 +39,7 @@ const insertTransaction = async (
   accountNameOwner: string,
   payload: Transaction,
   isFutureTransaction: boolean,
-): Promise<any> => {
+): Promise<Transaction> => {
   let endpoint = "https://finance.lan/api/transaction/insert";
   if (isFutureTransaction) {
     endpoint = "/transaction/future/insert";
