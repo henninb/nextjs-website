@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-//import { Box, Button, IconButton, Modal, TextField } from "@mui/material";
 import {
   Box,
   Button,
@@ -21,7 +20,6 @@ import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
-import useAccountRename from "../../hooks/useAccountRename";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
@@ -44,7 +42,6 @@ export default function AccountTable() {
   const { mutate: insertAccount } = useAccountInsert();
   const { mutate: updateAccount } = useAccountUpdate();
   const { mutate: deleteAccount } = useAccountDelete();
-  //const { mutate: renameAccount } = useAccountRename();
 
   const handleEditAccount = (account: Account) => {
     setAccountBeingEdited(account);
@@ -75,22 +72,6 @@ export default function AccountTable() {
           },
         },
       );
-
-      // renameAccount(
-      //   {
-      //     oldAccountName: accountBeingEdited.accountNameOwner,
-      //     newAccountName: editedAccountName,
-      //   },
-      //   {
-      //     onSuccess: () => {
-      //       setMessage("Account name updated successfully.");
-      //       setShowModelEdit(false);
-      //     },
-      //     onError: (error) => {
-      //       handleError(error, "Rename Account", false);
-      //     },
-      //   },
-      // );
     }
   };
 
