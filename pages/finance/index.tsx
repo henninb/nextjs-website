@@ -54,23 +54,27 @@ export default function AccountTable() {
 
   const handleRenameAccount = () => {
     if (accountBeingEdited) {
-
-      const updatedAccount = { ...accountBeingEdited, accountNameOwner: editedAccountName };
-      console.log("updatedAccount: " + JSON.stringify(updatedAccount))
-      console.log("accountBeingEdited: " + JSON.stringify(accountBeingEdited))
-      updateAccount({
-        oldRow: accountBeingEdited, newRow: updatedAccount
-      },
-      {
-        onSuccess: () => {
-          setMessage("Account name updated successfully.");
-          setEditModalOpen(false);
+      const updatedAccount = {
+        ...accountBeingEdited,
+        accountNameOwner: editedAccountName,
+      };
+      console.log("updatedAccount: " + JSON.stringify(updatedAccount));
+      console.log("accountBeingEdited: " + JSON.stringify(accountBeingEdited));
+      updateAccount(
+        {
+          oldRow: accountBeingEdited,
+          newRow: updatedAccount,
         },
-        onError: (error) => {
-          handleError(error, "Rename Account", false);
+        {
+          onSuccess: () => {
+            setMessage("Account name updated successfully.");
+            setEditModalOpen(false);
+          },
+          onError: (error) => {
+            handleError(error, "Rename Account", false);
+          },
         },
-      },
-      )
+      );
 
       // renameAccount(
       //   {

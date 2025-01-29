@@ -212,40 +212,42 @@ export default function transfers() {
         >
           <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>
 
-
-<Autocomplete
-  options={
-    isSuccessAccounts
-      ? accounts.filter((account) => account.accountType === "debit")
-      : []
-  }
-  getOptionLabel={(account: Account) => account.accountNameOwner || ""}
-  isOptionEqualToValue={(option, value) =>
-    option.accountNameOwner === value?.accountNameOwner
-  }
-  value={
-    transferData?.sourceAccount
-      ? accounts.find(
-          (account) => account.accountNameOwner === transferData.sourceAccount
-        ) || null
-      : null
-  }
-  onChange={(event, newValue) =>
-    setTransferData((prev) => ({
-      ...prev,
-      sourceAccount: newValue ? newValue.accountNameOwner : "",
-    }))
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="SourceAccount"
-      fullWidth
-      margin="normal"
-      placeholder="Select a source account"
-    />
-  )}
-/>
+          <Autocomplete
+            options={
+              isSuccessAccounts
+                ? accounts.filter((account) => account.accountType === "debit")
+                : []
+            }
+            getOptionLabel={(account: Account) =>
+              account.accountNameOwner || ""
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.accountNameOwner === value?.accountNameOwner
+            }
+            value={
+              transferData?.sourceAccount
+                ? accounts.find(
+                    (account) =>
+                      account.accountNameOwner === transferData.sourceAccount,
+                  ) || null
+                : null
+            }
+            onChange={(event, newValue) =>
+              setTransferData((prev) => ({
+                ...prev,
+                sourceAccount: newValue ? newValue.accountNameOwner : "",
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="SourceAccount"
+                fullWidth
+                margin="normal"
+                placeholder="Select a source account"
+              />
+            )}
+          />
 
           {/* <TextField
             label="Source Account"
@@ -272,40 +274,43 @@ export default function transfers() {
             }
           /> */}
 
-
-<Autocomplete
-  options={
-    isSuccessAccounts
-      ? accounts.filter((account) => account.accountType === "debit")
-      : []
-  }
-  getOptionLabel={(account: Account) => account.accountNameOwner || ""}
-  isOptionEqualToValue={(option, value) =>
-    option.accountNameOwner === value?.accountNameOwner
-  }
-  value={
-    transferData?.destinationAccount
-      ? accounts.find(
-          (account) => account.accountNameOwner === transferData.destinationAccount
-        ) || null
-      : null
-  }
-  onChange={(event, newValue) =>
-    setTransferData((prev) => ({
-      ...prev,
-      destinationAccount: newValue ? newValue.accountNameOwner : "",
-    }))
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="DestinationAccount"
-      fullWidth
-      margin="normal"
-      placeholder="Select a destination account"
-    />
-  )}
-/>
+          <Autocomplete
+            options={
+              isSuccessAccounts
+                ? accounts.filter((account) => account.accountType === "debit")
+                : []
+            }
+            getOptionLabel={(account: Account) =>
+              account.accountNameOwner || ""
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.accountNameOwner === value?.accountNameOwner
+            }
+            value={
+              transferData?.destinationAccount
+                ? accounts.find(
+                    (account) =>
+                      account.accountNameOwner ===
+                      transferData.destinationAccount,
+                  ) || null
+                : null
+            }
+            onChange={(event, newValue) =>
+              setTransferData((prev) => ({
+                ...prev,
+                destinationAccount: newValue ? newValue.accountNameOwner : "",
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="DestinationAccount"
+                fullWidth
+                margin="normal"
+                placeholder="Select a destination account"
+              />
+            )}
+          />
 
           <TextField
             label="Transaction Date"
