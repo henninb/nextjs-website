@@ -25,13 +25,13 @@ import useAccountRename from "../../hooks/useAccountRename";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [openForm, setOpenForm] = useState(false);
+  const [showModelAdd, setShowModelAdd] = useState(false);
+  const [showModelDelete, setShowModelDelete] = useState(false);
+  const [showModelEdit, setShowModelEdit] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
   const [editedAccountName, setEditedAccountName] = useState("");
   const [accountBeingEdited, setAccountBeingEdited] = useState<Account | null>(
     null,
@@ -49,7 +49,7 @@ export default function AccountTable() {
   const handleEditAccount = (account: Account) => {
     setAccountBeingEdited(account);
     setEditedAccountName(account.accountNameOwner);
-    setEditModalOpen(true);
+    setShowModelEdit(true);
   };
 
   const handleRenameAccount = () => {
@@ -68,7 +68,7 @@ export default function AccountTable() {
         {
           onSuccess: () => {
             setMessage("Account name updated successfully.");
-            setEditModalOpen(false);
+            setShowModelEdit(false);
           },
           onError: (error) => {
             handleError(error, "Rename Account", false);
@@ -84,7 +84,7 @@ export default function AccountTable() {
       //   {
       //     onSuccess: () => {
       //       setMessage("Account name updated successfully.");
-      //       setEditModalOpen(false);
+      //       setShowModelEdit(false);
       //     },
       //     onError: (error) => {
       //       handleError(error, "Rename Account", false);
@@ -104,22 +104,22 @@ export default function AccountTable() {
     router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
-  const handleDeleteRow = async () => {
+  const handleDeleteRow = () => {
     if (selectedAccount) {
       try {
-        await deleteAccount({ oldRow: selectedAccount });
+        deleteAccount({ oldRow: selectedAccount });
         setMessage("Account deleted successfully.");
       } catch (error) {
         handleError(error, "Delete Account", false);
       } finally {
-        setConfirmDelete(false);
+        setShowModelDelete(false);
         setSelectedAccount(null);
       }
     }
   };
 
   const handleSnackbarClose = () => {
-    setOpen(false);
+    setShowSnackbar(false);
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -130,14 +130,14 @@ export default function AccountTable() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
-    setOpen(true);
+    setShowSnackbar(true);
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Account) => {
+  const addRow = (newData: Account) => {
     try {
-      await insertAccount({ payload: newData });
-      setOpenForm(false);
+      insertAccount({ payload: newData });
+      setShowModelAdd(false);
     } catch (error) {
       handleError(error, "Add Account", false);
     }
@@ -156,13 +156,13 @@ export default function AccountTable() {
             {params.row.accountNameOwner}
           </Button>
 
-          <IconButton
+          {/* <IconButton
             onClick={() => {
               handleEditAccount(params.row);
             }}
           >
             <EditIcon />
-          </IconButton>
+          </IconButton> */}
         </div>
       ),
     },
@@ -219,14 +219,24 @@ export default function AccountTable() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
+       <Box>
+        <IconButton
+        onClick={() => {
+          handleEditAccount(params.row);
+        }}
+      >
+        <EditIcon />
+      </IconButton>
+
         <IconButton
           onClick={() => {
             setSelectedAccount(params.row);
-            setConfirmDelete(true);
+            setShowModelDelete(true);
           }}
         >
           <DeleteIcon />
         </IconButton>
+        </Box>
       ),
     },
   ];
@@ -238,7 +248,7 @@ export default function AccountTable() {
         <Spinner />
       ) : (
         <div>
-          <IconButton onClick={() => setOpenForm(true)}>
+          <IconButton onClick={() => setShowModelAdd(true)}>
             <AddIcon />
           </IconButton>
           <h3>
@@ -264,14 +274,14 @@ export default function AccountTable() {
           <div>
             <SnackbarBaseline
               message={message}
-              state={open}
+              state={showSnackbar}
               handleSnackbarClose={handleSnackbarClose}
             />
           </div>
         </div>
       )}
 
-      <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+      <Modal open={showModelEdit} onClose={() => setShowModelEdit(false)}>
         <Box
           sx={{
             width: 400,
@@ -300,7 +310,7 @@ export default function AccountTable() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setEditModalOpen(false)}
+              onClick={() => setShowModelEdit(false)}
             >
               Cancel
             </Button>
@@ -309,7 +319,7 @@ export default function AccountTable() {
       </Modal>
 
       {/* Confirmation Deleting Modal */}
-      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+      <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
         <Box
           sx={{
             width: 400,
@@ -335,7 +345,7 @@ export default function AccountTable() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setConfirmDelete(false)}
+              onClick={() => setShowModelDelete(false)}
             >
               Cancel
             </Button>
@@ -344,7 +354,7 @@ export default function AccountTable() {
       </Modal>
 
       {/* Adding Modal */}
-      <Modal open={openForm} onClose={() => setOpenForm(false)}>
+      <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
         <Box
           sx={{
             width: 400,

@@ -28,6 +28,7 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import EditIcon from "@mui/icons-material/CreateRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import AttachMoneyRounded from "@mui/icons-material/AttachMoneyRounded";
+import SwapVert from "@mui/icons-material/SwapVert"
 
 import {
   epochToDate,
@@ -40,6 +41,7 @@ export default function TransactionTable() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
+  const [moveAccount, setMoveAccount] = useState(false)
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -301,22 +303,6 @@ export default function TransactionTable() {
       width: 180,
       editable: true,
     },
-    // {
-    //   field: 'receiptImage',
-    //   headerName: 'Image',
-    //   editable: false,
-    //   //filtering: false,
-    //   width: 150,
-    //   renderCell: (params) => (
-    //     <div>
-    //       {params.value ? (
-    //         <img src={params.value.thumbnail} alt="receipt" style={{ width: '50px', height: '50px' }} />
-    //       ) : (
-    //         <Button onClick={() => {/* Handle image upload or view */}}>Upload Image</Button>
-    //       )}
-    //     </div>
-    //   ),
-    // },
     {
       field: "",
       headerName: "Actions",
@@ -325,13 +311,13 @@ export default function TransactionTable() {
       renderCell: (params) => {
         return (
           <div>
-            {/* <IconButton
+            <IconButton
               onClick={() => {
-                setOpenForm(true);
+                setMoveAccount(true)
               }}
             >
-              <EditIcon />
-            </IconButton> */}
+              <SwapVert />
+            </IconButton>
             <IconButton
               onClick={() => {
                 setSelectedTransaction(params.row);
@@ -642,6 +628,50 @@ export default function TransactionTable() {
           </div>
         </Box>
       </Modal>
+
+
+
+      <Modal open={moveAccount} onClose={() => console.log('')}>
+      <Box
+        sx={{
+          width: 400,
+          padding: 4,
+          backgroundColor: "white",
+          margin: "auto",
+          marginTop: "20%",
+        }}
+      >
+
+        <TextField
+            label="New AccountNameOwner"
+            value={transactionData?.accountNameOwner || ""}
+            onChange={(e) =>
+              setTransactionData((prev: any) => ({
+                ...prev,
+                accountNameOwner: e.target.value,
+              }))
+            }
+            fullWidth
+            margin="normal"
+          />
+
+        <Box mt={2} display="flex" justifyContent="space-between">
+          <Button variant="contained" color="primary" onClick={() => console.log('save')}>
+            Save
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={() => setMoveAccount(false)}>
+            Cancel
+          </Button>
+        </Box>
+      </Box>
+    </Modal>
+
+
     </Box>
+
+
+    
+
+
   );
 }
