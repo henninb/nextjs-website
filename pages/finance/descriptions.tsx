@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -32,7 +31,7 @@ export default function descriptions() {
   );
 
   const { data, isSuccess, isLoading } = useFetchDescription();
-  const { mutate: insertDescription } = useDescriptionInsert();
+  const { mutateAsync: insertDescription } = useDescriptionInsert();
   const { mutate: updateDescription } = useDescriptionUpdate();
   const { mutate: deleteDescription } = useDescriptionDelete();
 
@@ -72,10 +71,11 @@ export default function descriptions() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Description) => {
+  const addRow = async (newData: Description) : Promise<Description> =>  {
     try {
-      await insertDescription(newData);
+      const result = await insertDescription(newData);
       setOpenForm(false);
+      return result
     } catch (error) {
       handleError(error, "Add Description", false);
     }
@@ -85,14 +85,19 @@ export default function descriptions() {
     {
       field: "descriptionName",
       headerName: "Name",
-      width: 200,
+      width: 300,
       editable: true,
     },
     {
       field: "activeStatus",
       headerName: "Status",
-      width: 300,
+      width: 100,
       editable: true,
+    },
+    {
+      field: "descriptionCount",
+      headerName: "Count",
+      width: 100,
     },
     {
       field: "",
@@ -101,7 +106,6 @@ export default function descriptions() {
       renderCell: (params) => (
         <IconButton
           onClick={() => {
-            //handleDeleteRow(params.row);
             setSelectedDescription(params.row);
             setConfirmDelete(true);
           }}

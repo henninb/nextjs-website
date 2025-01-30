@@ -52,6 +52,7 @@ export default function TransactionTable() {
   const [confirmDelete, setShowModalDelete] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+  const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -87,7 +88,8 @@ export default function TransactionTable() {
 
   const { mutate: updateTransaction } = useTransactionUpdate();
   const { mutate: deleteTransaction } = useTransactionDelete();
-  const { mutateAsync: insertTransaction } = useTransactionInsert(accountNameOwner);
+  const { mutateAsync: insertTransaction } =
+    useTransactionInsert(accountNameOwner);
   const { mutate: insertValidationAmount } = useValidationAmountInsert();
 
   const transactionStates = ["outstanding", "future", "cleared"];
@@ -132,15 +134,17 @@ export default function TransactionTable() {
     });
   };
 
-  const handleMoveRow = async (transaction: Transaction) => {
-    // console.log(JSON.stringify(transaction))
+  const handleMoveRow = async (oldTransaction: Transaction, newTransaction: Transaction) => {
+    updateTransaction({
+      newRow: newTransaction,
+      oldRow: oldTransaction,
+    });
+      setOriginalRow(null)
+      setSelectedTransaction(null);
+      setShowModalMove(false)
 
-    // updateTransaction({
-    //   newRow: updatedRow,
-    //   oldRow: params.row,
-    // });
-  }
-
+      console.log('handleMoveRow updated')
+  };
 
   const handleDeleteRow = async () => {
     if (selectedTransaction) {
@@ -182,7 +186,7 @@ export default function TransactionTable() {
     }
   };
 
-  const addRow = async(newData: Transaction): Promise<Transaction> => {
+  const addRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
         accountNameOwner: newData.accountNameOwner,
@@ -316,8 +320,10 @@ export default function TransactionTable() {
           <div>
             <IconButton
               onClick={() => {
-                setSelectedTransaction(params.row)
-                setShowModalMove(true)
+                console.log('move: ' + params.row.accountType)
+                setSelectedTransaction(params.row);
+                setOriginalRow(params.row);
+                setShowModalMove(true);
               }}
             >
               <SwapVert />
@@ -497,7 +503,7 @@ export default function TransactionTable() {
             onChange={(_, newValue) =>
               setTransactionData((prev: any) => ({
                 ...prev,
-                category: newValue, // Allows selection from the list or free input
+                category: newValue,
               }))
             }
             renderInput={(params) => (
@@ -509,7 +515,6 @@ export default function TransactionTable() {
               />
             )}
           />
-
 
           <TextField
             label="Amount"
@@ -613,10 +618,10 @@ export default function TransactionTable() {
 
           <Autocomplete
             options={
-              isSuccessAccounts && isSuccess
+              isSuccessAccounts && isSuccess && selectedTransaction
                 ? accounts.filter(
                     (account) =>
-                      account.accountType === transactionData.accountType,
+                      account.accountType === selectedTransaction.accountType,
                   )
                 : []
             }
@@ -627,16 +632,16 @@ export default function TransactionTable() {
               option.accountNameOwner === value?.accountNameOwner
             }
             value={
-              transactionData?.accountNameOwner
+              selectedTransaction?.accountNameOwner
                 ? accounts.find(
                     (account) =>
                       account.accountNameOwner ===
-                      transactionData.accountNameOwner,
+                      selectedTransaction.accountNameOwner,
                   ) || null
                 : null
             }
             onChange={(event, newValue) =>
-              setTransactionData((prev) => ({
+              setSelectedTransaction((prev) => ({
                 ...prev,
                 accountNameOwner: newValue ? newValue.accountNameOwner : "",
                 accountId: newValue ? newValue.accountId : 0,
@@ -657,7 +662,7 @@ export default function TransactionTable() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => transactionData && handleMoveRow(transactionData)}
+              onClick={() => originalRow && selectedTransaction && handleMoveRow(originalRow, selectedTransaction)}
             >
               Save
             </Button>
