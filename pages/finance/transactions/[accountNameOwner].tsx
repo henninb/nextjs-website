@@ -134,16 +134,19 @@ export default function TransactionTable() {
     });
   };
 
-  const handleMoveRow = async (oldTransaction: Transaction, newTransaction: Transaction) => {
+  const handleMoveRow = async (
+    oldTransaction: Transaction,
+    newTransaction: Transaction,
+  ) => {
     updateTransaction({
       newRow: newTransaction,
       oldRow: oldTransaction,
     });
-      setOriginalRow(null)
-      setSelectedTransaction(null);
-      setShowModalMove(false)
+    setOriginalRow(null);
+    setSelectedTransaction(null);
+    setShowModalMove(false);
 
-      console.log('handleMoveRow updated')
+    console.log("handleMoveRow updated");
   };
 
   const handleDeleteRow = async () => {
@@ -320,7 +323,7 @@ export default function TransactionTable() {
           <div>
             <IconButton
               onClick={() => {
-                console.log('move: ' + params.row.accountType)
+                console.log("move: " + params.row.accountType);
                 setSelectedTransaction(params.row);
                 setOriginalRow(params.row);
                 setShowModalMove(true);
@@ -615,7 +618,6 @@ export default function TransactionTable() {
             marginTop: "20%",
           }}
         >
-
           <Autocomplete
             options={
               isSuccessAccounts && isSuccess && selectedTransaction
@@ -662,7 +664,11 @@ export default function TransactionTable() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => originalRow && selectedTransaction && handleMoveRow(originalRow, selectedTransaction)}
+              onClick={() =>
+                originalRow &&
+                selectedTransaction &&
+                handleMoveRow(originalRow, selectedTransaction)
+              }
             >
               Save
             </Button>

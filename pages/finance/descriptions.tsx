@@ -71,11 +71,11 @@ export default function descriptions() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Description) : Promise<Description> =>  {
+  const addRow = async (newData: Description): Promise<Description> => {
     try {
       const result = await insertDescription(newData);
       setOpenForm(false);
-      return result
+      return result;
     } catch (error) {
       handleError(error, "Add Description", false);
     }

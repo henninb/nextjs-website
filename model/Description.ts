@@ -2,7 +2,7 @@ export default interface Description {
   descriptionId: number;
   descriptionName: string;
   activeStatus: boolean;
-  descripitonCount?: number,
+  descripitonCount?: number;
   dateAdded?: Date;
   dateUpdated?: Date;
 }
