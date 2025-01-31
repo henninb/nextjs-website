@@ -51,6 +51,7 @@ export default function TransactionTable() {
   const [confirmDelete, setShowModalDelete] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+  const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -132,11 +133,19 @@ export default function TransactionTable() {
     });
   };
 
-  const handleMoveRow = async (transaction: Transaction) => {
-    // updateTransaction({
-    //   newRow: updatedRow,
-    //   oldRow: params.row,
-    // });
+  const handleMoveRow = async (
+    oldTransaction: Transaction,
+    newTransaction: Transaction,
+  ) => {
+    updateTransaction({
+      newRow: newTransaction,
+      oldRow: oldTransaction,
+    });
+    setOriginalRow(null);
+    setSelectedTransaction(null);
+    setShowModalMove(false);
+
+    console.log("handleMoveRow updated");
   };
 
   const handleDeleteRow = async () => {
@@ -313,7 +322,9 @@ export default function TransactionTable() {
           <div>
             <IconButton
               onClick={() => {
+                console.log("move: " + params.row.accountType);
                 setSelectedTransaction(params.row);
+                setOriginalRow(params.row);
                 setShowModalMove(true);
               }}
             >
@@ -494,7 +505,7 @@ export default function TransactionTable() {
             onChange={(_, newValue) =>
               setTransactionData((prev: any) => ({
                 ...prev,
-                category: newValue, // Allows selection from the list or free input
+                category: newValue,
               }))
             }
             renderInput={(params) => (
@@ -608,10 +619,10 @@ export default function TransactionTable() {
         >
           <Autocomplete
             options={
-              isSuccessAccounts && isSuccess
+              isSuccessAccounts && isSuccess && selectedTransaction
                 ? accounts.filter(
                     (account) =>
-                      account.accountType === transactionData.accountType,
+                      account.accountType === selectedTransaction.accountType,
                   )
                 : []
             }
@@ -622,16 +633,16 @@ export default function TransactionTable() {
               option.accountNameOwner === value?.accountNameOwner
             }
             value={
-              transactionData?.accountNameOwner
+              selectedTransaction?.accountNameOwner
                 ? accounts.find(
                     (account) =>
                       account.accountNameOwner ===
-                      transactionData.accountNameOwner,
+                      selectedTransaction.accountNameOwner,
                   ) || null
                 : null
             }
             onChange={(event, newValue) =>
-              setTransactionData((prev) => ({
+              setSelectedTransaction((prev) => ({
                 ...prev,
                 accountNameOwner: newValue ? newValue.accountNameOwner : "",
                 accountId: newValue ? newValue.accountId : 0,
@@ -652,7 +663,11 @@ export default function TransactionTable() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => transactionData && handleMoveRow(transactionData)}
+              onClick={() =>
+                originalRow &&
+                selectedTransaction &&
+                handleMoveRow(originalRow, selectedTransaction)
+              }
             >
               Save
             </Button>

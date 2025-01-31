@@ -31,7 +31,7 @@ export default function descriptions() {
   );
 
   const { data, isSuccess } = useFetchDescription();
-  const { mutate: insertDescription } = useDescriptionInsert();
+  const { mutateAsync: insertDescription } = useDescriptionInsert();
   const { mutate: updateDescription } = useDescriptionUpdate();
   const { mutate: deleteDescription } = useDescriptionDelete();
 
@@ -71,10 +71,11 @@ export default function descriptions() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Description) => {
+  const addRow = async (newData: Description): Promise<Description> => {
     try {
-      await insertDescription(newData);
+      const result = await insertDescription(newData);
       setOpenForm(false);
+      return result;
     } catch (error) {
       handleError(error, "Add Description", false);
     }
@@ -105,7 +106,6 @@ export default function descriptions() {
       renderCell: (params) => (
         <IconButton
           onClick={() => {
-            //handleDeleteRow(params.row);
             setSelectedDescription(params.row);
             setConfirmDelete(true);
           }}
