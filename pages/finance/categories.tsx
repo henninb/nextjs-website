@@ -20,16 +20,16 @@ import useCategoryUpdate from "../../hooks/useCategoryUpdate";
 
 export default function Categories() {
   const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [openForm, setOpenForm] = useState(false);
+  const [showModalAdd, setOpenForm] = useState(false);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
 
-  const { data, isSuccess, isLoading } = useFetchCategory();
+  const { data, isSuccess } = useFetchCategory();
   const { mutate: insertCategory } = useCategoryInsert();
   const { mutate: updateCategory } = useCategoryUpdate();
   const { mutate: deleteCategory } = useCategoryDelete();
@@ -55,7 +55,7 @@ export default function Categories() {
   };
 
   const handleSnackbarClose = () => {
-    setOpen(false);
+    setShowSnackbar(false);
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -66,7 +66,7 @@ export default function Categories() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
-    setOpen(true);
+    setShowSnackbar(true);
     if (throwIt) throw error;
   };
 
@@ -136,7 +136,7 @@ export default function Categories() {
           <div>
             <SnackbarBaseline
               message={message}
-              state={open}
+              state={showSnackbar}
               handleSnackbarClose={handleSnackbarClose}
             />
           </div>
@@ -178,7 +178,7 @@ export default function Categories() {
         </Box>
       </Modal>
 
-      <Modal open={openForm} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
         <Box
           sx={{
             width: 400,

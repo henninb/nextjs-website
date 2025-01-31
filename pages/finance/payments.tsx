@@ -24,15 +24,15 @@ import Account from "../../model/Account";
 
 export default function payments() {
   const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [openForm, setOpenForm] = useState(false);
+  const [showModalAdd, setOpenForm] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const router = useRouter();
 
-  const { data, isSuccess, isLoading } = useFetchPayment();
+  const { data, isSuccess } = useFetchPayment();
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
   const { mutate: insertPayment } = usePaymentInsert();
   const { mutate: deletePayment } = usePaymentDelete();
@@ -62,7 +62,7 @@ export default function payments() {
   };
 
   const handleSnackbarClose = () => {
-    setOpen(false);
+    setShowSnackbar(false);
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -73,7 +73,7 @@ export default function payments() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
-    setOpen(true);
+    setShowSnackbar(true);
     if (throwIt) throw error;
   };
 
@@ -98,7 +98,7 @@ export default function payments() {
     },
     {
       field: "accountNameOwner",
-      headerName: "Account",
+      headerName: "Destination Account",
       width: 275,
       renderCell: (params) => (
         <Button
@@ -162,7 +162,7 @@ export default function payments() {
           <div>
             <SnackbarBaseline
               message={message}
-              state={open}
+              state={showSnackbar}
               handleSnackbarClose={handleSnackbarClose}
             />
           </div>
@@ -204,7 +204,7 @@ export default function payments() {
         </Box>
       </Modal>
 
-      <Modal open={openForm} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
         <Box
           sx={{
             width: 400,

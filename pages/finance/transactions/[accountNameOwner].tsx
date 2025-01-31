@@ -29,7 +29,6 @@ import { TransactionType } from "../../../model/TransactionType";
 import { ReoccurringType } from "../../../model/ReoccurringType";
 import ValidationAmount from "../../../model/ValidationAmount";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import EditIcon from "@mui/icons-material/CreateRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import AttachMoneyRounded from "@mui/icons-material/AttachMoneyRounded";
 import SwapVert from "@mui/icons-material/SwapVert";
@@ -87,7 +86,8 @@ export default function TransactionTable() {
 
   const { mutate: updateTransaction } = useTransactionUpdate();
   const { mutate: deleteTransaction } = useTransactionDelete();
-  const { mutateAsync: insertTransaction } = useTransactionInsert(accountNameOwner);
+  const { mutateAsync: insertTransaction } =
+    useTransactionInsert(accountNameOwner);
   const { mutate: insertValidationAmount } = useValidationAmountInsert();
 
   const transactionStates = ["outstanding", "future", "cleared"];
@@ -133,14 +133,11 @@ export default function TransactionTable() {
   };
 
   const handleMoveRow = async (transaction: Transaction) => {
-    // console.log(JSON.stringify(transaction))
-
     // updateTransaction({
     //   newRow: updatedRow,
     //   oldRow: params.row,
     // });
-  }
-
+  };
 
   const handleDeleteRow = async () => {
     if (selectedTransaction) {
@@ -182,7 +179,7 @@ export default function TransactionTable() {
     }
   };
 
-  const addRow = async(newData: Transaction): Promise<Transaction> => {
+  const addRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
         accountNameOwner: newData.accountNameOwner,
@@ -316,8 +313,8 @@ export default function TransactionTable() {
           <div>
             <IconButton
               onClick={() => {
-                setSelectedTransaction(params.row)
-                setShowModalMove(true)
+                setSelectedTransaction(params.row);
+                setShowModalMove(true);
               }}
             >
               <SwapVert />
@@ -510,7 +507,6 @@ export default function TransactionTable() {
             )}
           />
 
-
           <TextField
             label="Amount"
             value={transactionData?.amount ?? ""}
@@ -610,7 +606,6 @@ export default function TransactionTable() {
             marginTop: "20%",
           }}
         >
-
           <Autocomplete
             options={
               isSuccessAccounts && isSuccess

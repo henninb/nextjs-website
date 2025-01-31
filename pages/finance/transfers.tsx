@@ -24,17 +24,17 @@ import Account from "../../model/Account";
 
 export default function transfers() {
   const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [openForm, setOpenForm] = useState(false);
+  const [showModalAdd, setShowModalAdd] = useState(false);
   const [transferData, setTransferData] = useState<Transfer | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null,
   );
   const router = useRouter();
 
-  const { data, isSuccess, isLoading } = useFetchTransfer();
+  const { data, isSuccess } = useFetchTransfer();
   const { mutate: insertTransfer } = useTransferInsert();
   const { mutate: deleteTransfer } = useTransferDelete();
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
@@ -46,7 +46,7 @@ export default function transfers() {
   }, [isSuccess]);
 
   const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/transactions/${accountNameOwner}`);
+    router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
   const handleDeleteRow = async () => {
@@ -57,14 +57,14 @@ export default function transfers() {
       } catch (error) {
         handleError(error, "Delete Transfer failure.", false);
       } finally {
-        setConfirmDelete(false);
+        setShowModalDelete(false);
         setSelectedTransfer(null);
       }
     }
   };
 
   const handleSnackbarClose = () => {
-    setOpen(false);
+    setShowSnackbar(false);
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -75,14 +75,14 @@ export default function transfers() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
-    setOpen(true);
+    setShowSnackbar(true);
     if (throwIt) throw error;
   };
 
   const addRow = async (newData: Transfer) => {
     try {
       await insertTransfer({ payload: newData });
-      setOpenForm(false);
+      setShowModalAdd(false);
     } catch (error) {
       handleError(error, "Add Transfer", false);
     }
@@ -102,7 +102,12 @@ export default function transfers() {
       field: "sourceAccount",
       headerName: "Source Account",
       width: 200,
-      editable: true,
+      renderCell: (params) => (
+        <Button onClick={() => handleButtonClickLink(params.row.sourceAccount)}>
+          {params.row.sourceAccount}
+        </Button>
+      ),
+      //editable: true,
     },
     {
       field: "destinationAccount",
@@ -130,7 +135,7 @@ export default function transfers() {
         <IconButton
           onClick={() => {
             setSelectedTransfer(params.row);
-            setConfirmDelete(true);
+            setShowModalDelete(true);
           }}
         >
           <DeleteIcon />
@@ -146,7 +151,7 @@ export default function transfers() {
         <Spinner />
       ) : (
         <div>
-          <IconButton onClick={() => setOpenForm(true)}>
+          <IconButton onClick={() => setShowModalAdd(true)}>
             <AddIcon />
           </IconButton>
           <DataGrid
@@ -159,7 +164,7 @@ export default function transfers() {
           <div>
             <SnackbarBaseline
               message={message}
-              state={open}
+              state={showSnackbar}
               handleSnackbarClose={handleSnackbarClose}
             />
           </div>
@@ -167,7 +172,7 @@ export default function transfers() {
       )}
 
       {/* Confirmation Delete Modal */}
-      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
         <Box
           sx={{
             width: 400,
@@ -193,7 +198,7 @@ export default function transfers() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setConfirmDelete(false)}
+              onClick={() => setShowModalDelete(false)}
             >
               Cancel
             </Button>
@@ -201,7 +206,7 @@ export default function transfers() {
         </Box>
       </Modal>
 
-      <Modal open={openForm} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
             width: 400,
@@ -248,31 +253,6 @@ export default function transfers() {
               />
             )}
           />
-
-          {/* <TextField
-            label="Source Account"
-            fullWidth
-            margin="normal"
-            value={transferData?.sourceAccount || ""}
-            onChange={(e) =>
-              setTransferData((prev) => ({
-                ...prev,
-                sourceAccount: e.target.value,
-              }))
-            }
-          /> */}
-          {/* <TextField
-            label="DestinationAccount"
-            fullWidth
-            margin="normal"
-            value={transferData?.destinationAccount || ""}
-            onChange={(e) =>
-              setTransferData((prev) => ({
-                ...prev,
-                destinationAccount: e.target.value,
-              }))
-            }
-          /> */}
 
           <Autocomplete
             options={

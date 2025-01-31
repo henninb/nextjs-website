@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -21,9 +20,9 @@ import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
 
 export default function descriptions() {
   const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(false);
+  const [showSnackbar, setOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [openForm, setOpenForm] = useState(false);
+  const [showModalAdd, setOpenForm] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedDescription, setSelectedDescription] =
     useState<Description | null>(null);
@@ -31,7 +30,7 @@ export default function descriptions() {
     null,
   );
 
-  const { data, isSuccess, isLoading } = useFetchDescription();
+  const { data, isSuccess } = useFetchDescription();
   const { mutate: insertDescription } = useDescriptionInsert();
   const { mutate: updateDescription } = useDescriptionUpdate();
   const { mutate: deleteDescription } = useDescriptionDelete();
@@ -85,14 +84,19 @@ export default function descriptions() {
     {
       field: "descriptionName",
       headerName: "Name",
-      width: 200,
+      width: 350,
       editable: true,
     },
     {
       field: "activeStatus",
       headerName: "Status",
-      width: 300,
+      width: 75,
       editable: true,
+    },
+    {
+      field: "descriptionCount",
+      headerName: "Count",
+      width: 75,
     },
     {
       field: "",
@@ -143,7 +147,7 @@ export default function descriptions() {
           <div>
             <SnackbarBaseline
               message={message}
-              state={open}
+              state={showSnackbar}
               handleSnackbarClose={handleSnackbarClose}
             />
           </div>
@@ -185,7 +189,7 @@ export default function descriptions() {
         </Box>
       </Modal>
 
-      <Modal open={openForm} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
         <Box
           sx={{
             width: 400,

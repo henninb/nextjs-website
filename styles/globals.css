@@ -129,3 +129,80 @@ pre {
     background: hsl(30,80%,90%);
 }
 */
+
+/* form-styles.css */
+
+.form-container {
+  min-height: 100vh; /* Ensure full viewport height */
+  background: linear-gradient(to right, #e0f2f7, #bbdefb); /* Light blue gradient background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-card {
+  background-color: white;
+  padding: 2rem; /* Increased padding */
+  border-radius: 1rem; /* More rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  width: 90%; /* Responsive width */
+  max-width: 768px; /* Maximum width on larger screens */
+}
+
+.form-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #374151; /* Darker gray */
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.form-description {
+  color: #6b7280; /* Lighter gray */
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #d1d5db; /* Light gray border */
+  border-radius: 0.5rem;
+  focus: outline-none;
+  focus: ring-2;
+  focus: ring-blue-500;
+  transition: border-color 0.2s ease-in-out; /* Smooth transition */
+}
+
+.form-error {
+  color: #ef4444; /* Red error color */
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-button {
+  width: 100%;
+  background-color: #2563eb; /* Blue button */
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.form-button:hover {
+  background-color: #1d4ed8; /* Darker blue on hover */
+}
