@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
+import { validateDate } from "@mui/x-date-pickers";
 //import { basicAuth } from "../Common";
 
 const setupNewAccount = (payload: Account) => {
@@ -11,6 +12,7 @@ const setupNewAccount = (payload: Account) => {
     dateAdded: new Date(),
     dateUpdated: new Date(),
     activeStatus: true,
+    validationDate: new Date(0),
     ...payload,
   };
 };
@@ -19,6 +21,8 @@ const insertAccount = async (payload: Account): Promise<Account> => {
   try {
     const endpoint = "https://finance.lan/api/account/insert";
     const newPayload = setupNewAccount(payload);
+
+    console.log(JSON.stringify(newPayload));
 
     const response = await fetch(endpoint, {
       method: "POST",

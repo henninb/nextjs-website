@@ -134,7 +134,11 @@ pre {
 
 .form-container {
   min-height: 100vh; /* Ensure full viewport height */
-  background: linear-gradient(to right, #e0f2f7, #bbdefb); /* Light blue gradient background */
+  background: linear-gradient(
+    to right,
+    #e0f2f7,
+    #bbdefb
+  ); /* Light blue gradient background */
   display: flex;
   justify-content: center;
   align-items: center;

@@ -817,7 +817,9 @@ header {
   background-color: white;
   padding: 2rem;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -1px rgb(0 0 0 / 0.06);
   width: 90%;
   max-width: 640px;
 }
@@ -831,15 +833,15 @@ header {
 }
 
 .modal-summary {
-margin-bottom: 1rem;
-padding: 0.5rem 0;
-border-bottom: 1px solid #eee;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
 }
 
 .modal-summary strong {
-font-weight: 500;
-color: #374151;
-margin-right: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+  margin-right: 0.5rem;
 }
 
 .modal-button {
@@ -856,7 +858,6 @@ margin-right: 0.5rem;
 .modal-button:hover {
   background-color: #14802b; /* Darker Green */
 }
-
 
 .form-container {
   max-width: 600px;

@@ -91,10 +91,7 @@ export default function ContactForm() {
               placeholder,
             }) => (
               <div key={name} className="form-group">
-                <label
-                  htmlFor={name}
-                  className="form-label"
-                >
+                <label htmlFor={name} className="form-label">
                   {label}
                 </label>
                 <input
@@ -119,10 +116,7 @@ export default function ContactForm() {
           )}
 
           <div className="mt-6">
-            <button
-              type="submit"
-              className="form-button"
-            >
+            <button type="submit" className="form-button">
               Submit
             </button>
           </div>
@@ -138,16 +132,13 @@ export default function ContactForm() {
                   <div key={key} className="py-1">
                     <strong className="modal-summary">
                       {key.replace(/([A-Z])/g, " $1")}:
-                    </strong> 
+                    </strong>
                     {value}
                   </div>
                 ))}
               </div>
               <div className="mt-6 flex justify-center">
-                <button
-                  onClick={handleModalClose}
-                  className="modal-button"
-                >
+                <button onClick={handleModalClose} className="modal-button">
                   OK
                 </button>
               </div>
