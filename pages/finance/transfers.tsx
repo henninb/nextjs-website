@@ -101,7 +101,7 @@ export default function transfers() {
     {
       field: "sourceAccount",
       headerName: "Source Account",
-      width: 200,
+      width: 300,
       renderCell: (params) => (
         <Button onClick={() => handleButtonClickLink(params.row.sourceAccount)}>
           {params.row.sourceAccount}
@@ -112,14 +112,19 @@ export default function transfers() {
     {
       field: "destinationAccount",
       headerName: "Destination Account",
-      width: 200,
-      editable: true,
+      width: 300,
+      renderCell: (params) => (
+        <Button onClick={() => handleButtonClickLink(params.row.destinationAccount)}>
+          {params.row.destinationAccount}
+        </Button>
+      ),
+      //editable: true,
     },
 
     {
       field: "amount",
       headerName: "Amount",
-      width: 150,
+      width: 200,
       editable: true,
       renderCell: (params) =>
         params.value?.toLocaleString("en-US", {

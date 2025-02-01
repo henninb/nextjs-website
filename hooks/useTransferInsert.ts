@@ -6,6 +6,7 @@ const overRideTransferValues = (payload: Transfer) => {
   return {
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
+    ...payload
   };
 };
 
@@ -14,6 +15,7 @@ const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
     const endpoint = "https://finance.lan/api/transfer/insert";
     const newPayload = overRideTransferValues(payload);
 
+    //console.log("" + JSON.stringify(newPayload));
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
