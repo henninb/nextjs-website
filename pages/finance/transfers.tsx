@@ -114,7 +114,9 @@ export default function transfers() {
       headerName: "Destination Account",
       width: 300,
       renderCell: (params) => (
-        <Button onClick={() => handleButtonClickLink(params.row.destinationAccount)}>
+        <Button
+          onClick={() => handleButtonClickLink(params.row.destinationAccount)}
+        >
           {params.row.destinationAccount}
         </Button>
       ),

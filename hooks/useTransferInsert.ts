@@ -6,7 +6,7 @@ const overRideTransferValues = (payload: Transfer) => {
   return {
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
-    ...payload
+    ...payload,
   };
 };
 
