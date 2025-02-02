@@ -11,6 +11,7 @@ interface Option {
 
 export default function SelectNavigateAccounts() {
   const [options, setOptions] = useState<Option[]>([]);
+  const [maxWidth, setMaxWidth] = useState<number>(0); // State to hold the max width
   const router = useRouter(); // Replacing useNavigate
   const { data, isSuccess, isError, error } = useFetchAccount();
 
@@ -37,6 +38,14 @@ export default function SelectNavigateAccounts() {
         }));
 
       setOptions(optionList);
+
+      // Calculate the max width based on the longest label
+      const longestLabel = optionList.reduce(
+        (max, option) => (option.label.length > max.length ? option.label : max),
+        ""
+      );
+      const newMaxWidth = longestLabel.length * 10; // Adjust multiplier as necessary to fit text
+      setMaxWidth(newMaxWidth);
     }
   }, [isSuccess, data]);
 
@@ -59,7 +68,7 @@ export default function SelectNavigateAccounts() {
       <Select
         options={options}
         onChange={handleChange}
-        placeholder="Select account name owner..."
+        placeholder="Select account..."
         theme={(theme) => ({
           ...theme,
           borderRadius: 0,
@@ -70,6 +79,21 @@ export default function SelectNavigateAccounts() {
           },
         })}
         aria-label="Select an account"
+        styles={{
+          control: (provided) => ({
+            ...provided,
+            minWidth: maxWidth ? `${maxWidth}px` : '200px', // Dynamically set the width
+            width: maxWidth ? `${maxWidth}px` : 'auto', // Prevent overflow and set width dynamically
+          }),
+          singleValue: (provided) => ({
+            ...provided,
+            whiteSpace: 'nowrap', // Prevent text wrapping for selected option
+          }),
+          option: (provided) => ({
+            ...provided,
+            whiteSpace: 'nowrap', // Prevent text wrapping in the dropdown
+          }),
+        }}
       />
     </div>
   );
