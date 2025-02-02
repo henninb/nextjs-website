@@ -90,10 +90,28 @@ export default function paymentrequired() {
       headerName: "Validation Date",
       width: 150,
       type: "date",
-      valueGetter: (params) => new Date(params),
+      // renderCell: (params) => {
+      //   return params.value.toLocaleDateString("en-US");
+      // },
+      // valueGetter: (params: string) => {
+      //   //console.log("date-in:" + params)
+      //   const utcDate = new Date(params);
+      //   const localDate = new Date(
+      //     utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
+      //   );
+      //   //console.log("localDate: " + localDate);
+      //   return localDate;
+      // },
+
       renderCell: (params) => {
-        return params?.value?.toLocaleDateString("en-US");
+        return params.value
+          ? new Date(params.value).toLocaleString("en-US")
+          : "";
       },
+      valueGetter: (params) => new Date(params),
+      // renderCell: (params) => {
+      //   return params?.value?.toLocaleDateString("en-US");
+      // },
     },
   ];
 
