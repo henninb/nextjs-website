@@ -383,7 +383,8 @@ export default function TransactionTable() {
                   currency: "USD",
                 })
               : "$0.00"}{" "}
-            {" - "} {new Date(validationData?.validationDate).toLocaleString("en-US")}
+            {" - "}{" "}
+            {new Date(validationData?.validationDate).toLocaleString("en-US")}
           </Button>
 
           <DataGrid

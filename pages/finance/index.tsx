@@ -20,11 +20,7 @@ import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
-import {
-  currencyFormat,
-  noNaN,
-  formatDate,
-} from "../../components/Common";
+import { currencyFormat, noNaN, formatDate } from "../../components/Common";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
