@@ -97,7 +97,6 @@ export default function transfers() {
         return params.value.toLocaleDateString("en-US");
       },
       valueGetter: (params: string) => {
-        //console.log("date-in:" + params)
         const utcDate = new Date(params);
         const localDate = new Date(
           utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
