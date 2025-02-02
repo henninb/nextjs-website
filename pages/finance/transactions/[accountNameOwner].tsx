@@ -351,13 +351,14 @@ export default function TransactionTable() {
         <Spinner />
       ) : (
         <div>
-          <h3>{`[ ${currencyFormat(
+          <h4>{`[ ${currencyFormat(
             noNaN(totals?.["totals"] ?? 0),
           )} ] [ ${currencyFormat(
             noNaN(totals?.["totalsCleared"] ?? 0),
           )} ]  [ ${currencyFormat(
             noNaN(totals?.["totalsOutstanding"] ?? 0),
-          )} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h3>
+          )} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h4>
+
           <IconButton
             onClick={() => {
               setShowModalAdd(true);
@@ -382,7 +383,7 @@ export default function TransactionTable() {
                   currency: "USD",
                 })
               : "$0.00"}{" "}
-            {" - "} {formatDate(validationData?.validationDate)}
+            {" - "} {new Date(validationData?.validationDate).toLocaleString("en-US")}
           </Button>
 
           <DataGrid

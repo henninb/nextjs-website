@@ -20,6 +20,11 @@ import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
+import {
+  currencyFormat,
+  noNaN,
+  formatDate,
+} from "../../components/Common";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
@@ -232,9 +237,16 @@ export default function AccountTable() {
           <IconButton onClick={() => setShowModelAdd(true)}>
             <AddIcon />
           </IconButton>
-          <h3>
+          {/* <h3>
             [${totals?.totals}] [${totals?.totalsCleared}] [$
             {totals?.totalsOutstanding}] [ ${totals?.totalsFuture}]
+          </h3> */}
+
+          <h3>
+            [ ${currencyFormat(noNaN(totals["totals"]))} ] [ $
+            {currencyFormat(noNaN(totals["totalsCleared"]))} ] [ $
+            {currencyFormat(noNaN(totals["totalsOutstanding"]))} ] [ $
+            {currencyFormat(noNaN(totals["totalsFuture"]))} ]
           </h3>
           <DataGrid
             rows={data?.filter((row) => row != null) || []}
