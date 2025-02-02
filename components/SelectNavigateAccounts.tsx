@@ -41,8 +41,9 @@ export default function SelectNavigateAccounts() {
 
       // Calculate the max width based on the longest label
       const longestLabel = optionList.reduce(
-        (max, option) => (option.label.length > max.length ? option.label : max),
-        ""
+        (max, option) =>
+          option.label.length > max.length ? option.label : max,
+        "",
       );
       const newMaxWidth = longestLabel.length * 10; // Adjust multiplier as necessary to fit text
       setMaxWidth(newMaxWidth);
@@ -82,16 +83,16 @@ export default function SelectNavigateAccounts() {
         styles={{
           control: (provided) => ({
             ...provided,
-            minWidth: maxWidth ? `${maxWidth}px` : '200px', // Dynamically set the width
-            width: maxWidth ? `${maxWidth}px` : 'auto', // Prevent overflow and set width dynamically
+            minWidth: maxWidth ? `${maxWidth}px` : "200px", // Dynamically set the width
+            width: maxWidth ? `${maxWidth}px` : "auto", // Prevent overflow and set width dynamically
           }),
           singleValue: (provided) => ({
             ...provided,
-            whiteSpace: 'nowrap', // Prevent text wrapping for selected option
+            whiteSpace: "nowrap", // Prevent text wrapping for selected option
           }),
           option: (provided) => ({
             ...provided,
-            whiteSpace: 'nowrap', // Prevent text wrapping in the dropdown
+            whiteSpace: "nowrap", // Prevent text wrapping in the dropdown
           }),
         }}
       />
