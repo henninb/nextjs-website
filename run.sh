@@ -17,8 +17,9 @@ if [ "$ENV" = "prod" ]; then
     exit 1
   fi
 
-  echo docker
   docker build -t nextjs-website:latest .
+  kubectl delete pod nextjs-website-pod -n test-ns
+  kubectl apply -f nextjs-website-pod.yml
   #docker run -d -p 3000:3000 --name nextjs-website nextjs-website:latest
   exit 0
 

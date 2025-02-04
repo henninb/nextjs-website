@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextjs-website-deployment
+  namespace: test-ns
+  labels:
+    app: nextjs-website
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextjs-website
+  template:
+    metadata:
+      labels:
+        app: nextjs-website
+    spec:
+      imagePullSecrets:
+        - name: my-registry-secret
+      containers:
+        - name: nextjs-website
+          image: nextjs-website:latest
+          ports:
+            - containerPort: 3000
