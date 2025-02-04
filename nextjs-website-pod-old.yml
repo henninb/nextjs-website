@@ -11,6 +11,6 @@ spec:
     - name: my-registry-secret  # The name of your image pull secret
   containers:
   - name: nextjs-website
-    image: nextjs-website:latest  # This is your Docker image
+    image: 192.168.10.40:5000/nextjs-website:latest  # This is your Docker image
     ports:
     - containerPort: 3000

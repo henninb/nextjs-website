@@ -19,6 +19,6 @@ spec:
         - name: my-registry-secret
       containers:
         - name: nextjs-website
-          image: nextjs-website:latest
+          image: 192.168.10.40:5000/nextjs-website:latest
           ports:
             - containerPort: 3000
