@@ -112,7 +112,7 @@ export default function payments() {
     {
       field: "accountNameOwner",
       headerName: "Destination Account",
-      width: 275,
+      width: 350,
       renderCell: (params) => (
         <Button
           onClick={() => handleButtonClickLink(params.row.accountNameOwner)}

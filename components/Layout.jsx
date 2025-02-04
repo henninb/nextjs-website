@@ -78,6 +78,11 @@ export default function Layout({ children }) {
                     </a>
                   </li>
                   <li className="nav-item">
+                    <a className="nav-link" href="/finance/configuration">
+                      Configuration
+                    </a>
+                  </li>
+                  <li className="nav-item">
                     <SelectNavigateAccounts></SelectNavigateAccounts>
                   </li>
                 </>
