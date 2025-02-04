@@ -19,7 +19,9 @@ if [ "$ENV" = "prod" ]; then
 
   docker build -t nextjs-website:latest .
   kubectl delete pod nextjs-website-pod -n test-ns
+  kubectl delete deployment nextjs-website-deployment -n test-ns
   kubectl apply -f nextjs-website-pod.yml
+  kubectl get pods -n test-ns -o wide
   #docker run -d -p 3000:3000 --name nextjs-website nextjs-website:latest
   exit 0
 
