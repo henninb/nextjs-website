@@ -231,6 +231,7 @@ export default function transfers() {
             padding: 4,
             backgroundColor: "white",
             margin: "auto",
+            marginTop: "20%",
           }}
         >
           <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>

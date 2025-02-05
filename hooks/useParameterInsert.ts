@@ -25,12 +25,13 @@ const insertParameter = async (payload: Parameter): Promise<Parameter> => {
     return await response.json();
   } catch (error) {
     console.log("An error occurred:", error);
-    return {
-      parameterId: Math.random(),
-      parameterName: payload.parameterName,
-      parameterValue: payload.parameterValue,
-      activeStatus: true,
-    };
+    return payload;
+    // return {
+    //   parameterId: Math.random(),
+    //   parameterName: payload.parameterName,
+    //   parameterValue: payload.parameterValue,
+    //   activeStatus: true,
+    // };
   }
 };
 

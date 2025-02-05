@@ -8,6 +8,7 @@ import {
   Modal,
   TextField,
   Typography,
+  Autocomplete,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -350,6 +351,7 @@ export default function AccountTable() {
             padding: 4,
             backgroundColor: "white",
             margin: "auto",
+            marginTop: "20%",
           }}
         >
           <h3>{accountData ? "Edit Account" : "Add New Account"}</h3>
@@ -365,7 +367,24 @@ export default function AccountTable() {
               }))
             }
           />
-          <TextField
+
+
+<Autocomplete
+  options={["debit", "credit"]}
+  value={accountData?.accountType || ""}
+  onChange={(event, newValue) =>
+    setAccountData((prev: any) => ({
+      ...prev,
+      accountType: newValue || "",
+    }))
+  }
+  renderInput={(params) => (
+    <TextField {...params} label="Account Type" fullWidth margin="normal" />
+  )}
+/>
+
+
+          {/* <TextField
             label="Account Type"
             fullWidth
             margin="normal"
@@ -376,7 +395,8 @@ export default function AccountTable() {
                 accountType: e.target.value,
               }))
             }
-          />
+          /> */}
+
           <TextField
             label="Moniker"
             fullWidth

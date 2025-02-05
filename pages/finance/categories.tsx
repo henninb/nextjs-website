@@ -185,6 +185,7 @@ export default function Categories() {
             padding: 4,
             backgroundColor: "white",
             margin: "auto",
+            marginTop: "20%",
           }}
         >
           <h3>{categoryData ? "Edit Category" : "Add New Category"}</h3>
@@ -194,7 +195,7 @@ export default function Categories() {
             margin="normal"
             value={categoryData?.categoryName || ""}
             onChange={(e) =>
-              setCategoryData((prev) => ({ ...prev, name: e.target.value }))
+              setCategoryData((prev) => ({ ...prev, categoryName: e.target.value }))
             }
           />
           <TextField
@@ -205,7 +206,7 @@ export default function Categories() {
             onChange={(e) =>
               setCategoryData((prev: any) => ({
                 ...prev,
-                description: e.target.value,
+                activeStatus: e.target.value,
               }))
             }
           />

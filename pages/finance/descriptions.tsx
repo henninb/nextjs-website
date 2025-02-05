@@ -196,6 +196,7 @@ export default function descriptions() {
             padding: 4,
             backgroundColor: "white",
             margin: "auto",
+            marginTop: "20%",
           }}
         >
           <h3>

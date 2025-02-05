@@ -224,6 +224,7 @@ export default function payments() {
             padding: 4,
             backgroundColor: "white",
             margin: "auto",
+            marginTop: "20%",
           }}
         >
           <h3>{paymentData ? "Edit Payment" : "Add New Payment"}</h3>

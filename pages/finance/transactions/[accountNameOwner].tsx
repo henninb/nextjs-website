@@ -455,7 +455,7 @@ export default function TransactionTable() {
             padding: 4,
             backgroundColor: "white",
             margin: "auto",
-            top: "20%",
+            marginTop: "20%",
           }}
         >
           <h3>

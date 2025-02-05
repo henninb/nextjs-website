@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 //import "../styles/form.css"
 
 interface FormData {
@@ -35,6 +35,22 @@ export default function ContactForm() {
     setSubmitted(false);
     reset();
   };
+
+  useEffect(() => {
+    // Function to insert a script tag at the very top of <head>
+    const insertScript = (src) => {
+      const existingScript = document.querySelector(`script[src="${src}"]`);
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = true;
+        script.defer = false; // Execute immediately
+        document.head.prepend(script); // Insert at the top of <head>
+      }
+    };
+
+    insertScript("https://code.jquery.com/jquery-3.7.1.min.js");
+  }, []);
 
   return (
     <div className="form-container">

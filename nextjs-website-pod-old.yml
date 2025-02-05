@@ -8,9 +8,9 @@ metadata:
     app: nextjs-website
 spec:
   imagePullSecrets:
-    - name: my-registry-secret  # The name of your image pull secret
+    - name: my-registry-secret # The name of your image pull secret
   containers:
-  - name: nextjs-website
-    image: 192.168.10.40:5000/nextjs-website:latest  # This is your Docker image
-    ports:
-    - containerPort: 3000
+    - name: nextjs-website
+      image: 192.168.10.40:5000/nextjs-website:latest # This is your Docker image
+      ports:
+        - containerPort: 3000
