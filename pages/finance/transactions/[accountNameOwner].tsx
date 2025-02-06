@@ -270,15 +270,15 @@ export default function TransactionTable() {
           const updatedRow = { ...params.row, transactionState: newState };
 
           try {
-          await updateTransaction({
-            newRow: updatedRow,
-            oldRow: params.row,
-          });
-          setMessage("TransactionState updated Successfully.");
-          setShowSnackbar(true);
-        } catch (error) {
-          handleError(error, "TransactionState failure.", false);
-        }
+            await updateTransaction({
+              newRow: updatedRow,
+              oldRow: params.row,
+            });
+            setMessage("TransactionState updated Successfully.");
+            setShowSnackbar(true);
+          } catch (error) {
+            handleError(error, "TransactionState failure.", false);
+          }
         };
 
         return (

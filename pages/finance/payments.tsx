@@ -174,7 +174,7 @@ export default function payments() {
             getRowId={(row) => row.paymentId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={ async (newRow: Payment, oldRow: Payment) => {
+            processRowUpdate={async (newRow: Payment, oldRow: Payment) => {
               try {
                 await updatePayment({ oldPayment: oldRow, newPayment: newRow });
                 setMessage("Payment updated successfully.");

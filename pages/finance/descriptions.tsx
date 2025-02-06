@@ -82,7 +82,6 @@ export default function descriptions() {
     } catch (error) {
       handleError(error, "Add Description", false);
     } finally {
-
     }
   };
 
@@ -137,7 +136,10 @@ export default function descriptions() {
             getRowId={(row) => row.descriptionId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={ async (newRow: Description, oldRow: Description) => {
+            processRowUpdate={async (
+              newRow: Description,
+              oldRow: Description,
+            ) => {
               try {
                 await updateDescription({
                   oldDescription: oldRow,

@@ -182,9 +182,12 @@ export default function transfers() {
             getRowId={(row) => row.transferId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async(newRow: Transfer, oldRow: Transfer) => {
+            processRowUpdate={async (newRow: Transfer, oldRow: Transfer) => {
               try {
-                await updateTransfer({ oldTransfer: oldRow, newTransfer: newRow });
+                await updateTransfer({
+                  oldTransfer: oldRow,
+                  newTransfer: newRow,
+                });
                 setMessage("Transfer updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {

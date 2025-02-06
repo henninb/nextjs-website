@@ -128,9 +128,12 @@ export default function Categories() {
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={ async (newRow: Category, oldRow: Category) => {
+            processRowUpdate={async (newRow: Category, oldRow: Category) => {
               try {
-                await updateCategory({ oldCategory: oldRow, newCategory: newRow });
+                await updateCategory({
+                  oldCategory: oldRow,
+                  newCategory: newRow,
+                });
                 setMessage("Category updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {

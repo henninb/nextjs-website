@@ -52,8 +52,6 @@ export default function AccountTable() {
     setShowModelEdit(true);
   };
 
-
-
   useEffect(() => {
     if (isSuccess && isSuccessTotals) {
       setShowSpinner(false);
@@ -64,7 +62,7 @@ export default function AccountTable() {
     router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
-  const handleDeleteRow = async() => {
+  const handleDeleteRow = async () => {
     if (selectedAccount) {
       try {
         await deleteAccount({ oldRow: selectedAccount });
@@ -102,21 +100,19 @@ export default function AccountTable() {
         accountNameOwner: editedAccountName,
       };
       try {
-        await updateAccount(
-          {
-            oldRow: accountBeingEdited,
-            newRow: updatedAccount,
-          }
-        )
+        await updateAccount({
+          oldRow: accountBeingEdited,
+          newRow: updatedAccount,
+        });
         setMessage("Account inserted successfully.");
         setShowSnackbar(true);
-      } catch(error) {
+      } catch (error) {
         handleError(error, `Rename Account ${error.message}`, false);
       }
     }
   };
 
-  const addRow = async(newData: Account) => {
+  const addRow = async (newData: Account) => {
     try {
       await insertAccount({ payload: newData });
       setShowModelAdd(false);

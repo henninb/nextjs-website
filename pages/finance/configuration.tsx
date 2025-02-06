@@ -130,7 +130,10 @@ export default function configuration() {
             rowSelection={false}
             processRowUpdate={async (newRow: Parameter, oldRow: Parameter) => {
               try {
-                await updateParameter({ oldParameter: oldRow, newParameter: newRow });
+                await updateParameter({
+                  oldParameter: oldRow,
+                  newParameter: newRow,
+                });
                 setMessage("Configuration updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
