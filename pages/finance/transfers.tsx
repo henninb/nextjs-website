@@ -21,6 +21,7 @@ import Transfer from "../../model/Transfer";
 import { formatDate } from "../../components/Common";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
+import useTransferUpdate from "../../hooks/useTransferUpdate";
 
 export default function transfers() {
   const [message, setMessage] = useState("");
@@ -37,6 +38,7 @@ export default function transfers() {
   const { data, isSuccess } = useFetchTransfer();
   const { mutate: insertTransfer } = useTransferInsert();
   const { mutate: deleteTransfer } = useTransferDelete();
+  const { mutate: updateTransfer } = useTransferUpdate();
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
 
   useEffect(() => {
@@ -178,6 +180,16 @@ export default function transfers() {
             getRowId={(row) => row.transferId || 0}
             checkboxSelection={false}
             rowSelection={false}
+            processRowUpdate={(newRow: Transfer, oldRow: Transfer) => {
+              try {
+                updateTransfer({ oldTransfer: oldRow, newTransfer: newRow });
+                setMessage("Transfer updated successfully.");
+                setShowSnackbar(true);
+              } catch (error) {
+                handleError(error, "Update Transfer failure.", false);
+              }
+              return newRow;
+            }}
           />
           <div>
             <SnackbarBaseline

@@ -46,7 +46,6 @@ export default function TransactionTable() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showModalMove, setShowModalMove] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [showModalAdd, setShowModalAdd] = useState<boolean>(false);
   const [confirmDelete, setShowModalDelete] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
@@ -99,7 +98,7 @@ export default function TransactionTable() {
     }
   }, [isSuccess, isSuccessTotals, isSuccessValidationTotals]);
 
-  const handleSnackbarClose = () => setOpenSnackbar(false);
+  const handleSnackbarClose = () => setShowSnackbar(false);
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
     const errorMessage = error.response
@@ -131,28 +130,35 @@ export default function TransactionTable() {
       accountNameOwner: accountNameOwner,
       payload: payload,
     });
+    setMessage("ValidationAmount inserted successfully.");
+    setShowSnackbar(true);
   };
 
   const handleMoveRow = async (
     oldTransaction: Transaction,
     newTransaction: Transaction,
   ) => {
-    updateTransaction({
-      newRow: newTransaction,
-      oldRow: oldTransaction,
-    });
-    setOriginalRow(null);
-    setSelectedTransaction(null);
-    setShowModalMove(false);
-
-    console.log("handleMoveRow updated");
-  };
+    try {
+      updateTransaction({
+        newRow: newTransaction,
+        oldRow: oldTransaction,
+      });
+      setOriginalRow(null);
+      setSelectedTransaction(null);
+      setShowModalMove(false);
+      setMessage("Transaction moved successfully.");
+      setShowSnackbar(true);
+    } catch (error) {
+      handleError(error, "Move Transaction failure.", false);
+    }
+  }
 
   const handleDeleteRow = async () => {
     if (selectedTransaction) {
       try {
         await deleteTransaction({ oldRow: selectedTransaction });
         setMessage("Transaction deleted successfully.");
+        setShowSnackbar(true);
       } catch (error) {
         handleError(error, "Delete Transaction failure.", false);
       } finally {
@@ -183,11 +189,14 @@ export default function TransactionTable() {
         newRow,
         isFutureTransaction: false,
       });
+      setMessage("handleAddRow() Transaction added successfully.");
+      setShowSnackbar(true);
     } catch (error) {
       handleError(error, "handleAddRow", false);
     }
   };
 
+  // why 2 adds? 
   const addRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
@@ -195,6 +204,9 @@ export default function TransactionTable() {
         newRow: newData,
         isFutureTransaction: false,
       });
+
+      setMessage("addRow() Transaction added successfully.");
+      setShowSnackbar(true);
 
       return result;
     } catch (error) {
@@ -351,6 +363,7 @@ export default function TransactionTable() {
         <Spinner />
       ) : (
         <div>
+        <div>
           <h4>{`[ ${currencyFormat(
             noNaN(totals?.["totals"] ?? 0),
           )} ] [ ${currencyFormat(
@@ -394,18 +407,29 @@ export default function TransactionTable() {
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={(newRow: Transaction, oldRow: Transaction) => {
-              updateTransaction({ newRow: newRow, oldRow: oldRow });
+              try {
+                updateTransaction({ newRow: newRow, oldRow: oldRow });
+                setMessage("Transaction updated successfully.");
+                setShowSnackbar(true);
+              } catch (error) {
+                handleError(error, "Update Transaction failure.", false);
+              }
               return newRow;
             }}
           />
         </div>
-      )}
 
-      <SnackbarBaseline
-        open={openSnackbar}
-        onClose={handleSnackbarClose}
-        message={message}
-      />
+
+        <div>
+            <SnackbarBaseline
+              message={message}
+              state={showSnackbar}
+              handleSnackbarClose={handleSnackbarClose}
+            />
+          </div>
+
+        </div>
+      )}
 
       {/* Confirmation Modal */}
       <Modal open={confirmDelete} onClose={() => setShowModalDelete(false)}>

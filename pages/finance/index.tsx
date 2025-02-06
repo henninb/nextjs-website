@@ -57,8 +57,6 @@ export default function AccountTable() {
         ...accountBeingEdited,
         accountNameOwner: editedAccountName,
       };
-      console.log("updatedAccount: " + JSON.stringify(updatedAccount));
-      console.log("accountBeingEdited: " + JSON.stringify(accountBeingEdited));
       updateAccount(
         {
           oldRow: accountBeingEdited,
@@ -67,6 +65,7 @@ export default function AccountTable() {
         {
           onSuccess: () => {
             setMessage("Account name updated successfully.");
+            setShowSnackbar(true);
             setShowModelEdit(false);
           },
           onError: (error) => {
@@ -92,6 +91,7 @@ export default function AccountTable() {
       try {
         deleteAccount({ oldRow: selectedAccount });
         setMessage("Account deleted successfully.");
+        setShowSnackbar(true);
       } catch (error) {
         handleError(error, "Delete Account", false);
       } finally {
@@ -121,6 +121,8 @@ export default function AccountTable() {
     try {
       insertAccount({ payload: newData });
       setShowModelAdd(false);
+      setMessage("Account inserted successfully.");
+      setShowSnackbar(true);
     } catch (error) {
       handleError(error, "Add Account", false);
     }
@@ -254,11 +256,14 @@ export default function AccountTable() {
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={(newRow: Account, oldRow: Account) => {
-              // Handle row update here
-              console.log("Row updating:", newRow);
-              updateAccount({ newRow: newRow, oldRow: oldRow });
-              console.log("Row updated:", newRow);
-              return newRow; // Return the updated row
+              try {
+                updateAccount({ newRow: newRow, oldRow: oldRow });
+                setMessage("Account updated successfully.");
+                setShowSnackbar(true);
+              } catch (error) {
+                handleError(error, "Update Account failure.", false);
+              }
+              return newRow;
             }}
           />
           <div>

@@ -20,9 +20,9 @@ import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
 
 export default function descriptions() {
   const [message, setMessage] = useState("");
-  const [showSnackbar, setOpen] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setOpenForm] = useState(false);
+  const [showModalAdd, setShowModalAdd] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedDescription, setSelectedDescription] =
     useState<Description | null>(null);
@@ -46,6 +46,7 @@ export default function descriptions() {
       try {
         await deleteDescription(selectedDescription);
         setMessage("Description deleted successfully.");
+        setShowSnackbar(true);
       } catch (error) {
         handleError(error, "Delete Description failure.", false);
       } finally {
@@ -56,7 +57,7 @@ export default function descriptions() {
   };
 
   const handleSnackbarClose = () => {
-    setOpen(false);
+    setShowSnackbar(false);
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -67,14 +68,16 @@ export default function descriptions() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
-    setOpen(true);
+    setShowSnackbar(true);
     if (throwIt) throw error;
   };
 
   const addRow = async (newData: Description): Promise<Description> => {
     try {
       const result = await insertDescription(newData);
-      setOpenForm(false);
+      setShowModalAdd(false);
+      setMessage("Description inserted successfully.");
+      setShowSnackbar(true);
       return result;
     } catch (error) {
       handleError(error, "Add Description", false);
@@ -123,7 +126,7 @@ export default function descriptions() {
         <Spinner />
       ) : (
         <div>
-          <IconButton onClick={() => setOpenForm(true)}>
+          <IconButton onClick={() => setShowModalAdd(true)}>
             <AddIcon />
           </IconButton>
           <DataGrid
@@ -133,15 +136,17 @@ export default function descriptions() {
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={(newRow: Description, oldRow: Description) => {
-              // Handle row update here
-              console.log("Row updating:", newRow);
+              try {
               updateDescription({
                 oldDescription: oldRow,
                 newDescription: newRow,
               });
-              //updateRow(newRow, oldRow);
-              console.log("Row updated:", newRow);
-              return newRow; // Return the updated row
+              setMessage("Description updated successfully.");
+              setShowSnackbar(true);
+            } catch (error) {
+              handleError(error, "Update Description failure.", false);
+            }
+              return newRow;
             }}
           />
           <div>
@@ -189,7 +194,7 @@ export default function descriptions() {
         </Box>
       </Modal>
 
-      <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
             width: 400,

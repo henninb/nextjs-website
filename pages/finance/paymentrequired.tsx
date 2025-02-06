@@ -24,7 +24,7 @@ export default function paymentrequired() {
   const columns: GridColDef[] = [
     {
       field: "accountNameOwner",
-      headerName: "Account Name Owner",
+      headerName: "Account",
       width: 180,
       renderCell: (params) => (
         <Button

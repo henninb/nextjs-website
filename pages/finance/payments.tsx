@@ -21,6 +21,7 @@ import Payment from "../../model/Payment";
 import { formatDate } from "../../components/Common";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
+import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 
 export default function payments() {
   const [message, setMessage] = useState("");
@@ -36,6 +37,7 @@ export default function payments() {
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
   const { mutate: insertPayment } = usePaymentInsert();
   const { mutate: deletePayment } = usePaymentDelete();
+  const { mutate: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
     if (isSuccess && isSuccessAccounts) {
@@ -171,6 +173,16 @@ export default function payments() {
             getRowId={(row) => row.paymentId || 0}
             checkboxSelection={false}
             rowSelection={false}
+            processRowUpdate={(newRow: Payment, oldRow: Payment) => {
+              try {
+                updatePayment({ oldPayment: oldRow, newPayment: newRow });
+                setMessage("Payment updated successfully.");
+                setShowSnackbar(true);
+              } catch (error) {
+                handleError(error, "Update Payment failure.", false);
+              }
+              return newRow;
+            }}
           />
           <div>
             <SnackbarBaseline

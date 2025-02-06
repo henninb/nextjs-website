@@ -22,7 +22,7 @@ export default function Categories() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setOpenForm] = useState(false);
+  const [showModalAdd, setShowModalAdd] = useState(false);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
@@ -45,6 +45,7 @@ export default function Categories() {
       try {
         await deleteCategory(selectedCategory);
         setMessage("Category deleted successfully.");
+        setShowSnackbar(true);
       } catch (error) {
         handleError(error, "Delete Category failure.", false);
       } finally {
@@ -73,7 +74,9 @@ export default function Categories() {
   const addRow = async (newData: Category) => {
     try {
       await insertCategory(newData);
-      setOpenForm(false);
+      setShowModalAdd(false);
+      setMessage("Category inserted successfully.");
+      setShowSnackbar(true);
     } catch (error) {
       handleError(error, "Add Category", false);
     }
@@ -116,7 +119,7 @@ export default function Categories() {
         <Spinner />
       ) : (
         <div>
-          <IconButton onClick={() => setOpenForm(true)}>
+          <IconButton onClick={() => setShowModalAdd(true)}>
             <AddIcon />
           </IconButton>
           <DataGrid
@@ -126,11 +129,14 @@ export default function Categories() {
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={(newRow: Category, oldRow: Category) => {
-              // Handle row update here
-              console.log("Row updating:", newRow);
-              updateCategory({ oldCategory: oldRow, newCategory: newRow });
-              console.log("Row updated:", newRow);
-              return newRow; // Return the updated row
+              try {
+                updateCategory({ oldCategory: oldRow, newCategory: newRow });
+                setMessage("Category updated successfully.");
+                setShowSnackbar(true);
+              } catch (error) {
+                handleError(error, "Update Category failure.", false);
+              }
+              return newRow;
             }}
           />
           <div>
@@ -178,7 +184,7 @@ export default function Categories() {
         </Box>
       </Modal>
 
-      <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
             width: 400,

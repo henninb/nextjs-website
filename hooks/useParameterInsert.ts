@@ -26,12 +26,6 @@ const insertParameter = async (payload: Parameter): Promise<Parameter> => {
   } catch (error) {
     console.log("An error occurred:", error);
     return payload;
-    // return {
-    //   parameterId: Math.random(),
-    //   parameterName: payload.parameterName,
-    //   parameterValue: payload.parameterValue,
-    //   activeStatus: true,
-    // };
   }
 };
 

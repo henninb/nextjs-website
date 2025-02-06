@@ -78,10 +78,10 @@ export default function configuration() {
       setMessage("Configuration added successfully.");
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Add Configuration", false);  // This will catch a 400
+      handleError(error, "Add Configuration", false); // This will catch a 400
     }
   };
-  
+
   const columns: GridColDef[] = [
     {
       field: "parameterName",
@@ -134,7 +134,7 @@ export default function configuration() {
                 setMessage("Configuration updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
-                handleError(error, "Update Configuration", false);  // Handles API 400s
+                handleError(error, "Update Configuration failure.", false);
               }
               return newRow;
             }}
