@@ -195,7 +195,10 @@ export default function Categories() {
             margin="normal"
             value={categoryData?.categoryName || ""}
             onChange={(e) =>
-              setCategoryData((prev) => ({ ...prev, categoryName: e.target.value }))
+              setCategoryData((prev) => ({
+                ...prev,
+                categoryName: e.target.value,
+              }))
             }
           />
           <TextField

@@ -25,7 +25,9 @@ export default function configuration() {
   const [showModalAdd, setOpenForm] = useState(false);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
   const [confirmDelete, setParameterDelete] = useState(false);
-  const [selectedConfig, setSelectedParameter] = useState<Parameter | null>(null);
+  const [selectedConfig, setSelectedParameter] = useState<Parameter | null>(
+    null,
+  );
 
   const { data, isSuccess } = useParameterFetch();
   const { mutate: insertParameter } = useParameterInsert();
@@ -43,6 +45,7 @@ export default function configuration() {
       try {
         await deleteParameter(selectedConfig);
         setMessage("Parameter deleted successfully.");
+        setShowSnackbar(true);
       } catch (error) {
         handleError(error, "Delete Parameter failure.", false);
       } finally {
@@ -59,7 +62,7 @@ export default function configuration() {
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
     const errorMessage = error.response
       ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-          error.response.data
+          error.response.data,
         )}`
       : `${moduleName}: Failure`;
 
@@ -70,13 +73,15 @@ export default function configuration() {
 
   const addRow = async (newData: Parameter) => {
     try {
-      await insertParameter({payload: newData});
+      await insertParameter({ payload: newData });
       setOpenForm(false);
+      setMessage("Configuration added successfully.");
+      setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Add Configuration", false);
+      handleError(error, "Add Configuration", false);  // This will catch a 400
     }
   };
-
+  
   const columns: GridColDef[] = [
     {
       field: "parameterName",
@@ -120,11 +125,17 @@ export default function configuration() {
           <DataGrid
             rows={data?.filter((row) => row != null) || []}
             columns={columns}
-            getRowId={(row) => row.configId || 0}
+            getRowId={(row) => row.parameterName || 0}
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={(newRow: Parameter, oldRow: Parameter) => {
-              updateParameter({ oldParameter: oldRow, newParameter: newRow });
+              try {
+                updateParameter({ oldParameter: oldRow, newParameter: newRow });
+                setMessage("Configuration updated successfully.");
+                setShowSnackbar(true);
+              } catch (error) {
+                handleError(error, "Update Configuration", false);  // Handles API 400s
+              }
               return newRow;
             }}
           />
@@ -137,16 +148,33 @@ export default function configuration() {
       )}
 
       <Modal open={confirmDelete} onClose={() => setParameterDelete(false)}>
-        <Box sx={{ width: 400, padding: 4, backgroundColor: "white", margin: "auto", marginTop: "20%" }}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
           <Typography variant="h6">Confirm Deletion</Typography>
           <Typography>
-            Are you sure you want to delete the configuration "{JSON.stringify(selectedConfig)}"?
+            Are you sure you want to delete the configuration "
+            {JSON.stringify(selectedConfig)}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="primary" onClick={handleDeleteRow}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleDeleteRow}
+            >
               Delete
             </Button>
-            <Button variant="outlined" color="secondary" onClick={() => setParameterDelete(false)}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setParameterDelete(false)}
+            >
               Cancel
             </Button>
           </Box>
@@ -154,23 +182,46 @@ export default function configuration() {
       </Modal>
 
       <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
-        <Box sx={{ width: 400, padding: 4, backgroundColor: "white", margin: "auto", marginTop: "20%" }}>
-          <h3>{parameterData ? "Edit Configuration" : "Add New Configuration"}</h3>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <h3>
+            {parameterData ? "Edit Configuration" : "Add New Configuration"}
+          </h3>
           <TextField
             label="Name"
             fullWidth
             margin="normal"
             value={parameterData?.parameterName || ""}
-            onChange={(e) => setParameterData((prev) => ({ ...prev, parameterName: e.target.value }))}
+            onChange={(e) =>
+              setParameterData((prev) => ({
+                ...prev,
+                parameterName: e.target.value,
+              }))
+            }
           />
           <TextField
             label="Value"
             fullWidth
             margin="normal"
             value={parameterData?.parameterValue || ""}
-            onChange={(e) => setParameterData((prev) => ({ ...prev, parameterValue: e.target.value }))}
+            onChange={(e) =>
+              setParameterData((prev) => ({
+                ...prev,
+                parameterValue: e.target.value,
+              }))
+            }
           />
-          <Button variant="contained" onClick={() => parameterData && addRow(parameterData)}>
+          <Button
+            variant="contained"
+            onClick={() => parameterData && addRow(parameterData)}
+          >
             {parameterData ? "Update" : "Add"}
           </Button>
         </Box>

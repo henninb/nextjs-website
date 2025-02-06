@@ -368,21 +368,24 @@ export default function AccountTable() {
             }
           />
 
-
-<Autocomplete
-  options={["debit", "credit"]}
-  value={accountData?.accountType || ""}
-  onChange={(event, newValue) =>
-    setAccountData((prev: any) => ({
-      ...prev,
-      accountType: newValue || "",
-    }))
-  }
-  renderInput={(params) => (
-    <TextField {...params} label="Account Type" fullWidth margin="normal" />
-  )}
-/>
-
+          <Autocomplete
+            options={["debit", "credit"]}
+            value={accountData?.accountType || ""}
+            onChange={(event, newValue) =>
+              setAccountData((prev: any) => ({
+                ...prev,
+                accountType: newValue || "",
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Account Type"
+                fullWidth
+                margin="normal"
+              />
+            )}
+          />
 
           {/* <TextField
             label="Account Type"
