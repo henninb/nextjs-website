@@ -45,13 +45,7 @@ const insertAccount = async (payload: Account): Promise<Account> => {
 
     return await response.json();
   } catch (error: any) {
-    return {
-      accountId: Math.random(),
-      cleared: 0.0,
-      future: 0.0,
-      outstanding: 0.0,
-      ...payload,
-    };
+    throw error;
   }
 };
 

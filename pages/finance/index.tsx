@@ -21,7 +21,7 @@ import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
-import { currencyFormat, noNaN, formatDate } from "../../components/Common";
+import { currencyFormat, noNaN } from "../../components/Common";
 
 export default function AccountTable() {
   const [message, setMessage] = useState("");
@@ -39,11 +39,12 @@ export default function AccountTable() {
 
   const router = useRouter();
 
-  const { data, isSuccess, isLoading } = useAccountFetch();
+  const { data, isSuccess } = useAccountFetch();
   const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
-  const { mutate: insertAccount } = useAccountInsert();
-  const { mutate: updateAccount } = useAccountUpdate();
-  const { mutate: deleteAccount } = useAccountDelete();
+
+  const { mutateAsync: insertAccount } = useAccountInsert();
+  const { mutateAsync: updateAccount } = useAccountUpdate();
+  const { mutateAsync: deleteAccount } = useAccountDelete();
 
   const handleEditAccount = (account: Account) => {
     setAccountBeingEdited(account);
@@ -51,30 +52,7 @@ export default function AccountTable() {
     setShowModelEdit(true);
   };
 
-  const handleRenameAccount = () => {
-    if (accountBeingEdited) {
-      const updatedAccount = {
-        ...accountBeingEdited,
-        accountNameOwner: editedAccountName,
-      };
-      updateAccount(
-        {
-          oldRow: accountBeingEdited,
-          newRow: updatedAccount,
-        },
-        {
-          onSuccess: () => {
-            setMessage("Account name updated successfully.");
-            setShowSnackbar(true);
-            setShowModelEdit(false);
-          },
-          onError: (error) => {
-            handleError(error, "Rename Account", false);
-          },
-        },
-      );
-    }
-  };
+
 
   useEffect(() => {
     if (isSuccess && isSuccessTotals) {
@@ -86,14 +64,14 @@ export default function AccountTable() {
     router.push(`/finance/transactions/${accountNameOwner}`);
   };
 
-  const handleDeleteRow = () => {
+  const handleDeleteRow = async() => {
     if (selectedAccount) {
       try {
-        deleteAccount({ oldRow: selectedAccount });
+        await deleteAccount({ oldRow: selectedAccount });
         setMessage("Account deleted successfully.");
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, "Delete Account", false);
+        handleError(error, `Delete Account ${error.message}`, false);
       } finally {
         setShowModelDelete(false);
         setSelectedAccount(null);
@@ -117,14 +95,35 @@ export default function AccountTable() {
     if (throwIt) throw error;
   };
 
-  const addRow = (newData: Account) => {
+  const handleRenameAccount = async () => {
+    if (accountBeingEdited) {
+      const updatedAccount = {
+        ...accountBeingEdited,
+        accountNameOwner: editedAccountName,
+      };
+      try {
+        await updateAccount(
+          {
+            oldRow: accountBeingEdited,
+            newRow: updatedAccount,
+          }
+        )
+        setMessage("Account inserted successfully.");
+        setShowSnackbar(true);
+      } catch(error) {
+        handleError(error, `Rename Account ${error.message}`, false);
+      }
+    }
+  };
+
+  const addRow = async(newData: Account) => {
     try {
-      insertAccount({ payload: newData });
+      await insertAccount({ payload: newData });
       setShowModelAdd(false);
       setMessage("Account inserted successfully.");
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Add Account", false);
+      handleError(error, `Add Account ${error.message}`, false);
     }
   };
 
@@ -255,9 +254,9 @@ export default function AccountTable() {
             hideFooterPagination={true}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={(newRow: Account, oldRow: Account) => {
+            processRowUpdate={async (newRow: Account, oldRow: Account) => {
               try {
-                updateAccount({ newRow: newRow, oldRow: oldRow });
+                await updateAccount({ newRow: newRow, oldRow: oldRow });
                 setMessage("Account updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {

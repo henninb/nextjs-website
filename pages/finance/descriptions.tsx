@@ -137,15 +137,15 @@ export default function descriptions() {
             rowSelection={false}
             processRowUpdate={(newRow: Description, oldRow: Description) => {
               try {
-              updateDescription({
-                oldDescription: oldRow,
-                newDescription: newRow,
-              });
-              setMessage("Description updated successfully.");
-              setShowSnackbar(true);
-            } catch (error) {
-              handleError(error, "Update Description failure.", false);
-            }
+                updateDescription({
+                  oldDescription: oldRow,
+                  newDescription: newRow,
+                });
+                setMessage("Description updated successfully.");
+                setShowSnackbar(true);
+              } catch (error) {
+                handleError(error, "Update Description failure.", false);
+              }
               return newRow;
             }}
           />

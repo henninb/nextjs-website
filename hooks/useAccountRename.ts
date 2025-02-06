@@ -29,19 +29,7 @@ const renameAccount = async (
     return newAccountName; // Return the new account name on success
   } catch (error: any) {
     console.log(`An error occurred: ${error.message}`);
-    //throw error;
-    return newAccountName;
-    // return  {
-    //   "accountId": 1,
-    //   "accountNameOwner": "wfargo-savings_brian",
-    //   "accountType": "debit",
-    //   "activeStatus": true,
-    //   "moniker": "0000",
-    //   "outstanding": 1500.25,
-    //   "future": 200.0,
-    //   "cleared": 1300.25,
-    //   "validationDate": "2024-10-31"
-    // }
+    throw error;
   }
 };
 

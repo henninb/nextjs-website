@@ -151,7 +151,7 @@ export default function TransactionTable() {
     } catch (error) {
       handleError(error, "Move Transaction failure.", false);
     }
-  }
+  };
 
   const handleDeleteRow = async () => {
     if (selectedTransaction) {
@@ -196,7 +196,7 @@ export default function TransactionTable() {
     }
   };
 
-  // why 2 adds? 
+  // why 2 adds?
   const addRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
@@ -363,71 +363,69 @@ export default function TransactionTable() {
         <Spinner />
       ) : (
         <div>
-        <div>
-          <h4>{`[ ${currencyFormat(
-            noNaN(totals?.["totals"] ?? 0),
-          )} ] [ ${currencyFormat(
-            noNaN(totals?.["totalsCleared"] ?? 0),
-          )} ]  [ ${currencyFormat(
-            noNaN(totals?.["totalsOutstanding"] ?? 0),
-          )} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h4>
+          <div>
+            <h4>{`[ ${currencyFormat(
+              noNaN(totals?.["totals"] ?? 0),
+            )} ] [ ${currencyFormat(
+              noNaN(totals?.["totalsCleared"] ?? 0),
+            )} ]  [ ${currencyFormat(
+              noNaN(totals?.["totalsOutstanding"] ?? 0),
+            )} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h4>
 
-          <IconButton
-            onClick={() => {
-              setShowModalAdd(true);
-              return handleAddRow;
-            }}
-            style={{ marginLeft: 8 }}
-          >
-            <AddIcon />
-          </IconButton>
+            <IconButton
+              onClick={() => {
+                setShowModalAdd(true);
+                return handleAddRow;
+              }}
+              style={{ marginLeft: 8 }}
+            >
+              <AddIcon />
+            </IconButton>
 
-          <Button
-            onClick={() => {
-              console.log(
-                'insertNewValidationData(accountNameOwner, "cleared")',
-              );
-              handleInsertNewValidationData(accountNameOwner, "cleared");
-            }}
-          >
-            {validationData?.amount
-              ? validationData?.amount.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                })
-              : "$0.00"}{" "}
-            {" - "}{" "}
-            {new Date(validationData?.validationDate).toLocaleString("en-US")}
-          </Button>
+            <Button
+              onClick={() => {
+                console.log(
+                  'insertNewValidationData(accountNameOwner, "cleared")',
+                );
+                handleInsertNewValidationData(accountNameOwner, "cleared");
+              }}
+            >
+              {validationData?.amount
+                ? validationData?.amount.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  })
+                : "$0.00"}{" "}
+              {" - "}{" "}
+              {new Date(validationData?.validationDate).toLocaleString("en-US")}
+            </Button>
 
-          <DataGrid
-            rows={data?.filter((row) => row != null) || []}
-            columns={columns}
-            getRowId={(row) => row.transactionId || 0}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={(newRow: Transaction, oldRow: Transaction) => {
-              try {
-                updateTransaction({ newRow: newRow, oldRow: oldRow });
-                setMessage("Transaction updated successfully.");
-                setShowSnackbar(true);
-              } catch (error) {
-                handleError(error, "Update Transaction failure.", false);
-              }
-              return newRow;
-            }}
-          />
-        </div>
+            <DataGrid
+              rows={data?.filter((row) => row != null) || []}
+              columns={columns}
+              getRowId={(row) => row.transactionId || 0}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={(newRow: Transaction, oldRow: Transaction) => {
+                try {
+                  updateTransaction({ newRow: newRow, oldRow: oldRow });
+                  setMessage("Transaction updated successfully.");
+                  setShowSnackbar(true);
+                } catch (error) {
+                  handleError(error, "Update Transaction failure.", false);
+                }
+                return newRow;
+              }}
+            />
+          </div>
 
-
-        <div>
+          <div>
             <SnackbarBaseline
               message={message}
               state={showSnackbar}
               handleSnackbarClose={handleSnackbarClose}
             />
           </div>
-
         </div>
       )}
 
