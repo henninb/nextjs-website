@@ -35,9 +35,10 @@ export default function payments() {
 
   const { data, isSuccess } = useFetchPayment();
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
-  const { mutate: insertPayment } = usePaymentInsert();
-  const { mutate: deletePayment } = usePaymentDelete();
-  const { mutate: updatePayment } = usePaymentUpdate();
+
+  const { mutateAsync: insertPayment } = usePaymentInsert();
+  const { mutateAsync: deletePayment } = usePaymentDelete();
+  const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
     if (isSuccess && isSuccessAccounts) {
@@ -173,9 +174,9 @@ export default function payments() {
             getRowId={(row) => row.paymentId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={(newRow: Payment, oldRow: Payment) => {
+            processRowUpdate={ async (newRow: Payment, oldRow: Payment) => {
               try {
-                updatePayment({ oldPayment: oldRow, newPayment: newRow });
+                await updatePayment({ oldPayment: oldRow, newPayment: newRow });
                 setMessage("Payment updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {

@@ -36,9 +36,9 @@ export default function transfers() {
   const router = useRouter();
 
   const { data, isSuccess } = useFetchTransfer();
-  const { mutate: insertTransfer } = useTransferInsert();
-  const { mutate: deleteTransfer } = useTransferDelete();
-  const { mutate: updateTransfer } = useTransferUpdate();
+  const { mutateAsync: insertTransfer } = useTransferInsert();
+  const { mutateAsync: deleteTransfer } = useTransferDelete();
+  const { mutateAsync: updateTransfer } = useTransferUpdate();
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
 
   useEffect(() => {
@@ -85,6 +85,8 @@ export default function transfers() {
     try {
       await insertTransfer({ payload: newData });
       setShowModalAdd(false);
+      setMessage("Transfer inserted Successfully.");
+      setShowSpinner(false);
     } catch (error) {
       handleError(error, "Add Transfer", false);
     }
@@ -180,9 +182,9 @@ export default function transfers() {
             getRowId={(row) => row.transferId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={(newRow: Transfer, oldRow: Transfer) => {
+            processRowUpdate={async(newRow: Transfer, oldRow: Transfer) => {
               try {
-                updateTransfer({ oldTransfer: oldRow, newTransfer: newRow });
+                await updateTransfer({ oldTransfer: oldRow, newTransfer: newRow });
                 setMessage("Transfer updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {

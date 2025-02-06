@@ -30,9 +30,9 @@ export default function Categories() {
   );
 
   const { data, isSuccess } = useFetchCategory();
-  const { mutate: insertCategory } = useCategoryInsert();
-  const { mutate: updateCategory } = useCategoryUpdate();
-  const { mutate: deleteCategory } = useCategoryDelete();
+  const { mutateAsync: insertCategory } = useCategoryInsert();
+  const { mutateAsync: updateCategory } = useCategoryUpdate();
+  const { mutateAsync: deleteCategory } = useCategoryDelete();
 
   useEffect(() => {
     if (isSuccess) {
@@ -128,9 +128,9 @@ export default function Categories() {
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={(newRow: Category, oldRow: Category) => {
+            processRowUpdate={ async (newRow: Category, oldRow: Category) => {
               try {
-                updateCategory({ oldCategory: oldRow, newCategory: newRow });
+                await updateCategory({ oldCategory: oldRow, newCategory: newRow });
                 setMessage("Category updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {

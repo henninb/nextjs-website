@@ -22,7 +22,7 @@ export default function configuration() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setOpenForm] = useState(false);
+  const [showModalAdd, setShowModalAdd] = useState(false);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
   const [confirmDelete, setParameterDelete] = useState(false);
   const [selectedConfig, setSelectedParameter] = useState<Parameter | null>(
@@ -30,9 +30,9 @@ export default function configuration() {
   );
 
   const { data, isSuccess } = useParameterFetch();
-  const { mutate: insertParameter } = useParameterInsert();
-  const { mutate: updateParameter } = useParameterUpdate();
-  const { mutate: deleteParameter } = useParameterDelete();
+  const { mutateAsync: insertParameter } = useParameterInsert();
+  const { mutateAsync: updateParameter } = useParameterUpdate();
+  const { mutateAsync: deleteParameter } = useParameterDelete();
 
   useEffect(() => {
     if (isSuccess) {
@@ -74,11 +74,11 @@ export default function configuration() {
   const addRow = async (newData: Parameter) => {
     try {
       await insertParameter({ payload: newData });
-      setOpenForm(false);
+      setShowModalAdd(false);
       setMessage("Configuration added successfully.");
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Add Configuration", false); // This will catch a 400
+      handleError(error, "Add Configuration", false);
     }
   };
 
@@ -119,7 +119,7 @@ export default function configuration() {
         <Spinner />
       ) : (
         <div>
-          <IconButton onClick={() => setOpenForm(true)}>
+          <IconButton onClick={() => setShowModalAdd(true)}>
             <AddIcon />
           </IconButton>
           <DataGrid
@@ -128,9 +128,9 @@ export default function configuration() {
             getRowId={(row) => row.parameterName || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={(newRow: Parameter, oldRow: Parameter) => {
+            processRowUpdate={async (newRow: Parameter, oldRow: Parameter) => {
               try {
-                updateParameter({ oldParameter: oldRow, newParameter: newRow });
+                await updateParameter({ oldParameter: oldRow, newParameter: newRow });
                 setMessage("Configuration updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
@@ -181,7 +181,7 @@ export default function configuration() {
         </Box>
       </Modal>
 
-      <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
             width: 400,

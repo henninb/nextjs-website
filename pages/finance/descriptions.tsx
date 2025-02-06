@@ -32,8 +32,8 @@ export default function descriptions() {
 
   const { data, isSuccess } = useFetchDescription();
   const { mutateAsync: insertDescription } = useDescriptionInsert();
-  const { mutate: updateDescription } = useDescriptionUpdate();
-  const { mutate: deleteDescription } = useDescriptionDelete();
+  const { mutateAsync: updateDescription } = useDescriptionUpdate();
+  const { mutateAsync: deleteDescription } = useDescriptionDelete();
 
   useEffect(() => {
     if (isSuccess) {
@@ -81,6 +81,8 @@ export default function descriptions() {
       return result;
     } catch (error) {
       handleError(error, "Add Description", false);
+    } finally {
+
     }
   };
 
@@ -135,9 +137,9 @@ export default function descriptions() {
             getRowId={(row) => row.descriptionId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={(newRow: Description, oldRow: Description) => {
+            processRowUpdate={ async (newRow: Description, oldRow: Description) => {
               try {
-                updateDescription({
+                await updateDescription({
                   oldDescription: oldRow,
                   newDescription: newRow,
                 });

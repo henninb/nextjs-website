@@ -84,7 +84,7 @@ export default function TransactionTable() {
   const { data: descrptions, isSuccess: isSuccessDescriptions } =
     useDescriptionFetch();
 
-  const { mutate: updateTransaction } = useTransactionUpdate();
+  const { mutateAsync: updateTransaction } = useTransactionUpdate();
   const { mutate: deleteTransaction } = useTransactionDelete();
   const { mutateAsync: insertTransaction } =
     useTransactionInsert(accountNameOwner);
@@ -265,15 +265,20 @@ export default function TransactionTable() {
       headerName: "transactionState",
       width: 275,
       renderCell: (params: any) => {
-        const handleStateChange = (newState: TransactionState) => {
+        const handleStateChange = async (newState: TransactionState) => {
           // Avoid directly mutating `params.row`
           const updatedRow = { ...params.row, transactionState: newState };
 
-          // Update the row in the database
-          updateTransaction({
+          try {
+          await updateTransaction({
             newRow: updatedRow,
             oldRow: params.row,
           });
+          setMessage("TransactionState updated Successfully.");
+          setShowSnackbar(true);
+        } catch (error) {
+          handleError(error, "TransactionState failure.", false);
+        }
         };
 
         return (
