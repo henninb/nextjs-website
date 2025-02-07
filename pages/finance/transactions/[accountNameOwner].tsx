@@ -2,7 +2,14 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
-import { Box, Button, Modal, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Modal,
+  IconButton,
+  Typography,
+  Tooltip,
+} from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -30,7 +37,7 @@ import { ReoccurringType } from "../../../model/ReoccurringType";
 import ValidationAmount from "../../../model/ValidationAmount";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
-import AttachMoneyRounded from "@mui/icons-material/AttachMoneyRounded";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
 
 import {
@@ -44,10 +51,11 @@ import useCategoryFetch from "../../../hooks/useCategoryFetch";
 export default function TransactionTable() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [showModalMove, setShowModalMove] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
+  const [showModalMove, setShowModalMove] = useState<boolean>(false);
   const [showModalAdd, setShowModalAdd] = useState<boolean>(false);
-  const [confirmDelete, setShowModalDelete] = useState(false);
+  const [showModalClone, setShowModalClone] = useState<boolean>(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
@@ -85,10 +93,10 @@ export default function TransactionTable() {
     useDescriptionFetch();
 
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
-  const { mutate: deleteTransaction } = useTransactionDelete();
+  const { mutateAsync: deleteTransaction } = useTransactionDelete();
   const { mutateAsync: insertTransaction } =
     useTransactionInsert(accountNameOwner);
-  const { mutate: insertValidationAmount } = useValidationAmountInsert();
+  const { mutateAsync: insertValidationAmount } = useValidationAmountInsert();
 
   const transactionStates = ["outstanding", "future", "cleared"];
 
@@ -112,7 +120,7 @@ export default function TransactionTable() {
     if (throwIt) throw error;
   };
 
-  const handleInsertNewValidationData = (
+  const handleInsertNewValidationData = async (
     accountNameOwner: string,
     transactionState: TransactionState,
   ) => {
@@ -126,12 +134,16 @@ export default function TransactionTable() {
       validationDate: new Date(),
     };
 
-    insertValidationAmount({
+    try {
+    const result = await insertValidationAmount({
       accountNameOwner: accountNameOwner,
       payload: payload,
     });
-    setMessage("ValidationAmount inserted successfully.");
+    setMessage(`ValidationAmount inserted successfully: ${result.validationDate}`);
     setShowSnackbar(true);
+    } catch(error) {
+      handleError(error, "Move Transaction failure.", false);
+    }
   };
 
   const handleMoveRow = async (
@@ -168,36 +180,23 @@ export default function TransactionTable() {
     }
   };
 
-  const handleAddRow = async () => {
-    const newRow = {
-      transactionDate: new Date(),
-      accountNameOwner,
-      reoccurringType: "onetime" as ReoccurringType,
-      amount: 0.0,
-      transactionState: "outstanding" as TransactionState,
-      transactionType: "undefined" as TransactionType,
-      guid: uuidv4(),
-      description: "",
-      category: "",
-      accountType: "undefined" as AccountType,
-      activeStatus: true,
-      notes: "",
-    };
+  const handleRowClone = async (): Promise<void> => {
     try {
-      await insertTransaction({
-        accountNameOwner,
-        newRow,
-        isFutureTransaction: false,
+      const result = await insertTransaction({
+        accountNameOwner: selectedTransaction.accountNameOwner,
+        newRow: selectedTransaction,
+        isFutureTransaction: true,
       });
-      setMessage("handleAddRow() Transaction added successfully.");
+
+      setMessage(`Transaction cloned successfully: ${JSON.stringify(result)}`);
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "handleAddRow", false);
+      handleError(error, "handleRowClone", false);
+      throw error;
     }
   };
 
-  // why 2 adds?
-  const addRow = async (newData: Transaction): Promise<Transaction> => {
+  const handleRowAdd = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
         accountNameOwner: newData.accountNameOwner,
@@ -205,12 +204,12 @@ export default function TransactionTable() {
         isFutureTransaction: false,
       });
 
-      setMessage("addRow() Transaction added successfully.");
+      setMessage(`Transaction added successfully: ${JSON.stringify(result)}`);
       setShowSnackbar(true);
 
       return result;
     } catch (error) {
-      handleError(error, "addRow", false);
+      handleError(error, "handleRowAdd", false);
       throw error;
     }
   };
@@ -337,24 +336,39 @@ export default function TransactionTable() {
       renderCell: (params) => {
         return (
           <div>
-            <IconButton
-              onClick={() => {
-                console.log("move: " + params.row.accountType);
-                setSelectedTransaction(params.row);
-                setOriginalRow(params.row);
-                setShowModalMove(true);
-              }}
-            >
-              <SwapVert />
-            </IconButton>
-            <IconButton
-              onClick={() => {
-                setSelectedTransaction(params.row);
-                setShowModalDelete(true);
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
+            <Tooltip title="Clone this row">
+              <IconButton
+                onClick={() => {
+                  setSelectedTransaction(params.row);
+                  setShowModalClone(true);
+                }}
+              >
+                <ContentCopyIcon />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Move this row to another account">
+              <IconButton
+                onClick={() => {
+                  setSelectedTransaction(params.row);
+                  setOriginalRow(params.row);
+                  setShowModalMove(true);
+                }}
+              >
+                <SwapVert />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Delete this row">
+              <IconButton
+                onClick={() => {
+                  setSelectedTransaction(params.row);
+                  setShowModalDelete(true);
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
           </div>
         );
       },
@@ -380,7 +394,6 @@ export default function TransactionTable() {
             <IconButton
               onClick={() => {
                 setShowModalAdd(true);
-                return handleAddRow;
               }}
               style={{ marginLeft: 8 }}
             >
@@ -434,8 +447,9 @@ export default function TransactionTable() {
         </div>
       )}
 
-      {/* Confirmation Modal */}
-      <Modal open={confirmDelete} onClose={() => setShowModalDelete(false)}>
+
+      {/* Modal  Clone Transaction */}
+            <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
         <Box
           sx={{
             width: 400,
@@ -445,10 +459,45 @@ export default function TransactionTable() {
             marginTop: "20%",
           }}
         >
-          <Typography variant="h6">Confirm Deletion</Typography>
+          <Typography variant="h6">Confirm Clone</Typography>
+          <Typography>
+            Are you sure you want to clone the transaction "
+            {selectedTransaction.description}"?
+          </Typography>
+          <Box mt={2} display="flex" justifyContent="space-between">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleRowClone}
+            >
+              Clone
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setShowModalClone(false)}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Modal Delete Transaction */}
+      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 4,
+            backgroundColor: "white",
+            margin: "auto",
+            marginTop: "20%",
+          }}
+        >
+          <Typography variant="h6">Confirm Delete</Typography>
           <Typography>
             Are you sure you want to delete the transaction "
-            {JSON.stringify(selectedTransaction)}"?
+            {selectedTransaction.accountNameOwner}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
@@ -469,7 +518,7 @@ export default function TransactionTable() {
         </Box>
       </Modal>
 
-      {/* Form Overlay for Adding/Editing Transaction */}
+      {/* Modal Add/Edit Transaction */}
       <Modal
         open={showModalAdd}
         onClose={() => setShowModalAdd(false)}
@@ -619,7 +668,7 @@ export default function TransactionTable() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => transactionData && addRow(transactionData)}
+              onClick={() => transactionData && handleRowAdd(transactionData)}
               style={{ marginTop: 16 }}
             >
               {transactionData ? "Update" : "Add"}
@@ -636,6 +685,7 @@ export default function TransactionTable() {
         </Box>
       </Modal>
 
+      {/* Modal Move Transaction */}
       <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
         <Box
           sx={{

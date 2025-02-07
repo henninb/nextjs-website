@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
   Autocomplete,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -104,7 +105,7 @@ export default function AccountTable() {
           oldRow: accountBeingEdited,
           newRow: updatedAccount,
         });
-        setMessage("Account inserted successfully.");
+        setMessage("Account updated successfully.");
         setShowSnackbar(true);
       } catch (error) {
         handleError(error, `Rename Account ${error.message}`, false);
@@ -135,14 +136,6 @@ export default function AccountTable() {
           >
             {params.row.accountNameOwner}
           </Button>
-
-          {/* <IconButton
-            onClick={() => {
-              handleEditAccount(params.row);
-            }}
-          >
-            <EditIcon />
-          </IconButton> */}
         </div>
       ),
     },
@@ -200,22 +193,26 @@ export default function AccountTable() {
       width: 100,
       renderCell: (params) => (
         <Box>
-          <IconButton
-            onClick={() => {
-              handleEditAccount(params.row);
-            }}
-          >
-            <EditIcon />
-          </IconButton>
+          <Tooltip title="edit the account name">
+            <IconButton
+              onClick={() => {
+                handleEditAccount(params.row);
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
 
-          <IconButton
-            onClick={() => {
-              setSelectedAccount(params.row);
-              setShowModelDelete(true);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
+          <Tooltip title="delete this row">
+            <IconButton
+              onClick={() => {
+                setSelectedAccount(params.row);
+                setShowModelDelete(true);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
       ),
     },
