@@ -25,7 +25,7 @@ const deleteDescription = async (oldRow: Description): Promise<Description> => {
     return await response.json();
   } catch (error) {
     console.log("Error in deleteDescription:", error);
-    return oldRow;
+    throw error;
   }
 };
 

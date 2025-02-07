@@ -10,9 +10,10 @@ const deleteTransaction = async (
   payload: Transaction,
 ): Promise<Transaction> => {
   try {
-    const endpoint =
-      "https://finance.lan/api/transaction/delete/" + payload.guid;
+    const endpoint = `https://finance.lan/api/transaction/delete/${payload.guid}`;
 
+    console.log(endpoint);
+    console.log(JSON.stringify(payload));
     const response = await fetch(endpoint, {
       method: "DELETE",
       headers: {
@@ -31,8 +32,7 @@ const deleteTransaction = async (
     return await response.json();
   } catch (error) {
     console.log("An error occurred:", error);
-    return payload;
-    //throw error;
+    throw error;
   }
 };
 
@@ -46,27 +46,51 @@ export default function useTransactionDelete() {
     onError: (error) => {
       console.log(error ? error : "error is undefined.");
     },
+
     onSuccess: (response, variables) => {
-      //console.log("Fetching transactions for key:", ["accounts", variables.oldRow.accountNameOwner]);
-      //console.log("Deleting transaction with key:", getAccountKey(variables.oldRow.accountNameOwner));
-      const oldData: [Transaction] = queryClient.getQueryData(
-        getAccountKey(variables.oldRow.accountNameOwner),
-      );
-      if (!oldData) {
-        console.log(
-          "No data found for key:",
-          getAccountKey(variables.oldRow.accountNameOwner),
+      const accountKey = getAccountKey(variables.oldRow.accountNameOwner);
+      const totalsKey = ["totals", variables.oldRow.accountNameOwner];
+
+      // Remove the deleted transaction from the cache
+      const oldData: [Transaction] | undefined =
+        queryClient.getQueryData(accountKey);
+      if (oldData) {
+        const newData = oldData.filter(
+          (t: Transaction) =>
+            t.transactionId !== variables.oldRow.transactionId,
         );
-        return;
+        queryClient.setQueryData(accountKey, newData);
+      } else {
+        console.log("No data found for key:", accountKey);
       }
 
-      const newData = oldData.filter(
-        (t: Transaction) => t.transactionId !== variables.oldRow.transactionId,
-      );
-      queryClient.setQueryData(
-        getAccountKey(variables.oldRow.accountNameOwner),
-        newData,
-      );
+      // Invalidate the totals query to refetch updated totals
+      queryClient.invalidateQueries({ queryKey: totalsKey });
     },
+    // onSuccess: (response, variables) => {
+    //   const totalsKey = ["totals", variables.oldRow.accountNameOwner];
+    //   const accountKey = getAccountKey(variables.oldRow.accountNameOwner);
+
+    //   //console.log("Fetching transactions for key:", ["accounts", variables.oldRow.accountNameOwner]);
+    //   //console.log("Deleting transaction with key:", getAccountKey(variables.oldRow.accountNameOwner));
+    //   const oldData: [Transaction] = queryClient.getQueryData(
+    //     getAccountKey(variables.oldRow.accountNameOwner),
+    //   );
+    //   if (!oldData) {
+    //     console.log(
+    //       "No data found for key:",
+    //       getAccountKey(variables.oldRow.accountNameOwner),
+    //     );
+    //     return;
+    //   }
+
+    //   const newData = oldData.filter(
+    //     (t: Transaction) => t.transactionId !== variables.oldRow.transactionId,
+    //   );
+    //   queryClient.setQueryData(
+    //     getAccountKey(variables.oldRow.accountNameOwner),
+    //     newData,
+    //   );
+    // },
   });
 }

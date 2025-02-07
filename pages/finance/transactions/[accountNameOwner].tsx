@@ -182,7 +182,7 @@ export default function TransactionTable() {
     }
   };
 
-  const handleRowClone = async (): Promise<void> => {
+  const handleCloneRow = async (): Promise<void> => {
     try {
       const result = await insertTransaction({
         accountNameOwner: selectedTransaction.accountNameOwner,
@@ -193,12 +193,12 @@ export default function TransactionTable() {
       setMessage(`Transaction cloned successfully: ${JSON.stringify(result)}`);
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "handleRowClone", false);
+      handleError(error, "handleCloneRow", false);
       throw error;
     }
   };
 
-  const handleRowAdd = async (newData: Transaction): Promise<Transaction> => {
+  const handleAddRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
         accountNameOwner: newData.accountNameOwner,
@@ -211,7 +211,7 @@ export default function TransactionTable() {
 
       return result;
     } catch (error) {
-      handleError(error, "handleRowAdd", false);
+      handleError(error, "handleAddRow", false);
       throw error;
     }
   };
@@ -463,13 +463,13 @@ export default function TransactionTable() {
           <Typography variant="h6">Confirm Clone</Typography>
           <Typography>
             Are you sure you want to clone the transaction "
-            {selectedTransaction?.description}"?
+            {selectedTransaction?.guid}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
               variant="contained"
               color="primary"
-              onClick={handleRowClone}
+              onClick={handleCloneRow}
             >
               Clone
             </Button>
@@ -498,7 +498,7 @@ export default function TransactionTable() {
           <Typography variant="h6">Confirm Delete</Typography>
           <Typography>
             Are you sure you want to delete the transaction "
-            {selectedTransaction?.accountNameOwner}"?
+            {selectedTransaction?.guid}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
@@ -669,7 +669,7 @@ export default function TransactionTable() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => transactionData && handleRowAdd(transactionData)}
+              onClick={() => transactionData && handleAddRow(transactionData)}
               style={{ marginTop: 16 }}
             >
               {transactionData ? "Update" : "Add"}

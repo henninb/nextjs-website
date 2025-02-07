@@ -42,8 +42,7 @@ const insertTransaction = async (
 ): Promise<Transaction> => {
   let endpoint = "https://finance.lan/api/transaction/insert";
   if (isFutureTransaction) {
-    endpoint = "/transaction/future/insert";
-    console.log("Will insert futureTransaction");
+    endpoint = "https://finance.lan/api/transaction/future/insert";
   }
 
   const newPayload = setupNewTransaction(payload, accountNameOwner);
@@ -61,6 +60,7 @@ const insertTransaction = async (
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Resource not found (404)");
+        throw new Error(`${response.status}`);
       }
       throw new Error(`Failed to insert transaction: ${response.statusText}`);
     }
@@ -70,7 +70,7 @@ const insertTransaction = async (
     return data;
   } catch (error) {
     console.log("Error inserting transaction:", error);
-    return payload;
+    throw error;
   }
 };
 

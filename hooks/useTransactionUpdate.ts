@@ -31,8 +31,6 @@ const updateTransaction = async (
 ): Promise<Transaction> => {
   try {
     const sanitizedGuid = sanitizeGuid(oldData.guid);
-    // const endpoint =
-    //   "https://finance.lan/api/transaction/update/" + oldData.guid;
 
     const endpoint = `https://finance.lan/api/transaction/update/${sanitizedGuid}`;
 
@@ -64,7 +62,7 @@ const updateTransaction = async (
     return await response.json();
   } catch (error) {
     console.log("Error updating transaction:", error);
-    return newData;
+    throw error;
   }
 };
 

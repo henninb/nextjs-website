@@ -3,23 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TransactionState } from "../model/TransactionState";
 import Transaction from "../model/Transaction";
 
-const dataTest: Transaction = {
-  transactionId: 10544,
-  guid: "299b36b1-a49f-43bc-aaa5-ba78352f716a",
-  accountId: 1029,
-  accountType: "credit",
-  transactionType: "undefined",
-  accountNameOwner: "barclay-cash_brian",
-  transactionDate: new Date("2017-09-17"),
-  description: "balance adjustment",
-  category: "none",
-  amount: 1.99,
-  transactionState: "future",
-  activeStatus: true,
-  reoccurringType: "onetime",
-  notes: "",
-};
-
 const getAccountKey = (accountNameOwner: string) => [
   "accounts",
   accountNameOwner,
@@ -54,7 +37,7 @@ const changeTransactionState = async (
     return await response.json();
   } catch (error: any) {
     console.log("Error updating transaction state:", error.message);
-    return dataTest;
+    throw error;
   }
 };
 
