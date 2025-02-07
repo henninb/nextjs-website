@@ -44,7 +44,8 @@ export default function payments() {
     if (isSuccess && isSuccessAccounts) {
       setShowSpinner(false);
     }
-  }, [isSuccess]);
+  }, [isSuccess, isSuccessAccounts]);
+  
 
   const handleButtonClickLink = (accountNameOwner: string) => {
     router.push(`/finance/transactions/${accountNameOwner}`);
@@ -88,7 +89,7 @@ export default function payments() {
       setMessage("Payment Added successfully.");
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, `Delete Payment error: ${error}`, false);
+      handleError(error, `Add Payment error: ${error}`, false);
     }
   };
 
@@ -101,19 +102,12 @@ export default function payments() {
         return params.value.toLocaleDateString("en-US");
       },
       valueGetter: (params: string) => {
-        //console.log("date-in:" + params)
         const utcDate = new Date(params);
         const localDate = new Date(
           utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
         );
-        //console.log("localDate: " + localDate);
         return localDate;
       },
-
-      // valueGetter: (params) => new Date(params),
-      // renderCell: (params) => {
-      //   return formatDate(params.value);
-      // },
     },
     {
       field: "accountNameOwner",
@@ -132,12 +126,6 @@ export default function payments() {
       headerName: "Amount",
       width: 150,
       editable: true,
-      // renderCell: (params) =>
-      //   params.value?.toLocaleString("en-US", {
-      //     style: "currency",
-      //     currency: "USD",
-      //   }),
-
       valueFormatter: (params: number) =>
         params.toLocaleString("en-US", {
           style: "currency",
@@ -174,18 +162,19 @@ export default function payments() {
           <DataGrid
             rows={data?.filter((row) => row != null) || []}
             columns={columns}
-            getRowId={(row) => row.paymentId || 0}
+            getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Payment, oldRow: Payment) => {
+            processRowUpdate={async (newRow, oldRow) => {
               try {
                 await updatePayment({ oldPayment: oldRow, newPayment: newRow });
                 setMessage("Payment updated successfully.");
                 setShowSnackbar(true);
+                return newRow;
               } catch (error) {
                 handleError(error, `Update Payment error: ${error}`, false);
+                return oldRow;
               }
-              return newRow;
             }}
           />
           <div>
@@ -212,7 +201,7 @@ export default function payments() {
           <Typography variant="h6">Confirm Deletion</Typography>
           <Typography>
             Are you sure you want to delete the payment "
-            {JSON.stringify(selectedPayment)}"?
+            {selectedPayment?.paymentId}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button

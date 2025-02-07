@@ -7,6 +7,7 @@ import {
   Modal,
   TextField,
   Typography,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,8 +29,10 @@ export default function Categories() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [fallbackData, setFallbackData] = useState<Category[]>([]);
 
-  const { data, isSuccess } = useFetchCategory();
+  const { data, isSuccess, isError, refetch } = useFetchCategory();
   const { mutateAsync: insertCategory } = useCategoryInsert();
   const { mutateAsync: updateCategory } = useCategoryUpdate();
   const { mutateAsync: deleteCategory } = useCategoryDelete();
@@ -37,8 +40,27 @@ export default function Categories() {
   useEffect(() => {
     if (isSuccess) {
       setShowSpinner(false);
+      setFetchError(null);
+      if (typeof window !== "undefined") {
+        const cachedData = localStorage.getItem("cachedCategories");
+        if (cachedData) {
+          setFallbackData(JSON.parse(cachedData));
+        }
+      }
     }
-  }, [isSuccess]);
+    if (isError) {
+      setShowSpinner(false);
+      setFetchError("Failed to load categories. Please check your connection.");
+    }
+  }, [isSuccess, isError, data]);
+
+  // Load cached data if API fails
+  // const fallbackData: Category[] = JSON.parse(
+  //   localStorage.getItem("cachedCategories") || "[]",
+  // );
+  // const fallbackData: Category[] = JSON.parse(
+  //   localStorage.getItem("cachedCategories") || "[]"
+  // );
 
   const handleDeleteRow = async () => {
     if (selectedCategory) {
@@ -71,14 +93,16 @@ export default function Categories() {
     if (throwIt) throw error;
   };
 
-  const handleAddRow = async (newData: Category) => {
+  const handleAddRow = async(newData: Category) => {
     try {
       await insertCategory(newData);
-      setShowModalAdd(false);
+      
       setMessage("Category inserted successfully.");
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Add Category", false);
+      handleError(error, `Add Category error: ${error.message}`, false);
+    } finally {
+      setShowModalAdd(false);
     }
   };
 
@@ -117,6 +141,37 @@ export default function Categories() {
       <h2>Category Details</h2>
       {showSpinner ? (
         <Spinner />
+      ) : fetchError ? (
+        <Box sx={{ textAlign: "center", mt: 3 }}>
+          <Alert severity="error">{fetchError}</Alert>
+          {fallbackData.length > 0 ? (
+            <>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Showing cached data instead:
+              </Typography>
+              <DataGrid
+                rows={fallbackData}
+                columns={columns}
+                getRowId={(row) => row.categoryId || 0}
+              />
+            </>
+          ) : (
+            <Typography variant="body1" sx={{ mt: 2 }}>
+              No cached data available.
+            </Typography>
+          )}
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+            onClick={() => {
+              setShowSpinner(true);
+              refetch();
+            }}
+          >
+            Retry
+          </Button>
+        </Box>
       ) : (
         <div>
           <IconButton onClick={() => setShowModalAdd(true)}>
@@ -142,15 +197,14 @@ export default function Categories() {
               return newRow;
             }}
           />
-          <div>
-            <SnackbarBaseline
-              message={message}
-              state={showSnackbar}
-              handleSnackbarClose={handleSnackbarClose}
-            />
-          </div>
         </div>
       )}
+
+      <SnackbarBaseline
+        message={message}
+        state={showSnackbar}
+        handleSnackbarClose={handleSnackbarClose}
+      />
 
       {/* Confirmation Delete Modal */}
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
@@ -187,6 +241,7 @@ export default function Categories() {
         </Box>
       </Modal>
 
+      {/* Add/Edit Category Modal */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{

@@ -179,7 +179,7 @@ export default function transfers() {
           <DataGrid
             rows={data?.filter((row) => row != null) || []}
             columns={columns}
-            getRowId={(row) => row.transferId || 0}
+            getRowId={(row) => row.transferId || `temp-${Math.random()}`}
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={async (newRow: Transfer, oldRow: Transfer) => {
@@ -190,10 +190,11 @@ export default function transfers() {
                 });
                 setMessage("Transfer updated successfully.");
                 setShowSnackbar(true);
+                return newRow;
               } catch (error) {
                 handleError(error, `Update Transfer error: ${error}`, false);
+                return oldRow;
               }
-              return newRow;
             }}
           />
           <div>
@@ -220,7 +221,7 @@ export default function transfers() {
           <Typography variant="h6">Confirm Deletion</Typography>
           <Typography>
             Are you sure you want to delete the transfer "
-            {JSON.stringify(selectedTransfer)}"?
+            {selectedTransfer?.transferId}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button

@@ -124,7 +124,7 @@ export default function TransactionTable() {
     accountNameOwner: string,
     transactionState: TransactionState,
   ) => {
-    console.log(accountNameOwner);
+    //console.log(accountNameOwner);
 
     const payload: ValidationAmount = {
       validationId: Math.random(),
@@ -135,16 +135,18 @@ export default function TransactionTable() {
     };
 
     try {
-      const result = await insertValidationAmount({
+      await insertValidationAmount({
         accountNameOwner: accountNameOwner,
         payload: payload,
       });
-      setMessage(
-        `ValidationAmount inserted successfully: ${result.validationDate}`,
-      );
+      setMessage(`ValidationAmount inserted successfully`);
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Move Transaction failure.", false);
+      handleError(
+        error,
+        `Insert ValidationAmount failure: ${error.message}`,
+        false,
+      );
     }
   };
 
@@ -153,7 +155,7 @@ export default function TransactionTable() {
     newTransaction: Transaction,
   ) => {
     try {
-      updateTransaction({
+      await updateTransaction({
         newRow: newTransaction,
         oldRow: oldTransaction,
       });
@@ -163,7 +165,7 @@ export default function TransactionTable() {
       setMessage("Transaction moved successfully.");
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Move Transaction failure.", false);
+      handleError(error, `Move Transaction failure: ${error}`, false);
     }
   };
 
@@ -174,7 +176,7 @@ export default function TransactionTable() {
         setMessage("Transaction deleted successfully.");
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, "Delete Transaction failure.", false);
+        handleError(error, `Delete Transaction failure: ${error}`, false);
       } finally {
         setShowModalDelete(false);
         setSelectedTransaction(null);
@@ -193,7 +195,7 @@ export default function TransactionTable() {
       setMessage(`Transaction cloned successfully: ${JSON.stringify(result)}`);
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "handleCloneRow", false);
+      handleError(error, `handleCloneRow error: ${error}`, false);
       throw error;
     }
   };
@@ -267,10 +269,9 @@ export default function TransactionTable() {
       width: 275,
       renderCell: (params: any) => {
         const handleStateChange = async (newState: TransactionState) => {
-          // Avoid directly mutating `params.row`
-          const updatedRow = { ...params.row, transactionState: newState };
-
           try {
+                      // Avoid directly mutating `params.row`
+          const updatedRow = { ...params.row, transactionState: newState };
             await updateTransaction({
               newRow: updatedRow,
               oldRow: params.row,
@@ -426,9 +427,9 @@ export default function TransactionTable() {
               getRowId={(row) => row.transactionId || 0}
               checkboxSelection={false}
               rowSelection={false}
-              processRowUpdate={(newRow: Transaction, oldRow: Transaction) => {
+              processRowUpdate={async (newRow: Transaction, oldRow: Transaction) => {
                 try {
-                  updateTransaction({ newRow: newRow, oldRow: oldRow });
+                  await updateTransaction({ newRow: newRow, oldRow: oldRow });
                   setMessage("Transaction updated successfully.");
                   setShowSnackbar(true);
                 } catch (error) {

@@ -72,16 +72,16 @@ export default function descriptions() {
     if (throwIt) throw error;
   };
 
-  const handleAddRow = async (newData: Description): Promise<Description> => {
+  const handleAddRow = async (newData: Description) => {
     try {
-      const result = await insertDescription(newData);
-      setShowModalAdd(false);
+      await insertDescription(newData);
       setMessage("Description inserted successfully.");
       setShowSnackbar(true);
-      return result;
+      //return result;
     } catch (error) {
       handleError(error, `Add Description error: ${error.message}`, false);
     } finally {
+      setShowModalAdd(false);
     }
   };
 
@@ -148,8 +148,14 @@ export default function descriptions() {
                 setMessage("Description updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
-                handleError(error, `Update Description error: ${error.message}`, false);
+                console.log("");
+                handleError(
+                  error,
+                  `Update Description error: ${error.message}`,
+                  false,
+                );
               }
+              // might need to move this line
               return newRow;
             }}
           />
