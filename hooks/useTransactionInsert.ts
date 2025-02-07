@@ -69,7 +69,7 @@ const insertTransaction = async (
     console.log("Response data:", JSON.stringify(data));
     return data;
   } catch (error) {
-    console.log("Error inserting transaction:", error);
+    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };

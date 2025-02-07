@@ -27,15 +27,8 @@ const insertDescription = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log("Error occurred:", error);
-    //throw error;
-    return {
-      descriptionId: Math.random(),
-      descriptionName: descriptionName,
-      activeStatus: true,
-      dateAdded: new Date(),
-      dateUpdated: new Date(),
-    };
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

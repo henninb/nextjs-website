@@ -48,7 +48,7 @@ export default function descriptions() {
         setMessage("Description deleted successfully.");
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, "Delete Description failure.", false);
+        handleError(error, `Delete Description error: ${error.message}`, false);
       } finally {
         setConfirmDelete(false);
         setSelectedDescription(null);
@@ -72,7 +72,7 @@ export default function descriptions() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Description): Promise<Description> => {
+  const handleAddRow = async (newData: Description): Promise<Description> => {
     try {
       const result = await insertDescription(newData);
       setShowModalAdd(false);
@@ -80,7 +80,7 @@ export default function descriptions() {
       setShowSnackbar(true);
       return result;
     } catch (error) {
-      handleError(error, "Add Description", false);
+      handleError(error, `Add Description error: ${error.message}`, false);
     } finally {
     }
   };
@@ -148,7 +148,7 @@ export default function descriptions() {
                 setMessage("Description updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
-                handleError(error, "Update Description failure.", false);
+                handleError(error, `Update Description error: ${error.message}`, false);
               }
               return newRow;
             }}
@@ -163,7 +163,7 @@ export default function descriptions() {
         </div>
       )}
 
-      {/* Confirmation Delete Modal */}
+      {/* Delete Modal */}
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
         <Box
           sx={{
@@ -198,6 +198,7 @@ export default function descriptions() {
         </Box>
       </Modal>
 
+      {/* Add/Update Modal */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -237,7 +238,7 @@ export default function descriptions() {
           />
           <Button
             variant="contained"
-            onClick={() => descriptionData && addRow(descriptionData)}
+            onClick={() => descriptionData && handleAddRow(descriptionData)}
           >
             {descriptionData ? "Update" : "Add"}
           </Button>

@@ -25,14 +25,8 @@ const insertCategory = async (categoryName: string): Promise<Category> => {
 
     return await response.json();
   } catch (error: any) {
-    console.log("An error occurred:", error);
-    return {
-      categoryId: Math.random(),
-      categoryName: categoryName,
-      activeStatus: true,
-      dateAdded: new Date(),
-      dateUpdated: new Date(),
-    };
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

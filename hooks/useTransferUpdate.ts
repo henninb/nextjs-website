@@ -30,7 +30,7 @@ const updateTransfer = async (
 
     return await response.json();
   } catch (error: any) {
-    console.error("Error updating transfer:", error.message);
+    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };

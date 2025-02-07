@@ -71,7 +71,7 @@ export default function configuration() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Parameter) => {
+  const handleAddRow = async (newData: Parameter) => {
     try {
       await insertParameter({ payload: newData });
       setShowModalAdd(false);
@@ -223,7 +223,7 @@ export default function configuration() {
           />
           <Button
             variant="contained"
-            onClick={() => parameterData && addRow(parameterData)}
+            onClick={() => parameterData && handleAddRow(parameterData)}
           >
             {parameterData ? "Update" : "Add"}
           </Button>

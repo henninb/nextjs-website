@@ -23,8 +23,8 @@ const deleteCategory = async (payload: Category): Promise<Category> => {
 
     return await response.json();
   } catch (error) {
-    console.log("Error in deleteCategory:", error);
-    return payload;
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

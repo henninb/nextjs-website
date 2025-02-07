@@ -29,7 +29,7 @@ export default function payments() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const router = useRouter();
 
@@ -59,7 +59,7 @@ export default function payments() {
       } catch (error) {
         handleError(error, `Delete Payment error: ${error}`, false);
       } finally {
-        setConfirmDelete(false);
+        setShowModalDelete(false);
         setSelectedPayment(null);
       }
     }
@@ -152,7 +152,7 @@ export default function payments() {
         <IconButton
           onClick={() => {
             setSelectedPayment(params.row);
-            setConfirmDelete(true);
+            setShowModalDelete(true);
           }}
         >
           <DeleteIcon />
@@ -199,7 +199,7 @@ export default function payments() {
       )}
 
       {/* Confirmation Delete Modal */}
-      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
         <Box
           sx={{
             width: 400,
@@ -225,7 +225,7 @@ export default function payments() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setConfirmDelete(false)}
+              onClick={() => setShowModalDelete(false)}
             >
               Cancel
             </Button>

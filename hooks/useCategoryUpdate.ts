@@ -30,8 +30,8 @@ const updateCategory = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log("Error updating transaction state:", error.message);
-    return newCategory; // Return fallback data on error
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

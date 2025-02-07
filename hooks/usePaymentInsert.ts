@@ -33,9 +33,8 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
 
     return await response.json();
   } catch (error) {
-    console.log("An error occurred:", error);
-    //throw error;
-    return payload;
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

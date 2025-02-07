@@ -70,7 +70,7 @@ export default function AccountTable() {
         setMessage("Account deleted successfully.");
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, `Delete Account ${error.message}`, false);
+        handleError(error, `Delete Account error: ${error.message}`, false);
       } finally {
         setShowModelDelete(false);
         setSelectedAccount(null);
@@ -108,12 +108,12 @@ export default function AccountTable() {
         setMessage("Account updated successfully.");
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, `Rename Account ${error.message}`, false);
+        handleError(error, `Rename Account error: ${error.message}`, false);
       }
     }
   };
 
-  const addRow = async (newData: Account) => {
+  const handleAddRow = async (newData: Account) => {
     try {
       await insertAccount({ payload: newData });
       setShowModelAdd(false);
@@ -228,10 +228,6 @@ export default function AccountTable() {
           <IconButton onClick={() => setShowModelAdd(true)}>
             <AddIcon />
           </IconButton>
-          {/* <h3>
-            [${totals?.totals}] [${totals?.totalsCleared}] [$
-            {totals?.totalsOutstanding}] [ ${totals?.totalsFuture}]
-          </h3> */}
 
           <h3>
             [ ${currencyFormat(noNaN(totals["totals"]))} ] [ $
@@ -253,7 +249,7 @@ export default function AccountTable() {
                 setMessage("Account updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
-                handleError(error, "Update Account failure.", false);
+                handleError(error, `Update Account ${error.message}`, false);
               }
               return newRow;
             }}
@@ -411,7 +407,7 @@ export default function AccountTable() {
           />
           <Button
             variant="contained"
-            onClick={() => accountData && addRow(accountData)}
+            onClick={() => accountData && handleAddRow(accountData)}
           >
             {accountData ? "Update" : "Add"}
           </Button>

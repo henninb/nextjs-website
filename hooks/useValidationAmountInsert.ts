@@ -30,15 +30,8 @@ const insertValidationAmount = async (
 
     return response.json();
   } catch (error) {
-    console.log("An error occurred while inserting validation amount:", error);
-    return {
-      validationId: Math.random(),
-      validationDate: new Date(),
-      accountId: 1,
-      amount: 0.0,
-      transactionState: "undefined" as TransactionState,
-      activeStatus: false,
-    };
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

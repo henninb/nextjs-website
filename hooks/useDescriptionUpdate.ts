@@ -30,8 +30,8 @@ const updateDescription = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log("Error updating transaction state:", error.message);
-    return newDescription; // Return fallback data on error
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

@@ -34,8 +34,8 @@ const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
 
     return await response.json();
   } catch (error) {
-    console.log("An error occurred:", error);
-    return payload;
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

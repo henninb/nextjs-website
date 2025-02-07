@@ -30,8 +30,8 @@ const updateParameter = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log("Error updating transaction state:", error.message);
-    return newParameter; // Return fallback data on error
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

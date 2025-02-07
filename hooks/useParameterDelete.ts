@@ -23,8 +23,8 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
 
     return await response.json();
   } catch (error) {
-    console.log("Error in deleteParameter:", error);
-    return payload;
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

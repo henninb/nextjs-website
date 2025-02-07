@@ -32,8 +32,8 @@ const updatePayment = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log("Error updating payment state:", error.message);
-    return newPayment; // Return fallback data on error
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

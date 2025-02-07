@@ -61,7 +61,7 @@ const updateTransaction = async (
 
     return await response.json();
   } catch (error) {
-    console.log("Error updating transaction:", error);
+    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };

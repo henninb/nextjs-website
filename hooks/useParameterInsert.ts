@@ -24,8 +24,8 @@ const insertParameter = async (payload: Parameter): Promise<Parameter> => {
 
     return await response.json();
   } catch (error) {
-    console.log("An error occurred:", error);
-    return payload;
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
   }
 };
 

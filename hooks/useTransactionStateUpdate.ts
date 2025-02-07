@@ -36,7 +36,7 @@ const changeTransactionState = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log("Error updating transaction state:", error.message);
+    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };

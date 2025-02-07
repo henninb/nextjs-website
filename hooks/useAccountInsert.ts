@@ -45,6 +45,7 @@ const insertAccount = async (payload: Account): Promise<Account> => {
 
     return await response.json();
   } catch (error: any) {
+    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };

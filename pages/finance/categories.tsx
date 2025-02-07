@@ -71,7 +71,7 @@ export default function Categories() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Category) => {
+  const handleAddRow = async (newData: Category) => {
     try {
       await insertCategory(newData);
       setShowModalAdd(false);
@@ -224,7 +224,7 @@ export default function Categories() {
           />
           <Button
             variant="contained"
-            onClick={() => categoryData && addRow(categoryData)}
+            onClick={() => categoryData && handleAddRow(categoryData)}
           >
             {categoryData ? "Update" : "Add"}
           </Button>
