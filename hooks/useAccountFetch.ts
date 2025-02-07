@@ -45,7 +45,7 @@ const dataTest: Account[] = [
   },
 ];
 
-const fetchAccountData = async (): Promise<Account[]> => {
+const fetchAccountData = async (): Promise<Account[]| null> => {
   try {
     const response = await fetch(
       "https://finance.lan/api/account/select/active",
@@ -70,7 +70,8 @@ const fetchAccountData = async (): Promise<Account[]> => {
         `HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`,
       );
     }
-    return await response.json();
+    
+    return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
     console.log("Error fetching account data:", error);
     return dataTest;
@@ -84,7 +85,7 @@ export default function useAccountFetch() {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching account data:",
       queryResult.error?.message,
     );

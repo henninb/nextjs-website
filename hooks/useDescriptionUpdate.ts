@@ -15,7 +15,7 @@ const updateDescription = async (
         Accept: "application/json",
         //Authorization: basicAuth(),
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(newDescription),
     });
 
     if (response.status === 404) {
@@ -48,7 +48,7 @@ export default function useDescriptionUpdate() {
       newDescription: Description;
     }) => updateDescription(oldDescription, newDescription),
     onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
+      console.log(`Error occurred during mutation: ${error.message}`);
     },
     onSuccess: (updatedDescription: Description) => {
       const oldData = queryClient.getQueryData<Description[]>(["description"]);
@@ -63,17 +63,5 @@ export default function useDescriptionUpdate() {
         queryClient.setQueryData(["description"], newData);
       }
     },
-    // onSuccess: (updatedDescription: Description) => {
-    //   const oldData = queryClient.getQueryData<Description[]>(["description"]);
-    //   if (oldData) {
-    //     const newData = oldData.map((element: Description) =>
-    //       element.descriptionName === updatedDescription.descriptionName
-    //         ? { ...element, ...updatedDescription }
-    //         : element,
-    //     );
-
-    //     queryClient.setQueryData(["description"], newData);
-    //   }
-    // },
   });
 }

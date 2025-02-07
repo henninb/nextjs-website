@@ -51,7 +51,7 @@ export default function useTransactionStateUpdate(accountNameOwner: string) {
       transactionState: TransactionState;
     }) => changeTransactionState(variables.guid, variables.transactionState),
     onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
+      console.log(`Error occurred during mutation: ${error.message}`);
     },
     onSuccess: (response: Transaction) => {
       const oldData: Transaction[] =

@@ -60,7 +60,7 @@ export default function useTransferFetch() {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching transfer data:",
       queryResult.error?.message,
     );

@@ -75,7 +75,7 @@ export default function usePaymentFetch() {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching payment data:",
       queryResult.error?.message,
     );

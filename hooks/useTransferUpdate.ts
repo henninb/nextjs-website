@@ -23,9 +23,7 @@ const updateTransfer = async (
     }
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to update transfer: ${response.statusText}`,
-      );
+      throw new Error(`Failed to update transfer: ${response.statusText}`);
     }
 
     return await response.json();

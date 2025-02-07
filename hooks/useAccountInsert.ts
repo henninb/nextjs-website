@@ -17,7 +17,7 @@ const setupNewAccount = (payload: Account) => {
   };
 };
 
-const insertAccount = async (payload: Account): Promise<Account> => {
+const insertAccount = async (payload: Account): Promise<Account | null> => {
   try {
     const endpoint = "https://finance.lan/api/account/insert";
     const newPayload = setupNewAccount(payload);
@@ -43,7 +43,7 @@ const insertAccount = async (payload: Account): Promise<Account> => {
       );
     }
 
-    return await response.json();
+    return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
     console.log(`An error occurred: ${error.message}`);
     throw error;
@@ -58,7 +58,7 @@ export default function useAccountInsert() {
     mutationFn: (variables: { payload: Account }) =>
       insertAccount(variables.payload),
     onError: (error: Error) => {
-      console.error(error ? error : "Error is undefined.");
+      console.log(error ? error : "Error is undefined.");
     },
     onSuccess: (response: Account) => {
       const oldData: Account[] | undefined = queryClient.getQueryData([

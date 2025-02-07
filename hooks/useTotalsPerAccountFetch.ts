@@ -40,7 +40,7 @@ export default function useTotalsPerAccountFetch(accountNameOwner: string) {
     queryFn: () => fetchTotalsPerAccount(accountNameOwner),
   });
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching account_totals data:",
       queryResult.error?.message,
     );

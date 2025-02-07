@@ -124,7 +124,7 @@ export default function useTransactionByAccountFetch(accountNameOwner: string) {
     queryFn: () => fetchTransactionsByAccount(accountNameOwner),
   });
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching transaction data:",
       queryResult.error?.message,
     );

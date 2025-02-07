@@ -15,7 +15,7 @@ const updateCategory = async (
         Accept: "application/json",
         //Authorization: basicAuth(),
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(newCategory),
     });
 
     if (response.status === 404) {
@@ -30,7 +30,6 @@ const updateCategory = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };

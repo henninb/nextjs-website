@@ -27,7 +27,6 @@ const updateAccount = async (
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -40,7 +39,7 @@ export default function useAccountUpdate() {
     mutationFn: (variables: { oldRow: Account; newRow: Account }) =>
       updateAccount(variables.oldRow, variables.newRow),
     onError: (error: any) => {
-      console.error(error ? error : "Error is undefined.");
+      console.log(error ? error : "Error is undefined.");
     },
     onSuccess: (response: Account) => {
       const oldData: Account[] | undefined = queryClient.getQueryData([

@@ -1,12 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ValidationAmount from "../model/ValidationAmount";
-import { TransactionState } from "../model/TransactionState";
 //import { basicAuth } from "../Common";
 
 const insertValidationAmount = async (
   accountNameOwner: string,
   payload: ValidationAmount,
-): Promise<ValidationAmount> => {
+): Promise<ValidationAmount | null> => {
   const endpoint = `https://finance.lan/api/validation/amount/insert/${accountNameOwner}`;
 
   try {
@@ -28,10 +27,15 @@ const insertValidationAmount = async (
       );
     }
 
-    return response.json();
+    return response.status !== 204 ? await response.json() : null;
   } catch (error) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
+    // console.log(`An error occurred: ${error}`);
+    // throw error;
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      console.warn("Network error: Unable to connect to finance.lan. The server may be down.");
+      //return null; // Return null instead of throwing an error to prevent crashes
+      throw error;
+    }
   }
 };
 
@@ -44,8 +48,8 @@ export default function useValidationAmountInsert() {
       accountNameOwner: string;
       payload: ValidationAmount;
     }) => insertValidationAmount(variables.accountNameOwner, variables.payload),
-    onError: (error: unknown) => {
-      console.error("Error during mutation:", error);
+    onError: (error: any) => {
+      console.log("Error during mutation:", error);
     },
     onSuccess: (response: ValidationAmount, variables) => {
       console.log("Mutation successful:", JSON.stringify(response));

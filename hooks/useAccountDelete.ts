@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
 //import { basicAuth } from "../Common";
 
-const deleteAccount = async (payload: Account): Promise<Account> => {
+const deleteAccount = async (payload: Account): Promise<Account| null> => {
   try {
     const endpoint = `https://finance.lan/api/account/delete/${payload.accountNameOwner}`;
 
@@ -21,7 +21,7 @@ const deleteAccount = async (payload: Account): Promise<Account> => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return await response.json();
+    return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
     console.log(`An error occurred: ${error.message}`);
     throw error;
@@ -36,7 +36,7 @@ export default function useAccountDelete() {
     mutationFn: (variables: { oldRow: Account }) =>
       deleteAccount(variables.oldRow),
     onError: (error: any) => {
-      console.error(error ? error : "Error is undefined.");
+      console.log(error ? error : "Error is undefined.");
     },
     onSuccess: (response, variables) => {
       const oldData: Account[] | undefined = queryClient.getQueryData([

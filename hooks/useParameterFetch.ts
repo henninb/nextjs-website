@@ -44,7 +44,7 @@ export default function useParameterFetch() {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching parameter data:",
       queryResult.error?.message,
     );

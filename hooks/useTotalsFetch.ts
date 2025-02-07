@@ -38,7 +38,7 @@ export default function useTotalsFetch() {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching payment_required data:",
       queryResult.error?.message,
     );

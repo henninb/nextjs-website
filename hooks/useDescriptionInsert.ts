@@ -39,7 +39,7 @@ export default function useDescriptionInsert() {
     mutationFn: (variables: { descriptionName: string }) =>
       insertDescription(variables.descriptionName),
     onError: (error: unknown) => {
-      console.error(error || "An unknown error occurred.");
+      console.log(error || "An unknown error occurred.");
     },
     onSuccess: (newDescription) => {
       const oldData: Description[] =

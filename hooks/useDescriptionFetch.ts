@@ -48,7 +48,7 @@ export default function useDescriptionFetch() {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching description data:",
       queryResult.error?.message,
     );

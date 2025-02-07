@@ -48,7 +48,7 @@ export default function useCategoryFetch() {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching category data:",
       queryResult.error?.message,
     );

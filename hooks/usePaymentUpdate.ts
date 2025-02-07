@@ -50,7 +50,7 @@ export default function usePaymentUpdate() {
       newPayment: Payment;
     }) => updatePayment(oldPayment, newPayment),
     onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
+      console.log(`Error occurred during mutation: ${error.message}`);
     },
     onSuccess: (updatedPayment: Payment) => {
       const oldData = queryClient.getQueryData<Payment[]>(["payment"]);

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
-const deleteCategory = async (payload: Category): Promise<Category> => {
+const deleteCategory = async (payload: Category): Promise<Category| null> => {
   try {
     const endpoint = `https://finance.lan/api/category/delete/${payload.categoryName}`;
 
@@ -21,9 +21,8 @@ const deleteCategory = async (payload: Category): Promise<Category> => {
       throw new Error(`An error occurred: ${response.statusText}`);
     }
 
-    return await response.json();
+    return response.status !== 204 ? await response.json() : null;
   } catch (error) {
-    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -35,7 +34,7 @@ export default function useCategoryDelete() {
     mutationKey: ["deleteCategory"],
     mutationFn: (variables: Category) => deleteCategory(variables),
     onError: (error) => {
-      console.error("Mutation error:", error);
+      console.info("Mutation error:", error);
     },
     onSuccess: (response, variables) => {
       console.log("Delete was successful.", response);

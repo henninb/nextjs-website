@@ -60,7 +60,7 @@ export default function useValidationAmountFetch(accountNameOwner: string) {
   });
 
   if (queryResult.isError) {
-    console.error(
+    console.log(
       "Error occurred while fetching validationAmount data:",
       queryResult.error?.message,
     );

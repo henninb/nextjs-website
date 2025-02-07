@@ -48,7 +48,7 @@ export default function useParameterUpdate() {
       newParameter: Parameter;
     }) => updateParameter(oldParameter, newParameter),
     onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
+      console.log(`Error occurred during mutation: ${error.message}`);
     },
     onSuccess: (updatedParameter: Parameter) => {
       const oldData = queryClient.getQueryData<Parameter[]>(["parameter"]);

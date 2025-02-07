@@ -36,7 +36,7 @@ export default function useParameterDelete() {
     //mutationFn: (variables: any) => deleteParameter(variables.payload),
     mutationFn: (variables: Parameter) => deleteParameter(variables),
     onError: (error) => {
-      console.error("Mutation error:", error);
+      console.log("Mutation error:", error);
     },
     onSuccess: (response, variables) => {
       console.log("Delete was successful.", response);

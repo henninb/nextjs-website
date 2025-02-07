@@ -65,9 +65,7 @@ const insertTransaction = async (
       throw new Error(`Failed to insert transaction: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    console.log("Response data:", JSON.stringify(data));
-    return data;
+    return await response.json();
   } catch (error) {
     console.log(`An error occurred: ${error.message}`);
     throw error;
@@ -86,7 +84,7 @@ export default function useTransactionInsert(accountNameOwner: string) {
         variables.isFutureTransaction,
       ),
     onError: (error: any) => {
-      console.error(`Mutation error: ${error.message}`);
+      console.log(`Mutation error: ${error.message}`);
     },
     onSuccess: (response: Transaction) => {
       const oldData: Transaction[] =

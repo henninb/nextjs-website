@@ -43,7 +43,7 @@ export default function useAccountRename() {
       newAccountName: string;
     }) => renameAccount(variables.oldAccountName, variables.newAccountName),
     onError: (error: any) => {
-      console.error(error ? error : "Error is undefined.");
+      console.log(error ? error : "Error is undefined.");
     },
     onSuccess: (newAccountName: string, variables) => {
       const { oldAccountName } = variables;

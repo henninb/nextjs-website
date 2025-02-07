@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
-const insertCategory = async (categoryName: string): Promise<Category> => {
+const insertCategory = async (categoryName: string): Promise<Category | null> => {
   try {
     const endpoint = "https://finance.lan/api/category/insert";
     const payload = { category: categoryName, activeStatus: true };
@@ -25,7 +25,6 @@ const insertCategory = async (categoryName: string): Promise<Category> => {
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -36,8 +35,8 @@ export default function useCategoryInsert() {
   return useMutation({
     mutationFn: (variables: { categoryName: string }) =>
       insertCategory(variables.categoryName),
-    onError: (error: unknown) => {
-      console.error(error || "An unknown error occurred.");
+    onError: (error: any) => {
+      console.log(error || "An unknown error occurred.");
     },
     onSuccess: (newCategory) => {
       const oldData: Category[] = queryClient.getQueryData(["category"]) || [];
