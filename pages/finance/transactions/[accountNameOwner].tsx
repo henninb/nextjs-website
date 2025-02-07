@@ -135,13 +135,15 @@ export default function TransactionTable() {
     };
 
     try {
-    const result = await insertValidationAmount({
-      accountNameOwner: accountNameOwner,
-      payload: payload,
-    });
-    setMessage(`ValidationAmount inserted successfully: ${result.validationDate}`);
-    setShowSnackbar(true);
-    } catch(error) {
+      const result = await insertValidationAmount({
+        accountNameOwner: accountNameOwner,
+        payload: payload,
+      });
+      setMessage(
+        `ValidationAmount inserted successfully: ${result.validationDate}`,
+      );
+      setShowSnackbar(true);
+    } catch (error) {
       handleError(error, "Move Transaction failure.", false);
     }
   };
@@ -447,9 +449,8 @@ export default function TransactionTable() {
         </div>
       )}
 
-
       {/* Modal  Clone Transaction */}
-        <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
+      <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
         <Box
           sx={{
             width: 400,
@@ -462,7 +463,7 @@ export default function TransactionTable() {
           <Typography variant="h6">Confirm Clone</Typography>
           <Typography>
             Are you sure you want to clone the transaction "
-            {selectedTransaction.description}"?
+            {selectedTransaction?.description}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
@@ -497,7 +498,7 @@ export default function TransactionTable() {
           <Typography variant="h6">Confirm Delete</Typography>
           <Typography>
             Are you sure you want to delete the transaction "
-            {selectedTransaction.accountNameOwner}"?
+            {selectedTransaction?.accountNameOwner}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
