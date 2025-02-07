@@ -449,7 +449,7 @@ export default function TransactionTable() {
 
 
       {/* Modal  Clone Transaction */}
-            <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
+        <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
         <Box
           sx={{
             width: 400,
