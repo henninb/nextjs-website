@@ -57,7 +57,7 @@ export default function transfers() {
         await deleteTransfer({ oldRow: selectedTransfer });
         setMessage("Transfer deleted successfully.");
       } catch (error) {
-        handleError(error, "Delete Transfer failure.", false);
+        handleError(error, `Delete Transfer error: ${error}`, false);
       } finally {
         setShowModalDelete(false);
         setSelectedTransfer(null);
@@ -81,14 +81,14 @@ export default function transfers() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Transfer) => {
+  const handleAddRow = async (newData: Transfer) => {
     try {
       await insertTransfer({ payload: newData });
       setShowModalAdd(false);
       setMessage("Transfer inserted Successfully.");
       setShowSpinner(false);
     } catch (error) {
-      handleError(error, "Add Transfer", false);
+      handleError(error, `Add Transfer error: ${error}`, false);
     }
   };
 
@@ -191,7 +191,7 @@ export default function transfers() {
                 setMessage("Transfer updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
-                handleError(error, "Update Transfer failure.", false);
+                handleError(error, `Update Transfer error: ${error}`, false);
               }
               return newRow;
             }}
@@ -361,7 +361,7 @@ export default function transfers() {
           />
           <Button
             variant="contained"
-            onClick={() => transferData && addRow(transferData)}
+            onClick={() => transferData && handleAddRow(transferData)}
           >
             {transferData ? "Update" : "Add"}
           </Button>

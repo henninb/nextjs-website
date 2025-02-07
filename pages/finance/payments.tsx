@@ -27,7 +27,7 @@ export default function payments() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setOpenForm] = useState(false);
+  const [showModalAdd, setShowModalAdd] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -55,8 +55,9 @@ export default function payments() {
       try {
         await deletePayment({ oldRow: selectedPayment });
         setMessage("Payment deleted successfully.");
+        setShowSnackbar(true);
       } catch (error) {
-        handleError(error, "Delete Payment failure.", false);
+        handleError(error, `Delete Payment error: ${error}`, false);
       } finally {
         setConfirmDelete(false);
         setSelectedPayment(null);
@@ -80,12 +81,14 @@ export default function payments() {
     if (throwIt) throw error;
   };
 
-  const addRow = async (newData: Payment) => {
+  const handleAddRow = async (newData: Payment) => {
     try {
       await insertPayment({ payload: newData });
-      setOpenForm(false);
+      setShowModalAdd(false);
+      setMessage("Payment Added successfully.");
+      setShowSnackbar(true);
     } catch (error) {
-      handleError(error, "Add Payment", false);
+      handleError(error, `Delete Payment error: ${error}`, false);
     }
   };
 
@@ -165,7 +168,7 @@ export default function payments() {
         <Spinner />
       ) : (
         <div>
-          <IconButton onClick={() => setOpenForm(true)}>
+          <IconButton onClick={() => setShowModalAdd(true)}>
             <AddIcon />
           </IconButton>
           <DataGrid
@@ -180,7 +183,7 @@ export default function payments() {
                 setMessage("Payment updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
-                handleError(error, "Update Payment failure.", false);
+                handleError(error, `Update Payment error: ${error}`, false);
               }
               return newRow;
             }}
@@ -230,7 +233,7 @@ export default function payments() {
         </Box>
       </Modal>
 
-      <Modal open={showModalAdd} onClose={() => setOpenForm(false)}>
+      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
             width: 400,
@@ -312,7 +315,7 @@ export default function payments() {
           />
           <Button
             variant="contained"
-            onClick={() => paymentData && addRow(paymentData)}
+            onClick={() => paymentData && handleAddRow(paymentData)}
           >
             {paymentData ? "Update" : "Add"}
           </Button>

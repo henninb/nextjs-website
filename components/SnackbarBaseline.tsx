@@ -7,26 +7,24 @@ export default function SnackbarBaseline({
   state,
   handleSnackbarClose,
 }: any) {
-  const [open, setOpen] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
-    setOpen(state);
+    setShowSnackbar(state);
   }, [state]);
 
   return (
     <div>
       <Snackbar
-        open={open}
+        open={showSnackbar}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "center",
         }}
         autoHideDuration={4500}
         onClose={() => {
-          console.log("from onClose close me:" + open);
-          setOpen(false);
+          setShowSnackbar(false);
           handleSnackbarClose();
-          console.log("from onClose close me:" + open);
         }}
       >
         <Alert severity="info">{message}</Alert>

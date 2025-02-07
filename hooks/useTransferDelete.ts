@@ -24,7 +24,7 @@ const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
     return await response.json();
   } catch (error) {
     console.log("An error occurred:", error);
-    return payload;
+    throw error;
   }
 };
 

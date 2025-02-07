@@ -24,14 +24,14 @@ const updateTransfer = async (
 
     if (!response.ok) {
       throw new Error(
-        `Failed to update transfer state: ${response.statusText}`,
+        `Failed to update transfer: ${response.statusText}`,
       );
     }
 
     return await response.json();
   } catch (error: any) {
-    console.log("Error updating transfer state:", error.message);
-    return newTransfer;
+    console.error("Error updating transfer:", error.message);
+    throw error;
   }
 };
 
