@@ -45,7 +45,7 @@ const dataTest: Account[] = [
   },
 ];
 
-const fetchAccountData = async (): Promise<Account[]| null> => {
+const fetchAccountData = async (): Promise<Account[] | null> => {
   try {
     const response = await fetch(
       "https://finance.lan/api/account/select/active",
@@ -70,7 +70,7 @@ const fetchAccountData = async (): Promise<Account[]| null> => {
         `HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`,
       );
     }
-    
+
     return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
     console.log("Error fetching account data:", error);

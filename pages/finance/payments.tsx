@@ -45,7 +45,6 @@ export default function payments() {
       setShowSpinner(false);
     }
   }, [isSuccess, isSuccessAccounts]);
-  
 
   const handleButtonClickLink = (accountNameOwner: string) => {
     router.push(`/finance/transactions/${accountNameOwner}`);

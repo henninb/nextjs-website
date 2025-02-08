@@ -270,8 +270,8 @@ export default function TransactionTable() {
       renderCell: (params: any) => {
         const handleStateChange = async (newState: TransactionState) => {
           try {
-                      // Avoid directly mutating `params.row`
-          const updatedRow = { ...params.row, transactionState: newState };
+            // Avoid directly mutating `params.row`
+            const updatedRow = { ...params.row, transactionState: newState };
             await updateTransaction({
               newRow: updatedRow,
               oldRow: params.row,
@@ -427,7 +427,10 @@ export default function TransactionTable() {
               getRowId={(row) => row.transactionId || 0}
               checkboxSelection={false}
               rowSelection={false}
-              processRowUpdate={async (newRow: Transaction, oldRow: Transaction) => {
+              processRowUpdate={async (
+                newRow: Transaction,
+                oldRow: Transaction,
+              ) => {
                 try {
                   await updateTransaction({ newRow: newRow, oldRow: oldRow });
                   setMessage("Transaction updated successfully.");

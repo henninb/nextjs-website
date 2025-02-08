@@ -93,10 +93,10 @@ export default function Categories() {
     if (throwIt) throw error;
   };
 
-  const handleAddRow = async(newData: Category) => {
+  const handleAddRow = async (newData: Category) => {
     try {
       await insertCategory(newData);
-      
+
       setMessage("Category inserted successfully.");
       setShowSnackbar(true);
     } catch (error) {

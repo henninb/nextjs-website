@@ -32,7 +32,9 @@ const insertValidationAmount = async (
     // console.log(`An error occurred: ${error}`);
     // throw error;
     if (error instanceof TypeError && error.message === "Failed to fetch") {
-      console.warn("Network error: Unable to connect to finance.lan. The server may be down.");
+      console.warn(
+        "Network error: Unable to connect to finance.lan. The server may be down.",
+      );
       //return null; // Return null instead of throwing an error to prevent crashes
       throw error;
     }

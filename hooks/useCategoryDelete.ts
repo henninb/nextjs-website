@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
-const deleteCategory = async (payload: Category): Promise<Category| null> => {
+const deleteCategory = async (payload: Category): Promise<Category | null> => {
   try {
     const endpoint = `https://finance.lan/api/category/delete/${payload.categoryName}`;
 

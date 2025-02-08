@@ -2,7 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 //import { basicAuth } from "../Common";
 
-const deleteDescription = async (oldRow: Description): Promise<Description | null> => {
+const deleteDescription = async (
+  oldRow: Description,
+): Promise<Description | null> => {
   try {
     const endpoint = `https://finance.lan/api/description/delete/${oldRow.descriptionName}`;
 
@@ -33,7 +35,6 @@ const deleteDescription = async (oldRow: Description): Promise<Description | nul
     //throw new Error("error");
     //throw new Error(`Delete request failed: ${error.message}`);
     throw error;
-
   }
 };
 
