@@ -87,7 +87,7 @@ const dataTest: Transaction[] = [
 
 const fetchTransactionsByAccount = async (
   accountNameOwner: string,
-): Promise<Transaction[]> => {
+): Promise<Transaction[] | null> => {
   try {
     const response = await fetch(
       `https://finance.lan/api/transaction/account/select/${accountNameOwner}`,
@@ -110,8 +110,9 @@ const fetchTransactionsByAccount = async (
       );
     }
 
-    const data = await response.json();
-    return data;
+    return response.status !== 204 ? await response.json() : null;
+    // const data = await response.json();
+    // return data;
   } catch (error) {
     console.log("Error fetching transactionsByAccount data:", error);
     return dataTest; // Default fallback data on error

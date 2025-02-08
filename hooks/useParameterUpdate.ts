@@ -6,7 +6,7 @@ const updateParameter = async (
   oldParameter: Parameter,
   newParameter: Parameter,
 ): Promise<Parameter> => {
-  const endpoint = `https://finance.lan/api/parm/update/${oldParameter.parameterName}`;
+  const endpoint = `https://finance.lan/api/parameter/update/${oldParameter.parameterName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
