@@ -29,15 +29,8 @@ const insertValidationAmount = async (
 
     return response.status !== 204 ? await response.json() : null;
   } catch (error) {
-    // console.log(`An error occurred: ${error}`);
-    // throw error;
-    if (error instanceof TypeError && error.message === "Failed to fetch") {
-      console.warn(
-        "Network error: Unable to connect to finance.lan. The server may be down.",
-      );
-      //return null; // Return null instead of throwing an error to prevent crashes
-      throw error;
-    }
+    console.log(`An error occurred: ${error}`);
+    throw error;
   }
 };
 

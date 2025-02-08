@@ -85,12 +85,12 @@ const dataTest: Transaction[] = [
   },
 ];
 
-const fetchTransactionsByAccount = async (
-  accountNameOwner: string,
+const fetchTransactionsByCategory = async (
+  categoryName: string,
 ): Promise<Transaction[] | null> => {
   try {
     const response = await fetch(
-      `https://finance.lan/api/transaction/account/select/${accountNameOwner}`,
+      `https://finance.lan/api/transaction/category/${categoryName}`,
       {
         method: "GET",
         headers: {
@@ -106,21 +106,21 @@ const fetchTransactionsByAccount = async (
         console.log("Resource not found (404).");
       }
       throw new Error(
-        `Failed to fetch transactionsByAccount data: ${response.statusText}`,
+        `Failed to fetch transactionsByCategory data: ${response.statusText}`,
       );
     }
 
     return response.status !== 204 ? await response.json() : null;
   } catch (error) {
-    console.log("Error fetching transactionsByAccount data:", error);
+    console.log("Error fetching transactionsByCategory data:", error);
     return dataTest; // Default fallback data on error
   }
 };
 
-export default function useTransactionByAccountFetch(accountNameOwner: string) {
+export default function useTransactionByCategoryFetch(accountNameOwner: string) {
   const queryResult = useQuery({
-    queryKey: ["accounts", accountNameOwner],
-    queryFn: () => fetchTransactionsByAccount(accountNameOwner),
+    queryKey: ["categories", accountNameOwner],
+    queryFn: () => fetchTransactionsByCategory(accountNameOwner),
   });
   if (queryResult.isError) {
     console.log(

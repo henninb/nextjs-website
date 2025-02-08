@@ -18,6 +18,7 @@ import useCategoryInsert from "../../hooks/useCategoryInsert";
 import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 import useCategoryUpdate from "../../hooks/useCategoryUpdate";
+import Link from "next/link";
 
 export default function Categories() {
   const [message, setMessage] = useState("");
@@ -111,7 +112,13 @@ export default function Categories() {
       field: "categoryName",
       headerName: "Name",
       width: 200,
-      editable: true,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/category/${params.value}`}>
+          {params.value}
+        </Link>
+        );
+      },
     },
     {
       field: "activeStatus",
