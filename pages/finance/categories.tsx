@@ -96,7 +96,8 @@ export default function Categories() {
 
   const handleAddRow = async (newData: Category) => {
     try {
-      await insertCategory(newData);
+      console.log("from handleAddRow: " + JSON.stringify(newData))
+      await insertCategory({category: newData});
 
       setMessage("Category inserted successfully.");
       setShowSnackbar(true);
@@ -112,6 +113,7 @@ export default function Categories() {
       field: "categoryName",
       headerName: "Name",
       width: 200,
+      editable: true,
       renderCell: (params) => {
         return (
           <Link href={`/finance/transactions/category/${params.value}`}>
@@ -286,7 +288,7 @@ export default function Categories() {
           />
           <Button
             variant="contained"
-            onClick={() => categoryData && handleAddRow(categoryData)}
+            onClick={() => {categoryData && handleAddRow(categoryData)}}
           >
             {categoryData ? "Update" : "Add"}
           </Button>

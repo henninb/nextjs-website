@@ -3,11 +3,13 @@ import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
 const insertCategory = async (
-  categoryName: string,
+  category: Category,
 ): Promise<Category | null> => {
   try {
     const endpoint = "https://finance.lan/api/category/insert";
-    const payload = { category: categoryName, activeStatus: true };
+    //const payload = { category: categoryName, activeStatus: true };
+
+    console.log("passed: " + JSON.stringify(category))
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -15,7 +17,7 @@ const insertCategory = async (
         "Content-Type": "application/json",
         //Authorization: basicAuth(),
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(category),
     });
 
     if (!response.ok) {
@@ -35,8 +37,8 @@ export default function useCategoryInsert() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (variables: { categoryName: string }) =>
-      insertCategory(variables.categoryName),
+    mutationFn: (variables: { category: Category }) =>
+      insertCategory(variables.category),
     onError: (error: any) => {
       console.log(error || "An unknown error occurred.");
     },
