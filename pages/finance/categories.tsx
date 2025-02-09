@@ -96,8 +96,8 @@ export default function Categories() {
 
   const handleAddRow = async (newData: Category) => {
     try {
-      console.log("from handleAddRow: " + JSON.stringify(newData))
-      await insertCategory({category: newData});
+      console.log("from handleAddRow: " + JSON.stringify(newData));
+      await insertCategory({ category: newData });
 
       setMessage("Category inserted successfully.");
       setShowSnackbar(true);
@@ -117,8 +117,8 @@ export default function Categories() {
       renderCell: (params) => {
         return (
           <Link href={`/finance/transactions/category/${params.value}`}>
-          {params.value}
-        </Link>
+            {params.value}
+          </Link>
         );
       },
     },
@@ -187,12 +187,13 @@ export default function Categories() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data?.filter((row) => row != null) || []}
+            //rows={data?.filter((row) => row != null) || []}
+            rows={data || []}
             columns={columns}
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Category, oldRow: Category) => {
+            processRowUpdate={async (newRow, oldRow) => {
               try {
                 await updateCategory({
                   oldCategory: oldRow,
@@ -200,11 +201,25 @@ export default function Categories() {
                 });
                 setMessage("Category updated successfully.");
                 setShowSnackbar(true);
+                return newRow;
               } catch (error) {
                 handleError(error, "Update Category failure.", false);
+                return oldRow; // Revert the row
               }
-              return newRow;
             }}
+            // processRowUpdate={async (newRow: Category, oldRow: Category) => {
+            //   try {
+            //     await updateCategory({
+            //       oldCategory: oldRow,
+            //       newCategory: newRow,
+            //     });
+            //     setMessage("Category updated successfully.");
+            //     setShowSnackbar(true);
+            //   } catch (error) {
+            //     handleError(error, "Update Category failure.", false);
+            //   }
+            //   return newRow;
+            // }}
           />
         </div>
       )}
@@ -288,7 +303,9 @@ export default function Categories() {
           />
           <Button
             variant="contained"
-            onClick={() => {categoryData && handleAddRow(categoryData)}}
+            onClick={() => {
+              categoryData && handleAddRow(categoryData);
+            }}
           >
             {categoryData ? "Update" : "Add"}
           </Button>

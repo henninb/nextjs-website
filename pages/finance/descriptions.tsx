@@ -23,7 +23,7 @@ export default function descriptions() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedDescription, setSelectedDescription] =
     useState<Description | null>(null);
   const [descriptionData, setDescriptionData] = useState<Description | null>(
@@ -50,7 +50,7 @@ export default function descriptions() {
       } catch (error) {
         handleError(error, `Delete Description error: ${error.message}`, false);
       } finally {
-        setConfirmDelete(false);
+        setShowModalDelete(false);
         setSelectedDescription(null);
       }
     }
@@ -77,7 +77,6 @@ export default function descriptions() {
       await insertDescription(newData);
       setMessage("Description inserted successfully.");
       setShowSnackbar(true);
-      //return result;
     } catch (error) {
       handleError(error, `Add Description error: ${error.message}`, false);
     } finally {
@@ -111,7 +110,7 @@ export default function descriptions() {
         <IconButton
           onClick={() => {
             setSelectedDescription(params.row);
-            setConfirmDelete(true);
+            setShowModalDelete(true);
           }}
         >
           <DeleteIcon />
@@ -148,7 +147,6 @@ export default function descriptions() {
                 setMessage("Description updated successfully.");
                 setShowSnackbar(true);
               } catch (error) {
-                console.log("");
                 handleError(
                   error,
                   `Update Description error: ${error.message}`,
@@ -170,7 +168,7 @@ export default function descriptions() {
       )}
 
       {/* Delete Modal */}
-      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
         <Box
           sx={{
             width: 400,
@@ -181,10 +179,16 @@ export default function descriptions() {
           }}
         >
           <Typography variant="h6">Confirm Deletion</Typography>
-          <Typography>
+          {/* <Typography>
             Are you sure you want to delete the description "
             {JSON.stringify(selectedDescription)}"?
-          </Typography>
+          </Typography> */}
+
+          <Typography>
+  Are you sure you want to delete the description "
+  {selectedDescription ? selectedDescription.descriptionName : ''}"?
+</Typography>
+
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
               variant="contained"
@@ -196,7 +200,7 @@ export default function descriptions() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setConfirmDelete(false)}
+              onClick={() => setShowModalDelete(false)}
             >
               Cancel
             </Button>

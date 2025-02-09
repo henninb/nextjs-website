@@ -2,14 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 //import { basicAuth } from "../Common";
 
-const insertCategory = async (
-  category: Category,
-): Promise<Category | null> => {
+const insertCategory = async (category: Category): Promise<Category | null> => {
   try {
     const endpoint = "https://finance.lan/api/category/insert";
     //const payload = { category: categoryName, activeStatus: true };
 
-    console.log("passed: " + JSON.stringify(category))
+    console.log("passed: " + JSON.stringify(category));
 
     const response = await fetch(endpoint, {
       method: "POST",

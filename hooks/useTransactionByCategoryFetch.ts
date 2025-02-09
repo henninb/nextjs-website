@@ -117,7 +117,9 @@ const fetchTransactionsByCategory = async (
   }
 };
 
-export default function useTransactionByCategoryFetch(accountNameOwner: string) {
+export default function useTransactionByCategoryFetch(
+  accountNameOwner: string,
+) {
   const queryResult = useQuery({
     queryKey: ["categories", accountNameOwner],
     queryFn: () => fetchTransactionsByCategory(accountNameOwner),

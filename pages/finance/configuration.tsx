@@ -24,7 +24,7 @@ export default function configuration() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
-  const [confirmDelete, setParameterDelete] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedConfig, setSelectedParameter] = useState<Parameter | null>(
     null,
   );
@@ -49,7 +49,7 @@ export default function configuration() {
       } catch (error) {
         handleError(error, "Delete Parameter failure.", false);
       } finally {
-        setParameterDelete(false);
+        setShowModalDelete(false);
         setSelectedParameter(null);
       }
     }
@@ -103,7 +103,7 @@ export default function configuration() {
         <IconButton
           onClick={() => {
             setSelectedParameter(params.row);
-            setParameterDelete(true);
+            setShowModalDelete(true);
           }}
         >
           <DeleteIcon />
@@ -150,7 +150,7 @@ export default function configuration() {
         </div>
       )}
 
-      <Modal open={confirmDelete} onClose={() => setParameterDelete(false)}>
+      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
         <Box
           sx={{
             width: 400,
@@ -163,7 +163,7 @@ export default function configuration() {
           <Typography variant="h6">Confirm Deletion</Typography>
           <Typography>
             Are you sure you want to delete the configuration "
-            {JSON.stringify(selectedConfig)}"?
+            {selectedConfig ? JSON.stringify(selectedConfig) : "N/A"}?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
@@ -176,7 +176,7 @@ export default function configuration() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setParameterDelete(false)}
+              onClick={() => setShowModalDelete(false)}
             >
               Cancel
             </Button>
@@ -202,11 +202,20 @@ export default function configuration() {
             fullWidth
             margin="normal"
             value={parameterData?.parameterName || ""}
-            onChange={(e) =>
-              setParameterData((prev) => ({
-                ...prev,
-                parameterName: e.target.value,
-              }))
+            onChange={
+              (e) =>
+                setParameterData(
+                  (prev) =>
+                    ({
+                      ...prev,
+                      parameterName: e.target.value,
+                    }) as Parameter,
+                )
+
+              // setParameterData((prev) => ({
+              //   ...prev,
+              //   parameterName: e.target.value,
+              // }))
             }
           />
           <TextField

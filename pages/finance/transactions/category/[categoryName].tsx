@@ -21,7 +21,7 @@ export default function TransactionTable() {
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
 
   useEffect(() => {
-    if (isSuccess ) {
+    if (isSuccess) {
       setShowSpinner(false);
     }
   }, [isSuccess]);
@@ -56,10 +56,26 @@ export default function TransactionTable() {
       },
       editable: true,
     },
-    { field: "accountNameOwner", headerName: "Account", width: 180, editable: true },
-    { field: "description", headerName: "Description", width: 180, editable: true },
+    {
+      field: "accountNameOwner",
+      headerName: "Account",
+      width: 180,
+      editable: true,
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      width: 180,
+      editable: true,
+    },
     { field: "category", headerName: "Category", width: 150, editable: true },
-    { field: "amount", headerName: "Amount", type: "number", width: 90, editable: true },
+    {
+      field: "amount",
+      headerName: "Amount",
+      type: "number",
+      width: 90,
+      editable: true,
+    },
     { field: "activeStatus", headerName: "Status", width: 100, editable: true },
     { field: "notes", headerName: "Notes", width: 200, editable: true },
   ];
@@ -69,7 +85,7 @@ export default function TransactionTable() {
       <h2>{`${categoryName}`}</h2>
       {showSpinner ? (
         //<div></div>
-         <Spinner />
+        <Spinner />
       ) : (
         <div>
           <DataGrid
@@ -89,7 +105,11 @@ export default function TransactionTable() {
               return newRow;
             }}
           />
-          <SnackbarBaseline message={message} state={showSnackbar} handleSnackbarClose={handleSnackbarClose} />
+          <SnackbarBaseline
+            message={message}
+            state={showSnackbar}
+            handleSnackbarClose={handleSnackbarClose}
+          />
         </div>
       )}
     </Box>
