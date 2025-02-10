@@ -393,20 +393,6 @@ export default function Accounts() {
               />
             )}
           />
-
-          {/* <TextField
-            label="Account Type"
-            fullWidth
-            margin="normal"
-            value={accountData?.accountType || ""}
-            onChange={(e) =>
-              setAccountData((prev: any) => ({
-                ...prev,
-                accountType: e.target.value,
-              }))
-            }
-          /> */}
-
           <TextField
             label="Moniker"
             fullWidth

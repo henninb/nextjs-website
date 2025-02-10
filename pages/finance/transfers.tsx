@@ -33,7 +33,6 @@ export default function Transfers() {
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null,
   );
-  //const router = useRouter();
 
   const { data, isSuccess } = useFetchTransfer();
   const { mutateAsync: insertTransfer } = useTransferInsert();
@@ -46,10 +45,6 @@ export default function Transfers() {
       setShowSpinner(false);
     }
   }, [isSuccess]);
-
-  // const handleButtonClickLink = (accountNameOwner: string) => {
-  //   router.push(`/finance/transactions/${accountNameOwner}`);
-  // };
 
   const handleDeleteRow = async () => {
     if (selectedTransfer) {
@@ -105,13 +100,8 @@ export default function Transfers() {
         const localDate = new Date(
           utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
         );
-        //console.log("localDate: " + localDate);
         return localDate;
       },
-      // valueGetter: (params) => new Date(params),
-      // renderCell: (params) => {
-      //   return formatDate(params.value);
-      // },
     },
     {
       field: "sourceAccount",
@@ -257,6 +247,23 @@ export default function Transfers() {
         >
           <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>
 
+          <TextField
+            label="Transaction Date"
+            fullWidth
+            margin="normal"
+            type="date"
+            value={transferData?.transactionDate || ""}
+            onChange={(e) =>
+              setTransferData((prev: any) => ({
+                ...prev,
+                transactionDate: e.target.value,
+              }))
+            }
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
+
           <Autocomplete
             options={
               isSuccessAccounts
@@ -331,37 +338,24 @@ export default function Transfers() {
               />
             )}
           />
-
-          <TextField
-            label="Transaction Date"
-            fullWidth
-            margin="normal"
-            type="date"
-            value={transferData?.transactionDate || ""}
-            onChange={(e) =>
-              setTransferData((prev: any) => ({
-                ...prev,
-                transactionDate: e.target.value,
-              }))
-            }
-          />
           <TextField
             label="Amount"
             fullWidth
             margin="normal"
             type="number"
-            slotProps={{
-              htmlInput: {
-                step: "0.01", // Allow decimal inputs
-              },
-            }}
             value={transferData?.amount ?? ""}
-            onChange={(e) =>
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              let parsedValue = inputValue === "" ? null : parseFloat(inputValue);
+
+              if (parsedValue !== null) {
+                parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
+              }
               setTransferData((prev) => ({
                 ...prev,
-                amount: parseFloat(e.target.value),
-              }))
-            }
+                amount: parsedValue,
+              }));
+            }}
           />
           <Button
             variant="contained"

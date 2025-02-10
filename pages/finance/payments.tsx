@@ -114,16 +114,48 @@ export default function Payments() {
         );
       },
     },
+
     {
       field: "amount",
       headerName: "Amount",
       width: 150,
+      type: 'number',
       editable: true,
-      valueFormatter: (params: number) =>
-        params.toLocaleString("en-US", {
+      renderEditCell: (params) => {
+        const value = params.value || ""; // Handle undefined values
+        return (
+          <TextField
+            type="number"
+            value={value}
+            onChange={(event) => {
+              const newValue = event.target.value;
+              let parsedValue = newValue === "" ? null : parseFloat(newValue);
+
+              if (parsedValue !== null) {
+                parsedValue = parseFloat(parsedValue.toFixed(2));
+              }
+              params.api.setEditCellValue({
+                id: params.id,
+                field: params.field,
+                value: parsedValue,
+              });
+            }}
+            // inputProps={{
+            //   style: { textAlign: 'right' } // Align text to the right
+            // }}
+          />
+        );
+      },
+      valueFormatter: (params:any) => {
+        const value = params;
+        if (value === undefined || value === null) {
+          return "";
+        }
+        return value.toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
-        }),
+        });
+      },
     },
     {
       field: "",
@@ -218,6 +250,7 @@ export default function Payments() {
         </Box>
       </Modal>
 
+      { /* Modal to Add or Edit */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -229,6 +262,23 @@ export default function Payments() {
           }}
         >
           <h3>{paymentData ? "Edit Payment" : "Add New Payment"}</h3>
+          <TextField
+            label="Transaction Date"
+            fullWidth
+            margin="normal"
+            type="date"
+            value={paymentData?.transactionDate || ""}
+            onChange={(e) =>
+              setPaymentData((prev: any) => ({
+                ...prev,
+                transactionDate: e.target.value,
+              }))
+            }
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
+
           <Autocomplete
             options={
               isSuccessAccounts
@@ -265,38 +315,24 @@ export default function Payments() {
               />
             )}
           />
-
-          <TextField
-            label="Transaction Date"
-            fullWidth
-            margin="normal"
-            type="date"
-            value={paymentData?.transactionDate || ""}
-            onChange={(e) =>
-              setPaymentData((prev: any) => ({
-                ...prev,
-                transactionDate: e.target.value,
-              }))
-            }
-          />
-
           <TextField
             label="Amount"
             fullWidth
             margin="normal"
             type="number"
-            slotProps={{
-              htmlInput: {
-                step: "0.01", // Allow decimal inputs
-              },
-            }}
             value={paymentData?.amount ?? ""}
-            onChange={(e) =>
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              let parsedValue = inputValue === "" ? null : parseFloat(inputValue);
+
+              if (parsedValue !== null) {
+                parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
+              }
               setPaymentData((prev) => ({
                 ...prev,
-                amount: parseFloat(e.target.value),
-              }))
-            }
+                amount: parsedValue,
+              }));
+            }}
           />
           <Button
             variant="contained"

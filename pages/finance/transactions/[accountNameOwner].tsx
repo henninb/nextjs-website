@@ -604,20 +604,21 @@ export default function TransactionTable() {
 
           <TextField
             label="Amount"
-            value={transactionData?.amount ?? ""}
-            onChange={(e) =>
-              setTransactionData((prev: any) => ({
-                ...prev,
-                amount: parseFloat(e.target.value) || 0,
-              }))
-            }
             fullWidth
             margin="normal"
             type="number"
-            slotProps={{
-              htmlInput: {
-                step: "0.01", // Allow decimal inputs
-              },
+            value={transactionData?.amount ?? ""}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              let parsedValue = inputValue === "" ? null : parseFloat(inputValue);
+
+              if (parsedValue !== null) {
+                parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
+              }
+              setTransactionData((prev) => ({
+                ...prev,
+                amount: parsedValue,
+              }));
             }}
           />
 
