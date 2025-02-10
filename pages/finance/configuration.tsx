@@ -142,7 +142,7 @@ export default function Configuration() {
                 return newRow;
               } catch (error) {
                 handleError(error, "Update Configuration failure.", false);
-                return oldRow;
+                throw error;
               }
             }}
           />

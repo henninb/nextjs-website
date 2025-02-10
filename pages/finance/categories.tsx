@@ -207,7 +207,7 @@ export default function Categories() {
                 return newRow;
               } catch (error) {
                 handleError(error, "Update Category failure.", false);
-                return oldRow;
+                throw error;
               }
             }}
           />

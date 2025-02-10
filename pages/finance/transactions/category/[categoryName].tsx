@@ -112,7 +112,7 @@ export default function TransactionTable() {
                 return newRow;
               } catch (error) {
                 handleError(error, "Update Transaction failure.");
-                return oldRow;
+                throw error;
               }
             }}
           />

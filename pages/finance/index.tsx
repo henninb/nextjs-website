@@ -264,7 +264,7 @@ export default function Accounts() {
                 return newRow;
               } catch (error) {
                 handleError(error, `Update Account ${error.message}`, false);
-                return oldRow;
+                return error;
               }
             }}
           />

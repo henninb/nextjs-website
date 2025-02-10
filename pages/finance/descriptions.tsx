@@ -153,7 +153,7 @@ export default function Descriptions() {
                   `Update Description error: ${error.message}`,
                   false,
                 );
-                return oldRow;
+                throw error;
               }
             }}
           />

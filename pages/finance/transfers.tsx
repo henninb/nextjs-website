@@ -196,7 +196,7 @@ export default function Transfers() {
                 return newRow;
               } catch (error) {
                 handleError(error, `Update Transfer error: ${error}`, false);
-                return oldRow;
+                throw error;
               }
             }}
           />

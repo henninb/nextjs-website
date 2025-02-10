@@ -1,15 +1,11 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Button } from "@mui/material";
 import Spinner from "../../components/Spinner";
 import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
 import Link from "next/link";
 
 export default function paymentrequired() {
   const [showSpinner, setShowSpinner] = useState(true);
-  //const router = useRouter();
-
   const { data, isSuccess } = useFetchPaymentRequired();
 
   useEffect(() => {
@@ -17,10 +13,6 @@ export default function paymentrequired() {
       setShowSpinner(false);
     }
   }, [isSuccess]);
-
-  // const handleButtonClickLink = (accountNameOwner: string) => {
-  //   router.push(`/finance/transactions/${accountNameOwner}`);
-  // };
 
   const columns: GridColDef[] = [
     {

@@ -31,8 +31,6 @@ export default function Payments() {
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  //const router = useRouter();
-
   const { data, isSuccess } = useFetchPayment();
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
 
@@ -171,7 +169,7 @@ export default function Payments() {
                 return newRow;
               } catch (error) {
                 handleError(error, `Update Payment error: ${error}`, false);
-                return oldRow;
+                throw error;
               }
             }}
           />
