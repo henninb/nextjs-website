@@ -18,7 +18,7 @@ import useParameterDelete from "../../hooks/useParameterDelete";
 import Parameter from "../../model/Parameter";
 import useParameterUpdate from "../../hooks/useParameterUpdate";
 
-export default function configuration() {
+export default function Configuration() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
@@ -128,7 +128,7 @@ export default function configuration() {
             getRowId={(row) => row.parameterName || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Parameter, oldRow: Parameter) => {
+            processRowUpdate={async (newRow: Parameter, oldRow: Parameter): Promise<Parameter> => {
               try {
                 await updateParameter({
                   oldParameter: oldRow,
@@ -136,10 +136,11 @@ export default function configuration() {
                 });
                 setMessage("Configuration updated successfully.");
                 setShowSnackbar(true);
+                return newRow;
               } catch (error) {
                 handleError(error, "Update Configuration failure.", false);
+                return oldRow;
               }
-              return newRow;
             }}
           />
           <SnackbarBaseline

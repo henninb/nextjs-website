@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -22,8 +21,9 @@ import { formatDate } from "../../components/Common";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
+import Link from "next/link";
 
-export default function transfers() {
+export default function Transfers() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
@@ -33,7 +33,7 @@ export default function transfers() {
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null,
   );
-  const router = useRouter();
+  //const router = useRouter();
 
   const { data, isSuccess } = useFetchTransfer();
   const { mutateAsync: insertTransfer } = useTransferInsert();
@@ -47,9 +47,9 @@ export default function transfers() {
     }
   }, [isSuccess]);
 
-  const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/finance/transactions/${accountNameOwner}`);
-  };
+  // const handleButtonClickLink = (accountNameOwner: string) => {
+  //   router.push(`/finance/transactions/${accountNameOwner}`);
+  // };
 
   const handleDeleteRow = async () => {
     if (selectedTransfer) {
@@ -117,25 +117,25 @@ export default function transfers() {
       field: "sourceAccount",
       headerName: "Source Account",
       width: 300,
-      renderCell: (params) => (
-        <Button onClick={() => handleButtonClickLink(params.row.sourceAccount)}>
-          {params.row.sourceAccount}
-        </Button>
-      ),
-      //editable: true,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${params.row.sourceAccount}`}>
+            {params.value}
+          </Link>
+        );
+      },
     },
     {
       field: "destinationAccount",
       headerName: "Destination Account",
       width: 300,
-      renderCell: (params) => (
-        <Button
-          onClick={() => handleButtonClickLink(params.row.destinationAccount)}
-        >
-          {params.row.destinationAccount}
-        </Button>
-      ),
-      //editable: true,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${params.row.destinationAccount}`}>
+            {params.value}
+          </Link>
+        );
+      },
     },
 
     {
@@ -182,7 +182,7 @@ export default function transfers() {
             getRowId={(row) => row.transferId || `temp-${Math.random()}`}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Transfer, oldRow: Transfer) => {
+            processRowUpdate={async (newRow: Transfer, oldRow: Transfer): Promise<Transfer> => {
               try {
                 await updateTransfer({
                   oldTransfer: oldRow,
@@ -267,7 +267,7 @@ export default function transfers() {
               option.accountNameOwner === value?.accountNameOwner
             }
             value={
-              transferData?.sourceAccount
+              transferData?.sourceAccount && isSuccessAccounts
                 ? accounts.find(
                     (account) =>
                       account.accountNameOwner === transferData.sourceAccount,
@@ -304,7 +304,7 @@ export default function transfers() {
               option.accountNameOwner === value?.accountNameOwner
             }
             value={
-              transferData?.destinationAccount
+              transferData?.destinationAccount && isSuccessAccounts
                 ? accounts.find(
                     (account) =>
                       account.accountNameOwner ===

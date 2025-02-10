@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -22,8 +21,9 @@ import { formatDate } from "../../components/Common";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
+import Link from "next/link";
 
-export default function payments() {
+export default function Payments() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
@@ -31,7 +31,7 @@ export default function payments() {
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  const router = useRouter();
+  //const router = useRouter();
 
   const { data, isSuccess } = useFetchPayment();
   const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
@@ -45,10 +45,6 @@ export default function payments() {
       setShowSpinner(false);
     }
   }, [isSuccess, isSuccessAccounts]);
-
-  const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/finance/transactions/${accountNameOwner}`);
-  };
 
   const handleDeleteRow = async () => {
     if (selectedPayment) {
@@ -112,13 +108,13 @@ export default function payments() {
       field: "accountNameOwner",
       headerName: "Destination Account",
       width: 350,
-      renderCell: (params) => (
-        <Button
-          onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
-        >
-          {params.row.accountNameOwner}
-        </Button>
-      ),
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+            {params.value}
+          </Link>
+        );
+      },
     },
     {
       field: "amount",
@@ -164,7 +160,7 @@ export default function payments() {
             getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow, oldRow) => {
+            processRowUpdate={async (newRow: Payment, oldRow: Payment): Promise<Payment> => {
               try {
                 await updatePayment({ oldPayment: oldRow, newPayment: newRow });
                 setMessage("Payment updated successfully.");
@@ -245,7 +241,7 @@ export default function payments() {
               option.accountNameOwner === value?.accountNameOwner
             }
             value={
-              paymentData?.accountNameOwner
+              paymentData?.accountNameOwner && isSuccessAccounts
                 ? accounts.find(
                     (account) =>
                       account.accountNameOwner === paymentData.accountNameOwner,

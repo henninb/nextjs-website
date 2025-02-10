@@ -193,7 +193,7 @@ export default function Categories() {
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow, oldRow) => {
+            processRowUpdate={async (newRow: Category, oldRow: Category): Promise<Category> => {
               try {
                 await updateCategory({
                   oldCategory: oldRow,
@@ -204,22 +204,9 @@ export default function Categories() {
                 return newRow;
               } catch (error) {
                 handleError(error, "Update Category failure.", false);
-                return oldRow; // Revert the row
+                return oldRow;
               }
             }}
-            // processRowUpdate={async (newRow: Category, oldRow: Category) => {
-            //   try {
-            //     await updateCategory({
-            //       oldCategory: oldRow,
-            //       newCategory: newRow,
-            //     });
-            //     setMessage("Category updated successfully.");
-            //     setShowSnackbar(true);
-            //   } catch (error) {
-            //     handleError(error, "Update Category failure.", false);
-            //   }
-            //   return newRow;
-            // }}
           />
         </div>
       )}

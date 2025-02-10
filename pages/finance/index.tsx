@@ -23,8 +23,9 @@ import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
+import Link from "next/link";
 
-export default function AccountTable() {
+export default function Accounts() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
@@ -38,7 +39,7 @@ export default function AccountTable() {
     null,
   );
 
-  const router = useRouter();
+  //const router = useRouter();
 
   const { data, isSuccess } = useAccountFetch();
   const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
@@ -59,9 +60,9 @@ export default function AccountTable() {
     }
   }, [isSuccess, isSuccessTotals]);
 
-  const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/finance/transactions/${accountNameOwner}`);
-  };
+  // const handleButtonClickLink = (accountNameOwner: string) => {
+  //   router.push(`/finance/transactions/${accountNameOwner}`);
+  // };
 
   const handleDeleteRow = async () => {
     if (selectedAccount) {
@@ -129,15 +130,24 @@ export default function AccountTable() {
       field: "accountNameOwner",
       headerName: "Account",
       width: 250,
-      renderCell: (params) => (
-        <div>
-          <Button
-            onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
-          >
-            {params.row.accountNameOwner}
-          </Button>
-        </div>
-      ),
+      editable: true,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+            {params.value}
+          </Link>
+        );
+      },
+
+      // renderCell: (params) => (
+      //   <div>
+      //     <Button
+      //       onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
+      //     >
+      //       {params.row.accountNameOwner}
+      //     </Button>
+      //   </div>
+      // ),
     },
     { field: "accountType", headerName: "Type", width: 150, editable: true },
     { field: "moniker", headerName: "Moniker", width: 150, editable: true },
@@ -243,15 +253,16 @@ export default function AccountTable() {
             hideFooterPagination={true}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Account, oldRow: Account) => {
+            processRowUpdate={async (newRow: Account, oldRow: Account) : Promise<Account> => {
               try {
                 await updateAccount({ newRow: newRow, oldRow: oldRow });
                 setMessage("Account updated successfully.");
                 setShowSnackbar(true);
+                return newRow;
               } catch (error) {
                 handleError(error, `Update Account ${error.message}`, false);
+                return oldRow;
               }
-              return newRow;
             }}
           />
           <div>

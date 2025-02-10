@@ -4,10 +4,11 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Button } from "@mui/material";
 import Spinner from "../../components/Spinner";
 import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
+import Link from "next/link";
 
 export default function paymentrequired() {
   const [showSpinner, setShowSpinner] = useState(true);
-  const router = useRouter();
+  //const router = useRouter();
 
   const { data, isSuccess } = useFetchPaymentRequired();
 
@@ -17,23 +18,22 @@ export default function paymentrequired() {
     }
   }, [isSuccess]);
 
-  const handleButtonClickLink = (accountNameOwner: string) => {
-    router.push(`/finance/transactions/${accountNameOwner}`);
-  };
+  // const handleButtonClickLink = (accountNameOwner: string) => {
+  //   router.push(`/finance/transactions/${accountNameOwner}`);
+  // };
 
   const columns: GridColDef[] = [
     {
       field: "accountNameOwner",
       headerName: "Account",
       width: 180,
-      renderCell: (params) => (
-        <Button
-          style={{ fontSize: ".6rem" }}
-          onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
-        >
-          {params.row.accountNameOwner}
-        </Button>
-      ),
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+            {params.value}
+          </Link>
+        );
+      },
       cellClassName: "nowrap",
     },
     {

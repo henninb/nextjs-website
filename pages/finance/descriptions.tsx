@@ -18,7 +18,7 @@ import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
 
-export default function descriptions() {
+export default function Descriptions() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
@@ -135,10 +135,7 @@ export default function descriptions() {
             getRowId={(row) => row.descriptionId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (
-              newRow: Description,
-              oldRow: Description,
-            ) => {
+            processRowUpdate={async (newRow: Description, oldRow: Description): Promise<Description> => {
               try {
                 await updateDescription({
                   oldDescription: oldRow,
@@ -146,15 +143,15 @@ export default function descriptions() {
                 });
                 setMessage("Description updated successfully.");
                 setShowSnackbar(true);
+                return newRow;
               } catch (error) {
                 handleError(
                   error,
                   `Update Description error: ${error.message}`,
                   false,
                 );
+                return oldRow;
               }
-              // might need to move this line
-              return newRow;
             }}
           />
           <div>
@@ -185,9 +182,9 @@ export default function descriptions() {
           </Typography> */}
 
           <Typography>
-  Are you sure you want to delete the description "
-  {selectedDescription ? selectedDescription.descriptionName : ''}"?
-</Typography>
+            Are you sure you want to delete the description "
+            {selectedDescription ? selectedDescription.descriptionName : ""}"?
+          </Typography>
 
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button

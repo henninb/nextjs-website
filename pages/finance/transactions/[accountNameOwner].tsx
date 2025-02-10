@@ -430,15 +430,16 @@ export default function TransactionTable() {
               processRowUpdate={async (
                 newRow: Transaction,
                 oldRow: Transaction,
-              ) => {
+              ): Promise<Transaction> => {
                 try {
                   await updateTransaction({ newRow: newRow, oldRow: oldRow });
                   setMessage("Transaction updated successfully.");
                   setShowSnackbar(true);
+                  return newRow;
                 } catch (error) {
                   handleError(error, "Update Transaction failure.", false);
+                  return oldRow;
                 }
-                return newRow;
               }}
             />
           </div>
@@ -717,7 +718,7 @@ export default function TransactionTable() {
               option.accountNameOwner === value?.accountNameOwner
             }
             value={
-              selectedTransaction?.accountNameOwner
+              selectedTransaction?.accountNameOwner && isSuccessAccounts
                 ? accounts.find(
                     (account) =>
                       account.accountNameOwner ===

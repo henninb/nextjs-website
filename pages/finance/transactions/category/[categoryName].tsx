@@ -8,6 +8,8 @@ import { currencyFormat, noNaN } from "../../../../components/Common";
 import useTransactionByCategory from "../../../../hooks/useTransactionByCategoryFetch";
 import useTotalsPerAccountFetch from "../../../../hooks/useTotalsPerAccountFetch";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
+import Transaction from "../../../../model/Transaction";
+import Link from "next/link";
 
 export default function TransactionTable() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -51,7 +53,6 @@ export default function TransactionTable() {
         const localDate = new Date(
           utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
         );
-        //console.log("localDate: " + localDate);
         return localDate;
       },
       editable: true,
@@ -61,6 +62,13 @@ export default function TransactionTable() {
       headerName: "Account",
       width: 180,
       editable: true,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+            {params.value}
+          </Link>
+        );
+      },
     },
     {
       field: "description",
@@ -84,7 +92,6 @@ export default function TransactionTable() {
     <Box>
       <h2>{`${categoryName}`}</h2>
       {showSpinner ? (
-        //<div></div>
         <Spinner />
       ) : (
         <div>
@@ -94,15 +101,16 @@ export default function TransactionTable() {
             getRowId={(row) => row.transactionId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow, oldRow) => {
+            processRowUpdate={async (newRow: Transaction, oldRow: Transaction): Promise<Transaction> => {
               try {
                 await updateTransaction({ newRow, oldRow });
                 setMessage("Transaction updated successfully.");
                 setShowSnackbar(true);
+                return newRow;
               } catch (error) {
                 handleError(error, "Update Transaction failure.");
+                return oldRow;
               }
-              return newRow;
             }}
           />
           <SnackbarBaseline
