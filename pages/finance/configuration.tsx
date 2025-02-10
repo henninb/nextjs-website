@@ -128,7 +128,10 @@ export default function Configuration() {
             getRowId={(row) => row.parameterName || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Parameter, oldRow: Parameter): Promise<Parameter> => {
+            processRowUpdate={async (
+              newRow: Parameter,
+              oldRow: Parameter,
+            ): Promise<Parameter> => {
               try {
                 await updateParameter({
                   oldParameter: oldRow,

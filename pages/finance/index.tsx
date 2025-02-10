@@ -253,7 +253,10 @@ export default function Accounts() {
             hideFooterPagination={true}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Account, oldRow: Account) : Promise<Account> => {
+            processRowUpdate={async (
+              newRow: Account,
+              oldRow: Account,
+            ): Promise<Account> => {
               try {
                 await updateAccount({ newRow: newRow, oldRow: oldRow });
                 setMessage("Account updated successfully.");

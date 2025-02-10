@@ -135,7 +135,10 @@ export default function Descriptions() {
             getRowId={(row) => row.descriptionId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Description, oldRow: Description): Promise<Description> => {
+            processRowUpdate={async (
+              newRow: Description,
+              oldRow: Description,
+            ): Promise<Description> => {
               try {
                 await updateDescription({
                   oldDescription: oldRow,

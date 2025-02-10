@@ -182,7 +182,10 @@ export default function Transfers() {
             getRowId={(row) => row.transferId || `temp-${Math.random()}`}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Transfer, oldRow: Transfer): Promise<Transfer> => {
+            processRowUpdate={async (
+              newRow: Transfer,
+              oldRow: Transfer,
+            ): Promise<Transfer> => {
               try {
                 await updateTransfer({
                   oldTransfer: oldRow,

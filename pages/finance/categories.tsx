@@ -193,7 +193,10 @@ export default function Categories() {
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Category, oldRow: Category): Promise<Category> => {
+            processRowUpdate={async (
+              newRow: Category,
+              oldRow: Category,
+            ): Promise<Category> => {
               try {
                 await updateCategory({
                   oldCategory: oldRow,

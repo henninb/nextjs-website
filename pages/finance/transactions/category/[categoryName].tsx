@@ -101,7 +101,10 @@ export default function TransactionTable() {
             getRowId={(row) => row.transactionId || 0}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Transaction, oldRow: Transaction): Promise<Transaction> => {
+            processRowUpdate={async (
+              newRow: Transaction,
+              oldRow: Transaction,
+            ): Promise<Transaction> => {
               try {
                 await updateTransaction({ newRow, oldRow });
                 setMessage("Transaction updated successfully.");

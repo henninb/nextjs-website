@@ -160,7 +160,10 @@ export default function Payments() {
             getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
             checkboxSelection={false}
             rowSelection={false}
-            processRowUpdate={async (newRow: Payment, oldRow: Payment): Promise<Payment> => {
+            processRowUpdate={async (
+              newRow: Payment,
+              oldRow: Payment,
+            ): Promise<Payment> => {
               try {
                 await updatePayment({ oldPayment: oldRow, newPayment: newRow });
                 setMessage("Payment updated successfully.");
