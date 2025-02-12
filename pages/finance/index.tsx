@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -39,10 +38,8 @@ export default function Accounts() {
     null,
   );
 
-  //const router = useRouter();
-
-  const { data, isSuccess } = useAccountFetch();
-  const { data: totals, isSuccess: isSuccessTotals } = useTotalsFetch();
+  const { data: fetchedAccounts, isSuccess: isSuccessAccounts, error: errorAccounts } = useAccountFetch();
+  const { data: fetchTotals, isSuccess: isSuccessTotals, error: errorTotals } = useTotalsFetch();
 
   const { mutateAsync: insertAccount } = useAccountInsert();
   const { mutateAsync: updateAccount } = useAccountUpdate();
@@ -55,14 +52,11 @@ export default function Accounts() {
   };
 
   useEffect(() => {
-    if (isSuccess && isSuccessTotals) {
+    if (isSuccessAccounts && isSuccessTotals) {
       setShowSpinner(false);
     }
-  }, [isSuccess, isSuccessTotals]);
+  }, [isSuccessAccounts, isSuccessTotals]);
 
-  // const handleButtonClickLink = (accountNameOwner: string) => {
-  //   router.push(`/finance/transactions/${accountNameOwner}`);
-  // };
 
   const handleDeleteRow = async () => {
     if (selectedAccount) {
@@ -138,16 +132,6 @@ export default function Accounts() {
           </Link>
         );
       },
-
-      // renderCell: (params) => (
-      //   <div>
-      //     <Button
-      //       onClick={() => handleButtonClickLink(params.row.accountNameOwner)}
-      //     >
-      //       {params.row.accountNameOwner}
-      //     </Button>
-      //   </div>
-      // ),
     },
     { field: "accountType", headerName: "Type", width: 150, editable: true },
     { field: "moniker", headerName: "Moniker", width: 150, editable: true },
@@ -240,16 +224,16 @@ export default function Accounts() {
           </IconButton>
 
           <h3>
-            [ ${currencyFormat(noNaN(totals["totals"]))} ] [ $
-            {currencyFormat(noNaN(totals["totalsCleared"]))} ] [ $
-            {currencyFormat(noNaN(totals["totalsOutstanding"]))} ] [ $
-            {currencyFormat(noNaN(totals["totalsFuture"]))} ]
+            [ ${currencyFormat(noNaN(fetchTotals["totals"]))} ] [ $
+            {currencyFormat(noNaN(fetchTotals["totalsCleared"]))} ] [ $
+            {currencyFormat(noNaN(fetchTotals["totalsOutstanding"]))} ] [ $
+            {currencyFormat(noNaN(fetchTotals["totalsFuture"]))} ]
           </h3>
           <DataGrid
-            rows={data?.filter((row) => row != null) || []}
+            rows={fetchedAccounts?.filter((row) => row != null) || []}
             columns={columns}
             getRowId={(row) => row.accountId || 0}
-            paginationModel={{ pageSize: data?.length, page: 0 }}
+            paginationModel={{ pageSize: fetchedAccounts?.length, page: 0 }}
             hideFooterPagination={true}
             checkboxSelection={false}
             rowSelection={false}

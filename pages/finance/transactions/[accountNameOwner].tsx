@@ -59,6 +59,14 @@ export default function TransactionTable() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [totalsError, setTotalsError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [accountsError, setAccountsError] = useState<string | null>(null);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+  const [descriptionsError, setDescriptionsError] = useState<string | null>(
+    null,
+  );
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -78,19 +86,36 @@ export default function TransactionTable() {
     notes: "",
   });
 
-  //const routeMatch: PathMatch<string> | null = useMatch("/transactions/:account");
-  //const accountNameOwner = routeMatch?.params?.account || "default";
-
-  const { data, isSuccess } = useTransactionByAccountFetch(accountNameOwner);
-  const { data: totals, isSuccess: isSuccessTotals } =
-    useTotalsPerAccountFetch(accountNameOwner);
-  const { data: validationData, isSuccess: isSuccessValidationTotals } =
-    useValidationAmountFetch(accountNameOwner);
-  const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
-  const { data: categories, isSuccess: isSuccessCategories } =
-    useCategoryFetch();
-  const { data: descrptions, isSuccess: isSuccessDescriptions } =
-    useDescriptionFetch();
+  const {
+    data: fetchedData,
+    isSuccess: isSuccessData,
+    error: dataFetchError,
+  } = useTransactionByAccountFetch(accountNameOwner);
+  const {
+    data: fetchedTotals,
+    isSuccess: isSuccessTotals,
+    error: totalsFetchError,
+  } = useTotalsPerAccountFetch(accountNameOwner);
+  const {
+    data: fetchedValidationData,
+    isSuccess: isSuccessValidationTotals,
+    error: validationFetchError,
+  } = useValidationAmountFetch(accountNameOwner);
+  const {
+    data: fetchedAccounts,
+    isSuccess: isSuccessAccounts,
+    error: accountsFetchError,
+  } = useAccountFetch();
+  const {
+    data: fetchedCategories,
+    isSuccess: isSuccessCategories,
+    error: categoriesFetchError,
+  } = useCategoryFetch();
+  const {
+    data: fetchedDescriptions,
+    isSuccess: isSuccessDescriptions,
+    error: descriptionsFetchError,
+  } = useDescriptionFetch();
 
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
   const { mutateAsync: deleteTransaction } = useTransactionDelete();
@@ -101,10 +126,24 @@ export default function TransactionTable() {
   const transactionStates = ["outstanding", "future", "cleared"];
 
   useEffect(() => {
-    if (isSuccess && isSuccessTotals && isSuccessValidationTotals) {
+    if (
+      isSuccessData &&
+      isSuccessTotals &&
+      isSuccessValidationTotals &&
+      isSuccessAccounts &&
+      isSuccessCategories &&
+      isSuccessDescriptions
+    ) {
       setShowSpinner(false);
     }
-  }, [isSuccess, isSuccessTotals, isSuccessValidationTotals]);
+  }, [
+    isSuccessData,
+    isSuccessTotals,
+    isSuccessValidationTotals,
+    isSuccessAccounts,
+    isSuccessCategories,
+    isSuccessDescriptions,
+  ]);
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
@@ -129,7 +168,7 @@ export default function TransactionTable() {
     const payload: ValidationAmount = {
       validationId: Math.random(),
       activeStatus: true,
-      amount: totals.totalsCleared,
+      amount: fetchedTotals.totalsCleared,
       transactionState: transactionState,
       validationDate: new Date(),
     };
@@ -387,12 +426,12 @@ export default function TransactionTable() {
         <div>
           <div>
             <h4>{`[ ${currencyFormat(
-              noNaN(totals?.["totals"] ?? 0),
+              noNaN(fetchedTotals?.["totals"] ?? 0),
             )} ] [ ${currencyFormat(
-              noNaN(totals?.["totalsCleared"] ?? 0),
+              noNaN(fetchedTotals?.["totalsCleared"] ?? 0),
             )} ]  [ ${currencyFormat(
-              noNaN(totals?.["totalsOutstanding"] ?? 0),
-            )} ] [ ${currencyFormat(noNaN(totals?.["totalsFuture"] ?? 0))} ]`}</h4>
+              noNaN(fetchedTotals?.["totalsOutstanding"] ?? 0),
+            )} ] [ ${currencyFormat(noNaN(fetchedTotals?.["totalsFuture"] ?? 0))} ]`}</h4>
 
             <IconButton
               onClick={() => {
@@ -411,18 +450,20 @@ export default function TransactionTable() {
                 handleInsertNewValidationData(accountNameOwner, "cleared");
               }}
             >
-              {validationData?.amount
-                ? validationData?.amount.toLocaleString("en-US", {
+              {fetchedValidationData?.amount
+                ? fetchedValidationData?.amount.toLocaleString("en-US", {
                     style: "currency",
                     currency: "USD",
                   })
                 : "$0.00"}{" "}
               {" - "}{" "}
-              {new Date(validationData?.validationDate).toLocaleString("en-US")}
+              {new Date(fetchedValidationData?.validationDate).toLocaleString(
+                "en-US",
+              )}
             </Button>
 
             <DataGrid
-              rows={data?.filter((row) => row != null) || []}
+              rows={fetchedData?.filter((row) => row != null) || []}
               columns={columns}
               getRowId={(row) => row.transactionId || 0}
               checkboxSelection={false}
@@ -560,7 +601,7 @@ export default function TransactionTable() {
             freeSolo
             options={
               isSuccessDescriptions
-                ? descrptions.map((d) => d.descriptionName)
+                ? fetchedDescriptions.map((d) => d.descriptionName)
                 : []
             }
             value={transactionData?.description || ""}
@@ -583,7 +624,9 @@ export default function TransactionTable() {
           <Autocomplete
             freeSolo
             options={
-              isSuccessCategories ? categories.map((c) => c.categoryName) : []
+              isSuccessCategories
+                ? fetchedCategories.map((c) => c.categoryName)
+                : []
             }
             value={transactionData?.category || ""}
             onChange={(_, newValue) =>
@@ -610,7 +653,8 @@ export default function TransactionTable() {
             value={transactionData?.amount ?? ""}
             onChange={(e) => {
               const inputValue = e.target.value;
-              let parsedValue = inputValue === "" ? null : parseFloat(inputValue);
+              let parsedValue =
+                inputValue === "" ? null : parseFloat(inputValue);
 
               if (parsedValue !== null) {
                 parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
@@ -705,8 +749,8 @@ export default function TransactionTable() {
         >
           <Autocomplete
             options={
-              isSuccessAccounts && isSuccess && selectedTransaction
-                ? accounts.filter(
+              isSuccessAccounts && isSuccessData && selectedTransaction
+                ? fetchedAccounts.filter(
                     (account) =>
                       account.accountType === selectedTransaction.accountType,
                   )
@@ -720,7 +764,7 @@ export default function TransactionTable() {
             }
             value={
               selectedTransaction?.accountNameOwner && isSuccessAccounts
-                ? accounts.find(
+                ? fetchedAccounts.find(
                     (account) =>
                       account.accountNameOwner ===
                       selectedTransaction.accountNameOwner,

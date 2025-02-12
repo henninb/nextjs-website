@@ -29,16 +29,20 @@ export default function Configuration() {
     null,
   );
 
-  const { data, isSuccess } = useParameterFetch();
+  const {
+    data: fetchedParameters,
+    isSuccess: isSuccessParameters,
+    error: errorParameters,
+  } = useParameterFetch();
   const { mutateAsync: insertParameter } = useParameterInsert();
   const { mutateAsync: updateParameter } = useParameterUpdate();
   const { mutateAsync: deleteParameter } = useParameterDelete();
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccessParameters) {
       setShowSpinner(false);
     }
-  }, [isSuccess]);
+  }, [isSuccessParameters]);
 
   const handleDeleteRow = async () => {
     if (selectedConfig) {
@@ -123,7 +127,7 @@ export default function Configuration() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data?.filter((row) => row != null) || []}
+            rows={fetchedParameters?.filter((row) => row != null) || []}
             columns={columns}
             getRowId={(row) => row.parameterName || 0}
             checkboxSelection={false}

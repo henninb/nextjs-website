@@ -33,13 +33,18 @@ export default function Categories() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fallbackData, setFallbackData] = useState<Category[]>([]);
 
-  const { data, isSuccess, isError, refetch } = useFetchCategory();
+  const {
+    data: fetchedCategories,
+    isSuccess: isSuccessCategories,
+    isError: isErrorCategories,
+    refetch,
+  } = useFetchCategory();
   const { mutateAsync: insertCategory } = useCategoryInsert();
   const { mutateAsync: updateCategory } = useCategoryUpdate();
   const { mutateAsync: deleteCategory } = useCategoryDelete();
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccessCategories) {
       setShowSpinner(false);
       setFetchError(null);
       if (typeof window !== "undefined") {
@@ -49,19 +54,11 @@ export default function Categories() {
         }
       }
     }
-    if (isError) {
+    if (isErrorCategories) {
       setShowSpinner(false);
       setFetchError("Failed to load categories. Please check your connection.");
     }
-  }, [isSuccess, isError, data]);
-
-  // Load cached data if API fails
-  // const fallbackData: Category[] = JSON.parse(
-  //   localStorage.getItem("cachedCategories") || "[]",
-  // );
-  // const fallbackData: Category[] = JSON.parse(
-  //   localStorage.getItem("cachedCategories") || "[]"
-  // );
+  }, [isSuccessCategories, isErrorCategories]);
 
   const handleDeleteRow = async () => {
     if (selectedCategory) {
@@ -188,7 +185,7 @@ export default function Categories() {
           </IconButton>
           <DataGrid
             //rows={data?.filter((row) => row != null) || []}
-            rows={data || []}
+            rows={fetchedCategories || []}
             columns={columns}
             getRowId={(row) => row.categoryId || 0}
             checkboxSelection={false}

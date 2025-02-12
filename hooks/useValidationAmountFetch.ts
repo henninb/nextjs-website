@@ -3,18 +3,6 @@ import { TransactionState } from "../model/TransactionState";
 import ValidationAmount from "../model/ValidationAmount";
 //import { basicAuth } from "../Common";
 
-const dataTest =
-  //[
-  {
-    validationId: Math.random(),
-    validationDate: new Date(),
-    accountId: 1,
-    amount: 0.0,
-    transactionState: "undefined" as TransactionState,
-    activeStatus: false,
-  };
-//];
-
 export const fetchValidationAmount = async (
   accountNameOwner: string,
 ): Promise<ValidationAmount> => {

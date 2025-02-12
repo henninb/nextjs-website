@@ -17,7 +17,6 @@ import useFetchTransfer from "../../hooks/useTransferFetch";
 import useTransferInsert from "../../hooks/useTransferInsert";
 import useTransferDelete from "../../hooks/useTransferDelete";
 import Transfer from "../../model/Transfer";
-import { formatDate } from "../../components/Common";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
@@ -28,23 +27,64 @@ export default function Transfers() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
-  const [transferData, setTransferData] = useState<Transfer | null>(null);
   const [showModalDelete, setShowModalDelete] = useState(false);
+  const [transferData, setTransferData] = useState<Transfer | null>(null);
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null,
   );
 
-  const { data, isSuccess } = useFetchTransfer();
   const { mutateAsync: insertTransfer } = useTransferInsert();
   const { mutateAsync: deleteTransfer } = useTransferDelete();
   const { mutateAsync: updateTransfer } = useTransferUpdate();
-  const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
+
+  const {
+    data: fetchedAccounts,
+    isSuccess: isSuccessAccounts,
+    error: errorAccounts,
+  } = useAccountFetch();
+  const {
+    data: fetchedTransfers,
+    isSuccess: isSuccessTransfers,
+    error: errorTransfers,
+  } = useFetchTransfer();
+
+  const dummyTransfers: Transfer[] = [
+    {
+      transferId: 1,
+      sourceAccount: "barclays-savings_brian",
+      destinationAccount: "wellsfargo-savings_kari",
+      transactionDate: new Date("2025-01-04"),
+      amount: 3.0,
+      guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+      guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+      activeStatus: true,
+    },
+    {
+      transferId: 2,
+      sourceAccount: "barclays-savings_brian",
+      destinationAccount: "wellsfargo-savings_kari",
+      transactionDate: new Date("2025-01-04"),
+      amount: 2.0,
+      guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+      guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+      activeStatus: true,
+    },
+  ];
+
+  const transfersToDisplay = errorTransfers
+    ? dummyTransfers
+    : fetchedTransfers?.filter((row) => row != null) || [];
+  //const transfersToDisplay = fetchedTransfers || [];
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccessTransfers && isSuccessAccounts) {
       setShowSpinner(false);
+    } else if (errorTransfers || errorAccounts) {
+      setShowSpinner(false);
+      setMessage("Error fetching data.");
+      setShowSnackbar(true);
     }
-  }, [isSuccess]);
+  }, [isSuccessTransfers, isSuccessAccounts, errorTransfers, errorAccounts]);
 
   const handleDeleteRow = async () => {
     if (selectedTransfer) {
@@ -167,7 +207,8 @@ export default function Transfers() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data?.filter((row) => row != null) || []}
+            //rows={fetchedTransfers?.filter((row) => row != null) || []}
+            rows={transfersToDisplay}
             columns={columns}
             getRowId={(row) => row.transferId || `temp-${Math.random()}`}
             checkboxSelection={false}
@@ -235,6 +276,7 @@ export default function Transfers() {
         </Box>
       </Modal>
 
+      {/* Modal to add or update a transaction */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -267,7 +309,9 @@ export default function Transfers() {
           <Autocomplete
             options={
               isSuccessAccounts
-                ? accounts.filter((account) => account.accountType === "debit")
+                ? fetchedAccounts.filter(
+                    (account) => account.accountType === "debit",
+                  )
                 : []
             }
             getOptionLabel={(account: Account) =>
@@ -278,7 +322,7 @@ export default function Transfers() {
             }
             value={
               transferData?.sourceAccount && isSuccessAccounts
-                ? accounts.find(
+                ? fetchedAccounts.find(
                     (account) =>
                       account.accountNameOwner === transferData.sourceAccount,
                   ) || null
@@ -304,7 +348,9 @@ export default function Transfers() {
           <Autocomplete
             options={
               isSuccessAccounts
-                ? accounts.filter((account) => account.accountType === "debit")
+                ? fetchedAccounts.filter(
+                    (account) => account.accountType === "debit",
+                  )
                 : []
             }
             getOptionLabel={(account: Account) =>
@@ -315,7 +361,7 @@ export default function Transfers() {
             }
             value={
               transferData?.destinationAccount && isSuccessAccounts
-                ? accounts.find(
+                ? fetchedAccounts.find(
                     (account) =>
                       account.accountNameOwner ===
                       transferData.destinationAccount,
@@ -346,7 +392,8 @@ export default function Transfers() {
             value={transferData?.amount ?? ""}
             onChange={(e) => {
               const inputValue = e.target.value;
-              let parsedValue = inputValue === "" ? null : parseFloat(inputValue);
+              let parsedValue =
+                inputValue === "" ? null : parseFloat(inputValue);
 
               if (parsedValue !== null) {
                 parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals

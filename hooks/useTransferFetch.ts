@@ -2,29 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
 //import { basicAuth } from "../Common";
 
-const dataTest: Transfer[] = [
-  {
-    transferId: 1,
-    sourceAccount: "barclays-savings_brian",
-    destinationAccount: "wellsfargo-savings_kari",
-    transactionDate: new Date("2025-01-04"),
-    amount: 3.0,
-    guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-    guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-    activeStatus: true,
-  },
-  {
-    transferId: 2,
-    sourceAccount: "barclays-savings_brian",
-    destinationAccount: "wellsfargo-savings_kari",
-    transactionDate: new Date("2025-01-04"),
-    amount: 2.0,
-    guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-    guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-    activeStatus: true,
-  },
-];
-
 const fetchTransferData = async (): Promise<Transfer[]> => {
   try {
     const response = await fetch("https://finance.lan/api/transfer/select", {
@@ -49,7 +26,7 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
     return data;
   } catch (error) {
     console.log("Error fetching transfer data:", error);
-    return dataTest;
+    throw error;
   }
 };
 

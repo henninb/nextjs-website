@@ -30,16 +30,20 @@ export default function Descriptions() {
     null,
   );
 
-  const { data, isSuccess } = useFetchDescription();
+  const {
+    data: fetchedDescrptions,
+    isSuccess: isSuccessDescriptions,
+    error: errorDescriptions,
+  } = useFetchDescription();
   const { mutateAsync: insertDescription } = useDescriptionInsert();
   const { mutateAsync: updateDescription } = useDescriptionUpdate();
   const { mutateAsync: deleteDescription } = useDescriptionDelete();
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccessDescriptions) {
       setShowSpinner(false);
     }
-  }, [isSuccess]);
+  }, [isSuccessDescriptions]);
 
   const handleDeleteRow = async () => {
     if (selectedDescription) {
@@ -130,7 +134,7 @@ export default function Descriptions() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data?.filter((row) => row != null) || []}
+            rows={fetchedDescrptions?.filter((row) => row != null) || []}
             columns={columns}
             getRowId={(row) => row.descriptionId || 0}
             checkboxSelection={false}

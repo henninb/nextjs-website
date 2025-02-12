@@ -31,18 +31,31 @@ export default function Payments() {
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  const { data, isSuccess } = useFetchPayment();
-  const { data: accounts, isSuccess: isSuccessAccounts } = useAccountFetch();
+
+  const {
+    data: fetchedPayments,
+    isSuccess: isSuccessPayments,
+    error: errorPayments,
+  } = useFetchPayment();
+  const {
+    data: fetchedAccounts,
+    isSuccess: isSuccessAccounts,
+    error: errorAccounts,
+  } = useAccountFetch();
 
   const { mutateAsync: insertPayment } = usePaymentInsert();
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
-    if (isSuccess && isSuccessAccounts) {
+    if (isSuccessPayments && isSuccessAccounts) {
       setShowSpinner(false);
+    } else if (errorPayments || errorAccounts) {
+      setShowSpinner(false);
+      setMessage("Error fetching data.");
+      setShowSnackbar(true);
     }
-  }, [isSuccess, isSuccessAccounts]);
+  }, [isSuccessPayments, isSuccessAccounts, errorPayments, errorAccounts]);
 
   const handleDeleteRow = async () => {
     if (selectedPayment) {
@@ -119,10 +132,10 @@ export default function Payments() {
       field: "amount",
       headerName: "Amount",
       width: 150,
-      type: 'number',
+      type: "number",
       editable: true,
       renderEditCell: (params) => {
-        const value = params.value || ""; // Handle undefined values
+        const value = params.value || "";
         return (
           <TextField
             type="number"
@@ -146,7 +159,7 @@ export default function Payments() {
           />
         );
       },
-      valueFormatter: (params:any) => {
+      valueFormatter: (params: any) => {
         const value = params;
         if (value === undefined || value === null) {
           return "";
@@ -185,7 +198,7 @@ export default function Payments() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={data?.filter((row) => row != null) || []}
+            rows={fetchedPayments?.filter((row) => row != null) || []}
             columns={columns}
             getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
             checkboxSelection={false}
@@ -250,7 +263,7 @@ export default function Payments() {
         </Box>
       </Modal>
 
-      { /* Modal to Add or Edit */}
+      {/* Modal to Add or Edit */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -282,7 +295,9 @@ export default function Payments() {
           <Autocomplete
             options={
               isSuccessAccounts
-                ? accounts.filter((account) => account.accountType === "credit")
+                ? fetchedAccounts.filter(
+                    (account) => account.accountType === "credit",
+                  )
                 : []
             }
             getOptionLabel={(account: Account) =>
@@ -293,7 +308,7 @@ export default function Payments() {
             }
             value={
               paymentData?.accountNameOwner && isSuccessAccounts
-                ? accounts.find(
+                ? fetchedAccounts.find(
                     (account) =>
                       account.accountNameOwner === paymentData.accountNameOwner,
                   ) || null
@@ -323,7 +338,8 @@ export default function Payments() {
             value={paymentData?.amount ?? ""}
             onChange={(e) => {
               const inputValue = e.target.value;
-              let parsedValue = inputValue === "" ? null : parseFloat(inputValue);
+              let parsedValue =
+                inputValue === "" ? null : parseFloat(inputValue);
 
               if (parsedValue !== null) {
                 parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
