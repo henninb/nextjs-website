@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
+import Totals from "../model/Totals";
 //import { basicAuth } from "../Common";
 
 export type TransactionInsertType = {
@@ -13,6 +14,8 @@ const getAccountKey = (accountNameOwner: string) => [
   "accounts",
   accountNameOwner,
 ];
+
+const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
 
 const setupNewTransaction = (
   payload: Transaction,
@@ -87,10 +90,63 @@ export default function useTransactionInsert(accountNameOwner: string) {
       console.log(`Mutation error: ${error.message}`);
     },
     onSuccess: (response: Transaction) => {
+      // Update transaction list
       const oldData: Transaction[] =
         queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
-      const newData = [response, ...oldData];
-      queryClient.setQueryData(getAccountKey(accountNameOwner), newData);
+      queryClient.setQueryData(getAccountKey(accountNameOwner), [
+        response,
+        ...oldData,
+      ]);
+
+      // Update totals
+      const oldTotals: Totals = queryClient.getQueryData(
+        getTotalsKey(accountNameOwner),
+      ) || {
+        totals: 0,
+        totalsFuture: 0,
+        totalsCleared: 0,
+        totalsOutstanding: 0,
+      };
+
+      const newTotals = { ...oldTotals };
+
+      // Adjust totals based on transaction state
+      newTotals.totals += response.amount;
+
+      if (response.transactionState === "cleared") {
+        newTotals.totalsCleared += response.amount;
+      } else if (response.transactionState === "outstanding") {
+        newTotals.totalsOutstanding += response.amount;
+      } else if (response.transactionState === "future") {
+        newTotals.totalsFuture += response.amount;
+      } else {
+        console.log("cannot adjust totals.");
+      }
+
+      queryClient.setQueryData(getTotalsKey(accountNameOwner), newTotals);
     },
   });
 }
+
+// export default function useTransactionInsert(accountNameOwner: string) {
+//   const queryClient = useQueryClient();
+
+//   return useMutation({
+//     mutationKey: ["insertTransaction"],
+//     mutationFn: (variables: TransactionInsertType) =>
+//       insertTransaction(
+//         accountNameOwner,
+//         variables.newRow,
+//         variables.isFutureTransaction,
+//       ),
+//     onError: (error: any) => {
+//       console.log(`Mutation error: ${error.message}`);
+//     },
+//     onSuccess: (response: Transaction) => {
+//       const oldData: Transaction[] =
+//         queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
+//       const newData = [response, ...oldData];
+//       queryClient.setQueryData(getAccountKey(accountNameOwner), newData);
+//     },
+//   });
+// }

@@ -20,6 +20,7 @@ import useAccountInsert from "../../hooks/useAccountInsert";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
+import Totals from "../../model/Totals";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
 import Link from "next/link";
@@ -38,8 +39,16 @@ export default function Accounts() {
     null,
   );
 
-  const { data: fetchedAccounts, isSuccess: isSuccessAccounts, error: errorAccounts } = useAccountFetch();
-  const { data: fetchTotals, isSuccess: isSuccessTotals, error: errorTotals } = useTotalsFetch();
+  const {
+    data: fetchedAccounts,
+    isSuccess: isSuccessAccounts,
+    error: errorAccounts,
+  } = useAccountFetch();
+  const {
+    data: fetchedTotals,
+    isSuccess: isSuccessTotals,
+    error: errorTotals,
+  } = useTotalsFetch();
 
   const { mutateAsync: insertAccount } = useAccountInsert();
   const { mutateAsync: updateAccount } = useAccountUpdate();
@@ -56,7 +65,6 @@ export default function Accounts() {
       setShowSpinner(false);
     }
   }, [isSuccessAccounts, isSuccessTotals]);
-
 
   const handleDeleteRow = async () => {
     if (selectedAccount) {
@@ -223,12 +231,19 @@ export default function Accounts() {
             <AddIcon />
           </IconButton>
 
-          <h3>
-            [ ${currencyFormat(noNaN(fetchTotals["totals"]))} ] [ $
-            {currencyFormat(noNaN(fetchTotals["totalsCleared"]))} ] [ $
-            {currencyFormat(noNaN(fetchTotals["totalsOutstanding"]))} ] [ $
-            {currencyFormat(noNaN(fetchTotals["totalsFuture"]))} ]
-          </h3>
+          <h4>{`[ ${currencyFormat(
+            noNaN(fetchedTotals?.totals ?? 0),
+          )} ] [ ${currencyFormat(
+            noNaN(fetchedTotals?.totalsCleared ?? 0),
+          )} ]  [ ${currencyFormat(
+            noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+          )} ] [ ${currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))} ]`}</h4>
+          {/* <h3>
+            [ ${currencyFormat(noNaN(fetchedTotals.totals))} ] [ $
+            {currencyFormat(noNaN(fetchedTotals.totalsCleared))} ] [ $
+            {currencyFormat(noNaN(fetchedTotals.totalsOutstanding))} ] [ $
+            {currencyFormat(noNaN(fetchedTotals.totalsFuture))} ]
+          </h3> */}
           <DataGrid
             rows={fetchedAccounts?.filter((row) => row != null) || []}
             columns={columns}

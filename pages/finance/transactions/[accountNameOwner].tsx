@@ -31,6 +31,7 @@ import useDescriptionFetch from "../../../hooks/useDescriptionFetch";
 import { AccountType } from "../../../model/AccountType";
 import Transaction from "../../../model/Transaction";
 import Account from "../../../model/Account";
+import Totals from "../../../model/Totals";
 import { TransactionState } from "../../../model/TransactionState";
 import { TransactionType } from "../../../model/TransactionType";
 import { ReoccurringType } from "../../../model/ReoccurringType";
@@ -40,12 +41,7 @@ import AddIcon from "@mui/icons-material/AddRounded";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
 
-import {
-  epochToDate,
-  currencyFormat,
-  noNaN,
-  formatDate,
-} from "../../../components/Common";
+import { currencyFormat, noNaN } from "../../../components/Common";
 import useCategoryFetch from "../../../hooks/useCategoryFetch";
 
 export default function TransactionTable() {
@@ -59,24 +55,16 @@ export default function TransactionTable() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
-  const [dataError, setDataError] = useState<string | null>(null);
-  const [totalsError, setTotalsError] = useState<string | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [accountsError, setAccountsError] = useState<string | null>(null);
-  const [categoriesError, setCategoriesError] = useState<string | null>(null);
-  const [descriptionsError, setDescriptionsError] = useState<string | null>(
-    null,
-  );
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
 
   const [transactionData, setTransactionData] = useState({
-    transactionDate: new Date(), // Default to today's date
+    transactionDate: new Date(),
     accountNameOwner: accountNameOwner,
-    reoccurringType: "onetime" as ReoccurringType, // Default to "onetime"
+    reoccurringType: "onetime" as ReoccurringType,
     amount: 0.0, // Default to 0.0
-    transactionState: "outstanding" as TransactionState, // Default to "outstanding"
+    transactionState: "outstanding" as TransactionState,
     transactionType: "undefined" as TransactionType,
     guid: uuidv4(),
     description: "",
@@ -163,8 +151,6 @@ export default function TransactionTable() {
     accountNameOwner: string,
     transactionState: TransactionState,
   ) => {
-    //console.log(accountNameOwner);
-
     const payload: ValidationAmount = {
       validationId: Math.random(),
       activeStatus: true,
@@ -271,7 +257,6 @@ export default function TransactionTable() {
         const localDate = new Date(
           utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
         );
-        //console.log("localDate: " + localDate);
         return localDate;
       },
       editable: true,
@@ -309,7 +294,6 @@ export default function TransactionTable() {
       renderCell: (params: any) => {
         const handleStateChange = async (newState: TransactionState) => {
           try {
-            // Avoid directly mutating `params.row`
             const updatedRow = { ...params.row, transactionState: newState };
             await updateTransaction({
               newRow: updatedRow,
@@ -426,12 +410,12 @@ export default function TransactionTable() {
         <div>
           <div>
             <h4>{`[ ${currencyFormat(
-              noNaN(fetchedTotals?.["totals"] ?? 0),
+              noNaN(fetchedTotals?.totals ?? 0),
             )} ] [ ${currencyFormat(
-              noNaN(fetchedTotals?.["totalsCleared"] ?? 0),
+              noNaN(fetchedTotals?.totalsCleared ?? 0),
             )} ]  [ ${currencyFormat(
-              noNaN(fetchedTotals?.["totalsOutstanding"] ?? 0),
-            )} ] [ ${currencyFormat(noNaN(fetchedTotals?.["totalsFuture"] ?? 0))} ]`}</h4>
+              noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+            )} ] [ ${currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))} ]`}</h4>
 
             <IconButton
               onClick={() => {

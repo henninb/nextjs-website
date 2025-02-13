@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
+import Totals from "../model/Totals";
 import { UpdateTransactionOptions } from "../model/UpdateTransactionOptions";
 //import { basicAuth } from "../Common";
 
@@ -76,21 +77,21 @@ export default function useTransactionUpdate() {
       oldRow: Transaction;
       options?: UpdateTransactionOptions;
     }) => updateTransaction(variables.newRow, variables.oldRow),
-    onError: (error) => {
+    onError: (error: any) => {
+      // Type the error
       console.log(error ? error : "error is undefined.");
     },
 
     onSuccess: (response, variables) => {
       const oldAccountKey = getAccountKey(variables.oldRow.accountNameOwner);
       const newAccountKey = getAccountKey(variables.newRow.accountNameOwner);
-      const oldTotalsKey = ["totals", variables.oldRow.accountNameOwner];
-      const newTotalsKey = ["totals", variables.newRow.accountNameOwner];
+      const oldTotalsKey = getTotalsKey(variables.oldRow.accountNameOwner);
+      const newTotalsKey = getTotalsKey(variables.newRow.accountNameOwner);
 
       const updatedRow = variables.newRow;
-      const oldData: any = queryClient.getQueryData(oldAccountKey);
-      let newData: any;
+      const oldData = queryClient.getQueryData(oldAccountKey) as Transaction[]; // Type assertion
+      let newData: Transaction[];
 
-      // Case 1: Updating transaction in the same account
       if (
         variables.oldRow.accountNameOwner === variables.newRow.accountNameOwner
       ) {
@@ -98,15 +99,13 @@ export default function useTransactionUpdate() {
           row.guid === updatedRow.guid ? updatedRow : row,
         );
 
-        //const totals: any = queryClient.getQueryData(oldTotalsKey);
-        const totals: any = queryClient.getQueryData(oldTotalsKey) || {};
+        const totals: Totals = queryClient.getQueryData(oldTotalsKey) || {
+          totals: 0,
+          totalsFuture: 0,
+          totalsCleared: 0,
+          totalsOutstanding: 0,
+        };
 
-        // Ensure all buckets exist
-        totals.totalsFuture = totals.totalsFuture ?? 0;
-        totals.totalsCleared = totals.totalsCleared ?? 0;
-        totals.totalsOutstanding = totals.totalsOutstanding ?? 0;
-
-        // If only amount changed, update correct bucket
         if (variables.oldRow.amount !== variables.newRow.amount) {
           const difference = variables.newRow.amount - variables.oldRow.amount;
 
@@ -119,14 +118,12 @@ export default function useTransactionUpdate() {
           }
         }
 
-        // If transaction state changed, move between buckets
         if (
           variables.oldRow.transactionState !==
           variables.newRow.transactionState
         ) {
           const amount = variables.newRow.amount;
 
-          // Remove from old bucket
           if (variables.oldRow.transactionState === "future") {
             totals.totalsFuture -= amount;
           } else if (variables.oldRow.transactionState === "cleared") {
@@ -135,7 +132,6 @@ export default function useTransactionUpdate() {
             totals.totalsOutstanding -= amount;
           }
 
-          // Add to new bucket
           if (variables.newRow.transactionState === "future") {
             totals.totalsFuture += amount;
           } else if (variables.newRow.transactionState === "cleared") {
@@ -147,13 +143,16 @@ export default function useTransactionUpdate() {
 
         queryClient.setQueryData(oldTotalsKey, totals);
       } else {
-        // Case 2: Transaction moved to a different account
         newData = oldData.filter(
           (row: Transaction) => row.guid !== variables.oldRow.guid,
         );
 
-        // Remove from old account totals
-        const oldTotals: any = queryClient.getQueryData(oldTotalsKey);
+        const oldTotals: Totals = queryClient.getQueryData(oldTotalsKey) || {
+          totals: 0,
+          totalsFuture: 0,
+          totalsCleared: 0,
+          totalsOutstanding: 0,
+        };
         if (oldTotals) {
           const amount = variables.oldRow.amount;
 
@@ -165,32 +164,23 @@ export default function useTransactionUpdate() {
             oldTotals.totalsOutstanding -= amount;
           }
 
-          // Subtract from the old account's total
           oldTotals.totals -= variables.oldRow.amount;
-
           queryClient.setQueryData(oldTotalsKey, oldTotals);
         }
 
-        // Add to new account
-        const newAccountData: any =
-          queryClient.getQueryData(newAccountKey) || [];
+        const newAccountData =
+          (queryClient.getQueryData(newAccountKey) as Transaction[]) || []; // Type assertion
         queryClient.setQueryData(newAccountKey, [
           ...newAccountData,
           updatedRow,
         ]);
 
-        // const newTotals: any = queryClient.getQueryData(newTotalsKey) || {
-        //   totals: 0,
-        //   totalsFuture: 0,
-        //   totalsCleared: 0,
-        //   totalsOutstanding: 0,
-        // };
-        const newTotals: any = queryClient.getQueryData(newTotalsKey) || {};
-
-        // Ensure all buckets exist
-        newTotals.totalsFuture = newTotals.totalsFuture ?? 0;
-        newTotals.totalsCleared = newTotals.totalsCleared ?? 0;
-        newTotals.totalsOutstanding = newTotals.totalsOutstanding ?? 0;
+        const newTotals: Totals = queryClient.getQueryData(newTotalsKey) || {
+          totals: 0,
+          totalsFuture: 0,
+          totalsCleared: 0,
+          totalsOutstanding: 0,
+        };
 
         if (variables.newRow.transactionState === "future") {
           newTotals.totalsFuture += variables.newRow.amount;
@@ -203,8 +193,150 @@ export default function useTransactionUpdate() {
         queryClient.setQueryData(newTotalsKey, newTotals);
       }
 
-      // Set updated transaction data
       queryClient.setQueryData(oldAccountKey, newData);
     },
   });
 }
+
+// export default function useTransactionUpdate() {
+//   const queryClient = useQueryClient();
+
+//   return useMutation({
+//     mutationKey: ["updateTransaction"],
+//     mutationFn: (variables: {
+//       newRow: Transaction;
+//       oldRow: Transaction;
+//       options?: UpdateTransactionOptions;
+//     }) => updateTransaction(variables.newRow, variables.oldRow),
+//     onError: (error) => {
+//       console.log(error ? error : "error is undefined.");
+//     },
+
+//     onSuccess: (response, variables) => {
+//       const oldAccountKey = getAccountKey(variables.oldRow.accountNameOwner);
+//       const newAccountKey = getAccountKey(variables.newRow.accountNameOwner);
+//       const oldTotalsKey = ["totals", variables.oldRow.accountNameOwner];
+//       const newTotalsKey = ["totals", variables.newRow.accountNameOwner];
+
+//       const updatedRow = variables.newRow;
+//       const oldData: any = queryClient.getQueryData(oldAccountKey);
+//       let newData: any;
+
+//       // Case 1: Updating transaction in the same account
+//       if (
+//         variables.oldRow.accountNameOwner === variables.newRow.accountNameOwner
+//       ) {
+//         newData = oldData.map((row: Transaction) =>
+//           row.guid === updatedRow.guid ? updatedRow : row,
+//         );
+
+//         //const totals: any = queryClient.getQueryData(oldTotalsKey);
+//         const totals: any = queryClient.getQueryData(oldTotalsKey) || {};
+
+//         // Ensure all buckets exist
+//         totals.totalsFuture = totals.totalsFuture ?? 0;
+//         totals.totalsCleared = totals.totalsCleared ?? 0;
+//         totals.totalsOutstanding = totals.totalsOutstanding ?? 0;
+
+//         // If only amount changed, update correct bucket
+//         if (variables.oldRow.amount !== variables.newRow.amount) {
+//           const difference = variables.newRow.amount - variables.oldRow.amount;
+
+//           if (variables.oldRow.transactionState === "future") {
+//             totals.totalsFuture += difference;
+//           } else if (variables.oldRow.transactionState === "cleared") {
+//             totals.totalsCleared += difference;
+//           } else if (variables.oldRow.transactionState === "outstanding") {
+//             totals.totalsOutstanding += difference;
+//           }
+//         }
+
+//         // If transaction state changed, move between buckets
+//         if (
+//           variables.oldRow.transactionState !==
+//           variables.newRow.transactionState
+//         ) {
+//           const amount = variables.newRow.amount;
+
+//           // Remove from old bucket
+//           if (variables.oldRow.transactionState === "future") {
+//             totals.totalsFuture -= amount;
+//           } else if (variables.oldRow.transactionState === "cleared") {
+//             totals.totalsCleared -= amount;
+//           } else if (variables.oldRow.transactionState === "outstanding") {
+//             totals.totalsOutstanding -= amount;
+//           }
+
+//           // Add to new bucket
+//           if (variables.newRow.transactionState === "future") {
+//             totals.totalsFuture += amount;
+//           } else if (variables.newRow.transactionState === "cleared") {
+//             totals.totalsCleared += amount;
+//           } else if (variables.newRow.transactionState === "outstanding") {
+//             totals.totalsOutstanding += amount;
+//           }
+//         }
+
+//         queryClient.setQueryData(oldTotalsKey, totals);
+//       } else {
+//         // Case 2: Transaction moved to a different account
+//         newData = oldData.filter(
+//           (row: Transaction) => row.guid !== variables.oldRow.guid,
+//         );
+
+//         // Remove from old account totals
+//         const oldTotals: any = queryClient.getQueryData(oldTotalsKey);
+//         if (oldTotals) {
+//           const amount = variables.oldRow.amount;
+
+//           if (variables.oldRow.transactionState === "future") {
+//             oldTotals.totalsFuture -= amount;
+//           } else if (variables.oldRow.transactionState === "cleared") {
+//             oldTotals.totalsCleared -= amount;
+//           } else if (variables.oldRow.transactionState === "outstanding") {
+//             oldTotals.totalsOutstanding -= amount;
+//           }
+
+//           // Subtract from the old account's total
+//           oldTotals.totals -= variables.oldRow.amount;
+
+//           queryClient.setQueryData(oldTotalsKey, oldTotals);
+//         }
+
+//         // Add to new account
+//         const newAccountData: any =
+//           queryClient.getQueryData(newAccountKey) || [];
+//         queryClient.setQueryData(newAccountKey, [
+//           ...newAccountData,
+//           updatedRow,
+//         ]);
+
+//         // const newTotals: any = queryClient.getQueryData(newTotalsKey) || {
+//         //   totals: 0,
+//         //   totalsFuture: 0,
+//         //   totalsCleared: 0,
+//         //   totalsOutstanding: 0,
+//         // };
+//         const newTotals: any = queryClient.getQueryData(newTotalsKey) || {};
+
+//         // Ensure all buckets exist
+//         newTotals.totalsFuture = newTotals.totalsFuture ?? 0;
+//         newTotals.totalsCleared = newTotals.totalsCleared ?? 0;
+//         newTotals.totalsOutstanding = newTotals.totalsOutstanding ?? 0;
+
+//         if (variables.newRow.transactionState === "future") {
+//           newTotals.totalsFuture += variables.newRow.amount;
+//         } else if (variables.newRow.transactionState === "cleared") {
+//           newTotals.totalsCleared += variables.newRow.amount;
+//         } else if (variables.newRow.transactionState === "outstanding") {
+//           newTotals.totalsOutstanding += variables.newRow.amount;
+//         }
+
+//         queryClient.setQueryData(newTotalsKey, newTotals);
+//       }
+
+//       // Set updated transaction data
+//       queryClient.setQueryData(oldAccountKey, newData);
+//     },
+//   });
+// }

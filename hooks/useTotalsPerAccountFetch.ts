@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import Totals from "../model/Totals";
 //import { basicAuth } from "../Common";
 
 const fetchTotalsPerAccount = async (
   accountNameOwner: string,
-): Promise<any> => {
+): Promise<Totals> => {
   try {
     const response = await fetch(
       "https://finance.lan/api/transaction/account/totals/" + accountNameOwner,
@@ -30,7 +31,12 @@ const fetchTotalsPerAccount = async (
     return data;
   } catch (error) {
     console.log("Error fetching totalsPerAccount data:", error);
-    return { totalsFuture: 25.45, totalsCleared: -25.45, totals: 0.0 };
+    return {
+      totalsOutstanding: 1.0,
+      totalsFuture: 25.45,
+      totalsCleared: -25.45,
+      totals: 0.0,
+    };
   }
 };
 

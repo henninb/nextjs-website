@@ -1,13 +1,18 @@
 #!/bin/sh
 
-
 # eval "$(ssh-agent -s)"
 echo ssh-add ~/.ssh/google_compute_engine
 echo ssh-add ~/.ssh/id_rsa_gcp
 
+# Exit if the token file does not exist or is empty
+if [ ! -s token ]; then
+    echo "Error: Token file is missing or empty."
+    exit 1
+fi
+
 TOKEN=$(cat token)
-docker context create remote-webserver --docker "host=ssh://brianhenning@34.136.119.9"
-export DOCKER_HOST=ssh://brianhenning@34.136.119.9
+docker context create remote-webserver --docker "host=ssh://brianhenning@34.170.214.18"
+export DOCKER_HOST=ssh://brianhenning@34.170.214.18
 
 npm install --only=production
 npm run build
@@ -24,6 +29,6 @@ docker system prune -af
 docker ps -a
 echo gcloud compute firewall-rules create allow-react-app-rule --allow tcp:3001
 echo gcloud compute ssh --zone "us-central1-b" "www-bhenning-com" --project "sa-brian-henning"
-curl 'http://34.136.119.9:3001/'
+curl 'http://34.170.214.18/'
 
 exit 0
