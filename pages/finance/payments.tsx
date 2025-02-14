@@ -207,6 +207,9 @@ export default function Payments() {
               newRow: Payment,
               oldRow: Payment,
             ): Promise<Payment> => {
+              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                return oldRow; // No changes detected, return the original row
+              }
               try {
                 await updatePayment({ oldPayment: oldRow, newPayment: newRow });
                 setMessage("Payment updated successfully.");

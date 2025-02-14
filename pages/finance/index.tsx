@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
 import useAccountFetch from "../../hooks/useAccountFetch";
@@ -31,13 +30,12 @@ export default function Accounts() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModelAdd, setShowModelAdd] = useState(false);
   const [showModelDelete, setShowModelDelete] = useState(false);
-  const [showModelEdit, setShowModelEdit] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [editedAccountName, setEditedAccountName] = useState("");
-  const [accountBeingEdited, setAccountBeingEdited] = useState<Account | null>(
-    null,
-  );
+  // const [editedAccountName, setEditedAccountName] = useState("");
+  // const [accountBeingEdited, setAccountBeingEdited] = useState<Account | null>(
+  //   null,
+  // );
 
   const {
     data: fetchedAccounts,
@@ -54,11 +52,27 @@ export default function Accounts() {
   const { mutateAsync: updateAccount } = useAccountUpdate();
   const { mutateAsync: deleteAccount } = useAccountDelete();
 
-  const handleEditAccount = (account: Account) => {
-    setAccountBeingEdited(account);
-    setEditedAccountName(account.accountNameOwner);
-    setShowModelEdit(true);
-  };
+
+  const accountTypeOptions = ["debit", "credit"];
+
+const handleAccountTypeKeyDown = (event: any) => {
+  if (event.key === "Tab") {
+    const inputValue = event.target.value.toLowerCase();
+    const match = accountTypeOptions.find((option) => option.startsWith(inputValue));
+    if (match) {
+      event.preventDefault(); // Prevent default tab behavior
+      setAccountData((prev:any) => ({
+        ...prev,
+        accountType: match,
+      }));
+    }
+  }
+};
+  // const handleEditAccount = (account: Account) => {
+  //   setAccountBeingEdited(account);
+  //   setEditedAccountName(account.accountNameOwner);
+  //   setShowModelEdit(true);
+  // };
 
   useEffect(() => {
     if (isSuccessAccounts && isSuccessTotals) {
@@ -97,24 +111,24 @@ export default function Accounts() {
     if (throwIt) throw error;
   };
 
-  const handleRenameAccount = async () => {
-    if (accountBeingEdited) {
-      const updatedAccount = {
-        ...accountBeingEdited,
-        accountNameOwner: editedAccountName,
-      };
-      try {
-        await updateAccount({
-          oldRow: accountBeingEdited,
-          newRow: updatedAccount,
-        });
-        setMessage("Account updated successfully.");
-        setShowSnackbar(true);
-      } catch (error) {
-        handleError(error, `Rename Account error: ${error.message}`, false);
-      }
-    }
-  };
+  // const handleRenameAccount = async () => {
+  //   if (accountBeingEdited) {
+  //     const updatedAccount = {
+  //       ...accountBeingEdited,
+  //       accountNameOwner: editedAccountName,
+  //     };
+  //     try {
+  //       await updateAccount({
+  //         oldRow: accountBeingEdited,
+  //         newRow: updatedAccount,
+  //       });
+  //       setMessage("Account updated successfully.");
+  //       setShowSnackbar(true);
+  //     } catch (error) {
+  //       handleError(error, `Rename Account error: ${error.message}`, false);
+  //     }
+  //   }
+  // };
 
   const handleAddRow = async (newData: Account) => {
     try {
@@ -195,7 +209,7 @@ export default function Accounts() {
       width: 100,
       renderCell: (params) => (
         <Box>
-          <Tooltip title="edit the account name">
+          {/* <Tooltip title="edit the account name">
             <IconButton
               onClick={() => {
                 handleEditAccount(params.row);
@@ -203,7 +217,7 @@ export default function Accounts() {
             >
               <EditIcon />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
 
           <Tooltip title="delete this row">
             <IconButton
@@ -238,12 +252,7 @@ export default function Accounts() {
           )} ]  [ ${currencyFormat(
             noNaN(fetchedTotals?.totalsOutstanding ?? 0),
           )} ] [ ${currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))} ]`}</h4>
-          {/* <h3>
-            [ ${currencyFormat(noNaN(fetchedTotals.totals))} ] [ $
-            {currencyFormat(noNaN(fetchedTotals.totalsCleared))} ] [ $
-            {currencyFormat(noNaN(fetchedTotals.totalsOutstanding))} ] [ $
-            {currencyFormat(noNaN(fetchedTotals.totalsFuture))} ]
-          </h3> */}
+
           <DataGrid
             rows={fetchedAccounts?.filter((row) => row != null) || []}
             columns={columns}
@@ -256,6 +265,9 @@ export default function Accounts() {
               newRow: Account,
               oldRow: Account,
             ): Promise<Account> => {
+              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                return oldRow; // No changes detected, return the original row
+              }
               try {
                 await updateAccount({ newRow: newRow, oldRow: oldRow });
                 setMessage("Account updated successfully.");
@@ -277,7 +289,8 @@ export default function Accounts() {
         </div>
       )}
 
-      <Modal open={showModelEdit} onClose={() => setShowModelEdit(false)}>
+      {/* Edit Account Name Modal */}
+      {/* <Modal open={showModelEdit} onClose={() => setShowModelEdit(false)}>
         <Box
           sx={{
             width: 400,
@@ -312,7 +325,7 @@ export default function Accounts() {
             </Button>
           </Box>
         </Box>
-      </Modal>
+      </Modal> */}
 
       {/* Confirmation Deleting Modal */}
       <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
@@ -374,24 +387,28 @@ export default function Accounts() {
             }
           />
 
-          <Autocomplete
-            options={["debit", "credit"]}
-            value={accountData?.accountType || ""}
-            onChange={(event, newValue) =>
-              setAccountData((prev: any) => ({
-                ...prev,
-                accountType: newValue || "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Account Type"
-                fullWidth
-                margin="normal"
-              />
-            )}
-          />
+
+<Autocomplete
+  freeSolo
+  options={accountTypeOptions}
+  value={accountData?.accountType || ""}
+  onChange={(event, newValue) =>
+    setAccountData((prev: any) => ({
+      ...prev,
+      accountType: newValue || "",
+    }))
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Account Type"
+      fullWidth
+      margin="normal"
+      onKeyDown={handleAccountTypeKeyDown}
+    />
+  )}
+/>
+
           <TextField
             label="Moniker"
             fullWidth

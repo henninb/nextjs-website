@@ -136,6 +136,9 @@ export default function Configuration() {
               newRow: Parameter,
               oldRow: Parameter,
             ): Promise<Parameter> => {
+              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                return oldRow; // No changes detected, return the original row
+              }
               try {
                 await updateParameter({
                   oldParameter: oldRow,

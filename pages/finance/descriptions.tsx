@@ -143,6 +143,9 @@ export default function Descriptions() {
               newRow: Description,
               oldRow: Description,
             ): Promise<Description> => {
+              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                return oldRow; // No changes detected, return the original row
+              }
               try {
                 await updateDescription({
                   oldDescription: oldRow,

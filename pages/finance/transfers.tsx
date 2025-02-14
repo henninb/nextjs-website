@@ -28,10 +28,32 @@ export default function Transfers() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
-  const [transferData, setTransferData] = useState<Transfer | null>(null);
+  //const [transferData, setTransferData] = useState<Transfer | null>(null);
+
+  const [transferData, setTransferData] = useState<Transfer>({
+    transferId: 0,
+    sourceAccount: "",
+    destinationAccount: "",
+    transactionDate: new Date(),
+    amount: 0,
+    guidSource: "",
+    guidDestination: "",
+    activeStatus: true,
+  });
+
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null,
   );
+
+  const [availableSourceAccounts, setAvailableSourceAccounts] = useState<
+    Account[]
+  >([]);
+  const [availableDestinationAccounts, setAvailableDestinationAccounts] =
+    useState<Account[]>([]);
+  const [selectedSourceAccount, setSelectedSourceAccount] =
+    useState<Account | null>(null);
+  const [selectedDestinationAccount, setSelectedDestinationAccount] =
+    useState<Account | null>(null);
 
   const { mutateAsync: insertTransfer } = useTransferInsert();
   const { mutateAsync: deleteTransfer } = useTransferDelete();
@@ -86,6 +108,69 @@ export default function Transfers() {
     }
   }, [isSuccessTransfers, isSuccessAccounts, errorTransfers, errorAccounts]);
 
+  useEffect(() => {
+    if (isSuccessAccounts) {
+      setAvailableSourceAccounts(
+        fetchedAccounts.filter((account) => account.accountType === "debit"),
+      );
+      setAvailableDestinationAccounts(
+        fetchedAccounts.filter((account) => account.accountType === "debit"),
+      );
+    }
+  }, [isSuccessAccounts, fetchedAccounts]);
+
+  useEffect(() => {
+    if (selectedSourceAccount) {
+      setAvailableDestinationAccounts(
+        fetchedAccounts.filter(
+          (account) =>
+            account.accountType === "debit" &&
+            account.accountNameOwner !== selectedSourceAccount.accountNameOwner,
+        ),
+      );
+    } else if (isSuccessAccounts) {
+      setAvailableDestinationAccounts(
+        fetchedAccounts.filter((account) => account.accountType === "debit"),
+      );
+    }
+  }, [selectedSourceAccount, isSuccessAccounts, fetchedAccounts]);
+
+  useEffect(() => {
+    if (selectedDestinationAccount) {
+      setAvailableSourceAccounts(
+        fetchedAccounts.filter(
+          (account) =>
+            account.accountType === "debit" &&
+            account.accountNameOwner !==
+              selectedDestinationAccount.accountNameOwner,
+        ),
+      );
+    } else if (isSuccessAccounts) {
+      setAvailableSourceAccounts(
+        fetchedAccounts.filter((account) => account.accountType === "debit"),
+      );
+    }
+  }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);
+
+  const handleSourceAccountChange = (event: any, newValue: Account | null) => {
+    setSelectedSourceAccount(newValue);
+    setTransferData((prev) => ({
+      ...prev,
+      sourceAccount: newValue ? newValue.accountNameOwner : "",
+    }));
+  };
+
+  const handleDestinationAccountChange = (
+    event: any,
+    newValue: Account | null,
+  ) => {
+    setSelectedDestinationAccount(newValue);
+    setTransferData((prev) => ({
+      ...prev,
+      destinationAccount: newValue ? newValue.accountNameOwner : "",
+    }));
+  };
+
   const handleDeleteRow = async () => {
     if (selectedTransfer) {
       try {
@@ -122,6 +207,7 @@ export default function Transfers() {
       setShowModalAdd(false);
       setMessage("Transfer inserted Successfully.");
       setShowSpinner(false);
+      setTransferData(null);
     } catch (error) {
       handleError(error, `Add Transfer error: ${error}`, false);
     }
@@ -217,6 +303,9 @@ export default function Transfers() {
               newRow: Transfer,
               oldRow: Transfer,
             ): Promise<Transfer> => {
+              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                return oldRow;
+              }
               try {
                 await updateTransfer({
                   oldTransfer: oldRow,
@@ -305,39 +394,21 @@ export default function Transfers() {
               inputLabel: { shrink: true },
             }}
           />
-
+          
           <Autocomplete
-            options={
-              isSuccessAccounts
-                ? fetchedAccounts.filter(
-                    (account) => account.accountType === "debit",
-                  )
-                : []
-            }
+            options={availableSourceAccounts}
             getOptionLabel={(account: Account) =>
               account.accountNameOwner || ""
             }
             isOptionEqualToValue={(option, value) =>
               option.accountNameOwner === value?.accountNameOwner
             }
-            value={
-              transferData?.sourceAccount && isSuccessAccounts
-                ? fetchedAccounts.find(
-                    (account) =>
-                      account.accountNameOwner === transferData.sourceAccount,
-                  ) || null
-                : null
-            }
-            onChange={(event, newValue) =>
-              setTransferData((prev) => ({
-                ...prev,
-                sourceAccount: newValue ? newValue.accountNameOwner : "",
-              }))
-            }
+            value={selectedSourceAccount}
+            onChange={handleSourceAccountChange}
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="SourceAccount"
+                label="Source Account"
                 fullWidth
                 margin="normal"
                 placeholder="Select a source account"
@@ -346,44 +417,26 @@ export default function Transfers() {
           />
 
           <Autocomplete
-            options={
-              isSuccessAccounts
-                ? fetchedAccounts.filter(
-                    (account) => account.accountType === "debit",
-                  )
-                : []
-            }
+            options={availableDestinationAccounts}
             getOptionLabel={(account: Account) =>
               account.accountNameOwner || ""
             }
             isOptionEqualToValue={(option, value) =>
               option.accountNameOwner === value?.accountNameOwner
             }
-            value={
-              transferData?.destinationAccount && isSuccessAccounts
-                ? fetchedAccounts.find(
-                    (account) =>
-                      account.accountNameOwner ===
-                      transferData.destinationAccount,
-                  ) || null
-                : null
-            }
-            onChange={(event, newValue) =>
-              setTransferData((prev) => ({
-                ...prev,
-                destinationAccount: newValue ? newValue.accountNameOwner : "",
-              }))
-            }
+            value={selectedDestinationAccount}
+            onChange={handleDestinationAccountChange}
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="DestinationAccount"
+                label="Destination Account"
                 fullWidth
                 margin="normal"
                 placeholder="Select a destination account"
               />
             )}
           />
+
           <TextField
             label="Amount"
             fullWidth

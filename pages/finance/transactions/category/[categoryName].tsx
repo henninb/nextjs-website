@@ -107,6 +107,9 @@ export default function TransactionTable() {
               newRow: Transaction,
               oldRow: Transaction,
             ): Promise<Transaction> => {
+              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                return oldRow; // No changes detected, return the original row
+              }
               try {
                 await updateTransaction({ newRow, oldRow });
                 setMessage("Transaction updated successfully.");

@@ -194,6 +194,9 @@ export default function Categories() {
               newRow: Category,
               oldRow: Category,
             ): Promise<Category> => {
+              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                return oldRow; // No changes detected, return the original row
+              }
               try {
                 await updateCategory({
                   oldCategory: oldRow,

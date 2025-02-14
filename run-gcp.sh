@@ -6,13 +6,21 @@ echo ssh-add ~/.ssh/id_rsa_gcp
 
 # Exit if the token file does not exist or is empty
 if [ ! -s token ]; then
-    echo "Error: Token file is missing or empty."
+    echo "Error: Cloudflare tunnel Token file is missing or empty."
     exit 1
 fi
 
+echo "cloudflare tunnel token exists"
+
 TOKEN=$(cat token)
-docker context create remote-webserver --docker "host=ssh://brianhenning@34.170.214.18"
-export DOCKER_HOST=ssh://brianhenning@34.170.214.18
+
+# Check Docker connection
+if ! docker info > /dev/null 2>&1; then
+    echo "Error: Unable to connect to Docker."
+    exit 1
+fi
+
+echo "Docker connection is successful."
 
 npm install --only=production
 npm run build
