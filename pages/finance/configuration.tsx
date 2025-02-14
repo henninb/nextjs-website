@@ -53,10 +53,18 @@ export default function Configuration() {
     }
   }, []);
 
+
+  useEffect(() => {
+    const storedRows = localStorage.getItem("offlineParameters");
+    if (storedRows) {
+      setOfflineRows(JSON.parse(storedRows));
+    }
+  }, [offlineRows]);  // 🔹 Re-run when offlineRows changes
+
   useEffect(() => {
     const syncOfflineRows = async () => {
       if (navigator.onLine && offlineRows.length > 0) {
-        const remainingRows = [];
+        let remainingRows: Parameter[] = [];
   
         for (const row of offlineRows) {
           try {
@@ -67,32 +75,21 @@ export default function Configuration() {
           }
         }
   
-        setOfflineRows(remainingRows);
-        localStorage.setItem("offlineParameters", JSON.stringify(remainingRows));
+        if (remainingRows.length !== offlineRows.length) {
+          setOfflineRows(remainingRows);
+          localStorage.setItem("offlineParameters", JSON.stringify(remainingRows));
+        }
       }
     };
   
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
-  }, [offlineRows, insertParameter]);
-
-  // const handleDeleteRow = async () => {
-  //   if (selectedParameter) {
-  //     try {
-  //       await deleteParameter(selectedParameter);
-  //       setMessage("Parameter deleted successfully.");
-  //       setShowSnackbar(true);
-  //     } catch (error) {
-  //       handleError(error, "Delete Parameter failure.", false);
-  //     } finally {
-  //       setShowModalDelete(false);
-  //       setSelectedParameter(null);
-  //     }
-  //   }
-  // };
+  }, [insertParameter, offlineRows]);
 
   const handleDeleteRow = async () => {
     if (!selectedParameter) return;
+
+    if (!selectedParameter?.parameterId) return;
   
     const isOfflineRow = offlineRows.some(row => row.parameterId === selectedParameter.parameterId);
   
@@ -136,16 +133,23 @@ export default function Configuration() {
   const handleAddRow = async (newData: Parameter) => {
     try {
       await insertParameter({ payload: newData });
-      setParameterData(null);
+      //setParameterData(null);
+      setParameterData({ ...newData, parameterId: Math.random() });
       setShowModalAdd(false);
       setMessage("Configuration added successfully.");
       setShowSnackbar(true);
     } catch (error) {
       handleError(error, "Add Configuration", false);
-      const updatedOfflineRows = [...offlineRows, { ...newData, parameterId: crypto.randomUUID()}];
+  
+      const newOfflineRow = { ...newData, parameterId: crypto.randomUUID() };
+      const updatedOfflineRows = [...offlineRows, newOfflineRow];
+  
+      setOfflineRows(updatedOfflineRows as [Parameter]);  // 🔹 Ensure UI updates immediately
       localStorage.setItem("offlineParameters", JSON.stringify(updatedOfflineRows));
+  
       setMessage("Parameter saved offline.");
       setShowSnackbar(true);
+      setParameterData({ ...newData, parameterId: Math.random() });
     }
   };
 
@@ -170,7 +174,7 @@ export default function Configuration() {
         <Tooltip title="delete this row">
           <IconButton
             onClick={() => {
-              setSelectedParameter(params.row);
+              setSelectedParameter(params.row as Parameter);
               setShowModalDelete(true);
             }}
           >
@@ -180,6 +184,8 @@ export default function Configuration() {
       ),
     },
   ];
+
+  
 
   return (
     <div>
@@ -192,11 +198,11 @@ export default function Configuration() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            key={offlineRows.length} // Change key on new insert to force refresh
+           //key={offlineRows?.length}  // 🔹 Changing this key forces a re-render
             //rows={fetchedParameters?.filter((row) => row != null) || []}
             rows={[...(fetchedParameters || []), ...offlineRows]}
+          
             columns={columns}
-            //getRowId={(row) => row.parameterId || 0}
             getRowId={(row) => row.parameterId || crypto.randomUUID()}
             checkboxSelection={false}
             rowSelection={false}
@@ -212,12 +218,13 @@ export default function Configuration() {
                   oldParameter: oldRow,
                   newParameter: newRow,
                 });
-                setMessage("Configuration updated successfully.");
+                setParameterData(newRow);
+                setMessage("Parameter updated successfully.");
                 setShowSnackbar(true);
 
                 return { ...newRow };
               } catch (error) {
-                handleError(error, "Update Configuration failure.", false);
+                handleError(error, `Parameter Update failure: ${error}`, false);
                 throw error;
               }
             }}
@@ -242,8 +249,7 @@ export default function Configuration() {
         >
           <Typography variant="h6">Confirm Deletion</Typography>
           <Typography>
-            Are you sure you want to delete the configuration "
-            {selectedParameter ? JSON.stringify(selectedParameter) : "N/A"}?
+            Are you sure you want to delete "{selectedParameter?.parameterName}"?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
