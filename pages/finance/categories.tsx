@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   IconButton,
+  Tooltip,
   Modal,
   TextField,
   Typography,
@@ -130,6 +131,7 @@ export default function Categories() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
+        <Tooltip title="delete this row">
         <IconButton
           onClick={() => {
             setSelectedCategory(params.row);
@@ -138,6 +140,7 @@ export default function Categories() {
         >
           <DeleteIcon />
         </IconButton>
+        </Tooltip>
       ),
     },
   ];
@@ -195,7 +198,7 @@ export default function Categories() {
               oldRow: Category,
             ): Promise<Category> => {
               if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow; // No changes detected, return the original row
+                return oldRow;
               }
               try {
                 await updateCategory({
@@ -204,7 +207,8 @@ export default function Categories() {
                 });
                 setMessage("Category updated successfully.");
                 setShowSnackbar(true);
-                return newRow;
+
+                return { ...newRow };
               } catch (error) {
                 handleError(error, "Update Category failure.", false);
                 throw error;

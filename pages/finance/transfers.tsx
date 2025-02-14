@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   IconButton,
+  Tooltip,
   Modal,
   TextField,
   Typography,
@@ -252,7 +253,6 @@ export default function Transfers() {
         );
       },
     },
-
     {
       field: "amount",
       headerName: "Amount",
@@ -269,6 +269,7 @@ export default function Transfers() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
+        <Tooltip title="delete this row">
         <IconButton
           onClick={() => {
             setSelectedTransfer(params.row);
@@ -277,6 +278,7 @@ export default function Transfers() {
         >
           <DeleteIcon />
         </IconButton>
+        </Tooltip>
       ),
     },
   ];
@@ -312,7 +314,8 @@ export default function Transfers() {
                 });
                 setMessage("Transfer updated successfully.");
                 setShowSnackbar(true);
-                return newRow;
+                //return newRow;
+                return { ...newRow };
               } catch (error) {
                 handleError(error, `Update Transfer error: ${error}`, false);
                 throw error;
@@ -436,7 +439,41 @@ export default function Transfers() {
             )}
           />
 
-          <TextField
+<TextField
+  label="Amount"
+  fullWidth
+  margin="normal"
+  type="text"
+  value={transferData?.amount ?? ""}
+  onChange={(e) => {
+    const inputValue = e.target.value;
+    
+    // Regular expression to allow only numbers with up to 2 decimal places
+    const regex = /^\d*\.?\d{0,2}$/;
+
+    if (regex.test(inputValue) || inputValue === "") {
+      setTransferData((prev: any) => ({
+        ...prev,
+        amount: inputValue, // Store as string to allow proper input control
+      }));
+    }
+  }}
+  onBlur={() => {
+    // Ensure value is properly formatted when user leaves the field
+    setTransferData((prev: any) => ({
+      ...prev,
+      amount: prev.amount ? parseFloat(Number(prev.amount).toFixed(2)) : "",
+    }));
+  }}
+
+  slotProps={{
+    input: {
+      inputMode: "decimal",
+    },
+  }}
+/>
+
+          {/* <TextField
             label="Amount"
             fullWidth
             margin="normal"
@@ -455,7 +492,7 @@ export default function Transfers() {
                 amount: parsedValue,
               }));
             }}
-          />
+          /> */}
           <Button
             variant="contained"
             onClick={() => transferData && handleAddRow(transferData)}

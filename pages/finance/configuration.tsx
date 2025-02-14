@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   IconButton,
+  Tooltip,
   Modal,
   TextField,
   Typography,
@@ -44,8 +45,10 @@ export default function Configuration() {
     }
   }, [isSuccessParameters]);
 
+  
   const handleDeleteRow = async () => {
     if (selectedConfig) {
+      setSelectedParameter(null);
       try {
         await deleteParameter(selectedConfig);
         setMessage("Parameter deleted successfully.");
@@ -78,6 +81,7 @@ export default function Configuration() {
   const handleAddRow = async (newData: Parameter) => {
     try {
       await insertParameter({ payload: newData });
+      setParameterData(null);
       setShowModalAdd(false);
       setMessage("Configuration added successfully.");
       setShowSnackbar(true);
@@ -104,6 +108,7 @@ export default function Configuration() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
+        <Tooltip title="delete this row">
         <IconButton
           onClick={() => {
             setSelectedParameter(params.row);
@@ -112,6 +117,7 @@ export default function Configuration() {
         >
           <DeleteIcon />
         </IconButton>
+        </Tooltip>
       ),
     },
   ];
@@ -129,7 +135,7 @@ export default function Configuration() {
           <DataGrid
             rows={fetchedParameters?.filter((row) => row != null) || []}
             columns={columns}
-            getRowId={(row) => row.parameterName || 0}
+            getRowId={(row) => row.parameterId || 0}
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={async (
@@ -137,7 +143,7 @@ export default function Configuration() {
               oldRow: Parameter,
             ): Promise<Parameter> => {
               if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow; // No changes detected, return the original row
+                return oldRow;
               }
               try {
                 await updateParameter({
@@ -146,7 +152,9 @@ export default function Configuration() {
                 });
                 setMessage("Configuration updated successfully.");
                 setShowSnackbar(true);
-                return newRow;
+                //return newRow;
+
+                return { ...newRow };
               } catch (error) {
                 handleError(error, "Update Configuration failure.", false);
                 throw error;
@@ -195,6 +203,7 @@ export default function Configuration() {
         </Box>
       </Modal>
 
+      {/* add or Edit modal */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -222,11 +231,6 @@ export default function Configuration() {
                       parameterName: e.target.value,
                     }) as Parameter,
                 )
-
-              // setParameterData((prev) => ({
-              //   ...prev,
-              //   parameterName: e.target.value,
-              // }))
             }
           />
           <TextField

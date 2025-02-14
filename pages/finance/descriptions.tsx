@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   IconButton,
+  Tooltip,
   Modal,
   TextField,
   Typography,
@@ -111,6 +112,7 @@ export default function Descriptions() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
+        <Tooltip title="delete this row">
         <IconButton
           onClick={() => {
             setSelectedDescription(params.row);
@@ -119,6 +121,7 @@ export default function Descriptions() {
         >
           <DeleteIcon />
         </IconButton>
+        </Tooltip>
       ),
     },
   ];
@@ -144,7 +147,7 @@ export default function Descriptions() {
               oldRow: Description,
             ): Promise<Description> => {
               if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow; // No changes detected, return the original row
+                return oldRow;
               }
               try {
                 await updateDescription({
@@ -153,7 +156,7 @@ export default function Descriptions() {
                 });
                 setMessage("Description updated successfully.");
                 setShowSnackbar(true);
-                return newRow;
+                return { ...newRow };
               } catch (error) {
                 handleError(
                   error,

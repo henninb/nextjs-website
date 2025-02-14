@@ -32,11 +32,7 @@ export default function Accounts() {
   const [showModelDelete, setShowModelDelete] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  // const [editedAccountName, setEditedAccountName] = useState("");
-  // const [accountBeingEdited, setAccountBeingEdited] = useState<Account | null>(
-  //   null,
-  // );
-
+  
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
@@ -69,11 +65,6 @@ export default function Accounts() {
       }
     }
   };
-  // const handleEditAccount = (account: Account) => {
-  //   setAccountBeingEdited(account);
-  //   setEditedAccountName(account.accountNameOwner);
-  //   setShowModelEdit(true);
-  // };
 
   useEffect(() => {
     if (isSuccessAccounts && isSuccessTotals) {
@@ -111,25 +102,6 @@ export default function Accounts() {
     setShowSnackbar(true);
     if (throwIt) throw error;
   };
-
-  // const handleRenameAccount = async () => {
-  //   if (accountBeingEdited) {
-  //     const updatedAccount = {
-  //       ...accountBeingEdited,
-  //       accountNameOwner: editedAccountName,
-  //     };
-  //     try {
-  //       await updateAccount({
-  //         oldRow: accountBeingEdited,
-  //         newRow: updatedAccount,
-  //       });
-  //       setMessage("Account updated successfully.");
-  //       setShowSnackbar(true);
-  //     } catch (error) {
-  //       handleError(error, `Rename Account error: ${error.message}`, false);
-  //     }
-  //   }
-  // };
 
   const handleAddRow = async (newData: Account) => {
     try {
@@ -210,16 +182,6 @@ export default function Accounts() {
       width: 100,
       renderCell: (params) => (
         <Box>
-          {/* <Tooltip title="edit the account name">
-            <IconButton
-              onClick={() => {
-                handleEditAccount(params.row);
-              }}
-            >
-              <EditIcon />
-            </IconButton>
-          </Tooltip> */}
-
           <Tooltip title="delete this row">
             <IconButton
               onClick={() => {
@@ -267,13 +229,14 @@ export default function Accounts() {
               oldRow: Account,
             ): Promise<Account> => {
               if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow; // No changes detected, return the original row
+                return oldRow;
               }
               try {
                 await updateAccount({ newRow: newRow, oldRow: oldRow });
                 setMessage("Account updated successfully.");
                 setShowSnackbar(true);
-                return newRow;
+                
+                return { ...newRow };
               } catch (error) {
                 handleError(error, `Update Account ${error.message}`, false);
                 return error;
@@ -289,44 +252,6 @@ export default function Accounts() {
           </div>
         </div>
       )}
-
-      {/* Edit Account Name Modal */}
-      {/* <Modal open={showModelEdit} onClose={() => setShowModelEdit(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Edit Account Name</Typography>
-          <TextField
-            label="Account Name Owner"
-            fullWidth
-            margin="normal"
-            value={editedAccountName}
-            onChange={(e) => setEditedAccountName(e.target.value)}
-          />
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleRenameAccount}
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModelEdit(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal> */}
 
       {/* Confirmation Deleting Modal */}
       <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
