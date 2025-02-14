@@ -28,7 +28,6 @@ export default function Transfers() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
-  //const [transferData, setTransferData] = useState<Transfer | null>(null);
 
   const [transferData, setTransferData] = useState<Transfer>({
     transferId: 0,
@@ -394,7 +393,7 @@ export default function Transfers() {
               inputLabel: { shrink: true },
             }}
           />
-          
+
           <Autocomplete
             options={availableSourceAccounts}
             getOptionLabel={(account: Account) =>

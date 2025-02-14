@@ -52,22 +52,23 @@ export default function Accounts() {
   const { mutateAsync: updateAccount } = useAccountUpdate();
   const { mutateAsync: deleteAccount } = useAccountDelete();
 
-
   const accountTypeOptions = ["debit", "credit"];
 
-const handleAccountTypeKeyDown = (event: any) => {
-  if (event.key === "Tab") {
-    const inputValue = event.target.value.toLowerCase();
-    const match = accountTypeOptions.find((option) => option.startsWith(inputValue));
-    if (match) {
-      event.preventDefault(); // Prevent default tab behavior
-      setAccountData((prev:any) => ({
-        ...prev,
-        accountType: match,
-      }));
+  const handleAccountTypeKeyDown = (event: any) => {
+    if (event.key === "Tab") {
+      const inputValue = event.target.value.toLowerCase();
+      const match = accountTypeOptions.find((option) =>
+        option.startsWith(inputValue),
+      );
+      if (match) {
+        event.preventDefault(); // Prevent default tab behavior
+        setAccountData((prev: any) => ({
+          ...prev,
+          accountType: match,
+        }));
+      }
     }
-  }
-};
+  };
   // const handleEditAccount = (account: Account) => {
   //   setAccountBeingEdited(account);
   //   setEditedAccountName(account.accountNameOwner);
@@ -387,27 +388,26 @@ const handleAccountTypeKeyDown = (event: any) => {
             }
           />
 
-
-<Autocomplete
-  freeSolo
-  options={accountTypeOptions}
-  value={accountData?.accountType || ""}
-  onChange={(event, newValue) =>
-    setAccountData((prev: any) => ({
-      ...prev,
-      accountType: newValue || "",
-    }))
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Account Type"
-      fullWidth
-      margin="normal"
-      onKeyDown={handleAccountTypeKeyDown}
-    />
-  )}
-/>
+          <Autocomplete
+            freeSolo
+            options={accountTypeOptions}
+            value={accountData?.accountType || ""}
+            onChange={(event, newValue) =>
+              setAccountData((prev: any) => ({
+                ...prev,
+                accountType: newValue || "",
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Account Type"
+                fullWidth
+                margin="normal"
+                onKeyDown={handleAccountTypeKeyDown}
+              />
+            )}
+          />
 
           <TextField
             label="Moniker"

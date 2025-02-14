@@ -21,6 +21,7 @@ import { formatDate } from "../../components/Common";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
+import useParameterFetch from "../../hooks/useParameterFetch";
 import Link from "next/link";
 
 export default function Payments() {
@@ -43,19 +44,37 @@ export default function Payments() {
     error: errorAccounts,
   } = useAccountFetch();
 
+  const {
+    data: fetchedParameters,
+    isSuccess: isSuccessParameters,
+    error: errorParameters,
+  } = useParameterFetch();
+
   const { mutateAsync: insertPayment } = usePaymentInsert();
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
-    if (isSuccessPayments && isSuccessAccounts) {
+    if (isSuccessPayments && isSuccessAccounts && isSuccessParameters) {
       setShowSpinner(false);
-    } else if (errorPayments || errorAccounts) {
+    } else if (errorPayments || errorAccounts || errorParameters) {
       setShowSpinner(false);
       setMessage("Error fetching data.");
       setShowSnackbar(true);
     }
-  }, [isSuccessPayments, isSuccessAccounts, errorPayments, errorAccounts]);
+  }, [
+    isSuccessPayments,
+    isSuccessAccounts,
+    isSuccessParameters,
+    errorParameters,
+    errorPayments,
+    errorAccounts,
+  ]);
+
+  const defaultPaymentMethod =
+    fetchedParameters?.find(
+      (param) => param.parameterName === "payment_account",
+    )?.parameterValue || "";
 
   const handleDeleteRow = async () => {
     if (selectedPayment) {
@@ -113,6 +132,18 @@ export default function Payments() {
           utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
         );
         return localDate;
+      },
+    },
+    {
+      field: "sourceAccount",
+      headerName: "Source Account",
+      width: 350,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${defaultPaymentMethod}`}>
+            {defaultPaymentMethod}
+          </Link>
+        );
       },
     },
     {
@@ -326,7 +357,7 @@ export default function Payments() {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Account"
+                label="Destination Account"
                 fullWidth
                 margin="normal"
                 placeholder="Select or search an account"

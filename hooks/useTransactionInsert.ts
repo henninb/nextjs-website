@@ -15,10 +15,7 @@ const getAccountKey = (accountNameOwner: string) => [
   accountNameOwner,
 ];
 
-const getTotalsKey = (accountNameOwner: string) => [
-  "totals",
-  accountNameOwner,
-];
+const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
 
 const setupNewTransaction = (
   payload: Transaction,
@@ -78,7 +75,6 @@ const insertTransaction = async (
   }
 };
 
-
 export default function useTransactionInsert(accountNameOwner: string) {
   const queryClient = useQueryClient();
 
@@ -96,15 +92,19 @@ export default function useTransactionInsert(accountNameOwner: string) {
     onSuccess: (response: Transaction) => {
       const oldData: Transaction[] =
         queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
-      queryClient.setQueryData(getAccountKey(accountNameOwner), [response, ...oldData]);
+      queryClient.setQueryData(getAccountKey(accountNameOwner), [
+        response,
+        ...oldData,
+      ]);
 
-      const oldTotals: Totals =
-        queryClient.getQueryData(getTotalsKey(accountNameOwner)) || {
-          totals: 0,
-          totalsFuture: 0,
-          totalsCleared: 0,
-          totalsOutstanding: 0,
-        };
+      const oldTotals: Totals = queryClient.getQueryData(
+        getTotalsKey(accountNameOwner),
+      ) || {
+        totals: 0,
+        totalsFuture: 0,
+        totalsCleared: 0,
+        totalsOutstanding: 0,
+      };
 
       const newTotals = { ...oldTotals };
 
@@ -118,7 +118,7 @@ export default function useTransactionInsert(accountNameOwner: string) {
       } else if (response.transactionState === "future") {
         newTotals.totalsFuture += response.amount;
       } else {
-        console.log('cannot adjust totals.')
+        console.log("cannot adjust totals.");
       }
 
       queryClient.setQueryData(getTotalsKey(accountNameOwner), newTotals);
