@@ -26,9 +26,10 @@ export default function Configuration() {
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
   const [showModalDelete, setShowModalDelete] = useState(false);
-  const [selectedConfig, setSelectedParameter] = useState<Parameter | null>(
+  const [selectedParameter, setSelectedParameter] = useState<Parameter | null>(
     null,
   );
+  const [offlineRows, setOfflineRows] = useState<Parameter[]>([]);
 
   const {
     data: fetchedParameters,
@@ -45,20 +46,75 @@ export default function Configuration() {
     }
   }, [isSuccessParameters]);
 
+  useEffect(() => {
+    const storedRows = localStorage.getItem("offlineParameters");
+    if (storedRows) {
+      setOfflineRows(JSON.parse(storedRows));
+    }
+  }, []);
+
+  useEffect(() => {
+    const syncOfflineRows = async () => {
+      if (navigator.onLine && offlineRows.length > 0) {
+        const remainingRows = [];
+  
+        for (const row of offlineRows) {
+          try {
+            await insertParameter({ payload: row });
+          } catch (error) {
+            console.error("Error syncing row:", error);
+            remainingRows.push(row);
+          }
+        }
+  
+        setOfflineRows(remainingRows);
+        localStorage.setItem("offlineParameters", JSON.stringify(remainingRows));
+      }
+    };
+  
+    window.addEventListener("online", syncOfflineRows);
+    return () => window.removeEventListener("online", syncOfflineRows);
+  }, [offlineRows, insertParameter]);
+
+  // const handleDeleteRow = async () => {
+  //   if (selectedParameter) {
+  //     try {
+  //       await deleteParameter(selectedParameter);
+  //       setMessage("Parameter deleted successfully.");
+  //       setShowSnackbar(true);
+  //     } catch (error) {
+  //       handleError(error, "Delete Parameter failure.", false);
+  //     } finally {
+  //       setShowModalDelete(false);
+  //       setSelectedParameter(null);
+  //     }
+  //   }
+  // };
+
   const handleDeleteRow = async () => {
-    if (selectedConfig) {
-      setSelectedParameter(null);
+    if (!selectedParameter) return;
+  
+    const isOfflineRow = offlineRows.some(row => row.parameterId === selectedParameter.parameterId);
+  
+    if (isOfflineRow) {
+      const updatedOfflineRows = offlineRows.filter(row => row.parameterId !== selectedParameter.parameterId);
+      setOfflineRows(updatedOfflineRows);
+      localStorage.setItem("offlineParameters", JSON.stringify(updatedOfflineRows));
+      
+      setMessage("Offline parameter deleted successfully.");
+      setShowSnackbar(true);
+    } else {
       try {
-        await deleteParameter(selectedConfig);
+        await deleteParameter(selectedParameter);
         setMessage("Parameter deleted successfully.");
         setShowSnackbar(true);
       } catch (error) {
         handleError(error, "Delete Parameter failure.", false);
-      } finally {
-        setShowModalDelete(false);
-        setSelectedParameter(null);
       }
     }
+  
+    setShowModalDelete(false);
+    setSelectedParameter(null);
   };
 
   const handleSnackbarClose = () => {
@@ -86,6 +142,10 @@ export default function Configuration() {
       setShowSnackbar(true);
     } catch (error) {
       handleError(error, "Add Configuration", false);
+      const updatedOfflineRows = [...offlineRows, { ...newData, parameterId: crypto.randomUUID()}];
+      localStorage.setItem("offlineParameters", JSON.stringify(updatedOfflineRows));
+      setMessage("Parameter saved offline.");
+      setShowSnackbar(true);
     }
   };
 
@@ -132,9 +192,12 @@ export default function Configuration() {
             <AddIcon />
           </IconButton>
           <DataGrid
-            rows={fetchedParameters?.filter((row) => row != null) || []}
+            key={offlineRows.length} // Change key on new insert to force refresh
+            //rows={fetchedParameters?.filter((row) => row != null) || []}
+            rows={[...(fetchedParameters || []), ...offlineRows]}
             columns={columns}
-            getRowId={(row) => row.parameterId || 0}
+            //getRowId={(row) => row.parameterId || 0}
+            getRowId={(row) => row.parameterId || crypto.randomUUID()}
             checkboxSelection={false}
             rowSelection={false}
             processRowUpdate={async (
@@ -180,7 +243,7 @@ export default function Configuration() {
           <Typography variant="h6">Confirm Deletion</Typography>
           <Typography>
             Are you sure you want to delete the configuration "
-            {selectedConfig ? JSON.stringify(selectedConfig) : "N/A"}?
+            {selectedParameter ? JSON.stringify(selectedParameter) : "N/A"}?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
