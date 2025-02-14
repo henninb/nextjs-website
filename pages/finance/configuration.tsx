@@ -45,7 +45,6 @@ export default function Configuration() {
     }
   }, [isSuccessParameters]);
 
-  
   const handleDeleteRow = async () => {
     if (selectedConfig) {
       setSelectedParameter(null);
@@ -109,14 +108,14 @@ export default function Configuration() {
       width: 100,
       renderCell: (params) => (
         <Tooltip title="delete this row">
-        <IconButton
-          onClick={() => {
-            setSelectedParameter(params.row);
-            setShowModalDelete(true);
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
+          <IconButton
+            onClick={() => {
+              setSelectedParameter(params.row);
+              setShowModalDelete(true);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
         </Tooltip>
       ),
     },
@@ -152,7 +151,6 @@ export default function Configuration() {
                 });
                 setMessage("Configuration updated successfully.");
                 setShowSnackbar(true);
-                //return newRow;
 
                 return { ...newRow };
               } catch (error) {
@@ -222,15 +220,14 @@ export default function Configuration() {
             fullWidth
             margin="normal"
             value={parameterData?.parameterName || ""}
-            onChange={
-              (e) =>
-                setParameterData(
-                  (prev) =>
-                    ({
-                      ...prev,
-                      parameterName: e.target.value,
-                    }) as Parameter,
-                )
+            onChange={(e) =>
+              setParameterData(
+                (prev) =>
+                  ({
+                    ...prev,
+                    parameterName: e.target.value,
+                  }) as Parameter,
+              )
             }
           />
           <TextField

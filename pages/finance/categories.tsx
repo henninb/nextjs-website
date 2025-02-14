@@ -132,14 +132,14 @@ export default function Categories() {
       width: 100,
       renderCell: (params) => (
         <Tooltip title="delete this row">
-        <IconButton
-          onClick={() => {
-            setSelectedCategory(params.row);
-            setConfirmDelete(true);
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
+          <IconButton
+            onClick={() => {
+              setSelectedCategory(params.row);
+              setConfirmDelete(true);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
         </Tooltip>
       ),
     },

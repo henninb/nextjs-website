@@ -113,14 +113,14 @@ export default function Descriptions() {
       width: 100,
       renderCell: (params) => (
         <Tooltip title="delete this row">
-        <IconButton
-          onClick={() => {
-            setSelectedDescription(params.row);
-            setShowModalDelete(true);
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
+          <IconButton
+            onClick={() => {
+              setSelectedDescription(params.row);
+              setShowModalDelete(true);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
         </Tooltip>
       ),
     },

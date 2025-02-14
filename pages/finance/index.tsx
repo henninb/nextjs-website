@@ -32,7 +32,7 @@ export default function Accounts() {
   const [showModelDelete, setShowModelDelete] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  
+
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
@@ -235,7 +235,7 @@ export default function Accounts() {
                 await updateAccount({ newRow: newRow, oldRow: oldRow });
                 setMessage("Account updated successfully.");
                 setShowSnackbar(true);
-                
+
                 return { ...newRow };
               } catch (error) {
                 handleError(error, `Update Account ${error.message}`, false);
