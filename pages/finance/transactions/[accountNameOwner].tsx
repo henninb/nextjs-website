@@ -585,7 +585,6 @@ export default function TransactionTable() {
             />
           </LocalizationProvider> */}
 
-
           <TextField
             label="Transaction Date"
             fullWidth
@@ -593,7 +592,9 @@ export default function TransactionTable() {
             type="date"
             value={transactionData?.transactionDate || ""}
             onChange={(e) => {
-              const formattedDate = new Date(e.target.value).toISOString().split("T")[0]; // Ensure YYYY-MM-DD format
+              const formattedDate = new Date(e.target.value)
+                .toISOString()
+                .split("T")[0]; // Ensure YYYY-MM-DD format
               setTransactionData((prev: any) => ({
                 ...prev,
                 transactionDate: formattedDate,

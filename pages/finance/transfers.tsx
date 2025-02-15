@@ -208,8 +208,10 @@ export default function Transfers() {
     try {
       const insertThisValue = {
         ...newData,
-        guidDestination: crypto.randomUUID(), guidSource: crypto.randomUUID()}
-      console.log(`Transfer Insert: ${JSON.stringify(insertThisValue)}`)
+        guidDestination: crypto.randomUUID(),
+        guidSource: crypto.randomUUID(),
+      };
+      console.log(`Transfer Insert: ${JSON.stringify(insertThisValue)}`);
       await insertTransfer({ payload: insertThisValue });
       setShowModalAdd(false);
       setMessage("Transfer inserted Successfully.");
@@ -406,7 +408,9 @@ export default function Transfers() {
             type="date"
             value={transferData?.transactionDate || ""}
             onChange={(e) => {
-              const formattedDate = new Date(e.target.value).toISOString().split("T")[0]; // Ensure YYYY-MM-DD format
+              const formattedDate = new Date(e.target.value)
+                .toISOString()
+                .split("T")[0]; // Ensure YYYY-MM-DD format
               setTransferData((prev: any) => ({
                 ...prev,
                 transactionDate: formattedDate,
