@@ -573,7 +573,7 @@ export default function TransactionTable() {
             {transactionData ? "Edit Transaction" : "Add New Transaction"}
           </h3>
 
-          <LocalizationProvider dateAdapter={AdapterMoment}>
+          {/* <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
               label="Transaction Date"
               onChange={(newValue) =>
@@ -583,7 +583,32 @@ export default function TransactionTable() {
                 }))
               }
             />
-          </LocalizationProvider>
+          </LocalizationProvider> */}
+
+
+          <TextField
+            label="Transaction Date"
+            fullWidth
+            margin="normal"
+            type="date"
+            value={transactionData?.transactionDate || ""}
+            onChange={(e) => {
+              const formattedDate = new Date(e.target.value).toISOString().split("T")[0]; // Ensure YYYY-MM-DD format
+              setTransactionData((prev: any) => ({
+                ...prev,
+                transactionDate: formattedDate,
+              }));
+            }}
+            // onChange={(e) =>
+            //   setTransactionData((prev: any) => ({
+            //     ...prev,
+            //     transactionDate: e.target.value,
+            //   }))
+            // }
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
 
           <Autocomplete
             freeSolo

@@ -387,7 +387,7 @@ export default function Transfers() {
         >
           <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>
 
-          <LocalizationProvider dateAdapter={AdapterMoment}>
+          {/* <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
               label="Transaction Date"
               onChange={(newValue) =>
@@ -397,24 +397,25 @@ export default function Transfers() {
                 }))
               }
             />
-          </LocalizationProvider>
+          </LocalizationProvider> */}
 
-          {/* <TextField
+          <TextField
             label="Transaction Date"
             fullWidth
             margin="normal"
             type="date"
             value={transferData?.transactionDate || ""}
-            onChange={(e) =>
+            onChange={(e) => {
+              const formattedDate = new Date(e.target.value).toISOString().split("T")[0]; // Ensure YYYY-MM-DD format
               setTransferData((prev: any) => ({
                 ...prev,
-                transactionDate: e.target.value,
-              }))
-            }
+                transactionDate: formattedDate,
+              }));
+            }}
             slotProps={{
               inputLabel: { shrink: true },
             }}
-          /> */}
+          />
 
           <Autocomplete
             options={availableSourceAccounts}
