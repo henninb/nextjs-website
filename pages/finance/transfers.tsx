@@ -21,6 +21,9 @@ import Transfer from "../../model/Transfer";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
+import { DatePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import Link from "next/link";
 
 export default function Transfers() {
@@ -203,7 +206,11 @@ export default function Transfers() {
 
   const handleAddRow = async (newData: Transfer) => {
     try {
-      await insertTransfer({ payload: newData });
+      const insertThisValue = {
+        ...newData,
+        guidDestination: crypto.randomUUID(), guidSource: crypto.randomUUID()}
+      console.log(`Transfer Insert: ${JSON.stringify(insertThisValue)}`)
+      await insertTransfer({ payload: insertThisValue });
       setShowModalAdd(false);
       setMessage("Transfer inserted Successfully.");
       setShowSpinner(false);
@@ -380,7 +387,19 @@ export default function Transfers() {
         >
           <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>
 
-          <TextField
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <DatePicker
+              label="Transaction Date"
+              onChange={(newValue) =>
+                setTransferData((prev: any) => ({
+                  ...prev,
+                  transactionDate: newValue,
+                }))
+              }
+            />
+          </LocalizationProvider>
+
+          {/* <TextField
             label="Transaction Date"
             fullWidth
             margin="normal"
@@ -395,7 +414,7 @@ export default function Transfers() {
             slotProps={{
               inputLabel: { shrink: true },
             }}
-          />
+          /> */}
 
           <Autocomplete
             options={availableSourceAccounts}
