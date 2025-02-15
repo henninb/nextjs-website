@@ -103,7 +103,7 @@ const fetchTransactionsByDescription = async (
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Resource not found (404).")
+        console.log("Resource not found (404).");
       }
       throw new Error(
         `Failed to fetch transactionsByDescription data: ${response.statusText}`,

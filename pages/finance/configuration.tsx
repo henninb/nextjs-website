@@ -53,19 +53,18 @@ export default function Configuration() {
     }
   }, []);
 
-
   useEffect(() => {
     const storedRows = localStorage.getItem("offlineParameters");
     if (storedRows) {
       setOfflineRows(JSON.parse(storedRows));
     }
-  }, [offlineRows]);  // 🔹 Re-run when offlineRows changes
+  }, [offlineRows]); // 🔹 Re-run when offlineRows changes
 
   useEffect(() => {
     const syncOfflineRows = async () => {
       if (navigator.onLine && offlineRows.length > 0) {
         let remainingRows: Parameter[] = [];
-  
+
         for (const row of offlineRows) {
           try {
             await insertParameter({ payload: row });
@@ -74,14 +73,17 @@ export default function Configuration() {
             remainingRows.push(row);
           }
         }
-  
+
         if (remainingRows.length !== offlineRows.length) {
           setOfflineRows(remainingRows);
-          localStorage.setItem("offlineParameters", JSON.stringify(remainingRows));
+          localStorage.setItem(
+            "offlineParameters",
+            JSON.stringify(remainingRows),
+          );
         }
       }
     };
-  
+
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
   }, [insertParameter, offlineRows]);
@@ -90,14 +92,21 @@ export default function Configuration() {
     if (!selectedParameter) return;
 
     if (!selectedParameter?.parameterId) return;
-  
-    const isOfflineRow = offlineRows.some(row => row.parameterId === selectedParameter.parameterId);
-  
+
+    const isOfflineRow = offlineRows.some(
+      (row) => row.parameterId === selectedParameter.parameterId,
+    );
+
     if (isOfflineRow) {
-      const updatedOfflineRows = offlineRows.filter(row => row.parameterId !== selectedParameter.parameterId);
+      const updatedOfflineRows = offlineRows.filter(
+        (row) => row.parameterId !== selectedParameter.parameterId,
+      );
       setOfflineRows(updatedOfflineRows);
-      localStorage.setItem("offlineParameters", JSON.stringify(updatedOfflineRows));
-      
+      localStorage.setItem(
+        "offlineParameters",
+        JSON.stringify(updatedOfflineRows),
+      );
+
       setMessage("Offline parameter deleted successfully.");
       setShowSnackbar(true);
     } else {
@@ -109,7 +118,7 @@ export default function Configuration() {
         handleError(error, "Delete Parameter failure.", false);
       }
     }
-  
+
     setShowModalDelete(false);
     setSelectedParameter(null);
   };
@@ -140,13 +149,16 @@ export default function Configuration() {
       setShowSnackbar(true);
     } catch (error) {
       handleError(error, "Add Configuration", false);
-  
+
       const newOfflineRow = { ...newData, parameterId: crypto.randomUUID() };
       const updatedOfflineRows = [...offlineRows, newOfflineRow];
-  
-      setOfflineRows(updatedOfflineRows as [Parameter]);  // 🔹 Ensure UI updates immediately
-      localStorage.setItem("offlineParameters", JSON.stringify(updatedOfflineRows));
-  
+
+      setOfflineRows(updatedOfflineRows as [Parameter]); // 🔹 Ensure UI updates immediately
+      localStorage.setItem(
+        "offlineParameters",
+        JSON.stringify(updatedOfflineRows),
+      );
+
       setMessage("Parameter saved offline.");
       setShowSnackbar(true);
       setParameterData({ ...newData, parameterId: Math.random() });
@@ -185,8 +197,6 @@ export default function Configuration() {
     },
   ];
 
-  
-
   return (
     <div>
       <h2>Configuration Details</h2>
@@ -198,10 +208,9 @@ export default function Configuration() {
             <AddIcon />
           </IconButton>
           <DataGrid
-           //key={offlineRows?.length}  // 🔹 Changing this key forces a re-render
+            //key={offlineRows?.length}  // 🔹 Changing this key forces a re-render
             //rows={fetchedParameters?.filter((row) => row != null) || []}
             rows={[...(fetchedParameters || []), ...offlineRows]}
-          
             columns={columns}
             getRowId={(row) => row.parameterId || crypto.randomUUID()}
             checkboxSelection={false}
@@ -249,7 +258,8 @@ export default function Configuration() {
         >
           <Typography variant="h6">Confirm Deletion</Typography>
           <Typography>
-            Are you sure you want to delete "{selectedParameter?.parameterName}"?
+            Are you sure you want to delete "{selectedParameter?.parameterName}
+            "?
           </Typography>
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button
