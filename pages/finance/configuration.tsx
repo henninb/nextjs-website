@@ -280,7 +280,7 @@ export default function Configuration() {
         </Box>
       </Modal>
 
-      {/* add or Edit modal */}
+      {/* Modal Add Parameter */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -291,9 +291,7 @@ export default function Configuration() {
             marginTop: "20%",
           }}
         >
-          <h3>
-            {parameterData ? "Edit Configuration" : "Add New Configuration"}
-          </h3>
+          <h3>Add New Parameter</h3>
           <TextField
             label="Name"
             fullWidth
@@ -325,7 +323,7 @@ export default function Configuration() {
             variant="contained"
             onClick={() => parameterData && handleAddRow(parameterData)}
           >
-            {parameterData ? "Update" : "Add"}
+            Add
           </Button>
         </Box>
       </Modal>

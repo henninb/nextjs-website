@@ -259,7 +259,7 @@ export default function Categories() {
         </Box>
       </Modal>
 
-      {/* Add/Edit Category Modal */}
+      {/* Modal Add Category */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -270,7 +270,7 @@ export default function Categories() {
             marginTop: "20%",
           }}
         >
-          <h3>{categoryData ? "Edit Category" : "Add New Category"}</h3>
+          <h3>Add New Category</h3>
           <TextField
             label="Name"
             fullWidth
@@ -301,7 +301,7 @@ export default function Categories() {
               categoryData && handleAddRow(categoryData);
             }}
           >
-            {categoryData ? "Update" : "Add"}
+            Add
           </Button>
         </Box>
       </Modal>

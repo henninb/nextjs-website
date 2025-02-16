@@ -288,7 +288,7 @@ export default function Accounts() {
         </Box>
       </Modal>
 
-      {/* Adding Modal */}
+      {/* Modal Add Account */}
       <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
         <Box
           sx={{
@@ -299,7 +299,7 @@ export default function Accounts() {
             marginTop: "20%",
           }}
         >
-          <h3>{accountData ? "Edit Account" : "Add New Account"}</h3>
+          <h3>Add New Account</h3>
           <TextField
             label="Account"
             fullWidth
@@ -350,7 +350,7 @@ export default function Accounts() {
             variant="contained"
             onClick={() => accountData && handleAddRow(accountData)}
           >
-            {accountData ? "Update" : "Add"}
+            Add
           </Button>
         </Box>
       </Modal>

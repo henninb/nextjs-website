@@ -185,9 +185,6 @@ export default function Payments() {
                 value: parsedValue,
               });
             }}
-            // inputProps={{
-            //   style: { textAlign: 'right' } // Align text to the right
-            // }}
           />
         );
       },
@@ -312,7 +309,7 @@ export default function Payments() {
             marginTop: "20%",
           }}
         >
-          <h3>{paymentData ? "Edit Payment" : "Add New Payment"}</h3>
+          <h3>Add New Payment</h3>
           <TextField
             label="Transaction Date"
             fullWidth
@@ -428,7 +425,7 @@ export default function Payments() {
             variant="contained"
             onClick={() => paymentData && handleAddRow(paymentData)}
           >
-            {paymentData ? "Update" : "Add"}
+            Add
           </Button>
         </Box>
       </Modal>

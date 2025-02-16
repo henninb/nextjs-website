@@ -218,7 +218,7 @@ export default function Descriptions() {
         </Box>
       </Modal>
 
-      {/* Add/Update Modal */}
+      {/* Modal Add Description */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -229,9 +229,7 @@ export default function Descriptions() {
             marginTop: "20%",
           }}
         >
-          <h3>
-            {descriptionData ? "Edit Description" : "Add New Description"}
-          </h3>
+          <h3>Add New Description</h3>
           <TextField
             label="Name"
             fullWidth
@@ -260,7 +258,7 @@ export default function Descriptions() {
             variant="contained"
             onClick={() => descriptionData && handleAddRow(descriptionData)}
           >
-            {descriptionData ? "Update" : "Add"}
+            Add
           </Button>
         </Box>
       </Modal>

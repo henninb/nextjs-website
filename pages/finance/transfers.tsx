@@ -376,7 +376,7 @@ export default function Transfers() {
         </Box>
       </Modal>
 
-      {/* Modal to add or update a transaction */}
+      {/* Modal to add a transaction */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
         <Box
           sx={{
@@ -387,7 +387,7 @@ export default function Transfers() {
             marginTop: "20%",
           }}
         >
-          <h3>{transferData ? "Edit Transfer" : "Add New Transfer"}</h3>
+          <h3>Add New Transfer</h3>
 
           {/* <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
@@ -498,31 +498,11 @@ export default function Transfers() {
             }}
           />
 
-          {/* <TextField
-            label="Amount"
-            fullWidth
-            margin="normal"
-            type="number"
-            value={transferData?.amount ?? ""}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              let parsedValue =
-                inputValue === "" ? null : parseFloat(inputValue);
-
-              if (parsedValue !== null) {
-                parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
-              }
-              setTransferData((prev) => ({
-                ...prev,
-                amount: parsedValue,
-              }));
-            }}
-          /> */}
           <Button
             variant="contained"
             onClick={() => transferData && handleAddRow(transferData)}
           >
-            {transferData ? "Update" : "Add"}
+            Add
           </Button>
         </Box>
       </Modal>

@@ -483,7 +483,7 @@ export default function TransactionTable() {
         </div>
       )}
 
-      {/* Modal  Clone Transaction */}
+      {/* Modal Clone Transaction */}
       <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
         <Box
           sx={{
@@ -553,7 +553,7 @@ export default function TransactionTable() {
         </Box>
       </Modal>
 
-      {/* Modal Add/Edit Transaction */}
+      {/* Modal Add Transaction */}
       <Modal
         open={showModalAdd}
         onClose={() => setShowModalAdd(false)}
@@ -569,9 +569,7 @@ export default function TransactionTable() {
             marginTop: "20%",
           }}
         >
-          <h3>
-            {transactionData ? "Edit Transaction" : "Add New Transaction"}
-          </h3>
+          <h3>Add New Transaction</h3>
 
           {/* <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
@@ -736,7 +734,7 @@ export default function TransactionTable() {
               onClick={() => transactionData && handleAddRow(transactionData)}
               style={{ marginTop: 16 }}
             >
-              {transactionData ? "Update" : "Add"}
+              Add
             </Button>
             <Button
               variant="outlined"
