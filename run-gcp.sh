@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # eval "$(ssh-agent -s)"
-echo ssh-add ~/.ssh/google_compute_engine
+# echo ssh-add ~/.ssh/google_compute_engine
 echo ssh-add ~/.ssh/id_rsa_gcp
 
 # Exit if the token file does not exist or is empty
@@ -12,7 +12,10 @@ fi
 
 echo "cloudflare tunnel token exists"
 
-TOKEN=$(cat token)
+CLOUDFLARE_TOKEN=$(cat token)
+docker context create remote-webserver --docker "host=ssh://brianhenning@34.170.214.18"
+export DOCKER_HOST=ssh://brianhenning@34.170.214.18
+export DOCKER_HOST=ssh://gcp
 
 # Check Docker connection
 if ! docker info > /dev/null 2>&1; then
@@ -32,7 +35,7 @@ docker rm -f react-app
 docker run --name=react-app -h react-app --restart unless-stopped -p 3001:3000 -d react-app
 
 docker rm -f cloudflared
-docker run -d --name cloudflared --restart=unless-stopped cloudflare/cloudflared:latest tunnel --no-autoupdate run --token ${TOKEN}
+docker run -d --name cloudflared --restart=unless-stopped cloudflare/cloudflared:latest tunnel --no-autoupdate run --token ${CLOUDFLARE_TOKEN}
 docker system prune -af
 docker ps -a
 echo gcloud compute firewall-rules create allow-react-app-rule --allow tcp:3001
