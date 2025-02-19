@@ -1,5 +1,6 @@
 options:
-  logging: "NONE"
+  # logging: "NONE"
+  logging: "gs://nextjs-website-logbucket"
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/nextjs-website:$COMMIT_SHA', '.']
