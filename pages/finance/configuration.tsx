@@ -150,18 +150,20 @@ export default function Configuration() {
     } catch (error) {
       handleError(error, "Add Configuration", false);
 
-      const newOfflineRow = { ...newData, parameterId: crypto.randomUUID() };
-      const updatedOfflineRows = [...offlineRows, newOfflineRow];
+      if (!navigator.onLine || (error.message && error.message.includes("Failed to fetch"))) {
+        const newOfflineRow = { ...newData, parameterId: crypto.randomUUID() };
+        const updatedOfflineRows = [...offlineRows, newOfflineRow];
 
-      setOfflineRows(updatedOfflineRows as [Parameter]); // 🔹 Ensure UI updates immediately
-      localStorage.setItem(
-        "offlineParameters",
-        JSON.stringify(updatedOfflineRows),
-      );
+        setOfflineRows(updatedOfflineRows as [Parameter]); // 🔹 Ensure UI updates immediately
+        localStorage.setItem(
+          "offlineParameters",
+          JSON.stringify(updatedOfflineRows),
+        );
 
-      setMessage("Parameter saved offline.");
-      setShowSnackbar(true);
-      setParameterData({ ...newData, parameterId: Math.random() });
+        setMessage("Parameter saved offline.");
+        setShowSnackbar(true);
+        setParameterData({ ...newData, parameterId: Math.random() });
+      }
     }
   };
 
