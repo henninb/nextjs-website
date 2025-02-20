@@ -18,10 +18,23 @@ const deleteDescription = async (
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Description not found (404). Check the description name.");
+      let errorMessage = "";
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody && errorBody.response) {
+          errorMessage = `${errorBody.response}`;
+        } else {
+          console.log("No error message returned.");
+          throw new Error("No error message returned.");
+        }
+      } catch (error) {
+        console.log(`Failed to parse error response: ${error.message}`);
+        throw new Error(`Failed to parse error response: ${error.message}`);
       }
-      throw new Error(`An error occurred: ${response.status}`);
+
+      console.log(errorMessage || "cannot throw a null value");
+      throw new Error(errorMessage || "cannot throw a null value");
     }
 
     return response.status !== 204 ? await response.json() : null;

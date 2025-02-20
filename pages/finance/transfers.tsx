@@ -193,17 +193,18 @@ export default function Transfers() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.response
-      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-          error.response.data,
-        )}`
+    const errorMessage = error.message
+      ? `${moduleName}: ${error.message}`
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
     setShowSnackbar(true);
+
+    console.error(errorMessage);
+
     if (throwIt) throw error;
   };
-
+  
   const handleAddRow = async (newData: Transfer) => {
     try {
       const insertThisValue = {
@@ -219,6 +220,11 @@ export default function Transfers() {
       setTransferData(null);
     } catch (error) {
       handleError(error, `Add Transfer error: ${error}`, false);
+      if (
+        !navigator.onLine ||
+        (error.message && error.message.includes("Failed to fetch"))
+      ) {
+      }
     }
   };
 

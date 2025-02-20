@@ -167,6 +167,11 @@ export default function Layout({ children }: LayoutProps) {
                       SpotifyAuth
                     </a>
                   </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/finance">
+                      Finance
+                    </a>
+                  </li>
                 </>
               )}
             </ul>

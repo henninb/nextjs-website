@@ -32,8 +32,8 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
         if (errorBody && errorBody.response) {
           errorMessage = `${errorBody.response}`;
         } else {
-          console.log("No error message returned.")
-          throw new Error("No error message returned.")
+          console.log("No error message returned.");
+          throw new Error("No error message returned.");
         }
       } catch (error) {
         console.log(`Failed to parse error response: ${error.message}`);

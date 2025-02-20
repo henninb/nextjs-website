@@ -15,13 +15,26 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Parameter not found (404). Check the parameter name.");
+      let errorMessage = "";
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody && errorBody.response) {
+          errorMessage = `${errorBody.response}`;
+        } else {
+          console.log("No error message returned.");
+          throw new Error("No error message returned.");
+        }
+      } catch (error) {
+        console.log(`Failed to parse error response: ${error.message}`);
+        throw new Error(`Failed to parse error response: ${error.message}`);
       }
-      throw new Error(`An error occurred: ${response.statusText}`);
+
+      console.log(errorMessage || "cannot throw a null value");
+      throw new Error(errorMessage || "cannot throw a null value");
     }
 
-    return await response.json();
+    return response.status !== 204 ? await response.json() : null;
   } catch (error) {
     console.log(`An error occurred: ${error.message}`);
     throw error;

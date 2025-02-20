@@ -51,20 +51,13 @@ export default function Configuration() {
     if (storedRows) {
       setOfflineRows(JSON.parse(storedRows));
     }
-  }, []);
-
-  useEffect(() => {
-    const storedRows = localStorage.getItem("offlineParameters");
-    if (storedRows) {
-      setOfflineRows(JSON.parse(storedRows));
-    }
-  }, [offlineRows]); // 🔹 Re-run when offlineRows changes
+  }, []); // ✅ Run only once on mount
 
   useEffect(() => {
     const syncOfflineRows = async () => {
       if (navigator.onLine && offlineRows.length > 0) {
         let remainingRows: Parameter[] = [];
-
+  
         for (const row of offlineRows) {
           try {
             await insertParameter({ payload: row });
@@ -73,20 +66,19 @@ export default function Configuration() {
             remainingRows.push(row);
           }
         }
-
+  
         if (remainingRows.length !== offlineRows.length) {
-          setOfflineRows(remainingRows);
-          localStorage.setItem(
-            "offlineParameters",
-            JSON.stringify(remainingRows),
-          );
+          setOfflineRows((prevRows) =>
+            prevRows.filter((row) => remainingRows.includes(row)),
+          ); // ✅ Ensures state is updated correctly
+          localStorage.setItem("offlineParameters", JSON.stringify(remainingRows));
         }
       }
     };
-
+  
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
-  }, [insertParameter, offlineRows]);
+  }, [insertParameter]); // ✅ Remove `offlineRows` from dependencies
 
   const handleDeleteRow = async () => {
     if (!selectedParameter) return;
@@ -143,8 +135,7 @@ export default function Configuration() {
   const handleAddRow = async (newData: Parameter) => {
     try {
       await insertParameter({ payload: newData });
-      //setParameterData(null);
-      setParameterData({ ...newData, parameterId: Math.random() });
+      setParameterData((prev: any) => prev?.parameterId ? prev : { ...newData, parameterId: crypto.randomUUID() });
       setShowModalAdd(false);
       setMessage("Configuration added successfully.");
       setShowSnackbar(true);

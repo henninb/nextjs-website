@@ -136,14 +136,15 @@ export default function TransactionTable() {
   const handleSnackbarClose = () => setShowSnackbar(false);
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.response
-      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-          error.response.data,
-        )}`
+    const errorMessage = error.message
+      ? `${moduleName}: ${error.message}`
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
     setShowSnackbar(true);
+
+    console.error(errorMessage);
+
     if (throwIt) throw error;
   };
 
@@ -239,6 +240,11 @@ export default function TransactionTable() {
       return result;
     } catch (error) {
       handleError(error, "handleAddRow", false);
+      if (
+        !navigator.onLine ||
+        (error.message && error.message.includes("Failed to fetch"))
+      ) {
+      }
       throw error;
     }
   };
