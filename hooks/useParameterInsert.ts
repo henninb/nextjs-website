@@ -4,27 +4,24 @@ import Parameter from "../model/Parameter";
 
 const insertParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
-    const endpoint = "https://finance.lan/api/parameter/insert";
-
-    const response = await fetch(endpoint, {
+    const response = await fetch("https://finance.lan/api/parameter/insert", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        //Authorization: basicAuth(),
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
+      try {
+        const errorBody = await response.json();
+        throw new Error(errorBody.response || "Unknown error occurred");
+      } catch {
+        throw new Error("Failed to parse error response");
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error("Error in insertParameter:", error.message);
     throw error;
   }
 };

@@ -128,14 +128,15 @@ export default function Configuration() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.response
-      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(
-          error.response.data,
-        )}`
+    const errorMessage = error.message
+      ? `${moduleName}: ${error.message}`
       : `${moduleName}: Failure`;
-
+  
     setMessage(errorMessage);
     setShowSnackbar(true);
+    
+    console.error(errorMessage);
+  
     if (throwIt) throw error;
   };
 
@@ -150,7 +151,10 @@ export default function Configuration() {
     } catch (error) {
       handleError(error, "Add Configuration", false);
 
-      if (!navigator.onLine || (error.message && error.message.includes("Failed to fetch"))) {
+      if (
+        !navigator.onLine ||
+        (error.message && error.message.includes("Failed to fetch"))
+      ) {
         const newOfflineRow = { ...newData, parameterId: crypto.randomUUID() };
         const updatedOfflineRows = [...offlineRows, newOfflineRow];
 

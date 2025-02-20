@@ -58,3 +58,22 @@ aws cloudfront get-distribution-config --id YOUR_DISTRIBUTION_ID > dist-config.j
 
 aws cloudfront update-distribution --id YOUR_DISTRIBUTION_ID --if-match YOUR_ETAG --distribution-config file://dist-config.json
 Replace YOUR_DISTRIBUTION_ID with your CloudFront distribution ID, YOUR_ETAG with the ETag value from the get-distribution-config command, and arn:aws:lambda:us-east-1:123456789012:function:my-function:NEW_VERSION with the ARN of your updated Lambda function version.
+
+gcloud auth activate-service-account sa-brian-henning@appspot.gserviceaccount.com --key-file=/home/henninb/sa-brian-henning-80dd8a3e99e3.json
+Activated service account credentials for: [sa-brian-henning@appspot.gserviceaccount.com]
+
+gcloud auth list
+Credentialed Accounts
+ACTIVE ACCOUNT
+brian.henning@humansecurity.com
+
+-       sa-brian-henning@appspot.gserviceaccount.com
+
+To set the active account, run:
+$ gcloud config set account `ACCOUNT`
+
+run deploy nextjs-website \
+ --image=gcr.io/sa-brian-henning/nextjs-website:b4b08daa1aae972e62bb40c7cdff818c88c7af3c \
+ --region=us-central1 \
+ --platform=managed \
+ --allow-unauthenticated
