@@ -19,10 +19,23 @@ const insertCategory = async (category: Category): Promise<Category | null> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
+      let errorMessage = "";
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody && errorBody.response) {
+          errorMessage = `${errorBody.response}`;
+        } else {
+          console.log("No error message returned.")
+          throw new Error("No error message returned.")
+        }
+      } catch (error) {
+        console.log(`Failed to parse error response: ${error.message}`);
+        throw new Error(`Failed to parse error response: ${error.message}`);
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
+
+      console.log(errorMessage || "cannot throw a null value");
+      throw new Error(errorMessage || "cannot throw a null value");
     }
 
     return await response.json();

@@ -61,14 +61,26 @@ const insertTransaction = async (
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404)");
-        throw new Error(`${response.status}`);
+      let errorMessage = "";
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody && errorBody.response) {
+          errorMessage = `${errorBody.response}`;
+        } else {
+          console.log("No error message returned.")
+          throw new Error("No error message returned.")
+        }
+      } catch (error) {
+        console.log(`Failed to parse error response: ${error.message}`);
+        throw new Error(`Failed to parse error response: ${error.message}`);
       }
-      throw new Error(`Failed to insert transaction: ${response.statusText}`);
+
+      console.log(errorMessage || "cannot throw a null value");
+      throw new Error(errorMessage || "cannot throw a null value");
     }
 
-    return await response.json();
+    return response.status !== 204 ? await response.json() : null;
   } catch (error) {
     console.log(`An error occurred: ${error.message}`);
     throw error;

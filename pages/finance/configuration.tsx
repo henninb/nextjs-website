@@ -131,12 +131,12 @@ export default function Configuration() {
     const errorMessage = error.message
       ? `${moduleName}: ${error.message}`
       : `${moduleName}: Failure`;
-  
+
     setMessage(errorMessage);
     setShowSnackbar(true);
-    
+
     console.error(errorMessage);
-  
+
     if (throwIt) throw error;
   };
 

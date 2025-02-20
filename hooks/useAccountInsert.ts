@@ -34,13 +34,23 @@ const insertAccount = async (payload: Account): Promise<Account | null> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
+      let errorMessage = "";
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody && errorBody.response) {
+          errorMessage = `${errorBody.response}`;
+        } else {
+          console.log("No error message returned.")
+          throw new Error("No error message returned.")
+        }
+      } catch (error) {
+        console.log(`Failed to parse error response: ${error.message}`);
+        throw new Error(`Failed to parse error response: ${error.message}`);
       }
-      const errorDetails = await response.json();
-      throw new Error(
-        `HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`,
-      );
+
+      console.log(errorMessage || "cannot throw a null value");
+      throw new Error(errorMessage || "cannot throw a null value");
     }
 
     return response.status !== 204 ? await response.json() : null;
