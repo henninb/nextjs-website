@@ -60,21 +60,21 @@ export default function TransactionTable() {
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
 
-  const [transactionData, setTransactionData] = useState<Transaction>(initialTransactionData); // Use initial state
-  // const [transactionData, setTransactionData] = useState({
-  //   transactionDate: new Date(),
-  //   accountNameOwner: accountNameOwner,
-  //   reoccurringType: "onetime" as ReoccurringType,
-  //   amount: 0.0, // Default to 0.0
-  //   transactionState: "outstanding" as TransactionState,
-  //   transactionType: "undefined" as TransactionType,
-  //   guid: uuidv4(),
-  //   description: "",
-  //   category: "",
-  //   accountType: "undefined" as AccountType,
-  //   activeStatus: true,
-  //   notes: "",
-  // });
+  //const [transactionData, setTransactionData] = useState<Transaction>(initialTransactionData); // Use initial state
+  const [transactionData, setTransactionData] = useState({
+    transactionDate: new Date(),
+    accountNameOwner: accountNameOwner,
+    reoccurringType: "onetime" as ReoccurringType,
+    amount: 0.0, // Default to 0.0
+    transactionState: "outstanding" as TransactionState,
+    transactionType: "undefined" as TransactionType,
+    guid: uuidv4(),
+    description: "",
+    category: "",
+    accountType: "undefined" as AccountType,
+    activeStatus: true,
+    notes: "",
+  });
 
   const {
     data: fetchedData,
