@@ -120,7 +120,7 @@ export default function Payments() {
   const handleAddRow = async (newData: Payment) => {
     try {
       await insertPayment({ payload: newData });
-      setShowModalAdd(false);
+      //setShowModalAdd(false);
       setMessage("Payment Added successfully.");
       setShowSnackbar(true);
     } catch (error) {

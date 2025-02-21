@@ -708,7 +708,7 @@ export default function TransactionsByAccount() {
             )}
           />
 
-          <TextField
+          {/* <TextField
             label="Amount"
             fullWidth
             margin="normal"
@@ -723,6 +723,41 @@ export default function TransactionsByAccount() {
                 ...prev,
                 amount: parsedValue,
               }));
+            }}
+          /> */}
+
+          <TextField
+            label="Amount"
+            fullWidth
+            margin="normal"
+            type="text"
+            value={transactionData?.amount ?? ""}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+
+              // Regular expression to allow only numbers with up to 2 decimal places
+              const regex = /^\d*\.?\d{0,2}$/;
+
+              if (regex.test(inputValue) || inputValue === "") {
+                setTransactionData((prev: any) => ({
+                  ...prev,
+                  amount: inputValue, // Store as string to allow proper input control
+                }));
+              }
+            }}
+            onBlur={() => {
+              // Ensure value is properly formatted when user leaves the field
+              setTransactionData((prev: any) => ({
+                ...prev,
+                amount: prev.amount
+                  ? parseFloat(Number(prev.amount).toFixed(2))
+                  : "",
+              }));
+            }}
+            slotProps={{
+              input: {
+                inputMode: "decimal",
+              },
             }}
           />
 
