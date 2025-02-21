@@ -104,7 +104,7 @@ export default function Transfers() {
   //const transfersToDisplay = fetchedTransfers || [];
 
   useEffect(() => {
-    if( isFetchingAccounts || isFetchingTransfers ) {
+    if (isFetchingAccounts || isFetchingTransfers) {
       setShowSpinner(true);
       return;
     }
@@ -115,7 +115,14 @@ export default function Transfers() {
       setMessage("Error fetching data.");
       setShowSnackbar(true);
     }
-  }, [isSuccessTransfers, isSuccessAccounts, errorTransfers, errorAccounts, isFetchingAccounts, isFetchingTransfers]);
+  }, [
+    isSuccessTransfers,
+    isSuccessAccounts,
+    errorTransfers,
+    errorAccounts,
+    isFetchingAccounts,
+    isFetchingTransfers,
+  ]);
 
   useEffect(() => {
     if (isSuccessAccounts) {

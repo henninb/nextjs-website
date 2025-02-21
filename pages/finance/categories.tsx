@@ -46,7 +46,7 @@ export default function Categories() {
   const { mutateAsync: deleteCategory } = useCategoryDelete();
 
   useEffect(() => {
-    if( isFetchingCategories) {
+    if (isFetchingCategories) {
       setShowSpinner(true);
       return;
     }

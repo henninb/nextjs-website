@@ -42,7 +42,7 @@ export default function Configuration() {
   const { mutateAsync: deleteParameter } = useParameterDelete();
 
   useEffect(() => {
-    if( isFetchingParameters ) {
+    if (isFetchingParameters) {
       setShowSpinner(true);
       return;
     }

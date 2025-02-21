@@ -53,14 +53,19 @@ export default function Accounts() {
   const accountTypeOptions = ["debit", "credit"];
 
   useEffect(() => {
-    if ( isFetchingAccounts || isFetchingTotals) {
+    if (isFetchingAccounts || isFetchingTotals) {
       setShowSpinner(true);
       return;
     }
     if (isSuccessAccounts && isSuccessTotals) {
       setShowSpinner(false);
     }
-  }, [isSuccessAccounts, isSuccessTotals, isFetchingAccounts, isFetchingTotals]);
+  }, [
+    isSuccessAccounts,
+    isSuccessTotals,
+    isFetchingAccounts,
+    isFetchingTotals,
+  ]);
 
   const handleAccountTypeKeyDown = (event: any) => {
     if (event.key === "Tab") {

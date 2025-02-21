@@ -39,7 +39,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
 import { currencyFormat, noNaN } from "../../../components/Common";
 
-
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
@@ -51,7 +50,6 @@ export default function TransactionsByAccount() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
-  
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -77,42 +75,42 @@ export default function TransactionsByAccount() {
     isSuccess: isSuccessTransactions,
     isLoading: isFetchingTransactions,
     isError: isErrorTransactions,
-    error: errorTransactions
+    error: errorTransactions,
   } = useTransactionByAccountFetch(accountNameOwner);
   const {
     data: fetchedTotals,
     isSuccess: isSuccessTotals,
     isLoading: isFetchingTotals,
     isError: isErrorTotals,
-    error: errorTotals
+    error: errorTotals,
   } = useTotalsPerAccountFetch(accountNameOwner);
   const {
     data: fetchedValidationData,
     isSuccess: isSuccessValidationTotals,
     isLoading: isFetchingValidationTotals,
     isError: isErrorValidationTotals,
-    error: errorValidationTotals
+    error: errorValidationTotals,
   } = useValidationAmountFetch(accountNameOwner);
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
     isLoading: isFetchingAccounts,
     isError: isErrorAccounts,
-    error: errorAccounts
+    error: errorAccounts,
   } = useAccountFetch();
   const {
     data: fetchedCategories,
     isSuccess: isSuccessCategories,
     isLoading: isFetchingCategories,
     isError: isErrorCategories,
-    error: errorCategories
+    error: errorCategories,
   } = useCategoryFetch();
   const {
     data: fetchedDescriptions,
     isSuccess: isSuccessDescriptions,
     isLoading: isFetchingDescriptions,
     isError: isErrorDescriptions,
-    error: errorDescriptions
+    error: errorDescriptions,
   } = useDescriptionFetch();
 
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
@@ -124,27 +122,28 @@ export default function TransactionsByAccount() {
   const transactionStates = ["outstanding", "future", "cleared"];
 
   useEffect(() => {
-      if(
+    if (
       isFetchingTransactions ||
       isFetchingTotals ||
       isFetchingValidationTotals ||
       isFetchingAccounts ||
       isFetchingCategories ||
-      isFetchingDescriptions) {
-        setShowSpinner(true);
-        return;
-      }
+      isFetchingDescriptions
+    ) {
+      setShowSpinner(true);
+      return;
+    }
 
-      if( 
+    if (
       isSuccessTransactions &&
       isSuccessTotals &&
       isSuccessValidationTotals &&
       isSuccessAccounts &&
       isSuccessCategories &&
-      isSuccessDescriptions ) {
-        setShowSpinner(false);
-      }
-
+      isSuccessDescriptions
+    ) {
+      setShowSpinner(false);
+    }
   }, [
     isFetchingTransactions,
     isFetchingTotals,
@@ -160,7 +159,6 @@ export default function TransactionsByAccount() {
     isSuccessDescriptions,
   ]);
 
-  
   const initialTransactionData: Transaction = {
     transactionDate: new Date(),
     accountNameOwner: accountNameOwner,
@@ -718,7 +716,8 @@ export default function TransactionsByAccount() {
             value={transactionData?.amount ?? ""}
             onChange={(e) => {
               const inputValue = e.target.value;
-              const parsedValue = inputValue === "" ? 0 : parseFloat(inputValue).toFixed(2);
+              const parsedValue =
+                inputValue === "" ? 0 : parseFloat(inputValue).toFixed(2);
 
               setTransactionData((prev: any) => ({
                 ...prev,

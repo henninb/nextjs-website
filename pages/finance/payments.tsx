@@ -58,7 +58,7 @@ export default function Payments() {
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
-    if( isFetchingAccounts || isFetchingParameters) {
+    if (isFetchingAccounts || isFetchingParameters) {
       setShowSpinner(true);
       return;
     }
@@ -77,7 +77,7 @@ export default function Payments() {
     errorPayments,
     errorAccounts,
     isFetchingAccounts,
-    isFetchingParameters
+    isFetchingParameters,
   ]);
 
   const defaultPaymentMethod =
