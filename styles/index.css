@@ -715,6 +715,15 @@ header {
   }
 }
 
+.spinner-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  width: 100vw; /* Full viewport width */
+  background-color: #e0c3fc; /* Slightly darker light purple */
+}
+
 .lds-roller {
   display: inline-block;
   position: relative;
@@ -725,6 +734,7 @@ header {
   animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
   transform-origin: 40px 40px;
 }
+
 .lds-roller div:after {
   content: " ";
   display: block;

@@ -1,6 +1,6 @@
 export default function Spinner() {
   return (
-    <div>
+    <div className="spinner-page">
       <div data-testid="loader">
         {/*<Loader type="Rings" color="#9965f4" />*/}
 
