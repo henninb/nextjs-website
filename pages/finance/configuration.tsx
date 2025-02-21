@@ -57,7 +57,7 @@ export default function Configuration() {
     const syncOfflineRows = async () => {
       if (navigator.onLine && offlineRows.length > 0) {
         let remainingRows: Parameter[] = [];
-  
+
         for (const row of offlineRows) {
           try {
             await insertParameter({ payload: row });
@@ -66,16 +66,19 @@ export default function Configuration() {
             remainingRows.push(row);
           }
         }
-  
+
         if (remainingRows.length !== offlineRows.length) {
           setOfflineRows((prevRows) =>
             prevRows.filter((row) => remainingRows.includes(row)),
           ); // ✅ Ensures state is updated correctly
-          localStorage.setItem("offlineParameters", JSON.stringify(remainingRows));
+          localStorage.setItem(
+            "offlineParameters",
+            JSON.stringify(remainingRows),
+          );
         }
       }
     };
-  
+
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
   }, [insertParameter]); // ✅ Remove `offlineRows` from dependencies
@@ -135,7 +138,11 @@ export default function Configuration() {
   const handleAddRow = async (newData: Parameter) => {
     try {
       await insertParameter({ payload: newData });
-      setParameterData((prev: any) => prev?.parameterId ? prev : { ...newData, parameterId: crypto.randomUUID() });
+      setParameterData((prev: any) =>
+        prev?.parameterId
+          ? prev
+          : { ...newData, parameterId: crypto.randomUUID() },
+      );
       setShowModalAdd(false);
       setMessage("Configuration added successfully.");
       setShowSnackbar(true);

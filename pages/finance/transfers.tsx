@@ -204,7 +204,7 @@ export default function Transfers() {
 
     if (throwIt) throw error;
   };
-  
+
   const handleAddRow = async (newData: Transfer) => {
     try {
       const insertThisValue = {
