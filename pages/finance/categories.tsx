@@ -37,6 +37,7 @@ export default function Categories() {
   const {
     data: fetchedCategories,
     isSuccess: isSuccessCategories,
+    isLoading: isFetchingCategories,
     isError: isErrorCategories,
     refetch,
   } = useFetchCategory();
@@ -45,6 +46,10 @@ export default function Categories() {
   const { mutateAsync: deleteCategory } = useCategoryDelete();
 
   useEffect(() => {
+    if( isFetchingCategories) {
+      setShowSpinner(true);
+      return;
+    }
     if (isSuccessCategories) {
       setShowSpinner(false);
       setFetchError(null);
@@ -59,7 +64,7 @@ export default function Categories() {
       setShowSpinner(false);
       setFetchError("Failed to load categories. Please check your connection.");
     }
-  }, [isSuccessCategories, isErrorCategories]);
+  }, [isSuccessCategories, isErrorCategories, isFetchingCategories]);
 
   const handleDeleteRow = async () => {
     if (selectedCategory) {

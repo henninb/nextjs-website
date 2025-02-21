@@ -13,12 +13,8 @@ import {
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import { v4 as uuidv4 } from "uuid";
 import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
 import useTransactionUpdate from "../../../hooks/useTransactionUpdate";
 import useTransactionInsert from "../../../hooks/useTransactionInsert";
@@ -27,6 +23,7 @@ import useTotalsPerAccountFetch from "../../../hooks/useTotalsPerAccountFetch";
 import useValidationAmountFetch from "../../../hooks/useValidationAmountFetch";
 import useValidationAmountInsert from "../../../hooks/useValidationAmountInsert";
 import useAccountFetch from "../../../hooks/useAccountFetch";
+import useCategoryFetch from "../../../hooks/useCategoryFetch";
 import useDescriptionFetch from "../../../hooks/useDescriptionFetch";
 import { AccountType } from "../../../model/AccountType";
 import Transaction from "../../../model/Transaction";
@@ -40,11 +37,10 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
-
 import { currencyFormat, noNaN } from "../../../components/Common";
-import useCategoryFetch from "../../../hooks/useCategoryFetch";
 
-export default function TransactionTable() {
+
+export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
@@ -68,7 +64,7 @@ export default function TransactionTable() {
     amount: 0.0, // Default to 0.0
     transactionState: "outstanding" as TransactionState,
     transactionType: "undefined" as TransactionType,
-    guid: uuidv4(),
+    guid: crypto.randomUUID(),
     description: "",
     category: "",
     accountType: "undefined" as AccountType,
@@ -77,34 +73,46 @@ export default function TransactionTable() {
   });
 
   const {
-    data: fetchedData,
-    isSuccess: isSuccessData,
-    error: dataFetchError,
+    data: fetchedTransactions,
+    isSuccess: isSuccessTransactions,
+    isLoading: isFetchingTransactions,
+    isError: isErrorTransactions,
+    error: errorTransactions
   } = useTransactionByAccountFetch(accountNameOwner);
   const {
     data: fetchedTotals,
     isSuccess: isSuccessTotals,
-    error: totalsFetchError,
+    isLoading: isFetchingTotals,
+    isError: isErrorTotals,
+    error: errorTotals
   } = useTotalsPerAccountFetch(accountNameOwner);
   const {
     data: fetchedValidationData,
     isSuccess: isSuccessValidationTotals,
-    error: validationFetchError,
+    isLoading: isFetchingValidationTotals,
+    isError: isErrorValidationTotals,
+    error: errorValidationTotals
   } = useValidationAmountFetch(accountNameOwner);
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
-    error: accountsFetchError,
+    isLoading: isFetchingAccounts,
+    isError: isErrorAccounts,
+    error: errorAccounts
   } = useAccountFetch();
   const {
     data: fetchedCategories,
     isSuccess: isSuccessCategories,
-    error: categoriesFetchError,
+    isLoading: isFetchingCategories,
+    isError: isErrorCategories,
+    error: errorCategories
   } = useCategoryFetch();
   const {
     data: fetchedDescriptions,
     isSuccess: isSuccessDescriptions,
-    error: descriptionsFetchError,
+    isLoading: isFetchingDescriptions,
+    isError: isErrorDescriptions,
+    error: errorDescriptions
   } = useDescriptionFetch();
 
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
@@ -116,18 +124,35 @@ export default function TransactionTable() {
   const transactionStates = ["outstanding", "future", "cleared"];
 
   useEffect(() => {
-    if (
-      isSuccessData &&
+      if(
+      isFetchingTransactions ||
+      isFetchingTotals ||
+      isFetchingValidationTotals ||
+      isFetchingAccounts ||
+      isFetchingCategories ||
+      isFetchingDescriptions) {
+        setShowSpinner(true);
+        return;
+      }
+
+      if( 
+      isSuccessTransactions &&
       isSuccessTotals &&
       isSuccessValidationTotals &&
       isSuccessAccounts &&
       isSuccessCategories &&
-      isSuccessDescriptions
-    ) {
-      setShowSpinner(false);
-    }
+      isSuccessDescriptions ) {
+        setShowSpinner(false);
+      }
+
   }, [
-    isSuccessData,
+    isFetchingTransactions,
+    isFetchingTotals,
+    isFetchingValidationTotals,
+    isFetchingAccounts,
+    isFetchingCategories,
+    isFetchingDescriptions,
+    isSuccessTransactions,
     isSuccessTotals,
     isSuccessValidationTotals,
     isSuccessAccounts,
@@ -136,14 +161,14 @@ export default function TransactionTable() {
   ]);
 
   
-  const initialTransactionData: Transaction = { // Define initial state
+  const initialTransactionData: Transaction = {
     transactionDate: new Date(),
     accountNameOwner: accountNameOwner,
     reoccurringType: "onetime" as ReoccurringType,
     amount: 0.0,
     transactionState: "outstanding" as TransactionState,
     transactionType: "undefined" as TransactionType,
-    guid: uuidv4(),
+    guid: crypto.randomUUID(),
     description: "",
     category: "",
     accountType: "undefined" as AccountType,
@@ -206,7 +231,7 @@ export default function TransactionTable() {
       setOriginalRow(null);
       setSelectedTransaction(null);
       setShowModalMove(false);
-      setMessage("Transaction moved successfully.");
+      setMessage(`Transaction moved successfully.`);
       setShowSnackbar(true);
     } catch (error) {
       handleError(error, `Move Transaction failure: ${error}`, false);
@@ -217,7 +242,7 @@ export default function TransactionTable() {
     if (selectedTransaction) {
       try {
         await deleteTransaction({ oldRow: selectedTransaction });
-        setMessage("Transaction deleted successfully.");
+        setMessage(`Transaction deleted successfully.`);
         setShowSnackbar(true);
       } catch (error) {
         handleError(error, `Delete Transaction failure: ${error}`, false);
@@ -247,7 +272,7 @@ export default function TransactionTable() {
   const handleAddRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
-        accountNameOwner: newData.accountNameOwner,
+        accountNameOwner: accountNameOwner,
         newRow: newData,
         isFutureTransaction: false,
       });
@@ -471,7 +496,7 @@ export default function TransactionTable() {
             </Button>
 
             <DataGrid
-              rows={fetchedData?.filter((row) => row != null) || []}
+              rows={fetchedTransactions?.filter((row) => row != null) || []}
               columns={columns}
               getRowId={(row) => row.transactionId || 0}
               checkboxSelection={false}
@@ -788,7 +813,7 @@ export default function TransactionTable() {
         >
           <Autocomplete
             options={
-              isSuccessAccounts && isSuccessData && selectedTransaction
+              isSuccessAccounts && isSuccessTransactions && selectedTransaction
                 ? fetchedAccounts.filter(
                     (account) =>
                       account.accountType === selectedTransaction.accountType,

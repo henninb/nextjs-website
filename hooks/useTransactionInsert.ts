@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+//import { v4 as uuidv4 } from "uuid";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
@@ -22,7 +22,7 @@ const setupNewTransaction = (
   accountNameOwner: string,
 ): Transaction => {
   return {
-    guid: uuidv4(),
+    guid: crypto.randomUUID(),
     transactionDate: payload.transactionDate,
     description: payload.description,
     category: payload.category || "undefined",
@@ -137,26 +137,3 @@ export default function useTransactionInsert(accountNameOwner: string) {
     },
   });
 }
-
-// export default function useTransactionInsert(accountNameOwner: string) {
-//   const queryClient = useQueryClient();
-
-//   return useMutation({
-//     mutationKey: ["insertTransaction"],
-//     mutationFn: (variables: TransactionInsertType) =>
-//       insertTransaction(
-//         accountNameOwner,
-//         variables.newRow,
-//         variables.isFutureTransaction,
-//       ),
-//     onError: (error: any) => {
-//       console.log(`Mutation error: ${error.message}`);
-//     },
-//     onSuccess: (response: Transaction) => {
-//       const oldData: Transaction[] =
-//         queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
-//       const newData = [response, ...oldData];
-//       queryClient.setQueryData(getAccountKey(accountNameOwner), newData);
-//     },
-//   });
-// }

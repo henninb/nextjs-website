@@ -64,11 +64,6 @@ export default function useTransactionStateUpdate(accountNameOwner: string) {
           ? { ...element, transactionState: response.transactionState }
           : element;
       });
-      // const newData = oldData.map((element) =>
-      //   element.transactionState === response.transactionState
-      //     ? { ...element, transactionState: response.transactionState }
-      //     : element,
-      // );
 
       queryClient.setQueryData(getAccountKey(accountNameOwner), newData);
     },

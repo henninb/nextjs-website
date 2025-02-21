@@ -36,11 +36,13 @@ export default function Accounts() {
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
+    isFetching: isFetchingAccounts,
     error: errorAccounts,
   } = useAccountFetch();
   const {
     data: fetchedTotals,
     isSuccess: isSuccessTotals,
+    isFetching: isFetchingTotals,
     error: errorTotals,
   } = useTotalsFetch();
 
@@ -49,6 +51,16 @@ export default function Accounts() {
   const { mutateAsync: deleteAccount } = useAccountDelete();
 
   const accountTypeOptions = ["debit", "credit"];
+
+  useEffect(() => {
+    if ( isFetchingAccounts || isFetchingTotals) {
+      setShowSpinner(true);
+      return;
+    }
+    if (isSuccessAccounts && isSuccessTotals) {
+      setShowSpinner(false);
+    }
+  }, [isSuccessAccounts, isSuccessTotals, isFetchingAccounts, isFetchingTotals]);
 
   const handleAccountTypeKeyDown = (event: any) => {
     if (event.key === "Tab") {
@@ -65,12 +77,6 @@ export default function Accounts() {
       }
     }
   };
-
-  useEffect(() => {
-    if (isSuccessAccounts && isSuccessTotals) {
-      setShowSpinner(false);
-    }
-  }, [isSuccessAccounts, isSuccessTotals]);
 
   const handleDeleteRow = async () => {
     if (selectedAccount) {

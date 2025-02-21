@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { v4 as uuidv4 } from "uuid";
+//import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "../../components/AuthProvider";
 
 export default function BasketballScores() {
@@ -81,7 +81,7 @@ export default function BasketballScores() {
         }}
       >
         <DataGrid
-          getRowId={() => uuidv4()}
+          getRowId={() => crypto.randomUUID()}
           rows={data ? data : []}
           columns={columns}
           pageSize={100}

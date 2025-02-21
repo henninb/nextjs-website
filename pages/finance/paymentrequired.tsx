@@ -9,13 +9,18 @@ export default function paymentrequired() {
   const {
     data: fetchedPaymentsRequired,
     isSuccess: isSuccessPaymentsRequired,
+    isFetching: isFetchingPaymentsRequired,
   } = useFetchPaymentRequired();
 
   useEffect(() => {
+    if (isFetchingPaymentsRequired) {
+      setShowSpinner(true);
+      return;
+    }
     if (isSuccessPaymentsRequired) {
       setShowSpinner(false);
     }
-  }, [isSuccessPaymentsRequired]);
+  }, [isSuccessPaymentsRequired, isFetchingPaymentsRequired]);
 
   const columns: GridColDef[] = [
     {

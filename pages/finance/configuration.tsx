@@ -34,6 +34,7 @@ export default function Configuration() {
   const {
     data: fetchedParameters,
     isSuccess: isSuccessParameters,
+    isLoading: isFetchingParameters,
     error: errorParameters,
   } = useParameterFetch();
   const { mutateAsync: insertParameter } = useParameterInsert();
@@ -41,10 +42,14 @@ export default function Configuration() {
   const { mutateAsync: deleteParameter } = useParameterDelete();
 
   useEffect(() => {
+    if( isFetchingParameters ) {
+      setShowSpinner(true);
+      return;
+    }
     if (isSuccessParameters) {
       setShowSpinner(false);
     }
-  }, [isSuccessParameters]);
+  }, [isSuccessParameters, isFetchingParameters]);
 
   useEffect(() => {
     const storedRows = localStorage.getItem("offlineParameters");

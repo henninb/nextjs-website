@@ -42,12 +42,14 @@ export default function Payments() {
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
+    isFetching: isFetchingAccounts,
     error: errorAccounts,
   } = useAccountFetch();
 
   const {
     data: fetchedParameters,
     isSuccess: isSuccessParameters,
+    isFetching: isFetchingParameters,
     error: errorParameters,
   } = useParameterFetch();
 
@@ -56,6 +58,10 @@ export default function Payments() {
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
+    if( isFetchingAccounts || isFetchingParameters) {
+      setShowSpinner(true);
+      return;
+    }
     if (isSuccessPayments && isSuccessAccounts && isSuccessParameters) {
       setShowSpinner(false);
     } else if (errorPayments || errorAccounts || errorParameters) {
@@ -70,6 +76,8 @@ export default function Payments() {
     errorParameters,
     errorPayments,
     errorAccounts,
+    isFetchingAccounts,
+    isFetchingParameters
   ]);
 
   const defaultPaymentMethod =

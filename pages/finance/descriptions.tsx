@@ -30,10 +30,17 @@ export default function Descriptions() {
   const [descriptionData, setDescriptionData] = useState<Description | null>(
     null,
   );
+  const [newDescriptionData, setNewDescriptionData] = useState<Description>({
+    descriptionId: 0,
+    descriptionName: "",
+    activeStatus: true,
+  });
 
   const {
     data: fetchedDescrptions,
     isSuccess: isSuccessDescriptions,
+    isLoading: isFetchingDescriptions,
+    isError: isErrorDescriptions,
     error: errorDescriptions,
   } = useFetchDescription();
   const { mutateAsync: insertDescription } = useDescriptionInsert();
@@ -41,19 +48,23 @@ export default function Descriptions() {
   const { mutateAsync: deleteDescription } = useDescriptionDelete();
 
   useEffect(() => {
+    if (isFetchingDescriptions) {
+      setShowSpinner(true);
+      return;
+    }
     if (isSuccessDescriptions) {
       setShowSpinner(false);
     }
-  }, [isSuccessDescriptions]);
+  }, [isSuccessDescriptions, isFetchingDescriptions]);
 
   const handleDeleteRow = async () => {
     if (selectedDescription) {
       try {
         await deleteDescription(selectedDescription);
-        setMessage("Description deleted successfully.");
+        setMessage(`Description deleted successfully.`);
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, `Delete Description error: ${error.message}`, false);
+        handleError(error, `Delete Description: ${error.message}`, false);
       } finally {
         setShowModalDelete(false);
         setSelectedDescription(null);
@@ -81,7 +92,7 @@ export default function Descriptions() {
   const handleAddRow = async (newData: Description) => {
     try {
       await insertDescription(newData);
-      setMessage("Description inserted successfully.");
+      setMessage(`Description inserted successfully.`);
       setShowSnackbar(true);
     } catch (error) {
       handleError(error, `Add Description error: ${error.message}`, false);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { v4 as uuidv4 } from "uuid";
+//import { v4 as uuidv4 } from "uuid";
 
 export default function Hockey() {
   const [data, setData] = useState(null);
@@ -80,7 +80,7 @@ export default function Hockey() {
 
       <div style={{ height: 800, width: "100%" }}>
         <DataGrid
-          getRowId={() => uuidv4()}
+          getRowId={() => crypto.randomUUID()}
           rows={data ? data : []}
           columns={columns}
           pageSize={100}

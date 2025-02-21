@@ -9,7 +9,7 @@ import Transaction from "../../../../model/Transaction";
 import { Box } from "@mui/material";
 import Link from "next/link";
 
-export default function TransactionTable() {
+export default function TransactionsByCategory() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
@@ -19,16 +19,16 @@ export default function TransactionTable() {
 
   const {
     data: fetchedTransactions,
-    isSuccess: isSucessTransactions,
+    isSuccess: isTransactionsLoaded,
     error: errorTransactions,
   } = useTransactionByCategory(categoryName);
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
 
   useEffect(() => {
-    if (isSucessTransactions) {
+    if (isTransactionsLoaded) {
       setShowSpinner(false);
     }
-  }, [isSucessTransactions]);
+  }, [isTransactionsLoaded]);
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
