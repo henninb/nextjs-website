@@ -133,6 +133,22 @@ export default function TransactionTable() {
     isSuccessDescriptions,
   ]);
 
+  
+  const initialTransactionData: Transaction = { // Define initial state
+    transactionDate: new Date(),
+    accountNameOwner: accountNameOwner,
+    reoccurringType: "onetime" as ReoccurringType,
+    amount: 0.0,
+    transactionState: "outstanding" as TransactionState,
+    transactionType: "undefined" as TransactionType,
+    guid: uuidv4(),
+    description: "",
+    category: "",
+    accountType: "undefined" as AccountType,
+    activeStatus: true,
+    notes: "",
+  };
+
   const handleSnackbarClose = () => setShowSnackbar(false);
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -562,7 +578,11 @@ export default function TransactionTable() {
       {/* Modal Add Transaction */}
       <Modal
         open={showModalAdd}
-        onClose={() => setShowModalAdd(false)}
+        onClose={() => {
+          setShowModalAdd(false);
+          setTransactionData(initialTransactionData);
+        }}
+        //onClose={() => setShowModalAdd(false)}
         aria-labelledby="transaction-form-modal"
         aria-describedby="transaction-form-modal-description"
       >
@@ -626,7 +646,7 @@ export default function TransactionTable() {
             onChange={(_, newValue) =>
               setTransactionData((prev: any) => ({
                 ...prev,
-                description: newValue,
+                description: newValue || "",
               }))
             }
             renderInput={(params) => (
@@ -650,7 +670,7 @@ export default function TransactionTable() {
             onChange={(_, newValue) =>
               setTransactionData((prev: any) => ({
                 ...prev,
-                category: newValue,
+                category: newValue || "",
               }))
             }
             renderInput={(params) => (
@@ -671,13 +691,9 @@ export default function TransactionTable() {
             value={transactionData?.amount ?? ""}
             onChange={(e) => {
               const inputValue = e.target.value;
-              let parsedValue =
-                inputValue === "" ? null : parseFloat(inputValue);
+              const parsedValue = inputValue === "" ? 0 : parseFloat(inputValue).toFixed(2);
 
-              if (parsedValue !== null) {
-                parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
-              }
-              setTransactionData((prev) => ({
+              setTransactionData((prev: any) => ({
                 ...prev,
                 amount: parsedValue,
               }));
@@ -745,7 +761,10 @@ export default function TransactionTable() {
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() => setShowModalAdd(false)}
+              onClick={() => {
+                setShowModalAdd(false);
+                setTransactionData(initialTransactionData);
+              }}
               style={{ marginTop: 16, marginLeft: 8 }}
             >
               Cancel
