@@ -456,7 +456,7 @@ export default function TransactionsByAccount() {
       ) : (
         <div>
           <div>
-            <h4>{`[ ${currencyFormat(
+            {/* <h4>{`[ ${currencyFormat(
               noNaN(fetchedTotals?.totals ?? 0),
             )} ] [ ${currencyFormat(
               noNaN(fetchedTotals?.totalsCleared ?? 0),
@@ -475,9 +475,9 @@ export default function TransactionsByAccount() {
 
             <Button
               onClick={() => {
-                console.log(
-                  'insertNewValidationData(accountNameOwner, "cleared")',
-                );
+                // console.log(
+                //   'insertNewValidationData(accountNameOwner, "cleared")',
+                // );
                 handleInsertNewValidationData(accountNameOwner, "cleared");
               }}
             >
@@ -491,7 +491,55 @@ export default function TransactionsByAccount() {
               {new Date(fetchedValidationData?.validationDate).toLocaleString(
                 "en-US",
               )}
-            </Button>
+            </Button> */}
+
+<div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Total</th>
+            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Cleared</th>
+            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Outstanding</th>
+            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Future</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}</td>
+            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}</td>
+            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}</td>
+            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style={{ display: 'flex', alignItems: 'center', marginTop: '16px' }}> {/* Added margin for spacing */}
+        <Button
+          onClick={() => handleInsertNewValidationData(accountNameOwner, "cleared")}
+          variant="contained" // Added variant for better visual appearance
+          style={{ marginRight: '8px' }} // Added margin for spacing
+        >
+          {fetchedValidationData?.amount ? (
+            fetchedValidationData?.amount.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+            })
+          ) : (
+            "$0.00"
+          )}
+          {" - "}
+          {fetchedValidationData?.validationDate ? ( // Check if validationDate exists
+            new Date(fetchedValidationData?.validationDate).toLocaleString("en-US")
+          ) : (
+            "No Date" // Or handle the absence of a date as needed
+          )}
+        </Button>
+
+        <IconButton onClick={() => setShowModalAdd(true)}>
+          <AddIcon />
+        </IconButton>
+      </div>
+    </div>
 
             <DataGrid
               rows={fetchedTransactions?.filter((row) => row != null) || []}
