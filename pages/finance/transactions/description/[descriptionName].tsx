@@ -27,7 +27,7 @@ export default function TransactionsByDescription() {
 
   useEffect(() => {
     if (isFetchingTransactions) {
-      setShowSpinner(true)
+      setShowSpinner(true);
       return;
     }
     if (isTransactionsLoaded) {
