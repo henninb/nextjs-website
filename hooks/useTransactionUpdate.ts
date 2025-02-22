@@ -87,16 +87,18 @@ export default function useTransactionUpdate() {
       const newAccountKey = getAccountKey(variables.newRow.accountNameOwner);
       const oldTotalsKey = getTotalsKey(variables.oldRow.accountNameOwner);
       const newTotalsKey = getTotalsKey(variables.newRow.accountNameOwner);
-    
+
       const updatedRow = variables.newRow;
       const oldData = queryClient.getQueryData(oldAccountKey) as Transaction[];
-    
-      if (variables.oldRow.accountNameOwner === variables.newRow.accountNameOwner) {
+
+      if (
+        variables.oldRow.accountNameOwner === variables.newRow.accountNameOwner
+      ) {
         // Same account update
         const newData = oldData.map((row: Transaction) =>
-          row.guid === updatedRow.guid ? updatedRow : row
+          row.guid === updatedRow.guid ? updatedRow : row,
         );
-    
+
         // *** KEY CHANGE: Clone the existing totals or create a new one ***
         let totals: Totals = {
           ...(queryClient.getQueryData(oldTotalsKey) || {
@@ -106,9 +108,9 @@ export default function useTransactionUpdate() {
             totalsOutstanding: 0,
           }),
         };
-    
+
         const difference = variables.newRow.amount - variables.oldRow.amount;
-    
+
         if (variables.oldRow.amount !== variables.newRow.amount) {
           if (variables.oldRow.transactionState === "future") {
             totals.totalsFuture += difference;
@@ -118,10 +120,13 @@ export default function useTransactionUpdate() {
             totals.totalsOutstanding += difference;
           }
         }
-    
-        if (variables.oldRow.transactionState !== variables.newRow.transactionState) {
+
+        if (
+          variables.oldRow.transactionState !==
+          variables.newRow.transactionState
+        ) {
           const amount = variables.newRow.amount;
-    
+
           // Deduct from old state
           if (variables.oldRow.transactionState === "future") {
             totals.totalsFuture -= amount;
@@ -130,7 +135,7 @@ export default function useTransactionUpdate() {
           } else if (variables.oldRow.transactionState === "outstanding") {
             totals.totalsOutstanding -= amount;
           }
-    
+
           // Add to new state
           if (variables.newRow.transactionState === "future") {
             totals.totalsFuture += amount;
@@ -140,15 +145,15 @@ export default function useTransactionUpdate() {
             totals.totalsOutstanding += amount;
           }
         }
-    
+
         queryClient.setQueryData(oldTotalsKey, totals);
         queryClient.setQueryData(oldAccountKey, newData); // Update transactions
       } else {
         // Different account update
         const newData = oldData.filter(
-          (row: Transaction) => row.guid !== variables.oldRow.guid
+          (row: Transaction) => row.guid !== variables.oldRow.guid,
         );
-    
+
         let oldTotals: Totals = {
           ...(queryClient.getQueryData(oldTotalsKey) || {
             totals: 0,
@@ -157,10 +162,10 @@ export default function useTransactionUpdate() {
             totalsOutstanding: 0,
           }),
         };
-    
+
         if (oldTotals) {
           const amount = variables.oldRow.amount;
-    
+
           if (variables.oldRow.transactionState === "future") {
             oldTotals.totalsFuture -= amount;
           } else if (variables.oldRow.transactionState === "cleared") {
@@ -168,23 +173,27 @@ export default function useTransactionUpdate() {
           } else if (variables.oldRow.transactionState === "outstanding") {
             oldTotals.totalsOutstanding -= amount;
           }
-    
+
           oldTotals.totals -= variables.oldRow.amount;
           queryClient.setQueryData(oldTotalsKey, oldTotals);
         }
-    
-        const newAccountData = queryClient.getQueryData(newAccountKey) as Transaction[] || [];
-        queryClient.setQueryData(newAccountKey, [...newAccountData, updatedRow]);
-    
+
+        const newAccountData =
+          (queryClient.getQueryData(newAccountKey) as Transaction[]) || [];
+        queryClient.setQueryData(newAccountKey, [
+          ...newAccountData,
+          updatedRow,
+        ]);
+
         let newTotals: Totals = {
-           ...(queryClient.getQueryData(newTotalsKey) || {
+          ...(queryClient.getQueryData(newTotalsKey) || {
             totals: 0,
             totalsFuture: 0,
             totalsCleared: 0,
             totalsOutstanding: 0,
           }),
         };
-    
+
         if (variables.newRow.transactionState === "future") {
           newTotals.totalsFuture += variables.newRow.amount;
         } else if (variables.newRow.transactionState === "cleared") {
@@ -192,7 +201,7 @@ export default function useTransactionUpdate() {
         } else if (variables.newRow.transactionState === "outstanding") {
           newTotals.totalsOutstanding += variables.newRow.amount;
         }
-    
+
         queryClient.setQueryData(newTotalsKey, newTotals);
         queryClient.setQueryData(oldAccountKey, newData); // Update transactions
       }

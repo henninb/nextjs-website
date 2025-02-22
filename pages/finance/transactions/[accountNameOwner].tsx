@@ -493,53 +493,103 @@ export default function TransactionsByAccount() {
               )}
             </Button> */}
 
-<div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Total</th>
-            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Cleared</th>
-            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Outstanding</th>
-            <th style={{ padding: '8px', border: '1px solid #ddd', textAlign: 'left' }}>Future</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}</td>
-            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}</td>
-            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}</td>
-            <td style={{ padding: '8px', border: '1px solid #ddd' }}>{currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}</td>
-          </tr>
-        </tbody>
-      </table>
+            <div>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Total
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Cleared
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Outstanding
+                    </th>
+                    <th
+                      style={{
+                        padding: "8px",
+                        border: "1px solid #ddd",
+                        textAlign: "left",
+                      }}
+                    >
+                      Future
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                      {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                    </td>
+                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                      {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+                    </td>
+                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                      {currencyFormat(
+                        noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+                      )}
+                    </td>
+                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                      {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
-      <div style={{ display: 'flex', alignItems: 'center', marginTop: '16px' }}> {/* Added margin for spacing */}
-        <Button
-          onClick={() => handleInsertNewValidationData(accountNameOwner, "cleared")}
-          variant="contained" // Added variant for better visual appearance
-          style={{ marginRight: '8px' }} // Added margin for spacing
-        >
-          {fetchedValidationData?.amount ? (
-            fetchedValidationData?.amount.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })
-          ) : (
-            "$0.00"
-          )}
-          {" - "}
-          {fetchedValidationData?.validationDate ? ( // Check if validationDate exists
-            new Date(fetchedValidationData?.validationDate).toLocaleString("en-US")
-          ) : (
-            "No Date" // Or handle the absence of a date as needed
-          )}
-        </Button>
-
-        <IconButton onClick={() => setShowModalAdd(true)}>
-          <AddIcon />
-        </IconButton>
-      </div>
-    </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginTop: "16px",
+                }}
+              >
+                {" "}
+                {/* Added margin for spacing */}
+                <Button
+                  onClick={() =>
+                    handleInsertNewValidationData(accountNameOwner, "cleared")
+                  }
+                  variant="contained" // Added variant for better visual appearance
+                  style={{ marginRight: "8px" }} // Added margin for spacing
+                >
+                  {fetchedValidationData?.amount
+                    ? fetchedValidationData?.amount.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      })
+                    : "$0.00"}
+                  {" - "}
+                  {fetchedValidationData?.validationDate // Check if validationDate exists
+                    ? new Date(
+                        fetchedValidationData?.validationDate,
+                      ).toLocaleString("en-US")
+                    : "No Date" // Or handle the absence of a date as needed
+                  }
+                </Button>
+                <IconButton onClick={() => setShowModalAdd(true)}>
+                  <AddIcon />
+                </IconButton>
+              </div>
+            </div>
 
             <DataGrid
               rows={fetchedTransactions?.filter((row) => row != null) || []}
@@ -670,18 +720,6 @@ export default function TransactionsByAccount() {
         >
           <h3>Add New Transaction</h3>
 
-          {/* <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DatePicker
-              label="Transaction Date"
-              onChange={(newValue) =>
-                setTransactionData((prev: any) => ({
-                  ...prev,
-                  transactionDate: newValue,
-                }))
-              }
-            />
-          </LocalizationProvider> */}
-
           <TextField
             label="Transaction Date"
             fullWidth
@@ -697,18 +735,47 @@ export default function TransactionsByAccount() {
                 transactionDate: formattedDate,
               }));
             }}
-            // onChange={(e) =>
-            //   setTransactionData((prev: any) => ({
-            //     ...prev,
-            //     transactionDate: e.target.value,
-            //   }))
-            // }
             slotProps={{
               inputLabel: { shrink: true },
             }}
           />
 
-          <Autocomplete
+<Autocomplete
+  freeSolo
+  options={isSuccessDescriptions ? fetchedDescriptions.map((d) => d.descriptionName) : []}
+  value={transactionData?.description || ""}
+  onChange={(_, newValue) =>
+    setTransactionData((prev) => ({
+      ...prev,
+      description: newValue || "",
+    }))
+  }
+  onBlur={() => {
+    if (transactionData?.description === "") {
+      setTransactionData((prev) => ({
+        ...prev,
+        description: "", // Ensure an empty description is updated
+      }));
+    }
+  }}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Description"
+      fullWidth
+      margin="normal"
+      onChange={(e) => {
+        const newDescription = e.target.value;
+        setTransactionData((prev) => ({
+          ...prev,
+          description: newDescription,
+        }));
+      }}
+    />
+  )}
+/>
+
+          {/* <Autocomplete
             freeSolo
             options={
               isSuccessDescriptions
@@ -730,9 +797,9 @@ export default function TransactionsByAccount() {
                 margin="normal"
               />
             )}
-          />
+          /> */}
 
-          <Autocomplete
+          {/* <Autocomplete
             freeSolo
             options={
               isSuccessCategories
@@ -754,27 +821,84 @@ export default function TransactionsByAccount() {
                 margin="normal"
               />
             )}
-          />
-
-          {/* <TextField
-            label="Amount"
-            fullWidth
-            margin="normal"
-            type="number"
-            value={transactionData?.amount ?? ""}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              const parsedValue =
-                inputValue === "" ? 0 : parseFloat(inputValue).toFixed(2);
-
-              setTransactionData((prev: any) => ({
-                ...prev,
-                amount: parsedValue,
-              }));
-            }}
           /> */}
 
-          <TextField
+          <Autocomplete
+            freeSolo
+            options={
+              isSuccessCategories
+                ? fetchedCategories.map((c) => c.categoryName)
+                : []
+            }
+            value={transactionData?.category || ""}
+            onChange={(_, newValue) =>
+              setTransactionData((prev) => ({
+                ...prev,
+                category: newValue || "",
+              }))
+            }
+            onBlur={() => {
+              if (transactionData?.category === "") {
+                setTransactionData((prev) => ({
+                  ...prev,
+                  category: "", // Ensure an empty category is updated
+                }));
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Category"
+                fullWidth
+                margin="normal"
+                onChange={(e) => {
+                  const newCategory = e.target.value;
+                  setTransactionData((prev) => ({
+                    ...prev,
+                    category: newCategory,
+                  }));
+                }}
+              />
+            )}
+          />
+
+
+<TextField
+  label="Amount"
+  fullWidth
+  margin="normal"
+  type="text"
+  value={transactionData?.amount ?? ""}
+  onChange={(e) => {
+    const inputValue = e.target.value;
+
+    // Regular expression to allow only numbers with up to 2 decimal places
+    const regex = /^\d*\.?\d{0,2}$/;
+
+    if (regex.test(inputValue) || inputValue === "") {
+      setTransactionData((prev: any) => ({
+        ...prev,
+        amount: inputValue, // Store as string to allow proper input control
+      }));
+    }
+  }}
+  onBlur={() => {
+    // Ensure value is properly formatted when user leaves the field
+    setTransactionData((prev:any) => ({
+      ...prev,
+      amount: prev.amount
+        ? parseFloat(Number(prev.amount).toFixed(2)).toString() // Format to 2 decimal places
+        : "",
+    }));
+  }}
+  slotProps={{
+    input: {
+      inputMode: "decimal",
+    },
+  }}
+/>
+
+          {/* <TextField
             label="Amount"
             fullWidth
             margin="normal"
@@ -807,7 +931,7 @@ export default function TransactionsByAccount() {
                 inputMode: "decimal",
               },
             }}
-          />
+          /> */}
 
           <Select
             label="Transaction State"
