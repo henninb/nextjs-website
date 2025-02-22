@@ -18,6 +18,7 @@ import useDescriptionInsert from "../../hooks/useDescriptionInsert";
 import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
+import Link from "next/link";
 
 export default function Descriptions() {
   const [message, setMessage] = useState("");
@@ -112,6 +113,13 @@ export default function Descriptions() {
       headerName: "Name",
       width: 350,
       editable: true,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/description/${params.value}`}>
+            {params.value}
+          </Link>
+        );
+      },
     },
     {
       field: "activeStatus",

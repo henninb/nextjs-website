@@ -20,15 +20,20 @@ export default function TransactionsByDescription() {
   const {
     data: fetchedTransactions,
     isSuccess: isTransactionsLoaded,
+    isFetching: isFetchingTransactions,
     error: errorTransactions,
   } = useTransactionByDescription(descriptionName);
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
 
   useEffect(() => {
+    if (isFetchingTransactions) {
+      setShowSpinner(true)
+      return;
+    }
     if (isTransactionsLoaded) {
       setShowSpinner(false);
     }
-  }, [isTransactionsLoaded]);
+  }, [isTransactionsLoaded, isFetchingTransactions]);
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
