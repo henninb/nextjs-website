@@ -23,6 +23,8 @@ import Totals from "../../model/Totals";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
 import Link from "next/link";
+import FinanceLayout from "../../layouts/FinanceLayout";
+
 
 export default function Accounts() {
   const [message, setMessage] = useState("");
@@ -216,6 +218,7 @@ export default function Accounts() {
 
   return (
     <div>
+      <FinanceLayout>
       <h2>Account Details</h2>
       {showSpinner ? (
         <Spinner />
@@ -371,6 +374,7 @@ export default function Accounts() {
           </Button>
         </Box>
       </Modal>
+      </FinanceLayout>
     </div>
   );
 }
