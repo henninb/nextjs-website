@@ -67,16 +67,18 @@ export default function SelectNavigateAccounts() {
   return (
     <div className="select-formatting" data-test-id="account-name-owner-select">
       <Select
+        classNamePrefix="select"
         options={options}
         onChange={handleChange}
         placeholder="Select account..."
         theme={(theme) => ({
           ...theme,
-          borderRadius: 0,
+          borderRadius: 20,
           colors: {
             ...theme.colors,
             primary25: "#9965f4",
-            primary: "#ffffff",
+            //primary: "#ffffff",
+            background: "#282a36", 
           },
         })}
         aria-label="Select an account"

@@ -16,11 +16,11 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const isFinancePage: boolean = pathname.startsWith("/finance");
-  const navbarClass = isFinancePage ? "navbar navbar-expand-lg navbar-dark bg-dark" : "navbar navbar-expand-lg navbar-light bg-light";
+  const layoutClass = isFinancePage ? "finance-theme" : "";
 
   return (
-    <div>
-      <nav className={navbarClass}>
+    <div className={layoutClass}>
+      <nav className="navbar navbar-expand-lg">
         <div className="container-fluid flex-column">
           <div className="d-flex justify-content-center w-100 mb-2">
             <ul className="navbar-nav">

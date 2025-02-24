@@ -21,6 +21,23 @@ export const draculaTheme = createTheme({
     divider: "#44475A", // Consistent with Dracula
   },
   components: {
+  //   MuiDataGrid: {
+  //     styleOverrides: {
+  //       root: {
+  //         backgroundColor: "#2A2B3A",
+  //         color: "#F8F8F2",
+  //         borderColor: "#BD93F9",
+  //         borderRadius: "8px",
+  //         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+  //       },
+  //       columnHeader: {
+  //         backgroundColor: "#3A3C4E",
+  //         color: "#F8F8F2",
+  //         fontWeight: "bold",
+  //       },
+  //     },
+  //   },
+
     MuiDataGrid: {
       styleOverrides: {
         root: {
@@ -30,13 +47,18 @@ export const draculaTheme = createTheme({
           borderRadius: "8px",
           boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
         },
-        columnHeader: {
-          backgroundColor: "#3A3C4E",
-          color: "#F8F8F2",
+        columnHeaders: {
+          backgroundColor: "#3A3C4E", // Header background
+          //color: "#F8F8F2", // Header text color
+          color: "#8be9fd", /* Cyan */
           fontWeight: "bold",
+          borderBottom: "2px solid #BD93F9",
+          textTransform: "uppercase",
         },
       },
     },
+
+
     // **Added logic for MuiLink here**
     MuiLink: {
       styleOverrides: {

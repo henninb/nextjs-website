@@ -943,3 +943,63 @@ header {
 .form-button:hover {
   background-color: #0056b3;
 }
+
+.finance-theme {
+  background-color: #282a36;
+  color: #f8f8f2;
+}
+
+.finance-theme .navbar {
+  background-color: #44475a !important;
+}
+
+.finance-theme .nav-link {
+  color: #f8f8f2 !important;
+}
+
+.finance-theme .nav-link:hover {
+  color: #50fa7b !important;
+}
+
+.finance-theme .navbar-toggler-icon {
+  filter: invert(100%);
+}
+
+.finance-theme .container-fluid {
+  background-color: #282a36;
+}
+
+.finance-theme .form-icon {
+  color: #ff79c6 !important;
+}
+
+
+/* Global Dracula Theme for Finance Section */
+.finance-theme {
+  background-color: #282a36;
+  color: #f8f8f2;
+}
+
+.finance-theme .navbar {
+  background-color: #44475a !important;
+}
+
+.finance-theme .nav-link {
+  color: #f8f8f2 !important;
+}
+
+.finance-theme .nav-link:hover {
+  color: #50fa7b !important;
+}
+
+.finance-theme .navbar-toggler-icon {
+  filter: invert(100%);
+}
+
+.finance-theme .container-fluid {
+  background-color: #282a36;
+}
+
+.finance-theme .form-icon {
+  color: #ff79c6 !important;
+}
