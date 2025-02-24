@@ -16,10 +16,11 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const isFinancePage: boolean = pathname.startsWith("/finance");
+  const navbarClass = isFinancePage ? "navbar navbar-expand-lg navbar-dark bg-dark" : "navbar navbar-expand-lg navbar-light bg-light";
 
   return (
     <div>
-      <nav className="navbar navbar-expand-lg navbar-light primary-color">
+      <nav className={navbarClass}>
         <div className="container-fluid flex-column">
           <div className="d-flex justify-content-center w-100 mb-2">
             <ul className="navbar-nav">
@@ -49,129 +50,28 @@ export default function Layout({ children }: LayoutProps) {
             <ul className="navbar-nav mx-auto">
               {isFinancePage ? (
                 <>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance/">
-                      Home
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance/transfers">
-                      Transfer
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance/payments">
-                      Payments
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance/paymentrequired">
-                      PaymentsRequired
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance/categories">
-                      Categories
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance/descriptions">
-                      Descriptions
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance/configuration">
-                      Configuration
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <SelectNavigateAccounts />
-                  </li>
+                  <li className="nav-item active"><a className="nav-link" href="/finance/">Home</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/finance/transfers">Transfer</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/finance/payments">Payments</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/finance/paymentrequired">PaymentsRequired</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/finance/categories">Categories</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/finance/descriptions">Descriptions</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/finance/configuration">Configuration</a></li>
+                  <li className="nav-item"><SelectNavigateAccounts /></li>
                 </>
               ) : (
                 <>
-                  <li className="nav-item active">
-                    <a
-                      className="nav-link"
-                      href="/?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      Home
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/nba?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      NBA
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/nhl?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      NHL
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/mlb?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      MLB
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/howto?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      Howto
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/tools?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      Tools
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/temperature?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      Temperature
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/lead?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      Lead
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/payment?utm_source=dummy_source&utm_medium=dummy_medium&utm_campaign=dummy_campaign"
-                    >
-                      Payment
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/spotifyauth">
-                      SpotifyAuth
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/finance">
-                      Finance
-                    </a>
-                  </li>
+                  <li className="nav-item active"><a className="nav-link" href="/">Home</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/nba">NBA</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/nhl">NHL</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/mlb">MLB</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/howto">Howto</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/tools">Tools</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/temperature">Temperature</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/lead">Lead</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/payment">Payment</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/spotifyauth">SpotifyAuth</a></li>
+                  <li className="nav-item"><a className="nav-link" href="/finance">Finance</a></li>
                 </>
               )}
             </ul>
