@@ -1,3 +1,5 @@
+export {};
+
 import { FinanceThemeProvider } from "../components/FinanceThemeProvider";
 
 const FinanceLayout = ({ children }: { children: React.ReactNode }) => {
