@@ -5,6 +5,7 @@ import {
   Button,
   IconButton,
   Modal,
+  Paper,
   TextField,
   Typography,
   Autocomplete,
@@ -24,7 +25,6 @@ import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
 import Link from "next/link";
 import FinanceLayout from "../../layouts/FinanceLayout";
-
 
 export default function Accounts() {
   const [message, setMessage] = useState("");
@@ -217,164 +217,162 @@ export default function Accounts() {
   ];
 
   return (
-    <div>
+    <Box>
       <FinanceLayout>
-      <h2>Account Details</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div>
-          <IconButton onClick={() => setShowModelAdd(true)}>
-            <AddIcon />
-          </IconButton>
-
-          <h4>{`[ ${currencyFormat(
-            noNaN(fetchedTotals?.totals ?? 0),
-          )} ] [ ${currencyFormat(
-            noNaN(fetchedTotals?.totalsCleared ?? 0),
-          )} ]  [ ${currencyFormat(
-            noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-          )} ] [ ${currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))} ]`}</h4>
-
-          <DataGrid
-            rows={fetchedAccounts?.filter((row) => row != null) || []}
-            columns={columns}
-            getRowId={(row) => row.accountId || 0}
-            paginationModel={{ pageSize: fetchedAccounts?.length, page: 0 }}
-            hideFooterPagination={true}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={async (
-              newRow: Account,
-              oldRow: Account,
-            ): Promise<Account> => {
-              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow;
-              }
-              try {
-                await updateAccount({ newRow: newRow, oldRow: oldRow });
-                setMessage("Account updated successfully.");
-                setShowSnackbar(true);
-
-                return { ...newRow };
-              } catch (error) {
-                handleError(error, `Update Account ${error.message}`, false);
-                return error;
-              }
-            }}
-          />
+        <h2>Account Details</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
           <div>
-            <SnackbarBaseline
-              message={message}
-              state={showSnackbar}
-              handleSnackbarClose={handleSnackbarClose}
-            />
-          </div>
-        </div>
-      )}
+            <IconButton onClick={() => setShowModelAdd(true)}>
+              <AddIcon />
+            </IconButton>
 
-      {/* Confirmation Deleting Modal */}
-      <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Confirm Deletion</Typography>
-          <Typography>
-            Are you sure you want to delete the account "
-            {selectedAccount?.accountNameOwner}"?
-          </Typography>
-          <Box mt={2} display="flex" justifyContent="space-between">
+            <h4>{`[ ${currencyFormat(
+              noNaN(fetchedTotals?.totals ?? 0),
+            )} ] [ ${currencyFormat(
+              noNaN(fetchedTotals?.totalsCleared ?? 0),
+            )} ]  [ ${currencyFormat(
+              noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+            )} ] [ ${currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))} ]`}</h4>
+
+            <DataGrid
+              rows={fetchedAccounts?.filter((row) => row != null) || []}
+              columns={columns}
+              getRowId={(row) => row.accountId || 0}
+              paginationModel={{ pageSize: fetchedAccounts?.length, page: 0 }}
+              hideFooterPagination={true}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={async (
+                newRow: Account,
+                oldRow: Account,
+              ): Promise<Account> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updateAccount({ newRow: newRow, oldRow: oldRow });
+                  setMessage("Account updated successfully.");
+                  setShowSnackbar(true);
+
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(error, `Update Account ${error.message}`, false);
+                  return error;
+                }
+              }}
+            />
+            <div>
+              <SnackbarBaseline
+                message={message}
+                state={showSnackbar}
+                handleSnackbarClose={handleSnackbarClose}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Confirmation Deleting Modal */}
+        <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography>
+              Are you sure you want to delete the account "
+              {selectedAccount?.accountNameOwner}"?
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModelDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
+
+        {/* Modal Add Account */}
+        <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <h3>Add New Account</h3>
+            <TextField
+              label="Account"
+              fullWidth
+              margin="normal"
+              value={accountData?.accountNameOwner || ""}
+              onChange={(e) =>
+                setAccountData((prev) => ({
+                  ...prev,
+                  accountNameOwner: e.target.value,
+                }))
+              }
+            />
+
+            <Autocomplete
+              freeSolo
+              options={accountTypeOptions}
+              value={accountData?.accountType || ""}
+              onChange={(event, newValue) =>
+                setAccountData((prev: any) => ({
+                  ...prev,
+                  accountType: newValue || "",
+                }))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Account Type"
+                  fullWidth
+                  margin="normal"
+                  onKeyDown={handleAccountTypeKeyDown}
+                />
+              )}
+            />
+
+            <TextField
+              label="Moniker"
+              fullWidth
+              margin="normal"
+              value={accountData?.moniker || ""}
+              onChange={(e) =>
+                setAccountData((prev: any) => ({
+                  ...prev,
+                  moniker: e.target.value,
+                }))
+              }
+            />
             <Button
               variant="contained"
-              color="primary"
-              onClick={handleDeleteRow}
+              onClick={() => accountData && handleAddRow(accountData)}
             >
-              Delete
+              Add
             </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModelDelete(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* Modal Add Account */}
-      <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <h3>Add New Account</h3>
-          <TextField
-            label="Account"
-            fullWidth
-            margin="normal"
-            value={accountData?.accountNameOwner || ""}
-            onChange={(e) =>
-              setAccountData((prev) => ({
-                ...prev,
-                accountNameOwner: e.target.value,
-              }))
-            }
-          />
-
-          <Autocomplete
-            freeSolo
-            options={accountTypeOptions}
-            value={accountData?.accountType || ""}
-            onChange={(event, newValue) =>
-              setAccountData((prev: any) => ({
-                ...prev,
-                accountType: newValue || "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Account Type"
-                fullWidth
-                margin="normal"
-                onKeyDown={handleAccountTypeKeyDown}
-              />
-            )}
-          />
-
-          <TextField
-            label="Moniker"
-            fullWidth
-            margin="normal"
-            value={accountData?.moniker || ""}
-            onChange={(e) =>
-              setAccountData((prev: any) => ({
-                ...prev,
-                moniker: e.target.value,
-              }))
-            }
-          />
-          <Button
-            variant="contained"
-            onClick={() => accountData && handleAddRow(accountData)}
-          >
-            Add
-          </Button>
-        </Box>
-      </Modal>
+          </Paper>
+        </Modal>
       </FinanceLayout>
-    </div>
+    </Box>
   );
 }

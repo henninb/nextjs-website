@@ -283,7 +283,6 @@ export default function Payments() {
           sx={{
             width: 400,
             padding: 4,
-            backgroundColor: "white",
             margin: "auto",
             marginTop: "20%",
           }}
@@ -318,7 +317,6 @@ export default function Payments() {
           sx={{
             width: 400,
             padding: 4,
-            backgroundColor: "white",
             margin: "auto",
             marginTop: "20%",
           }}

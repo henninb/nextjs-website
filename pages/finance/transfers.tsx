@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
+  Paper,
   Button,
   IconButton,
   Tooltip,
@@ -366,7 +367,6 @@ export default function Transfers() {
           sx={{
             width: 400,
             padding: 4,
-            backgroundColor: "white",
             margin: "auto",
             marginTop: "20%",
           }}
@@ -397,11 +397,10 @@ export default function Transfers() {
 
       {/* Modal to add a transaction */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Box
+        <Paper
           sx={{
             width: 400,
             padding: 4,
-            backgroundColor: "white",
             margin: "auto",
             marginTop: "20%",
           }}
@@ -523,7 +522,7 @@ export default function Transfers() {
           >
             Add
           </Button>
-        </Box>
+        </Paper>
       </Modal>
     </div>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
+  Paper,
   Button,
   IconButton,
   Tooltip,
@@ -152,7 +153,7 @@ export default function Descriptions() {
   ];
 
   return (
-    <div>
+    <Box>
       <h2>Description Details</h2>
       {showSpinner ? (
         <Spinner />
@@ -204,11 +205,10 @@ export default function Descriptions() {
 
       {/* Delete Modal */}
       <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-        <Box
+        <Paper
           sx={{
             width: 400,
             padding: 4,
-            backgroundColor: "white",
             margin: "auto",
             marginTop: "20%",
           }}
@@ -240,16 +240,15 @@ export default function Descriptions() {
               Cancel
             </Button>
           </Box>
-        </Box>
+        </Paper>
       </Modal>
 
       {/* Modal Add Description */}
       <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Box
+        <Paper
           sx={{
             width: 400,
             padding: 4,
-            backgroundColor: "white",
             margin: "auto",
             marginTop: "20%",
           }}
@@ -285,8 +284,8 @@ export default function Descriptions() {
           >
             Add
           </Button>
-        </Box>
+        </Paper>
       </Modal>
-    </div>
+    </Box>
   );
 }

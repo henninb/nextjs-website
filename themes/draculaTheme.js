@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+import Link from "next/link"; // Import Link from Next.js
 
 export const draculaTheme = createTheme({
   palette: {
@@ -33,6 +34,19 @@ export const draculaTheme = createTheme({
           backgroundColor: "#3A3C4E",
           color: "#F8F8F2",
           fontWeight: "bold",
+        },
+      },
+    },
+    // **Added logic for MuiLink here**
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: "#50FA7B", // Dracula green for links
+          textDecoration: "none",
+          "&:hover": {
+            textDecoration: "underline",
+            color: "#8BE9FD", // Light blue on hover
+          },
         },
       },
     },
