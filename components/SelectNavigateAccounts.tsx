@@ -78,7 +78,7 @@ export default function SelectNavigateAccounts() {
             ...theme.colors,
             primary25: "#9965f4",
             //primary: "#ffffff",
-            background: "#282a36", 
+            background: "#282a36",
           },
         })}
         aria-label="Select an account"

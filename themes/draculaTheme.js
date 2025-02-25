@@ -1,73 +1,78 @@
 import { createTheme } from "@mui/material/styles";
-import Link from "next/link"; // Import Link from Next.js
 
 export const draculaTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#BD93F9", // Soft purple
+      main: "rgba(189, 147, 249, 1)", // Soft purple
     },
     secondary: {
-      main: "#FF79C6", // Vibrant pink
+      main: "rgba(255, 121, 198, 1)", // Vibrant pink
     },
     background: {
-      default: "#1E1F29", // Darker shade for better contrast
-      paper: "#2A2B3A", // Slightly lighter for card-like elements
+      default: "rgba(30, 31, 41, 1)", // Darker shade for better contrast
+      paper: "rgba(42, 43, 58, 1)", // Slightly lighter for card-like elements
     },
     text: {
-      primary: "#F8F8F2", // Softer white
-      secondary: "#8BE9FD", // Light blue for accents
+      primary: "rgba(248, 248, 242, 1)",
+      secondary: "rgba(139, 233, 253, 1)",
     },
-    divider: "#44475A", // Consistent with Dracula
+    divider: "rgba(68, 71, 90, 1)",
   },
   components: {
-  //   MuiDataGrid: {
-  //     styleOverrides: {
-  //       root: {
-  //         backgroundColor: "#2A2B3A",
-  //         color: "#F8F8F2",
-  //         borderColor: "#BD93F9",
-  //         borderRadius: "8px",
-  //         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-  //       },
-  //       columnHeader: {
-  //         backgroundColor: "#3A3C4E",
-  //         color: "#F8F8F2",
-  //         fontWeight: "bold",
-  //       },
-  //     },
-  //   },
-
+    MuiTooltip: { // Tooltip styles *must* come before components that might contain tooltips
+      styleOverrides: ({ theme }) => ({
+        tooltip: {
+          backgroundColor: 'rgba(42, 43, 58, 0.9)',
+          color: theme.palette.text.primary,
+          fontSize: '0.875rem',
+          borderRadius: '4px',
+          padding: '4px 8px',
+        },
+        arrow: {
+          color: 'rgba(42, 43, 58, 0.9)',
+        },
+      }),
+    },
+    MuiIconButton: {
+      styleOverrides: ({ theme }) => ({
+        root: {
+          color: "rgba(189, 147, 249, 1)",
+          "&:hover": {
+            backgroundColor: "rgba(189, 147, 249, 0.2)",
+          },
+          "& .MuiSvgIcon-root": {
+            color: "rgba(255, 121, 198, 1)",
+          },
+        },
+      }),
+    },
     MuiDataGrid: {
       styleOverrides: {
         root: {
-          backgroundColor: "#2A2B3A",
-          color: "#F8F8F2",
-          borderColor: "#BD93F9",
+          backgroundColor: "rgba(42, 43, 58, 1)",
+          color: "rgba(248, 248, 242, 1)",
+          borderColor: "rgba(189, 147, 249, 1)",
           borderRadius: "8px",
           boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
         },
         columnHeaders: {
-          backgroundColor: "#3A3C4E", // Header background
-          //color: "#F8F8F2", // Header text color
-          color: "#8be9fd", /* Cyan */
+          backgroundColor: "rgba(58, 60, 78, 1)",
+          color: "rgba(139, 233, 253, 1)",
           fontWeight: "bold",
-          borderBottom: "2px solid #BD93F9",
+          borderBottom: "2px solid rgba(189, 147, 249, 1)",
           textTransform: "uppercase",
         },
       },
     },
-
-
-    // **Added logic for MuiLink here**
     MuiLink: {
       styleOverrides: {
         root: {
-          color: "#50FA7B", // Dracula green for links
+          color: "rgba(80, 250, 123, 1)",
           textDecoration: "none",
           "&:hover": {
             textDecoration: "underline",
-            color: "#8BE9FD", // Light blue on hover
+            color: "rgba(139, 233, 253, 1)",
           },
         },
       },
@@ -84,15 +89,15 @@ export const draculaTheme = createTheme({
     MuiBackdrop: {
       styleOverrides: {
         root: {
-          backgroundColor: "rgba(0, 0, 0, 0.7)", // Darken backdrop
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: "#2A2B3A", // Ensures modal content is dark
-          color: "#F8F8F2",
+          backgroundColor: "rgba(42, 43, 58, 1)",
+          color: "rgba(248, 248, 242, 1)",
           borderRadius: "10px",
           padding: "24px",
           boxShadow: "0px 6px 12px rgba(0, 0, 0, 0.3)",
@@ -112,11 +117,21 @@ export const draculaTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: "#282A36",
-          color: "#F8F8F2",
+          backgroundColor: "rgba(40, 42, 54, 1)",
+          color: "rgba(248, 248, 242, 1)",
           borderRadius: "12px",
           padding: "16px",
           boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+        },
+      },
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: {
+          fontSize: "1.5rem",
+        },
+        colorError: {
+          color: "rgba(255, 85, 85, 1)",
         },
       },
     },

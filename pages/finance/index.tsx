@@ -21,10 +21,8 @@ import useAccountInsert from "../../hooks/useAccountInsert";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
-import Totals from "../../model/Totals";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
-// import Link from "next/link";
 import FinanceLayout from "../../layouts/FinanceLayout";
 
 export default function Accounts() {
