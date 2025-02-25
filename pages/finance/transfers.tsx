@@ -7,6 +7,7 @@ import {
   IconButton,
   Tooltip,
   Modal,
+  Link,
   TextField,
   Typography,
   Autocomplete,
@@ -22,10 +23,7 @@ import Transfer from "../../model/Transfer";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
-import { DatePicker } from "@mui/x-date-pickers";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import Link from "next/link";
+import FinanceLayout from "../../layouts/FinanceLayout";
 
 export default function Transfers() {
   const [message, setMessage] = useState("");
@@ -314,11 +312,13 @@ export default function Transfers() {
 
   return (
     <div>
+      <FinanceLayout>
       <h2>Transfer Details</h2>
       {showSpinner ? (
         <Spinner />
       ) : (
         <div>
+          
           <IconButton onClick={() => setShowModalAdd(true)}>
             <AddIcon />
           </IconButton>
@@ -358,12 +358,13 @@ export default function Transfers() {
               handleSnackbarClose={handleSnackbarClose}
             />
           </div>
+ 
         </div>
       )}
 
       {/* Confirmation Delete Modal */}
       <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-        <Box
+        <Paper
           sx={{
             width: 400,
             padding: 4,
@@ -392,7 +393,7 @@ export default function Transfers() {
               Cancel
             </Button>
           </Box>
-        </Box>
+        </Paper>
       </Modal>
 
       {/* Modal to add a transaction */}
@@ -406,18 +407,6 @@ export default function Transfers() {
           }}
         >
           <h3>Add New Transfer</h3>
-
-          {/* <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DatePicker
-              label="Transaction Date"
-              onChange={(newValue) =>
-                setTransferData((prev: any) => ({
-                  ...prev,
-                  transactionDate: newValue,
-                }))
-              }
-            />
-          </LocalizationProvider> */}
 
           <TextField
             label="Transaction Date"
@@ -524,6 +513,7 @@ export default function Transfers() {
           </Button>
         </Paper>
       </Modal>
+      </FinanceLayout>
     </div>
   );
 }

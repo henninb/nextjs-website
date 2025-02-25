@@ -6,6 +6,7 @@ import {
   IconButton,
   Tooltip,
   Modal,
+  Link,
   TextField,
   Typography,
   Autocomplete,
@@ -18,12 +19,10 @@ import useFetchPayment from "../../hooks/usePaymentFetch";
 import usePaymentInsert from "../../hooks/usePaymentInsert";
 import usePaymentDelete from "../../hooks/usePaymentDelete";
 import Payment from "../../model/Payment";
-import { formatDate } from "../../components/Common";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import useParameterFetch from "../../hooks/useParameterFetch";
-import Link from "next/link";
 
 export default function Payments() {
   const [message, setMessage] = useState("");

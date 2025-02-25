@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../components/Spinner";
 import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
-import Link from "next/link";
+import { Link } from "@mui/material";
 
 export default function paymentrequired() {
   const [showSpinner, setShowSpinner] = useState(true);

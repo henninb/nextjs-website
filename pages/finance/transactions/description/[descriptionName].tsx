@@ -7,7 +7,7 @@ import useTransactionByDescription from "../../../../hooks/useTransactionByDescr
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import Transaction from "../../../../model/Transaction";
 import { Box } from "@mui/material";
-import Link from "next/link";
+import { Link } from "@mui/material";
 
 export default function TransactionsByDescription() {
   const [showSpinner, setShowSpinner] = useState(true);

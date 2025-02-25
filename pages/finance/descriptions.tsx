@@ -3,6 +3,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Paper,
+  Link,
   Button,
   IconButton,
   Tooltip,
@@ -19,7 +20,6 @@ import useDescriptionInsert from "../../hooks/useDescriptionInsert";
 import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
-import Link from "next/link";
 
 export default function Descriptions() {
   const [message, setMessage] = useState("");

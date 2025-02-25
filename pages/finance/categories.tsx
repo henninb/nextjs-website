@@ -6,6 +6,7 @@ import {
   IconButton,
   Tooltip,
   Modal,
+  Link,
   TextField,
   Typography,
   Alert,
@@ -19,7 +20,6 @@ import useCategoryInsert from "../../hooks/useCategoryInsert";
 import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 import useCategoryUpdate from "../../hooks/useCategoryUpdate";
-import Link from "next/link";
 
 export default function Categories() {
   const [message, setMessage] = useState("");
