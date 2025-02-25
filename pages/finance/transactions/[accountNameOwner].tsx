@@ -4,6 +4,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
 import {
   Box,
+  Paper,
   Button,
   Modal,
   IconButton,
@@ -28,7 +29,6 @@ import useDescriptionFetch from "../../../hooks/useDescriptionFetch";
 import { AccountType } from "../../../model/AccountType";
 import Transaction from "../../../model/Transaction";
 import Account from "../../../model/Account";
-import Totals from "../../../model/Totals";
 import { TransactionState } from "../../../model/TransactionState";
 import { TransactionType } from "../../../model/TransactionType";
 import { ReoccurringType } from "../../../model/ReoccurringType";
@@ -38,6 +38,7 @@ import AddIcon from "@mui/icons-material/AddRounded";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
 import { currencyFormat, noNaN } from "../../../components/Common";
+import FinanceLayout from "../../../layouts/FinanceLayout";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -449,642 +450,525 @@ export default function TransactionsByAccount() {
   ];
 
   return (
-    <Box>
-      <h2>{`${accountNameOwner}`}</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div>
+    <div>
+      <FinanceLayout>
+        <h2>{`${accountNameOwner}`}</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
           <div>
-            {/* <h4>{`[ ${currencyFormat(
-              noNaN(fetchedTotals?.totals ?? 0),
-            )} ] [ ${currencyFormat(
-              noNaN(fetchedTotals?.totalsCleared ?? 0),
-            )} ]  [ ${currencyFormat(
-              noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-            )} ] [ ${currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))} ]`}</h4>
-
-            <IconButton
-              onClick={() => {
-                setShowModalAdd(true);
-              }}
-              style={{ marginLeft: 8 }}
-            >
-              <AddIcon />
-            </IconButton>
-
-            <Button
-              onClick={() => {
-                // console.log(
-                //   'insertNewValidationData(accountNameOwner, "cleared")',
-                // );
-                handleInsertNewValidationData(accountNameOwner, "cleared");
-              }}
-            >
-              {fetchedValidationData?.amount
-                ? fetchedValidationData?.amount.toLocaleString("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  })
-                : "$0.00"}{" "}
-              {" - "}{" "}
-              {new Date(fetchedValidationData?.validationDate).toLocaleString(
-                "en-US",
-              )}
-            </Button> */}
-
             <div>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        padding: "8px",
-                        border: "1px solid #ddd",
-                        textAlign: "left",
-                      }}
-                    >
-                      Total
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px",
-                        border: "1px solid #ddd",
-                        textAlign: "left",
-                      }}
-                    >
-                      Cleared
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px",
-                        border: "1px solid #ddd",
-                        textAlign: "left",
-                      }}
-                    >
-                      Outstanding
-                    </th>
-                    <th
-                      style={{
-                        padding: "8px",
-                        border: "1px solid #ddd",
-                        textAlign: "left",
-                      }}
-                    >
-                      Future
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                      {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                    </td>
-                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                      {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
-                    </td>
-                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                      {currencyFormat(
-                        noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-                      )}
-                    </td>
-                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                      {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th
+                        style={{
+                          padding: "8px",
+                          border: "1px solid #ddd",
+                          textAlign: "left",
+                        }}
+                      >
+                        Total
+                      </th>
+                      <th
+                        style={{
+                          padding: "8px",
+                          border: "1px solid #ddd",
+                          textAlign: "left",
+                        }}
+                      >
+                        Cleared
+                      </th>
+                      <th
+                        style={{
+                          padding: "8px",
+                          border: "1px solid #ddd",
+                          textAlign: "left",
+                        }}
+                      >
+                        Outstanding
+                      </th>
+                      <th
+                        style={{
+                          padding: "8px",
+                          border: "1px solid #ddd",
+                          textAlign: "left",
+                        }}
+                      >
+                        Future
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                        {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                      </td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                        {currencyFormat(
+                          noNaN(fetchedTotals?.totalsCleared ?? 0),
+                        )}
+                      </td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                        {currencyFormat(
+                          noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+                        )}
+                      </td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                        {currencyFormat(
+                          noNaN(fetchedTotals?.totalsFuture ?? 0),
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginTop: "16px",
-                }}
-              >
-                {" "}
-                {/* Added margin for spacing */}
-                <Button
-                  onClick={() =>
-                    handleInsertNewValidationData(accountNameOwner, "cleared")
-                  }
-                  variant="contained" // Added variant for better visual appearance
-                  style={{ marginRight: "8px" }} // Added margin for spacing
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginTop: "16px",
+                  }}
                 >
-                  {fetchedValidationData?.amount
-                    ? fetchedValidationData?.amount.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                      })
-                    : "$0.00"}
-                  {" - "}
-                  {
-                    fetchedValidationData?.validationDate // Check if validationDate exists
-                      ? new Date(
-                          fetchedValidationData?.validationDate,
-                        ).toLocaleString("en-US")
-                      : "No Date" // Or handle the absence of a date as needed
-                  }
-                </Button>
-                <IconButton onClick={() => setShowModalAdd(true)}>
-                  <AddIcon />
-                </IconButton>
+                  {" "}
+                  {/* Added margin for spacing */}
+                  <Button
+                    onClick={() =>
+                      handleInsertNewValidationData(accountNameOwner, "cleared")
+                    }
+                    variant="contained" // Added variant for better visual appearance
+                    style={{ marginRight: "8px" }} // Added margin for spacing
+                  >
+                    {fetchedValidationData?.amount
+                      ? fetchedValidationData?.amount.toLocaleString("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        })
+                      : "$0.00"}
+                    {" - "}
+                    {
+                      fetchedValidationData?.validationDate // Check if validationDate exists
+                        ? new Date(
+                            fetchedValidationData?.validationDate,
+                          ).toLocaleString("en-US")
+                        : "No Date" // Or handle the absence of a date as needed
+                    }
+                  </Button>
+                  <IconButton onClick={() => setShowModalAdd(true)}>
+                    <AddIcon />
+                  </IconButton>
+                </div>
               </div>
+
+              <DataGrid
+                rows={fetchedTransactions?.filter((row) => row != null) || []}
+                columns={columns}
+                getRowId={(row) => row.transactionId || 0}
+                checkboxSelection={false}
+                rowSelection={false}
+                processRowUpdate={async (
+                  newRow: Transaction,
+                  oldRow: Transaction,
+                ): Promise<Transaction> => {
+                  if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                    return oldRow;
+                  }
+                  try {
+                    await updateTransaction({ newRow: newRow, oldRow: oldRow });
+                    setMessage("Transaction updated successfully.");
+                    setShowSnackbar(true);
+                    //return newRow;
+                    return { ...newRow };
+                  } catch (error) {
+                    handleError(error, "Update Transaction failure.", false);
+                    throw error;
+                  }
+                }}
+              />
             </div>
 
-            <DataGrid
-              rows={fetchedTransactions?.filter((row) => row != null) || []}
-              columns={columns}
-              getRowId={(row) => row.transactionId || 0}
-              checkboxSelection={false}
-              rowSelection={false}
-              processRowUpdate={async (
-                newRow: Transaction,
-                oldRow: Transaction,
-              ): Promise<Transaction> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updateTransaction({ newRow: newRow, oldRow: oldRow });
-                  setMessage("Transaction updated successfully.");
-                  setShowSnackbar(true);
-                  //return newRow;
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(error, "Update Transaction failure.", false);
-                  throw error;
-                }
-              }}
-            />
+            <div>
+              <SnackbarBaseline
+                message={message}
+                state={showSnackbar}
+                handleSnackbarClose={handleSnackbarClose}
+              />
+            </div>
           </div>
+        )}
 
-          <div>
-            <SnackbarBaseline
-              message={message}
-              state={showSnackbar}
-              handleSnackbarClose={handleSnackbarClose}
-            />
-          </div>
-        </div>
-      )}
+        {/* Modal Clone Transaction */}
+        <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <Typography variant="h6">Confirm Clone</Typography>
+            <Typography>
+              Are you sure you want to clone the transaction "
+              {selectedTransaction?.guid}"?
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleCloneRow}
+              >
+                Clone
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModalClone(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
 
-      {/* Modal Clone Transaction */}
-      <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
+        {/* Modal Delete Transaction */}
+        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <Typography variant="h6">Confirm Delete</Typography>
+            <Typography>
+              Are you sure you want to delete the transaction "
+              {selectedTransaction?.guid}"?
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModalDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
+
+        {/* Modal Add Transaction */}
+        <Modal
+          open={showModalAdd}
+          onClose={() => {
+            setShowModalAdd(false);
+            setTransactionData(initialTransactionData);
           }}
+          //onClose={() => setShowModalAdd(false)}
+          aria-labelledby="transaction-form-modal"
+          aria-describedby="transaction-form-modal-description"
         >
-          <Typography variant="h6">Confirm Clone</Typography>
-          <Typography>
-            Are you sure you want to clone the transaction "
-            {selectedTransaction?.guid}"?
-          </Typography>
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCloneRow}
-            >
-              Clone
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModalClone(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* Modal Delete Transaction */}
-      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Confirm Delete</Typography>
-          <Typography>
-            Are you sure you want to delete the transaction "
-            {selectedTransaction?.guid}"?
-          </Typography>
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleDeleteRow}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModalDelete(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* Modal Add Transaction */}
-      <Modal
-        open={showModalAdd}
-        onClose={() => {
-          setShowModalAdd(false);
-          setTransactionData(initialTransactionData);
-        }}
-        //onClose={() => setShowModalAdd(false)}
-        aria-labelledby="transaction-form-modal"
-        aria-describedby="transaction-form-modal-description"
-      >
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <h3>Add New Transaction</h3>
-
-          <TextField
-            label="Transaction Date"
-            fullWidth
-            margin="normal"
-            type="date"
-            value={transactionData?.transactionDate || ""}
-            onChange={(e) => {
-              const formattedDate = new Date(e.target.value)
-                .toISOString()
-                .split("T")[0]; // Ensure YYYY-MM-DD format
-              setTransactionData((prev: any) => ({
-                ...prev,
-                transactionDate: formattedDate,
-              }));
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
             }}
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
-          />
+          >
+            <h3>Add New Transaction</h3>
 
-          <Autocomplete
-            freeSolo
-            options={
-              isSuccessDescriptions
-                ? fetchedDescriptions.map((d) => d.descriptionName)
-                : []
-            }
-            value={transactionData?.description || ""}
-            onChange={(_, newValue) =>
-              setTransactionData((prev) => ({
-                ...prev,
-                description: newValue || "",
-              }))
-            }
-            onBlur={() => {
-              if (transactionData?.description === "") {
-                setTransactionData((prev) => ({
-                  ...prev,
-                  description: "", // Ensure an empty description is updated
-                }));
-              }
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Description"
-                fullWidth
-                margin="normal"
-                onChange={(e) => {
-                  const newDescription = e.target.value;
-                  setTransactionData((prev) => ({
-                    ...prev,
-                    description: newDescription,
-                  }));
-                }}
-              />
-            )}
-          />
-
-          {/* <Autocomplete
-            freeSolo
-            options={
-              isSuccessDescriptions
-                ? fetchedDescriptions.map((d) => d.descriptionName)
-                : []
-            }
-            value={transactionData?.description || ""}
-            onChange={(_, newValue) =>
-              setTransactionData((prev: any) => ({
-                ...prev,
-                description: newValue || "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Description"
-                fullWidth
-                margin="normal"
-              />
-            )}
-          /> */}
-
-          {/* <Autocomplete
-            freeSolo
-            options={
-              isSuccessCategories
-                ? fetchedCategories.map((c) => c.categoryName)
-                : []
-            }
-            value={transactionData?.category || ""}
-            onChange={(_, newValue) =>
-              setTransactionData((prev: any) => ({
-                ...prev,
-                category: newValue || "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Category"
-                fullWidth
-                margin="normal"
-              />
-            )}
-          /> */}
-
-          <Autocomplete
-            freeSolo
-            options={
-              isSuccessCategories
-                ? fetchedCategories.map((c) => c.categoryName)
-                : []
-            }
-            value={transactionData?.category || ""}
-            onChange={(_, newValue) =>
-              setTransactionData((prev) => ({
-                ...prev,
-                category: newValue || "",
-              }))
-            }
-            onBlur={() => {
-              if (transactionData?.category === "") {
-                setTransactionData((prev) => ({
-                  ...prev,
-                  category: "", // Ensure an empty category is updated
-                }));
-              }
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Category"
-                fullWidth
-                margin="normal"
-                onChange={(e) => {
-                  const newCategory = e.target.value;
-                  setTransactionData((prev) => ({
-                    ...prev,
-                    category: newCategory,
-                  }));
-                }}
-              />
-            )}
-          />
-
-          <TextField
-            label="Amount"
-            fullWidth
-            margin="normal"
-            type="text"
-            value={transactionData?.amount ?? ""}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-
-              // Regular expression to allow only numbers with up to 2 decimal places
-              const regex = /^\d*\.?\d{0,2}$/;
-
-              if (regex.test(inputValue) || inputValue === "") {
+            <TextField
+              label="Transaction Date"
+              fullWidth
+              margin="normal"
+              type="date"
+              value={transactionData?.transactionDate || ""}
+              onChange={(e) => {
+                const formattedDate = new Date(e.target.value)
+                  .toISOString()
+                  .split("T")[0]; // Ensure YYYY-MM-DD format
                 setTransactionData((prev: any) => ({
                   ...prev,
-                  amount: inputValue, // Store as string to allow proper input control
+                  transactionDate: formattedDate,
                 }));
+              }}
+              slotProps={{
+                inputLabel: { shrink: true },
+              }}
+            />
+
+            <Autocomplete
+              freeSolo
+              options={
+                isSuccessDescriptions
+                  ? fetchedDescriptions.map((d) => d.descriptionName)
+                  : []
               }
-            }}
-            onBlur={() => {
-              // Ensure value is properly formatted when user leaves the field
-              setTransactionData((prev: any) => ({
-                ...prev,
-                amount: prev.amount
-                  ? parseFloat(Number(prev.amount).toFixed(2)).toString() // Format to 2 decimal places
-                  : "",
-              }));
-            }}
-            slotProps={{
-              input: {
-                inputMode: "decimal",
-              },
-            }}
-          />
+              value={transactionData?.description || ""}
+              onChange={(_, newValue) =>
+                setTransactionData((prev) => ({
+                  ...prev,
+                  description: newValue || "",
+                }))
+              }
+              onBlur={() => {
+                if (transactionData?.description === "") {
+                  setTransactionData((prev) => ({
+                    ...prev,
+                    description: "", // Ensure an empty description is updated
+                  }));
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Description"
+                  fullWidth
+                  margin="normal"
+                  onChange={(e) => {
+                    const newDescription = e.target.value;
+                    setTransactionData((prev) => ({
+                      ...prev,
+                      description: newDescription,
+                    }));
+                  }}
+                />
+              )}
+            />
+            <Autocomplete
+              freeSolo
+              options={
+                isSuccessCategories
+                  ? fetchedCategories.map((c) => c.categoryName)
+                  : []
+              }
+              value={transactionData?.category || ""}
+              onChange={(_, newValue) =>
+                setTransactionData((prev) => ({
+                  ...prev,
+                  category: newValue || "",
+                }))
+              }
+              onBlur={() => {
+                if (transactionData?.category === "") {
+                  setTransactionData((prev) => ({
+                    ...prev,
+                    category: "", // Ensure an empty category is updated
+                  }));
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Category"
+                  fullWidth
+                  margin="normal"
+                  onChange={(e) => {
+                    const newCategory = e.target.value;
+                    setTransactionData((prev) => ({
+                      ...prev,
+                      category: newCategory,
+                    }));
+                  }}
+                />
+              )}
+            />
 
-          {/* <TextField
-            label="Amount"
-            fullWidth
-            margin="normal"
-            type="text"
-            value={transactionData?.amount ?? ""}
-            onChange={(e) => {
-              const inputValue = e.target.value;
+            <TextField
+              label="Amount"
+              fullWidth
+              margin="normal"
+              type="text"
+              value={transactionData?.amount ?? ""}
+              onChange={(e) => {
+                const inputValue = e.target.value;
 
-              // Regular expression to allow only numbers with up to 2 decimal places
-              const regex = /^\d*\.?\d{0,2}$/;
+                // Regular expression to allow only numbers with up to 2 decimal places
+                const regex = /^\d*\.?\d{0,2}$/;
 
-              if (regex.test(inputValue) || inputValue === "") {
+                if (regex.test(inputValue) || inputValue === "") {
+                  setTransactionData((prev: any) => ({
+                    ...prev,
+                    amount: inputValue, // Store as string to allow proper input control
+                  }));
+                }
+              }}
+              onBlur={() => {
+                // Ensure value is properly formatted when user leaves the field
                 setTransactionData((prev: any) => ({
                   ...prev,
-                  amount: inputValue, // Store as string to allow proper input control
+                  amount: prev.amount
+                    ? parseFloat(Number(prev.amount).toFixed(2)).toString() // Format to 2 decimal places
+                    : "",
                 }));
-              }
-            }}
-            onBlur={() => {
-              // Ensure value is properly formatted when user leaves the field
-              setTransactionData((prev: any) => ({
-                ...prev,
-                amount: prev.amount
-                  ? parseFloat(Number(prev.amount).toFixed(2))
-                  : "",
-              }));
-            }}
-            slotProps={{
-              input: {
-                inputMode: "decimal",
-              },
-            }}
-          /> */}
-
-          <Select
-            label="Transaction State"
-            value={transactionData?.transactionState || ""}
-            onChange={(e) =>
-              setTransactionData((prev: any) => ({
-                ...prev,
-                transactionState: e.target.value,
-              }))
-            }
-            fullWidth
-          >
-            {transactionStates.map((state) => (
-              <MenuItem key={state} value={state}>
-                {state}
-              </MenuItem>
-            ))}
-          </Select>
-
-          <Select
-            label="Reoccurring Type"
-            value={transactionData?.reoccurringType || "onetime"}
-            onChange={(e) =>
-              setTransactionData((prev: any) => ({
-                ...prev,
-                reoccurringType: e.target.value,
-              }))
-            }
-            fullWidth
-          >
-            <MenuItem value="onetime">One-Time</MenuItem>
-            <MenuItem value="weekly">Weekly</MenuItem>
-            <MenuItem value="monthly">Monthly</MenuItem>
-          </Select>
-
-          <TextField
-            label="Notes"
-            value={transactionData?.notes || ""}
-            onChange={(e) =>
-              setTransactionData((prev: any) => ({
-                ...prev,
-                notes: e.target.value,
-              }))
-            }
-            fullWidth
-            margin="normal"
-            multiline
-            rows={3}
-          />
-
-          <div>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => transactionData && handleAddRow(transactionData)}
-              style={{ marginTop: 16 }}
-            >
-              Add
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => {
-                setShowModalAdd(false);
-                setTransactionData(initialTransactionData);
               }}
-              style={{ marginTop: 16, marginLeft: 8 }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </Box>
-      </Modal>
+              slotProps={{
+                input: {
+                  inputMode: "decimal",
+                },
+              }}
+            />
 
-      {/* Modal Move Transaction */}
-      <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Autocomplete
-            options={
-              isSuccessAccounts && isSuccessTransactions && selectedTransaction
-                ? fetchedAccounts.filter(
-                    (account) =>
-                      account.accountType === selectedTransaction.accountType,
-                  )
-                : []
-            }
-            getOptionLabel={(account: Account) =>
-              account.accountNameOwner || ""
-            }
-            isOptionEqualToValue={(option, value) =>
-              option.accountNameOwner === value?.accountNameOwner
-            }
-            value={
-              selectedTransaction?.accountNameOwner && isSuccessAccounts
-                ? fetchedAccounts.find(
-                    (account) =>
-                      account.accountNameOwner ===
-                      selectedTransaction.accountNameOwner,
-                  ) || null
-                : null
-            }
-            onChange={(event, newValue) =>
-              setSelectedTransaction((prev) => ({
-                ...prev,
-                accountNameOwner: newValue ? newValue.accountNameOwner : "",
-                accountId: newValue ? newValue.accountId : 0,
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="New AccountNameOwner"
-                fullWidth
-                margin="normal"
-                placeholder="Select a new account..."
-              />
-            )}
-          />
-
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() =>
-                originalRow &&
-                selectedTransaction &&
-                handleMoveRow(originalRow, selectedTransaction)
+            <Select
+              label="Transaction State"
+              value={transactionData?.transactionState || ""}
+              onChange={(e) =>
+                setTransactionData((prev: any) => ({
+                  ...prev,
+                  transactionState: e.target.value,
+                }))
               }
+              fullWidth
             >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModalMove(false)}
+              {transactionStates.map((state) => (
+                <MenuItem key={state} value={state}>
+                  {state}
+                </MenuItem>
+              ))}
+            </Select>
+
+            <Select
+              label="Reoccurring Type"
+              value={transactionData?.reoccurringType || "onetime"}
+              onChange={(e) =>
+                setTransactionData((prev: any) => ({
+                  ...prev,
+                  reoccurringType: e.target.value,
+                }))
+              }
+              fullWidth
             >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-    </Box>
+              <MenuItem value="onetime">One-Time</MenuItem>
+              <MenuItem value="weekly">Weekly</MenuItem>
+              <MenuItem value="monthly">Monthly</MenuItem>
+            </Select>
+
+            <TextField
+              label="Notes"
+              value={transactionData?.notes || ""}
+              onChange={(e) =>
+                setTransactionData((prev: any) => ({
+                  ...prev,
+                  notes: e.target.value,
+                }))
+              }
+              fullWidth
+              margin="normal"
+              multiline
+              rows={3}
+            />
+
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => transactionData && handleAddRow(transactionData)}
+                style={{ marginTop: 16 }}
+              >
+                Add
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  setShowModalAdd(false);
+                  setTransactionData(initialTransactionData);
+                }}
+                style={{ marginTop: 16, marginLeft: 8 }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Paper>
+        </Modal>
+
+        {/* Modal Move Transaction */}
+        <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <Autocomplete
+              options={
+                isSuccessAccounts &&
+                isSuccessTransactions &&
+                selectedTransaction
+                  ? fetchedAccounts.filter(
+                      (account) =>
+                        account.accountType === selectedTransaction.accountType,
+                    )
+                  : []
+              }
+              getOptionLabel={(account: Account) =>
+                account.accountNameOwner || ""
+              }
+              isOptionEqualToValue={(option, value) =>
+                option.accountNameOwner === value?.accountNameOwner
+              }
+              value={
+                selectedTransaction?.accountNameOwner && isSuccessAccounts
+                  ? fetchedAccounts.find(
+                      (account) =>
+                        account.accountNameOwner ===
+                        selectedTransaction.accountNameOwner,
+                    ) || null
+                  : null
+              }
+              onChange={(event, newValue) =>
+                setSelectedTransaction((prev) => ({
+                  ...prev,
+                  accountNameOwner: newValue ? newValue.accountNameOwner : "",
+                  accountId: newValue ? newValue.accountId : 0,
+                }))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="New AccountNameOwner"
+                  fullWidth
+                  margin="normal"
+                  placeholder="Select a new account..."
+                />
+              )}
+            />
+
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() =>
+                  originalRow &&
+                  selectedTransaction &&
+                  handleMoveRow(originalRow, selectedTransaction)
+                }
+              >
+                Save
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModalMove(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
+      </FinanceLayout>
+    </div>
   );
 }

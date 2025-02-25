@@ -1,6 +1,9 @@
+import FinanceLayout from "../layouts/FinanceLayout";
+
 export default function Spinner() {
   return (
     <div className="spinner-page">
+      <FinanceLayout>x
       <div data-testid="loader">
         {/*<Loader type="Rings" color="#9965f4" />*/}
 
@@ -15,6 +18,7 @@ export default function Spinner() {
           <div></div>
         </div>
       </div>
+      </FinanceLayout>
     </div>
   );
 }

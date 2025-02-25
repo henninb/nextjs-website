@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
+  Paper,
   Button,
   IconButton,
   Tooltip,
@@ -23,6 +24,7 @@ import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import useParameterFetch from "../../hooks/useParameterFetch";
+import FinanceLayout from "../../layouts/FinanceLayout";
 
 export default function Payments() {
   const [message, setMessage] = useState("");
@@ -233,213 +235,198 @@ export default function Payments() {
 
   return (
     <div>
-      <h2>Payment Details</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div>
-          <IconButton onClick={() => setShowModalAdd(true)}>
-            <AddIcon />
-          </IconButton>
-          <DataGrid
-            rows={fetchedPayments?.filter((row) => row != null) || []}
-            columns={columns}
-            getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={async (
-              newRow: Payment,
-              oldRow: Payment,
-            ): Promise<Payment> => {
-              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow;
-              }
-              try {
-                await updatePayment({ oldPayment: oldRow, newPayment: newRow });
-                setMessage("Payment updated successfully.");
-                setShowSnackbar(true);
-                //return newRow;
-                return { ...newRow };
-              } catch (error) {
-                handleError(error, `Update Payment error: ${error}`, false);
-                throw error;
-              }
-            }}
-          />
+      <FinanceLayout>
+        <h2>Payment Details</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
           <div>
-            <SnackbarBaseline
-              message={message}
-              state={showSnackbar}
-              handleSnackbarClose={handleSnackbarClose}
+            <IconButton onClick={() => setShowModalAdd(true)}>
+              <AddIcon />
+            </IconButton>
+            <DataGrid
+              rows={fetchedPayments?.filter((row) => row != null) || []}
+              columns={columns}
+              getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={async (
+                newRow: Payment,
+                oldRow: Payment,
+              ): Promise<Payment> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updatePayment({
+                    oldPayment: oldRow,
+                    newPayment: newRow,
+                  });
+                  setMessage("Payment updated successfully.");
+                  setShowSnackbar(true);
+                  //return newRow;
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(error, `Update Payment error: ${error}`, false);
+                  throw error;
+                }
+              }}
             />
-          </div>
-        </div>
-      )}
-
-      {/* Confirmation Delete Modal */}
-      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Confirm Deletion</Typography>
-          <Typography>
-            Are you sure you want to delete the payment "
-            {selectedPayment?.paymentId}"?
-          </Typography>
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleDeleteRow}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModalDelete(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* Modal to Add or Edit */}
-      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <h3>Add New Payment</h3>
-          <TextField
-            label="Transaction Date"
-            fullWidth
-            margin="normal"
-            type="date"
-            value={paymentData?.transactionDate || ""}
-            onChange={(e) =>
-              setPaymentData((prev: any) => ({
-                ...prev,
-                transactionDate: e.target.value,
-              }))
-            }
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
-          />
-
-          <Autocomplete
-            options={
-              isSuccessAccounts
-                ? fetchedAccounts.filter(
-                    (account) => account.accountType === "credit",
-                  )
-                : []
-            }
-            getOptionLabel={(account: Account) =>
-              account.accountNameOwner || ""
-            }
-            isOptionEqualToValue={(option, value) =>
-              option.accountNameOwner === value?.accountNameOwner
-            }
-            value={
-              paymentData?.accountNameOwner && isSuccessAccounts
-                ? fetchedAccounts.find(
-                    (account) =>
-                      account.accountNameOwner === paymentData.accountNameOwner,
-                  ) || null
-                : null
-            }
-            onChange={(event, newValue) =>
-              setPaymentData((prev) => ({
-                ...prev,
-                accountNameOwner: newValue ? newValue.accountNameOwner : "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Destination Account"
-                fullWidth
-                margin="normal"
-                placeholder="Select or search an account"
+            <div>
+              <SnackbarBaseline
+                message={message}
+                state={showSnackbar}
+                handleSnackbarClose={handleSnackbarClose}
               />
-            )}
-          />
+            </div>
+          </div>
+        )}
 
-          <TextField
-            label="Amount"
-            fullWidth
-            margin="normal"
-            type="text"
-            value={paymentData?.amount ?? ""}
-            onChange={(e) => {
-              const inputValue = e.target.value;
+        {/* Confirmation Delete Modal */}
+        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography>
+              Are you sure you want to delete the payment "
+              {selectedPayment?.paymentId}"?
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModalDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
 
-              // Regular expression to allow only numbers with up to 2 decimal places
-              const regex = /^\d*\.?\d{0,2}$/;
-
-              if (regex.test(inputValue) || inputValue === "") {
+        {/* Modal to Add or Edit */}
+        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <h3>Add New Payment</h3>
+            <TextField
+              label="Transaction Date"
+              fullWidth
+              margin="normal"
+              type="date"
+              value={paymentData?.transactionDate || ""}
+              onChange={(e) =>
                 setPaymentData((prev: any) => ({
                   ...prev,
-                  amount: inputValue, // Store as string to allow proper input control
+                  transactionDate: e.target.value,
+                }))
+              }
+              slotProps={{
+                inputLabel: { shrink: true },
+              }}
+            />
+
+            <Autocomplete
+              options={
+                isSuccessAccounts
+                  ? fetchedAccounts.filter(
+                      (account) => account.accountType === "credit",
+                    )
+                  : []
+              }
+              getOptionLabel={(account: Account) =>
+                account.accountNameOwner || ""
+              }
+              isOptionEqualToValue={(option, value) =>
+                option.accountNameOwner === value?.accountNameOwner
+              }
+              value={
+                paymentData?.accountNameOwner && isSuccessAccounts
+                  ? fetchedAccounts.find(
+                      (account) =>
+                        account.accountNameOwner ===
+                        paymentData.accountNameOwner,
+                    ) || null
+                  : null
+              }
+              onChange={(event, newValue) =>
+                setPaymentData((prev) => ({
+                  ...prev,
+                  accountNameOwner: newValue ? newValue.accountNameOwner : "",
+                }))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Destination Account"
+                  fullWidth
+                  margin="normal"
+                  placeholder="Select or search an account"
+                />
+              )}
+            />
+
+            <TextField
+              label="Amount"
+              fullWidth
+              margin="normal"
+              type="text"
+              value={paymentData?.amount ?? ""}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+
+                // Regular expression to allow only numbers with up to 2 decimal places
+                const regex = /^\d*\.?\d{0,2}$/;
+
+                if (regex.test(inputValue) || inputValue === "") {
+                  setPaymentData((prev: any) => ({
+                    ...prev,
+                    amount: inputValue, // Store as string to allow proper input control
+                  }));
+                }
+              }}
+              onBlur={() => {
+                // Ensure value is properly formatted when user leaves the field
+                setPaymentData((prev: any) => ({
+                  ...prev,
+                  amount: prev.amount
+                    ? parseFloat(Number(prev.amount).toFixed(2))
+                    : "",
                 }));
-              }
-            }}
-            onBlur={() => {
-              // Ensure value is properly formatted when user leaves the field
-              setPaymentData((prev: any) => ({
-                ...prev,
-                amount: prev.amount
-                  ? parseFloat(Number(prev.amount).toFixed(2))
-                  : "",
-              }));
-            }}
-            slotProps={{
-              input: {
-                inputMode: "decimal",
-              },
-            }}
-          />
-
-          {/* <TextField
-            label="Amount"
-            fullWidth
-            margin="normal"
-            type="number"
-            value={paymentData?.amount ?? ""}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              let parsedValue =
-                inputValue === "" ? null : parseFloat(inputValue);
-
-              if (parsedValue !== null) {
-                parsedValue = parseFloat(parsedValue.toFixed(2)); // Round to 2 decimals
-              }
-              setPaymentData((prev) => ({
-                ...prev,
-                amount: parsedValue,
-              }));
-            }}
-          /> */}
-          <Button
-            variant="contained"
-            onClick={() => paymentData && handleAddRow(paymentData)}
-          >
-            Add
-          </Button>
-        </Box>
-      </Modal>
+              }}
+              slotProps={{
+                input: {
+                  inputMode: "decimal",
+                },
+              }}
+            />
+            <Button
+              variant="contained"
+              onClick={() => paymentData && handleAddRow(paymentData)}
+            >
+              Add
+            </Button>
+          </Paper>
+        </Modal>
+      </FinanceLayout>
     </div>
   );
 }

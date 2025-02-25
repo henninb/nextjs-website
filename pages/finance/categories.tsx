@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
+  Paper,
   Button,
   IconButton,
   Tooltip,
@@ -20,6 +21,7 @@ import useCategoryInsert from "../../hooks/useCategoryInsert";
 import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 import useCategoryUpdate from "../../hooks/useCategoryUpdate";
+import FinanceLayout from "../../layouts/FinanceLayout";
 
 export default function Categories() {
   const [message, setMessage] = useState("");
@@ -158,164 +160,164 @@ export default function Categories() {
 
   return (
     <div>
-      <h2>Category Details</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : fetchError ? (
-        <Box sx={{ textAlign: "center", mt: 3 }}>
-          <Alert severity="error">{fetchError}</Alert>
-          {fallbackData.length > 0 ? (
-            <>
+      <FinanceLayout>
+        <h2>Category Details</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : fetchError ? (
+          <Box sx={{ textAlign: "center", mt: 3 }}>
+            <Alert severity="error">{fetchError}</Alert>
+            {fallbackData.length > 0 ? (
+              <>
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  Showing cached data instead:
+                </Typography>
+                <DataGrid
+                  rows={fallbackData}
+                  columns={columns}
+                  getRowId={(row) => row.categoryId || 0}
+                />
+              </>
+            ) : (
               <Typography variant="body1" sx={{ mt: 2 }}>
-                Showing cached data instead:
+                No cached data available.
               </Typography>
-              <DataGrid
-                rows={fallbackData}
-                columns={columns}
-                getRowId={(row) => row.categoryId || 0}
-              />
-            </>
-          ) : (
-            <Typography variant="body1" sx={{ mt: 2 }}>
-              No cached data available.
-            </Typography>
-          )}
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2 }}
-            onClick={() => {
-              setShowSpinner(true);
-              refetch();
-            }}
-          >
-            Retry
-          </Button>
-        </Box>
-      ) : (
-        <div>
-          <IconButton onClick={() => setShowModalAdd(true)}>
-            <AddIcon />
-          </IconButton>
-          <DataGrid
-            //rows={data?.filter((row) => row != null) || []}
-            rows={fetchedCategories || []}
-            columns={columns}
-            getRowId={(row) => row.categoryId || 0}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={async (
-              newRow: Category,
-              oldRow: Category,
-            ): Promise<Category> => {
-              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow;
-              }
-              try {
-                await updateCategory({
-                  oldCategory: oldRow,
-                  newCategory: newRow,
-                });
-                setMessage("Category updated successfully.");
-                setShowSnackbar(true);
-
-                return { ...newRow };
-              } catch (error) {
-                handleError(error, "Update Category failure.", false);
-                throw error;
-              }
-            }}
-          />
-        </div>
-      )}
-
-      <SnackbarBaseline
-        message={message}
-        state={showSnackbar}
-        handleSnackbarClose={handleSnackbarClose}
-      />
-
-      {/* Confirmation Delete Modal */}
-      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Confirm Deletion</Typography>
-          <Typography>
-            Are you sure you want to delete the category "
-            {JSON.stringify(selectedCategory)}"?
-          </Typography>
-          <Box mt={2} display="flex" justifyContent="space-between">
+            )}
             <Button
               variant="contained"
               color="primary"
-              onClick={handleDeleteRow}
+              sx={{ mt: 2 }}
+              onClick={() => {
+                setShowSpinner(true);
+                refetch();
+              }}
             >
-              Delete
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setConfirmDelete(false)}
-            >
-              Cancel
+              Retry
             </Button>
           </Box>
-        </Box>
-      </Modal>
+        ) : (
+          <div>
+            <IconButton onClick={() => setShowModalAdd(true)}>
+              <AddIcon />
+            </IconButton>
+            <DataGrid
+              //rows={data?.filter((row) => row != null) || []}
+              rows={fetchedCategories || []}
+              columns={columns}
+              getRowId={(row) => row.categoryId || 0}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={async (
+                newRow: Category,
+                oldRow: Category,
+              ): Promise<Category> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updateCategory({
+                    oldCategory: oldRow,
+                    newCategory: newRow,
+                  });
+                  setMessage("Category updated successfully.");
+                  setShowSnackbar(true);
 
-      {/* Modal Add Category */}
-      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <h3>Add New Category</h3>
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={categoryData?.categoryName || ""}
-            onChange={(e) =>
-              setCategoryData((prev) => ({
-                ...prev,
-                categoryName: e.target.value,
-              }))
-            }
-          />
-          <TextField
-            label="Status"
-            fullWidth
-            margin="normal"
-            value={categoryData?.activeStatus || ""}
-            onChange={(e) =>
-              setCategoryData((prev: any) => ({
-                ...prev,
-                activeStatus: e.target.value,
-              }))
-            }
-          />
-          <Button
-            variant="contained"
-            onClick={() => {
-              categoryData && handleAddRow(categoryData);
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(error, "Update Category failure.", false);
+                  throw error;
+                }
+              }}
+            />
+          </div>
+        )}
+
+        <SnackbarBaseline
+          message={message}
+          state={showSnackbar}
+          handleSnackbarClose={handleSnackbarClose}
+        />
+
+        {/* Confirmation Delete Modal */}
+        <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
             }}
           >
-            Add
-          </Button>
-        </Box>
-      </Modal>
+            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography>
+              Are you sure you want to delete the category "
+              {JSON.stringify(selectedCategory)}"?
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
+
+        {/* Modal Add Category */}
+        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <h3>Add New Category</h3>
+            <TextField
+              label="Name"
+              fullWidth
+              margin="normal"
+              value={categoryData?.categoryName || ""}
+              onChange={(e) =>
+                setCategoryData((prev) => ({
+                  ...prev,
+                  categoryName: e.target.value,
+                }))
+              }
+            />
+            <TextField
+              label="Status"
+              fullWidth
+              margin="normal"
+              value={categoryData?.activeStatus || ""}
+              onChange={(e) =>
+                setCategoryData((prev: any) => ({
+                  ...prev,
+                  activeStatus: e.target.value,
+                }))
+              }
+            />
+            <Button
+              variant="contained"
+              onClick={() => {
+                categoryData && handleAddRow(categoryData);
+              }}
+            >
+              Add
+            </Button>
+          </Paper>
+        </Modal>
+      </FinanceLayout>
     </div>
   );
 }

@@ -20,6 +20,7 @@ import useDescriptionInsert from "../../hooks/useDescriptionInsert";
 import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
+import FinanceLayout from "../../layouts/FinanceLayout";
 
 export default function Descriptions() {
   const [message, setMessage] = useState("");
@@ -153,139 +154,141 @@ export default function Descriptions() {
   ];
 
   return (
-    <Box>
-      <h2>Description Details</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div>
-          <IconButton onClick={() => setShowModalAdd(true)}>
-            <AddIcon />
-          </IconButton>
-          <DataGrid
-            rows={fetchedDescrptions?.filter((row) => row != null) || []}
-            columns={columns}
-            getRowId={(row) => row.descriptionId || 0}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={async (
-              newRow: Description,
-              oldRow: Description,
-            ): Promise<Description> => {
-              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow;
-              }
-              try {
-                await updateDescription({
-                  oldDescription: oldRow,
-                  newDescription: newRow,
-                });
-                setMessage("Description updated successfully.");
-                setShowSnackbar(true);
-                return { ...newRow };
-              } catch (error) {
-                handleError(
-                  error,
-                  `Update Description error: ${error.message}`,
-                  false,
-                );
-                throw error;
-              }
-            }}
-          />
+    <div>
+      <FinanceLayout>
+        <h2>Description Details</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
           <div>
-            <SnackbarBaseline
-              message={message}
-              state={showSnackbar}
-              handleSnackbarClose={handleSnackbarClose}
+            <IconButton onClick={() => setShowModalAdd(true)}>
+              <AddIcon />
+            </IconButton>
+            <DataGrid
+              rows={fetchedDescrptions?.filter((row) => row != null) || []}
+              columns={columns}
+              getRowId={(row) => row.descriptionId || 0}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={async (
+                newRow: Description,
+                oldRow: Description,
+              ): Promise<Description> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updateDescription({
+                    oldDescription: oldRow,
+                    newDescription: newRow,
+                  });
+                  setMessage("Description updated successfully.");
+                  setShowSnackbar(true);
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(
+                    error,
+                    `Update Description error: ${error.message}`,
+                    false,
+                  );
+                  throw error;
+                }
+              }}
             />
+            <div>
+              <SnackbarBaseline
+                message={message}
+                state={showSnackbar}
+                handleSnackbarClose={handleSnackbarClose}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Delete Modal */}
-      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-        <Paper
-          sx={{
-            width: 400,
-            padding: 4,
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Confirm Deletion</Typography>
-          {/* <Typography>
+        {/* Delete Modal */}
+        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <Typography variant="h6">Confirm Deletion</Typography>
+            {/* <Typography>
             Are you sure you want to delete the description "
             {JSON.stringify(selectedDescription)}"?
           </Typography> */}
 
-          <Typography>
-            Are you sure you want to delete the description "
-            {selectedDescription ? selectedDescription.descriptionName : ""}"?
-          </Typography>
+            <Typography>
+              Are you sure you want to delete the description "
+              {selectedDescription ? selectedDescription.descriptionName : ""}"?
+            </Typography>
 
-          <Box mt={2} display="flex" justifyContent="space-between">
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModalDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
+
+        {/* Modal Add Description */}
+        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <h3>Add New Description</h3>
+            <TextField
+              label="Name"
+              fullWidth
+              margin="normal"
+              value={descriptionData?.descriptionName || ""}
+              onChange={(e) =>
+                setDescriptionData((prev) => ({
+                  ...prev,
+                  descriptionName: e.target.value,
+                }))
+              }
+            />
+            <TextField
+              label="Status"
+              fullWidth
+              margin="normal"
+              value={descriptionData?.activeStatus || ""}
+              onChange={(e) =>
+                setDescriptionData((prev: any) => ({
+                  ...prev,
+                  activeStatus: e.target.value,
+                }))
+              }
+            />
             <Button
               variant="contained"
-              color="primary"
-              onClick={handleDeleteRow}
+              onClick={() => descriptionData && handleAddRow(descriptionData)}
             >
-              Delete
+              Add
             </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModalDelete(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Paper>
-      </Modal>
-
-      {/* Modal Add Description */}
-      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Paper
-          sx={{
-            width: 400,
-            padding: 4,
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <h3>Add New Description</h3>
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={descriptionData?.descriptionName || ""}
-            onChange={(e) =>
-              setDescriptionData((prev) => ({
-                ...prev,
-                descriptionName: e.target.value,
-              }))
-            }
-          />
-          <TextField
-            label="Status"
-            fullWidth
-            margin="normal"
-            value={descriptionData?.activeStatus || ""}
-            onChange={(e) =>
-              setDescriptionData((prev: any) => ({
-                ...prev,
-                activeStatus: e.target.value,
-              }))
-            }
-          />
-          <Button
-            variant="contained"
-            onClick={() => descriptionData && handleAddRow(descriptionData)}
-          >
-            Add
-          </Button>
-        </Paper>
-      </Modal>
-    </Box>
+          </Paper>
+        </Modal>
+      </FinanceLayout>
+    </div>
   );
 }

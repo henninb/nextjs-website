@@ -313,206 +313,204 @@ export default function Transfers() {
   return (
     <div>
       <FinanceLayout>
-      <h2>Transfer Details</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div>
-          
-          <IconButton onClick={() => setShowModalAdd(true)}>
-            <AddIcon />
-          </IconButton>
-          <DataGrid
-            //rows={fetchedTransfers?.filter((row) => row != null) || []}
-            rows={transfersToDisplay}
-            columns={columns}
-            getRowId={(row) => row.transferId || `temp-${Math.random()}`}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={async (
-              newRow: Transfer,
-              oldRow: Transfer,
-            ): Promise<Transfer> => {
-              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow;
-              }
-              try {
-                await updateTransfer({
-                  oldTransfer: oldRow,
-                  newTransfer: newRow,
-                });
-                setMessage("Transfer updated successfully.");
-                setShowSnackbar(true);
-                //return newRow;
-                return { ...newRow };
-              } catch (error) {
-                handleError(error, `Update Transfer error: ${error}`, false);
-                throw error;
-              }
-            }}
-          />
+        <h2>Transfer Details</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
           <div>
-            <SnackbarBaseline
-              message={message}
-              state={showSnackbar}
-              handleSnackbarClose={handleSnackbarClose}
+            <IconButton onClick={() => setShowModalAdd(true)}>
+              <AddIcon />
+            </IconButton>
+            <DataGrid
+              //rows={fetchedTransfers?.filter((row) => row != null) || []}
+              rows={transfersToDisplay}
+              columns={columns}
+              getRowId={(row) => row.transferId || `temp-${Math.random()}`}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={async (
+                newRow: Transfer,
+                oldRow: Transfer,
+              ): Promise<Transfer> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updateTransfer({
+                    oldTransfer: oldRow,
+                    newTransfer: newRow,
+                  });
+                  setMessage("Transfer updated successfully.");
+                  setShowSnackbar(true);
+                  //return newRow;
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(error, `Update Transfer error: ${error}`, false);
+                  throw error;
+                }
+              }}
             />
+            <div>
+              <SnackbarBaseline
+                message={message}
+                state={showSnackbar}
+                handleSnackbarClose={handleSnackbarClose}
+              />
+            </div>
           </div>
- 
-        </div>
-      )}
+        )}
 
-      {/* Confirmation Delete Modal */}
-      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-        <Paper
-          sx={{
-            width: 400,
-            padding: 4,
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Confirm Deletion</Typography>
-          <Typography>
-            Are you sure you want to delete the transfer "
-            {selectedTransfer?.transferId}"?
-          </Typography>
-          <Box mt={2} display="flex" justifyContent="space-between">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleDeleteRow}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModalDelete(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Paper>
-      </Modal>
-
-      {/* Modal to add a transaction */}
-      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Paper
-          sx={{
-            width: 400,
-            padding: 4,
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <h3>Add New Transfer</h3>
-
-          <TextField
-            label="Transaction Date"
-            fullWidth
-            margin="normal"
-            type="date"
-            value={transferData?.transactionDate || ""}
-            onChange={(e) => {
-              const formattedDate = new Date(e.target.value)
-                .toISOString()
-                .split("T")[0]; // Ensure YYYY-MM-DD format
-              setTransferData((prev: any) => ({
-                ...prev,
-                transactionDate: formattedDate,
-              }));
+        {/* Confirmation Delete Modal */}
+        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
             }}
-            slotProps={{
-              inputLabel: { shrink: true },
+          >
+            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography>
+              Are you sure you want to delete the transfer "
+              {selectedTransfer?.transferId}"?
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModalDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
+
+        {/* Modal to add a transaction */}
+        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              margin: "auto",
+              marginTop: "20%",
             }}
-          />
+          >
+            <h3>Add New Transfer</h3>
 
-          <Autocomplete
-            options={availableSourceAccounts}
-            getOptionLabel={(account: Account) =>
-              account.accountNameOwner || ""
-            }
-            isOptionEqualToValue={(option, value) =>
-              option.accountNameOwner === value?.accountNameOwner
-            }
-            value={selectedSourceAccount}
-            onChange={handleSourceAccountChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Source Account"
-                fullWidth
-                margin="normal"
-                placeholder="Select a source account"
-              />
-            )}
-          />
-
-          <Autocomplete
-            options={availableDestinationAccounts}
-            getOptionLabel={(account: Account) =>
-              account.accountNameOwner || ""
-            }
-            isOptionEqualToValue={(option, value) =>
-              option.accountNameOwner === value?.accountNameOwner
-            }
-            value={selectedDestinationAccount}
-            onChange={handleDestinationAccountChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Destination Account"
-                fullWidth
-                margin="normal"
-                placeholder="Select a destination account"
-              />
-            )}
-          />
-
-          <TextField
-            label="Amount"
-            fullWidth
-            margin="normal"
-            type="text"
-            value={transferData?.amount ?? ""}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-
-              // Regular expression to allow only numbers with up to 2 decimal places
-              const regex = /^\d*\.?\d{0,2}$/;
-
-              if (regex.test(inputValue) || inputValue === "") {
+            <TextField
+              label="Transaction Date"
+              fullWidth
+              margin="normal"
+              type="date"
+              value={transferData?.transactionDate || ""}
+              onChange={(e) => {
+                const formattedDate = new Date(e.target.value)
+                  .toISOString()
+                  .split("T")[0]; // Ensure YYYY-MM-DD format
                 setTransferData((prev: any) => ({
                   ...prev,
-                  amount: inputValue, // Store as string to allow proper input control
+                  transactionDate: formattedDate,
                 }));
-              }
-            }}
-            onBlur={() => {
-              // Ensure value is properly formatted when user leaves the field
-              setTransferData((prev: any) => ({
-                ...prev,
-                amount: prev.amount
-                  ? parseFloat(Number(prev.amount).toFixed(2))
-                  : "",
-              }));
-            }}
-            slotProps={{
-              input: {
-                inputMode: "decimal",
-              },
-            }}
-          />
+              }}
+              slotProps={{
+                inputLabel: { shrink: true },
+              }}
+            />
 
-          <Button
-            variant="contained"
-            onClick={() => transferData && handleAddRow(transferData)}
-          >
-            Add
-          </Button>
-        </Paper>
-      </Modal>
+            <Autocomplete
+              options={availableSourceAccounts}
+              getOptionLabel={(account: Account) =>
+                account.accountNameOwner || ""
+              }
+              isOptionEqualToValue={(option, value) =>
+                option.accountNameOwner === value?.accountNameOwner
+              }
+              value={selectedSourceAccount}
+              onChange={handleSourceAccountChange}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Source Account"
+                  fullWidth
+                  margin="normal"
+                  placeholder="Select a source account"
+                />
+              )}
+            />
+
+            <Autocomplete
+              options={availableDestinationAccounts}
+              getOptionLabel={(account: Account) =>
+                account.accountNameOwner || ""
+              }
+              isOptionEqualToValue={(option, value) =>
+                option.accountNameOwner === value?.accountNameOwner
+              }
+              value={selectedDestinationAccount}
+              onChange={handleDestinationAccountChange}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Destination Account"
+                  fullWidth
+                  margin="normal"
+                  placeholder="Select a destination account"
+                />
+              )}
+            />
+
+            <TextField
+              label="Amount"
+              fullWidth
+              margin="normal"
+              type="text"
+              value={transferData?.amount ?? ""}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+
+                // Regular expression to allow only numbers with up to 2 decimal places
+                const regex = /^\d*\.?\d{0,2}$/;
+
+                if (regex.test(inputValue) || inputValue === "") {
+                  setTransferData((prev: any) => ({
+                    ...prev,
+                    amount: inputValue, // Store as string to allow proper input control
+                  }));
+                }
+              }}
+              onBlur={() => {
+                // Ensure value is properly formatted when user leaves the field
+                setTransferData((prev: any) => ({
+                  ...prev,
+                  amount: prev.amount
+                    ? parseFloat(Number(prev.amount).toFixed(2))
+                    : "",
+                }));
+              }}
+              slotProps={{
+                input: {
+                  inputMode: "decimal",
+                },
+              }}
+            />
+
+            <Button
+              variant="contained"
+              onClick={() => transferData && handleAddRow(transferData)}
+            >
+              Add
+            </Button>
+          </Paper>
+        </Modal>
       </FinanceLayout>
     </div>
   );

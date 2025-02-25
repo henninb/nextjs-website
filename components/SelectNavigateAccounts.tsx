@@ -23,7 +23,7 @@ export default function SelectNavigateAccounts() {
         .filter(
           (account: Account) =>
             typeof account.accountNameOwner === "string" &&
-            account.accountNameOwner.trim() !== ""
+            account.accountNameOwner.trim() !== "",
         )
         .map(({ accountNameOwner }: Account) => ({
           value: accountNameOwner,
@@ -36,7 +36,7 @@ export default function SelectNavigateAccounts() {
       const longestLabel = optionList.reduce(
         (max, option) =>
           option.label.length > max.length ? option.label : max,
-        ""
+        "",
       );
       const newMaxWidth = Math.max(longestLabel.length * 10, 200); // Ensure minimum width
       setMaxWidth(newMaxWidth);
@@ -64,29 +64,26 @@ export default function SelectNavigateAccounts() {
   return (
     <div>
       <FinanceLayout>
-    <FormControl 
-      variant="outlined" 
-      sx={{
-        minWidth: `${maxWidth}px`,
-      }}
-    >
-      <InputLabel>Select an account</InputLabel>
-      <Select
-        value={selectedValue}
-        onChange={handleChange}
-        label="Select an account"
-      >
-        {options.map((option) => (
-          <MenuItem 
-            key={option.value} 
-            value={option.value} 
+        <FormControl
+          variant="outlined"
+          sx={{
+            minWidth: `${maxWidth}px`,
+          }}
+        >
+          <InputLabel>Select an account</InputLabel>
+          <Select
+            value={selectedValue}
+            onChange={handleChange}
+            label="Select an account"
           >
-            {option.label}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-    </FinanceLayout>
+            {options.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </FinanceLayout>
     </div>
   );
 }

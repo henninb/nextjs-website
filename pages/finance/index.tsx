@@ -216,7 +216,7 @@ export default function Accounts() {
   ];
 
   return (
-    <Box>
+    <div>
       <FinanceLayout>
         <h2>Account Details</h2>
         {showSpinner ? (
@@ -372,6 +372,6 @@ export default function Accounts() {
           </Paper>
         </Modal>
       </FinanceLayout>
-    </Box>
+    </div>
   );
 }

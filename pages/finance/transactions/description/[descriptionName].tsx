@@ -6,8 +6,8 @@ import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import useTransactionByDescription from "../../../../hooks/useTransactionByDescriptionFetch";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import Transaction from "../../../../model/Transaction";
-import { Box } from "@mui/material";
 import { Link } from "@mui/material";
+import FinanceLayout from "../../../../layouts/FinanceLayout";
 
 export default function TransactionsByDescription() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -95,7 +95,8 @@ export default function TransactionsByDescription() {
   ];
 
   return (
-    <Box>
+    <div>
+      <FinanceLayout>
       <h2>{`${descriptionName}`}</h2>
       {showSpinner ? (
         <Spinner />
@@ -132,6 +133,7 @@ export default function TransactionsByDescription() {
           />
         </div>
       )}
-    </Box>
+      </FinanceLayout>
+    </div>
   );
 }

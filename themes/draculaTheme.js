@@ -20,18 +20,17 @@ export const draculaTheme = createTheme({
     divider: "rgba(68, 71, 90, 1)",
   },
   components: {
-
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: 'rgba(42, 43, 58, 0.9)', // Set tooltip background
-          color: 'rgba(80, 250, 123, 1)', // Soft green text for tooltips
-          fontSize: '0.875rem',
-          borderRadius: '4px',
-          padding: '4px 8px',
+          backgroundColor: "rgba(42, 43, 58, 0.9)", // Set tooltip background
+          color: "rgba(80, 250, 123, 1)", // Soft green text for tooltips
+          fontSize: "0.875rem",
+          borderRadius: "4px",
+          padding: "4px 8px",
         },
         arrow: {
-          color: 'rgba(42, 43, 58, 0.9)', // Match arrow color with tooltip background
+          color: "rgba(42, 43, 58, 0.9)", // Match arrow color with tooltip background
         },
       },
     },
@@ -52,10 +51,10 @@ export const draculaTheme = createTheme({
           textTransform: "uppercase",
         },
         row: {
-          '&:nth-of-type(even)': {
+          "&:nth-of-type(even)": {
             backgroundColor: "rgba(50, 52, 70, 1)", // Slightly lighter Dracula background
           },
-          '&:nth-of-type(odd)': {
+          "&:nth-of-type(odd)": {
             backgroundColor: "rgba(42, 43, 58, 1)", // Default Dracula background
           },
           "&:hover": {
@@ -65,7 +64,7 @@ export const draculaTheme = createTheme({
         },
       },
     },
- 
+
     MuiLink: {
       styleOverrides: {
         root: {
@@ -179,6 +178,5 @@ export const draculaTheme = createTheme({
         },
       },
     },
-
   },
 });

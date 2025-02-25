@@ -3,6 +3,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../components/Spinner";
 import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
 import { Link } from "@mui/material";
+import FinanceLayout from "../../layouts/FinanceLayout";
 
 export default function paymentrequired() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -101,25 +102,27 @@ export default function paymentrequired() {
 
   return (
     <div>
-      <h2>Payment Required Details</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div data-testid="payment-required-table">
-          <DataGrid
-            columns={columns}
-            rows={fetchedPaymentsRequired?.filter((row) => row != null) || []}
-            paginationModel={{
-              pageSize: fetchedPaymentsRequired?.length,
-              page: 0,
-            }}
-            hideFooterPagination={true}
-            checkboxSelection={false}
-            rowSelection={false}
-            getRowId={(row) => row.accountNameOwner}
-          />
-        </div>
-      )}
+      <FinanceLayout>
+        <h2>Payment Required Details</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
+          <div data-testid="payment-required-table">
+            <DataGrid
+              columns={columns}
+              rows={fetchedPaymentsRequired?.filter((row) => row != null) || []}
+              paginationModel={{
+                pageSize: fetchedPaymentsRequired?.length,
+                page: 0,
+              }}
+              hideFooterPagination={true}
+              checkboxSelection={false}
+              rowSelection={false}
+              getRowId={(row) => row.accountNameOwner}
+            />
+          </div>
+        )}
+      </FinanceLayout>
     </div>
   );
 }

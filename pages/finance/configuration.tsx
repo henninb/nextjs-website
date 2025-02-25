@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
+  Paper,
   Button,
   IconButton,
   Tooltip,
@@ -18,6 +19,7 @@ import useParameterInsert from "../../hooks/useParameterInsert";
 import useParameterDelete from "../../hooks/useParameterDelete";
 import Parameter from "../../model/Parameter";
 import useParameterUpdate from "../../hooks/useParameterUpdate";
+import FinanceLayout from "../../layouts/FinanceLayout";
 
 export default function Configuration() {
   const [message, setMessage] = useState("");
@@ -208,134 +210,141 @@ export default function Configuration() {
 
   return (
     <div>
-      <h2>Configuration Details</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div>
-          <IconButton onClick={() => setShowModalAdd(true)}>
-            <AddIcon />
-          </IconButton>
-          <DataGrid
-            //key={offlineRows?.length}  // 🔹 Changing this key forces a re-render
-            //rows={fetchedParameters?.filter((row) => row != null) || []}
-            rows={[...(fetchedParameters || []), ...offlineRows]}
-            columns={columns}
-            getRowId={(row) => row.parameterId || crypto.randomUUID()}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={async (
-              newRow: Parameter,
-              oldRow: Parameter,
-            ): Promise<Parameter> => {
-              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow;
-              }
-              try {
-                await updateParameter({
-                  oldParameter: oldRow,
-                  newParameter: newRow,
-                });
-                setParameterData(newRow);
-                setMessage("Parameter updated successfully.");
-                setShowSnackbar(true);
+      <FinanceLayout>
+        <h2>Configuration Details</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
+          <div>
+            <IconButton onClick={() => setShowModalAdd(true)}>
+              <AddIcon />
+            </IconButton>
+            <DataGrid
+              //key={offlineRows?.length}  // 🔹 Changing this key forces a re-render
+              //rows={fetchedParameters?.filter((row) => row != null) || []}
+              rows={[...(fetchedParameters || []), ...offlineRows]}
+              columns={columns}
+              getRowId={(row) => row.parameterId || crypto.randomUUID()}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={async (
+                newRow: Parameter,
+                oldRow: Parameter,
+              ): Promise<Parameter> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updateParameter({
+                    oldParameter: oldRow,
+                    newParameter: newRow,
+                  });
+                  setParameterData(newRow);
+                  setMessage("Parameter updated successfully.");
+                  setShowSnackbar(true);
 
-                return { ...newRow };
-              } catch (error) {
-                handleError(error, `Parameter Update failure: ${error}`, false);
-                throw error;
-              }
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(
+                    error,
+                    `Parameter Update failure: ${error}`,
+                    false,
+                  );
+                  throw error;
+                }
+              }}
+            />
+            <SnackbarBaseline
+              message={message}
+              state={showSnackbar}
+              handleSnackbarClose={handleSnackbarClose}
+            />
+          </div>
+        )}
+
+        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              backgroundColor: "white",
+              margin: "auto",
+              marginTop: "20%",
             }}
-          />
-          <SnackbarBaseline
-            message={message}
-            state={showSnackbar}
-            handleSnackbarClose={handleSnackbarClose}
-          />
-        </div>
-      )}
+          >
+            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography>
+              Are you sure you want to delete "
+              {selectedParameter?.parameterName}
+              "?
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModalDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
+        </Modal>
 
-      <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <Typography variant="h6">Confirm Deletion</Typography>
-          <Typography>
-            Are you sure you want to delete "{selectedParameter?.parameterName}
-            "?
-          </Typography>
-          <Box mt={2} display="flex" justifyContent="space-between">
+        {/* Modal Add Parameter */}
+        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
+          <Paper
+            sx={{
+              width: 400,
+              padding: 4,
+              backgroundColor: "white",
+              margin: "auto",
+              marginTop: "20%",
+            }}
+          >
+            <h3>Add New Parameter</h3>
+            <TextField
+              label="Name"
+              fullWidth
+              margin="normal"
+              value={parameterData?.parameterName || ""}
+              onChange={(e) =>
+                setParameterData(
+                  (prev) =>
+                    ({
+                      ...prev,
+                      parameterName: e.target.value,
+                    }) as Parameter,
+                )
+              }
+            />
+            <TextField
+              label="Value"
+              fullWidth
+              margin="normal"
+              value={parameterData?.parameterValue || ""}
+              onChange={(e) =>
+                setParameterData((prev) => ({
+                  ...prev,
+                  parameterValue: e.target.value,
+                }))
+              }
+            />
             <Button
               variant="contained"
-              color="primary"
-              onClick={handleDeleteRow}
+              onClick={() => parameterData && handleAddRow(parameterData)}
             >
-              Delete
+              Add
             </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setShowModalDelete(false)}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* Modal Add Parameter */}
-      <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Box
-          sx={{
-            width: 400,
-            padding: 4,
-            backgroundColor: "white",
-            margin: "auto",
-            marginTop: "20%",
-          }}
-        >
-          <h3>Add New Parameter</h3>
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={parameterData?.parameterName || ""}
-            onChange={(e) =>
-              setParameterData(
-                (prev) =>
-                  ({
-                    ...prev,
-                    parameterName: e.target.value,
-                  }) as Parameter,
-              )
-            }
-          />
-          <TextField
-            label="Value"
-            fullWidth
-            margin="normal"
-            value={parameterData?.parameterValue || ""}
-            onChange={(e) =>
-              setParameterData((prev) => ({
-                ...prev,
-                parameterValue: e.target.value,
-              }))
-            }
-          />
-          <Button
-            variant="contained"
-            onClick={() => parameterData && handleAddRow(parameterData)}
-          >
-            Add
-          </Button>
-        </Box>
-      </Modal>
+          </Paper>
+        </Modal>
+      </FinanceLayout>
     </div>
   );
 }
