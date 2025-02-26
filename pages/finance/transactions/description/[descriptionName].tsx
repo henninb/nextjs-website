@@ -97,42 +97,42 @@ export default function TransactionsByDescription() {
   return (
     <div>
       <FinanceLayout>
-      <h2>{`${descriptionName}`}</h2>
-      {showSpinner ? (
-        <Spinner />
-      ) : (
-        <div>
-          <DataGrid
-            rows={fetchedTransactions?.filter((row) => row != null) || []}
-            columns={columns}
-            getRowId={(row) => row.transactionId || 0}
-            checkboxSelection={false}
-            rowSelection={false}
-            processRowUpdate={async (
-              newRow: Transaction,
-              oldRow: Transaction,
-            ): Promise<Transaction> => {
-              if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                return oldRow;
-              }
-              try {
-                await updateTransaction({ newRow, oldRow });
-                setMessage("Transaction updated successfully.");
-                setShowSnackbar(true);
-                return { ...newRow };
-              } catch (error) {
-                handleError(error, "Update Transaction failure.");
-                throw error;
-              }
-            }}
-          />
-          <SnackbarBaseline
-            message={snackbarMessage}
-            state={showSnackbar}
-            handleSnackbarClose={handleSnackbarClose}
-          />
-        </div>
-      )}
+        <h2>{`${descriptionName}`}</h2>
+        {showSpinner ? (
+          <Spinner />
+        ) : (
+          <div>
+            <DataGrid
+              rows={fetchedTransactions?.filter((row) => row != null) || []}
+              columns={columns}
+              getRowId={(row) => row.transactionId || 0}
+              checkboxSelection={false}
+              rowSelection={false}
+              processRowUpdate={async (
+                newRow: Transaction,
+                oldRow: Transaction,
+              ): Promise<Transaction> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updateTransaction({ newRow, oldRow });
+                  setMessage("Transaction updated successfully.");
+                  setShowSnackbar(true);
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(error, "Update Transaction failure.");
+                  throw error;
+                }
+              }}
+            />
+            <SnackbarBaseline
+              message={snackbarMessage}
+              state={showSnackbar}
+              handleSnackbarClose={handleSnackbarClose}
+            />
+          </div>
+        )}
       </FinanceLayout>
     </div>
   );
