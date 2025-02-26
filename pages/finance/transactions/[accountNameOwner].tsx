@@ -39,6 +39,15 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
 import { currencyFormat, noNaN } from "../../../components/Common";
 import FinanceLayout from "../../../layouts/FinanceLayout";
+import Totals from "../../../model/Totals";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+} from "@mui/material";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -175,6 +184,55 @@ export default function TransactionsByAccount() {
     notes: "",
   };
 
+  const FinanceTable = ({ fetchedTotals }: { fetchedTotals: Totals }) => {
+    const currencyFormat = (num: number) =>
+      new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(num);
+
+    const noNaN = (value: number) => (isNaN(value) ? 0 : value);
+
+    return (
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <b>Total</b>
+              </TableCell>
+              <TableCell>
+                <b>Cleared</b>
+              </TableCell>
+              <TableCell>
+                <b>Outstanding</b>
+              </TableCell>
+              <TableCell>
+                <b>Future</b>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell>
+                {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+              </TableCell>
+              <TableCell>
+                {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+              </TableCell>
+              <TableCell>
+                {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
+              </TableCell>
+              <TableCell>
+                {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
   const handleSnackbarClose = () => setShowSnackbar(false);
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -294,7 +352,7 @@ export default function TransactionsByAccount() {
   const columns: GridColDef[] = [
     {
       field: "transactionDate",
-      headerName: "Transaction Date",
+      headerName: "Date",
       type: "date",
       width: 100,
       renderCell: (params) => {
@@ -384,12 +442,12 @@ export default function TransactionsByAccount() {
       width: 180,
       renderCell: (params: any) => params.value || "undefined",
     },
-    {
-      field: "accountType",
-      headerName: "AccountType",
-      width: 150,
-      renderCell: (params: any) => params.value || "undefined",
-    },
+    // {
+    //   field: "accountType",
+    //   headerName: "AccountType",
+    //   width: 150,
+    //   renderCell: (params: any) => params.value || "undefined",
+    // },
     {
       field: "reoccurringType",
       headerName: "Reoccur",
