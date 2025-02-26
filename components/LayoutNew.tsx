@@ -10,6 +10,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Box,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -58,16 +59,12 @@ export default function Layout({ children }: LayoutProps) {
     setIsOpen(open);
   };
 
-  return (
-    <div>
+  const content = (
+    // <Box sx={{ backgroundColor: isFinancePage ? "inherit" : "#fff", minHeight: "100vh" }}>
+         <Box sx={{ backgroundColor: isFinancePage ? "#f5f5f5" : "#fff", minHeight: "100vh" }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={toggleDrawer(true)}
-          >
+          <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer(true)}>
             <MenuIcon />
           </IconButton>
           <IconButton color="inherit" href="/login">
@@ -91,18 +88,15 @@ export default function Layout({ children }: LayoutProps) {
             </ListItem>
           ))}
           {isFinancePage && (
-            <div>
-                
             <ListItem disablePadding>
               <SelectNavigateAccounts />
             </ListItem>
-            
-            </div>
           )}
         </List>
       </Drawer>
-
       {children}
-    </div>
+    </Box>
   );
+
+  return isFinancePage ? <FinanceLayout>{content}</FinanceLayout> : content;
 }
