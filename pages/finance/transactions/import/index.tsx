@@ -9,7 +9,6 @@ import { TransactionType } from "../../../../model/TransactionType";
 import FinanceLayout from "../../../../layouts/FinanceLayout";
 
 export default function TransactionImporter() {
-//const TransactionImporter = () => {
   const [inputText, setInputText] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -76,8 +75,6 @@ export default function TransactionImporter() {
     },
   ];
 
-
-
   const columns: GridColDef[] = [
     {
       field: "transactionDate",
@@ -127,7 +124,6 @@ export default function TransactionImporter() {
       headerName: "transactionState",
       width: 275,
       editable: true,
-
     },
     {
       field: "transactionType",
@@ -150,7 +146,6 @@ export default function TransactionImporter() {
       editable: true,
     },
 
-
     {
       field: "actions",
       headerName: "Actions",
@@ -167,34 +162,33 @@ export default function TransactionImporter() {
         </Button>
       ),
     },
-
   ];
 
   return (
     <Box sx={{ p: 3 }}>
       <FinanceLayout>
-      <Typography variant="h6">Paste Transactions</Typography>
-      <TextField
-        multiline
-        fullWidth
-        rows={4}
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-        placeholder="Enter transactions, e.g.\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary 2000.00"
-      />
-      <Button variant="contained" sx={{ mt: 2 }} onClick={parseTransactions}>
-        Submit
-      </Button>
-      <Paper sx={{ height: 400, width: "100%", mt: 2 }}>
-        <DataGrid
-          rows={transactions}
-          columns={columns}
-          getRowId={(row) => row.guid}
+        <Typography variant="h6">Paste Transactions</Typography>
+        <TextField
+          multiline
+          fullWidth
+          rows={4}
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Enter transactions, e.g.\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary 2000.00"
         />
-      </Paper>
+        <Button variant="contained" sx={{ mt: 2 }} onClick={parseTransactions}>
+          Submit
+        </Button>
+        <Paper sx={{ height: 400, width: "100%", mt: 2 }}>
+          <DataGrid
+            rows={transactions}
+            columns={columns}
+            getRowId={(row) => row.guid}
+          />
+        </Paper>
       </FinanceLayout>
     </Box>
   );
-};
+}
 
 //export default TransactionImporter;

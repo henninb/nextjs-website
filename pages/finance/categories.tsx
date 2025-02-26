@@ -240,14 +240,7 @@ export default function Categories() {
 
         {/* Confirmation Delete Modal */}
         <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Typography variant="h6">Confirm Deletion</Typography>
             <Typography>
               Are you sure you want to delete the category "
@@ -274,14 +267,7 @@ export default function Categories() {
 
         {/* Modal Add Category */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <h3>Add New Category</h3>
             <TextField
               label="Name"

@@ -362,14 +362,7 @@ export default function Transfers() {
 
         {/* Confirmation Delete Modal */}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Typography variant="h6">Confirm Deletion</Typography>
             <Typography>
               Are you sure you want to delete the transfer "
@@ -396,14 +389,7 @@ export default function Transfers() {
 
         {/* Modal to add a transaction */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <h3>Add New Transfer</h3>
 
             <TextField

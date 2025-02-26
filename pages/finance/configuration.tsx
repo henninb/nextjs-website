@@ -263,15 +263,7 @@ export default function Configuration() {
         )}
 
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              backgroundColor: "white",
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Typography variant="h6">Confirm Deletion</Typography>
             <Typography>
               Are you sure you want to delete "
@@ -299,15 +291,7 @@ export default function Configuration() {
 
         {/* Modal Add Parameter */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              backgroundColor: "white",
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <h3>Add New Parameter</h3>
             <TextField
               label="Name"

@@ -274,14 +274,7 @@ export default function Accounts() {
 
         {/* Confirmation Deleting Modal */}
         <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Typography variant="h6">Confirm Deletion</Typography>
             <Typography>
               Are you sure you want to delete the account "
@@ -308,14 +301,7 @@ export default function Accounts() {
 
         {/* Modal Add Account */}
         <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <h3>Add New Account</h3>
             <TextField
               label="Account"

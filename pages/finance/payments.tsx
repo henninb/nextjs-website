@@ -284,14 +284,7 @@ export default function Payments() {
 
         {/* Confirmation Delete Modal */}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Typography variant="h6">Confirm Deletion</Typography>
             <Typography>
               Are you sure you want to delete the payment "
@@ -318,14 +311,7 @@ export default function Payments() {
 
         {/* Modal to Add or Edit */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <h3>Add New Payment</h3>
             <TextField
               label="Transaction Date"

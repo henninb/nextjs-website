@@ -658,14 +658,7 @@ export default function TransactionsByAccount() {
 
         {/* Modal Clone Transaction */}
         <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Typography variant="h6">Confirm Clone</Typography>
             <Typography>
               Are you sure you want to clone the transaction "
@@ -692,14 +685,7 @@ export default function TransactionsByAccount() {
 
         {/* Modal Delete Transaction */}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Typography variant="h6">Confirm Delete</Typography>
             <Typography>
               Are you sure you want to delete the transaction "
@@ -735,14 +721,7 @@ export default function TransactionsByAccount() {
           aria-labelledby="transaction-form-modal"
           aria-describedby="transaction-form-modal-description"
         >
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <h3>Add New Transaction</h3>
 
             <TextField
@@ -952,14 +931,7 @@ export default function TransactionsByAccount() {
 
         {/* Modal Move Transaction */}
         <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
-          <Paper
-            sx={{
-              width: 400,
-              padding: 4,
-              margin: "auto",
-              marginTop: "20%",
-            }}
-          >
+          <Paper>
             <Autocomplete
               options={
                 isSuccessAccounts &&

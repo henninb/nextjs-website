@@ -101,6 +101,9 @@ export const draculaTheme = createTheme({
           borderRadius: "10px",
           padding: "24px",
           boxShadow: "0px 6px 12px rgba(0, 0, 0, 0.3)",
+          width: 400,
+          margin: "auto",
+          marginTop: "20%",
         },
       },
     },
@@ -125,7 +128,6 @@ export const draculaTheme = createTheme({
         },
       },
     },
-
     MuiIconButton: {
       styleOverrides: {
         root: {
@@ -165,6 +167,22 @@ export const draculaTheme = createTheme({
         },
       },
     },
+
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          color: "rgba(248, 248, 242, 1)", // Dracula foreground color
+          "&.Mui-selected": {
+            backgroundColor: "rgba(189, 147, 249, 0.3)", // Soft purple highlight
+            color: "rgba(248, 248, 242, 1)",
+          },
+          "&:hover": {
+            backgroundColor: "rgba(80, 250, 123, 0.3)", // Green hover effect
+          },
+        },
+      },
+    },
+
     MuiMenuItem: {
       styleOverrides: {
         root: {

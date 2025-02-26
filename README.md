@@ -91,8 +91,8 @@ gcloud compute ssh www-bhenning-com --zone=us-central1-b
 
 http://34.170.134.90/
 
-
 Wells Fargo
+
 ```
 const transactions = [...document.querySelectorAll("tr.TransactionsRow__transaction-row___IjXn8")].map(row => {
     const cells = row.querySelectorAll("td");

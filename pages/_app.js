@@ -1,5 +1,6 @@
 import "../styles/index.css";
 import Layout from "../components/Layout";
+import LayoutNew from "../components/LayoutNew";
 import AuthProvider from "../components/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; //from 'react-query';
 import { useEffect, useState } from "react";
@@ -80,11 +81,11 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <div>
       <QueryClientProvider client={queryClient}>
-        <Layout>
+        <LayoutNew>
           <AuthProvider>
             <Component {...pageProps} />
           </AuthProvider>
-        </Layout>
+        </LayoutNew>
       </QueryClientProvider>
     </div>
   );
