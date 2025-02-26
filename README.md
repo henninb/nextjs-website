@@ -2,6 +2,10 @@
 
 hosted on cloudflare pages
 hosted on vercel
+hosted on netlify
+hosted on gcp
+hosted on aws
+
 npm install -D @cloudflare/next-on-pages
 
 ## aws
@@ -86,3 +90,23 @@ gcloud compute ssh www-bhenning-com --zone=us-central1-b
 ## curl nginx
 
 http://34.170.134.90/
+
+
+Wells Fargo
+```
+const transactions = [...document.querySelectorAll("tr.TransactionsRow__transaction-row___IjXn8")].map(row => {
+    const cells = row.querySelectorAll("td");
+
+    return {
+        date: cells[1]?.innerText.trim(), // Transaction Date
+        postedDate: cells[2]?.innerText.trim(), // Posted Date
+        description: cells[3]?.querySelector("span")?.innerText.trim(), // Merchant/Description
+        transactionId: cells[3]?.querySelector(".OneLinkNoTx")?.innerText.trim(), // Transaction ID
+        amount: cells[4]?.innerText.trim(), // Transaction Amount
+        balance: cells[5]?.innerText.trim() // Running Balance
+    };
+});
+
+// Print to console
+console.table(transactions);
+```
