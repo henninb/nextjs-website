@@ -61,13 +61,14 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const content = (
-<Box
-  sx={{
-    backgroundColor: isFinancePage ? "rgba(30, 31, 41, 1)" : "#fff",
-    color: "rgba(248, 248, 242, 1)",
-    minHeight: "100vh",
-  }}
->  
+    <Box
+      sx={{
+        backgroundColor: isFinancePage ? "rgba(30, 31, 41, 1)" : "#fff",
+        color: isFinancePage ? "rgba(248, 248, 242, 1)" : "#000",
+        //color: "rgba(248, 248, 242, 1)",
+        minHeight: "100vh",
+      }}
+    >
       <AppBar position="static">
         <Toolbar>
           <IconButton
