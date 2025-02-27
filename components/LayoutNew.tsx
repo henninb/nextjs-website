@@ -31,6 +31,7 @@ const financeLinks = [
   { text: "Categories", href: "/finance/categories" },
   { text: "Descriptions", href: "/finance/descriptions" },
   { text: "Configuration", href: "/finance/configuration" },
+  { text: "Import", href: "/finance/transactions/import" },
 ];
 
 const generalLinks = [
@@ -60,11 +61,21 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const content = (
-    // <Box sx={{ backgroundColor: isFinancePage ? "inherit" : "#fff", minHeight: "100vh" }}>
-         <Box sx={{ backgroundColor: isFinancePage ? "#f5f5f5" : "#fff", minHeight: "100vh" }}>
+<Box
+  sx={{
+    backgroundColor: isFinancePage ? "rgba(30, 31, 41, 1)" : "#fff",
+    color: "rgba(248, 248, 242, 1)",
+    minHeight: "100vh",
+  }}
+>  
       <AppBar position="static">
         <Toolbar>
-          <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer(true)}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={toggleDrawer(true)}
+          >
             <MenuIcon />
           </IconButton>
           <IconButton color="inherit" href="/login">

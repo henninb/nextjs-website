@@ -20,6 +20,7 @@ export const draculaTheme = createTheme({
     divider: "rgba(68, 71, 90, 1)",
   },
   components: {
+    
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
