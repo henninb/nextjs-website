@@ -33,6 +33,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote"; // 🎵 Spotify
 import BuildIcon from "@mui/icons-material/Build"; // 🔧 Best for Tools
 import MenuBookIcon from "@mui/icons-material/MenuBook"; // 📖 Best for Howto
 import ContactPageIcon from "@mui/icons-material/ContactPage";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
@@ -137,23 +138,22 @@ export default function Layout({ children }: LayoutProps) {
       </ListItem>
     ))}
     {isFinancePage && (
-      // <ListItem disablePadding>
-      //   <SelectNavigateAccounts onNavigate={() => setIsOpen(false)} /> {/* Pass function to close menu */}
-      // </ListItem>
 
 <ListItem disablePadding>
-  <ListItemButton
-    component="div"
-    sx={{
-      backgroundColor: "rgba(73, 74, 87, 1)", // Ensure default background matches Dracula theme
-      
-      "&:hover": {
-        backgroundColor: "rgba(73, 74, 87, 1)", // Prevent green flash on hover
-      },
-    }}
-  >
-    <SelectNavigateAccounts onNavigate={() => setIsOpen(false)} />
-  </ListItemButton>
+<ListItemButton
+  component="div"
+  sx={{
+    backgroundColor: "rgba(73, 74, 87, 1)", // Ensure default background matches Dracula theme
+    "&:hover": {
+      backgroundColor: "rgba(73, 74, 87, 1)", // Prevent green flash on hover
+    },
+  }}
+>
+  <ListItemIcon>
+    <ListAltIcon />
+  </ListItemIcon>
+  <SelectNavigateAccounts onNavigate={() => setIsOpen(false)} />
+</ListItemButton>
 </ListItem>
 
     )}

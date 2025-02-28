@@ -149,7 +149,6 @@ export const draculaTheme = createTheme({
         },
       },
     },
-
     MuiSelect: {
       styleOverrides: {
         root: {
@@ -171,14 +170,14 @@ export const draculaTheme = createTheme({
     MuiMenu: {
       styleOverrides: {
         paper: {
-          backgroundColor: "rgba(40, 42, 54, 1)", // Dropdown background
+          backgroundColor: "rgba(40, 42, 54, 1)", // Dark background
           color: "rgba(248, 248, 242, 1)", // Text color
-          //borderRadius: "6px",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+          borderRadius: "6px", // Smooth rounded corners
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.5)", // Softer and more pronounced shadow
+          border: "1px solid rgba(68, 71, 90, 1)", // Subtle border with a matching color to the theme
         },
       },
     },
-
     MuiListItem: {
       styleOverrides: {
         root: {
@@ -188,7 +187,9 @@ export const draculaTheme = createTheme({
             color: "rgba(248, 248, 242, 1)",
           },
           "&:hover": {
-            backgroundColor: "rgba(80, 250, 123, 0.3)", // Green hover effect
+            //backgroundColor: "rgba(80, 250, 123, 0.3)", // Green hover effect
+            backgroundColor: "transparent", // Remove background color on hover
+            textDecoration: "underline", // Underline effect on hover
           },
         },
       },
