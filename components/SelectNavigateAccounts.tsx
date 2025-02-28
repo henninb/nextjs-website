@@ -10,10 +10,14 @@ interface Option {
   label: string;
 }
 
-export default function SelectNavigateAccounts() {
+interface SelectNavigateAccountsProps {
+  onNavigate: () => void; // Accept function to close menu
+}
+
+export default function SelectNavigateAccounts({ onNavigate }: SelectNavigateAccountsProps) {
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>("");
-  const [maxWidth, setMaxWidth] = useState<number>(200); // Default width
+  const [maxWidth, setMaxWidth] = useState<number>(200);
   const router = useRouter();
   const { data, isSuccess, isError } = useFetchAccount();
 
@@ -32,13 +36,12 @@ export default function SelectNavigateAccounts() {
 
       setOptions(optionList);
 
-      // Calculate max width based on longest label
       const longestLabel = optionList.reduce(
         (max, option) =>
           option.label.length > max.length ? option.label : max,
         "",
       );
-      const newMaxWidth = Math.max(longestLabel.length * 10, 200); // Ensure minimum width
+      const newMaxWidth = Math.max(longestLabel.length * 10, 200);
       setMaxWidth(newMaxWidth);
     }
   }, [isSuccess, data]);
@@ -46,6 +49,7 @@ export default function SelectNavigateAccounts() {
   const handleChange = (event: any) => {
     const selected = event.target.value as string;
     setSelectedValue(selected);
+    onNavigate(); // Close drawer before navigating
     router.push(`/finance/transactions/${selected}`);
   };
 
@@ -62,28 +66,17 @@ export default function SelectNavigateAccounts() {
   }
 
   return (
-    <div>
-      <FinanceLayout>
-        <FormControl
-          variant="outlined"
-          sx={{
-            minWidth: `${maxWidth}px`,
-          }}
-        >
-          <InputLabel>Select an account</InputLabel>
-          <Select
-            value={selectedValue}
-            onChange={handleChange}
-            label="Select an account"
-          >
-            {options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </FinanceLayout>
-    </div>
+    <FinanceLayout>
+    <FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
+      <InputLabel>Select an account</InputLabel>
+      <Select value={selectedValue} onChange={handleChange} label="Select an account">
+        {options.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+    </FinanceLayout>
   );
 }

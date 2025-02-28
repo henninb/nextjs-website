@@ -20,6 +20,18 @@ export const draculaTheme = createTheme({
     divider: "rgba(68, 71, 90, 1)",
   },
   components: {
+
+  MuiListItemIcon: {
+    styleOverrides: {
+      root: {
+        color: "rgba(255, 121, 198, 1)", // Set icon color to pink (or another color from the theme)
+        "&:hover": {
+          color: "rgba(139, 233, 253, 1)", // Light blue hover effect
+        },
+      },
+    },
+  },
+
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
@@ -101,7 +113,7 @@ export const draculaTheme = createTheme({
           borderRadius: "10px",
           padding: "24px",
           boxShadow: "0px 6px 12px rgba(0, 0, 0, 0.3)",
-          width: 400,
+          //width: 400,
           margin: "auto",
         },
       },
