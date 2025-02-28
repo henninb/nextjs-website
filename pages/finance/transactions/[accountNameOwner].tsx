@@ -40,6 +40,9 @@ import SwapVert from "@mui/icons-material/SwapVert";
 import { currencyFormat, noNaN } from "../../../components/Common";
 import FinanceLayout from "../../../layouts/FinanceLayout";
 import Totals from "../../../model/Totals";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import {
   Table,
   TableHead,
@@ -203,6 +206,7 @@ export default function TransactionsByAccount() {
               </TableCell>
               <TableCell>
                 <b>Cleared</b>
+                {/* <CheckCircleIcon /> */}
               </TableCell>
               <TableCell>
                 <b>Outstanding</b>
@@ -413,27 +417,71 @@ export default function TransactionsByAccount() {
         };
 
         return (
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            {transactionStates.map((state) => (
-              <Button
-                key={state}
-                size="small"
-                variant={
-                  params.row.transactionState === state
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() => handleStateChange(state as TransactionState)}
-              >
-                {state}
-              </Button>
-            ))}
+          <Box display="flex" alignItems="center">
+            {transactionStates.map((state: any) => {
+              let IconComponent : any;
+              let tooltipText : any;
+      
+              // Map states to icons and tooltips
+              if (state === "cleared") {
+                IconComponent = CheckCircleIcon;
+                tooltipText = "Cleared";
+              } else if (state === "outstanding") {
+                IconComponent = AccessTimeIcon;
+                tooltipText = "Outstanding";
+              } else if (state === "future") {
+                IconComponent = EventNoteIcon;
+                tooltipText = "Future";
+              }
+      
+              return (
+                <Tooltip key={state} title={tooltipText}>
+                  {/* <IconButton
+                    color={params.row.transactionState === state ? "primary" : "default"}
+                    onClick={() => handleStateChange(state)}
+                  >
+                  
+                    <IconComponent />
+                  </IconButton> */}
+
+<IconButton
+              style={{
+                color: params.row.transactionState === state
+                  ? "rgba(189, 147, 249, 1)" // Purple color for active state
+                  : "default", // Default color for inactive state
+              }}
+              onClick={() => handleStateChange(state)}
+            >
+              <IconComponent />
+            </IconButton>
+                </Tooltip>
+              );
+            })}
           </Box>
         );
+
+        // return (
+        //   <Box
+        //     display="flex"
+        //     justifyContent="space-between"
+        //     alignItems="center"
+        //   >
+        //     {transactionStates.map((state) => (
+        //       <Button
+        //         key={state}
+        //         size="small"
+        //         variant={
+        //           params.row.transactionState === state
+        //             ? "contained"
+        //             : "outlined"
+        //         }
+        //         onClick={() => handleStateChange(state as TransactionState)}
+        //       >
+        //         {state}
+        //       </Button>
+        //     ))}
+        //   </Box>
+        // );
       },
     },
     {
@@ -536,7 +584,7 @@ export default function TransactionsByAccount() {
                           textAlign: "left",
                         }}
                       >
-                        Cleared
+                        Cleared <CheckCircleIcon />
                       </th>
                       <th
                         style={{
@@ -545,7 +593,7 @@ export default function TransactionsByAccount() {
                           textAlign: "left",
                         }}
                       >
-                        Outstanding
+                        Outstanding <AccessTimeIcon />
                       </th>
                       <th
                         style={{
@@ -554,7 +602,7 @@ export default function TransactionsByAccount() {
                           textAlign: "left",
                         }}
                       >
-                        Future
+                        Future <EventNoteIcon />
                       </th>
                     </tr>
                   </thead>
