@@ -1,5 +1,6 @@
 module.exports = {
   reactStrictMode: true,
+  //chrome: false, // Avoid bundling chrome API
   // output: 'export',
   // trailingSlash : true
   // Add other custom configurations

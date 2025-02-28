@@ -12,28 +12,32 @@ export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const getTransactionsFromExtension = async () => {
-    const extensionId = "your-extension-id-here"; // Found in chrome://extensions
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        extensionId,
-        { action: "getTransactions" },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve(response);
-          }
-        },
-      );
-    });
-  };
+  // const getTransactionsFromExtension = async () => {
+  //   const extensionId = "ldehlkfgenjholjmakdlmgbchmebdinc"; // Found in chrome://extensions
+  //   return new Promise((resolve, reject) => {
+  //     chrome.runtime.sendMessage(
+  //       extensionId,
+  //       { action: "getTransactions" },
+  //       (response) => {
+  //         if (chrome.runtime.lastError) {
+  //           reject(chrome.runtime.lastError);
+  //         } else {
+  //           resolve(response);
+  //         }
+  //       },
+  //     );
+  //   });
+  // };
 
-  useEffect(() => {
-    getTransactionsFromExtension().then((data) => {
-      console.log("Received transactions:", data);
-    });
-  }, []);
+  // getTransactionsFromExtension().then((data) => {
+  //   console.log("Received transactions:", data);
+  // });
+
+  // useEffect(() => {
+  //   getTransactionsFromExtension().then((data) => {
+  //     console.log("Received transactions:", data);
+  //   });
+  // }, []);
 
   const parseTransactions = () => {
     const lines = inputText.split("\n").filter((line) => line.trim() !== "");
