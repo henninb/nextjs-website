@@ -1,5 +1,4 @@
 import "../styles/index.css";
-import Layout from "../components/Layout";
 import LayoutNew from "../components/LayoutNew";
 import AuthProvider from "../components/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; //from 'react-query';
