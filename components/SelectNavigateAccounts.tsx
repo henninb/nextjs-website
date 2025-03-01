@@ -14,7 +14,9 @@ interface SelectNavigateAccountsProps {
   onNavigate: () => void; // Accept function to close menu
 }
 
-export default function SelectNavigateAccounts({ onNavigate }: SelectNavigateAccountsProps) {
+export default function SelectNavigateAccounts({
+  onNavigate,
+}: SelectNavigateAccountsProps) {
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>("");
   const [maxWidth, setMaxWidth] = useState<number>(200);
@@ -67,16 +69,20 @@ export default function SelectNavigateAccounts({ onNavigate }: SelectNavigateAcc
 
   return (
     <FinanceLayout>
-    <FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
-      <InputLabel>Select an account</InputLabel>
-      <Select value={selectedValue} onChange={handleChange} label="Select an account">
-        {options.map((option) => (
-          <MenuItem key={option.value} value={option.value}>
-            {option.label}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+      <FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
+        <InputLabel>Select an account</InputLabel>
+        <Select
+          value={selectedValue}
+          onChange={handleChange}
+          label="Select an account"
+        >
+          {options.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </FinanceLayout>
   );
 }

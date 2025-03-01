@@ -120,9 +120,6 @@ export const draculaTheme = createTheme({
       },
     },
 
-
-    
-
     MuiButton: {
       styleOverrides: {
         root: {

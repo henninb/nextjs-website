@@ -40,9 +40,9 @@ import SwapVert from "@mui/icons-material/SwapVert";
 import { currencyFormat, noNaN } from "../../../components/Common";
 import FinanceLayout from "../../../layouts/FinanceLayout";
 import Totals from "../../../model/Totals";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import EventNoteIcon from '@mui/icons-material/EventNote';
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import EventNoteIcon from "@mui/icons-material/EventNote";
 import {
   Table,
   TableHead,
@@ -419,9 +419,9 @@ export default function TransactionsByAccount() {
         return (
           <Box display="flex" alignItems="center">
             {transactionStates.map((state: any) => {
-              let IconComponent : any;
-              let tooltipText : any;
-      
+              let IconComponent: any;
+              let tooltipText: any;
+
               // Map states to icons and tooltips
               if (state === "cleared") {
                 IconComponent = CheckCircleIcon;
@@ -433,7 +433,7 @@ export default function TransactionsByAccount() {
                 IconComponent = EventNoteIcon;
                 tooltipText = "Future";
               }
-      
+
               return (
                 <Tooltip key={state} title={tooltipText}>
                   {/* <IconButton
@@ -444,16 +444,17 @@ export default function TransactionsByAccount() {
                     <IconComponent />
                   </IconButton> */}
 
-<IconButton
-              style={{
-                color: params.row.transactionState === state
-                  ? "rgba(189, 147, 249, 1)" // Purple color for active state
-                  : "default", // Default color for inactive state
-              }}
-              onClick={() => handleStateChange(state)}
-            >
-              <IconComponent />
-            </IconButton>
+                  <IconButton
+                    style={{
+                      color:
+                        params.row.transactionState === state
+                          ? "rgba(189, 147, 249, 1)" // Purple color for active state
+                          : "default", // Default color for inactive state
+                    }}
+                    onClick={() => handleStateChange(state)}
+                  >
+                    <IconComponent />
+                  </IconButton>
                 </Tooltip>
               );
             })}

@@ -27,14 +27,13 @@ import SportsBaseballIcon from "@mui/icons-material/SportsBaseball";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SportsFootballIcon from "@mui/icons-material/SportsFootball";
 import SportsHockeyIcon from "@mui/icons-material/SportsHockey";
-import MonetizationOnIcon from "@mui/icons-material/MonetizationOn"; 
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat"; // 🌡️ Temperature
 import MusicNoteIcon from "@mui/icons-material/MusicNote"; // 🎵 Spotify
 import BuildIcon from "@mui/icons-material/Build"; // 🔧 Best for Tools
 import MenuBookIcon from "@mui/icons-material/MenuBook"; // 📖 Best for Howto
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -124,41 +123,39 @@ export default function Layout({ children }: LayoutProps) {
         </Toolbar>
       </AppBar>
       <Drawer anchor="left" open={isOpen} onClose={toggleDrawer(false)}>
-  <List>
-    {menuLinks.map(({ text, href, icon }) => (
-      <ListItem key={href} disablePadding>
-        <ListItemButton
-          component="a"
-          href={href}
-          onClick={toggleDrawer(false)} // Ensure menu closes on selection
-        >
-          <ListItemIcon>{icon}</ListItemIcon>
-          <ListItemText primary={text} />
-        </ListItemButton>
-      </ListItem>
-    ))}
-    {isFinancePage && (
-
-<ListItem disablePadding>
-<ListItemButton
-  component="div"
-  sx={{
-    backgroundColor: "rgba(73, 74, 87, 1)", // Ensure default background matches Dracula theme
-    "&:hover": {
-      backgroundColor: "rgba(73, 74, 87, 1)", // Prevent green flash on hover
-    },
-  }}
->
-  <ListItemIcon>
-    <ListAltIcon />
-  </ListItemIcon>
-  <SelectNavigateAccounts onNavigate={() => setIsOpen(false)} />
-</ListItemButton>
-</ListItem>
-
-    )}
-  </List>
-</Drawer>
+        <List>
+          {menuLinks.map(({ text, href, icon }) => (
+            <ListItem key={href} disablePadding>
+              <ListItemButton
+                component="a"
+                href={href}
+                onClick={toggleDrawer(false)} // Ensure menu closes on selection
+              >
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+          {isFinancePage && (
+            <ListItem disablePadding>
+              <ListItemButton
+                component="div"
+                sx={{
+                  backgroundColor: "rgba(73, 74, 87, 1)", // Ensure default background matches Dracula theme
+                  "&:hover": {
+                    backgroundColor: "rgba(73, 74, 87, 1)", // Prevent green flash on hover
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <ListAltIcon />
+                </ListItemIcon>
+                <SelectNavigateAccounts onNavigate={() => setIsOpen(false)} />
+              </ListItemButton>
+            </ListItem>
+          )}
+        </List>
+      </Drawer>
       {children}
     </Box>
   );
