@@ -436,14 +436,6 @@ export default function TransactionsByAccount() {
 
               return (
                 <Tooltip key={state} title={tooltipText}>
-                  {/* <IconButton
-                    color={params.row.transactionState === state ? "primary" : "default"}
-                    onClick={() => handleStateChange(state)}
-                  >
-                  
-                    <IconComponent />
-                  </IconButton> */}
-
                   <IconButton
                     style={{
                       color:
@@ -460,29 +452,6 @@ export default function TransactionsByAccount() {
             })}
           </Box>
         );
-
-        // return (
-        //   <Box
-        //     display="flex"
-        //     justifyContent="space-between"
-        //     alignItems="center"
-        //   >
-        //     {transactionStates.map((state) => (
-        //       <Button
-        //         key={state}
-        //         size="small"
-        //         variant={
-        //           params.row.transactionState === state
-        //             ? "contained"
-        //             : "outlined"
-        //         }
-        //         onClick={() => handleStateChange(state as TransactionState)}
-        //       >
-        //         {state}
-        //       </Button>
-        //     ))}
-        //   </Box>
-        // );
       },
     },
     {
@@ -491,12 +460,6 @@ export default function TransactionsByAccount() {
       width: 180,
       renderCell: (params: any) => params.value || "undefined",
     },
-    // {
-    //   field: "accountType",
-    //   headerName: "AccountType",
-    //   width: 150,
-    //   renderCell: (params: any) => params.value || "undefined",
-    // },
     {
       field: "reoccurringType",
       headerName: "Reoccur",

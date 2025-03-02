@@ -7,37 +7,92 @@ import { TransactionState } from "../../../../model/TransactionState";
 import { AccountType } from "../../../../model/AccountType";
 import { TransactionType } from "../../../../model/TransactionType";
 import FinanceLayout from "../../../../layouts/FinanceLayout";
+import usePendingTransactions from "../../../../hooks/usePendingTransactionFetch";
+import Spinner from "../../../../components/Spinner";
+import SnackbarBaseline from "../../../../components/SnackbarBaseline";
+import useTransactionInsert from "../../../../hooks/useTransactionInsert";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+
+// ✅ Custom hook that returns a mutation instance dynamically
+function useDynamicTransactionInsert(accountNameOwner: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ["insertTransaction", accountNameOwner],
+    mutationFn: async (transaction) => {
+      // Call your API/mutation logic here
+      console.log(`Inserting transaction for ${accountNameOwner}`, transaction);
+      // Example: await api.insertTransaction(transaction);
+    },
+    onSuccess: () => {
+      //queryClient.invalidateQueries(["transactions", accountNameOwner]);
+    },
+  });
+}
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [showSpinner, setShowSpinner] = useState(true);
+  const [message, setMessage] = useState("");
+  const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
+  //const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  // const getTransactionsFromExtension = async () => {
-  //   const extensionId = "ldehlkfgenjholjmakdlmgbchmebdinc"; // Found in chrome://extensions
-  //   return new Promise((resolve, reject) => {
-  //     chrome.runtime.sendMessage(
-  //       extensionId,
-  //       { action: "getTransactions" },
-  //       (response) => {
-  //         if (chrome.runtime.lastError) {
-  //           reject(chrome.runtime.lastError);
-  //         } else {
-  //           resolve(response);
-  //         }
-  //       },
-  //     );
-  //   });
-  // };
+  const {
+    data: fetchedPendingTransactions,
+    isSuccess: isPendingTransactionsLoaded,
+    isFetching: isFetchingPendingTransactions,
+    error: errorPendingTransactions,
+  } = usePendingTransactions();
 
-  // getTransactionsFromExtension().then((data) => {
-  //   console.log("Received transactions:", data);
-  // });
 
-  // useEffect(() => {
-  //   getTransactionsFromExtension().then((data) => {
-  //     console.log("Received transactions:", data);
-  //   });
-  // }, []);
+    useEffect(() => {
+      if (isFetchingPendingTransactions) {
+        setShowSpinner(true);
+        return;
+      }
+      if (isPendingTransactionsLoaded) {
+        setShowSpinner(false);
+      }
+    }, [isPendingTransactionsLoaded, isFetchingPendingTransactions]);
+
+
+    useEffect(() => {
+      if (isPendingTransactionsLoaded && fetchedPendingTransactions) {
+        const transactionsWithGUID = fetchedPendingTransactions.map((transaction) => ({
+          ...transaction,
+          guid: crypto.randomUUID(),
+          reoccurringType: "onetime" as ReoccurringType,
+          transactionState: "outstanding" as TransactionState,
+          transactionType: "undefined" as TransactionType,
+          category: "",
+          accountType: "undefined" as AccountType,
+          activeStatus: true,
+          notes: "imported",
+        }));
+        setTransactions(transactionsWithGUID);
+      }
+    }, [isPendingTransactionsLoaded, fetchedPendingTransactions]);
+
+
+    const handleInsertTransaction = async (transaction) => {
+
+      const mutation = useTransactionInsert(transaction.accountNameOwner);
+      const insertTransaction = useTransactionInsert(transaction.accountNameOwner).mutateAsync;
+      //await insertTransaction(transaction);
+      await mutation.mutateAsync(transaction);
+    };
+
+  const handleSnackbarClose = () => setShowSnackbar(false);
+
+  const handleError = (error: any, moduleName: string) => {
+    const errorMessage = error.response
+      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(error.response.data)}`
+      : `${moduleName}: Failure`;
+    setMessage(errorMessage);
+    setShowSnackbar(true);
+  };
 
   const parseTransactions = () => {
     const lines = inputText.split("\n").filter((line) => line.trim() !== "");
@@ -121,9 +176,16 @@ export default function TransactionImporter() {
       editable: true,
     },
     {
+      field: "accountNameOwner",
+      headerName: "Account",
+      width: 200,
+      editable: true,
+      renderCell: (params) => <div>{params.value}</div>,
+    },
+    {
       field: "description",
       headerName: "Description",
-      width: 180,
+      width: 225,
       editable: true,
       renderCell: (params) => <div>{params.value}</div>,
     },
@@ -182,8 +244,12 @@ export default function TransactionImporter() {
           variant="contained"
           color="primary"
           size="small"
-          disabled={params.row.transactionState === "Approved"}
-          onClick={() => approveTransaction(params.row.guid)}
+          //disabled={params.row.transactionState === "Approved"}
+          onClick={() => {
+            console.log(params.row)
+            handleInsertTransaction(params.row)
+          }
+          }
         >
           Approve
         </Button>
@@ -192,13 +258,13 @@ export default function TransactionImporter() {
   ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <div>
       <FinanceLayout>
         <Typography variant="h6">Paste Transactions</Typography>
         <TextField
           multiline
           fullWidth
-          rows={4}
+          rows={6}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Enter transactions, e.g.\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary 2000.00"
@@ -206,16 +272,28 @@ export default function TransactionImporter() {
         <Button variant="contained" sx={{ mt: 2 }} onClick={parseTransactions}>
           Submit
         </Button>
-        <Paper sx={{ height: 400, width: "100%", mt: 2 }}>
+
+       {showSpinner ? (
+          <Spinner />
+        ) : (
+        <div>
           <DataGrid
             rows={transactions}
             columns={columns}
             getRowId={(row) => row.guid}
           />
-        </Paper>
+
+
+                    
+        </div>
+        )}
+
+          <SnackbarBaseline
+            message={message}
+            state={showSnackbar}
+            handleSnackbarClose={handleSnackbarClose}
+          />
       </FinanceLayout>
-    </Box>
+    </div>
   );
 }
-
-//export default TransactionImporter;
