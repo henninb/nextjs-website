@@ -13,7 +13,6 @@ import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-
 // ✅ Custom hook that returns a mutation instance dynamically
 function useDynamicTransactionInsert(accountNameOwner: string) {
   const queryClient = useQueryClient();
@@ -46,21 +45,20 @@ export default function TransactionImporter() {
     error: errorPendingTransactions,
   } = usePendingTransactions();
 
+  useEffect(() => {
+    if (isFetchingPendingTransactions) {
+      setShowSpinner(true);
+      return;
+    }
+    if (isPendingTransactionsLoaded) {
+      setShowSpinner(false);
+    }
+  }, [isPendingTransactionsLoaded, isFetchingPendingTransactions]);
 
-    useEffect(() => {
-      if (isFetchingPendingTransactions) {
-        setShowSpinner(true);
-        return;
-      }
-      if (isPendingTransactionsLoaded) {
-        setShowSpinner(false);
-      }
-    }, [isPendingTransactionsLoaded, isFetchingPendingTransactions]);
-
-
-    useEffect(() => {
-      if (isPendingTransactionsLoaded && fetchedPendingTransactions) {
-        const transactionsWithGUID = fetchedPendingTransactions.map((transaction) => ({
+  useEffect(() => {
+    if (isPendingTransactionsLoaded && fetchedPendingTransactions) {
+      const transactionsWithGUID = fetchedPendingTransactions.map(
+        (transaction) => ({
           ...transaction,
           guid: crypto.randomUUID(),
           reoccurringType: "onetime" as ReoccurringType,
@@ -70,19 +68,20 @@ export default function TransactionImporter() {
           accountType: "undefined" as AccountType,
           activeStatus: true,
           notes: "imported",
-        }));
-        setTransactions(transactionsWithGUID);
-      }
-    }, [isPendingTransactionsLoaded, fetchedPendingTransactions]);
+        }),
+      );
+      setTransactions(transactionsWithGUID);
+    }
+  }, [isPendingTransactionsLoaded, fetchedPendingTransactions]);
 
-
-    const handleInsertTransaction = async (transaction) => {
-
-      const mutation = useTransactionInsert(transaction.accountNameOwner);
-      const insertTransaction = useTransactionInsert(transaction.accountNameOwner).mutateAsync;
-      //await insertTransaction(transaction);
-      await mutation.mutateAsync(transaction);
-    };
+  const handleInsertTransaction = async (transaction) => {
+    const mutation = useTransactionInsert(transaction.accountNameOwner);
+    const insertTransaction = useTransactionInsert(
+      transaction.accountNameOwner,
+    ).mutateAsync;
+    //await insertTransaction(transaction);
+    await mutation.mutateAsync(transaction);
+  };
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
@@ -246,10 +245,9 @@ export default function TransactionImporter() {
           size="small"
           //disabled={params.row.transactionState === "Approved"}
           onClick={() => {
-            console.log(params.row)
-            handleInsertTransaction(params.row)
-          }
-          }
+            console.log(params.row);
+            handleInsertTransaction(params.row);
+          }}
         >
           Approve
         </Button>
@@ -273,26 +271,23 @@ export default function TransactionImporter() {
           Submit
         </Button>
 
-       {showSpinner ? (
+        {showSpinner ? (
           <Spinner />
         ) : (
-        <div>
-          <DataGrid
-            rows={transactions}
-            columns={columns}
-            getRowId={(row) => row.guid}
-          />
-
-
-                    
-        </div>
+          <div>
+            <DataGrid
+              rows={transactions}
+              columns={columns}
+              getRowId={(row) => row.guid}
+            />
+          </div>
         )}
 
-          <SnackbarBaseline
-            message={message}
-            state={showSnackbar}
-            handleSnackbarClose={handleSnackbarClose}
-          />
+        <SnackbarBaseline
+          message={message}
+          state={showSnackbar}
+          handleSnackbarClose={handleSnackbarClose}
+        />
       </FinanceLayout>
     </div>
   );
