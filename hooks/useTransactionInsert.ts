@@ -34,7 +34,7 @@ const setupNewTransaction = (
     activeStatus: true,
     accountType: payload.accountType || "undefined",
     reoccurringType: payload.reoccurringType || "onetime",
-    accountNameOwner: accountNameOwner,
+    accountNameOwner: payload.accountNameOwner || "",
   };
 };
 
@@ -87,14 +87,14 @@ const insertTransaction = async (
   }
 };
 
-export default function useTransactionInsert(accountNameOwner: string) {
+export default function useTransactionInsert() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationKey: ["insertTransaction"],
     mutationFn: (variables: TransactionInsertType) =>
       insertTransaction(
-        accountNameOwner,
+        variables.newRow.accountNameOwner,
         variables.newRow,
         variables.isFutureTransaction,
       ),
@@ -103,14 +103,15 @@ export default function useTransactionInsert(accountNameOwner: string) {
     },
     onSuccess: (response: Transaction) => {
       const oldData: Transaction[] =
-        queryClient.getQueryData(getAccountKey(accountNameOwner)) || [];
-      queryClient.setQueryData(getAccountKey(accountNameOwner), [
+        queryClient.getQueryData(getAccountKey(response.accountNameOwner)) ||
+        [];
+      queryClient.setQueryData(getAccountKey(response.accountNameOwner), [
         response,
         ...oldData,
       ]);
 
       const oldTotals: Totals = queryClient.getQueryData(
-        getTotalsKey(accountNameOwner),
+        getTotalsKey(response.accountNameOwner),
       ) || {
         totals: 0,
         totalsFuture: 0,
@@ -133,7 +134,10 @@ export default function useTransactionInsert(accountNameOwner: string) {
         console.log("cannot adjust totals.");
       }
 
-      queryClient.setQueryData(getTotalsKey(accountNameOwner), newTotals);
+      queryClient.setQueryData(
+        getTotalsKey(response.accountNameOwner),
+        newTotals,
+      );
     },
   });
 }

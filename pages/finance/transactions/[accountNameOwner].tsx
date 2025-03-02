@@ -128,8 +128,7 @@ export default function TransactionsByAccount() {
 
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
   const { mutateAsync: deleteTransaction } = useTransactionDelete();
-  const { mutateAsync: insertTransaction } =
-    useTransactionInsert(accountNameOwner);
+  const { mutateAsync: insertTransaction } = useTransactionInsert();
   const { mutateAsync: insertValidationAmount } = useValidationAmountInsert();
 
   const transactionStates = ["outstanding", "future", "cleared"];

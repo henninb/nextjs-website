@@ -11,24 +11,6 @@ import usePendingTransactions from "../../../../hooks/usePendingTransactionFetch
 import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// ✅ Custom hook that returns a mutation instance dynamically
-function useDynamicTransactionInsert(accountNameOwner: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationKey: ["insertTransaction", accountNameOwner],
-    mutationFn: async (transaction) => {
-      // Call your API/mutation logic here
-      console.log(`Inserting transaction for ${accountNameOwner}`, transaction);
-      // Example: await api.insertTransaction(transaction);
-    },
-    onSuccess: () => {
-      //queryClient.invalidateQueries(["transactions", accountNameOwner]);
-    },
-  });
-}
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -44,6 +26,8 @@ export default function TransactionImporter() {
     isFetching: isFetchingPendingTransactions,
     error: errorPendingTransactions,
   } = usePendingTransactions();
+
+  const { mutateAsync: insertTransaction } = useTransactionInsert();
 
   useEffect(() => {
     if (isFetchingPendingTransactions) {
@@ -74,32 +58,61 @@ export default function TransactionImporter() {
     }
   }, [isPendingTransactionsLoaded, fetchedPendingTransactions]);
 
-  const handleInsertTransaction = async (transaction) => {
-    const mutation = useTransactionInsert(transaction.accountNameOwner);
-    const insertTransaction = useTransactionInsert(
-      transaction.accountNameOwner,
-    ).mutateAsync;
-    //await insertTransaction(transaction);
-    await mutation.mutateAsync(transaction);
-  };
+  const handleInsertTransaction = async (
+    newData: Transaction,
+  ): Promise<Transaction> => {
+    try {
+      const result = await insertTransaction({
+        accountNameOwner: newData.accountNameOwner,
+        newRow: newData,
+        isFutureTransaction: false,
+      });
 
+      setMessage(`Transaction added successfully: ${JSON.stringify(result)}`);
+      setShowSnackbar(true);
+
+      return result;
+    } catch (error) {
+      handleError(error, "handleAddRow", false);
+      if (
+        !navigator.onLine ||
+        (error.message && error.message.includes("Failed to fetch"))
+      ) {
+      }
+      throw error;
+    }
+  };
+  
   const handleSnackbarClose = () => setShowSnackbar(false);
 
-  const handleError = (error: any, moduleName: string) => {
-    const errorMessage = error.response
-      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(error.response.data)}`
+  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
+    const errorMessage = error.message
+      ? `${moduleName}: ${error.message}`
       : `${moduleName}: Failure`;
+
     setMessage(errorMessage);
     setShowSnackbar(true);
+
+    console.error(errorMessage);
+
+    if (throwIt) throw error;
   };
 
   const parseTransactions = () => {
     const lines = inputText.split("\n").filter((line) => line.trim() !== "");
+    console.log(`Total lines found: ${lines.length}`);
+  
+    let failedCount = 0;
+  
     const parsedTransactions = lines
-      .map((line) => {
+      .map((line, index) => {
         const parts = line.match(/(\d{4}-\d{2}-\d{2})\s(.+)\s(-?\d+\.\d{2})/);
-        if (!parts) return null;
-
+        if (!parts) {
+          console.warn(`Failed to parse line ${index + 1}: "${line}"`);
+          failedCount++;
+          return null;
+        }
+  
         return {
           transactionDate: new Date(parts[1]),
           accountNameOwner: "testing_brian",
@@ -116,10 +129,15 @@ export default function TransactionImporter() {
         } as Transaction;
       })
       .filter(Boolean) as Transaction[];
-
+  
+    console.log(`Successfully parsed transactions: ${parsedTransactions.length}`);
+    if (failedCount > 0) {
+      console.warn(`Failed to parse ${failedCount} transaction(s).`);
+    }
+  
     setTransactions(parsedTransactions);
   };
-
+  
   const approveTransaction = (id: string) => {
     setTransactions((prev: any) =>
       prev.map((t: any) =>
