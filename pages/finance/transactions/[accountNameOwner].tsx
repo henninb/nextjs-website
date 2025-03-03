@@ -316,8 +316,9 @@ export default function TransactionsByAccount() {
   const handleCloneRow = async (): Promise<void> => {
     try {
       const result = await insertTransaction({
-        accountNameOwner: selectedTransaction.accountNameOwner,
-        newRow: selectedTransaction,
+        accountNameOwner: accountNameOwner,
+        //newRow: selectedTransaction,
+        newRow: { ...selectedTransaction, accountNameOwner: accountNameOwner }, 
         isFutureTransaction: true,
       });
 
@@ -333,7 +334,8 @@ export default function TransactionsByAccount() {
     try {
       const result = await insertTransaction({
         accountNameOwner: accountNameOwner,
-        newRow: newData,
+        //newRow: newData,
+        newRow: { ...newData, accountNameOwner: accountNameOwner }, 
         isFutureTransaction: false,
       });
 
