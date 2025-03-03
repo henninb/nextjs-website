@@ -1,0 +1,64 @@
+---
+title: "Getting Started with NextJS and TypeScript"
+date: "2025-03-02"
+excerpt: "A beginner-friendly guide to setting up a modern web application with NextJS and TypeScript."
+author: "Brian Henning"
+tags: ["nextjs", "typescript", "webdev"]
+coverImage: "/images/blog/nextjs-typescript.jpg"
+---
+
+# Getting Started with NextJS and TypeScript
+
+NextJS and TypeScript create a powerful combination for building modern web applications. In this guide, I'll walk you through setting up a new project and explain some of the key benefits.
+
+## Why NextJS?
+
+NextJS offers several advantages over a standard React application:
+
+- **Server-side rendering** for better performance and SEO
+- **Static site generation** for blazing-fast page loads
+- **API routes** to build backend functionality without a separate service
+- **File-based routing** that simplifies navigation setup
+
+## Setting Up Your Environment
+
+First, make sure you have Node.js installed (version 14 or later recommended). Then run:
+
+```bash
+npx create-next-app@latest my-project --typescript
+cd my-project
+npm run dev
+```
+
+This will create a new NextJS project with TypeScript support and start the development server.
+
+## Adding TypeScript Types
+
+One of the biggest advantages of TypeScript is static typing. Here's a simple example:
+
+```typescript
+// Without TypeScript
+function addNumbers(a, b) {
+  return a + b;
+}
+
+// With TypeScript
+function addNumbers(a: number, b: number): number {
+  return a + b;
+}
+```
+
+The TypeScript version ensures that only numbers are passed to the function and that it returns a number.
+
+## Next Steps
+
+In future posts, I'll cover:
+
+1. Adding a component library
+2. Setting up authentication
+3. Connecting to APIs
+4. Deployment strategies
+
+Stay tuned!
+
+export default ({ children }) => <div className="blog-post">{children}</div>;
