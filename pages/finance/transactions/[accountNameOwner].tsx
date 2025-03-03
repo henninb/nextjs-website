@@ -338,7 +338,7 @@ export default function TransactionsByAccount() {
         newRow: { ...newData, accountNameOwner: accountNameOwner }, 
         isFutureTransaction: false,
       });
-
+      console.log(`Transaction added successfully: ${JSON.stringify(result)}`);
       setMessage(`Transaction added successfully: ${JSON.stringify(result)}`);
       setShowSnackbar(true);
 
