@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { BlogPost } from "../types/blog";
+import { BlogPost } from "../model/BlogPost";
 
 // Path to our blog posts
 const postsDirectory = path.join(process.cwd(), "content/blog");

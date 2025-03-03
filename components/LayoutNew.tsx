@@ -34,6 +34,7 @@ import BuildIcon from "@mui/icons-material/Build"; // 🔧 Best for Tools
 import MenuBookIcon from "@mui/icons-material/MenuBook"; // 📖 Best for Howto
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import ArticleIcon from "@mui/icons-material/Article";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -75,13 +76,14 @@ const generalLinks = [
   { text: "NFL", href: "/nfl", icon: <SportsFootballIcon /> },
   { text: "NHL", href: "/nhl", icon: <SportsHockeyIcon /> },
   { text: "MLB", href: "/mlb", icon: <SportsBaseballIcon /> },
-  { text: "Howto", href: "/howto", icon: <MenuBookIcon /> },
+  // { text: "Howto", href: "/howto", icon: <MenuBookIcon /> },
   { text: "Tools", href: "/tools", icon: <BuildIcon /> },
   { text: "Temperature", href: "/temperature", icon: <DeviceThermostatIcon /> },
   { text: "Lead", href: "/lead", icon: <ContactPageIcon /> },
   { text: "Payment", href: "/payment", icon: <PaymentIcon /> },
   { text: "SpotifyAuth", href: "/spotifyauth", icon: <MusicNoteIcon /> },
   { text: "Finance", href: "/finance", icon: <MonetizationOnIcon /> },
+  { text: "Blog", href: "/blog", icon: <ArticleIcon /> },
 ];
 
 export default function Layout({ children }: LayoutProps) {

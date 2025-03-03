@@ -1,4 +1,3 @@
-// 4. Create a blog post page: pages/blog/[slug].tsx
 import { GetStaticProps, GetStaticPaths } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
@@ -7,21 +6,7 @@ import { ParsedUrlQuery } from "querystring";
 import { getAllPostSlugs, getPostBySlug } from "../../components/blog";
 import { format } from "date-fns";
 
-// If using Material UI
 import { Container, Typography, Box, Chip } from "@mui/material";
-
-// interface BlogPostProps {
-//   post: {
-//     slug: string;
-//     title: string;
-//     date: string;
-//     excerpt: string;
-//     author: string;
-//     tags: string[];
-//     coverImage: string;
-//     content: MDXRemoteSerializeResult;
-//   };
-// }
 
 interface BlogPostProps {
   post: {
@@ -29,9 +14,9 @@ interface BlogPostProps {
     title: string;
     date: string;
     excerpt: string;
-    author?: string; // Make optional with ?
-    tags?: string[]; // Make optional with ?
-    coverImage?: string; // Make optional with ?
+    author?: string;
+    tags?: string[];
+    coverImage?: string;
     content: MDXRemoteSerializeResult;
   };
 }

@@ -3,17 +3,15 @@ import Head from "next/head";
 import Link from "next/link";
 import { getAllPosts } from "../../components/blog";
 import { format } from "date-fns";
-import { BlogPost } from "../../types/blog";
+import { BlogPost } from "../../model/BlogPost";
 
-// If using Material UI
 import {
   Container,
   Typography,
   Box,
   Card,
+  Grid2,
   CardContent,
-  CardActionArea,
-  Grid,
   Chip,
 } from "@mui/material";
 
@@ -25,8 +23,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
   return (
     <>
       <Head>
-        {/* <title>Blog | Your Website</title> */}
-        <title>{`Blog | Your Website`}</title>
+        <title>Blog | Your Website</title>
         <meta name="description" content="Latest articles and posts" />
       </Head>
 
@@ -35,9 +32,10 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
           Blog
         </Typography>
 
-        <Grid container spacing={4}>
+        <Grid2 container spacing={4}>
           {posts.map((post) => (
-            <Grid item xs={12} sm={6} md={4} key={post.slug}>
+            // <Grid2 item xs={12} sm={6} md={4} key={post.slug}>
+            <Grid2 key={post.slug} component="div">
               <Link
                 href={`/blog/${post.slug}`}
                 passHref
@@ -57,8 +55,8 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                           position: "absolute",
                           top: 0,
                           left: 0,
-                          width: "100%",
-                          height: "100%",
+                          width: "50%",
+                          height: "50%",
                           objectFit: "cover",
                         }}
                         src={post.coverImage}
@@ -80,9 +78,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                       {format(new Date(post.date), "MMMM dd, yyyy")}
                     </Typography>
 
-                    <Typography variant="body2" paragraph>
-                      {post.excerpt}
-                    </Typography>
+                    <Typography variant="body2">{post.excerpt}</Typography>
 
                     {post.tags && post.tags.length > 0 && (
                       <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
@@ -94,9 +90,9 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                   </CardContent>
                 </Card>
               </Link>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       </Container>
     </>
   );
