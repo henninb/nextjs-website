@@ -82,7 +82,7 @@ export default function TransactionImporter() {
       throw error;
     }
   };
-  
+
   const handleSnackbarClose = () => setShowSnackbar(false);
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
@@ -101,9 +101,9 @@ export default function TransactionImporter() {
   const parseTransactions = () => {
     const lines = inputText.split("\n").filter((line) => line.trim() !== "");
     console.log(`Total lines found: ${lines.length}`);
-  
+
     let failedCount = 0;
-  
+
     const parsedTransactions = lines
       .map((line, index) => {
         const parts = line.match(/(\d{4}-\d{2}-\d{2})\s(.+)\s(-?\d+\.\d{2})/);
@@ -112,7 +112,7 @@ export default function TransactionImporter() {
           failedCount++;
           return null;
         }
-  
+
         return {
           transactionDate: new Date(parts[1]),
           accountNameOwner: "testing_brian",
@@ -129,15 +129,17 @@ export default function TransactionImporter() {
         } as Transaction;
       })
       .filter(Boolean) as Transaction[];
-  
-    console.log(`Successfully parsed transactions: ${parsedTransactions.length}`);
+
+    console.log(
+      `Successfully parsed transactions: ${parsedTransactions.length}`,
+    );
     if (failedCount > 0) {
       console.warn(`Failed to parse ${failedCount} transaction(s).`);
     }
-  
+
     setTransactions(parsedTransactions);
   };
-  
+
   const approveTransaction = (id: string) => {
     setTransactions((prev: any) =>
       prev.map((t: any) =>

@@ -318,7 +318,7 @@ export default function TransactionsByAccount() {
       const result = await insertTransaction({
         accountNameOwner: accountNameOwner,
         //newRow: selectedTransaction,
-        newRow: { ...selectedTransaction, accountNameOwner: accountNameOwner }, 
+        newRow: { ...selectedTransaction, accountNameOwner: accountNameOwner },
         isFutureTransaction: true,
       });
 
@@ -335,7 +335,7 @@ export default function TransactionsByAccount() {
       const result = await insertTransaction({
         accountNameOwner: accountNameOwner,
         //newRow: newData,
-        newRow: { ...newData, accountNameOwner: accountNameOwner }, 
+        newRow: { ...newData, accountNameOwner: accountNameOwner },
         isFutureTransaction: false,
       });
       console.log(`Transaction added successfully: ${JSON.stringify(result)}`);
@@ -442,7 +442,7 @@ export default function TransactionsByAccount() {
                       color:
                         params.row.transactionState === state
                           ? "rgba(189, 147, 249, 1)" // Purple color for active state
-                          : "default", // Default color for inactive state
+                          : "rgba(255, 255, 255, 1)", // White color for inactive state, // Default color for inactive state
                     }}
                     onClick={() => handleStateChange(state)}
                   >
