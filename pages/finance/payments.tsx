@@ -25,7 +25,12 @@ import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import useParameterFetch from "../../hooks/useParameterFetch";
 import FinanceLayout from "../../layouts/FinanceLayout";
-import { currencyFormat } from "../../components/Common";
+import { 
+  currencyFormat, 
+  normalizeTransactionDate, 
+  formatDateForInput, 
+  formatDateForDisplay 
+} from "../../components/Common";
 
 export default function Payments() {
   const [message, setMessage] = useState("");
@@ -141,14 +146,10 @@ export default function Payments() {
       headerName: "Transaction Date",
       width: 175,
       renderCell: (params) => {
-        return params.value.toLocaleDateString("en-US");
+        return formatDateForDisplay(params.value);
       },
       valueGetter: (params: string) => {
-        const utcDate = new Date(params);
-        const localDate = new Date(
-          utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
-        );
-        return localDate;
+        return normalizeTransactionDate(params);
       },
     },
     {
@@ -310,13 +311,14 @@ export default function Payments() {
               fullWidth
               margin="normal"
               type="date"
-              value={paymentData?.transactionDate || ""}
-              onChange={(e) =>
+              value={formatDateForInput(paymentData?.transactionDate || new Date())}
+              onChange={(e) => {
+                const normalizedDate = normalizeTransactionDate(e.target.value);
                 setPaymentData((prev: any) => ({
                   ...prev,
-                  transactionDate: e.target.value,
-                }))
-              }
+                  transactionDate: normalizedDate,
+                }));
+              }}
               slotProps={{
                 inputLabel: { shrink: true },
               }}

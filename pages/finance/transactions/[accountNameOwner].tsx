@@ -37,7 +37,13 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
-import { currencyFormat, noNaN } from "../../../components/Common";
+import { 
+  currencyFormat, 
+  noNaN, 
+  normalizeTransactionDate, 
+  formatDateForInput, 
+  formatDateForDisplay 
+} from "../../../components/Common";
 import FinanceLayout from "../../../layouts/FinanceLayout";
 import Totals from "../../../model/Totals";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -353,14 +359,10 @@ export default function TransactionsByAccount() {
       type: "date",
       width: 100,
       renderCell: (params) => {
-        return params.value.toLocaleDateString("en-US");
+        return formatDateForDisplay(params.value);
       },
       valueGetter: (params: string) => {
-        const utcDate = new Date(params);
-        const localDate = new Date(
-          utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
-        );
-        return localDate;
+        return normalizeTransactionDate(params);
       },
       editable: true,
     },
@@ -730,14 +732,12 @@ export default function TransactionsByAccount() {
               fullWidth
               margin="normal"
               type="date"
-              value={transactionData?.transactionDate || ""}
+              value={formatDateForInput(transactionData?.transactionDate || new Date())}
               onChange={(e) => {
-                const formattedDate = new Date(e.target.value)
-                  .toISOString()
-                  .split("T")[0]; // Ensure YYYY-MM-DD format
+                const normalizedDate = normalizeTransactionDate(e.target.value);
                 setTransactionData((prev: any) => ({
                   ...prev,
-                  transactionDate: formattedDate,
+                  transactionDate: normalizedDate,
                 }));
               }}
               slotProps={{

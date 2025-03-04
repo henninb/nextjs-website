@@ -24,7 +24,12 @@ import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
-import { currencyFormat } from "../../components/Common";
+import { 
+  currencyFormat, 
+  normalizeTransactionDate, 
+  formatDateForInput, 
+  formatDateForDisplay 
+} from "../../components/Common";
 
 export default function Transfers() {
   const [message, setMessage] = useState("");
@@ -247,14 +252,10 @@ export default function Transfers() {
       headerName: "Transaction Date",
       width: 200,
       renderCell: (params) => {
-        return params.value.toLocaleDateString("en-US");
+        return formatDateForDisplay(params.value);
       },
       valueGetter: (params: string) => {
-        const utcDate = new Date(params);
-        const localDate = new Date(
-          utcDate.getTime() + utcDate.getTimezoneOffset() * 60000,
-        );
-        return localDate;
+        return normalizeTransactionDate(params);
       },
     },
     {
@@ -394,14 +395,12 @@ export default function Transfers() {
               fullWidth
               margin="normal"
               type="date"
-              value={transferData?.transactionDate || ""}
+              value={formatDateForInput(transferData?.transactionDate || new Date())}
               onChange={(e) => {
-                const formattedDate = new Date(e.target.value)
-                  .toISOString()
-                  .split("T")[0]; // Ensure YYYY-MM-DD format
+                const normalizedDate = normalizeTransactionDate(e.target.value);
                 setTransferData((prev: any) => ({
                   ...prev,
-                  transactionDate: formattedDate,
+                  transactionDate: normalizedDate,
                 }));
               }}
               slotProps={{
