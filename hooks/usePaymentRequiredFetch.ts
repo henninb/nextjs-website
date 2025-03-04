@@ -5,7 +5,7 @@ import PaymentRequired from "../model/PaymentRequired";
 const dataTest = [
   {
     accountId: 2,
-    accountNameOwner: "barclay-cash_brian",
+    accountNameOwner: "fte_brian",
     accountType: "credit",
     activeStatus: true,
     moniker: "0000",
@@ -16,7 +16,7 @@ const dataTest = [
   },
   {
     accountId: 4,
-    accountNameOwner: "wellsfargo-cash_brian",
+    accountNameOwner: "bfe_brian",
     accountType: "credit",
     activeStatus: true,
     moniker: "0000",
