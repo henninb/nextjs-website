@@ -13,11 +13,13 @@
 ## Jest Testing
 
 Jest tests are configured with:
+
 - SWC for fast transpilation
 - Support for TypeScript, TSX files
 - React Testing Library for component testing
 
 Currently working test examples:
+
 - Basic JS test: `__tests__/hooks/example.test.js`
 - TypeScript test: `__tests__/hooks/basic.test.ts`
 - React component test: `__tests__/hooks/component.test.tsx`

@@ -1,5 +1,5 @@
+import React, { useCallback, useEffect, useState } from "react";
 import Head from "next/head";
-import { useCallback, useEffect, useState } from "react";
 
 export default function Temperature() {
   const [data, setData] = useState(null);

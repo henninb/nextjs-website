@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { draculaTheme } from "../themes/draculaTheme";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 interface FinanceThemeProviderProps {
   children: ReactNode;

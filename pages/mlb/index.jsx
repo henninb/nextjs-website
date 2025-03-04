@@ -1,5 +1,5 @@
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
-import { useEffect, useState } from "react";
 
 export default function Baseball() {
   const [data, setData] = useState(null);

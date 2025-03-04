@@ -1,3 +1,4 @@
+import React from "react";
 import { GetStaticProps, GetStaticPaths } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
@@ -29,7 +30,7 @@ export default function BlogPost({ post }: BlogPostProps) {
   return (
     <>
       <Head>
-        <title>{post.title} | Your Blog Name</title>
+        <title>{`${post.title} | Your Blog Name`}</title>
         <meta name="description" content={post.excerpt} />
       </Head>
 

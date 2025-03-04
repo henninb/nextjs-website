@@ -1,6 +1,6 @@
+import React from "react";
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
-//import "../styles/form.css"
 
 interface FormData {
   firstName: string;

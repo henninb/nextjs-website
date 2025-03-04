@@ -1,5 +1,4 @@
-export {};
-
+import React from 'react';
 import { FinanceThemeProvider } from "../components/FinanceThemeProvider";
 
 export default function FinanceLayout({

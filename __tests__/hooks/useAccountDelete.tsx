@@ -1,13 +1,12 @@
-import React from 'react';
+import React from "react";
 import { render, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import Account from "../../model/Account";
-import { AuthProvider } from '../../components/AuthProvider';
-import LayoutNew from "../../components/LayoutNew"
-
+import { AuthProvider } from "../../components/AuthProvider";
+import LayoutNew from "../../components/LayoutNew";
 
 const server = setupServer();
 
@@ -19,7 +18,6 @@ const queryClient = new QueryClient();
 
 describe("useAccountDelete", () => {
   it("should delete an account successfully", async () => {
-    
     const mockAccount: Account = {
       accountId: 123,
       accountNameOwner: "account_owner",
@@ -66,7 +64,6 @@ describe("useAccountDelete", () => {
   });
 
   it("should handle API errors correctly", async () => {
-
     const mockAccount: Account = {
       accountId: 123,
       accountNameOwner: "account_owner",

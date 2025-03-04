@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom';
-import fetch, { Response, Headers, Request } from 'node-fetch';
+import "@testing-library/jest-dom";
+import fetch, { Response, Headers, Request } from "node-fetch";
 
 // Mock fetch
 global.fetch = fetch;
@@ -8,8 +8,8 @@ global.Headers = Headers;
 global.Request = Request;
 
 // Mock TextEncoder/TextDecoder
-if (typeof TextEncoder === 'undefined') {
-  const { TextEncoder, TextDecoder } = require('util');
+if (typeof TextEncoder === "undefined") {
+  const { TextEncoder, TextDecoder } = require("util");
   global.TextEncoder = TextEncoder;
   global.TextDecoder = TextDecoder;
 }
@@ -31,9 +31,9 @@ global.BroadcastChannel = class BroadcastChannel {
 };
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -41,8 +41,8 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: jest.fn(),
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn()
-  }))
+    dispatchEvent: jest.fn(),
+  })),
 });
 
 // Suppress React 18 console errors/warnings
@@ -56,4 +56,3 @@ console.error = (...args) => {
   }
   originalConsoleError(...args);
 };
-  

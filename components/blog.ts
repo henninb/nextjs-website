@@ -1,4 +1,3 @@
-// 3. Create a utility file: lib/blog.ts
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";

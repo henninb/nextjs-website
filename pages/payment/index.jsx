@@ -1,6 +1,5 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Head from "next/head";
-// import Script from 'next/script';
 
 export default function Payment() {
   const [cardName, setCardName] = useState("");
