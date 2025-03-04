@@ -11,6 +11,7 @@ import usePendingTransactions from "../../../../hooks/usePendingTransactionFetch
 import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
+import { currencyFormat } from "../../../../components/Common";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -219,11 +220,7 @@ export default function TransactionImporter() {
       headerName: "Amount",
       type: "number",
       width: 90,
-      renderCell: (params: any) =>
-        params.value?.toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-        }),
+      renderCell: (params: any) => currencyFormat(params.value),
       editable: true,
       cellClassName: "nowrap",
     },

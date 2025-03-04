@@ -24,6 +24,7 @@ import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import { currencyFormat } from "../../components/Common";
 
 export default function Transfers() {
   const [message, setMessage] = useState("");
@@ -285,11 +286,7 @@ export default function Transfers() {
       headerName: "Amount",
       width: 200,
       editable: true,
-      renderCell: (params) =>
-        params.value?.toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-        }),
+      renderCell: (params) => currencyFormat(params.value),
     },
     {
       field: "",

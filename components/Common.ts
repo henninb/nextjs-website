@@ -22,9 +22,20 @@ export const formatDate = (date: Date): string => {
 //   return process.env.REACT_APP_TIMEZONE;
 // };
 
-export const currencyFormat = (inputData: string): string => {
-  inputData = parseFloat(inputData).toFixed(2);
-  return inputData.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export const currencyFormat = (inputData: number | string): string => {
+  if (inputData === undefined || inputData === null) {
+    return "$0.00";
+  }
+  const amount =
+    typeof inputData === "string" ? parseFloat(inputData) : inputData;
+  return isNaN(amount)
+    ? "$0.00"
+    : amount.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 };
 
 export const epochToDate = (epoch: number): Date => {

@@ -3,11 +3,13 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "test": "npx jest",
     "start": "next start",
     "prettier": "npx prettier --write .",
     "pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
+    "@anthropic-ai/claude-code": "^0.2.29",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.6",

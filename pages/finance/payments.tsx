@@ -25,6 +25,7 @@ import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import useParameterFetch from "../../hooks/useParameterFetch";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import { currencyFormat } from "../../components/Common";
 
 export default function Payments() {
   const [message, setMessage] = useState("");
@@ -203,16 +204,7 @@ export default function Payments() {
           />
         );
       },
-      valueFormatter: (params: any) => {
-        const value = params;
-        if (value === undefined || value === null) {
-          return "";
-        }
-        return value.toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-        });
-      },
+      valueFormatter: (params: any) => currencyFormat(params),
     },
     {
       field: "",

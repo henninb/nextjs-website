@@ -8,6 +8,7 @@ import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import Transaction from "../../../../model/Transaction";
 import { Link } from "@mui/material";
 import FinanceLayout from "../../../../layouts/FinanceLayout";
+import { currencyFormat } from "../../../../components/Common";
 
 export default function TransactionsByCategory() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -84,6 +85,7 @@ export default function TransactionsByCategory() {
       headerName: "Amount",
       type: "number",
       width: 90,
+      renderCell: (params) => currencyFormat(params.value),
       editable: true,
     },
     { field: "activeStatus", headerName: "Status", width: 100, editable: true },

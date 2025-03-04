@@ -187,14 +187,6 @@ export default function TransactionsByAccount() {
   };
 
   const FinanceTable = ({ fetchedTotals }: { fetchedTotals: Totals }) => {
-    const currencyFormat = (num: number) =>
-      new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(num);
-
-    const noNaN = (value: number) => (isNaN(value) ? 0 : value);
-
     return (
       <TableContainer component={Paper}>
         <Table>
@@ -390,11 +382,7 @@ export default function TransactionsByAccount() {
       headerName: "Amount",
       type: "number",
       width: 90,
-      renderCell: (params: any) =>
-        params.value?.toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-        }),
+      renderCell: (params: any) => currencyFormat(params.value),
       editable: true,
       cellClassName: "nowrap",
     },
