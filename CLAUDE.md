@@ -8,6 +8,22 @@
 - `npm run prettier` - Format code with Prettier
 - `npm test` - Run Jest tests
 - `npm test -- -t "test name"` - Run specific test
+- `npm test -- --testPathPattern=path/to/test` - Run tests in specific path
+
+## Jest Testing
+
+Jest tests are configured with:
+- SWC for fast transpilation
+- Support for TypeScript, TSX files
+- React Testing Library for component testing
+
+Currently working test examples:
+- Basic JS test: `__tests__/hooks/example.test.js`
+- TypeScript test: `__tests__/hooks/basic.test.ts`
+- React component test: `__tests__/hooks/component.test.tsx`
+- React Hook test: `__tests__/hooks/hook-example.test.tsx`
+
+MSW (Mock Service Worker) for API mocking still needs configuration.
 
 ## Code Style Guidelines
 

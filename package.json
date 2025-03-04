@@ -35,11 +35,21 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.9",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.26.0",
     "@cloudflare/next-on-pages": "^1.13.8",
+    "@swc/core": "^1.11.7",
+    "@swc/jest": "^0.2.37",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.0.10",
+    "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
-    "msw": "^2.7.3"
+    "jest-environment-jsdom": "^29.7.0",
+    "msw": "^2.7.3",
+    "ts-jest": "^29.2.6"
   }
 }
