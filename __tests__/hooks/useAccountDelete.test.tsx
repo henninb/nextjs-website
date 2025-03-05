@@ -1,26 +1,47 @@
 import React from "react";
-import { render, renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
 // For Jest tests in Node environment, we need to manually create a server
 // instead of importing from msw/node which doesn't exist in MSW v2
-import { createServer } from "msw/node";
+import { setupServer } from "msw/node";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import Account from "../../model/Account";
 import { AuthProvider } from "../../components/AuthProvider";
 import LayoutNew from "../../components/LayoutNew";
 
 // Setup MSW server for Node environment
-const server = createServer();
+const server = setupServer();
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-const queryClient = new QueryClient();
+// Create a fresh QueryClient for each test
+const createTestQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
+
+// Create a wrapper component with all providers
+const createWrapper = (queryClient) => ({ children }) => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <LayoutNew>{children}</LayoutNew>
+    </AuthProvider>
+  </QueryClientProvider>
+);
 
 describe("useAccountDelete", () => {
   it("should delete an account successfully", async () => {
+    const queryClient = createTestQueryClient();
+    
     const mockAccount: Account = {
       accountId: 123,
       accountNameOwner: "account_owner",
@@ -43,16 +64,9 @@ describe("useAccountDelete", () => {
 
     queryClient.setQueryData(["account"], [mockAccount]);
 
-    // Render the hook using renderHook instead of render
-
+    // Render the hook
     const { result } = renderHook(() => useAccountDelete(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <LayoutNew>{children}</LayoutNew>
-          </AuthProvider>
-        </QueryClientProvider>
-      ),
+      wrapper: createWrapper(queryClient),
     });
 
     // Execute the mutation
@@ -67,6 +81,8 @@ describe("useAccountDelete", () => {
   });
 
   it("should handle API errors correctly", async () => {
+    const queryClient = createTestQueryClient();
+    
     const mockAccount: Account = {
       accountId: 123,
       accountNameOwner: "account_owner",
@@ -81,7 +97,7 @@ describe("useAccountDelete", () => {
     // Mock an API error
     server.use(
       http.delete(
-        `https://finance.lan/api/account/delete/testAccount_owner`,
+        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
         () => {
           return HttpResponse.json(
             { response: "Cannot delete this account" },
@@ -92,14 +108,8 @@ describe("useAccountDelete", () => {
     );
 
     // Render the hook
-    const result: any = renderHook(() => useAccountDelete(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <LayoutNew>{children}</LayoutNew>
-          </AuthProvider>
-        </QueryClientProvider>
-      ),
+    const { result } = renderHook(() => useAccountDelete(), {
+      wrapper: createWrapper(queryClient),
     });
 
     // Spy on console.log
@@ -120,6 +130,8 @@ describe("useAccountDelete", () => {
   });
 
   it("should handle network errors correctly", async () => {
+    const queryClient = createTestQueryClient();
+    
     const mockAccount: Account = {
       accountId: 123,
       accountNameOwner: "account_owner",
@@ -130,10 +142,11 @@ describe("useAccountDelete", () => {
       future: 300,
       cleared: 200,
     };
+    
     // Mock a network error
     server.use(
       http.delete(
-        `https://finance.lan/api/account/delete/testAccount_owner`,
+        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
         () => {
           return HttpResponse.error();
         },
@@ -141,14 +154,8 @@ describe("useAccountDelete", () => {
     );
 
     // Render the hook
-    const result: any = renderHook(() => useAccountDelete(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <LayoutNew>{children}</LayoutNew>
-          </AuthProvider>
-        </QueryClientProvider>
-      ),
+    const { result } = renderHook(() => useAccountDelete(), {
+      wrapper: createWrapper(queryClient),
     });
 
     // Spy on console.log
