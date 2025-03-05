@@ -12,8 +12,8 @@ const deleteTransaction = async (
   try {
     const endpoint = `https://finance.lan/api/transaction/delete/${payload.guid}`;
 
-    console.log(endpoint);
-    console.log(JSON.stringify(payload));
+    //console.log(endpoint);
+    //console.log(JSON.stringify(payload));
     const response = await fetch(endpoint, {
       method: "DELETE",
       headers: {

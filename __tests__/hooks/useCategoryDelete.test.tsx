@@ -9,19 +9,19 @@ import { AuthProvider } from "../../components/AuthProvider";
 import LayoutNew from "../../components/LayoutNew";
 
 // Mock next/router
-jest.mock('next/router', () => ({
+jest.mock("next/router", () => ({
   useRouter: () => ({
     push: jest.fn(),
-    pathname: '/',
-    route: '/',
-    asPath: '/',
+    pathname: "/",
+    route: "/",
+    asPath: "/",
     query: {},
   }),
 }));
 
 // Mock jose package
-jest.mock('jose', () => ({
-  jwtVerify: jest.fn().mockResolvedValue(true)
+jest.mock("jose", () => ({
+  jwtVerify: jest.fn().mockResolvedValue(true),
 }));
 
 // Setup MSW server for Node environment
@@ -61,7 +61,7 @@ describe("useCategoryDelete", () => {
 
     const mockCategory: Category = {
       categoryId: 1,
-      categoryName: "Electronics",
+      categoryName: "electronics",
       activeStatus: true,
       categoryCount: 10,
       dateAdded: new Date(),
@@ -70,10 +70,10 @@ describe("useCategoryDelete", () => {
 
     server.use(
       rest.delete(
-        `https://finance.lan/api/category/delete/${mockCategory.categoryId}`,
+        `https://finance.lan/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(ctx.status(204));
-        }
+        },
       ),
     );
 
@@ -92,7 +92,9 @@ describe("useCategoryDelete", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Verify that the category was removed from the cache
-    const updatedCategories = queryClient.getQueryData<Category[]>(["category"]);
+    const updatedCategories = queryClient.getQueryData<Category[]>([
+      "category",
+    ]);
     expect(updatedCategories).toEqual([]);
   });
 
@@ -111,13 +113,13 @@ describe("useCategoryDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `https://finance.lan/api/category/delete/${mockCategory.categoryId}`,
+        `https://finance.lan/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot delete this category" })
+            ctx.json({ response: "Cannot delete this category" }),
           );
-        }
+        },
       ),
     );
 
@@ -130,14 +132,14 @@ describe("useCategoryDelete", () => {
     const consoleSpy = jest.spyOn(console, "log");
 
     // Execute the mutation
-    result.current.mutate( mockCategory );
+    result.current.mutate(mockCategory);
 
     // Wait for the mutation to fail
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     // Verify error was logged
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Cannot delete this category")
+      expect.stringContaining("Cannot delete this category"),
     );
 
     consoleSpy.mockRestore();
@@ -158,10 +160,10 @@ describe("useCategoryDelete", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `https://finance.lan/api/category/delete/${mockCategory.categoryId}`,
+        `https://finance.lan/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(ctx.status(500), ctx.json({ message: "Network error" }));
-        }
+        },
       ),
     );
 
