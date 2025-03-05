@@ -2,10 +2,9 @@ import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { rest } from "msw";
-// For Jest tests in Node environment
 import { setupServer } from "msw/node";
-import useAccountDelete from "../../hooks/useAccountDelete";
-import Account from "../../model/Account";
+import useCategoryDelete from "../../hooks/useCategoryDelete";
+import Category from "../../model/Category";
 import { AuthProvider } from "../../components/AuthProvider";
 import LayoutNew from "../../components/LayoutNew";
 
@@ -47,8 +46,8 @@ const createTestQueryClient = () =>
 
 // Create a wrapper component with all providers
 const createWrapper =
-  (queryClient) =>
-  ({ children }) => (
+  (queryClient: QueryClient) =>
+  ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LayoutNew>{children}</LayoutNew>
@@ -56,77 +55,74 @@ const createWrapper =
     </QueryClientProvider>
   );
 
-describe("useAccountDelete", () => {
-  it("should delete an account successfully", async () => {
+describe("useCategoryDelete", () => {
+  it("should delete a category successfully", async () => {
     const queryClient = createTestQueryClient();
 
-    const mockAccount: Account = {
-      accountId: 123,
-      accountNameOwner: "account_owner",
-      accountType: "debit",
+    const mockCategory: Category = {
+      categoryId: 1,
+      categoryName: "Electronics",
       activeStatus: true,
-      moniker: "0000",
-      outstanding: 100,
-      future: 300,
-      cleared: 200,
+      categoryCount: 10,
+      dateAdded: new Date(),
+      dateUpdated: new Date(),
     };
 
     server.use(
       rest.delete(
-        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.lan/api/category/delete/${mockCategory.categoryId}`,
         (req, res, ctx) => {
           return res(ctx.status(204));
         }
       ),
     );
 
-    queryClient.setQueryData(["account"], [mockAccount]);
+    // Set initial cache data
+    queryClient.setQueryData(["category"], [mockCategory]);
 
     // Render the hook
-    const { result } = renderHook(() => useAccountDelete(), {
+    const { result } = renderHook(() => useCategoryDelete(), {
       wrapper: createWrapper(queryClient),
     });
 
     // Execute the mutation
-    result.current.mutate({ oldRow: mockAccount });
+    result.current.mutate(mockCategory);
 
     // Wait for the mutation to complete
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Verify that the account was removed from the cache
-    const updatedAccounts = queryClient.getQueryData<Account[]>(["account"]);
-    expect(updatedAccounts).toEqual([]);
+    // Verify that the category was removed from the cache
+    const updatedCategories = queryClient.getQueryData<Category[]>(["category"]);
+    expect(updatedCategories).toEqual([]);
   });
 
   it("should handle API errors correctly", async () => {
     const queryClient = createTestQueryClient();
 
-    const mockAccount: Account = {
-      accountId: 123,
-      accountNameOwner: "account_owner",
-      accountType: "debit",
+    const mockCategory: Category = {
+      categoryId: 1,
+      categoryName: "Electronics",
       activeStatus: true,
-      moniker: "0000",
-      outstanding: 100,
-      future: 300,
-      cleared: 200,
+      categoryCount: 10,
+      dateAdded: new Date(),
+      dateUpdated: new Date(),
     };
 
     // Mock an API error
     server.use(
       rest.delete(
-        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.lan/api/category/delete/${mockCategory.categoryId}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot delete this account" })
+            ctx.json({ response: "Cannot delete this category" })
           );
         }
       ),
     );
 
     // Render the hook
-    const { result } = renderHook(() => useAccountDelete(), {
+    const { result } = renderHook(() => useCategoryDelete(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -134,14 +130,14 @@ describe("useAccountDelete", () => {
     const consoleSpy = jest.spyOn(console, "log");
 
     // Execute the mutation
-    result.current.mutate({ oldRow: mockAccount });
+    result.current.mutate( mockCategory );
 
     // Wait for the mutation to fail
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     // Verify error was logged
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Cannot delete this account"),
+      expect.stringContaining("Cannot delete this category")
     );
 
     consoleSpy.mockRestore();
@@ -150,21 +146,19 @@ describe("useAccountDelete", () => {
   it("should handle network errors correctly", async () => {
     const queryClient = createTestQueryClient();
 
-    const mockAccount: Account = {
-      accountId: 123,
-      accountNameOwner: "account_owner",
-      accountType: "debit",
+    const mockCategory: Category = {
+      categoryId: 1,
+      categoryName: "Electronics",
       activeStatus: true,
-      moniker: "0000",
-      outstanding: 100,
-      future: 300,
-      cleared: 200,
+      categoryCount: 10,
+      dateAdded: new Date(),
+      dateUpdated: new Date(),
     };
 
     // Mock a network error
     server.use(
       rest.delete(
-        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.lan/api/category/delete/${mockCategory.categoryId}`,
         (req, res, ctx) => {
           return res(ctx.status(500), ctx.json({ message: "Network error" }));
         }
@@ -172,7 +166,7 @@ describe("useAccountDelete", () => {
     );
 
     // Render the hook
-    const { result } = renderHook(() => useAccountDelete(), {
+    const { result } = renderHook(() => useCategoryDelete(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -180,7 +174,7 @@ describe("useAccountDelete", () => {
     const consoleSpy = jest.spyOn(console, "log");
 
     // Execute the mutation
-    result.current.mutate({ oldRow: mockAccount });
+    result.current.mutate(mockCategory);
 
     // Wait for the mutation to fail
     await waitFor(() => expect(result.current.isError).toBe(true));
