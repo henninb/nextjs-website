@@ -24,11 +24,11 @@ import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
-import { 
-  currencyFormat, 
-  normalizeTransactionDate, 
-  formatDateForInput, 
-  formatDateForDisplay 
+import {
+  currencyFormat,
+  normalizeTransactionDate,
+  formatDateForInput,
+  formatDateForDisplay,
 } from "../../components/Common";
 
 export default function Transfers() {
@@ -395,7 +395,9 @@ export default function Transfers() {
               fullWidth
               margin="normal"
               type="date"
-              value={formatDateForInput(transferData?.transactionDate || new Date())}
+              value={formatDateForInput(
+                transferData?.transactionDate || new Date(),
+              )}
               onChange={(e) => {
                 const normalizedDate = normalizeTransactionDate(e.target.value);
                 setTransferData((prev: any) => ({

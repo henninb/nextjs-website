@@ -1,58 +1,60 @@
 /**
  * Normalize transaction date handling across components
- * 
+ *
  * Consistent approach for working with transaction dates to ensure uniform behavior
  * across all finance components.
- * 
+ *
  * @param date - Date object or string to normalize
  * @returns A properly formatted Date object
  */
 export const normalizeTransactionDate = (date: Date | string): Date => {
   if (!date) return new Date();
-  
+
   // If date is already a Date object, clone it to avoid mutating the original
   const dateObj = date instanceof Date ? new Date(date) : new Date(date);
-  
+
   // Return the normalized date (no timezone adjustment needed)
   return dateObj;
 };
 
 /**
  * Format a date consistently for form input fields (YYYY-MM-DD)
- * 
+ *
  * @param date - Date object or string to format
  * @returns Date formatted as YYYY-MM-DD string
  */
 export const formatDateForInput = (date: Date | string): string => {
   const dateObj = normalizeTransactionDate(date);
-  
+
   const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+
   return `${year}-${month}-${day}`;
 };
 
 /**
  * Format a date for display in UI components
- * 
+ *
  * @param date - Date object or string to format
  * @returns Formatted date string (e.g., "MM/DD/YYYY")
  */
 export const formatDateForDisplay = (date: Date | string): string => {
-  if (!date) return '';
+  if (!date) return "";
   const dateObj = normalizeTransactionDate(date);
-  return dateObj.toLocaleDateString('en-US');
+  return dateObj.toLocaleDateString("en-US");
 };
 
 // Legacy functions maintained for backward compatibility
 export const convertUTCDateToLocalDate = (date: Date) => {
-  console.warn('convertUTCDateToLocalDate is deprecated, use normalizeTransactionDate instead');
+  console.warn(
+    "convertUTCDateToLocalDate is deprecated, use normalizeTransactionDate instead",
+  );
   return normalizeTransactionDate(date);
 };
 
 export const formatDate = (date: Date | string): string => {
-  console.warn('formatDate is deprecated, use formatDateForInput instead');
+  console.warn("formatDate is deprecated, use formatDateForInput instead");
   return formatDateForInput(date);
 };
 

@@ -25,11 +25,11 @@ import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import useParameterFetch from "../../hooks/useParameterFetch";
 import FinanceLayout from "../../layouts/FinanceLayout";
-import { 
-  currencyFormat, 
-  normalizeTransactionDate, 
-  formatDateForInput, 
-  formatDateForDisplay 
+import {
+  currencyFormat,
+  normalizeTransactionDate,
+  formatDateForInput,
+  formatDateForDisplay,
 } from "../../components/Common";
 
 export default function Payments() {
@@ -311,7 +311,9 @@ export default function Payments() {
               fullWidth
               margin="normal"
               type="date"
-              value={formatDateForInput(paymentData?.transactionDate || new Date())}
+              value={formatDateForInput(
+                paymentData?.transactionDate || new Date(),
+              )}
               onChange={(e) => {
                 const normalizedDate = normalizeTransactionDate(e.target.value);
                 setPaymentData((prev: any) => ({

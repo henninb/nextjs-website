@@ -37,12 +37,12 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import SwapVert from "@mui/icons-material/SwapVert";
-import { 
-  currencyFormat, 
-  noNaN, 
-  normalizeTransactionDate, 
-  formatDateForInput, 
-  formatDateForDisplay 
+import {
+  currencyFormat,
+  noNaN,
+  normalizeTransactionDate,
+  formatDateForInput,
+  formatDateForDisplay,
 } from "../../../components/Common";
 import FinanceLayout from "../../../layouts/FinanceLayout";
 import Totals from "../../../model/Totals";
@@ -732,7 +732,9 @@ export default function TransactionsByAccount() {
               fullWidth
               margin="normal"
               type="date"
-              value={formatDateForInput(transactionData?.transactionDate || new Date())}
+              value={formatDateForInput(
+                transactionData?.transactionDate || new Date(),
+              )}
               onChange={(e) => {
                 const normalizedDate = normalizeTransactionDate(e.target.value);
                 setTransactionData((prev: any) => ({
