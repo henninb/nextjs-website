@@ -1,3 +1,4 @@
+import React from "react";
 import { useAuth } from "../../components/AuthProvider";
 
 export default function Logout() {
