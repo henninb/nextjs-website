@@ -2,13 +2,16 @@ import React from "react";
 import { render, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
+// For Jest tests in Node environment, we need to manually create a server
+// instead of importing from msw/node which doesn't exist in MSW v2
+import { createServer } from "msw/node";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import Account from "../../model/Account";
 import { AuthProvider } from "../../components/AuthProvider";
 import LayoutNew from "../../components/LayoutNew";
 
-const server = setupServer();
+// Setup MSW server for Node environment
+const server = createServer();
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
