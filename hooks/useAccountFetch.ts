@@ -82,6 +82,9 @@ export default function useAccountFetch() {
   const queryResult = useQuery<Account[], Error>({
     queryKey: ["account"],
     queryFn: fetchAccountData,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    //cacheTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
   });
 
   if (queryResult.isError) {

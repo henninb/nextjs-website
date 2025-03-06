@@ -33,6 +33,7 @@ export default function Accounts() {
   const [showModelDelete, setShowModelDelete] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [paginationModel, setPaginationModel] = useState({ pageSize: 25, page: 0 });
 
   const {
     data: fetchedAccounts,
@@ -239,10 +240,19 @@ export default function Accounts() {
               rows={fetchedAccounts?.filter((row) => row != null) || []}
               columns={columns}
               getRowId={(row) => row.accountId || 0}
-              paginationModel={{ pageSize: fetchedAccounts?.length, page: 0 }}
-              hideFooterPagination={true}
+              pagination
+              pageSizeOptions={[10, 25, 50]}
+              //paginationModel={{ pageSize: 25, page: 0 }}
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
+              disableRowSelectionOnClick
               checkboxSelection={false}
               rowSelection={false}
+              // initialState={{
+              //   sorting: {
+              //     sortModel: [{ field: "accountNameOwner", sort: "asc" }],
+              //   },
+              // }}
               processRowUpdate={async (
                 newRow: Account,
                 oldRow: Account,

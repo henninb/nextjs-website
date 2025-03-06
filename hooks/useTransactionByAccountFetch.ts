@@ -121,6 +121,9 @@ export default function useTransactionByAccountFetch(accountNameOwner: string) {
   const queryResult = useQuery({
     queryKey: ["accounts", accountNameOwner],
     queryFn: () => fetchTransactionsByAccount(accountNameOwner),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
   });
   if (queryResult.isError) {
     console.log(

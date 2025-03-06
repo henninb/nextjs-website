@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
@@ -192,62 +192,67 @@ export default function TransactionsByAccount() {
     notes: "",
   };
 
-  const FinanceTable = ({ fetchedTotals }: { fetchedTotals: Totals }) => {
-    return (
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <b>Total</b>
-              </TableCell>
-              <TableCell>
-                <b>Cleared</b>
-                {/* <CheckCircleIcon /> */}
-              </TableCell>
-              <TableCell>
-                <b>Outstanding</b>
-              </TableCell>
-              <TableCell>
-                <b>Future</b>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell>
-                {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-              </TableCell>
-              <TableCell>
-                {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
-              </TableCell>
-              <TableCell>
-                {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
-              </TableCell>
-              <TableCell>
-                {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
-  };
+  const FinanceTable = React.memo(
+    ({ fetchedTotals }: { fetchedTotals: Totals }) => {
+      return (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  <b>Total</b>
+                </TableCell>
+                <TableCell>
+                  <b>Cleared</b>
+                  {/* <CheckCircleIcon /> */}
+                </TableCell>
+                <TableCell>
+                  <b>Outstanding</b>
+                </TableCell>
+                <TableCell>
+                  <b>Future</b>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                </TableCell>
+                <TableCell>
+                  {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+                </TableCell>
+                <TableCell>
+                  {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
+                </TableCell>
+                <TableCell>
+                  {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      );
+    },
+  );
 
-  const handleSnackbarClose = () => setShowSnackbar(false);
+  const handleSnackbarClose = useCallback(() => setShowSnackbar(false), []);
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = useCallback(
+    (error: any, moduleName: string, throwIt: boolean) => {
+      const errorMessage = error.message
+        ? `${moduleName}: ${error.message}`
+        : `${moduleName}: Failure`;
 
-    setMessage(errorMessage);
-    setShowSnackbar(true);
+      setMessage(errorMessage);
+      setShowSnackbar(true);
 
-    console.error(errorMessage);
+      console.error(errorMessage);
 
-    if (throwIt) throw error;
-  };
+      if (throwIt) throw error;
+    },
+    [],
+  );
 
   const handleInsertNewValidationData = async (
     accountNameOwner: string,
@@ -352,163 +357,166 @@ export default function TransactionsByAccount() {
     }
   };
 
-  const columns: GridColDef[] = [
-    {
-      field: "transactionDate",
-      headerName: "Date",
-      type: "date",
-      width: 100,
-      renderCell: (params) => {
-        return formatDateForDisplay(params.value);
+  const columns: GridColDef[] = useMemo(
+    () => [
+      {
+        field: "transactionDate",
+        headerName: "Date",
+        type: "date",
+        width: 100,
+        renderCell: (params) => {
+          return formatDateForDisplay(params.value);
+        },
+        valueGetter: (params: string) => {
+          return normalizeTransactionDate(params);
+        },
+        editable: true,
       },
-      valueGetter: (params: string) => {
-        return normalizeTransactionDate(params);
+      {
+        field: "description",
+        headerName: "Description",
+        width: 180,
+        editable: true,
+        renderCell: (params) => <div>{params.value}</div>,
       },
-      editable: true,
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      width: 180,
-      editable: true,
-      renderCell: (params) => <div>{params.value}</div>,
-    },
-    {
-      field: "category",
-      headerName: "Category",
-      width: 150,
-      editable: true,
-    },
-    {
-      field: "amount",
-      headerName: "Amount",
-      type: "number",
-      width: 90,
-      renderCell: (params: any) => currencyFormat(params.value),
-      editable: true,
-      cellClassName: "nowrap",
-    },
-    {
-      field: "transactionState",
-      headerName: "transactionState",
-      width: 275,
-      renderCell: (params: any) => {
-        const handleStateChange = async (newState: TransactionState) => {
-          try {
-            const updatedRow = { ...params.row, transactionState: newState };
-            await updateTransaction({
-              newRow: updatedRow,
-              oldRow: params.row,
-            });
-            setMessage("TransactionState updated Successfully.");
-            setShowSnackbar(true);
-          } catch (error) {
-            handleError(error, "TransactionState failure.", false);
-          }
-        };
-
-        return (
-          <Box display="flex" alignItems="center">
-            {transactionStates.map((state: any) => {
-              let IconComponent: any;
-              let tooltipText: any;
-
-              // Map states to icons and tooltips
-              if (state === "cleared") {
-                IconComponent = CheckCircleIcon;
-                tooltipText = "Cleared";
-              } else if (state === "outstanding") {
-                IconComponent = AccessTimeIcon;
-                tooltipText = "Outstanding";
-              } else if (state === "future") {
-                IconComponent = EventNoteIcon;
-                tooltipText = "Future";
-              }
-
-              return (
-                <Tooltip key={state} title={tooltipText}>
-                  <IconButton
-                    style={{
-                      color:
-                        params.row.transactionState === state
-                          ? "rgba(189, 147, 249, 1)" // Purple color for active state
-                          : "rgba(255, 255, 255, 1)", // White color for inactive state, // Default color for inactive state
-                    }}
-                    onClick={() => handleStateChange(state)}
-                  >
-                    <IconComponent />
-                  </IconButton>
-                </Tooltip>
-              );
-            })}
-          </Box>
-        );
+      {
+        field: "category",
+        headerName: "Category",
+        width: 150,
+        editable: true,
       },
-    },
-    {
-      field: "transactionType",
-      headerName: "Type",
-      width: 180,
-      renderCell: (params: any) => params.value || "undefined",
-    },
-    {
-      field: "reoccurringType",
-      headerName: "Reoccur",
-      width: 150,
-      renderCell: (params: any) => params.value || "undefined",
-    },
-    {
-      field: "notes",
-      headerName: "Notes",
-      width: 180,
-      editable: true,
-    },
-    {
-      field: "",
-      headerName: "Actions",
-      sortable: false,
-      width: 120,
-      renderCell: (params) => {
-        return (
-          <div>
-            <Tooltip title="Clone this row">
-              <IconButton
-                onClick={() => {
-                  setSelectedTransaction(params.row);
-                  setShowModalClone(true);
-                }}
-              >
-                <ContentCopyIcon />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Move this row to another account">
-              <IconButton
-                onClick={() => {
-                  setSelectedTransaction(params.row);
-                  setOriginalRow(params.row);
-                  setShowModalMove(true);
-                }}
-              >
-                <SwapVert />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Delete this row">
-              <IconButton
-                onClick={() => {
-                  setSelectedTransaction(params.row);
-                  setShowModalDelete(true);
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-        );
+      {
+        field: "amount",
+        headerName: "Amount",
+        type: "number",
+        width: 90,
+        renderCell: (params: any) => currencyFormat(params.value),
+        editable: true,
+        cellClassName: "nowrap",
       },
-    },
-  ];
+      {
+        field: "transactionState",
+        headerName: "transactionState",
+        width: 275,
+        renderCell: (params: any) => {
+          const handleStateChange = async (newState: TransactionState) => {
+            try {
+              const updatedRow = { ...params.row, transactionState: newState };
+              await updateTransaction({
+                newRow: updatedRow,
+                oldRow: params.row,
+              });
+              setMessage("TransactionState updated Successfully.");
+              setShowSnackbar(true);
+            } catch (error) {
+              handleError(error, "TransactionState failure.", false);
+            }
+          };
+
+          return (
+            <Box display="flex" alignItems="center">
+              {transactionStates.map((state: any) => {
+                let IconComponent: any;
+                let tooltipText: any;
+
+                // Map states to icons and tooltips
+                if (state === "cleared") {
+                  IconComponent = CheckCircleIcon;
+                  tooltipText = "Cleared";
+                } else if (state === "outstanding") {
+                  IconComponent = AccessTimeIcon;
+                  tooltipText = "Outstanding";
+                } else if (state === "future") {
+                  IconComponent = EventNoteIcon;
+                  tooltipText = "Future";
+                }
+
+                return (
+                  <Tooltip key={state} title={tooltipText}>
+                    <IconButton
+                      style={{
+                        color:
+                          params.row.transactionState === state
+                            ? "rgba(189, 147, 249, 1)" // Purple color for active state
+                            : "rgba(255, 255, 255, 1)", // White color for inactive state, // Default color for inactive state
+                      }}
+                      onClick={() => handleStateChange(state)}
+                    >
+                      <IconComponent />
+                    </IconButton>
+                  </Tooltip>
+                );
+              })}
+            </Box>
+          );
+        },
+      },
+      {
+        field: "transactionType",
+        headerName: "Type",
+        width: 180,
+        renderCell: (params: any) => params.value || "undefined",
+      },
+      {
+        field: "reoccurringType",
+        headerName: "Reoccur",
+        width: 150,
+        renderCell: (params: any) => params.value || "undefined",
+      },
+      {
+        field: "notes",
+        headerName: "Notes",
+        width: 180,
+        editable: true,
+      },
+      {
+        field: "",
+        headerName: "Actions",
+        sortable: false,
+        width: 120,
+        renderCell: (params) => {
+          return (
+            <div>
+              <Tooltip title="Clone this row">
+                <IconButton
+                  onClick={() => {
+                    setSelectedTransaction(params.row);
+                    setShowModalClone(true);
+                  }}
+                >
+                  <ContentCopyIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Move this row to another account">
+                <IconButton
+                  onClick={() => {
+                    setSelectedTransaction(params.row);
+                    setOriginalRow(params.row);
+                    setShowModalMove(true);
+                  }}
+                >
+                  <SwapVert />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Delete this row">
+                <IconButton
+                  onClick={() => {
+                    setSelectedTransaction(params.row);
+                    setShowModalDelete(true);
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+          );
+        },
+      },
+    ],
+    [],
+  );
 
   return (
     <div>
@@ -628,6 +636,16 @@ export default function TransactionsByAccount() {
                 getRowId={(row) => row.transactionId || 0}
                 checkboxSelection={false}
                 rowSelection={false}
+                pagination
+                paginationModel={{ pageSize: 25, page: 0 }}
+                pageSizeOptions={[25, 50, 100]}
+                rowHeight={52}
+                disableRowSelectionOnClick
+                // initialState={{
+                //   sorting: {
+                //     sortModel: [{ field: "transactionDate", sort: "desc" }],
+                //   },
+                // }}
                 processRowUpdate={async (
                   newRow: Transaction,
                   oldRow: Transaction,
@@ -639,7 +657,6 @@ export default function TransactionsByAccount() {
                     await updateTransaction({ newRow: newRow, oldRow: oldRow });
                     setMessage("Transaction updated successfully.");
                     setShowSnackbar(true);
-                    //return newRow;
                     return { ...newRow };
                   } catch (error) {
                     handleError(error, "Update Transaction failure.", false);
