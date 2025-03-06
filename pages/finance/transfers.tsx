@@ -24,6 +24,7 @@ import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import { dummyTransfers } from "../../data/dummyTransfers";
 import {
   currencyFormat,
   normalizeTransactionDate,
@@ -37,6 +38,10 @@ export default function Transfers() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
+  });
 
   const [transferData, setTransferData] = useState<Transfer>({
     transferId: 0,
@@ -80,28 +85,28 @@ export default function Transfers() {
     error: errorTransfers,
   } = useFetchTransfer();
 
-  const dummyTransfers: Transfer[] = [
-    {
-      transferId: 1,
-      sourceAccount: "barclays-savings_brian",
-      destinationAccount: "wellsfargo-savings_kari",
-      transactionDate: new Date("2025-01-04"),
-      amount: 3.0,
-      guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-      guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-      activeStatus: true,
-    },
-    {
-      transferId: 2,
-      sourceAccount: "barclays-savings_brian",
-      destinationAccount: "wellsfargo-savings_kari",
-      transactionDate: new Date("2025-01-04"),
-      amount: 2.0,
-      guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-      guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-      activeStatus: true,
-    },
-  ];
+  // const dummyTransfers: Transfer[] = [
+  //   {
+  //     transferId: 1,
+  //     sourceAccount: "test-abc-savings_brian",
+  //     destinationAccount: "test-dfg-savings_brian",
+  //     transactionDate: new Date("2025-01-04"),
+  //     amount: 3.0,
+  //     guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+  //     guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+  //     activeStatus: true,
+  //   },
+  //   {
+  //     transferId: 2,
+  //     sourceAccount: "test-abc-savings_brian",
+  //     destinationAccount: "test-dfg-savings_brian",
+  //     transactionDate: new Date("2025-01-04"),
+  //     amount: 2.0,
+  //     guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+  //     guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
+  //     activeStatus: true,
+  //   },
+  // ];
 
   const transfersToDisplay = errorTransfers
     ? dummyTransfers
@@ -326,6 +331,12 @@ export default function Transfers() {
               getRowId={(row) => row.transferId || `temp-${Math.random()}`}
               checkboxSelection={false}
               rowSelection={false}
+              pagination
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) =>
+                setPaginationModel(newModel)
+              }
+              pageSizeOptions={[25, 50, 100]}
               processRowUpdate={async (
                 newRow: Transfer,
                 oldRow: Transfer,

@@ -33,7 +33,10 @@ export default function Accounts() {
   const [showModelDelete, setShowModelDelete] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [paginationModel, setPaginationModel] = useState({ pageSize: 25, page: 0 });
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
+  });
 
   const {
     data: fetchedAccounts,
@@ -244,7 +247,9 @@ export default function Accounts() {
               pageSizeOptions={[10, 25, 50]}
               //paginationModel={{ pageSize: 25, page: 0 }}
               paginationModel={paginationModel}
-              onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
+              onPaginationModelChange={(newModel) =>
+                setPaginationModel(newModel)
+              }
               disableRowSelectionOnClick
               checkboxSelection={false}
               rowSelection={false}

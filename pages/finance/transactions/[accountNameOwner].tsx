@@ -69,6 +69,10 @@ export default function TransactionsByAccount() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
+  });
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -180,14 +184,14 @@ export default function TransactionsByAccount() {
   const initialTransactionData: Transaction = {
     transactionDate: new Date(),
     accountNameOwner: accountNameOwner,
-    reoccurringType: "onetime" as ReoccurringType,
+    reoccurringType: "onetime",
     amount: 0.0,
-    transactionState: "outstanding" as TransactionState,
-    transactionType: "undefined" as TransactionType,
+    transactionState: "outstanding",
+    transactionType: "undefined",
     guid: crypto.randomUUID(),
     description: "",
     category: "",
-    accountType: "undefined" as AccountType,
+    accountType: "undefined",
     activeStatus: true,
     notes: "",
   };
@@ -637,9 +641,12 @@ export default function TransactionsByAccount() {
                 checkboxSelection={false}
                 rowSelection={false}
                 pagination
-                paginationModel={{ pageSize: 25, page: 0 }}
+                paginationModel={paginationModel}
+                onPaginationModelChange={(newModel) =>
+                  setPaginationModel(newModel)
+                }
                 pageSizeOptions={[25, 50, 100]}
-                rowHeight={52}
+                //rowHeight={52}
                 disableRowSelectionOnClick
                 // initialState={{
                 //   sorting: {

@@ -1,49 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Account from "../model/Account";
+import { dummyAccounts } from "../data/dummyAccounts";
 //import { basicAuth } from "../Common";
-
-const dataTest: Account[] = [
-  {
-    accountId: 1,
-    accountNameOwner: "fte-savings_brian",
-    accountType: "debit",
-    activeStatus: true,
-    moniker: "0000",
-    outstanding: 1500.25,
-    future: 200.0,
-    cleared: 1300.25,
-  },
-  {
-    accountId: 2,
-    accountNameOwner: "fte_brian",
-    accountType: "credit",
-    activeStatus: true,
-    moniker: "0000",
-    outstanding: 5000.75,
-    future: 1000.0,
-    cleared: 4000.75,
-  },
-  {
-    accountId: 3,
-    accountNameOwner: "bfe-savings_brian",
-    accountType: "debit",
-    activeStatus: true,
-    moniker: "0000",
-    outstanding: 5000.75,
-    future: 1000.0,
-    cleared: 4000.75,
-  },
-  {
-    accountId: 4,
-    accountNameOwner: "bdf_brian",
-    accountType: "credit",
-    activeStatus: true,
-    moniker: "0000",
-    outstanding: 5.75,
-    future: 10.24,
-    cleared: 4.75,
-  },
-];
 
 const fetchAccountData = async (): Promise<Account[] | null> => {
   try {
@@ -74,7 +32,7 @@ const fetchAccountData = async (): Promise<Account[] | null> => {
     return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
     console.log("Error fetching account data:", error);
-    return dataTest;
+    return dummyAccounts;
   }
 };
 

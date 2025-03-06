@@ -1,31 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import PaymentRequired from "../model/PaymentRequired";
+import { dummyPaymentsRequired } from "../data/dummyPaymentsRequired";
 //import { basicAuth } from "../Common";
-
-const dataTest = [
-  {
-    accountId: 2,
-    accountNameOwner: "fte_brian",
-    accountType: "credit",
-    activeStatus: true,
-    moniker: "0000",
-    outstanding: 5000.75,
-    future: 1000.0,
-    cleared: 4000.75,
-    validationDate: "2024-10-31",
-  },
-  {
-    accountId: 4,
-    accountNameOwner: "bfe_brian",
-    accountType: "credit",
-    activeStatus: true,
-    moniker: "0000",
-    outstanding: 5.75,
-    future: 10.24,
-    cleared: 4.75,
-    validationDate: "2024-10-31",
-  },
-];
 
 const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
   try {
@@ -52,7 +28,7 @@ const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
     return data;
   } catch (error) {
     console.log("Error fetching payment required data:", error);
-    return dataTest;
+    return dummyPaymentsRequired;
   }
 };
 

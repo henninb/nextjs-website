@@ -117,14 +117,14 @@ export default function TransactionImporter() {
         return {
           transactionDate: new Date(parts[1]),
           accountNameOwner: "testing_brian",
-          reoccurringType: "onetime" as ReoccurringType,
+          reoccurringType: "onetime",
           amount: parseFloat(parts[3]),
-          transactionState: "outstanding" as TransactionState,
-          transactionType: "undefined" as TransactionType,
+          transactionState: "outstanding",
+          transactionType: "undefined",
           guid: crypto.randomUUID(),
           description: parts[2],
           category: "",
-          accountType: "undefined" as AccountType,
+          accountType: "undefined",
           activeStatus: true,
           notes: "",
         } as Transaction;

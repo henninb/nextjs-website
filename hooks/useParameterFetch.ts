@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
+import { dummyParameters } from "../data/dummyParameters";
 //import { basicAuth } from "../Common";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
@@ -29,14 +30,7 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     return data;
   } catch (error) {
     console.log("Error fetching parameters data:", error);
-    return [
-      {
-        parameterId: Math.random(),
-        parameterName: "payment_account",
-        parameterValue: "wfargo-savings_brian",
-        activeStatus: true,
-      },
-    ];
+    return dummyParameters;
   }
 };
 
@@ -55,11 +49,3 @@ export default function useParameterFetch() {
 
   return queryResult;
 }
-
-// export default function useParameterFetch() {
-//   return useQuery("parameter", () => fetchParameterData(), {
-//     onError: (error: any) => {
-//       console.log(error ? error : "error is undefined.");
-//     },
-//   });
-// }

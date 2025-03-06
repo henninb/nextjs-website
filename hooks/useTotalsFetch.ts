@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Totals from "../model/Totals";
+import { dummyTotals } from "../data/dummyTotals";
 //import { basicAuth } from "../Common";
 
 const fetchTotals = async (): Promise<Totals> => {
@@ -23,12 +24,7 @@ const fetchTotals = async (): Promise<Totals> => {
     return await response.json();
   } catch (error) {
     console.log("Error fetching totals data:", error);
-    return {
-      totalsFuture: -205.7,
-      totalsCleared: 15287.53,
-      totals: 152326.56,
-      totalsOutstanding: 150.73,
-    };
+    return dummyTotals;
   }
 };
 

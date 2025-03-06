@@ -33,11 +33,15 @@ export default function Descriptions() {
   const [descriptionData, setDescriptionData] = useState<Description | null>(
     null,
   );
-  const [newDescriptionData, setNewDescriptionData] = useState<Description>({
-    descriptionId: 0,
-    descriptionName: "",
-    activeStatus: true,
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
   });
+  // const [newDescriptionData, setNewDescriptionData] = useState<Description>({
+  //   descriptionId: 0,
+  //   descriptionName: "",
+  //   activeStatus: true,
+  // });
 
   const {
     data: fetchedDescrptions,
@@ -170,6 +174,12 @@ export default function Descriptions() {
               getRowId={(row) => row.descriptionId || 0}
               checkboxSelection={false}
               rowSelection={false}
+              pagination
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) =>
+                setPaginationModel(newModel)
+              }
+              pageSizeOptions={[25, 50, 100]}
               processRowUpdate={async (
                 newRow: Description,
                 oldRow: Description,

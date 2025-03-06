@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Description from "../model/Description";
+import { dummyDescriptions } from "../data/dummyDescriptions";
 //import { basicAuth } from "../Common";
 
 const fetchDescriptionData = async (): Promise<Description[]> => {
@@ -26,18 +27,7 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
     return await response.json();
   } catch (error) {
     console.log("Error fetching description data:", error);
-    return [
-      {
-        descriptionId: 1,
-        descriptionName: "direct deposit",
-        activeStatus: true,
-      },
-      {
-        descriptionId: 2,
-        descriptionName: "xfinity",
-        activeStatus: true,
-      },
-    ];
+    return dummyDescriptions;
   }
 };
 

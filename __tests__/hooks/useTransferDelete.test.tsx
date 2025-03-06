@@ -5,8 +5,6 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import useTransferDelete from "../../hooks/useTransferDelete";
 import Transfer from "../../model/Transfer";
-import { AuthProvider } from "../../components/AuthProvider";
-import LayoutNew from "../../components/LayoutNew";
 
 // Mock next/router
 jest.mock("next/router", () => ({
@@ -48,11 +46,7 @@ const createTestQueryClient = () =>
 const createWrapper =
   (queryClient: QueryClient) =>
   ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <LayoutNew>{children}</LayoutNew>
-      </AuthProvider>
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
 describe("useDeleteTransfer", () => {

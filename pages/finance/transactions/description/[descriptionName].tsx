@@ -14,6 +14,10 @@ export default function TransactionsByDescription() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [snackbarMessage, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
+  });
 
   const router = useRouter();
   const { descriptionName }: any = router.query;
@@ -110,6 +114,12 @@ export default function TransactionsByDescription() {
               getRowId={(row) => row.transactionId || 0}
               checkboxSelection={false}
               rowSelection={false}
+              pagination
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) =>
+                setPaginationModel(newModel)
+              }
+              pageSizeOptions={[25, 50, 100]}
               processRowUpdate={async (
                 newRow: Transaction,
                 oldRow: Transaction,

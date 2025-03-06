@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { TransactionState } from "../model/TransactionState";
 import ValidationAmount from "../model/ValidationAmount";
+import { dummyValidationAmount } from "../data/dummyValidationAmount";
 //import { basicAuth } from "../Common";
 
 export const fetchValidationAmount = async (
@@ -30,14 +31,7 @@ export const fetchValidationAmount = async (
     return response.json();
   } catch (error) {
     console.log("Error fetching validationAmount data:", error);
-    return {
-      validationId: Math.random(),
-      validationDate: new Date(),
-      accountId: 1,
-      amount: 0.0,
-      transactionState: "undefined" as TransactionState,
-      activeStatus: false,
-    };
+    return dummyValidationAmount;
   }
 };
 

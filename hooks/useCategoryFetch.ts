@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Category from "../model/Category";
+import { dummyCategories } from "../data/dummyCategories";
 //import { basicAuth } from "../Common";
 
 const fetchCategoryData = async (): Promise<Category[]> => {
@@ -26,18 +27,7 @@ const fetchCategoryData = async (): Promise<Category[]> => {
     return await response.json();
   } catch (error) {
     console.log("Error fetching category data:", error);
-    return [
-      {
-        categoryId: 1,
-        categoryName: "paycheck",
-        activeStatus: true,
-      },
-      {
-        categoryId: 2,
-        categoryName: "utilities",
-        activeStatus: true,
-      },
-    ];
+    return dummyCategories;
   }
 };
 

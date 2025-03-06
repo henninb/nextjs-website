@@ -40,6 +40,10 @@ export default function Payments() {
   const [paymentData, setPaymentData] = useState<Payment | null>(null);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
+  });
 
   const {
     data: fetchedPayments,
@@ -243,6 +247,12 @@ export default function Payments() {
               getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
               checkboxSelection={false}
               rowSelection={false}
+              pagination
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) =>
+                setPaginationModel(newModel)
+              }
+              pageSizeOptions={[25, 50, 100]}
               processRowUpdate={async (
                 newRow: Payment,
                 oldRow: Payment,
