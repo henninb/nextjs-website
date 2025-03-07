@@ -64,6 +64,10 @@ export default function Payment() {
           async=""
           src="https://connect.facebook.net/en_US/sdk.js"
         ></script>
+
+      <script id="hs-pagetype"  type="application/javascript">window["hs_pagetype"] = "checkout" 
+      </script>
+
         <script
           async=""
           src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"
