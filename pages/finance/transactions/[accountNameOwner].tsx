@@ -640,16 +640,21 @@ export default function TransactionsByAccount() {
                 getRowId={(row) => row.transactionId || 0}
                 checkboxSelection={false}
                 rowSelection={false}
-  
-                // Only enable pagination if there are more than 25 rows
-                //pagination={fetchedTransactions.length > 25}
+                //{...(fetchedTransactions.length > 25 ? { pagination: true } : {})}
                 pagination
                 paginationModel={paginationModel}
-                onPaginationModelChange={(newModel) =>
-                  setPaginationModel(newModel)
-                }
+                //hideFooter={fetchedTransactions?.length > 25}
+                onPaginationModelChange={(newModel) => {
+                  if (fetchedTransactions?.length > 25) {
+                    // Always show all rows in one page when totalRows is 25 or less
+                    console.log('i was here')
+                    setPaginationModel({ page: 0, pageSize: fetchedTransactions?.length });
+                  } else {
+                    setPaginationModel(newModel);
+                  }
+                }}
+
                 pageSizeOptions={[25, 50, 100]}
-                //rowHeight={52}
                 disableRowSelectionOnClick
                 // initialState={{
                 //   sorting: {
