@@ -32,6 +32,10 @@ export default function Configuration() {
     null,
   );
   const [offlineRows, setOfflineRows] = useState<Parameter[]>([]);
+    const [paginationModel, setPaginationModel] = useState({
+      pageSize: 25,
+      page: 0,
+    });
 
   const {
     data: fetchedParameters,
@@ -220,13 +224,19 @@ export default function Configuration() {
               <AddIcon />
             </IconButton>
             <DataGrid
-              //key={offlineRows?.length}  // 🔹 Changing this key forces a re-render
-              //rows={fetchedParameters?.filter((row) => row != null) || []}
               rows={[...(fetchedParameters || []), ...offlineRows]}
               columns={columns}
               getRowId={(row) => row.parameterId || crypto.randomUUID()}
               checkboxSelection={false}
               rowSelection={false}
+              pagination
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) =>
+                setPaginationModel(newModel)
+              }
+              pageSizeOptions={[25, 50, 100]}
+              disableRowSelectionOnClick
+
               processRowUpdate={async (
                 newRow: Parameter,
                 oldRow: Parameter,

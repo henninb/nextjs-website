@@ -65,8 +65,9 @@ export default function Payment() {
           src="https://connect.facebook.net/en_US/sdk.js"
         ></script>
 
-      <script id="hs-pagetype"  type="application/javascript">window["hs_pagetype"] = "checkout" 
-      </script>
+        <script id="hs-pagetype" type="application/javascript">
+          window["hs_pagetype"] = "checkout"
+        </script>
 
         <script
           async=""

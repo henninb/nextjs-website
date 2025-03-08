@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { Autocomplete, TextField, FormControl } from "@mui/material";
 import { useRouter } from "next/router";
 import useFetchAccount from "../hooks/useAccountFetch";
 import Account from "../model/Account";
@@ -18,7 +18,7 @@ export default function SelectNavigateAccounts({
   onNavigate,
 }: SelectNavigateAccountsProps) {
   const [options, setOptions] = useState<Option[]>([]);
-  const [selectedValue, setSelectedValue] = useState<string>("");
+  const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [maxWidth, setMaxWidth] = useState<number>(200);
   const router = useRouter();
   const { data, isSuccess, isError } = useFetchAccount();
@@ -29,13 +29,12 @@ export default function SelectNavigateAccounts({
         .filter(
           (account: Account) =>
             typeof account.accountNameOwner === "string" &&
-            account.accountNameOwner.trim() !== "",
+            account.accountNameOwner.trim() !== ""
         )
         .map(({ accountNameOwner }: Account) => ({
           value: accountNameOwner,
           label: accountNameOwner,
         }));
-
       setOptions(optionList);
 
       const longestLabel = optionList.reduce(
@@ -48,11 +47,12 @@ export default function SelectNavigateAccounts({
     }
   }, [isSuccess, data]);
 
-  const handleChange = (event: any) => {
-    const selected = event.target.value as string;
-    setSelectedValue(selected);
-    onNavigate(); // Close drawer before navigating
-    router.push(`/finance/transactions/${selected}`);
+  const handleChange = (event: any, newValue: Option | null) => {
+    setSelectedOption(newValue);
+    if (newValue) {
+      onNavigate(); // Close menu before navigating
+      router.push(`/finance/transactions/${newValue.value}`);
+    }
   };
 
   if (isError) {
@@ -69,19 +69,30 @@ export default function SelectNavigateAccounts({
 
   return (
     <FinanceLayout>
-      <FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
-        <InputLabel>Select an account</InputLabel>
-        <Select
-          value={selectedValue}
+
+<FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
+        <Autocomplete
+          options={options}
+          getOptionLabel={(option: Option) => option.label || ""}
+          isOptionEqualToValue={(option: Option, value: Option) =>
+            option.value === value.value
+          }
+          value={selectedOption}
           onChange={handleChange}
-          label="Select an account"
-        >
-          {options.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
+          slotProps={{
+            listbox: {
+              style: { whiteSpace: "nowrap" },
+            },
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Select an account"
+              placeholder="Type to search accounts"
+              variant="outlined"
+            />
+          )}
+        />
       </FormControl>
     </FinanceLayout>
   );

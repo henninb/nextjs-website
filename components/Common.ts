@@ -2,18 +2,50 @@
  * Normalize transaction date handling across components
  *
  * Consistent approach for working with transaction dates to ensure uniform behavior
- * across all finance components.
+ * across all finance components. This function ensures dates are timezone agnostic
+ * by setting the time to noon UTC on the specified date.
  *
  * @param date - Date object or string to normalize
- * @returns A properly formatted Date object
+ * @returns A properly formatted Date object with timezone issues eliminated
  */
 export const normalizeTransactionDate = (date: Date | string): Date => {
   if (!date) return new Date();
 
-  // If date is already a Date object, clone it to avoid mutating the original
-  const dateObj = date instanceof Date ? new Date(date) : new Date(date);
+  let dateObj: Date;
 
-  // Return the normalized date (no timezone adjustment needed)
+  if (date instanceof Date) {
+    // If date is a Date object, extract its year, month, and day
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+
+    // Create a new Date object with the time set to noon UTC
+    dateObj = new Date(Date.UTC(year, month, day, 12, 0, 0));
+  } else {
+    // If date is a string (like "YYYY-MM-DD")
+    if (typeof date === "string" && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Parse the date parts from the string
+      const [year, month, day] = date.split("-").map(Number);
+
+      // Create a new Date object with the time set to noon UTC
+      // Note: month is 0-indexed in JavaScript Date
+      dateObj = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+    } else {
+      // For other string formats, use standard Date constructor but fix timezone issues
+      const tempDate = new Date(date);
+      dateObj = new Date(
+        Date.UTC(
+          tempDate.getFullYear(),
+          tempDate.getMonth(),
+          tempDate.getDate(),
+          12,
+          0,
+          0,
+        ),
+      );
+    }
+  }
+
   return dateObj;
 };
 
@@ -26,9 +58,10 @@ export const normalizeTransactionDate = (date: Date | string): Date => {
 export const formatDateForInput = (date: Date | string): string => {
   const dateObj = normalizeTransactionDate(date);
 
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-  const day = String(dateObj.getDate()).padStart(2, "0");
+  // Use UTC methods to avoid timezone issues
+  const year = dateObj.getUTCFullYear();
+  const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getUTCDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 };
@@ -42,7 +75,16 @@ export const formatDateForInput = (date: Date | string): string => {
 export const formatDateForDisplay = (date: Date | string): string => {
   if (!date) return "";
   const dateObj = normalizeTransactionDate(date);
-  return dateObj.toLocaleDateString("en-US");
+
+  // Create options for consistent date formatting regardless of timezone
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    timeZone: "UTC",
+  };
+
+  return dateObj.toLocaleDateString("en-US", options);
 };
 
 // Legacy functions maintained for backward compatibility
@@ -53,10 +95,10 @@ export const convertUTCDateToLocalDate = (date: Date) => {
   return normalizeTransactionDate(date);
 };
 
-export const formatDate = (date: Date | string): string => {
-  console.warn("formatDate is deprecated, use formatDateForInput instead");
-  return formatDateForInput(date);
-};
+// export const formatDate = (date: Date | string): string => {
+//   console.warn("formatDate is deprecated, use formatDateForInput instead");
+//   return formatDateForInput(date);
+// };
 
 // export const fetchTimeZone = () => {
 //   return process.env.REACT_APP_TIMEZONE;

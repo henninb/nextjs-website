@@ -640,6 +640,9 @@ export default function TransactionsByAccount() {
                 getRowId={(row) => row.transactionId || 0}
                 checkboxSelection={false}
                 rowSelection={false}
+  
+                // Only enable pagination if there are more than 25 rows
+                //pagination={fetchedTransactions.length > 25}
                 pagination
                 paginationModel={paginationModel}
                 onPaginationModelChange={(newModel) =>
