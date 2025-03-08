@@ -24,6 +24,17 @@ import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+} from "@mui/material";
 
 export default function Accounts() {
   const [message, setMessage] = useState("");
@@ -227,18 +238,54 @@ export default function Accounts() {
           <Spinner />
         ) : (
           <div>
-            <IconButton onClick={() => setShowModelAdd(true)}>
+
+
+
+            <div style={{ maxWidth: "600px", margin: "0 auto", marginBottom: "16px" }}>
+  <TableContainer component={Paper}>
+    <Table size="small">
+      <TableHead>
+        <TableRow>
+          <TableCell align="center">
+            <strong>Total</strong>
+          </TableCell>
+          <TableCell align="center">
+            <CheckCircleIcon fontSize="small" style={{ verticalAlign: "middle" }} />{" "}
+            <strong>Cleared</strong>
+          </TableCell>
+          <TableCell align="center">
+            <AccessTimeIcon fontSize="small" style={{ verticalAlign: "middle" }} />{" "}
+            <strong>Outstanding</strong>
+          </TableCell>
+          <TableCell align="center">
+            <EventNoteIcon fontSize="small" style={{ verticalAlign: "middle" }} />{" "}
+            <strong>Future</strong>
+          </TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        <TableRow>
+          <TableCell align="center">
+            {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+          </TableCell>
+          <TableCell align="center">
+            {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+          </TableCell>
+          <TableCell align="center">
+            {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
+          </TableCell>
+          <TableCell align="center">
+            {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  </TableContainer>
+</div>
+
+<IconButton onClick={() => setShowModelAdd(true)}>
               <AddIcon />
             </IconButton>
-
-            <h4>{`[ ${currencyFormat(
-              noNaN(fetchedTotals?.totals ?? 0),
-            )} ] [ ${currencyFormat(
-              noNaN(fetchedTotals?.totalsCleared ?? 0),
-            )} ]  [ ${currencyFormat(
-              noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-            )} ] [ ${currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))} ]`}</h4>
-
             <DataGrid
               rows={fetchedAccounts?.filter((row) => row != null) || []}
               columns={columns}
