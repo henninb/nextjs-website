@@ -643,17 +643,10 @@ export default function TransactionsByAccount() {
                 //{...(fetchedTransactions.length > 25 ? { pagination: true } : {})}
                 pagination
                 paginationModel={paginationModel}
-                //hideFooter={fetchedTransactions?.length > 25}
+                hideFooter={fetchedTransactions?.length < 25}
                 onPaginationModelChange={(newModel) => {
-                  if (fetchedTransactions?.length > 25) {
-                    // Always show all rows in one page when totalRows is 25 or less
-                    console.log('i was here')
-                    setPaginationModel({ page: 0, pageSize: fetchedTransactions?.length });
-                  } else {
                     setPaginationModel(newModel);
-                  }
                 }}
-
                 pageSizeOptions={[25, 50, 100]}
                 disableRowSelectionOnClick
                 // initialState={{
