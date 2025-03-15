@@ -10,6 +10,8 @@ const deletePayment = async (payload: Payment): Promise<Payment> => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

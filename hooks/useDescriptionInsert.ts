@@ -13,6 +13,8 @@ const insertDescription = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        credentials: "include",
+        Accept: "application/json",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(payload),

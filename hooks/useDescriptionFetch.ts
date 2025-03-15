@@ -12,6 +12,7 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          credentials: "include",
           //Authorization: basicAuth(),
         },
       },

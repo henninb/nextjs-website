@@ -28,6 +28,7 @@ const insertAccount = async (payload: Account): Promise<Account | null> => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),

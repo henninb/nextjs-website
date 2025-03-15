@@ -11,7 +11,6 @@ import {
   Alert,
 } from "@mui/material";
 import { useAuth } from "../../components/AuthProvider";
-import cookie from "js-cookie";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -21,44 +20,50 @@ export default function Login() {
   const { login } = useAuth();
   const router = useRouter();
 
-  const userLogin = async (payload: {
-    email: string;
-    password: string;
-  }): Promise<any> => {
-    const endpoint = "https://finace.lan/api/login";
+  const userLogin = async (payload: { email: string; password: string }): Promise<void> => {
+    const endpoint = "https://finance.lan/api/login";
+
+    // Map the form's "email" value to the "username" key expected by the API.
+    const loginPayload = {
+      username: payload.email,
+      password: payload.password,
+    };
 
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(loginPayload),
+      credentials: "include", // ensures cookies are sent and received
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // If the response is 204 (No Content), treat it as success.
+    if (response.status === 204) {
+      return;
+    } else {
+      // Try to parse error details if available.
+      let errorDetail = "";
+      try {
+        const body = await response.json();
+        errorDetail = body.error || "";
+      } catch (err) {
+        errorDetail = `status: ${response.status}`;
+      }
+      throw new Error(`Login failed: ${errorDetail}`);
     }
-
-    return await response.json();
   };
 
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = { email, password };
-  
+
     try {
-      const response = await userLogin(data);
-      if (response.token) {
-        sessionStorage.setItem("token", response.token);
-        cookie.set("token", response.token, { expires: 1 });
-        login(response.token);
-        sessionStorage.setItem("isAuthenticated", "true");
-        router.push("/");
-      } else {
-        setErrorMessage(response.error || "Failed login. Please check your credentials.");
-      }
-      console.log("response: " + JSON.stringify(response));
+      await userLogin(data);
+      // The JWT is set as an HTTP-only cookie by the backend.
+      // Update your client auth state (if needed) and redirect.
+      login(); // e.g. sets a flag in your context to indicate authentication
+      router.push("/");
     } catch (error: any) {
-      setErrorMessage("Failed login. Please try again.");
+      setErrorMessage(error.message || "Failed login. Please try again.");
       console.error("Login error:", error);
     }
   };

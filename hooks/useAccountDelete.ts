@@ -10,6 +10,7 @@ const deleteAccount = async (payload: Account): Promise<Account | null> => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

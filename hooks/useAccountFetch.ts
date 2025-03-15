@@ -12,6 +12,7 @@ const fetchAccountData = async (): Promise<Account[] | null> => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          credentials: "include",
           // Uncomment and implement if authorization is required
           // "Authorization": basicAuth(),
         },

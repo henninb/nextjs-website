@@ -13,6 +13,7 @@ const updateAccount = async (
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newRow),

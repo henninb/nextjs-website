@@ -10,6 +10,8 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

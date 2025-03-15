@@ -18,6 +18,8 @@ const deleteTransaction = async (
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
         //Authorization: `Basic ${btoa("username:password")}`, // Replace with dynamic basicAuth if needed
       },
     });

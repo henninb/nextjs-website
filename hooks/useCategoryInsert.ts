@@ -13,6 +13,7 @@ const insertCategory = async (category: Category): Promise<Category | null> => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(category),

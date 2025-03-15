@@ -10,6 +10,7 @@ const deleteCategory = async (payload: Category): Promise<Category | null> => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

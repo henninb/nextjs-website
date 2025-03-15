@@ -55,6 +55,8 @@ const insertTransaction = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),

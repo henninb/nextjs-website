@@ -12,6 +12,7 @@ const deleteDescription = async (
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        credentials: "include",
         // Uncomment and modify if authentication is required
         // Authorization: basicAuth(),
       },
