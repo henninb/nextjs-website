@@ -32,10 +32,10 @@ export default function Configuration() {
     null,
   );
   const [offlineRows, setOfflineRows] = useState<Parameter[]>([]);
-    const [paginationModel, setPaginationModel] = useState({
-      pageSize: 25,
-      page: 0,
-    });
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 25,
+    page: 0,
+  });
 
   const {
     data: fetchedParameters,
@@ -236,7 +236,6 @@ export default function Configuration() {
               }
               pageSizeOptions={[25, 50, 100]}
               disableRowSelectionOnClick
-
               processRowUpdate={async (
                 newRow: Parameter,
                 oldRow: Parameter,

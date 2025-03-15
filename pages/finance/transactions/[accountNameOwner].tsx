@@ -531,52 +531,70 @@ export default function TransactionsByAccount() {
         ) : (
           <div>
             <div>
-
-            <div style={{ maxWidth: "600px", margin: "0 auto", marginBottom: "16px" }}>
-  <TableContainer component={Paper}>
-    <Table size="small">
-      <TableHead>
-        <TableRow>
-          <TableCell align="center">
-            <strong>Total</strong>
-          </TableCell>
-          <TableCell align="center">
-            <CheckCircleIcon fontSize="small" style={{ verticalAlign: "middle" }} />{" "}
-            <strong>Cleared</strong>
-          </TableCell>
-          <TableCell align="center">
-            <AccessTimeIcon fontSize="small" style={{ verticalAlign: "middle" }} />{" "}
-            <strong>Outstanding</strong>
-          </TableCell>
-          <TableCell align="center">
-            <EventNoteIcon fontSize="small" style={{ verticalAlign: "middle" }} />{" "}
-            <strong>Future</strong>
-          </TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        <TableRow>
-          <TableCell align="center">
-            {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-          </TableCell>
-          <TableCell align="center">
-            {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
-          </TableCell>
-          <TableCell align="center">
-            {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
-          </TableCell>
-          <TableCell align="center">
-            {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
-  </TableContainer>
-</div>
+              <div
+                style={{
+                  maxWidth: "600px",
+                  margin: "0 auto",
+                  marginBottom: "16px",
+                }}
+              >
+                <TableContainer component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="center">
+                          <strong>Total</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <CheckCircleIcon
+                            fontSize="small"
+                            style={{ verticalAlign: "middle" }}
+                          />{" "}
+                          <strong>Cleared</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <AccessTimeIcon
+                            fontSize="small"
+                            style={{ verticalAlign: "middle" }}
+                          />{" "}
+                          <strong>Outstanding</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <EventNoteIcon
+                            fontSize="small"
+                            style={{ verticalAlign: "middle" }}
+                          />{" "}
+                          <strong>Future</strong>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell align="center">
+                          {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                        </TableCell>
+                        <TableCell align="center">
+                          {currencyFormat(
+                            noNaN(fetchedTotals?.totalsCleared ?? 0),
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          {currencyFormat(
+                            noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          {currencyFormat(
+                            noNaN(fetchedTotals?.totalsFuture ?? 0),
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
 
               <div>
-
-
                 <div
                   style={{
                     display: "flex",
@@ -625,7 +643,7 @@ export default function TransactionsByAccount() {
                 paginationModel={paginationModel}
                 hideFooter={fetchedTransactions?.length < 25}
                 onPaginationModelChange={(newModel) => {
-                    setPaginationModel(newModel);
+                  setPaginationModel(newModel);
                 }}
                 pageSizeOptions={[25, 50, 100]}
                 disableRowSelectionOnClick

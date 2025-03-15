@@ -29,7 +29,7 @@ export default function SelectNavigateAccounts({
         .filter(
           (account: Account) =>
             typeof account.accountNameOwner === "string" &&
-            account.accountNameOwner.trim() !== ""
+            account.accountNameOwner.trim() !== "",
         )
         .map(({ accountNameOwner }: Account) => ({
           value: accountNameOwner,
@@ -69,8 +69,7 @@ export default function SelectNavigateAccounts({
 
   return (
     <FinanceLayout>
-
-<FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
+      <FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
         <Autocomplete
           options={options}
           getOptionLabel={(option: Option) => option.label || ""}
