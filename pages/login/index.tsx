@@ -25,7 +25,7 @@ export default function Login() {
     email: string;
     password: string;
   }): Promise<any> => {
-    const endpoint = "/api/login";
+    const endpoint = "https://finace.lan/api/login";
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -62,33 +62,6 @@ export default function Login() {
       console.error("Login error:", error);
     }
   };
-
-  // const handleSubmit = async (event: any) => {
-  //   event.preventDefault();
-
-  //   const data = { email, password };
-
-  //   try {
-  //     const response = await userLogin(data);
-  //     if (response.ok) {
-  //       sessionStorage.setItem("token", response.token);
-  //       cookie.set("token", response.token, { expires: 1 });
-  //       login(response.token);
-  //       sessionStorage.setItem("isAuthenticated", "true");
-  //       router.push("/");
-  //     } else {
-  //       setErrorMessage("Failed login. Please check your credentials.");
-  //     }
-  //     console.log("response: " + JSON.stringify(response));
-  //   } catch (error: any) {
-  //     if (error.response && error.response.status === 403) {
-  //       setErrorMessage("Failed login. Please check your credentials.");
-  //     } else {
-  //       setErrorMessage("Failed login. Please try again.");
-  //     }
-  //     console.error("Registration error:", error);
-  //   }
-  // };
 
   return (
     <>
