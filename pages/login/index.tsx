@@ -20,7 +20,10 @@ export default function Login() {
   const { login } = useAuth();
   const router = useRouter();
 
-  const userLogin = async (payload: { email: string; password: string }): Promise<void> => {
+  const userLogin = async (payload: {
+    email: string;
+    password: string;
+  }): Promise<void> => {
     const endpoint = "https://finance.lan/api/login";
 
     // Map the form's "email" value to the "username" key expected by the API.
