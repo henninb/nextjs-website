@@ -45,10 +45,11 @@ export default async function POST(request) {
         path: "/",
       };
 
-      return new Response(token, {
+      return new Response(JSON.stringify({ token }), {
         status: 200,
         //cookie.set('token', jwtToken, { expires: 1 });
         headers: {
+          "Content-Type": "application/json",
           "Set-Cookie": `token=${token}; Path=${cookieOptions.path}; Max-Age=${cookieOptions.maxAge}`,
         },
       });

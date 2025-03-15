@@ -40,32 +40,55 @@ export default function Login() {
     return await response.json();
   };
 
-  const handleSubmit = async (event: any) => {
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const data = { email, password };
-
+  
     try {
       const response = await userLogin(data);
-      if (response.ok) {
+      if (response.token) {
         sessionStorage.setItem("token", response.token);
         cookie.set("token", response.token, { expires: 1 });
         login(response.token);
         sessionStorage.setItem("isAuthenticated", "true");
         router.push("/");
       } else {
-        setErrorMessage("Failed login. Please check your credentials.");
+        setErrorMessage(response.error || "Failed login. Please check your credentials.");
       }
       console.log("response: " + JSON.stringify(response));
     } catch (error: any) {
-      if (error.response && error.response.status === 403) {
-        setErrorMessage("Failed login. Please check your credentials.");
-      } else {
-        setErrorMessage("Failed login. Please try again.");
-      }
-      console.error("Registration error:", error);
+      setErrorMessage("Failed login. Please try again.");
+      console.error("Login error:", error);
     }
   };
+
+  // const handleSubmit = async (event: any) => {
+  //   event.preventDefault();
+
+  //   const data = { email, password };
+
+  //   try {
+  //     const response = await userLogin(data);
+  //     if (response.ok) {
+  //       sessionStorage.setItem("token", response.token);
+  //       cookie.set("token", response.token, { expires: 1 });
+  //       login(response.token);
+  //       sessionStorage.setItem("isAuthenticated", "true");
+  //       router.push("/");
+  //     } else {
+  //       setErrorMessage("Failed login. Please check your credentials.");
+  //     }
+  //     console.log("response: " + JSON.stringify(response));
+  //   } catch (error: any) {
+  //     if (error.response && error.response.status === 403) {
+  //       setErrorMessage("Failed login. Please check your credentials.");
+  //     } else {
+  //       setErrorMessage("Failed login. Please try again.");
+  //     }
+  //     console.error("Registration error:", error);
+  //   }
+  // };
 
   return (
     <>

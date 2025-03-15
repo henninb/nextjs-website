@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 
 export default function Register() {
-  const [username, setUsername] = useState<string>("");
+  //const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -28,7 +28,7 @@ export default function Register() {
       return;
     }
 
-    const data = { username, email, password };
+    const data = { email, password };
 
     try {
       const response = await fetch("/api/register", {
@@ -68,7 +68,7 @@ export default function Register() {
             Register
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate>
-            <TextField
+            {/* <TextField
               margin="normal"
               required
               fullWidth
@@ -77,7 +77,7 @@ export default function Register() {
               name="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-            />
+            /> */}
             <TextField
               margin="normal"
               required
