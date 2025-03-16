@@ -29,12 +29,17 @@ export default function Register() {
     }
 
     const data = { email, password };
-
+    // Map the form's "email" value to the "username" key expected by the API.
+    const registrationPayload = {
+      username: email,
+      password: password,
+    };
+    
     try {
       const response = await fetch("https://finance.lan/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(registrationPayload),
       });
       const result = await response.json();
 
@@ -68,16 +73,6 @@ export default function Register() {
             Register
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate>
-            {/* <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            /> */}
             <TextField
               margin="normal"
               required
