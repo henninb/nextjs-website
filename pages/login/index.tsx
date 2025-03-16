@@ -24,7 +24,7 @@ export default function Login() {
     email: string;
     password: string;
   }): Promise<void> => {
-    const endpoint = "https://finance.lan/api/login";
+    const endpoint = "/api/login";
 
     // Map the form's "email" value to the "username" key expected by the API.
     const loginPayload = {

@@ -3,8 +3,8 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "test": "npx jest",
     "start": "next start",
+    "test": "npx jest",
     "prettier": "npx prettier --write .",
     "pages:build": "npx @cloudflare/next-on-pages"
   },
