@@ -40,8 +40,8 @@ export default function Register() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(registrationPayload),
+        credentials: "include",
       });
-      //const result = await response.json();
 
       if (response.status === 201) {
         router.push("/login");

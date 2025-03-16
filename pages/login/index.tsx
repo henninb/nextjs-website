@@ -36,7 +36,7 @@ export default function Login() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginPayload),
-      credentials: "include", // ensures cookies are sent and received
+      credentials: "include",
     });
 
     // If the response is 204 (No Content), treat it as success.
