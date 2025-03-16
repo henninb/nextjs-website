@@ -31,7 +31,7 @@ export default function Register() {
     const data = { email, password };
 
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch("https://finance.lan/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
