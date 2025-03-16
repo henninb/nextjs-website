@@ -1001,3 +1001,7 @@ header {
 .finance-theme .form-icon {
   color: #ff79c6 !important;
 }
+
+.turbo-debug-widget {
+  display: none !important;
+}

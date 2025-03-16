@@ -1,4 +1,7 @@
 module.exports = {
+  experimental: {
+    turbopack: false,
+  },
   reactStrictMode: true,
   //chrome: false, // Avoid bundling chrome API
   // output: 'export',

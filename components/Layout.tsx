@@ -1,5 +1,5 @@
 import React, { useState, ReactNode } from "react";
-import { useAuth } from "./AuthProvider"; 
+import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/router";
 import {
   AppBar,
@@ -33,6 +33,7 @@ import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat"; // 🌡
 import MusicNoteIcon from "@mui/icons-material/MusicNote"; // 🎵 Spotify
 import BuildIcon from "@mui/icons-material/Build"; // 🔧 Best for Tools
 import MenuBookIcon from "@mui/icons-material/MenuBook"; // 📖 Best for Howto
+import HowToRegIcon from "@mui/icons-material/HowToReg"; // Registration icon
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArticleIcon from "@mui/icons-material/Article";
@@ -92,8 +93,7 @@ export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
   const { pathname } = router;
 
-
-   const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   const isFinancePage = pathname.startsWith("/finance");
   const menuLinks = isFinancePage ? financeLinks : generalLinks;
@@ -119,31 +119,24 @@ export default function Layout({ children }: LayoutProps) {
             onClick={toggleDrawer(true)}
           >
             <MenuIcon />
-
-           </IconButton>
-          
-          {/*
-          <IconButton color="inherit" href="/login">
-            <AccountCircleIcon />
           </IconButton>
-          <IconButton color="inherit" href="/logout">
-            <ExitToAppIcon />
-          </IconButton> */}
 
-
+          <Box sx={{ flexGrow: 1 }} />
           {isAuthenticated ? (
             // If authenticated, show the logout button.
             <IconButton color="inherit" onClick={logout}>
               <ExitToAppIcon />
             </IconButton>
           ) : (
-            // Otherwise, show the login button.
-            <IconButton color="inherit" href="/login">
-              <AccountCircleIcon />
-            </IconButton>
+            <>
+              <IconButton color="inherit" href="/login">
+                <AccountCircleIcon />
+              </IconButton>
+              <IconButton color="inherit" href="/register">
+                <HowToRegIcon />
+              </IconButton>
+            </>
           )}
-
-
         </Toolbar>
       </AppBar>
       <Drawer anchor="left" open={isOpen} onClose={toggleDrawer(false)}>

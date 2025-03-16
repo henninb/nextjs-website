@@ -46,8 +46,7 @@ export default function Register() {
       if (response.status === 201) {
         router.push("/login");
       } else {
-        setErrorMessage("Registration failed. Please try again.",
-        );
+        setErrorMessage("Registration failed. Please try again.");
       }
     } catch (error) {
       setErrorMessage("Registration failed. Please try again.");
