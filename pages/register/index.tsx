@@ -34,27 +34,20 @@ export default function Register() {
       username: email,
       password: password,
     };
-    
+
     try {
       const response = await fetch("https://finance.lan/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(registrationPayload),
       });
-      const result = await response.json();
+      //const result = await response.json();
 
-      if (!response.ok) {
-        setErrorMessage(
-          result.message || "Registration failed. Please try again.",
-        );
+      if (response.status === 201) {
+        router.push("/login");
       } else {
-        if (result.ok) {
-          router.push("/login");
-        } else {
-          setErrorMessage(
-            result.message || "Registration failed. Please try again.",
-          );
-        }
+        setErrorMessage("Registration failed. Please try again.",
+        );
       }
     } catch (error) {
       setErrorMessage("Registration failed. Please try again.");

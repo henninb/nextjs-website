@@ -78,11 +78,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Layout>
+      
         <AuthProvider>
+          <Layout>
           <Component {...pageProps} />
+          </Layout>
         </AuthProvider>
-      </Layout>
+     
     </QueryClientProvider>
   );
 }

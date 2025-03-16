@@ -1,4 +1,5 @@
 import React, { useState, ReactNode } from "react";
+import { useAuth } from "./AuthProvider"; 
 import { useRouter } from "next/router";
 import {
   AppBar,
@@ -91,6 +92,9 @@ export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
   const { pathname } = router;
 
+
+   const { isAuthenticated, logout } = useAuth();
+
   const isFinancePage = pathname.startsWith("/finance");
   const menuLinks = isFinancePage ? financeLinks : generalLinks;
 
@@ -115,13 +119,31 @@ export default function Layout({ children }: LayoutProps) {
             onClick={toggleDrawer(true)}
           >
             <MenuIcon />
-          </IconButton>
+
+           </IconButton>
+          
+          {/*
           <IconButton color="inherit" href="/login">
             <AccountCircleIcon />
           </IconButton>
           <IconButton color="inherit" href="/logout">
             <ExitToAppIcon />
-          </IconButton>
+          </IconButton> */}
+
+
+          {isAuthenticated ? (
+            // If authenticated, show the logout button.
+            <IconButton color="inherit" onClick={logout}>
+              <ExitToAppIcon />
+            </IconButton>
+          ) : (
+            // Otherwise, show the login button.
+            <IconButton color="inherit" href="/login">
+              <AccountCircleIcon />
+            </IconButton>
+          )}
+
+
         </Toolbar>
       </AppBar>
       <Drawer anchor="left" open={isOpen} onClose={toggleDrawer(false)}>
