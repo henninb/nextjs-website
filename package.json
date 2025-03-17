@@ -39,7 +39,7 @@
     "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.26.0",
     "@cloudflare/next-on-pages": "^1.13.10",
-    "@swc/core": "^1.11.9",
+    "@swc/core": "^1.11.10",
     "@swc/jest": "^0.2.37",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

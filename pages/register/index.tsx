@@ -10,6 +10,7 @@ import {
   Button,
   Alert,
 } from "@mui/material";
+import useUserAccountRegister from "../../hooks/useUserAccountRegister";
 
 export default function Register() {
   //const [username, setUsername] = useState<string>("");
@@ -19,6 +20,7 @@ export default function Register() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const router = useRouter();
+  const registerUserAccount = useUserAccountRegister();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

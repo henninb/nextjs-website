@@ -33,6 +33,7 @@ echo npx npm-check-updates -u
 #npm install
 touch .env.local
 npm run prettier
+npx npm-check-updates
 npm install
 npm run dev
 
