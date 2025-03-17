@@ -1,59 +1,57 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
   useEffect,
   ReactNode,
-  FC,
 } from "react";
 import { useRouter } from "next/router";
 
-// Define the shape of our context with an authentication flag.
+// Define the shape of our auth state
 interface AuthContextType {
   isAuthenticated: boolean;
   login: () => void;
   logout: () => void;
 }
 
-// Create the AuthContext.
+// Create the authentication context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+// Extract authentication logic into a function
 
-export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+const useProvideAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
-  // Optionally, on mount you could check authentication status from a secure endpoint.
   useEffect(() => {
-    // Example: fetch('/api/auth/me', { credentials: 'include' })
-    //   .then(res => res.ok && setIsAuthenticated(true))
-    //   .catch(() => setIsAuthenticated(false));
-    // For now, we assume the user is not authenticated by default.
+    // Simulating auth check
+    const storedAuth = localStorage.getItem("auth") === "true";
+    setIsAuthenticated(storedAuth);
   }, []);
 
-  // The login function simply marks the user as authenticated.
-  // The server has already set the JWT in an HTTP-only cookie.
   const login = () => {
     setIsAuthenticated(true);
+    localStorage.setItem("auth", "true"); // Persist session
   };
 
-  // The logout function clears the local auth state and redirects to the login page.
-  // Optionally, you could also call a backend endpoint to clear the cookie.
   const logout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem("auth");
     router.push("/login");
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return { isAuthenticated, login, logout };
 };
 
+// **Step 2: Create a Context Provider Component**
+
+export default function AuthProvider({ children }: { children: ReactNode }) {
+  //export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const auth = useProvideAuth(); // Use the extracted function logic
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+}
+
+// **Step 3: Create a Hook for Using AuthContext**
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -62,4 +60,4 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-export default AuthProvider;
+//export default AuthProvider;

@@ -7,7 +7,6 @@ const userAccountRegister = async (payload: User): Promise<User | null> => {
 
     console.log("Register payload:", JSON.stringify(payload));
 
-
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -35,7 +34,7 @@ const userAccountRegister = async (payload: User): Promise<User | null> => {
       throw new Error(errorMessage || "Registration failed");
     }
 
-    return response.status !== 201 ? payload : null
+    return response.status !== 201 ? payload : null;
   } catch (error: any) {
     console.log(`An error occurred: ${error.message}`);
     throw error;
