@@ -6,7 +6,7 @@ const updateTransfer = async (
   oldTransfer: Transfer,
   newTransfer: Transfer,
 ): Promise<Transfer> => {
-  const endpoint = `https://finance.lan/api/transfer/update/${oldTransfer.transferId}`;
+  const endpoint = `/api/transfer/update/${oldTransfer.transferId}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",

@@ -1,12 +1,12 @@
-import path from "path";
-import fs from "fs";
+// import path from "path";
+// import fs from "fs";
 
-const certPath = path.join(process.cwd(), "ssl", "rootCA.pem");
+// const certPath = path.join(process.cwd(), "ssl", "rootCA.pem");
 
-if (fs.existsSync(certPath)) {
-  process.env.NODE_EXTRA_CA_CERTS = certPath;
-  console.log(`Certificate found and loaded from: ${certPath}`);
-}
+// if (fs.existsSync(certPath)) {
+//   process.env.NODE_EXTRA_CA_CERTS = certPath;
+//   console.log(`Certificate found and loaded from: ${certPath}`);
+// }
 
 export default {
   // experimental: {
@@ -18,7 +18,7 @@ export default {
     return [
       {
         source: "/api/:path*",
-        destination: "https://finance.lan/api/:path*",
+        destination: "https://finance.bhenning.com/api/:path*",
         basePath: false,
       },
     ];

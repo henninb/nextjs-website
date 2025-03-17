@@ -71,7 +71,7 @@ describe("useTransactionDelete", () => {
 
     server.use(
       rest.delete(
-        `https://finance.lan/api/transaction/delete/${mockTransaction.guid}`,
+        `/api/transaction/delete/${mockTransaction.guid}`,
         (req, res, ctx) => res(ctx.status(204)),
       ),
     );
@@ -125,7 +125,7 @@ describe("useTransactionDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `https://finance.lan/api/transaction/delete/${mockTransaction.guid}`,
+        `/api/transaction/delete/${mockTransaction.guid}`,
         (req, res, ctx) =>
           res(
             ctx.status(400),
@@ -180,7 +180,7 @@ describe("useTransactionDelete", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `https://finance.lan/api/transaction/delete/${mockTransaction.guid}`,
+        `/api/transaction/delete/${mockTransaction.guid}`,
         (req, res, ctx) =>
           res(ctx.status(500), ctx.json({ message: "Network error" })),
       ),

@@ -5,7 +5,7 @@ import { dummyPayments } from "../data/dummyPayments";
 
 const fetchPaymentData = async (): Promise<Payment[]> => {
   try {
-    const response = await fetch("https://finance.lan/api/payment/select", {
+    const response = await fetch("/api/payment/select", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

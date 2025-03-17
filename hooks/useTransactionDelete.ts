@@ -10,7 +10,7 @@ const deleteTransaction = async (
   payload: Transaction,
 ): Promise<Transaction> => {
   try {
-    const endpoint = `https://finance.lan/api/transaction/delete/${payload.guid}`;
+    const endpoint = `/api/transaction/delete/${payload.guid}`;
 
     //console.log(endpoint);
     //console.log(JSON.stringify(payload));

@@ -3,7 +3,7 @@ import User from "../model/User";
 
 const userAccountRegister = async (payload: User): Promise<User | null> => {
   try {
-    const endpoint = "https://finance.lan/api/user/register";
+    const endpoint = "/api/user/register";
 
     console.log("Register payload:", JSON.stringify(payload));
 

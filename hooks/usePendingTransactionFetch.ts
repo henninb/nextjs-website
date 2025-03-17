@@ -3,17 +3,14 @@ import PendingTransaction from "../model/PendingTransaction";
 
 const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
   try {
-    const response = await fetch(
-      "https://finance.lan/api/pending/transaction/all",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          credentials: "include",
-        },
+    const response = await fetch("/api/pending/transaction/all", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 404) {

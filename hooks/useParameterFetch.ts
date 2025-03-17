@@ -5,18 +5,15 @@ import { dummyParameters } from "../data/dummyParameters";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
   try {
-    const response = await fetch(
-      "https://finance.lan/api/parameter/select/active",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          credentials: "include",
-          //Authorization: basicAuth(),
-        },
+    const response = await fetch("/api/parameter/select/active", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
+        //Authorization: basicAuth(),
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 404) {

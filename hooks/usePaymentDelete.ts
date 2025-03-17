@@ -4,7 +4,7 @@ import Payment from "../model/Payment";
 
 const deletePayment = async (payload: Payment): Promise<Payment> => {
   try {
-    const endpoint = `https://finance.lan/api/payment/delete/${payload.paymentId}`;
+    const endpoint = `/api/payment/delete/${payload.paymentId}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

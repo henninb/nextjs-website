@@ -89,18 +89,15 @@ const fetchTransactionsByCategory = async (
   categoryName: string,
 ): Promise<Transaction[] | null> => {
   try {
-    const response = await fetch(
-      `https://finance.lan/api/transaction/category/${categoryName}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          credentials: "include",
-          //Authorization: basicAuth(),
-        },
+    const response = await fetch(`/api/transaction/category/${categoryName}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
+        //Authorization: basicAuth(),
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 404) {

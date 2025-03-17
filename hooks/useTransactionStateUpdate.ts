@@ -12,7 +12,7 @@ const changeTransactionState = async (
   guid: string,
   newTransactionState: TransactionState,
 ): Promise<Transaction> => {
-  const endpoint = `https://finance.lan/api/transaction/state/update/${guid}/${newTransactionState}`;
+  const endpoint = `/api/transaction/state/update/${guid}/${newTransactionState}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",

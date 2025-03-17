@@ -5,18 +5,15 @@ import { dummyDescriptions } from "../data/dummyDescriptions";
 
 const fetchDescriptionData = async (): Promise<Description[]> => {
   try {
-    const response = await fetch(
-      "https://finance.lan/api/description/select/active",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          credentials: "include",
-          //Authorization: basicAuth(),
-        },
+    const response = await fetch("/api/description/select/active", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        credentials: "include",
+        //Authorization: basicAuth(),
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 404) {

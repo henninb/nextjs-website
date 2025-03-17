@@ -12,7 +12,7 @@ const setupNewPayment = (payload: Payment) => {
 
 const insertPayment = async (payload: Payment): Promise<Payment> => {
   try {
-    const endpoint = "https://finance.lan/api/payment/insert";
+    const endpoint = "/api/payment/insert";
     const newPayload = setupNewPayment(payload);
 
     const response = await fetch(endpoint, {

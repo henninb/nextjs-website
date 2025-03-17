@@ -6,7 +6,7 @@ const updatePayment = async (
   oldPayment: Payment,
   newPayment: Payment,
 ): Promise<Payment> => {
-  const endpoint = `https://finance.lan/api/payment/update/${oldPayment.paymentId}`;
+  const endpoint = `/api/payment/update/${oldPayment.paymentId}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",

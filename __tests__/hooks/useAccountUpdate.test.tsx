@@ -71,7 +71,7 @@ describe("useAccountUpdate", () => {
 
     server.use(
       rest.put(
-        `https://finance.lan/api/account/update/${oldAccount.accountNameOwner}`,
+        `/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(200), ctx.json(newAccount));
         },
@@ -118,7 +118,7 @@ describe("useAccountUpdate", () => {
     // Mock an API error
     server.use(
       rest.put(
-        `https://finance.lan/api/account/update/${oldAccount.accountNameOwner}`,
+        `/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
@@ -170,7 +170,7 @@ describe("useAccountUpdate", () => {
     // Mock a 404 error
     server.use(
       rest.put(
-        `https://finance.lan/api/account/update/${oldAccount.accountNameOwner}`,
+        `/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(
             ctx.status(404),
@@ -224,7 +224,7 @@ describe("useAccountUpdate", () => {
 
     server.use(
       rest.put(
-        `https://finance.lan/api/account/update/${oldAccount.accountNameOwner}`,
+        `/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(200), ctx.json(newAccount));
         },
