@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY .next ./.next
 COPY public ./public
-COPY next.config.js ./
+COPY next.config.mjs ./
 
 # Install only production dependencies
 RUN npm install --only=production

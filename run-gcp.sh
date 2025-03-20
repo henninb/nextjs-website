@@ -25,6 +25,7 @@ fi
 
 echo "Docker connection is successful."
 
+# npm install
 npm install --only=production
 npm run build
 docker system prune -af
