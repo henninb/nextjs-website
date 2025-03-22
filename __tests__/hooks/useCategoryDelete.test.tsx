@@ -110,7 +110,7 @@ describe("useCategoryDelete", () => {
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot delete this category" }),
+            ctx.json({ response: "Cannot delete this category" })
           );
         },
       ),

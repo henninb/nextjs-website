@@ -108,7 +108,7 @@ describe("useDescriptionDelete", () => {
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot delete this description" }),
+            ctx.json({ response: "Cannot delete this description" })
           );
         },
       ),

@@ -122,7 +122,7 @@ describe("useAccountUpdate", () => {
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot update this account" }),
+            ctx.json({ response: "Cannot update this account" })
           );
         },
       ),
@@ -174,7 +174,7 @@ describe("useAccountUpdate", () => {
         (req, res, ctx) => {
           return res(
             ctx.status(404),
-            ctx.json({ message: "Account not found" }),
+            ctx.json({ message: "Account not found" })
           );
         },
       ),

@@ -1,9 +1,9 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
-// For Jest tests in Node environment
-import { setupServer } from "msw/node";
+// MSW v1 imports
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
 import useAccountDelete from "../../hooks/useAccountDelete";
 import Account from "../../model/Account";
 import { AuthProvider } from "../../components/AuthProvider";
