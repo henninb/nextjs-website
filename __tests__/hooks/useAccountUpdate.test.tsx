@@ -71,7 +71,7 @@ describe("useAccountUpdate", () => {
 
     server.use(
       rest.put(
-        `/api/account/update/${oldAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(200), ctx.json(newAccount));
         },
@@ -118,11 +118,11 @@ describe("useAccountUpdate", () => {
     // Mock an API error
     server.use(
       rest.put(
-        `/api/account/update/${oldAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot update this account" })
+            ctx.json({ response: "Cannot update this account" }),
           );
         },
       ),
@@ -170,11 +170,11 @@ describe("useAccountUpdate", () => {
     // Mock a 404 error
     server.use(
       rest.put(
-        `/api/account/update/${oldAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(
             ctx.status(404),
-            ctx.json({ message: "Account not found" })
+            ctx.json({ message: "Account not found" }),
           );
         },
       ),
@@ -224,7 +224,7 @@ describe("useAccountUpdate", () => {
 
     server.use(
       rest.put(
-        `/api/account/update/${oldAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(200), ctx.json(newAccount));
         },

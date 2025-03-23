@@ -228,13 +228,13 @@ describe("Payments Page", () => {
 
     // Set up API mocks that will return data but with some delay - correct endpoint paths
     server.use(
-      rest.get("/api/payment/select", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
         return res(ctx.delay(100), ctx.json(mockPayments));
       }),
-      rest.get("/api/account/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
         return res(ctx.delay(100), ctx.json(mockAccounts));
       }),
-      rest.get("/api/parameter/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
         return res(ctx.delay(100), ctx.json(mockParameters));
       }),
     );
@@ -249,13 +249,13 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get("/api/payment/select", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
         return res(ctx.json(mockPayments));
       }),
-      rest.get("/api/account/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
         return res(ctx.json(mockAccounts));
       }),
-      rest.get("/api/parameter/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
         return res(ctx.json(mockParameters));
       }),
     );
@@ -282,13 +282,13 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get("/api/payment/select", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
         return res(ctx.json(mockPayments));
       }),
-      rest.get("/api/account/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
         return res(ctx.json(mockAccounts));
       }),
-      rest.get("/api/parameter/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
         return res(ctx.json(mockParameters));
       }),
     );
@@ -315,13 +315,13 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get("/api/payment/select", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
         return res(ctx.json(mockPayments));
       }),
-      rest.get("/api/account/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
         return res(ctx.json(mockAccounts));
       }),
-      rest.get("/api/parameter/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
         return res(ctx.json(mockParameters));
       }),
     );
@@ -342,13 +342,13 @@ describe("Payments Page", () => {
 
     // Set up API mocks to simulate errors with correct endpoint paths
     server.use(
-      rest.get("/api/payment/select", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
         return res(ctx.status(500), ctx.json({ message: "Server error" }));
       }),
-      rest.get("/api/account/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
         return res(ctx.json(mockAccounts));
       }),
-      rest.get("/api/parameter/select/active", (req, res, ctx) => {
+      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
         return res(ctx.json(mockParameters));
       }),
     );

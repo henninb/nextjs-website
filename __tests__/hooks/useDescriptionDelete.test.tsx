@@ -62,7 +62,7 @@ describe("useDescriptionDelete", () => {
 
     server.use(
       rest.delete(
-        `/api/description/delete/${mockDescription.descriptionName}`,
+        `https://finance.bhenning.com/api/description/delete/${mockDescription.descriptionName}`,
         (req, res, ctx) => {
           return res(ctx.status(204));
         },
@@ -104,11 +104,11 @@ describe("useDescriptionDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `/api/description/delete/${mockDescription.descriptionName}`,
+        `https://finance.bhenning.com/api/description/delete/${mockDescription.descriptionName}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot delete this description" })
+            ctx.json({ response: "Cannot delete this description" }),
           );
         },
       ),

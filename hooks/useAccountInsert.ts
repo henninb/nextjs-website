@@ -19,7 +19,7 @@ const setupNewAccount = (payload: Account) => {
 
 const insertAccount = async (payload: Account): Promise<Account | null> => {
   try {
-    const endpoint = "/api/account/insert";
+    const endpoint = "https://finance.bhenning.com/api/account/insert";
     const newPayload = setupNewAccount(payload);
 
     console.log(JSON.stringify(newPayload));

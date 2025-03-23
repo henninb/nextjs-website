@@ -90,7 +90,7 @@ const fetchTransactionsByDescription = async (
 ): Promise<Transaction[] | null> => {
   try {
     const response = await fetch(
-      `/api/transaction/description/${description}`,
+      `https://finance.bhenning.com/api/transaction/description/${description}`,
       {
         method: "GET",
         headers: {

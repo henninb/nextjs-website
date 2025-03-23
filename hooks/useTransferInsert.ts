@@ -12,7 +12,7 @@ const overRideTransferValues = (payload: Transfer) => {
 
 const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
   try {
-    const endpoint = "/api/transfer/insert";
+    const endpoint = "https://finance.bhenning.com/api/transfer/insert";
     const newPayload = overRideTransferValues(payload);
 
     //console.log("" + JSON.stringify(newPayload));

@@ -4,7 +4,7 @@ import Transfer from "../model/Transfer";
 
 const fetchTransferData = async (): Promise<Transfer[]> => {
   try {
-    const response = await fetch("/api/transfer/select", {
+    const response = await fetch("https://finance.bhenning.com/api/transfer/select", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -63,7 +63,7 @@ describe("useCategoryDelete", () => {
 
     server.use(
       rest.delete(
-        `/api/category/delete/${mockCategory.categoryName}`,
+        `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(ctx.status(204));
         },
@@ -106,11 +106,11 @@ describe("useCategoryDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `/api/category/delete/${mockCategory.categoryName}`,
+        `https://finance.bhenning.comhttps://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
-            ctx.json({ response: "Cannot delete this category" })
+            ctx.json({ response: "Cannot delete this category" }),
           );
         },
       ),

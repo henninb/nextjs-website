@@ -4,7 +4,7 @@ import Account from "../model/Account";
 
 const deleteAccount = async (payload: Account): Promise<Account | null> => {
   try {
-    const endpoint = `/api/account/delete/${payload.accountNameOwner}`;
+    const endpoint = `https://finance.bhenning.comhttps://finance.bhenning.com/api/account/delete/${payload.accountNameOwner}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

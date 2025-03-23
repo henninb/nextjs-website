@@ -43,9 +43,9 @@ const insertTransaction = async (
   payload: Transaction,
   isFutureTransaction: boolean,
 ): Promise<Transaction> => {
-  let endpoint = "/api/transaction/insert";
+  let endpoint = "https://finance.bhenning.com/api/transaction/insert";
   if (isFutureTransaction) {
-    endpoint = "/api/transaction/future/insert";
+    endpoint = "https://finance.bhenning.com/api/transaction/future/insert";
   }
 
   const newPayload = setupNewTransaction(payload, accountNameOwner);
