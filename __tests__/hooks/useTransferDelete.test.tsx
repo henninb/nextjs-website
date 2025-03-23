@@ -66,7 +66,7 @@ describe("useDeleteTransfer", () => {
 
     server.use(
       rest.delete(
-        `/api/transfer/delete/${mockTransfer.transferId}`,
+        `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
         (req, res, ctx) => res(ctx.status(204)),
       ),
     );
@@ -107,7 +107,7 @@ describe("useDeleteTransfer", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `/api/transfer/delete/${mockTransfer.transferId}`,
+        `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
         (req, res, ctx) =>
           res(
             ctx.status(400),
@@ -155,7 +155,7 @@ describe("useDeleteTransfer", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `/api/transfer/delete/${mockTransfer.transferId}`,
+        `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
         (req, res, ctx) =>
           res(ctx.status(500), ctx.json({ message: "Network error" })),
       ),

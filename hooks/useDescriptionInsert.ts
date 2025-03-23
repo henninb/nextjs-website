@@ -6,7 +6,7 @@ const insertDescription = async (
   descriptionName: string,
 ): Promise<Description> => {
   try {
-    const endpoint = "/api/description/insert";
+    const endpoint = "https://finance.bhenning.com/api/description/insert";
     const payload = { description: descriptionName, activeStatus: true };
 
     const response = await fetch(endpoint, {

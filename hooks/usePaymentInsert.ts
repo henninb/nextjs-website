@@ -12,7 +12,7 @@ const setupNewPayment = (payload: Payment) => {
 
 const insertPayment = async (payload: Payment): Promise<Payment> => {
   try {
-    const endpoint = "/api/payment/insert";
+    const endpoint = "https://finance.bhenning.com/api/payment/insert";
     const newPayload = setupNewPayment(payload);
 
     const response = await fetch(endpoint, {

@@ -6,7 +6,7 @@ const updateCategory = async (
   oldCategory: Category,
   newCategory: Category,
 ): Promise<Category> => {
-  const endpoint = `/api/category/update/${oldCategory.categoryName}`;
+  const endpoint = `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",

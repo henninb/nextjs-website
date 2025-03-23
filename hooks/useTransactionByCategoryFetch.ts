@@ -89,7 +89,7 @@ const fetchTransactionsByCategory = async (
   categoryName: string,
 ): Promise<Transaction[] | null> => {
   try {
-    const response = await fetch(`/api/transaction/category/${categoryName}`, {
+    const response = await fetch(`https://finance.bhenning.com/api/transaction/category/${categoryName}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

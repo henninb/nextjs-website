@@ -4,7 +4,7 @@ import Parameter from "../model/Parameter";
 
 // const insertParameter = async (payload: Parameter): Promise<Parameter> => {
 //   try {
-//     const response = await fetch("/api/parameter/insert", {
+//     const response = await fetch("https://finance.bhenning.com/api/parameter/insert", {
 //       method: "POST",
 //       headers: { "Content-Type": "application/json" },
 //       body: JSON.stringify(payload),
@@ -47,7 +47,7 @@ import Parameter from "../model/Parameter";
 
 const insertParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
-    const endpoint = "/api/parameter/insert";
+    const endpoint = "https://finance.bhenning.com/api/parameter/insert";
 
     const response = await fetch(endpoint, {
       method: "POST",

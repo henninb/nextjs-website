@@ -6,7 +6,7 @@ const insertValidationAmount = async (
   accountNameOwner: string,
   payload: ValidationAmount,
 ): Promise<ValidationAmount | null> => {
-  const endpoint = `/api/validation/amount/insert/${accountNameOwner}`;
+  const endpoint = `https://finance.bhenning.com/api/validation/amount/insert/${accountNameOwner}`;
 
   try {
     const response = await fetch(endpoint, {

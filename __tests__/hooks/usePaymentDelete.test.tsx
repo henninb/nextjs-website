@@ -65,7 +65,7 @@ describe("usePaymentDelete", () => {
 
     server.use(
       rest.delete(
-        `/api/payment/delete/${mockPayment.paymentId}`,
+        `https://finance.bhenning.com/api/payment/delete/${mockPayment.paymentId}`,
         (req, res, ctx) => res(ctx.status(204)),
       ),
     );
@@ -105,7 +105,7 @@ describe("usePaymentDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `/api/payment/delete/${mockPayment.paymentId}`,
+        `https://finance.bhenning.com/api/payment/delete/${mockPayment.paymentId}`,
         (req, res, ctx) =>
           res(
             ctx.status(400),
@@ -152,7 +152,7 @@ describe("usePaymentDelete", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `/api/payment/delete/${mockPayment.paymentId}`,
+        `https://finance.bhenning.com/api/payment/delete/${mockPayment.paymentId}`,
         (req, res, ctx) =>
           res(ctx.status(500), ctx.json({ message: "Network error" })),
       ),

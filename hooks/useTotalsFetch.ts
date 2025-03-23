@@ -5,7 +5,7 @@ import { dummyTotals } from "../data/dummyTotals";
 
 const fetchTotals = async (): Promise<Totals> => {
   try {
-    const response = await fetch("/api/account/totals", {
+    const response = await fetch("https://finance.bhenning.com/api/account/totals", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

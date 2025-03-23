@@ -6,7 +6,7 @@ const deleteDescription = async (
   oldRow: Description,
 ): Promise<Description | null> => {
   try {
-    const endpoint = `/api/description/delete/${oldRow.descriptionName}`;
+    const endpoint = `https://finance.bhenning.com/api/description/delete/${oldRow.descriptionName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

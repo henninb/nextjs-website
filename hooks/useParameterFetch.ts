@@ -5,7 +5,7 @@ import { dummyParameters } from "../data/dummyParameters";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
   try {
-    const response = await fetch("/api/parameter/select/active", {
+    const response = await fetch("https://finance.bhenning.com/api/parameter/select/active", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

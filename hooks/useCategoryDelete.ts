@@ -4,7 +4,7 @@ import Category from "../model/Category";
 
 const deleteCategory = async (payload: Category): Promise<Category | null> => {
   try {
-    const endpoint = `/api/category/delete/${payload.categoryName}`;
+    const endpoint = `https://finance.bhenning.com/api/category/delete/${payload.categoryName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

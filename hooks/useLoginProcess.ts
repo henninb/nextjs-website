@@ -17,7 +17,7 @@ export default function useLogin() {
 
   const loginMutation = useMutation({
     mutationFn: async (payload: LoginPayload): Promise<void> => {
-      const response = await fetch("/api/login", {
+      const response = await fetch("https://finance.bhenning.com/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

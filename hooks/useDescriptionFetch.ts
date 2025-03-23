@@ -5,7 +5,7 @@ import { dummyDescriptions } from "../data/dummyDescriptions";
 
 const fetchDescriptionData = async (): Promise<Description[]> => {
   try {
-    const response = await fetch("/api/description/select/active", {
+    const response = await fetch("https://finance.bhenning.com/api/description/select/active", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

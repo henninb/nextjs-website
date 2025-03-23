@@ -59,7 +59,7 @@ describe("useParameterDelete", () => {
 
     server.use(
       rest.delete(
-        `/api/parameter/delete/${mockParameter.parameterName}`,
+        `https://finance.bhenning.com/api/parameter/delete/${mockParameter.parameterName}`,
         (req, res, ctx) => res(ctx.status(204)),
       ),
     );
@@ -100,7 +100,7 @@ describe("useParameterDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `/api/parameter/delete/${mockParameter.parameterName}`,
+        `https://finance.bhenning.com/api/parameter/delete/${mockParameter.parameterName}`,
         (req, res, ctx) =>
           res(
             ctx.status(400),
@@ -146,7 +146,7 @@ describe("useParameterDelete", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `/api/parameter/delete/${mockParameter.parameterName}`,
+        `https://finance.bhenning.com/api/parameter/delete/${mockParameter.parameterName}`,
         (req, res, ctx) =>
           res(ctx.status(500), ctx.json({ message: "Network error" })),
       ),

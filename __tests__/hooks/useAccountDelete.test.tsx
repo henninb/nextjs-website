@@ -66,7 +66,7 @@ describe("useAccountDelete", () => {
 
     server.use(
       rest.delete(
-        `/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(204));
         },
@@ -108,7 +108,7 @@ describe("useAccountDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
@@ -157,7 +157,7 @@ describe("useAccountDelete", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(500), ctx.json({ message: "Network error" }));
         },

@@ -8,7 +8,7 @@ const fetchTransactionsByAccount = async (
 ): Promise<Transaction[] | null> => {
   try {
     const response = await fetch(
-      `/api/transaction/account/select/${accountNameOwner}`,
+      `https://finance.bhenning.com/api/transaction/account/select/${accountNameOwner}`,
       {
         method: "GET",
         headers: {

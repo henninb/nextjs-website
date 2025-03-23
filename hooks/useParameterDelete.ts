@@ -4,7 +4,7 @@ import Parameter from "../model/Parameter";
 
 const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
-    const endpoint = `/api/parameter/delete/${payload.parameterName}`;
+    const endpoint = `https://finance.bhenning.com/api/parameter/delete/${payload.parameterName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
