@@ -6,14 +6,14 @@ const updateDescription = async (
   oldDescription: Description,
   newDescription: Description,
 ): Promise<Description> => {
-  const endpoint = `https://finance.lan/api/description/update/${oldDescription.descriptionName}`;
+  const endpoint = `https://finance.bhenning.com/api/description/update/${oldDescription.descriptionName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newDescription),

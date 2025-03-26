@@ -5,18 +5,15 @@ import { dummyPaymentsRequired } from "../data/dummyPaymentsRequired";
 
 const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
   try {
-    const response = await fetch(
-      "https://finance.lan/api/account/payment/required",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          credentials: "include",
-          //Authorization: basicAuth(),
-        },
+    const response = await fetch("https://finance.bhenning.com/api/account/payment/required", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        //Authorization: basicAuth(),
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 404) {

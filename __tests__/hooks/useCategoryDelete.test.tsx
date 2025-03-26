@@ -63,7 +63,7 @@ describe("useCategoryDelete", () => {
 
     server.use(
       rest.delete(
-        `https://finance.lan/api/category/delete/${mockCategory.categoryName}`,
+        `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(ctx.status(204));
         },
@@ -106,7 +106,7 @@ describe("useCategoryDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `https://finance.lan/api/category/delete/${mockCategory.categoryName}`,
+        `https://finance.bhenning.comhttps://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
@@ -153,7 +153,7 @@ describe("useCategoryDelete", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `https://finance.lan/api/category/delete/${mockCategory.categoryName}`,
+        `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
         (req, res, ctx) => {
           return res(ctx.status(500), ctx.json({ message: "Network error" }));
         },

@@ -1,13 +1,11 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// MSW v1 imports
 import { rest } from "msw";
-// For Jest tests in Node environment
 import { setupServer } from "msw/node";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import Account from "../../model/Account";
-import { AuthProvider } from "../../components/AuthProvider";
-import Layout from "../../components/Layout";
 
 // Mock next/router
 jest.mock("next/router", () => ({
@@ -68,7 +66,7 @@ describe("useAccountDelete", () => {
 
     server.use(
       rest.delete(
-        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(204));
         },
@@ -110,7 +108,7 @@ describe("useAccountDelete", () => {
     // Mock an API error
     server.use(
       rest.delete(
-        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(
             ctx.status(400),
@@ -159,7 +157,7 @@ describe("useAccountDelete", () => {
     // Mock a network error
     server.use(
       rest.delete(
-        `https://finance.lan/api/account/delete/${mockAccount.accountNameOwner}`,
+        `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
         (req, res, ctx) => {
           return res(ctx.status(500), ctx.json({ message: "Network error" }));
         },

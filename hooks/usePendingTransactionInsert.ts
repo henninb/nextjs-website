@@ -5,15 +5,15 @@ const insertPendingTransaction = async (
   pendingTransaction: PendingTransaction,
 ): Promise<PendingTransaction | null> => {
   try {
-    const endpoint = "https://finance.lan/api/pending/transaction/insert";
+    const endpoint = "https://finance.bhenning.com/api/pending/transaction/insert";
     console.log("Sending data: " + JSON.stringify(pendingTransaction));
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
       },
       body: JSON.stringify(pendingTransaction),
     });

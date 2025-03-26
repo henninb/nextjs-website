@@ -7,15 +7,15 @@ import { dummyValidationAmount } from "../data/dummyValidationAmount";
 export const fetchValidationAmount = async (
   accountNameOwner: string,
 ): Promise<ValidationAmount> => {
-  const endpoint = `https://finance.lan/api/validation/amount/select/${accountNameOwner}/cleared`;
+  const endpoint = `https://finance.bhenning.com/api/validation/amount/select/${accountNameOwner}/cleared`;
 
   try {
     const response = await fetch(endpoint, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

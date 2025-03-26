@@ -33,7 +33,7 @@ const updateTransaction = async (
   try {
     const sanitizedGuid = sanitizeGuid(oldData.guid);
 
-    const endpoint = `https://finance.lan/api/transaction/update/${sanitizedGuid}`;
+    const endpoint = `https://finance.bhenning.com/api/transaction/update/${sanitizedGuid}`;
 
     if (newData.receiptImage !== undefined) {
       newData["receiptImage"].image = newData["receiptImage"].image.replace(
@@ -45,10 +45,10 @@ const updateTransaction = async (
 
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newData),

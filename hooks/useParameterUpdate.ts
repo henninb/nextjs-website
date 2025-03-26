@@ -6,14 +6,14 @@ const updateParameter = async (
   oldParameter: Parameter,
   newParameter: Parameter,
 ): Promise<Parameter> => {
-  const endpoint = `https://finance.lan/api/parameter/update/${oldParameter.parameterName}`;
+  const endpoint = `https://finance.bhenning.com/api/parameter/update/${oldParameter.parameterName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),

@@ -10,16 +10,16 @@ const deleteTransaction = async (
   payload: Transaction,
 ): Promise<Transaction> => {
   try {
-    const endpoint = `https://finance.lan/api/transaction/delete/${payload.guid}`;
+    const endpoint = `https://finance.bhenning.com/api/transaction/delete/${payload.guid}`;
 
     //console.log(endpoint);
     //console.log(JSON.stringify(payload));
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: `Basic ${btoa("username:password")}`, // Replace with dynamic basicAuth if needed
       },
     });

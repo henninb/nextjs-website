@@ -12,16 +12,16 @@ const overRideTransferValues = (payload: Transfer) => {
 
 const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
   try {
-    const endpoint = "https://finance.lan/api/transfer/insert";
+    const endpoint = "https://finance.bhenning.com/api/transfer/insert";
     const newPayload = overRideTransferValues(payload);
 
     //console.log("" + JSON.stringify(newPayload));
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),

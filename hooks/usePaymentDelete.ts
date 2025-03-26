@@ -4,14 +4,14 @@ import Payment from "../model/Payment";
 
 const deletePayment = async (payload: Payment): Promise<Payment> => {
   try {
-    const endpoint = `https://finance.lan/api/payment/delete/${payload.paymentId}`;
+    const endpoint = `https://finance.bhenning.com/api/payment/delete/${payload.paymentId}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

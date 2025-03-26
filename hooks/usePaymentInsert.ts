@@ -12,15 +12,15 @@ const setupNewPayment = (payload: Payment) => {
 
 const insertPayment = async (payload: Payment): Promise<Payment> => {
   try {
-    const endpoint = "https://finance.lan/api/payment/insert";
+    const endpoint = "https://finance.bhenning.com/api/payment/insert";
     const newPayload = setupNewPayment(payload);
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),

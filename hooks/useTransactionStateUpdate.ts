@@ -12,14 +12,14 @@ const changeTransactionState = async (
   guid: string,
   newTransactionState: TransactionState,
 ): Promise<Transaction> => {
-  const endpoint = `https://finance.lan/api/transaction/state/update/${guid}/${newTransactionState}`;
+  const endpoint = `https://finance.bhenning.com/api/transaction/state/update/${guid}/${newTransactionState}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),

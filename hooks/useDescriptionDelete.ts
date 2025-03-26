@@ -6,13 +6,13 @@ const deleteDescription = async (
   oldRow: Description,
 ): Promise<Description | null> => {
   try {
-    const endpoint = `https://finance.lan/api/description/delete/${oldRow.descriptionName}`;
+    const endpoint = `https://finance.bhenning.com/api/description/delete/${oldRow.descriptionName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         // Uncomment and modify if authentication is required
         // Authorization: basicAuth(),
       },

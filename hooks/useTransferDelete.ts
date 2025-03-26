@@ -4,14 +4,14 @@ import Transfer from "../model/Transfer";
 
 const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
   try {
-    const endpoint = `https://finance.lan/api/transfer/delete/${payload.transferId}`;
+    const endpoint = `https://finance.bhenning.comhttps://finance.bhenning.comhttps://finance.bhenning.com/api/transfer/delete/${payload.transferId}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

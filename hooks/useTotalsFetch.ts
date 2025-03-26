@@ -5,12 +5,12 @@ import { dummyTotals } from "../data/dummyTotals";
 
 const fetchTotals = async (): Promise<Totals> => {
   try {
-    const response = await fetch("https://finance.lan/api/account/totals", {
+    const response = await fetch("https://finance.bhenning.com/api/account/totals", {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

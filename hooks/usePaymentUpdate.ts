@@ -6,14 +6,14 @@ const updatePayment = async (
   oldPayment: Payment,
   newPayment: Payment,
 ): Promise<Payment> => {
-  const endpoint = `https://finance.lan/api/payment/update/${oldPayment.paymentId}`;
+  const endpoint = `https://finance.bhenning.com/api/payment/update/${oldPayment.paymentId}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),

@@ -4,14 +4,14 @@ import Parameter from "../model/Parameter";
 
 const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
-    const endpoint = `https://finance.lan/api/parameter/delete/${payload.parameterName}`;
+    const endpoint = `https://finance.bhenning.com/api/parameter/delete/${payload.parameterName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

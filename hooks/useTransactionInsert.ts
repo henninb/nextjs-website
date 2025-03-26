@@ -43,9 +43,9 @@ const insertTransaction = async (
   payload: Transaction,
   isFutureTransaction: boolean,
 ): Promise<Transaction> => {
-  let endpoint = "https://finance.lan/api/transaction/insert";
+  let endpoint = "https://finance.bhenning.com/api/transaction/insert";
   if (isFutureTransaction) {
-    endpoint = "https://finance.lan/api/transaction/future/insert";
+    endpoint = "https://finance.bhenning.com/api/transaction/future/insert";
   }
 
   const newPayload = setupNewTransaction(payload, accountNameOwner);
@@ -53,10 +53,10 @@ const insertTransaction = async (
   try {
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),

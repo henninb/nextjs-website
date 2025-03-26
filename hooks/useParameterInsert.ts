@@ -2,59 +2,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 //import { basicAuth } from "../Common";
 
-// const insertParameter = async (payload: Parameter): Promise<Parameter> => {
-//   try {
-//     const response = await fetch("https://finance.lan/api/parameter/insert", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(payload),
-//     });
-
-//     if (!response.ok) {
-//       try {
-//         const contentType = response.headers.get("content-type");
-//         console.log(contentType);
-//         const errorBody = await response.json();
-//         console.log("errorBody: " + JSON.stringify(errorBody));
-//         console.log(contentType);
-//         throw new Error(`${errorBody.response}`);
-//       } catch {
-//         throw new Error("Failed to parse error response");
-//       }
-//     }
-
-//     // if (!response.ok) {
-//     //   try {
-//     //     const rawText = await response.text(); // Get raw response
-//     //     console.log("Raw Response:", rawText);
-
-//     //     const errorBody = JSON.parse(rawText); // Try to parse manually
-//     //     console.log("Parsed Error Body:", errorBody);
-
-//     //     throw new Error(errorBody.response || "Unknown error occurred");
-//     //   } catch (err) {
-//     //     console.error("Parsing error:", err);
-//     //     throw new Error("Failed to parse error response");
-//     //   }
-//     // }
-
-//     return await response.json();
-//   } catch (error) {
-//     console.error("Error in insertParameter:", error.message);
-//     throw error;
-//   }
-// };
-
 const insertParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
-    const endpoint = "https://finance.lan/api/parameter/insert";
+    const endpoint = "https://finance.bhenning.com/api/parameter/insert";
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
       },
       body: JSON.stringify(payload),
     });

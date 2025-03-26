@@ -6,14 +6,14 @@ const updateTransfer = async (
   oldTransfer: Transfer,
   newTransfer: Transfer,
 ): Promise<Transfer> => {
-  const endpoint = `https://finance.lan/api/transfer/update/${oldTransfer.transferId}`;
+  const endpoint = `https://finance.bhenning.com/api/transfer/update/${oldTransfer.transferId}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),

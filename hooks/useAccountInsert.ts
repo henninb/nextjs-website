@@ -19,16 +19,16 @@ const setupNewAccount = (payload: Account) => {
 
 const insertAccount = async (payload: Account): Promise<Account | null> => {
   try {
-    const endpoint = "https://finance.lan/api/account/insert";
+    const endpoint = "https://finance.bhenning.com/api/account/insert";
     const newPayload = setupNewAccount(payload);
 
     console.log(JSON.stringify(newPayload));
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),

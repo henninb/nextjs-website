@@ -6,15 +6,15 @@ const insertValidationAmount = async (
   accountNameOwner: string,
   payload: ValidationAmount,
 ): Promise<ValidationAmount | null> => {
-  const endpoint = `https://finance.lan/api/validation/amount/insert/${accountNameOwner}`;
+  const endpoint = `https://finance.bhenning.com/api/validation/amount/insert/${accountNameOwner}`;
 
   try {
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(payload),

@@ -8,13 +8,13 @@ const fetchTransactionsByAccount = async (
 ): Promise<Transaction[] | null> => {
   try {
     const response = await fetch(
-      `https://finance.lan/api/transaction/account/select/${accountNameOwner}`,
+      `https://finance.bhenning.com/api/transaction/account/select/${accountNameOwner}`,
       {
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          credentials: "include",
           //Authorization: basicAuth(),
         },
       },

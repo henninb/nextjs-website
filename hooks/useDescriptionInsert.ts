@@ -6,14 +6,14 @@ const insertDescription = async (
   descriptionName: string,
 ): Promise<Description> => {
   try {
-    const endpoint = "https://finance.lan/api/description/insert";
+    const endpoint = "https://finance.bhenning.com/api/description/insert";
     const payload = { description: descriptionName, activeStatus: true };
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         Accept: "application/json",
         //Authorization: basicAuth(),
       },
