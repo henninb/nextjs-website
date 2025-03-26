@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import cookie from "js-cookie";
+import useLogout from "../../hooks/useLogoutProcess";
 
-const Logout = () => {
+export default function Logout() {
   const router = useRouter();
+  //const { mutateAsync: u } = useTransferInsert();
 
   useEffect(() => {
     // Remove the token cookie
@@ -14,5 +16,3 @@ const Logout = () => {
 
   return null;
 };
-
-export default Logout;

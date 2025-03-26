@@ -8,8 +8,6 @@ interface LoginPayload {
   password: string;
 }
 
-// ** unused **
-
 export default function useLogin() {
   const { login } = useAuth();
   const router = useRouter();
@@ -19,9 +17,9 @@ export default function useLogin() {
     mutationFn: async (payload: LoginPayload): Promise<void> => {
       const response = await fetch("https://finance.lan/api/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials: "include", // ensures cookies are handled automatically
       });
 
       // Check for 204 (No Content) which indicates a successful login.
