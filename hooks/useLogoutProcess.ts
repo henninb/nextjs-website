@@ -19,7 +19,7 @@ export default function useLogout() {
       if (!response.ok) {
         throw new Error("Logout failed");
       }
-      logout()
+      logout();
       // After successful logout, redirect to the login page
       router.push("/login");
     } catch (err) {
@@ -30,4 +30,4 @@ export default function useLogout() {
   };
 
   return { logout, loading, error };
-};
+}

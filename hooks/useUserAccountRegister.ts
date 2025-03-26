@@ -3,7 +3,8 @@ import User from "../model/User";
 
 const userAccountRegister = async (payload: User): Promise<User | null> => {
   try {
-    const endpoint = "https://finance.bhenning.comhttps://finance.bhenning.comhttps://finance.bhenning.comhttps://finance.bhenning.com/api/user/register";
+    const endpoint =
+      "https://finance.bhenning.comhttps://finance.bhenning.comhttps://finance.bhenning.comhttps://finance.bhenning.com/api/user/register";
 
     console.log("Register payload:", JSON.stringify(payload));
 

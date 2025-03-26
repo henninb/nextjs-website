@@ -228,15 +228,24 @@ describe("Payments Page", () => {
 
     // Set up API mocks that will return data but with some delay - correct endpoint paths
     server.use(
-      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
-        return res(ctx.delay(100), ctx.json(mockPayments));
-      }),
-      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
-        return res(ctx.delay(100), ctx.json(mockAccounts));
-      }),
-      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
-        return res(ctx.delay(100), ctx.json(mockParameters));
-      }),
+      rest.get(
+        "https://finance.bhenning.com/api/payment/select",
+        (req, res, ctx) => {
+          return res(ctx.delay(100), ctx.json(mockPayments));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/account/select/active",
+        (req, res, ctx) => {
+          return res(ctx.delay(100), ctx.json(mockAccounts));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/parameter/select/active",
+        (req, res, ctx) => {
+          return res(ctx.delay(100), ctx.json(mockParameters));
+        },
+      ),
     );
 
     render(<Payments />, { wrapper: createWrapper(queryClient) });
@@ -249,15 +258,24 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
-        return res(ctx.json(mockPayments));
-      }),
-      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockAccounts));
-      }),
-      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockParameters));
-      }),
+      rest.get(
+        "https://finance.bhenning.com/api/payment/select",
+        (req, res, ctx) => {
+          return res(ctx.json(mockPayments));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/account/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockAccounts));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/parameter/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockParameters));
+        },
+      ),
     );
 
     render(<Payments />, { wrapper: createWrapper(queryClient) });
@@ -282,15 +300,24 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
-        return res(ctx.json(mockPayments));
-      }),
-      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockAccounts));
-      }),
-      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockParameters));
-      }),
+      rest.get(
+        "https://finance.bhenning.com/api/payment/select",
+        (req, res, ctx) => {
+          return res(ctx.json(mockPayments));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/account/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockAccounts));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/parameter/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockParameters));
+        },
+      ),
     );
 
     render(<Payments />, { wrapper: createWrapper(queryClient) });
@@ -315,15 +342,24 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
-        return res(ctx.json(mockPayments));
-      }),
-      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockAccounts));
-      }),
-      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockParameters));
-      }),
+      rest.get(
+        "https://finance.bhenning.com/api/payment/select",
+        (req, res, ctx) => {
+          return res(ctx.json(mockPayments));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/account/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockAccounts));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/parameter/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockParameters));
+        },
+      ),
     );
 
     render(<Payments />, { wrapper: createWrapper(queryClient) });
@@ -342,15 +378,24 @@ describe("Payments Page", () => {
 
     // Set up API mocks to simulate errors with correct endpoint paths
     server.use(
-      rest.get("https://finance.bhenning.com/api/payment/select", (req, res, ctx) => {
-        return res(ctx.status(500), ctx.json({ message: "Server error" }));
-      }),
-      rest.get("https://finance.bhenning.com/api/account/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockAccounts));
-      }),
-      rest.get("https://finance.bhenning.com/api/parameter/select/active", (req, res, ctx) => {
-        return res(ctx.json(mockParameters));
-      }),
+      rest.get(
+        "https://finance.bhenning.com/api/payment/select",
+        (req, res, ctx) => {
+          return res(ctx.status(500), ctx.json({ message: "Server error" }));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/account/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockAccounts));
+        },
+      ),
+      rest.get(
+        "https://finance.bhenning.com/api/parameter/select/active",
+        (req, res, ctx) => {
+          return res(ctx.json(mockParameters));
+        },
+      ),
     );
 
     const { container } = render(<Payments />, {

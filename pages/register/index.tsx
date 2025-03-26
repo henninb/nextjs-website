@@ -38,12 +38,15 @@ export default function Register() {
     };
 
     try {
-      const response = await fetch("https://finance.bhenning.com/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(registrationPayload),
-        credentials: "include",
-      });
+      const response = await fetch(
+        "https://finance.bhenning.com/api/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(registrationPayload),
+          credentials: "include",
+        },
+      );
 
       if (response.status === 201) {
         router.push("/login");

@@ -89,15 +89,18 @@ const fetchTransactionsByCategory = async (
   categoryName: string,
 ): Promise<Transaction[] | null> => {
   try {
-    const response = await fetch(`https://finance.bhenning.com/api/transaction/category/${categoryName}`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        //Authorization: basicAuth(),
+    const response = await fetch(
+      `https://finance.bhenning.com/api/transaction/category/${categoryName}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          //Authorization: basicAuth(),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       if (response.status === 404) {
