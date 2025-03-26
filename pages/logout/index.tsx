@@ -3,13 +3,7 @@ import { useRouter } from "next/router";
 import cookie from "js-cookie";
 import useLogout from "../../hooks/useLogoutProcess";
 
-<<<<<<< HEAD
 export default function Logout() {
-=======
-
-export default function Logout() {
-
->>>>>>> refs/remotes/origin/main
   const router = useRouter();
   //const { mutateAsync: u } = useTransferInsert();
 
@@ -21,8 +15,4 @@ export default function Logout() {
   }, [router]);
 
   return null;
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> refs/remotes/origin/main
