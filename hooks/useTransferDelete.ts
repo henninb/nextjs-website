@@ -8,10 +8,10 @@ const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

@@ -10,10 +10,10 @@ const updateTransfer = async (
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),

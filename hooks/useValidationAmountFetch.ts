@@ -12,10 +12,10 @@ export const fetchValidationAmount = async (
   try {
     const response = await fetch(endpoint, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

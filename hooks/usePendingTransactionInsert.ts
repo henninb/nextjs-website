@@ -10,10 +10,10 @@ const insertPendingTransaction = async (
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
       },
       body: JSON.stringify(pendingTransaction),
     });

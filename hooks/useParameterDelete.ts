@@ -8,10 +8,10 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

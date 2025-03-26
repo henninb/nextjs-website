@@ -7,10 +7,10 @@ const fetchAccountData = async (): Promise<Account[] | null> => {
   try {
     const response = await fetch("https://finance.bhenning.com/api/account/select/active", {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         // Uncomment and implement if authorization is required
         // "Authorization": basicAuth(),
       },

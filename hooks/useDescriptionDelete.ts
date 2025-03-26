@@ -10,9 +10,9 @@ const deleteDescription = async (
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         // Uncomment and modify if authentication is required
         // Authorization: basicAuth(),
       },

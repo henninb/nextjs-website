@@ -11,9 +11,9 @@ const insertCategory = async (category: Category): Promise<Category | null> => {
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(category),

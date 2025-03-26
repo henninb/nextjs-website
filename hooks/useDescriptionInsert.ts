@@ -11,9 +11,9 @@ const insertDescription = async (
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         Accept: "application/json",
         //Authorization: basicAuth(),
       },

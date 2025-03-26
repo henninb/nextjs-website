@@ -93,10 +93,10 @@ const fetchTransactionsByDescription = async (
       `https://finance.bhenning.com/api/transaction/description/${description}`,
       {
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          credentials: "include",
           //Authorization: basicAuth(),
         },
       },

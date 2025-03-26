@@ -11,9 +11,9 @@ const updateAccount = async (
 
     const response = await fetch(endpoint, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newRow),

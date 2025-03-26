@@ -5,10 +5,10 @@ const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
   try {
     const response = await fetch("https://finance.bhenning.com/api/pending/transaction/all", {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
       },
     });
 

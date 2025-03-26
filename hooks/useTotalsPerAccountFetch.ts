@@ -10,10 +10,10 @@ const fetchTotalsPerAccount = async (
       "https://finance.bhenning.com/api/transaction/account/totals/" + accountNameOwner,
       {
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          credentials: "include",
           //Authorization: basicAuth(),
         },
       },

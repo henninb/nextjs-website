@@ -6,10 +6,10 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
   try {
     const response = await fetch("https://finance.bhenning.com/api/transfer/select", {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

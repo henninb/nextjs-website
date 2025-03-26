@@ -26,9 +26,9 @@ const insertAccount = async (payload: Account): Promise<Account | null> => {
 
     const response = await fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),

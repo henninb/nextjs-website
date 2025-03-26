@@ -8,9 +8,9 @@ const deleteAccount = async (payload: Account): Promise<Account | null> => {
 
     const response = await fetch(endpoint, {
       method: "DELETE",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });

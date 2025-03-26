@@ -91,10 +91,10 @@ const fetchTransactionsByCategory = async (
   try {
     const response = await fetch(`https://finance.bhenning.com/api/transaction/category/${categoryName}`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        credentials: "include",
         //Authorization: basicAuth(),
       },
     });
