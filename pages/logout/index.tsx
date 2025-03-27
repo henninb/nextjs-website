@@ -1,12 +1,11 @@
-import { useEffect } from "react";
-import useLogout from "../../hooks/useLogoutProcess";
+import React from "react";
 
 export default function Logout() {
-  const { logout } = useLogout();
+  // const { logout } = useLogout();
 
-  useEffect(() => {
-    logout();
-  }, [logout]);
+  // useEffect(() => {
+  //   logout();
+  // }, [logout]);
 
-  return null;
+  // return null;
 }

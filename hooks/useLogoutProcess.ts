@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "../components/AuthProvider";
+//import { useAuth } from "../components/AuthProvider";
 
 export default function useLogout() {
   const [loading, setLoading] = useState(false);
@@ -8,7 +8,6 @@ export default function useLogout() {
   const router = useRouter();
 
   const logout = async () => {
-    const { logout } = useAuth();
     setLoading(true);
     setError(null);
     try {
@@ -19,9 +18,9 @@ export default function useLogout() {
       if (!response.ok) {
         throw new Error("Logout failed");
       }
-      logout();
+      //logout();
       // After successful logout, redirect to the login page
-      router.push("/login");
+      //router.push("/login");
     } catch (err) {
       setError(err);
     } finally {
