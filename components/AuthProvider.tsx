@@ -18,25 +18,25 @@ interface AuthContextType {
 // Create the authentication context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Extract authentication logic into a function
-
+// Extract authentication logic into a custom hook
 const useProvideAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+  // Call useLogout at the top level of the hook
+  const { logoutNow } = useLogout();
 
   useEffect(() => {
-    // Simulating auth check
+    // Simulate auth check
     const storedAuth = localStorage.getItem("auth") === "true";
     setIsAuthenticated(storedAuth);
   }, []);
 
   const login = () => {
     setIsAuthenticated(true);
-    localStorage.setItem("auth", "true"); // Persist session
+    localStorage.setItem("auth", "true");
   };
 
   const logout = async () => {
-    const { logoutNow } = useLogout();
     await logoutNow();
     setIsAuthenticated(false);
     localStorage.removeItem("auth");
@@ -46,15 +46,13 @@ const useProvideAuth = () => {
   return { isAuthenticated, login, logout };
 };
 
-// **Step 2: Create a Context Provider Component**
-
+// Context Provider Component
 export default function AuthProvider({ children }: { children: ReactNode }) {
-  //export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const auth = useProvideAuth(); // Use the extracted function logic
+  const auth = useProvideAuth();
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }
 
-// **Step 3: Create a Hook for Using AuthContext**
+// Hook for accessing the AuthContext
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -62,5 +60,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
-//export default AuthProvider;
