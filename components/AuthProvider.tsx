@@ -36,8 +36,8 @@ const useProvideAuth = () => {
   };
 
   const logout = async () => {
-    const { logout } = useLogout();
-    await logout()
+    const { logoutNow } = useLogout();
+    await logoutNow();
     setIsAuthenticated(false);
     localStorage.removeItem("auth");
     router.push("/login");
