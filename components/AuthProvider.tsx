@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/router";
+import useLogout from "../hooks/useLogoutProcess";
 
 // Define the shape of our auth state
 interface AuthContextType {
@@ -34,7 +35,9 @@ const useProvideAuth = () => {
     localStorage.setItem("auth", "true"); // Persist session
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const { logout } = useLogout();
+    await logout()
     setIsAuthenticated(false);
     localStorage.removeItem("auth");
     router.push("/login");
