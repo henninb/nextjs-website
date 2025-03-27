@@ -13,7 +13,8 @@ import {
 import useUserAccountRegister from "../../hooks/useUserAccountRegister";
 
 export default function Register() {
-  //const [username, setUsername] = useState<string>("");
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -30,11 +31,12 @@ export default function Register() {
       return;
     }
 
-    const data = { email, password };
-    // Map the form's "email" value to the "username" key expected by the API.
+    // Map the form values to the keys expected by the API.
     const registrationPayload = {
       username: email,
       password: password,
+      firstName: firstName,
+      lastName: lastName,
     };
 
     try {
@@ -70,6 +72,26 @@ export default function Register() {
             Register
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="firstName"
+              label="First Name"
+              name="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="lastName"
+              label="Last Name"
+              name="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
             <TextField
               margin="normal"
               required
