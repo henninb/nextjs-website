@@ -7,20 +7,19 @@ export default function useLogout() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  const logout = async () => {
+  const logoutNow = async () => {
     setLoading(true);
     setError(null);
     try {
+      console.log('trying')
       const response = await fetch("https://finance.bhenning.com/api/logout", {
         method: "POST",
         credentials: "include", // Ensure cookies are sent with the request
       });
+      console.log('trying now')
       if (!response.ok) {
         throw new Error("Logout failed");
       }
-      //logout();
-      // After successful logout, redirect to the login page
-      //router.push("/login");
     } catch (err) {
       setError(err);
     } finally {
@@ -28,5 +27,5 @@ export default function useLogout() {
     }
   };
 
-  return { logout, loading, error };
+  return { logoutNow, loading, error };
 }
