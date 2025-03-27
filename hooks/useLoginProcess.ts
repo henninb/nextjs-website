@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../components/AuthProvider";
 import { useRouter } from "next/router";
+import User from "../model/User";
 
 interface LoginPayload {
   email: string;
@@ -30,9 +31,9 @@ export default function useLogin() {
         throw new Error(errorBody.error || "Login failed");
       }
     },
-    onSuccess: () => {
+    onSuccess: (response, variables: any) => {
       // Update your global auth state via the AuthProvider.
-      login();
+      login(variables);
       // Redirect the user after a successful login.
       router.push("/");
     },
