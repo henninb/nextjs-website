@@ -64,7 +64,7 @@ export default function Login() {
       await userLogin(data);
       // The JWT is set as an HTTP-only cookie by the backend.
       // Update your client auth state (if needed) and redirect.
-      login({"username": "username", "password": "password"}); // e.g. sets a flag in your context to indicate authentication
+      login({ username: "username", password: "password" }); // e.g. sets a flag in your context to indicate authentication
       router.push("/");
     } catch (error: any) {
       setErrorMessage(error.message || "Failed login. Please try again.");

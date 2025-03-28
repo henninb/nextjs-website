@@ -32,7 +32,8 @@ export default function TransactionImporter() {
   const { mutateAsync: insertTransaction } = useTransactionInsert();
   const { mutateAsync: deleteAllPendingTransactions } =
     usePendingTransactionDeleteAll();
-  const {mutateAsync: deletePendingTransaction } = usePendingTransactionDelete()
+  const { mutateAsync: deletePendingTransaction } =
+    usePendingTransactionDelete();
 
   useEffect(() => {
     if (isFetchingPendingTransactions) {
@@ -167,6 +168,13 @@ export default function TransactionImporter() {
 
   const columns: GridColDef[] = [
     {
+      field: "pendingTransactionId",
+      headerName: "Id",
+      width: 100,
+      hideable: true,
+    },
+
+    {
       field: "transactionDate",
       headerName: "Date",
       type: "date",
@@ -289,6 +297,13 @@ export default function TransactionImporter() {
             <DataGrid
               rows={transactions}
               columns={columns}
+              initialState={{
+                columns: {
+                  columnVisibilityModel: {
+                    pendingTransactionId: true, // This will hide the column by default
+                  },
+                },
+              }}
               getRowId={(row) => row.guid}
             />
           </div>
