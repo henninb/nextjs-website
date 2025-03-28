@@ -300,8 +300,13 @@ export default function TransactionImporter() {
               initialState={{
                 columns: {
                   columnVisibilityModel: {
-                    pendingTransactionId: true, // This will hide the column by default
+                    pendingTransactionId: false, // This will hide the column by default
                   },
+                },
+                sorting: {
+                  sortModel: [
+                    { field: "transactionDate", sort: "desc" } // Newest dates first
+                  ],
                 },
               }}
               getRowId={(row) => row.guid}
