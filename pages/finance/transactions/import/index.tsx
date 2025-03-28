@@ -13,6 +13,7 @@ import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import { currencyFormat } from "../../../../components/Common";
 import usePendingTransactionDeleteAll from "../../../../hooks/usePendingTransactionDeleteAll";
+import usePendingTransactionDelete from "../../../../hooks/usePendingTransactionDelete";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -31,6 +32,7 @@ export default function TransactionImporter() {
   const { mutateAsync: insertTransaction } = useTransactionInsert();
   const { mutateAsync: deleteAllPendingTransactions } =
     usePendingTransactionDeleteAll();
+  const {mutateAsync: deletePendingTransaction } = usePendingTransactionDelete()
 
   useEffect(() => {
     if (isFetchingPendingTransactions) {
