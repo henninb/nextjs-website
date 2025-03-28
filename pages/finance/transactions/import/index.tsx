@@ -12,6 +12,7 @@ import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import { currencyFormat } from "../../../../components/Common";
+import usePendingTransactionDeleteAll from "../../../../hooks/usePendingTransactionDeleteAll";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -19,7 +20,6 @@ export default function TransactionImporter() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
-  //const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const {
     data: fetchedPendingTransactions,
@@ -29,6 +29,8 @@ export default function TransactionImporter() {
   } = usePendingTransactions();
 
   const { mutateAsync: insertTransaction } = useTransactionInsert();
+  const { mutateAsync: deleteAllPendingTransactions } =
+    usePendingTransactionDeleteAll();
 
   useEffect(() => {
     if (isFetchingPendingTransactions) {
@@ -81,6 +83,18 @@ export default function TransactionImporter() {
       ) {
       }
       throw error;
+    }
+  };
+
+  const handleDeleteAllPendingTransactions = async () => {
+    try {
+      await deleteAllPendingTransactions();
+      setMessage("All pending transactions have been deleted.");
+      setShowSnackbar(true);
+    } catch (error: any) {
+      console.error("Error deleting pending transactions: ", error);
+      setMessage(`Error deleting pending transactions: ${error.message}`);
+      setShowSnackbar(true);
     }
   };
 
@@ -148,34 +162,6 @@ export default function TransactionImporter() {
       ),
     );
   };
-
-  const columns_old: GridColDef[] = [
-    {
-      field: "transactionDate",
-      headerName: "Date",
-      width: 150,
-      //valueGetter: (params: any) => params.value.toISOString().split("T")[0],
-    },
-    { field: "description", headerName: "Description", width: 250 },
-    { field: "amount", headerName: "Amount", width: 120, type: "number" },
-    { field: "transactionState", headerName: "State", width: 120 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 120,
-      renderCell: (params) => (
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          disabled={params.row.transactionState === "Approved"}
-          onClick={() => approveTransaction(params.row.guid)}
-        >
-          Approve
-        </Button>
-      ),
-    },
-  ];
 
   const columns: GridColDef[] = [
     {
@@ -250,7 +236,6 @@ export default function TransactionImporter() {
       width: 180,
       editable: true,
     },
-
     {
       field: "actions",
       headerName: "Actions",
@@ -260,7 +245,6 @@ export default function TransactionImporter() {
           variant="contained"
           color="primary"
           size="small"
-          //disabled={params.row.transactionState === "Approved"}
           onClick={() => {
             console.log(params.row);
             handleInsertTransaction(params.row);
@@ -284,10 +268,18 @@ export default function TransactionImporter() {
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Enter transactions, e.g.\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary 2000.00"
         />
-        <Button variant="contained" sx={{ mt: 2 }} onClick={parseTransactions}>
-          Submit
-        </Button>
-
+        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Button variant="contained" onClick={parseTransactions}>
+            Submit
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleDeleteAllPendingTransactions}
+          >
+            Delete All Pending Transactions
+          </Button>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
@@ -299,7 +291,6 @@ export default function TransactionImporter() {
             />
           </div>
         )}
-
         <SnackbarBaseline
           message={message}
           state={showSnackbar}

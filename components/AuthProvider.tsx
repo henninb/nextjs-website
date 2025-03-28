@@ -9,7 +9,6 @@ import { useRouter } from "next/router";
 import User from "../model/User";
 import useLogout from "../hooks/useLogoutProcess";
 
-
 // Define the shape of our auth state including the user object
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -17,7 +16,6 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => void;
 }
-
 
 // ** cannot store the password in localStorage ***
 
@@ -36,7 +34,7 @@ const useProvideAuth = () => {
     // Check if a user is stored in localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      //setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
     }
   }, []);
