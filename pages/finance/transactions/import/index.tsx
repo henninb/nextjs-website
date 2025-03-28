@@ -89,6 +89,19 @@ export default function TransactionImporter() {
     }
   };
 
+  const handleDeletePendingTransaction = async (pendingTransactionId) => {
+    try {
+      deletePendingTransaction(pendingTransactionId)
+    } catch(error) {
+      handleError(error, "handleDeleteRow", false);
+      if (
+        !navigator.onLine ||
+        (error.message && error.message.includes("Failed to fetch"))
+      ) {
+      }
+    }
+  }
+
   const handleDeleteAllPendingTransactions = async () => {
     try {
       await deleteAllPendingTransactions();
@@ -258,6 +271,7 @@ export default function TransactionImporter() {
           onClick={() => {
             console.log(params.row);
             handleInsertTransaction(params.row);
+          
           }}
         >
           Approve
