@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import PendingTransaction from "../model/PendingTransaction";
 
 const deletePendingTransaction = async (id: number): Promise<void> => {
   try {
@@ -43,12 +44,14 @@ export default function usePendingTransactionDelete() {
     onError: (error: any) => {
       console.log(error || "An unknown error occurred.");
     },
-    // The second parameter "id" is the mutation variable passed to mutate()
     onSuccess: (_, id: number) => {
       // Remove the deleted transaction from the cache if it exists
       queryClient.setQueryData(["pendingTransactions"], (oldData: any) => {
         if (!oldData) return oldData;
-        return oldData.filter((transaction: any) => transaction.id !== id);
+        return oldData.filter(
+          (transaction: PendingTransaction) =>
+            transaction.pendingTransactionId !== id,
+        );
       });
     },
   });
