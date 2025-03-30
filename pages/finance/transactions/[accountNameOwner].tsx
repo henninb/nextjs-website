@@ -857,7 +857,8 @@ export default function TransactionsByAccount() {
                 const inputValue = e.target.value;
 
                 // Regular expression to allow only numbers with up to 2 decimal places
-                const regex = /^\d*\.?\d{0,2}$/;
+                //const regex = /^\d*\.?\d{0,2}$/;
+                const regex = /^-?\d*\.?\d{0,2}$/;
 
                 if (regex.test(inputValue) || inputValue === "") {
                   setTransactionData((prev: any) => ({
