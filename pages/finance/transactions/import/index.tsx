@@ -89,10 +89,10 @@ export default function TransactionImporter() {
     }
   };
 
-  const handleDeletePendingTransaction = async (pendingTransactionId) => {
+  const handleDeletePendingTransaction = async (pendingTransactionId: any) => {
     try {
-      deletePendingTransaction(pendingTransactionId)
-    } catch(error) {
+      deletePendingTransaction(pendingTransactionId);
+    } catch (error) {
       handleError(error, "handleDeleteRow", false);
       if (
         !navigator.onLine ||
@@ -100,7 +100,7 @@ export default function TransactionImporter() {
       ) {
       }
     }
-  }
+  };
 
   const handleDeleteAllPendingTransactions = async () => {
     try {
@@ -271,7 +271,7 @@ export default function TransactionImporter() {
           onClick={() => {
             console.log(params.row);
             handleInsertTransaction(params.row);
-          
+            handleDeletePendingTransaction(params.row.pendingTransactionId);
           }}
         >
           Approve
@@ -319,7 +319,7 @@ export default function TransactionImporter() {
                 },
                 sorting: {
                   sortModel: [
-                    { field: "transactionDate", sort: "desc" } // Newest dates first
+                    { field: "transactionDate", sort: "desc" }, // Newest dates first
                   ],
                 },
               }}

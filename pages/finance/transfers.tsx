@@ -85,29 +85,6 @@ export default function Transfers() {
     error: errorTransfers,
   } = useFetchTransfer();
 
-  // const dummyTransfers: Transfer[] = [
-  //   {
-  //     transferId: 1,
-  //     sourceAccount: "test-abc-savings_brian",
-  //     destinationAccount: "test-dfg-savings_brian",
-  //     transactionDate: new Date("2025-01-04"),
-  //     amount: 3.0,
-  //     guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-  //     guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-  //     activeStatus: true,
-  //   },
-  //   {
-  //     transferId: 2,
-  //     sourceAccount: "test-abc-savings_brian",
-  //     destinationAccount: "test-dfg-savings_brian",
-  //     transactionDate: new Date("2025-01-04"),
-  //     amount: 2.0,
-  //     guidSource: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-  //     guidDestination: "00a8a750-cc3d-4c24-9263-c85af59cab64",
-  //     activeStatus: true,
-  //   },
-  // ];
-
   const transfersToDisplay = errorTransfers
     ? dummyTransfers
     : fetchedTransfers?.filter((row) => row != null) || [];
@@ -240,7 +217,16 @@ export default function Transfers() {
       setShowModalAdd(false);
       setMessage("Transfer inserted Successfully.");
       setShowSpinner(false);
-      setTransferData(null);
+      setTransferData({
+        transferId: 0,
+        sourceAccount: newData.sourceAccount,
+        destinationAccount: newData.destinationAccount,
+        transactionDate: newData.transactionDate,
+        amount: 0,
+        guidSource: "",
+        guidDestination: "",
+        activeStatus: true,
+      });
     } catch (error) {
       handleError(error, `Add Transfer error: ${error}`, false);
       if (
