@@ -23,7 +23,6 @@ import Payment from "../../model/Payment";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
-import useParameterFetch from "../../hooks/useParameterFetch";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import {
   currencyFormat,
@@ -36,6 +35,8 @@ const initialPaymentData: Payment = {
   paymentId: undefined,
   transactionDate: new Date(),
   accountNameOwner: "",
+  destinationAccount: "",
+  sourceAccount: "",
   activeStatus: true,
   amount: 0,
 };
@@ -66,25 +67,18 @@ export default function Payments() {
     error: errorAccounts,
   } = useAccountFetch();
 
-  const {
-    data: fetchedParameters,
-    isSuccess: isSuccessParameters,
-    isFetching: isFetchingParameters,
-    error: errorParameters,
-  } = useParameterFetch();
-
   const { mutateAsync: insertPayment } = usePaymentInsert();
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
-    if (isFetchingPayments || isFetchingAccounts || isFetchingParameters) {
+    if (isFetchingPayments || isFetchingAccounts) {
       setShowSpinner(true);
       return;
     }
-    if (isSuccessPayments && isSuccessAccounts && isSuccessParameters) {
+    if (isSuccessPayments && isSuccessAccounts) {
       setShowSpinner(false);
-    } else if (errorPayments || errorAccounts || errorParameters) {
+    } else if (errorPayments || errorAccounts) {
       setShowSpinner(false);
       setMessage("Error fetching data.");
       setShowSnackbar(true);
@@ -92,19 +86,11 @@ export default function Payments() {
   }, [
     isSuccessPayments,
     isSuccessAccounts,
-    isSuccessParameters,
     errorPayments,
     errorAccounts,
-    errorParameters,
     isFetchingPayments,
     isFetchingAccounts,
-    isFetchingParameters,
   ]);
-
-  const defaultPaymentMethod =
-    fetchedParameters?.find(
-      (param) => param.parameterName === "payment_account",
-    )?.parameterValue || "";
 
   const handleDeleteRow = async () => {
     if (selectedPayment) {
@@ -174,19 +160,19 @@ export default function Payments() {
       width: 350,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/${defaultPaymentMethod}`}>
-            {defaultPaymentMethod}
+          <Link href={`/finance/transactions/${params.value}`}>
+            {params.value}
           </Link>
         );
       },
     },
     {
-      field: "accountNameOwner",
+      field: "destinationAccount",
       headerName: "Destination Account",
       width: 350,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+          <Link href={`/finance/transactions/${params.value}`}>
             {params.value}
           </Link>
         );
@@ -343,7 +329,44 @@ export default function Payments() {
                 inputLabel: { shrink: true },
               }}
             />
-
+            <Autocomplete
+              options={
+                isSuccessAccounts
+                  ? fetchedAccounts.filter(
+                      (account) => account.accountType === "debit",
+                    )
+                  : []
+              }
+              getOptionLabel={(account: Account) =>
+                account.accountNameOwner || ""
+              }
+              isOptionEqualToValue={(option, value) =>
+                option.accountNameOwner === value?.accountNameOwner
+              }
+              value={
+                paymentData.sourceAccount && isSuccessAccounts
+                  ? fetchedAccounts.find(
+                      (account) =>
+                        account.accountNameOwner === paymentData.sourceAccount,
+                    ) || null
+                  : null
+              }
+              onChange={(event, newValue) =>
+                setPaymentData((prev) => ({
+                  ...prev,
+                  sourceAccount: newValue ? newValue.accountNameOwner : "",
+                }))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Source Account"
+                  fullWidth
+                  margin="normal"
+                  placeholder="Select or search an account"
+                />
+              )}
+            />
             <Autocomplete
               options={
                 isSuccessAccounts
@@ -359,18 +382,18 @@ export default function Payments() {
                 option.accountNameOwner === value?.accountNameOwner
               }
               value={
-                paymentData.accountNameOwner && isSuccessAccounts
+                paymentData.destinationAccount && isSuccessAccounts
                   ? fetchedAccounts.find(
                       (account) =>
                         account.accountNameOwner ===
-                        paymentData.accountNameOwner,
+                        paymentData.destinationAccount,
                     ) || null
                   : null
               }
               onChange={(event, newValue) =>
                 setPaymentData((prev) => ({
                   ...prev,
-                  accountNameOwner: newValue ? newValue.accountNameOwner : "",
+                  destinationAccount: newValue ? newValue.accountNameOwner : "",
                 }))
               }
               renderInput={(params) => (
@@ -383,7 +406,6 @@ export default function Payments() {
                 />
               )}
             />
-
             <TextField
               label="Amount"
               fullWidth

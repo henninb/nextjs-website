@@ -27,7 +27,7 @@ const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
   } catch (error) {
     console.log("Error fetching pending transactions:", error);
     //return []; // Return an empty array in case of error
-    return dummyPendingTransactions
+    return dummyPendingTransactions;
   }
 };
 
