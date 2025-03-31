@@ -64,17 +64,5 @@ export default function useParameterUpdate() {
         queryClient.setQueryData(["parameter"], newData);
       }
     },
-    // onSuccess: (updatedParameter: Parameter) => {
-    //   const oldData = queryClient.getQueryData<Parameter[]>(["parameter"]);
-    //   if (oldData) {
-    //     const newData = oldData.map((element) =>
-    //       element.parameterName === updatedParameter.parameterName
-    //         ? { ...element, ...updatedParameter }
-    //         : element,
-    //     );
-
-    //     queryClient.setQueryData(["parameter"], newData);
-    //   }
-    // },
   });
 }

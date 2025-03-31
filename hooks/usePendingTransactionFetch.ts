@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import PendingTransaction from "../model/PendingTransaction";
+import { dummyPendingTransactions } from "../data/dummyPendingTransactions";
 
 const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
   try {
@@ -25,7 +26,8 @@ const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
     return await response.json();
   } catch (error) {
     console.log("Error fetching pending transactions:", error);
-    return []; // Return an empty array in case of error
+    //return []; // Return an empty array in case of error
+    return dummyPendingTransactions
   }
 };
 

@@ -32,12 +32,20 @@ import {
   formatDateForDisplay,
 } from "../../components/Common";
 
+const initialPaymentData: Payment = {
+  paymentId: undefined,
+  transactionDate: new Date(),
+  accountNameOwner: "",
+  activeStatus: true,
+  amount: 0,
+};
+
 export default function Payments() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
-  const [paymentData, setPaymentData] = useState<Payment | null>(null);
+  const [paymentData, setPaymentData] = useState<Payment>(initialPaymentData);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [paginationModel, setPaginationModel] = useState({
@@ -48,6 +56,7 @@ export default function Payments() {
   const {
     data: fetchedPayments,
     isSuccess: isSuccessPayments,
+    isFetching: isFetchingPayments,
     error: errorPayments,
   } = useFetchPayment();
   const {
@@ -69,7 +78,7 @@ export default function Payments() {
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
-    if (isFetchingAccounts || isFetchingParameters) {
+    if (isFetchingPayments || isFetchingAccounts || isFetchingParameters) {
       setShowSpinner(true);
       return;
     }
@@ -84,16 +93,17 @@ export default function Payments() {
     isSuccessPayments,
     isSuccessAccounts,
     isSuccessParameters,
-    errorParameters,
     errorPayments,
     errorAccounts,
+    errorParameters,
+    isFetchingPayments,
     isFetchingAccounts,
     isFetchingParameters,
   ]);
 
   const defaultPaymentMethod =
     fetchedParameters?.find(
-      (param) => param.parameterName === "payment_account",
+      (param) => param.parameterName === "payment_account"
     )?.parameterValue || "";
 
   const handleDeleteRow = async () => {
@@ -131,8 +141,9 @@ export default function Payments() {
   const handleAddRow = async (newData: Payment) => {
     try {
       await insertPayment({ payload: newData });
-      //setShowModalAdd(false);
-      setMessage("Payment Added successfully.");
+      // Optionally, close the modal here if desired:
+      // setShowModalAdd(false);
+      setMessage("Payment added successfully.");
       setShowSnackbar(true);
     } catch (error) {
       handleError(error, `Add Payment error: ${error}`, false);
@@ -140,6 +151,7 @@ export default function Payments() {
         !navigator.onLine ||
         (error.message && error.message.includes("Failed to fetch"))
       ) {
+        // Handle offline error if needed.
       }
     }
   };
@@ -152,7 +164,7 @@ export default function Payments() {
       renderCell: (params) => {
         return formatDateForDisplay(params.value);
       },
-      valueGetter: (params: string) => {
+      valueGetter: (params) => {
         return normalizeTransactionDate(params);
       },
     },
@@ -180,7 +192,6 @@ export default function Payments() {
         );
       },
     },
-
     {
       field: "amount",
       headerName: "Amount",
@@ -255,7 +266,7 @@ export default function Payments() {
               pageSizeOptions={[25, 50, 100]}
               processRowUpdate={async (
                 newRow: Payment,
-                oldRow: Payment,
+                oldRow: Payment
               ): Promise<Payment> => {
                 if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
                   return oldRow;
@@ -267,7 +278,6 @@ export default function Payments() {
                   });
                   setMessage("Payment updated successfully.");
                   setShowSnackbar(true);
-                  //return newRow;
                   return { ...newRow };
                 } catch (error) {
                   handleError(error, `Update Payment error: ${error}`, false);
@@ -315,18 +325,16 @@ export default function Payments() {
         {/* Modal to Add or Edit */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
           <Paper>
-            <h3>Add New Payment</h3>
+            <Typography variant="h6">Add New Payment</Typography>
             <TextField
               label="Transaction Date"
               fullWidth
               margin="normal"
               type="date"
-              value={formatDateForInput(
-                paymentData?.transactionDate || new Date(),
-              )}
+              value={formatDateForInput(paymentData.transactionDate)}
               onChange={(e) => {
                 const normalizedDate = normalizeTransactionDate(e.target.value);
-                setPaymentData((prev: any) => ({
+                setPaymentData((prev) => ({
                   ...prev,
                   transactionDate: normalizedDate,
                 }));
@@ -340,7 +348,7 @@ export default function Payments() {
               options={
                 isSuccessAccounts
                   ? fetchedAccounts.filter(
-                      (account) => account.accountType === "credit",
+                      (account) => account.accountType === "credit"
                     )
                   : []
               }
@@ -351,11 +359,10 @@ export default function Payments() {
                 option.accountNameOwner === value?.accountNameOwner
               }
               value={
-                paymentData?.accountNameOwner && isSuccessAccounts
+                paymentData.accountNameOwner && isSuccessAccounts
                   ? fetchedAccounts.find(
                       (account) =>
-                        account.accountNameOwner ===
-                        paymentData.accountNameOwner,
+                        account.accountNameOwner === paymentData.accountNameOwner
                     ) || null
                   : null
               }
@@ -384,19 +391,17 @@ export default function Payments() {
               value={paymentData?.amount ?? ""}
               onChange={(e) => {
                 const inputValue = e.target.value;
-
                 // Regular expression to allow only numbers with up to 2 decimal places
                 const regex = /^\d*\.?\d{0,2}$/;
-
                 if (regex.test(inputValue) || inputValue === "") {
                   setPaymentData((prev: any) => ({
                     ...prev,
-                    amount: inputValue, // Store as string to allow proper input control
+                    amount: inputValue, // storing as string to control input
                   }));
                 }
               }}
               onBlur={() => {
-                // Ensure value is properly formatted when user leaves the field
+                // Format amount properly on blur
                 setPaymentData((prev: any) => ({
                   ...prev,
                   amount: prev.amount

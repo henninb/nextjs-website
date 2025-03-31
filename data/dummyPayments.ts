@@ -1,4 +1,3 @@
-// Payments (normalized)
 import Payment from "../model/Payment";
 
 export const dummyPayments: Payment[] = [

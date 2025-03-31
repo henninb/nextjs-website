@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Button, TextField, Typography, Box, Paper } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Typography,
+  Box,
+  Paper,
+  IconButton,
+} from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Transaction from "../../../../model/Transaction";
 import { ReoccurringType } from "../../../../model/ReoccurringType";
 import { TransactionState } from "../../../../model/TransactionState";
@@ -14,6 +23,8 @@ import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import { currencyFormat } from "../../../../components/Common";
 import usePendingTransactionDeleteAll from "../../../../hooks/usePendingTransactionDeleteAll";
 import usePendingTransactionDelete from "../../../../hooks/usePendingTransactionDelete";
+import PendingTransaction from "../../../../model/PendingTransaction";
+import usePendingTransactionUpdate from "../../../../hooks/usePendingTransactionUpdate";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -34,6 +45,8 @@ export default function TransactionImporter() {
     usePendingTransactionDeleteAll();
   const { mutateAsync: deletePendingTransaction } =
     usePendingTransactionDelete();
+  const { mutateAsync: updatePendingTransaction } =
+    usePendingTransactionUpdate();
 
   useEffect(() => {
     if (isFetchingPendingTransactions) {
@@ -84,6 +97,7 @@ export default function TransactionImporter() {
         !navigator.onLine ||
         (error.message && error.message.includes("Failed to fetch"))
       ) {
+        // offline error handling
       }
       throw error;
     }
@@ -98,6 +112,7 @@ export default function TransactionImporter() {
         !navigator.onLine ||
         (error.message && error.message.includes("Failed to fetch"))
       ) {
+        // offline error handling
       }
     }
   };
@@ -171,14 +186,6 @@ export default function TransactionImporter() {
     setTransactions(parsedTransactions);
   };
 
-  const approveTransaction = (id: string) => {
-    setTransactions((prev: any) =>
-      prev.map((t: any) =>
-        t.guid === id ? { ...t, transactionState: "Approved" } : t,
-      ),
-    );
-  };
-
   const columns: GridColDef[] = [
     {
       field: "pendingTransactionId",
@@ -186,7 +193,6 @@ export default function TransactionImporter() {
       width: 100,
       hideable: true,
     },
-
     {
       field: "transactionDate",
       headerName: "Date",
@@ -264,18 +270,28 @@ export default function TransactionImporter() {
       headerName: "Actions",
       width: 120,
       renderCell: (params) => (
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          onClick={() => {
-            console.log(params.row);
-            handleInsertTransaction(params.row);
-            handleDeletePendingTransaction(params.row.pendingTransactionId);
-          }}
-        >
-          Approve
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <IconButton
+            color="primary"
+            size="small"
+            onClick={() => {
+              console.log(params.row);
+              handleInsertTransaction(params.row);
+              handleDeletePendingTransaction(params.row.pendingTransactionId);
+            }}
+          >
+            <CheckIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            size="small"
+            onClick={() => {
+              handleDeletePendingTransaction(params.row.pendingTransactionId);
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       ),
     },
   ];
@@ -311,6 +327,31 @@ export default function TransactionImporter() {
             <DataGrid
               rows={transactions}
               columns={columns}
+              processRowUpdate={async (
+                newRow: PendingTransaction,
+                oldRow: PendingTransaction,
+              ): Promise<PendingTransaction> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                  return oldRow;
+                }
+                try {
+                  await updatePendingTransaction({
+                    oldPendingTransaction: oldRow,
+                    newPendingTransaction: newRow,
+                  });
+                  setMessage("PendingTransaction updated successfully.");
+                  setShowSnackbar(true);
+
+                  return { ...newRow };
+                } catch (error) {
+                  handleError(
+                    error,
+                    "Update PendingTransaction failure.",
+                    false,
+                  );
+                  throw error;
+                }
+              }}
               initialState={{
                 columns: {
                   columnVisibilityModel: {
