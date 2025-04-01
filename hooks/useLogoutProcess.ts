@@ -11,12 +11,10 @@ export default function useLogout() {
     setLoading(true);
     setError(null);
     try {
-      console.log("trying");
       const response = await fetch("https://finance.bhenning.com/api/logout", {
         method: "POST",
         credentials: "include", // Ensure cookies are sent with the request
       });
-      console.log("trying now");
       if (!response.ok) {
         throw new Error("Logout failed");
       }

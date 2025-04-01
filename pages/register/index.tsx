@@ -40,6 +40,7 @@ export default function Register() {
     };
 
     try {
+      console.log(`reg=${JSON.stringify(registrationPayload)}`);
       const response = await fetch(
         "https://finance.bhenning.com/api/register",
         {

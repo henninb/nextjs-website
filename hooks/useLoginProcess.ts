@@ -4,10 +4,10 @@ import { useAuth } from "../components/AuthProvider";
 import { useRouter } from "next/router";
 import User from "../model/User";
 
-interface LoginPayload {
-  email: string;
-  password: string;
-}
+// interface LoginPayload {
+//   email: string;
+//   password: string;
+// }
 
 export default function useLogin() {
   const { login } = useAuth();
@@ -15,7 +15,7 @@ export default function useLogin() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const loginMutation = useMutation({
-    mutationFn: async (payload: LoginPayload): Promise<void> => {
+    mutationFn: async (payload: User): Promise<void> => {
       const response = await fetch("https://finance.bhenning.com/api/login", {
         method: "POST",
         credentials: "include",

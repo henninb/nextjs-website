@@ -10,6 +10,7 @@ import {
   Button,
   Alert,
 } from "@mui/material";
+import User from "../../model/User";
 import { useAuth } from "../../components/AuthProvider";
 import useLogin from "../../hooks/useLoginProcess";
 
@@ -28,9 +29,11 @@ export default function Login() {
     const endpoint = "https://finance.bhenning.com/api/login";
 
     // Map the form's "email" value to the "username" key expected by the API.
-    const loginPayload = {
+    const loginPayload : User = {
       username: payload.email,
       password: payload.password,
+      firstName: "Joe",
+      lastName: "User"
     };
 
     const response = await fetch(endpoint, {
