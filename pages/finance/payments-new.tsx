@@ -21,6 +21,7 @@ import usePaymentInsert from "../../hooks/usePaymentInsert";
 import usePaymentDelete from "../../hooks/usePaymentDelete";
 import Payment from "../../model/Payment";
 import useAccountFetch from "../../hooks/useAccountFetch";
+import useParameterFetch from "../../hooks/useParameterFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
@@ -67,18 +68,25 @@ export default function Payments() {
     error: errorAccounts,
   } = useAccountFetch();
 
+  const {
+    data: fetchedParameters,
+    isSuccess: isSuccessParameters,
+    isFetching: isFetchingParameters,
+    error: errorParameters,
+  } = useParameterFetch();
+
   const { mutateAsync: insertPayment } = usePaymentInsert();
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
   useEffect(() => {
-    if (isFetchingPayments || isFetchingAccounts) {
+    if (isFetchingPayments || isFetchingAccounts || isFetchingParameters) {
       setShowSpinner(true);
       return;
     }
-    if (isSuccessPayments && isSuccessAccounts) {
+    if (isSuccessPayments && isSuccessAccounts && isSuccessParameters) {
       setShowSpinner(false);
-    } else if (errorPayments || errorAccounts) {
+    } else if (errorPayments || errorAccounts || errorParameters) {
       setShowSpinner(false);
       setMessage("Error fetching data.");
       setShowSnackbar(true);
@@ -90,6 +98,34 @@ export default function Payments() {
     errorAccounts,
     isFetchingPayments,
     isFetchingAccounts,
+    isFetchingParameters,
+  ]);
+
+  const defaultPaymentMethod =
+    fetchedParameters?.find(
+      (param) => param.parameterName === "payment_account"
+    )?.parameterValue || "";
+
+  // Set default sourceAccount when modal opens if not already set.
+  useEffect(() => {
+    if (
+      showModalAdd &&
+      defaultPaymentMethod &&
+      isSuccessAccounts &&
+      fetchedAccounts.length > 0 &&
+      paymentData.sourceAccount === ""
+    ) {
+      setPaymentData((prev) => ({
+        ...prev,
+        sourceAccount: defaultPaymentMethod,
+      }));
+    }
+  }, [
+    showModalAdd,
+    defaultPaymentMethod,
+    isSuccessAccounts,
+    fetchedAccounts,
+    paymentData.sourceAccount,
   ]);
 
   const handleDeleteRow = async () => {
@@ -127,8 +163,7 @@ export default function Payments() {
   const handleAddRow = async (newData: Payment) => {
     try {
       await insertPayment({ payload: newData });
-      // Optionally, close the modal here if desired:
-      // setShowModalAdd(false);
+      setShowModalAdd(true);
       setMessage("Payment added successfully.");
       setShowSnackbar(true);
     } catch (error) {
@@ -252,7 +287,7 @@ export default function Payments() {
               pageSizeOptions={[25, 50, 100]}
               processRowUpdate={async (
                 newRow: Payment,
-                oldRow: Payment,
+                oldRow: Payment
               ): Promise<Payment> => {
                 if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
                   return oldRow;
@@ -282,6 +317,7 @@ export default function Payments() {
         )}
 
         {/* Confirmation Delete Modal */}
+        {defaultPaymentMethod}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
           <Paper>
             <Typography variant="h6">Confirm Deletion</Typography>
@@ -333,7 +369,7 @@ export default function Payments() {
               options={
                 isSuccessAccounts
                   ? fetchedAccounts.filter(
-                      (account) => account.accountType === "debit",
+                      (account) => account.accountType === "debit"
                     )
                   : []
               }
@@ -344,10 +380,10 @@ export default function Payments() {
                 option.accountNameOwner === value?.accountNameOwner
               }
               value={
-                paymentData.sourceAccount && isSuccessAccounts
+                isSuccessAccounts
                   ? fetchedAccounts.find(
                       (account) =>
-                        account.accountNameOwner === paymentData.sourceAccount,
+                        account.accountNameOwner === paymentData.sourceAccount
                     ) || null
                   : null
               }
@@ -371,7 +407,7 @@ export default function Payments() {
               options={
                 isSuccessAccounts
                   ? fetchedAccounts.filter(
-                      (account) => account.accountType === "credit",
+                      (account) => account.accountType === "credit"
                     )
                   : []
               }
@@ -385,8 +421,7 @@ export default function Payments() {
                 paymentData.destinationAccount && isSuccessAccounts
                   ? fetchedAccounts.find(
                       (account) =>
-                        account.accountNameOwner ===
-                        paymentData.destinationAccount,
+                        account.accountNameOwner === paymentData.destinationAccount
                     ) || null
                   : null
               }
