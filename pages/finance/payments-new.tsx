@@ -103,7 +103,7 @@ export default function Payments() {
 
   const defaultPaymentMethod =
     fetchedParameters?.find(
-      (param) => param.parameterName === "payment_account"
+      (param) => param.parameterName === "payment_account",
     )?.parameterValue || "";
 
   // Set default sourceAccount when modal opens if not already set.
@@ -287,7 +287,7 @@ export default function Payments() {
               pageSizeOptions={[25, 50, 100]}
               processRowUpdate={async (
                 newRow: Payment,
-                oldRow: Payment
+                oldRow: Payment,
               ): Promise<Payment> => {
                 if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
                   return oldRow;
@@ -369,7 +369,7 @@ export default function Payments() {
               options={
                 isSuccessAccounts
                   ? fetchedAccounts.filter(
-                      (account) => account.accountType === "debit"
+                      (account) => account.accountType === "debit",
                     )
                   : []
               }
@@ -383,7 +383,7 @@ export default function Payments() {
                 isSuccessAccounts
                   ? fetchedAccounts.find(
                       (account) =>
-                        account.accountNameOwner === paymentData.sourceAccount
+                        account.accountNameOwner === paymentData.sourceAccount,
                     ) || null
                   : null
               }
@@ -407,7 +407,7 @@ export default function Payments() {
               options={
                 isSuccessAccounts
                   ? fetchedAccounts.filter(
-                      (account) => account.accountType === "credit"
+                      (account) => account.accountType === "credit",
                     )
                   : []
               }
@@ -421,7 +421,8 @@ export default function Payments() {
                 paymentData.destinationAccount && isSuccessAccounts
                   ? fetchedAccounts.find(
                       (account) =>
-                        account.accountNameOwner === paymentData.destinationAccount
+                        account.accountNameOwner ===
+                        paymentData.destinationAccount,
                     ) || null
                   : null
               }

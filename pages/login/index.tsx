@@ -29,11 +29,11 @@ export default function Login() {
     const endpoint = "https://finance.bhenning.com/api/login";
 
     // Map the form's "email" value to the "username" key expected by the API.
-    const loginPayload : User = {
+    const loginPayload: User = {
       username: payload.email,
       password: payload.password,
       firstName: "Joe",
-      lastName: "User"
+      lastName: "User",
     };
 
     const response = await fetch(endpoint, {
