@@ -7,6 +7,8 @@ const setupNewPayment = (payload: Payment) => {
     accountNameOwner: payload?.accountNameOwner,
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
+    sourceAccount: payload.sourceAccount,
+    destinationAccount: payload.destinationAccount
   };
 };
 

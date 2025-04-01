@@ -162,7 +162,8 @@ export default function Payments() {
 
   const handleAddRow = async (newData: Payment) => {
     try {
-      await insertPayment({ payload: newData });
+      //await insertPayment({ payload: newData });
+      await insertPayment({ payload: { ...newData, accountNameOwner: newData.destinationAccount } });
       setShowModalAdd(true);
       setMessage("Payment added successfully.");
       setShowSnackbar(true);
