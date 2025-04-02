@@ -8,7 +8,7 @@ const setupNewPayment = (payload: Payment) => {
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
     sourceAccount: payload.sourceAccount,
-    destinationAccount: payload.destinationAccount
+    destinationAccount: payload.destinationAccount,
   };
 };
 
