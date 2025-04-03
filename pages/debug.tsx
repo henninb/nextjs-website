@@ -1,6 +1,6 @@
-import { GetServerSideProps, NextPage } from 'next';
+import { GetServerSideProps, NextPage } from "next";
 
-export const runtime = 'experimental-edge';
+export const runtime = "experimental-edge";
 
 interface HeadersPageProps {
   headers: Record<string, string | string[]>;
@@ -8,7 +8,7 @@ interface HeadersPageProps {
 
 const HeadersPage: NextPage<HeadersPageProps> = ({ headers }) => {
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>Request Headers</h1>
       <table border={1} cellPadding={8} cellSpacing={0}>
         <thead>
@@ -21,7 +21,7 @@ const HeadersPage: NextPage<HeadersPageProps> = ({ headers }) => {
           {Object.entries(headers).map(([key, value]) => (
             <tr key={key}>
               <td>{key}</td>
-              <td>{Array.isArray(value) ? value.join(', ') : value}</td>
+              <td>{Array.isArray(value) ? value.join(", ") : value}</td>
             </tr>
           ))}
         </tbody>
@@ -32,7 +32,7 @@ const HeadersPage: NextPage<HeadersPageProps> = ({ headers }) => {
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   // Log the headers for debugging purposes
-  console.log('Incoming request headers:', req.headers);
+  console.log("Incoming request headers:", req.headers);
 
   return {
     props: {
