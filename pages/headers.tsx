@@ -4,12 +4,18 @@ export const runtime = 'experimental-edge';
 
 export default async function HeadersPage() {
     // Await the headers if they come back as a promise.
+    let headerEntries = []
+    try {
     const reqHeaders = await headers();
+    console.log('await headers()')
     const headerEntries: Array<[string, string]> = [];
   
     reqHeaders.forEach((value, key) => {
       headerEntries.push([key, value]);
     });
+    } catch {
+      console.log('failed to get headers.')
+    }
   
     return (
       <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
