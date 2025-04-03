@@ -748,7 +748,7 @@ export default function TransactionsByAccount() {
           aria-describedby="transaction-form-modal-description"
         >
           <Paper>
-            <h3>Add New Transaction</h3>
+            <Typography variant="h6">Add A New Transaction</Typography>
 
             <TextField
               label="Transaction Date"
@@ -959,6 +959,11 @@ export default function TransactionsByAccount() {
         {/* Modal Move Transaction */}
         <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
           <Paper>
+            <Typography variant="h6">Confirm Move</Typography>
+            <Typography>
+              Are you sure you want to move the transaction "
+              {selectedTransaction?.guid}"?
+            </Typography>
             <Autocomplete
               options={
                 isSuccessAccounts &&

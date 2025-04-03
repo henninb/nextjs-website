@@ -29,11 +29,11 @@ export default function Login() {
     const endpoint = "https://finance.bhenning.com/api/login";
 
     // Map the form's "email" value to the "username" key expected by the API.
-    const loginPayload : User = {
+    const loginPayload: User = {
       username: payload.email,
       password: payload.password,
       firstName: "Joe",
-      lastName: "User"
+      lastName: "User",
     };
 
     const response = await fetch(endpoint, {
@@ -68,7 +68,7 @@ export default function Login() {
       // The JWT is set as an HTTP-only cookie by the backend.
       // Update your client auth state (if needed) and redirect.
       login({ username: "username", password: "password" }); // e.g. sets a flag in your context to indicate authentication
-      router.push("/");
+      router.push("/finance");
     } catch (error: any) {
       setErrorMessage(error.message || "Failed login. Please try again.");
       console.error("Login error:", error);
