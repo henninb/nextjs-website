@@ -1,5 +1,7 @@
 import { GetServerSideProps, NextPage } from 'next';
 
+export const runtime = 'edge';
+
 interface HeadersPageProps {
   headers: Record<string, string | string[]>;
 }
