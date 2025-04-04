@@ -28,7 +28,8 @@
     "perimeterx-nextjs": "^0.2.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-hook-form": "^7.55.0"
+    "react-hook-form": "^7.55.0",
+    "swr": "^2.3.3"
   },
   "engines": {
     "node": "20.x || 22.x || 23.x"
