@@ -48,6 +48,17 @@ export default function Configuration() {
   const { mutateAsync: insertParameter } = useParameterInsert();
   const { mutateAsync: updateParameter } = useParameterUpdate();
   const { mutateAsync: deleteParameter } = useParameterDelete();
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if(loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingParameters) {
@@ -95,6 +106,10 @@ export default function Configuration() {
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
   }, [insertParameter]); // ✅ Remove `offlineRows` from dependencies
+
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
 
   const handleDeleteRow = async () => {
     if (!selectedParameter) return;

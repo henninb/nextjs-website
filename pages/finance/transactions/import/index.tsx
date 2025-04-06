@@ -26,6 +26,7 @@ import usePendingTransactionDeleteAll from "../../../../hooks/usePendingTransact
 import usePendingTransactionDelete from "../../../../hooks/usePendingTransactionDelete";
 import PendingTransaction from "../../../../model/PendingTransaction";
 import usePendingTransactionUpdate from "../../../../hooks/usePendingTransactionUpdate";
+import { useAuth } from "../../../../components/AuthProvider";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -48,6 +49,17 @@ export default function TransactionImporter() {
     usePendingTransactionDelete();
   const { mutateAsync: updatePendingTransaction } =
     usePendingTransactionUpdate();
+    const { isAuthenticated, loading } = useAuth();
+    const router = useRouter();
+  
+    useEffect(() => {
+      if(loading) {
+        setShowSpinner(true);
+      }
+      if (!loading && !isAuthenticated) {
+        router.replace("/login");
+      }
+    }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingPendingTransactions) {
@@ -77,6 +89,10 @@ export default function TransactionImporter() {
       setTransactions(transactionsWithGUID);
     }
   }, [isPendingTransactionsLoaded, fetchedPendingTransactions]);
+
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
 
   const handleInsertTransaction = async (
     newData: Transaction,

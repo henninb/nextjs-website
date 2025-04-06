@@ -30,6 +30,16 @@ export default function TransactionsByDescription() {
     error: errorTransactions,
   } = useTransactionByDescription(descriptionName);
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
+    const { isAuthenticated, loading } = useAuth();
+  
+    useEffect(() => {
+      if(loading) {
+        setShowSpinner(true);
+      }
+      if (!loading && !isAuthenticated) {
+        router.replace("/login");
+      }
+    }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingTransactions) {
@@ -40,6 +50,10 @@ export default function TransactionsByDescription() {
       setShowSpinner(false);
     }
   }, [isTransactionsLoaded, isFetchingTransactions]);
+
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
