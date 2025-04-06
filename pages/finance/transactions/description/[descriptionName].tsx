@@ -51,6 +51,7 @@ export default function TransactionsByDescription() {
     }
   }, [isTransactionsLoaded, isFetchingTransactions]);
 
+  // can be eliminated
   if (loading || (!loading && !isAuthenticated)) {
     return null;
   }

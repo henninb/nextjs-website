@@ -115,6 +115,7 @@ export default function Payments() {
     isFetchingParameters,
   ]);
 
+  // can be eliminated
   if (loading || (!loading && !isAuthenticated)) {
     return null;
   }

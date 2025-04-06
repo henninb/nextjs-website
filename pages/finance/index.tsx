@@ -96,6 +96,7 @@ export default function Accounts() {
     isFetchingTotals,
   ]);
 
+  // can be eliminated
   if (loading || (!loading && !isAuthenticated)) {
     return null;
   }
