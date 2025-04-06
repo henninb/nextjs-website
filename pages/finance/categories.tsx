@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -22,6 +23,7 @@ import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 import useCategoryUpdate from "../../hooks/useCategoryUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import { useAuth } from "../../components/AuthProvider";
 
 export default function Categories() {
   const [message, setMessage] = useState("");

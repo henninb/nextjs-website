@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -31,6 +32,7 @@ import {
   formatDateForInput,
   formatDateForDisplay,
 } from "../../components/Common";
+import { useAuth } from "../../components/AuthProvider";
 
 const initialPaymentData: Payment = {
   paymentId: undefined,
@@ -78,6 +80,18 @@ export default function Payments() {
   const { mutateAsync: insertPayment } = usePaymentInsert();
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if(loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingPayments || isFetchingAccounts || isFetchingParameters) {
@@ -100,6 +114,10 @@ export default function Payments() {
     isFetchingAccounts,
     isFetchingParameters,
   ]);
+
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
 
   const defaultPaymentMethod =
     fetchedParameters?.find(

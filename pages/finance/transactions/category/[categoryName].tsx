@@ -9,6 +9,7 @@ import Transaction from "../../../../model/Transaction";
 import { Link } from "@mui/material";
 import FinanceLayout from "../../../../layouts/FinanceLayout";
 import { currencyFormat } from "../../../../components/Common";
+import { useAuth } from "../../../../components/AuthProvider";
 
 export default function TransactionsByCategory() {
   const [showSpinner, setShowSpinner] = useState(true);

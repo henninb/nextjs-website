@@ -57,6 +57,7 @@ import {
   TableCell,
   TableContainer,
 } from "@mui/material";
+import { useAuth } from "../../../components/AuthProvider";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -142,6 +143,16 @@ export default function TransactionsByAccount() {
   const { mutateAsync: insertValidationAmount } = useValidationAmountInsert();
 
   const transactionStates = ["outstanding", "future", "cleared"];
+  const { isAuthenticated, loading } = useAuth();
+
+  useEffect(() => {
+    if(loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (
@@ -180,6 +191,10 @@ export default function TransactionsByAccount() {
     isSuccessCategories,
     isSuccessDescriptions,
   ]);
+
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
 
   const initialTransactionData: Transaction = {
     transactionDate: new Date(),

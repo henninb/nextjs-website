@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -20,6 +21,7 @@ import useParameterDelete from "../../hooks/useParameterDelete";
 import Parameter from "../../model/Parameter";
 import useParameterUpdate from "../../hooks/useParameterUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import { useAuth } from "../../components/AuthProvider";
 
 export default function Configuration() {
   const [message, setMessage] = useState("");

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -21,6 +22,7 @@ import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import { useAuth } from "../../components/AuthProvider";
 
 export default function Descriptions() {
   const [message, setMessage] = useState("");
@@ -53,7 +55,18 @@ export default function Descriptions() {
   const { mutateAsync: insertDescription } = useDescriptionInsert();
   const { mutateAsync: updateDescription } = useDescriptionUpdate();
   const { mutateAsync: deleteDescription } = useDescriptionDelete();
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
 
+  useEffect(() => {
+    if(loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
+  
   useEffect(() => {
     if (isFetchingDescriptions) {
       setShowSpinner(true);
@@ -63,6 +76,10 @@ export default function Descriptions() {
       setShowSpinner(false);
     }
   }, [isSuccessDescriptions, isFetchingDescriptions]);
+
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
 
   const handleDeleteRow = async () => {
     if (selectedDescription) {

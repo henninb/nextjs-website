@@ -169,6 +169,10 @@ export default function Transfers() {
     }
   }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);
 
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
+
   const handleSourceAccountChange = (event: any, newValue: Account | null) => {
     setSelectedSourceAccount(newValue);
     setTransferData((prev) => ({
