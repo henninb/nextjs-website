@@ -30,13 +30,39 @@ const useProvideAuth = () => {
   // Call useLogout at the top level of the hook
   const { logoutNow } = useLogout();
 
+  // useEffect(() => {
+  //   // Check if a user is stored in localStorage
+  //   const storedUser = localStorage.getItem("user");
+  //   if (storedUser) {
+  //     //setUser(JSON.parse(storedUser));
+  //     setIsAuthenticated(true);
+  //   }
+  // }, []);
+
+
   useEffect(() => {
-    // Check if a user is stored in localStorage
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      //setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+    async function fetchUser() {
+      try {
+        const res = await fetch("https://finance.bhenning.com/api/me", {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+          setIsAuthenticated(true);
+          // Optionally, update localStorage if you want persistence,
+          // but treat it as a cache rather than the source of truth.
+          localStorage.setItem("user", JSON.stringify(data));
+        } else {
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
     }
+    fetchUser();
   }, []);
 
   // Update login to accept a user object
