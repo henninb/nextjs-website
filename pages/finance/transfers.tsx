@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -31,6 +32,7 @@ import {
   formatDateForInput,
   formatDateForDisplay,
 } from "../../components/Common";
+import { useAuth } from "../../components/AuthProvider";
 
 export default function Transfers() {
   const [message, setMessage] = useState("");
@@ -89,6 +91,18 @@ export default function Transfers() {
     ? dummyTransfers
     : fetchedTransfers?.filter((row) => row != null) || [];
   //const transfersToDisplay = fetchedTransfers || [];
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if(loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingAccounts || isFetchingTransfers) {

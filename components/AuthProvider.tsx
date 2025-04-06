@@ -1,44 +1,24 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/router";
 import User from "../model/User";
 import useLogout from "../hooks/useLogoutProcess";
 
-// Define the shape of our auth state including the user object
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
+  loading: boolean; // New loading flag
   login: (user: User) => void;
   logout: () => void;
 }
 
-// ** cannot store the password in localStorage ***
-
-// Create the authentication context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Extract authentication logic into a custom hook
 const useProvideAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true); // Start as loading
   const router = useRouter();
-  // Call useLogout at the top level of the hook
   const { logoutNow } = useLogout();
-
-  // useEffect(() => {
-  //   // Check if a user is stored in localStorage
-  //   const storedUser = localStorage.getItem("user");
-  //   if (storedUser) {
-  //     //setUser(JSON.parse(storedUser));
-  //     setIsAuthenticated(true);
-  //   }
-  // }, []);
-
 
   useEffect(() => {
     async function fetchUser() {
@@ -50,9 +30,7 @@ const useProvideAuth = () => {
           const data = await res.json();
           setUser(data);
           setIsAuthenticated(true);
-          // Optionally, update localStorage if you want persistence,
-          // but treat it as a cache rather than the source of truth.
-          localStorage.setItem("user", JSON.stringify(data));
+          //localStorage.setItem("user", JSON.stringify(data));
         } else {
           setIsAuthenticated(false);
           setUser(null);
@@ -60,37 +38,35 @@ const useProvideAuth = () => {
       } catch (error) {
         setIsAuthenticated(false);
         setUser(null);
+      } finally {
+        setLoading(false); // Finished loading regardless of outcome
       }
     }
     fetchUser();
   }, []);
 
-  // Update login to accept a user object
   const login = (user: User) => {
     setUser(user);
     setIsAuthenticated(true);
-    // Store user information as a JSON string in localStorage
-    localStorage.setItem("user", JSON.stringify(user));
+    //localStorage.setItem("user", JSON.stringify(user));
   };
 
   const logout = async () => {
     await logoutNow();
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("user");
+    //localStorage.removeItem("user");
     router.push("/login");
   };
 
-  return { isAuthenticated, user, login, logout };
+  return { isAuthenticated, user, loading, login, logout };
 };
 
-// Context Provider Component
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const auth = useProvideAuth();
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }
 
-// Hook for accessing the AuthContext
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

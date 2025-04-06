@@ -1,10 +1,12 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../components/Spinner";
 import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
 import { Link } from "@mui/material";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import { useAuth } from "../../components/AuthProvider";
 
 export default function paymentrequired() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -13,16 +15,29 @@ export default function paymentrequired() {
     isSuccess: isSuccessPaymentsRequired,
     isFetching: isFetchingPaymentsRequired,
   } = useFetchPaymentRequired();
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
 
+  useEffect(() => {
+    if(loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
+
+  // Update spinner state based on fetch status
   useEffect(() => {
     if (isFetchingPaymentsRequired) {
       setShowSpinner(true);
-      return;
-    }
-    if (isSuccessPaymentsRequired) {
+    } else if (isSuccessPaymentsRequired) {
+      setShowSpinner(false);
+    } else {
+      // In case of an error or no data, stop showing the spinner
       setShowSpinner(false);
     }
-  }, [isSuccessPaymentsRequired, isFetchingPaymentsRequired]);
+  }, [isFetchingPaymentsRequired, isSuccessPaymentsRequired]);
 
   const columns: GridColDef[] = [
     {
