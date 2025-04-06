@@ -94,9 +94,8 @@ export default function Transfers() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-
   useEffect(() => {
-    if(loading) {
+    if (loading) {
       setShowSpinner(true);
     }
     if (!loading && !isAuthenticated) {

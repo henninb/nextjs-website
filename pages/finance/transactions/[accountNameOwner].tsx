@@ -146,7 +146,7 @@ export default function TransactionsByAccount() {
   const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    if(loading) {
+    if (loading) {
       setShowSpinner(true);
     }
     if (!loading && !isAuthenticated) {

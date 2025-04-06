@@ -52,7 +52,7 @@ export default function Categories() {
   const router = useRouter();
 
   useEffect(() => {
-    if(loading) {
+    if (loading) {
       setShowSpinner(true);
     }
     if (!loading && !isAuthenticated) {

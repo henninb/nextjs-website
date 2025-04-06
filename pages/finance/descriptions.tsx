@@ -59,14 +59,14 @@ export default function Descriptions() {
   const router = useRouter();
 
   useEffect(() => {
-    if(loading) {
+    if (loading) {
       setShowSpinner(true);
     }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
-  
+
   useEffect(() => {
     if (isFetchingDescriptions) {
       setShowSpinner(true);

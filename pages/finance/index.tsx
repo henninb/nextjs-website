@@ -73,7 +73,7 @@ export default function Accounts() {
   const router = useRouter();
 
   useEffect(() => {
-    if(loading) {
+    if (loading) {
       setShowSpinner(true);
     }
     if (!loading && !isAuthenticated) {

@@ -49,17 +49,17 @@ export default function TransactionImporter() {
     usePendingTransactionDelete();
   const { mutateAsync: updatePendingTransaction } =
     usePendingTransactionUpdate();
-    const { isAuthenticated, loading } = useAuth();
-    const router = useRouter();
-  
-    useEffect(() => {
-      if(loading) {
-        setShowSpinner(true);
-      }
-      if (!loading && !isAuthenticated) {
-        router.replace("/login");
-      }
-    }, [loading, isAuthenticated, router]);
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingPendingTransactions) {

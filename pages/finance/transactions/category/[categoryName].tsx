@@ -29,16 +29,16 @@ export default function TransactionsByCategory() {
     error: errorTransactions,
   } = useTransactionByCategory(categoryName);
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
-    const { isAuthenticated, loading } = useAuth();
-  
-    useEffect(() => {
-      if(loading) {
-        setShowSpinner(true);
-      }
-      if (!loading && !isAuthenticated) {
-        router.replace("/login");
-      }
-    }, [loading, isAuthenticated, router]);
+  const { isAuthenticated, loading } = useAuth();
+
+  useEffect(() => {
+    if (loading) {
+      setShowSpinner(true);
+    }
+    if (!loading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isTransactionsLoaded) {

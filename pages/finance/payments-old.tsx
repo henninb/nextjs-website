@@ -22,9 +22,9 @@ import usePaymentInsert from "../../hooks/usePaymentInsert";
 import usePaymentDelete from "../../hooks/usePaymentDelete";
 import Payment from "../../model/Payment";
 import useAccountFetch from "../../hooks/useAccountFetch";
-import useParameterFetch from "../../hooks/useParameterFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
+import useParameterFetch from "../../hooks/useParameterFetch";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import {
   currencyFormat,
@@ -38,8 +38,8 @@ const initialPaymentData: Payment = {
   paymentId: undefined,
   transactionDate: new Date(),
   accountNameOwner: "",
-  destinationAccount: "",
   sourceAccount: "",
+  destinationAccount: "",
   activeStatus: true,
   amount: 0,
 };
@@ -83,9 +83,8 @@ export default function Payments() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-
   useEffect(() => {
-    if(loading) {
+    if (loading) {
       setShowSpinner(true);
     }
     if (!loading && !isAuthenticated) {
@@ -108,14 +107,15 @@ export default function Payments() {
   }, [
     isSuccessPayments,
     isSuccessAccounts,
+    isSuccessParameters,
     errorPayments,
     errorAccounts,
+    errorParameters,
     isFetchingPayments,
     isFetchingAccounts,
     isFetchingParameters,
   ]);
 
-  // can be eliminated
   if (loading || (!loading && !isAuthenticated)) {
     return null;
   }
@@ -124,28 +124,6 @@ export default function Payments() {
     fetchedParameters?.find(
       (param) => param.parameterName === "payment_account",
     )?.parameterValue || "";
-
-  // Set default sourceAccount when modal opens if not already set.
-  useEffect(() => {
-    if (
-      showModalAdd &&
-      defaultPaymentMethod &&
-      isSuccessAccounts &&
-      fetchedAccounts.length > 0 &&
-      paymentData.sourceAccount === ""
-    ) {
-      setPaymentData((prev) => ({
-        ...prev,
-        sourceAccount: defaultPaymentMethod,
-      }));
-    }
-  }, [
-    showModalAdd,
-    defaultPaymentMethod,
-    isSuccessAccounts,
-    fetchedAccounts,
-    paymentData.sourceAccount,
-  ]);
 
   const handleDeleteRow = async () => {
     if (selectedPayment) {
@@ -181,11 +159,9 @@ export default function Payments() {
 
   const handleAddRow = async (newData: Payment) => {
     try {
-      //await insertPayment({ payload: newData });
-      await insertPayment({
-        payload: { ...newData, accountNameOwner: newData.destinationAccount },
-      });
-      setShowModalAdd(true);
+      await insertPayment({ payload: newData });
+      // Optionally, close the modal here if desired:
+      // setShowModalAdd(false);
       setMessage("Payment added successfully.");
       setShowSnackbar(true);
     } catch (error) {
@@ -217,19 +193,19 @@ export default function Payments() {
       width: 350,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/${params.value}`}>
-            {params.value}
+          <Link href={`/finance/transactions/${params.row.sourceAccount}`}>
+            {defaultPaymentMethod}
           </Link>
         );
       },
     },
     {
-      field: "destinationAccount",
+      field: "accountNameOwner",
       headerName: "Destination Account",
       width: 350,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/${params.value}`}>
+          <Link href={`/finance/transactions/${params.row.destinationAccount}`}>
             {params.value}
           </Link>
         );
@@ -339,7 +315,6 @@ export default function Payments() {
         )}
 
         {/* Confirmation Delete Modal */}
-        {defaultPaymentMethod}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
           <Paper>
             <Typography variant="h6">Confirm Deletion</Typography>
@@ -387,44 +362,7 @@ export default function Payments() {
                 inputLabel: { shrink: true },
               }}
             />
-            <Autocomplete
-              options={
-                isSuccessAccounts
-                  ? fetchedAccounts.filter(
-                      (account) => account.accountType === "debit",
-                    )
-                  : []
-              }
-              getOptionLabel={(account: Account) =>
-                account.accountNameOwner || ""
-              }
-              isOptionEqualToValue={(option, value) =>
-                option.accountNameOwner === value?.accountNameOwner
-              }
-              value={
-                isSuccessAccounts
-                  ? fetchedAccounts.find(
-                      (account) =>
-                        account.accountNameOwner === paymentData.sourceAccount,
-                    ) || null
-                  : null
-              }
-              onChange={(event, newValue) =>
-                setPaymentData((prev) => ({
-                  ...prev,
-                  sourceAccount: newValue ? newValue.accountNameOwner : "",
-                }))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Source Account"
-                  fullWidth
-                  margin="normal"
-                  placeholder="Select or search an account"
-                />
-              )}
-            />
+
             <Autocomplete
               options={
                 isSuccessAccounts
@@ -440,18 +378,18 @@ export default function Payments() {
                 option.accountNameOwner === value?.accountNameOwner
               }
               value={
-                paymentData.destinationAccount && isSuccessAccounts
+                paymentData.accountNameOwner && isSuccessAccounts
                   ? fetchedAccounts.find(
                       (account) =>
                         account.accountNameOwner ===
-                        paymentData.destinationAccount,
+                        paymentData.accountNameOwner,
                     ) || null
                   : null
               }
               onChange={(event, newValue) =>
                 setPaymentData((prev) => ({
                   ...prev,
-                  destinationAccount: newValue ? newValue.accountNameOwner : "",
+                  accountNameOwner: newValue ? newValue.accountNameOwner : "",
                 }))
               }
               renderInput={(params) => (
@@ -464,6 +402,7 @@ export default function Payments() {
                 />
               )}
             />
+
             <TextField
               label="Amount"
               fullWidth

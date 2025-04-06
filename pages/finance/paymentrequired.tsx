@@ -19,7 +19,7 @@ export default function paymentrequired() {
   const router = useRouter();
 
   useEffect(() => {
-    if(loading) {
+    if (loading) {
       setShowSpinner(true);
     }
     if (!loading && !isAuthenticated) {
