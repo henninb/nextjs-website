@@ -141,10 +141,10 @@ export default function Payments() {
     paymentData.sourceAccount,
   ]);
 
-    // can be eliminated
-    if (loading || (!loading && !isAuthenticated)) {
-      return null;
-    }
+  // can be eliminated
+  if (loading || (!loading && !isAuthenticated)) {
+    return null;
+  }
 
   const handleDeleteRow = async () => {
     if (selectedPayment) {
