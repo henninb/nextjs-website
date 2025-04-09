@@ -161,7 +161,9 @@ export default function TransactionsByAccount() {
       isFetchingValidationTotals ||
       isFetchingAccounts ||
       isFetchingCategories ||
-      isFetchingDescriptions
+      isFetchingDescriptions ||
+      loading ||
+      (!loading && !isAuthenticated)
     ) {
       setShowSpinner(true);
       return;
@@ -191,10 +193,6 @@ export default function TransactionsByAccount() {
     isSuccessCategories,
     isSuccessDescriptions,
   ]);
-
-  if (loading || (!loading && !isAuthenticated)) {
-    return null;
-  }
 
   const initialTransactionData: Transaction = {
     transactionDate: new Date(),

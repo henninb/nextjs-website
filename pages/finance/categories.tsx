@@ -52,16 +52,16 @@ export default function Categories() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
+    // if (loading) {
+    //   setShowSpinner(true);
+    // }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingCategories) {
+    if (isFetchingCategories || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }
@@ -80,10 +80,6 @@ export default function Categories() {
       setFetchError("Failed to load categories. Please check your connection.");
     }
   }, [isSuccessCategories, isErrorCategories, isFetchingCategories]);
-
-  if (loading || (!loading && !isAuthenticated)) {
-    return null;
-  }
 
   const handleDeleteRow = async () => {
     if (selectedCategory) {
