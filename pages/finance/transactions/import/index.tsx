@@ -291,10 +291,10 @@ export default function TransactionImporter() {
           <IconButton
             color="primary"
             size="small"
-            onClick={() => {
+            onClick={async () => {
               console.log(params.row);
-              handleInsertTransaction(params.row);
-              handleDeletePendingTransaction(params.row.pendingTransactionId);
+              await handleInsertTransaction(params.row);
+              await handleDeletePendingTransaction(params.row.pendingTransactionId);
             }}
           >
             <CheckIcon />
