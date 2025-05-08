@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
 
 export default function Payment() {
@@ -8,16 +8,16 @@ export default function Payment() {
   const [cvv, setCvv] = useState("");
   const [errors, setErrors] = useState({});
 
-  // // 👇 Added effect to set and unset hs_pagetype
-  // useEffect(() => {
-  //   // Set hs_pagetype when this page/component mounts
-  //   window["hs_pagetype"] = "checkout"; // ← Comment: setting on page visit
+  // 👇 Added effect to set and unset hs_pagetype
+  useEffect(() => {
+    // Set hs_pagetype when this page/component mounts
+    window["hs_pagetype"] = "checkout"; // ← Comment: setting on page visit
 
-  //   return () => {
-  //     // Unset hs_pagetype when this page/component unmounts
-  //     delete window["hs_pagetype"]; // ← Comment: cleaning up on page leave
-  //   };
-  // }, []);
+    return () => {
+      // Unset hs_pagetype when this page/component unmounts
+      delete window["hs_pagetype"]; // ← Comment: cleaning up on page leave
+    };
+  }, []);
 
   const handleClick = async () => {
     window.open(
