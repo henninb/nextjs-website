@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
 
 export default function Payment() {
@@ -7,6 +7,17 @@ export default function Payment() {
   const [expDate, setExpDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [errors, setErrors] = useState({});
+
+  // 👇 Added effect to set and unset hs_pagetype
+  useEffect(() => {
+    // Set hs_pagetype when this page/component mounts
+    window["hs_pagetype"] = "checkout"; // ← Comment: setting on page visit
+
+    return () => {
+      // Unset hs_pagetype when this page/component unmounts
+      delete window["hs_pagetype"]; // ← Comment: cleaning up on page leave
+    };
+  }, []);
 
   const handleClick = async () => {
     window.open(
@@ -65,10 +76,6 @@ export default function Payment() {
           src="https://connect.facebook.net/en_US/sdk.js"
         ></script>
 
-        <script id="hs-pagetype" type="application/javascript">
-          window["hs_pagetype"] = "checkout"
-        </script>
-
         <script
           async=""
           src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"
@@ -118,14 +125,6 @@ export default function Payment() {
           className="optanon-category-C0002"
         ></script>
 
-        {/*
-        <script src="https://cdn.rlets.com/capture_configs/d68/2d8/ef1/311474ea88290056581be3c.js"></script>
-        <script async="" src="https://www.clarity.ms/s/0.7.45/clarity.js"></script>
-        <script type="text/javascript" async="" src="https://cdn.krxd.net/controltag/rigf54zhi.js"></script>
-        <script type="text/javascript" async="" src="https://analytics.tiktok.com/i18n/pixel/events.js"></script>
-        <script src="https://snippet.maze.co/maze-universal-loader.js?apiKey=9675d50a-9c96-4a95-81a0-6c32d63fc04f" async=""></script>
-        <script src="https://js-agent.newrelic.com/nr-spa-1130.min.js"></script>
-      */}
       </Head>
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
