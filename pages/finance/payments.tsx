@@ -84,16 +84,13 @@ export default function Payments() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingPayments || isFetchingAccounts || isFetchingParameters) {
+    if (isFetchingPayments || isFetchingAccounts || isFetchingParameters || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }
@@ -112,6 +109,8 @@ export default function Payments() {
     isFetchingPayments,
     isFetchingAccounts,
     isFetchingParameters,
+    loading,
+    isAuthenticated
   ]);
 
   const defaultPaymentMethod =
@@ -140,11 +139,6 @@ export default function Payments() {
     fetchedAccounts,
     paymentData.sourceAccount,
   ]);
-
-  // can be eliminated
-  if (loading || (!loading && !isAuthenticated)) {
-    return null;
-  }
 
   const handleDeleteRow = async () => {
     if (selectedPayment) {

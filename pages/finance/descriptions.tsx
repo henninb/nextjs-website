@@ -59,27 +59,20 @@ export default function Descriptions() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingDescriptions) {
+    if (isFetchingDescriptions || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }
     if (isSuccessDescriptions) {
       setShowSpinner(false);
     }
-  }, [isSuccessDescriptions, isFetchingDescriptions]);
-
-  if (loading || (!loading && !isAuthenticated)) {
-    return null;
-  }
+  }, [isSuccessDescriptions, isFetchingDescriptions, loading, isAuthenticated]);
 
   const handleDeleteRow = async () => {
     if (selectedDescription) {

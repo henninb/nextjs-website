@@ -52,9 +52,6 @@ export default function Categories() {
   const router = useRouter();
 
   useEffect(() => {
-    // if (loading) {
-    //   setShowSpinner(true);
-    // }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
@@ -79,7 +76,7 @@ export default function Categories() {
       setShowSpinner(false);
       setFetchError("Failed to load categories. Please check your connection.");
     }
-  }, [isSuccessCategories, isErrorCategories, isFetchingCategories]);
+  }, [isSuccessCategories, isErrorCategories, isFetchingCategories, loading, isAuthenticated]);
 
   const handleDeleteRow = async () => {
     if (selectedCategory) {

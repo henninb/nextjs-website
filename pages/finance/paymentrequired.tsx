@@ -19,9 +19,6 @@ export default function paymentrequired() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
@@ -29,15 +26,16 @@ export default function paymentrequired() {
 
   // Update spinner state based on fetch status
   useEffect(() => {
-    if (isFetchingPaymentsRequired) {
+    if (isFetchingPaymentsRequired || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
+      return;
     } else if (isSuccessPaymentsRequired) {
       setShowSpinner(false);
     } else {
       // In case of an error or no data, stop showing the spinner
       setShowSpinner(false);
     }
-  }, [isFetchingPaymentsRequired, isSuccessPaymentsRequired]);
+  }, [isFetchingPaymentsRequired, isSuccessPaymentsRequired, loading, isAuthenticated]);
 
   const columns: GridColDef[] = [
     {

@@ -192,6 +192,8 @@ export default function TransactionsByAccount() {
     isSuccessAccounts,
     isSuccessCategories,
     isSuccessDescriptions,
+    loading,
+    isAuthenticated
   ]);
 
   const initialTransactionData: Transaction = {

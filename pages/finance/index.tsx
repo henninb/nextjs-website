@@ -73,16 +73,13 @@ export default function Accounts() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingAccounts || isFetchingTotals) {
+    if (isFetchingAccounts || isFetchingTotals || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }
@@ -94,12 +91,9 @@ export default function Accounts() {
     isSuccessTotals,
     isFetchingAccounts,
     isFetchingTotals,
+    loading,
+    isAuthenticated
   ]);
-
-  // can be eliminated
-  if (loading || (!loading && !isAuthenticated)) {
-    return null;
-  }
 
   const handleAccountTypeKeyDown = (event: any) => {
     if (event.key === "Tab") {

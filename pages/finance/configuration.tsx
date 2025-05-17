@@ -52,23 +52,20 @@ export default function Configuration() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingParameters) {
+    if (isFetchingParameters || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }
     if (isSuccessParameters) {
       setShowSpinner(false);
     }
-  }, [isSuccessParameters, isFetchingParameters]);
+  }, [isSuccessParameters, isFetchingParameters, loading, isAuthenticated]);
 
   useEffect(() => {
     const storedRows = localStorage.getItem("offlineParameters");
@@ -106,10 +103,6 @@ export default function Configuration() {
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
   }, [insertParameter]); // ✅ Remove `offlineRows` from dependencies
-
-  if (loading || (!loading && !isAuthenticated)) {
-    return null;
-  }
 
   const handleDeleteRow = async () => {
     if (!selectedParameter) return;
