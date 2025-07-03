@@ -107,44 +107,44 @@ export default function useTransactionInsert() {
       console.log(`Mutation error: ${error.message}`);
     },
     onSuccess: (response: Transaction, variables: TransactionInsertType) => {
-      if( !variables.isImportTransaction ) {
-      const oldData: Transaction[] =
-        queryClient.getQueryData(getAccountKey(response.accountNameOwner)) ||
-        [];
-      queryClient.setQueryData(getAccountKey(response.accountNameOwner), [
-        response,
-        ...oldData,
-      ]);
+      if (!variables.isImportTransaction) {
+        const oldData: Transaction[] =
+          queryClient.getQueryData(getAccountKey(response.accountNameOwner)) ||
+          [];
+        queryClient.setQueryData(getAccountKey(response.accountNameOwner), [
+          response,
+          ...oldData,
+        ]);
 
-      const oldTotals: Totals = queryClient.getQueryData(
-        getTotalsKey(response.accountNameOwner),
-      ) || {
-        totals: 0,
-        totalsFuture: 0,
-        totalsCleared: 0,
-        totalsOutstanding: 0,
-      };
+        const oldTotals: Totals = queryClient.getQueryData(
+          getTotalsKey(response.accountNameOwner),
+        ) || {
+          totals: 0,
+          totalsFuture: 0,
+          totalsCleared: 0,
+          totalsOutstanding: 0,
+        };
 
-      const newTotals = { ...oldTotals };
+        const newTotals = { ...oldTotals };
 
-      // Adjust totals based on transaction state
-      newTotals.totals += response.amount;
+        // Adjust totals based on transaction state
+        newTotals.totals += response.amount;
 
-      if (response.transactionState === "cleared") {
-        newTotals.totalsCleared += response.amount;
-      } else if (response.transactionState === "outstanding") {
-        newTotals.totalsOutstanding += response.amount;
-      } else if (response.transactionState === "future") {
-        newTotals.totalsFuture += response.amount;
-      } else {
-        console.log("cannot adjust totals.");
+        if (response.transactionState === "cleared") {
+          newTotals.totalsCleared += response.amount;
+        } else if (response.transactionState === "outstanding") {
+          newTotals.totalsOutstanding += response.amount;
+        } else if (response.transactionState === "future") {
+          newTotals.totalsFuture += response.amount;
+        } else {
+          console.log("cannot adjust totals.");
+        }
+
+        queryClient.setQueryData(
+          getTotalsKey(response.accountNameOwner),
+          newTotals,
+        );
       }
-
-      queryClient.setQueryData(
-        getTotalsKey(response.accountNameOwner),
-        newTotals,
-      );
-    }
     },
   });
 }
