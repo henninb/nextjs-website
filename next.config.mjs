@@ -14,6 +14,9 @@ export default {
   // },
   reactStrictMode: true,
 
+    // Add transpilePackages to handle MUI X components
+  transpilePackages: ['@mui/x-data-grid'],
+
   async rewrites() {
     return [
       {

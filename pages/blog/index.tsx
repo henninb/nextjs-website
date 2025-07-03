@@ -27,7 +27,6 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
         <title>Blog | Your Website</title>
         <meta name="description" content="Latest articles and posts" />
       </Head>
-
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
           Blog
