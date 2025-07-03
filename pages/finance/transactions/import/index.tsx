@@ -102,6 +102,7 @@ export default function TransactionImporter() {
         accountNameOwner: newData.accountNameOwner,
         newRow: newData,
         isFutureTransaction: false,
+        isImportTransaction: true,
       });
 
       setMessage(`Transaction added successfully: ${JSON.stringify(result)}`);
@@ -294,7 +295,9 @@ export default function TransactionImporter() {
             onClick={async () => {
               console.log(params.row);
               await handleInsertTransaction(params.row);
-              await handleDeletePendingTransaction(params.row.pendingTransactionId);
+              await handleDeletePendingTransaction(
+                params.row.pendingTransactionId,
+              );
             }}
           >
             <CheckIcon />

@@ -193,7 +193,7 @@ export default function TransactionsByAccount() {
     isSuccessCategories,
     isSuccessDescriptions,
     loading,
-    isAuthenticated
+    isAuthenticated,
   ]);
 
   const initialTransactionData: Transaction = {
@@ -342,6 +342,7 @@ export default function TransactionsByAccount() {
         //newRow: selectedTransaction,
         newRow: { ...selectedTransaction, accountNameOwner: accountNameOwner },
         isFutureTransaction: true,
+        isImportTransaction: false,
       });
 
       setMessage(`Transaction cloned successfully: ${JSON.stringify(result)}`);
@@ -359,6 +360,7 @@ export default function TransactionsByAccount() {
         //newRow: newData,
         newRow: { ...newData, accountNameOwner: accountNameOwner },
         isFutureTransaction: false,
+        isImportTransaction: false,
       });
       console.log(`Transaction added successfully: ${JSON.stringify(result)}`);
       setMessage(`Transaction added successfully: ${JSON.stringify(result)}`);

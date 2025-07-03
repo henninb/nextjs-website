@@ -104,7 +104,12 @@ export default function Transfers() {
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingAccounts || isFetchingTransfers || loading || (!loading && !isAuthenticated)) {
+    if (
+      isFetchingAccounts ||
+      isFetchingTransfers ||
+      loading ||
+      (!loading && !isAuthenticated)
+    ) {
       setShowSpinner(true);
       return;
     }
@@ -123,7 +128,7 @@ export default function Transfers() {
     isFetchingAccounts,
     isFetchingTransfers,
     loading,
-    isAuthenticated
+    isAuthenticated,
   ]);
 
   useEffect(() => {

@@ -79,7 +79,12 @@ export default function Accounts() {
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingAccounts || isFetchingTotals || loading || (!loading && !isAuthenticated)) {
+    if (
+      isFetchingAccounts ||
+      isFetchingTotals ||
+      loading ||
+      (!loading && !isAuthenticated)
+    ) {
       setShowSpinner(true);
       return;
     }
@@ -92,7 +97,7 @@ export default function Accounts() {
     isFetchingAccounts,
     isFetchingTotals,
     loading,
-    isAuthenticated
+    isAuthenticated,
   ]);
 
   const handleAccountTypeKeyDown = (event: any) => {

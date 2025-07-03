@@ -26,7 +26,11 @@ export default function paymentrequired() {
 
   // Update spinner state based on fetch status
   useEffect(() => {
-    if (isFetchingPaymentsRequired || loading || (!loading && !isAuthenticated)) {
+    if (
+      isFetchingPaymentsRequired ||
+      loading ||
+      (!loading && !isAuthenticated)
+    ) {
       setShowSpinner(true);
       return;
     } else if (isSuccessPaymentsRequired) {
@@ -35,7 +39,12 @@ export default function paymentrequired() {
       // In case of an error or no data, stop showing the spinner
       setShowSpinner(false);
     }
-  }, [isFetchingPaymentsRequired, isSuccessPaymentsRequired, loading, isAuthenticated]);
+  }, [
+    isFetchingPaymentsRequired,
+    isSuccessPaymentsRequired,
+    loading,
+    isAuthenticated,
+  ]);
 
   const columns: GridColDef[] = [
     {

@@ -90,7 +90,13 @@ export default function Payments() {
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingPayments || isFetchingAccounts || isFetchingParameters || loading || (!loading && !isAuthenticated)) {
+    if (
+      isFetchingPayments ||
+      isFetchingAccounts ||
+      isFetchingParameters ||
+      loading ||
+      (!loading && !isAuthenticated)
+    ) {
       setShowSpinner(true);
       return;
     }
@@ -110,7 +116,7 @@ export default function Payments() {
     isFetchingAccounts,
     isFetchingParameters,
     loading,
-    isAuthenticated
+    isAuthenticated,
   ]);
 
   const defaultPaymentMethod =

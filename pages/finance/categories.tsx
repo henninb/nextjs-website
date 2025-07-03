@@ -76,7 +76,13 @@ export default function Categories() {
       setShowSpinner(false);
       setFetchError("Failed to load categories. Please check your connection.");
     }
-  }, [isSuccessCategories, isErrorCategories, isFetchingCategories, loading, isAuthenticated]);
+  }, [
+    isSuccessCategories,
+    isErrorCategories,
+    isFetchingCategories,
+    loading,
+    isAuthenticated,
+  ]);
 
   const handleDeleteRow = async () => {
     if (selectedCategory) {

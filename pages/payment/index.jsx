@@ -124,7 +124,6 @@ export default function Payment() {
           src="https://edge.fullstory.com/s/fs.js"
           className="optanon-category-C0002"
         ></script>
-
       </Head>
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>

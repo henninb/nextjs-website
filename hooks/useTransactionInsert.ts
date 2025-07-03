@@ -8,6 +8,7 @@ export type TransactionInsertType = {
   accountNameOwner: string;
   newRow: Transaction;
   isFutureTransaction: boolean;
+  isImportTransaction: boolean;
 };
 
 const getAccountKey = (accountNameOwner: string) => [
@@ -42,6 +43,7 @@ const insertTransaction = async (
   accountNameOwner: string,
   payload: Transaction,
   isFutureTransaction: boolean,
+  isImportTransaction: boolean,
 ): Promise<Transaction> => {
   let endpoint = "https://finance.bhenning.com/api/transaction/insert";
   if (isFutureTransaction) {
@@ -99,11 +101,13 @@ export default function useTransactionInsert() {
         variables.newRow.accountNameOwner,
         variables.newRow,
         variables.isFutureTransaction,
+        variables.isImportTransaction,
       ),
     onError: (error: any) => {
       console.log(`Mutation error: ${error.message}`);
     },
-    onSuccess: (response: Transaction) => {
+    onSuccess: (response: Transaction, variables: TransactionInsertType) => {
+      if( !variables.isImportTransaction ) {
       const oldData: Transaction[] =
         queryClient.getQueryData(getAccountKey(response.accountNameOwner)) ||
         [];
@@ -140,6 +144,7 @@ export default function useTransactionInsert() {
         getTotalsKey(response.accountNameOwner),
         newTotals,
       );
+    }
     },
   });
 }
