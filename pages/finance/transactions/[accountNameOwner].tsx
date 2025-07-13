@@ -77,9 +77,7 @@ export default function TransactionsByAccount() {
     page: 0,
   });
 
-  // //const [rowSelectionModel, setRowSelectionModel] = useState<GridRowId[]>([]);
-  // const [rowSelectionModel, setRowSelectionModel] =
-  //   useState<GridRowSelectionModel>(undefined);
+  const [selectedTotal, setSelectedTotal] = useState<number | null>(null);
 
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>({
@@ -160,21 +158,16 @@ export default function TransactionsByAccount() {
   useEffect(() => {
     const { ids } = rowSelectionModel;
     if (ids.size === 0) {
-      // nothing selected
+      setSelectedTotal(null);
       return;
     }
-
-    // turn the Set into an array of IDs
     const selectedIds = Array.from(ids);
     const selectedRows =
       fetchedTransactions?.filter((r) =>
         selectedIds.includes(r.transactionId!),
       ) || [];
-
-    const total = selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0);
-
-    setMessage(`Selected total: ${currencyFormat(total)}`);
-    setShowSnackbar(true);
+    const total = selectedRows.reduce((sum, r) => sum + (r.amount ?? 0), 0);
+    setSelectedTotal(total);
   }, [rowSelectionModel, fetchedTransactions]);
 
   useEffect(() => {
@@ -242,50 +235,6 @@ export default function TransactionsByAccount() {
     activeStatus: true,
     notes: "",
   };
-
-  const FinanceTable = React.memo(
-    ({ fetchedTotals }: { fetchedTotals: Totals }) => {
-      return (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <b>Total</b>
-                </TableCell>
-                <TableCell>
-                  <b>Cleared</b>
-                  {/* <CheckCircleIcon /> */}
-                </TableCell>
-                <TableCell>
-                  <b>Outstanding</b>
-                </TableCell>
-                <TableCell>
-                  <b>Future</b>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                </TableCell>
-                <TableCell>
-                  {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
-                </TableCell>
-                <TableCell>
-                  {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
-                </TableCell>
-                <TableCell>
-                  {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-      );
-    },
-  );
 
   const handleSnackbarClose = useCallback(() => setShowSnackbar(false), []);
 
@@ -587,60 +536,57 @@ export default function TransactionsByAccount() {
                   marginBottom: "16px",
                 }}
               >
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell align="center">
-                          <strong>Total</strong>
-                        </TableCell>
-                        <TableCell align="center">
-                          <CheckCircleIcon
-                            fontSize="small"
-                            style={{ verticalAlign: "middle" }}
-                          />{" "}
-                          <strong>Cleared</strong>
-                        </TableCell>
-                        <TableCell align="center">
-                          <AccessTimeIcon
-                            fontSize="small"
-                            style={{ verticalAlign: "middle" }}
-                          />{" "}
-                          <strong>Outstanding</strong>
-                        </TableCell>
-                        <TableCell align="center">
-                          <EventNoteIcon
-                            fontSize="small"
-                            style={{ verticalAlign: "middle" }}
-                          />{" "}
-                          <strong>Future</strong>
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell align="center">
-                          {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                        </TableCell>
-                        <TableCell align="center">
-                          {currencyFormat(
-                            noNaN(fetchedTotals?.totalsCleared ?? 0),
-                          )}
-                        </TableCell>
-                        <TableCell align="center">
-                          {currencyFormat(
-                            noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-                          )}
-                        </TableCell>
-                        <TableCell align="center">
-                          {currencyFormat(
-                            noNaN(fetchedTotals?.totalsFuture ?? 0),
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+
+<TableContainer component={Paper}>
+  <Table size="small">
+    <TableHead>
+      <TableRow>
+        <TableCell align="center"><strong>Total</strong></TableCell>
+        <TableCell align="center">
+          <CheckCircleIcon fontSize="small" style={{ verticalAlign: "middle" }}/>{" "}
+          <strong>Cleared</strong>
+        </TableCell>
+        <TableCell align="center">
+          <AccessTimeIcon fontSize="small" style={{ verticalAlign: "middle" }}/>{" "}
+          <strong>Outstanding</strong>
+        </TableCell>
+        <TableCell align="center">
+          <EventNoteIcon fontSize="small" style={{ verticalAlign: "middle" }}/>{" "}
+          <strong>Future</strong>
+        </TableCell>
+
+        {selectedTotal !== null && (
+          <TableCell align="center"><strong>Selected</strong></TableCell>
+        )}
+      </TableRow>
+    </TableHead>
+
+    <TableBody>
+      <TableRow>
+        <TableCell align="center">
+          {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+        </TableCell>
+        <TableCell align="center">
+          {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+        </TableCell>
+        <TableCell align="center">
+          {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
+        </TableCell>
+        <TableCell align="center">
+          {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+        </TableCell>
+
+        {selectedTotal !== null && (
+          <TableCell align="center">
+            {currencyFormat(noNaN(selectedTotal))}
+          </TableCell>
+        )}
+      </TableRow>
+    </TableBody>
+  </Table>
+</TableContainer>
+
+
               </div>
 
               <div>
