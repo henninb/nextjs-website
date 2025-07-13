@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import type { GridRowSelectionModel } from "@mui/x-data-grid";
+import type { GridRowId } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
 import {
   Box,
@@ -75,6 +77,16 @@ export default function TransactionsByAccount() {
     page: 0,
   });
 
+  // //const [rowSelectionModel, setRowSelectionModel] = useState<GridRowId[]>([]);
+  // const [rowSelectionModel, setRowSelectionModel] =
+  //   useState<GridRowSelectionModel>(undefined);
+
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>({
+      type: "include", // “include” means these IDs are selected
+      ids: new Set(), // start with no selections
+    });
+
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
 
@@ -144,6 +156,26 @@ export default function TransactionsByAccount() {
 
   const transactionStates = ["outstanding", "future", "cleared"];
   const { isAuthenticated, loading } = useAuth();
+
+  useEffect(() => {
+    const { ids } = rowSelectionModel;
+    if (ids.size === 0) {
+      // nothing selected
+      return;
+    }
+
+    // turn the Set into an array of IDs
+    const selectedIds = Array.from(ids);
+    const selectedRows =
+      fetchedTransactions?.filter((r) =>
+        selectedIds.includes(r.transactionId!),
+      ) || [];
+
+    const total = selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0);
+
+    setMessage(`Selected total: ${currencyFormat(total)}`);
+    setShowSnackbar(true);
+  }, [rowSelectionModel, fetchedTransactions]);
 
   useEffect(() => {
     if (loading) {
@@ -653,8 +685,9 @@ export default function TransactionsByAccount() {
                 rows={fetchedTransactions?.filter((row) => row != null) || []}
                 columns={columns}
                 getRowId={(row) => row.transactionId || 0}
-                checkboxSelection={false}
-                rowSelection={false}
+                //checkboxSelection={false}
+                checkboxSelection={true}
+                //rowSelection={false}
                 //{...(fetchedTransactions.length > 25 ? { pagination: true } : {})}
                 pagination
                 paginationModel={paginationModel}
@@ -663,7 +696,7 @@ export default function TransactionsByAccount() {
                   setPaginationModel(newModel);
                 }}
                 pageSizeOptions={[25, 50, 100]}
-                disableRowSelectionOnClick
+                //disableRowSelectionOnClick
                 // initialState={{
                 //   sorting: {
                 //     sortModel: [{ field: "transactionDate", sort: "desc" }],
@@ -686,6 +719,9 @@ export default function TransactionsByAccount() {
                     throw error;
                   }
                 }}
+                disableRowSelectionOnClick={true}
+                rowSelectionModel={rowSelectionModel}
+                onRowSelectionModelChange={setRowSelectionModel}
               />
             </div>
 
