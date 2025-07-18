@@ -110,3 +110,17 @@ const transactions = [...document.querySelectorAll("tr.TransactionsRow__transact
 // Print to console
 console.table(transactions);
 ```
+
+curl -X 'POST' 'https://pages.bhenning.com/api/celsius' \
+  -H 'accept: */*' \
+  -H 'content-type: application/json' \
+  -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
+AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" \
+  --data-raw '{"fahrenheit":50}'
+
+curl -X 'POST' 'https://www.brianhenning.com/api/celsius' \
+  -H 'accept: */*' \
+  -H 'content-type: application/json' \
+  -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
+AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" \
+  --data-raw '{"fahrenheit":100}'
