@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import Account from "../../model/Account";
@@ -70,10 +70,10 @@ describe("useAccountUpdate", () => {
     };
 
     server.use(
-      rest.put(
+      http.put(
         `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        (req, res, ctx) => {
-          return res(ctx.status(200), ctx.json(newAccount));
+        () => {
+          return HttpResponse.json(newAccount, { status: 200 });
         },
       ),
     );
@@ -117,12 +117,12 @@ describe("useAccountUpdate", () => {
 
     // Mock an API error
     server.use(
-      rest.put(
+      http.put(
         `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({ response: "Cannot update this account" }),
+        () => {
+          return HttpResponse.json(
+            { response: "Cannot update this account" },
+            { status: 400 },
           );
         },
       ),
@@ -169,12 +169,12 @@ describe("useAccountUpdate", () => {
 
     // Mock a 404 error
     server.use(
-      rest.put(
+      http.put(
         `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        (req, res, ctx) => {
-          return res(
-            ctx.status(404),
-            ctx.json({ message: "Account not found" }),
+        () => {
+          return HttpResponse.json(
+            { message: "Account not found" },
+            { status: 404 },
           );
         },
       ),
@@ -223,10 +223,10 @@ describe("useAccountUpdate", () => {
     };
 
     server.use(
-      rest.put(
+      http.put(
         `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        (req, res, ctx) => {
-          return res(ctx.status(200), ctx.json(newAccount));
+        () => {
+          return HttpResponse.json(newAccount, { status: 200 });
         },
       ),
     );

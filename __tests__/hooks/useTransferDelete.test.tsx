@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import useTransferDelete from "../../hooks/useTransferDelete";
 import Transfer from "../../model/Transfer";
@@ -65,9 +65,9 @@ describe("useDeleteTransfer", () => {
     };
 
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
-        (req, res, ctx) => res(ctx.status(204)),
+        () => new HttpResponse(null, { status: 204 }),
       ),
     );
 
@@ -106,12 +106,12 @@ describe("useDeleteTransfer", () => {
 
     // Mock an API error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
-        (req, res, ctx) =>
-          res(
-            ctx.status(400),
-            ctx.json({ response: "Cannot delete this transfer" }),
+        () =>
+          HttpResponse.json(
+            { response: "Cannot delete this transfer" },
+            { status: 400 },
           ),
       ),
     );
@@ -154,10 +154,10 @@ describe("useDeleteTransfer", () => {
 
     // Mock a network error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
-        (req, res, ctx) =>
-          res(ctx.status(500), ctx.json({ message: "Network error" })),
+        () =>
+          HttpResponse.json({ message: "Network error" }, { status: 500 }),
       ),
     );
 

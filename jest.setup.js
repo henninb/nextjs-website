@@ -1,17 +1,26 @@
 import "@testing-library/jest-dom";
-import fetch, { Response, Headers, Request } from "node-fetch";
 
-// Mock fetch
-global.fetch = fetch;
-global.Response = Response;
-global.Headers = Headers;
-global.Request = Request;
-
-// Mock TextEncoder/TextDecoder
+// Mock TextEncoder/TextDecoder first
 if (typeof TextEncoder === "undefined") {
   const { TextEncoder, TextDecoder } = require("util");
   global.TextEncoder = TextEncoder;
   global.TextDecoder = TextDecoder;
+}
+
+// Add web streams polyfill for Node.js
+if (!global.ReadableStream) {
+  global.ReadableStream = require("stream/web").ReadableStream;
+  global.WritableStream = require("stream/web").WritableStream;
+  global.TransformStream = require("stream/web").TransformStream;
+}
+
+// Use Node.js built-in fetch if available (Node 18+), otherwise use a polyfill
+if (!global.fetch) {
+  const nodeFetch = require("node-fetch");
+  global.fetch = nodeFetch.default || nodeFetch;
+  global.Headers = nodeFetch.Headers;
+  global.Request = nodeFetch.Request;
+  global.Response = nodeFetch.Response;
 }
 
 // Mock BroadcastChannel

@@ -1,8 +1,8 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// MSW v1 imports
-import { rest } from "msw";
+// MSW v2 imports
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import Account from "../../model/Account";
@@ -65,10 +65,10 @@ describe("useAccountDelete", () => {
     };
 
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
-        (req, res, ctx) => {
-          return res(ctx.status(204));
+        () => {
+          return new HttpResponse(null, { status: 204 });
         },
       ),
     );
@@ -107,12 +107,12 @@ describe("useAccountDelete", () => {
 
     // Mock an API error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
-        (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({ response: "Cannot delete this account" }),
+        () => {
+          return HttpResponse.json(
+            { response: "Cannot delete this account" },
+            { status: 400 }
           );
         },
       ),
@@ -156,10 +156,13 @@ describe("useAccountDelete", () => {
 
     // Mock a network error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/account/delete/${mockAccount.accountNameOwner}`,
-        (req, res, ctx) => {
-          return res(ctx.status(500), ctx.json({ message: "Network error" }));
+        () => {
+          return HttpResponse.json(
+            { message: "Network error" },
+            { status: 500 }
+          );
         },
       ),
     );

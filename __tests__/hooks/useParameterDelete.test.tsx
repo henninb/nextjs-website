@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import useParameterDelete from "../../hooks/useParameterDelete";
 import Parameter from "../../model/Parameter";
@@ -58,9 +58,9 @@ describe("useParameterDelete", () => {
     };
 
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/parameter/delete/${mockParameter.parameterName}`,
-        (req, res, ctx) => res(ctx.status(204)),
+        () => new HttpResponse(null, { status: 204 }),
       ),
     );
 
@@ -99,12 +99,12 @@ describe("useParameterDelete", () => {
 
     // Mock an API error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/parameter/delete/${mockParameter.parameterName}`,
-        (req, res, ctx) =>
-          res(
-            ctx.status(400),
-            ctx.json({ response: "Cannot delete this parameter" }),
+        () =>
+          HttpResponse.json(
+            { response: "Cannot delete this parameter" },
+            { status: 400 },
           ),
       ),
     );
@@ -145,10 +145,10 @@ describe("useParameterDelete", () => {
 
     // Mock a network error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/parameter/delete/${mockParameter.parameterName}`,
-        (req, res, ctx) =>
-          res(ctx.status(500), ctx.json({ message: "Network error" })),
+        () =>
+          HttpResponse.json({ message: "Network error" }, { status: 500 }),
       ),
     );
 

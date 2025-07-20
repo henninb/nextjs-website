@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
@@ -62,10 +62,10 @@ describe("useCategoryDelete", () => {
     };
 
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
-        (req, res, ctx) => {
-          return res(ctx.status(204));
+        () => {
+          return new HttpResponse(null, { status: 204 });
         },
       ),
     );
@@ -105,12 +105,12 @@ describe("useCategoryDelete", () => {
 
     // Mock an API error
     server.use(
-      rest.delete(
-        `https://finance.bhenning.comhttps://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
-        (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({ response: "Cannot delete this category" }),
+      http.delete(
+        `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
+        () => {
+          return HttpResponse.json(
+            { response: "Cannot delete this category" },
+            { status: 400 },
           );
         },
       ),
@@ -152,10 +152,10 @@ describe("useCategoryDelete", () => {
 
     // Mock a network error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
-        (req, res, ctx) => {
-          return res(ctx.status(500), ctx.json({ message: "Network error" }));
+        () => {
+          return HttpResponse.json({ message: "Network error" }, { status: 500 });
         },
       ),
     );

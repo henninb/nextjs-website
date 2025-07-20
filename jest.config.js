@@ -43,5 +43,5 @@ module.exports = {
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(tsx?|jsx?)$",
-  transformIgnorePatterns: ["<rootDir>/node_modules/(?!(@mswjs|jose))"],
+  transformIgnorePatterns: ["<rootDir>/node_modules/(?!(@mswjs|jose|msw|node-fetch))"],
 };

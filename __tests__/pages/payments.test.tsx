@@ -1,13 +1,28 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
+import { http, HttpResponse, delay } from "msw";
 import { setupServer } from "msw/node";
 import Payments from "../../pages/finance/payments";
 import Payment from "../../model/Payment";
 import Account from "../../model/Account";
 import Parameter from "../../model/Parameter";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+// Mock AuthProvider instead of importing it
+const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
+  return <div data-testid="mock-auth-provider">{children}</div>;
+};
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: { id: 1, email: "test@example.com" },
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 // Create a simple mock theme for testing instead of importing draculaTheme
 const mockTheme = createTheme({
@@ -228,22 +243,25 @@ describe("Payments Page", () => {
 
     // Set up API mocks that will return data but with some delay - correct endpoint paths
     server.use(
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/payment/select",
-        (req, res, ctx) => {
-          return res(ctx.delay(100), ctx.json(mockPayments));
+        async () => {
+          await delay(100);
+          return HttpResponse.json(mockPayments);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/account/select/active",
-        (req, res, ctx) => {
-          return res(ctx.delay(100), ctx.json(mockAccounts));
+        async () => {
+          await delay(100);
+          return HttpResponse.json(mockAccounts);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
-        (req, res, ctx) => {
-          return res(ctx.delay(100), ctx.json(mockParameters));
+        async () => {
+          await delay(100);
+          return HttpResponse.json(mockParameters);
         },
       ),
     );
@@ -258,22 +276,22 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/payment/select",
-        (req, res, ctx) => {
-          return res(ctx.json(mockPayments));
+        () => {
+          return HttpResponse.json(mockPayments);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/account/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockAccounts));
+        () => {
+          return HttpResponse.json(mockAccounts);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockParameters));
+        () => {
+          return HttpResponse.json(mockParameters);
         },
       ),
     );
@@ -300,22 +318,22 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/payment/select",
-        (req, res, ctx) => {
-          return res(ctx.json(mockPayments));
+        () => {
+          return HttpResponse.json(mockPayments);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/account/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockAccounts));
+        () => {
+          return HttpResponse.json(mockAccounts);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockParameters));
+        () => {
+          return HttpResponse.json(mockParameters);
         },
       ),
     );
@@ -342,22 +360,22 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/payment/select",
-        (req, res, ctx) => {
-          return res(ctx.json(mockPayments));
+        () => {
+          return HttpResponse.json(mockPayments);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/account/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockAccounts));
+        () => {
+          return HttpResponse.json(mockAccounts);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockParameters));
+        () => {
+          return HttpResponse.json(mockParameters);
         },
       ),
     );
@@ -378,22 +396,22 @@ describe("Payments Page", () => {
 
     // Set up API mocks to simulate errors with correct endpoint paths
     server.use(
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/payment/select",
-        (req, res, ctx) => {
-          return res(ctx.status(500), ctx.json({ message: "Server error" }));
+        () => {
+          return HttpResponse.json({ message: "Server error" }, { status: 500 });
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/account/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockAccounts));
+        () => {
+          return HttpResponse.json(mockAccounts);
         },
       ),
-      rest.get(
+      http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
-        (req, res, ctx) => {
-          return res(ctx.json(mockParameters));
+        () => {
+          return HttpResponse.json(mockParameters);
         },
       ),
     );

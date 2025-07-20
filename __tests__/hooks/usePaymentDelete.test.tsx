@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import usePaymentDelete from "../../hooks/usePaymentDelete";
 import Payment from "../../model/Payment";
@@ -64,9 +64,9 @@ describe("usePaymentDelete", () => {
     };
 
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/payment/delete/${mockPayment.paymentId}`,
-        (req, res, ctx) => res(ctx.status(204)),
+        () => new HttpResponse(null, { status: 204 }),
       ),
     );
 
@@ -104,12 +104,12 @@ describe("usePaymentDelete", () => {
 
     // Mock an API error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/payment/delete/${mockPayment.paymentId}`,
-        (req, res, ctx) =>
-          res(
-            ctx.status(400),
-            ctx.json({ response: "Cannot delete this payment" }),
+        () =>
+          HttpResponse.json(
+            { response: "Cannot delete this payment" },
+            { status: 400 },
           ),
       ),
     );
@@ -151,10 +151,10 @@ describe("usePaymentDelete", () => {
 
     // Mock a network error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/payment/delete/${mockPayment.paymentId}`,
-        (req, res, ctx) =>
-          res(ctx.status(500), ctx.json({ message: "Network error" })),
+        () =>
+          HttpResponse.json({ message: "Network error" }, { status: 500 }),
       ),
     );
 

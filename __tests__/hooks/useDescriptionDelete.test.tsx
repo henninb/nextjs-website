@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
@@ -61,10 +61,10 @@ describe("useDescriptionDelete", () => {
     };
 
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/description/delete/${mockDescription.descriptionName}`,
-        (req, res, ctx) => {
-          return res(ctx.status(204));
+        () => {
+          return new HttpResponse(null, { status: 204 });
         },
       ),
     );
@@ -103,12 +103,12 @@ describe("useDescriptionDelete", () => {
 
     // Mock an API error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/description/delete/${mockDescription.descriptionName}`,
-        (req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({ response: "Cannot delete this description" }),
+        () => {
+          return HttpResponse.json(
+            { response: "Cannot delete this description" },
+            { status: 400 },
           );
         },
       ),
@@ -149,10 +149,10 @@ describe("useDescriptionDelete", () => {
 
     // Mock a network error
     server.use(
-      rest.delete(
+      http.delete(
         `https://finance.bhenning.com/api/description/delete/${mockDescription.descriptionName}`,
-        (req, res, ctx) => {
-          return res(ctx.status(500), ctx.json({ message: "Network error" }));
+        () => {
+          return HttpResponse.json({ message: "Network error" }, { status: 500 });
         },
       ),
     );
