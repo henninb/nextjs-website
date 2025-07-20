@@ -87,22 +87,30 @@ export default function TransactionsByAccount() {
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
+  const validAccountNameOwner =
+    typeof accountNameOwner === "string" ? accountNameOwner : "";
 
-  //const [transactionData, setTransactionData] = useState<Transaction>(initialTransactionData); // Use initial state
-  const [transactionData, setTransactionData] = useState({
-    transactionDate: new Date(),
-    accountNameOwner: accountNameOwner,
-    reoccurringType: "onetime" as ReoccurringType,
-    amount: 0.0, // Default to 0.0
-    transactionState: "outstanding" as TransactionState,
-    transactionType: "undefined" as TransactionType,
-    guid: crypto.randomUUID(),
-    description: "",
-    category: "",
-    accountType: "undefined" as AccountType,
-    activeStatus: true,
-    notes: "",
-  });
+  const initialTransactionData: Transaction = useMemo(
+    () => ({
+      transactionDate: new Date(),
+      accountNameOwner: validAccountNameOwner,
+      reoccurringType: "onetime" as ReoccurringType,
+      amount: 0.0,
+      transactionState: "outstanding" as TransactionState,
+      transactionType: "undefined" as TransactionType,
+      guid: crypto.randomUUID(),
+      description: "",
+      category: "",
+      accountType: "undefined" as AccountType,
+      activeStatus: true,
+      notes: "",
+    }),
+    [validAccountNameOwner],
+  );
+
+  const [transactionData, setTransactionData] = useState<Transaction>(
+    initialTransactionData,
+  );
 
   const {
     data: fetchedTransactions,
@@ -110,21 +118,21 @@ export default function TransactionsByAccount() {
     isLoading: isFetchingTransactions,
     isError: isErrorTransactions,
     error: errorTransactions,
-  } = useTransactionByAccountFetch(accountNameOwner);
+  } = useTransactionByAccountFetch(validAccountNameOwner);
   const {
     data: fetchedTotals,
     isSuccess: isSuccessTotals,
     isLoading: isFetchingTotals,
     isError: isErrorTotals,
     error: errorTotals,
-  } = useTotalsPerAccountFetch(accountNameOwner);
+  } = useTotalsPerAccountFetch(validAccountNameOwner);
   const {
     data: fetchedValidationData,
     isSuccess: isSuccessValidationTotals,
     isLoading: isFetchingValidationTotals,
     isError: isErrorValidationTotals,
     error: errorValidationTotals,
-  } = useValidationAmountFetch(accountNameOwner);
+  } = useValidationAmountFetch(validAccountNameOwner);
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
@@ -163,8 +171,8 @@ export default function TransactionsByAccount() {
     }
     const selectedIds = Array.from(ids);
     const selectedRows =
-      fetchedTransactions?.filter((r) =>
-        selectedIds.includes(r.transactionId!),
+      fetchedTransactions?.filter(
+        (r) => r?.transactionId && selectedIds.includes(r.transactionId),
       ) || [];
     const total = selectedRows.reduce((sum, r) => sum + (r.amount ?? 0), 0);
     setSelectedTotal(total);
@@ -221,21 +229,6 @@ export default function TransactionsByAccount() {
     isAuthenticated,
   ]);
 
-  const initialTransactionData: Transaction = {
-    transactionDate: new Date(),
-    accountNameOwner: accountNameOwner,
-    reoccurringType: "onetime",
-    amount: 0.0,
-    transactionState: "outstanding",
-    transactionType: "undefined",
-    guid: crypto.randomUUID(),
-    description: "",
-    category: "",
-    accountType: "undefined",
-    activeStatus: true,
-    notes: "",
-  };
-
   const handleSnackbarClose = useCallback(() => setShowSnackbar(false), []);
 
   const handleError = useCallback(
@@ -259,9 +252,9 @@ export default function TransactionsByAccount() {
     transactionState: TransactionState,
   ) => {
     const payload: ValidationAmount = {
-      validationId: Math.random(),
+      validationId: Math.floor(Math.random() * 1000000),
       activeStatus: true,
-      amount: fetchedTotals.totalsCleared,
+      amount: fetchedTotals?.totalsCleared ?? 0,
       transactionState: transactionState,
       validationDate: new Date(),
     };
@@ -319,9 +312,12 @@ export default function TransactionsByAccount() {
   const handleCloneRow = async (): Promise<void> => {
     try {
       const result = await insertTransaction({
-        accountNameOwner: accountNameOwner,
+        accountNameOwner: validAccountNameOwner,
         //newRow: selectedTransaction,
-        newRow: { ...selectedTransaction, accountNameOwner: accountNameOwner },
+        newRow: {
+          ...selectedTransaction,
+          accountNameOwner: validAccountNameOwner,
+        },
         isFutureTransaction: true,
         isImportTransaction: false,
       });
@@ -337,9 +333,9 @@ export default function TransactionsByAccount() {
   const handleAddRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       const result = await insertTransaction({
-        accountNameOwner: accountNameOwner,
+        accountNameOwner: validAccountNameOwner,
         //newRow: newData,
-        newRow: { ...newData, accountNameOwner: accountNameOwner },
+        newRow: { ...newData, accountNameOwner: validAccountNameOwner },
         isFutureTransaction: false,
         isImportTransaction: false,
       });
@@ -517,13 +513,15 @@ export default function TransactionsByAccount() {
         },
       },
     ],
-    [],
+    [updateTransaction, handleError],
   );
 
   return (
     <div>
       <FinanceLayout>
-        <h2>{accountNameOwner ? accountNameOwner.toUpperCase() : ""}</h2>
+        <h2>
+          {validAccountNameOwner ? validAccountNameOwner.toUpperCase() : ""}
+        </h2>
         {showSpinner ? (
           <Spinner />
         ) : (
@@ -536,57 +534,73 @@ export default function TransactionsByAccount() {
                   marginBottom: "16px",
                 }}
               >
+                <TableContainer component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="center">
+                          <strong>Total</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <CheckCircleIcon
+                            fontSize="small"
+                            style={{ verticalAlign: "middle" }}
+                          />{" "}
+                          <strong>Cleared</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <AccessTimeIcon
+                            fontSize="small"
+                            style={{ verticalAlign: "middle" }}
+                          />{" "}
+                          <strong>Outstanding</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <EventNoteIcon
+                            fontSize="small"
+                            style={{ verticalAlign: "middle" }}
+                          />{" "}
+                          <strong>Future</strong>
+                        </TableCell>
 
-<TableContainer component={Paper}>
-  <Table size="small">
-    <TableHead>
-      <TableRow>
-        <TableCell align="center"><strong>Total</strong></TableCell>
-        <TableCell align="center">
-          <CheckCircleIcon fontSize="small" style={{ verticalAlign: "middle" }}/>{" "}
-          <strong>Cleared</strong>
-        </TableCell>
-        <TableCell align="center">
-          <AccessTimeIcon fontSize="small" style={{ verticalAlign: "middle" }}/>{" "}
-          <strong>Outstanding</strong>
-        </TableCell>
-        <TableCell align="center">
-          <EventNoteIcon fontSize="small" style={{ verticalAlign: "middle" }}/>{" "}
-          <strong>Future</strong>
-        </TableCell>
+                        {selectedTotal !== null && (
+                          <TableCell align="center">
+                            <strong>Selected</strong>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    </TableHead>
 
-        {selectedTotal !== null && (
-          <TableCell align="center"><strong>Selected</strong></TableCell>
-        )}
-      </TableRow>
-    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell align="center">
+                          {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                        </TableCell>
+                        <TableCell align="center">
+                          {currencyFormat(
+                            noNaN(fetchedTotals?.totalsCleared ?? 0),
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          {currencyFormat(
+                            noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          {currencyFormat(
+                            noNaN(fetchedTotals?.totalsFuture ?? 0),
+                          )}
+                        </TableCell>
 
-    <TableBody>
-      <TableRow>
-        <TableCell align="center">
-          {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-        </TableCell>
-        <TableCell align="center">
-          {currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
-        </TableCell>
-        <TableCell align="center">
-          {currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
-        </TableCell>
-        <TableCell align="center">
-          {currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
-        </TableCell>
-
-        {selectedTotal !== null && (
-          <TableCell align="center">
-            {currencyFormat(noNaN(selectedTotal))}
-          </TableCell>
-        )}
-      </TableRow>
-    </TableBody>
-  </Table>
-</TableContainer>
-
-
+                        {selectedTotal !== null && (
+                          <TableCell align="center">
+                            {currencyFormat(noNaN(selectedTotal))}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </div>
 
               <div>
@@ -601,7 +615,10 @@ export default function TransactionsByAccount() {
                   {/* Added margin for spacing */}
                   <Button
                     onClick={() =>
-                      handleInsertNewValidationData(accountNameOwner, "cleared")
+                      handleInsertNewValidationData(
+                        validAccountNameOwner,
+                        "cleared",
+                      )
                     }
                     variant="contained" // Added variant for better visual appearance
                     style={{ marginRight: "8px" }} // Added margin for spacing

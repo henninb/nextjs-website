@@ -120,7 +120,13 @@ export default function Login() {
                 {errorMessage}
               </Alert>
             )}
-            <Button id="submit" type="submit" fullWidth variant="contained" sx={{ mt: 3 }}>
+            <Button
+              id="submit"
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3 }}
+            >
               Login
             </Button>
           </Box>
