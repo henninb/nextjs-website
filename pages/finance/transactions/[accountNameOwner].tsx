@@ -251,10 +251,14 @@ export default function TransactionsByAccount() {
     accountNameOwner: string,
     transactionState: TransactionState,
   ) => {
+    // Round to 2 decimal places to ensure proper precision
+    const clearedAmount = fetchedTotals?.totalsCleared ?? 0;
+    const roundedAmount = Math.round(clearedAmount * 100) / 100;
+    
     const payload: ValidationAmount = {
       validationId: Math.floor(Math.random() * 1000000),
       activeStatus: true,
-      amount: fetchedTotals?.totalsCleared ?? 0,
+      amount: roundedAmount,
       transactionState: transactionState,
       validationDate: new Date(),
     };
