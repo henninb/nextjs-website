@@ -94,7 +94,6 @@ describe("Accounts Component", () => {
     expect(screen.getByText("Account Details")).toBeInTheDocument();
   });
 
-
   it("shows spinner while loading", () => {
     (useAccountFetch.default as jest.Mock).mockReturnValue({
       data: null,
@@ -104,13 +103,13 @@ describe("Accounts Component", () => {
     });
 
     render(<Accounts />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {
     render(<Accounts />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 });

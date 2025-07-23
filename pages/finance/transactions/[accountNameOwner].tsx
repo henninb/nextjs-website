@@ -60,6 +60,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import { useAuth } from "../../../components/AuthProvider";
+import { UIToggle } from "../../../components/UIToggle";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -254,7 +255,7 @@ export default function TransactionsByAccount() {
     // Round to 2 decimal places to ensure proper precision
     const clearedAmount = fetchedTotals?.totalsCleared ?? 0;
     const roundedAmount = Math.round(clearedAmount * 100) / 100;
-    
+
     const payload: ValidationAmount = {
       validationId: Math.random(),
       activeStatus: true,
@@ -523,6 +524,7 @@ export default function TransactionsByAccount() {
   return (
     <div>
       <FinanceLayout>
+        <UIToggle />
         <h2>
           {validAccountNameOwner ? validAccountNameOwner.toUpperCase() : ""}
         </h2>

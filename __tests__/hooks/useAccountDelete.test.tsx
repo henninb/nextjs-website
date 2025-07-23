@@ -112,7 +112,7 @@ describe("useAccountDelete", () => {
         () => {
           return HttpResponse.json(
             { response: "Cannot delete this account" },
-            { status: 400 }
+            { status: 400 },
           );
         },
       ),
@@ -161,7 +161,7 @@ describe("useAccountDelete", () => {
         () => {
           return HttpResponse.json(
             { message: "Network error" },
-            { status: 500 }
+            { status: 500 },
           );
         },
       ),

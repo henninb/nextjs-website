@@ -8,6 +8,7 @@ import Payment from "../../model/Payment";
 import Account from "../../model/Account";
 import Parameter from "../../model/Parameter";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { UIProvider } from "../../contexts/UIContext";
 
 // Mock AuthProvider instead of importing it
 const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -46,6 +47,27 @@ jest.mock("next/router", () => ({
   }),
 }));
 
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+});
+
 // Mock jose package
 jest.mock("jose", () => ({
   jwtVerify: jest.fn().mockResolvedValue(true),
@@ -76,7 +98,9 @@ const createWrapper =
   (queryClient: QueryClient) =>
   ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={mockTheme}>{children}</ThemeProvider>
+      <UIProvider>
+        <ThemeProvider theme={mockTheme}>{children}</ThemeProvider>
+      </UIProvider>
     </QueryClientProvider>
   );
 
@@ -243,13 +267,10 @@ describe("Payments Page", () => {
 
     // Set up API mocks that will return data but with some delay - correct endpoint paths
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/payment/select",
-        async () => {
-          await delay(100);
-          return HttpResponse.json(mockPayments);
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/payment/select", async () => {
+        await delay(100);
+        return HttpResponse.json(mockPayments);
+      }),
       http.get(
         "https://finance.bhenning.com/api/account/select/active",
         async () => {
@@ -276,18 +297,12 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/payment/select",
-        () => {
-          return HttpResponse.json(mockPayments);
-        },
-      ),
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return HttpResponse.json(mockAccounts);
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/payment/select", () => {
+        return HttpResponse.json(mockPayments);
+      }),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return HttpResponse.json(mockAccounts);
+      }),
       http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
         () => {
@@ -318,18 +333,12 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/payment/select",
-        () => {
-          return HttpResponse.json(mockPayments);
-        },
-      ),
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return HttpResponse.json(mockAccounts);
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/payment/select", () => {
+        return HttpResponse.json(mockPayments);
+      }),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return HttpResponse.json(mockAccounts);
+      }),
       http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
         () => {
@@ -360,18 +369,12 @@ describe("Payments Page", () => {
 
     // Set up API mocks with correct endpoint paths
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/payment/select",
-        () => {
-          return HttpResponse.json(mockPayments);
-        },
-      ),
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return HttpResponse.json(mockAccounts);
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/payment/select", () => {
+        return HttpResponse.json(mockPayments);
+      }),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return HttpResponse.json(mockAccounts);
+      }),
       http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
         () => {
@@ -396,18 +399,12 @@ describe("Payments Page", () => {
 
     // Set up API mocks to simulate errors with correct endpoint paths
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/payment/select",
-        () => {
-          return HttpResponse.json({ message: "Server error" }, { status: 500 });
-        },
-      ),
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return HttpResponse.json(mockAccounts);
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/payment/select", () => {
+        return HttpResponse.json({ message: "Server error" }, { status: 500 });
+      }),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return HttpResponse.json(mockAccounts);
+      }),
       http.get(
         "https://finance.bhenning.com/api/parameter/select/active",
         () => {

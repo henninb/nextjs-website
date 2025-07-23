@@ -33,6 +33,7 @@ import {
   formatDateForDisplay,
 } from "../../components/Common";
 import { useAuth } from "../../components/AuthProvider";
+import { UIToggle } from "../../components/UIToggle";
 
 const initialPaymentData: Payment = {
   paymentId: undefined,
@@ -286,6 +287,7 @@ export default function Payments() {
   return (
     <div>
       <FinanceLayout>
+        <UIToggle />
         <h2>Payment Details</h2>
         {showSpinner ? (
           <Spinner />

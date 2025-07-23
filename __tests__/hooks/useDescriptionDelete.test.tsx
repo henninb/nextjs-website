@@ -152,7 +152,10 @@ describe("useDescriptionDelete", () => {
       http.delete(
         `https://finance.bhenning.com/api/description/delete/${mockDescription.descriptionName}`,
         () => {
-          return HttpResponse.json({ message: "Network error" }, { status: 500 });
+          return HttpResponse.json(
+            { message: "Network error" },
+            { status: 500 },
+          );
         },
       ),
     );

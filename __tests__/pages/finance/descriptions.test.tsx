@@ -79,7 +79,7 @@ describe("Descriptions Component", () => {
 
   it("renders data grid component", () => {
     render(<Descriptions />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 
@@ -92,8 +92,7 @@ describe("Descriptions Component", () => {
     });
 
     render(<Descriptions />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
-
 });

@@ -30,7 +30,7 @@ const mockPaymentData = [
     transactionDate: new Date("2024-01-01"),
     sourceAccount: "Checking Account",
     destinationAccount: "Credit Card",
-    amount: 250.00,
+    amount: 250.0,
     accountNameOwner: "Credit Card",
     activeStatus: true,
   },
@@ -119,7 +119,7 @@ describe("Payments Component", () => {
 
   it("renders data grid component", () => {
     render(<Payments />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 
@@ -132,8 +132,7 @@ describe("Payments Component", () => {
     });
 
     render(<Payments />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
-
 });

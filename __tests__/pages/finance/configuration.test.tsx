@@ -79,7 +79,7 @@ describe("Configuration Component", () => {
 
   it("renders data grid component", () => {
     render(<Configuration />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 
@@ -92,8 +92,7 @@ describe("Configuration Component", () => {
     });
 
     render(<Configuration />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
-
 });

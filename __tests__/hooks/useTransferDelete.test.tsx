@@ -156,8 +156,7 @@ describe("useDeleteTransfer", () => {
     server.use(
       http.delete(
         `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
-        () =>
-          HttpResponse.json({ message: "Network error" }, { status: 500 }),
+        () => HttpResponse.json({ message: "Network error" }, { status: 500 }),
       ),
     );
 

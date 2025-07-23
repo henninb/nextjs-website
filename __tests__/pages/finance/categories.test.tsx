@@ -80,7 +80,7 @@ describe("Categories Component", () => {
 
   it("renders data grid component", () => {
     render(<Categories />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 
@@ -94,7 +94,7 @@ describe("Categories Component", () => {
     });
 
     render(<Categories />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
 
@@ -109,9 +109,13 @@ describe("Categories Component", () => {
     });
 
     render(<Categories />, { wrapper: createWrapper() });
-    
-    expect(screen.getByText("Failed to load categories. Please check your connection.")).toBeInTheDocument();
-    
+
+    expect(
+      screen.getByText(
+        "Failed to load categories. Please check your connection.",
+      ),
+    ).toBeInTheDocument();
+
     const retryButton = screen.getByText("Retry");
     fireEvent.click(retryButton);
     expect(mockRefetch).toHaveBeenCalled();
@@ -119,8 +123,7 @@ describe("Categories Component", () => {
 
   it("renders data grid component", () => {
     render(<Categories />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
-
 });

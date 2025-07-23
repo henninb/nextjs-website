@@ -155,7 +155,10 @@ describe("useCategoryDelete", () => {
       http.delete(
         `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
         () => {
-          return HttpResponse.json({ message: "Network error" }, { status: 500 });
+          return HttpResponse.json(
+            { message: "Network error" },
+            { status: 500 },
+          );
         },
       ),
     );

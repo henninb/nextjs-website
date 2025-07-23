@@ -147,8 +147,7 @@ describe("useParameterDelete", () => {
     server.use(
       http.delete(
         `https://finance.bhenning.com/api/parameter/delete/${mockParameter.parameterName}`,
-        () =>
-          HttpResponse.json({ message: "Network error" }, { status: 500 }),
+        () => HttpResponse.json({ message: "Network error" }, { status: 500 }),
       ),
     );
 

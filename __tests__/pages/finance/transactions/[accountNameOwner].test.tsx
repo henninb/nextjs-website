@@ -41,7 +41,7 @@ const mockTransactionData = [
     transactionDate: new Date("2024-01-01"),
     description: "Test Transaction",
     category: "Food",
-    amount: -50.00,
+    amount: -50.0,
     cleared: 0,
     transactionState: "outstanding",
     transactionType: "expense",
@@ -168,13 +168,13 @@ describe("AccountTransactions Component", () => {
     });
 
     render(<AccountTransactions />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {
     render(<AccountTransactions />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 });

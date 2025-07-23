@@ -28,7 +28,7 @@ const mockTransferData = [
     transactionDate: new Date("2024-01-01"),
     sourceAccount: "Checking Account",
     destinationAccount: "Savings Account",
-    amount: 500.00,
+    amount: 500.0,
     guidSource: "guid-1",
     guidDestination: "guid-2",
     activeStatus: true,
@@ -103,7 +103,7 @@ describe("Transfers Component", () => {
 
   it("renders data grid component", () => {
     render(<Transfers />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 
@@ -116,7 +116,7 @@ describe("Transfers Component", () => {
     });
 
     render(<Transfers />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
 });

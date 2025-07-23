@@ -153,8 +153,7 @@ describe("usePaymentDelete", () => {
     server.use(
       http.delete(
         `https://finance.bhenning.com/api/payment/delete/${mockPayment.paymentId}`,
-        () =>
-          HttpResponse.json({ message: "Network error" }, { status: 500 }),
+        () => HttpResponse.json({ message: "Network error" }, { status: 500 }),
       ),
     );
 
