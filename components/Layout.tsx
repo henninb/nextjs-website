@@ -47,6 +47,8 @@ import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
 import { useUI } from "../contexts/UIContext";
 import { UIToggleInline } from "./UIToggle";
+import { modernTheme } from "../themes/modernTheme";
+import { draculaTheme } from "../themes/draculaTheme";
 
 interface LayoutProps {
   children: ReactNode;
@@ -99,13 +101,18 @@ export default function Layout({ children }: LayoutProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const router = useRouter();
   const { pathname } = router;
-  const theme = useTheme();
+  const globalTheme = useTheme();
   const { uiMode } = useUI();
 
   const { isAuthenticated, logout } = useAuth();
   const isModern = uiMode === "modern";
 
   const isFinancePage = pathname.startsWith("/finance");
+  
+  // Use the appropriate theme based on page and mode
+  const theme = isFinancePage && isModern ? modernTheme : 
+               isFinancePage ? draculaTheme : 
+               globalTheme;
   const menuLinks = isFinancePage ? financeLinks : generalLinks;
 
   const toggleDrawer = (open: boolean) => () => {
@@ -132,15 +139,13 @@ export default function Layout({ children }: LayoutProps) {
         position="static"
         elevation={isModern ? 0 : 4}
         sx={{
-          backgroundColor:
-            isFinancePage && isModern
-              ? alpha(theme.palette.background.paper, 0.9)
-              : undefined,
-          backdropFilter: isFinancePage && isModern ? "blur(10px)" : undefined,
-          borderBottom:
-            isFinancePage && isModern
-              ? `1px solid ${theme.palette.divider}`
-              : undefined,
+          backgroundColor: isModern
+            ? alpha(theme.palette.background.paper, 0.9)
+            : undefined,
+          backdropFilter: isModern ? "blur(10px)" : undefined,
+          borderBottom: isModern
+            ? `1px solid ${theme.palette.divider}`
+            : undefined,
         }}
       >
         <Toolbar sx={{ px: isModern ? 3 : undefined }}>
@@ -253,14 +258,12 @@ export default function Layout({ children }: LayoutProps) {
         PaperProps={{
           sx: {
             width: isModern ? 320 : 250,
-            backgroundColor:
-              isFinancePage && isModern
-                ? theme.palette.background.paper
-                : undefined,
-            borderRight:
-              isFinancePage && isModern
-                ? `1px solid ${theme.palette.divider}`
-                : undefined,
+            backgroundColor: isModern
+              ? theme.palette.background.paper
+              : undefined,
+            borderRight: isModern
+              ? `1px solid ${theme.palette.divider}`
+              : undefined,
             boxShadow: isModern
               ? "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)"
               : undefined,

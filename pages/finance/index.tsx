@@ -375,88 +375,133 @@ export default function Accounts() {
 
         {/* Confirmation Deleting Modal */}
         <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
-          <Paper>
-            <Typography variant="h6">Confirm Deletion</Typography>
-            <Typography>
-              Are you sure you want to delete the account "
-              {selectedAccount?.accountNameOwner}"?
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModelDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              maxWidth: "90vw",
+              p: 3,
+            }}
+          >
+            <Paper>
+              <Box sx={{ p: 2 }}>
+                <Typography variant="h6">Confirm Deletion</Typography>
+                <Typography>
+                  Are you sure you want to delete the account "
+                  {selectedAccount?.accountNameOwner}"?
+                </Typography>
+                <Box mt={2} display="flex" justifyContent="space-between">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleDeleteRow}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => setShowModelDelete(false)}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </Box>
+            </Paper>
+          </Box>
         </Modal>
 
         {/* Modal Add Account */}
         <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
-          <Paper>
-            <h3>Add New Account</h3>
-            <TextField
-              label="Account"
-              fullWidth
-              margin="normal"
-              value={accountData?.accountNameOwner || ""}
-              onChange={(e) =>
-                setAccountData((prev) => ({
-                  ...prev,
-                  accountNameOwner: e.target.value,
-                }))
-              }
-            />
-
-            <Autocomplete
-              freeSolo
-              options={accountTypeOptions}
-              value={accountData?.accountType || ""}
-              onChange={(event, newValue) =>
-                setAccountData((prev: any) => ({
-                  ...prev,
-                  accountType: newValue || "",
-                }))
-              }
-              renderInput={(params) => (
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              maxWidth: "90vw",
+              p: 3,
+            }}
+          >
+            <Paper>
+              <Box sx={{ p: 3 }}>
+                <Typography variant="h5" sx={{ mb: 2 }}>
+                  Add New Account
+                </Typography>
                 <TextField
-                  {...params}
-                  label="Account Type"
+                  label="Account"
                   fullWidth
                   margin="normal"
-                  onKeyDown={handleAccountTypeKeyDown}
+                  value={accountData?.accountNameOwner || ""}
+                  onChange={(e) =>
+                    setAccountData((prev) => ({
+                      ...prev,
+                      accountNameOwner: e.target.value,
+                    }))
+                  }
                 />
-              )}
-            />
 
-            <TextField
-              label="Moniker"
-              fullWidth
-              margin="normal"
-              value={accountData?.moniker || ""}
-              onChange={(e) =>
-                setAccountData((prev: any) => ({
-                  ...prev,
-                  moniker: e.target.value,
-                }))
-              }
-            />
-            <Button
-              variant="contained"
-              onClick={() => accountData && handleAddRow(accountData)}
-            >
-              Add
-            </Button>
-          </Paper>
+                <Autocomplete
+                  freeSolo
+                  options={accountTypeOptions}
+                  value={accountData?.accountType || ""}
+                  onChange={(event, newValue) =>
+                    setAccountData((prev: any) => ({
+                      ...prev,
+                      accountType: newValue || "",
+                    }))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Account Type"
+                      fullWidth
+                      margin="normal"
+                      onKeyDown={handleAccountTypeKeyDown}
+                    />
+                  )}
+                />
+
+                <TextField
+                  label="Moniker"
+                  fullWidth
+                  margin="normal"
+                  value={accountData?.moniker || ""}
+                  onChange={(e) =>
+                    setAccountData((prev: any) => ({
+                      ...prev,
+                      moniker: e.target.value,
+                    }))
+                  }
+                />
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 1,
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    onClick={() => setShowModelAdd(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => accountData && handleAddRow(accountData)}
+                  >
+                    Add
+                  </Button>
+                </Box>
+              </Box>
+            </Paper>
+          </Box>
         </Modal>
       </FinanceLayout>
     </div>
