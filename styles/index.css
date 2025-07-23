@@ -1002,6 +1002,42 @@ header {
   color: #ff79c6 !important;
 }
 
-.turbo-debug-widget {
+/* Hide all Turbopack and Next.js development widgets/overlays */
+.turbo-debug-widget,
+.__next-dev-overlay-wrapper,
+.__next-dev-overlay,
+[data-nextjs-dev-overlay],
+[data-turbo-dev-widget],
+.__turbo-inspector,
+.__turbo-dev-overlay,
+#turbopack-floating-menu,
+#__next-dev-ui,
+[data-nextjs-turbopack],
+._turbo-dev-widget,
+.__turbopack-dev-overlay,
+.turbopack-dev-indicator,
+.__turbo-dev-indicator,
+#__turbo-dev-tools,
+.__nextjs-dev-indicator,
+.__next-build-watcher,
+[class*="turbo"],
+[id*="turbo"],
+[class*="next-dev"],
+[id*="next-dev"],
+[class*="build-activity"],
+[id*="build-activity"],
+.__nextjs-build-indicator,
+.__next-webpack-indicator,
+[class*="__nextjs"],
+[id*="__nextjs"] {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  left: -9999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  z-index: -9999 !important;
 }

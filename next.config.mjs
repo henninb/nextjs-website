@@ -9,9 +9,6 @@
 // }
 
 export default {
-  // experimental: {
-  //   turbopack: false,
-  // },
   reactStrictMode: true,
 
   // Add transpilePackages to handle MUI X components

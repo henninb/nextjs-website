@@ -60,7 +60,6 @@ import {
   TableContainer,
 } from "@mui/material";
 import { useAuth } from "../../../components/AuthProvider";
-import { UIToggle } from "../../../components/UIToggle";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -524,7 +523,6 @@ export default function TransactionsByAccount() {
   return (
     <div>
       <FinanceLayout>
-        <UIToggle />
         <h2>
           {validAccountNameOwner ? validAccountNameOwner.toUpperCase() : ""}
         </h2>

@@ -1,6 +1,7 @@
 import "../styles/index.css";
 import Layout from "../components/Layout";
 import AuthProvider from "../components/AuthProvider";
+import { UIProvider } from "../contexts/UIContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
@@ -10,6 +11,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
 
   useEffect(() => {
+    // Disable Next.js development overlay and turbopack widgets
+    if (typeof window !== "undefined") {
+      (window as any).__NEXT_DEV_OVERLAY = false;
+      (window as any).__turbopack_dev_overlay = false;
+      (window as any).__TURBOPACK_DEV_OVERLAY_ENABLED__ = false;
+    }
+
     (window as any)._pxCustomAbrDomains = [
       "amazonaws.com",
       "execute-api.us-east-1.amazonaws.com",
@@ -79,9 +87,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
+        <UIProvider>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </UIProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

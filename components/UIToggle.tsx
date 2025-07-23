@@ -10,6 +10,51 @@ import {
 import { Palette, AutoAwesome } from "@mui/icons-material";
 import { useUI } from "../contexts/UIContext";
 
+// Inline version for use in toolbar
+export const UIToggleInline: React.FC = () => {
+  const { uiMode, toggleUIMode } = useUI();
+  const theme = useTheme();
+
+  const isModern = uiMode === "modern";
+
+  return (
+    <Tooltip
+      title={`Switch to ${isModern ? "Dracula" : "Modern Dark"} UI`}
+      placement="bottom"
+    >
+      <IconButton
+        onClick={toggleUIMode}
+        size="small"
+        sx={{
+          color: "inherit",
+          borderRadius: 2,
+          padding: "8px",
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            transform: "scale(1.05)",
+          },
+        }}
+      >
+        {isModern ? (
+          <Palette
+            sx={{
+              fontSize: "1.2rem",
+            }}
+          />
+        ) : (
+          <AutoAwesome
+            sx={{
+              fontSize: "1.2rem",
+            }}
+          />
+        )}
+      </IconButton>
+    </Tooltip>
+  );
+};
+
+// Original fixed position version (kept for backward compatibility if needed)
 export const UIToggle: React.FC = () => {
   const { uiMode, toggleUIMode } = useUI();
   const theme = useTheme();

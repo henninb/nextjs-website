@@ -29,7 +29,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import { useAuth } from "../../components/AuthProvider";
-import { UIToggle } from "../../components/UIToggle";
 import {
   Table,
   TableHead,
@@ -251,7 +250,6 @@ export default function Accounts() {
   return (
     <div>
       <FinanceLayout>
-        <UIToggle />
         <h2>Account Details</h2>
         {showSpinner ? (
           <Spinner />
