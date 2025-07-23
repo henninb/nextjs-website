@@ -124,3 +124,5 @@ curl -X 'POST' 'https://www.brianhenning.com/api/celsius' \
   -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" \
   --data-raw '{"fahrenheit":100}'
+
+https://captcha.px-cdn.net/PXjJ0cYtn9/captcha.js?a=c&u=1d0953eb-63f9-11f0-807c-1201d10bfd28&v=09daa62b-63f9-11f0-8948-82c124838a96&m=0&b=aHR0cHM6Ly93d3cuYmhlbm5pbmcuY29tL2FwaS9jZWxzaXVz&h=UE9TVA==
