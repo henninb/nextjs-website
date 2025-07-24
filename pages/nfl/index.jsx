@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import axios from "axios";
 import { useAuth } from "../../components/AuthProvider";
 
-export default function BasketballScores() {
+export default function FootballScores() {
   const [data, setData] = useState(null);
   const { token, login } = useAuth();
 
@@ -49,9 +49,9 @@ export default function BasketballScores() {
     },
   ];
 
-  const fetchBasketballSchedule = useCallback(async () => {
+  const fetchFootballSchedule = useCallback(async () => {
     try {
-      const response = await axios.get("/api/nba");
+      const response = await axios.get("/api/nfl");
       setData(response.data);
     } catch (error) {
       if (error) {
@@ -63,13 +63,13 @@ export default function BasketballScores() {
   }, []);
 
   useEffect(() => {
-    fetchBasketballSchedule();
-  }, [fetchBasketballSchedule]);
+    fetchFootballSchedule();
+  }, [fetchFootballSchedule]);
 
   return (
     <div style={{ margin: "20px", fontFamily: "Arial, sans-serif" }}>
       <h1 style={{ textAlign: "center", color: "#333", marginBottom: "20px" }}>
-        Wolves Basketball Scores
+        Vikings Football Scores
       </h1>
 
       <Box display="flex" justifyContent="center">

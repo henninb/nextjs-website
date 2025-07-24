@@ -327,44 +327,55 @@ export default function Transfers() {
           <Spinner />
         ) : (
           <div>
-            <IconButton onClick={() => setShowModalAdd(true)}>
-              <AddIcon />
-            </IconButton>
-            <DataGrid
-              //rows={fetchedTransfers?.filter((row) => row != null) || []}
-              rows={transfersToDisplay}
-              columns={columns}
-              getRowId={(row) => row.transferId || `temp-${Math.random()}`}
-              checkboxSelection={false}
-              rowSelection={false}
-              pagination
-              paginationModel={paginationModel}
-              onPaginationModelChange={(newModel) =>
-                setPaginationModel(newModel)
-              }
-              pageSizeOptions={[25, 50, 100]}
-              processRowUpdate={async (
-                newRow: Transfer,
-                oldRow: Transfer,
-              ): Promise<Transfer> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updateTransfer({
-                    oldTransfer: oldRow,
-                    newTransfer: newRow,
-                  });
-                  setMessage("Transfer updated successfully.");
-                  setShowSnackbar(true);
-                  //return newRow;
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(error, `Update Transfer error: ${error}`, false);
-                  throw error;
-                }
-              }}
-            />
+            <Box display="flex" justifyContent="center" mb={2}>
+              <IconButton onClick={() => setShowModalAdd(true)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  //rows={fetchedTransfers?.filter((row) => row != null) || []}
+                  rows={transfersToDisplay}
+                  columns={columns}
+                  getRowId={(row) => row.transferId || `temp-${Math.random()}`}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  pagination
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  processRowUpdate={async (
+                    newRow: Transfer,
+                    oldRow: Transfer,
+                  ): Promise<Transfer> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateTransfer({
+                        oldTransfer: oldRow,
+                        newTransfer: newRow,
+                      });
+                      setMessage("Transfer updated successfully.");
+                      setShowSnackbar(true);
+                      //return newRow;
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        `Update Transfer error: ${error}`,
+                        false,
+                      );
+                      throw error;
+                    }
+                  }}
+                  autoHeight
+                />
+              </Box>
+            </Box>
             <div>
               <SnackbarBaseline
                 message={message}

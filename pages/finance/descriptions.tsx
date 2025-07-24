@@ -175,46 +175,53 @@ export default function Descriptions() {
           <Spinner />
         ) : (
           <div>
-            <IconButton onClick={() => setShowModalAdd(true)}>
-              <AddIcon />
-            </IconButton>
-            <DataGrid
-              rows={fetchedDescrptions?.filter((row) => row != null) || []}
-              columns={columns}
-              getRowId={(row) => row.descriptionId || 0}
-              checkboxSelection={false}
-              rowSelection={false}
-              pagination
-              paginationModel={paginationModel}
-              onPaginationModelChange={(newModel) =>
-                setPaginationModel(newModel)
-              }
-              pageSizeOptions={[25, 50, 100]}
-              processRowUpdate={async (
-                newRow: Description,
-                oldRow: Description,
-              ): Promise<Description> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updateDescription({
-                    oldDescription: oldRow,
-                    newDescription: newRow,
-                  });
-                  setMessage("Description updated successfully.");
-                  setShowSnackbar(true);
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(
-                    error,
-                    `Update Description error: ${error.message}`,
-                    false,
-                  );
-                  throw error;
-                }
-              }}
-            />
+            <Box display="flex" justifyContent="center" mb={2}>
+              <IconButton onClick={() => setShowModalAdd(true)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  rows={fetchedDescrptions?.filter((row) => row != null) || []}
+                  columns={columns}
+                  getRowId={(row) => row.descriptionId || 0}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  pagination
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  autoHeight
+                  processRowUpdate={async (
+                    newRow: Description,
+                    oldRow: Description,
+                  ): Promise<Description> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateDescription({
+                        oldDescription: oldRow,
+                        newDescription: newRow,
+                      });
+                      setMessage("Description updated successfully.");
+                      setShowSnackbar(true);
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        `Update Description error: ${error.message}`,
+                        false,
+                      );
+                      throw error;
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
             <div>
               <SnackbarBaseline
                 message={message}

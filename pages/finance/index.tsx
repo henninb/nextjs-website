@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
+import DataGrid from "../../components/DataGridDynamic";
 import {
   Box,
   Button,
@@ -318,51 +319,52 @@ export default function Accounts() {
               </TableContainer>
             </div>
 
-            <IconButton onClick={() => setShowModelAdd(true)}>
-              <AddIcon />
-            </IconButton>
-            <DataGrid
-              rows={fetchedAccounts?.filter((row) => row != null) || []}
-              columns={columns}
-              getRowId={(row) => row.accountId || 0}
-              paginationModel={{
-                pageSize: fetchedAccounts?.length,
-                page: 0,
-              }}
-              pagination
-              //pageSizeOptions={[10, 25, 50]}
-              //paginationModel={{ pageSize: 25, page: 0 }}
-              //paginationModel={paginationModel}
-              // onPaginationModelChange={(newModel) =>
-              //   setPaginationModel(newModel)
-              // }
-              disableRowSelectionOnClick
-              checkboxSelection={false}
-              rowSelection={false}
-              // initialState={{
-              //   sorting: {
-              //     sortModel: [{ field: "accountNameOwner", sort: "asc" }],
-              //   },
-              // }}
-              processRowUpdate={async (
-                newRow: Account,
-                oldRow: Account,
-              ): Promise<Account> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updateAccount({ newRow: newRow, oldRow: oldRow });
-                  setMessage("Account updated successfully.");
-                  setShowSnackbar(true);
+            <Box display="flex" justifyContent="center" mb={2}>
+              <IconButton onClick={() => setShowModelAdd(true)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  rows={fetchedAccounts?.filter((row) => row != null) || []}
+                  columns={columns}
+                  getRowId={(row) => row.accountId || 0}
+                  paginationModel={{
+                    pageSize: fetchedAccounts?.length,
+                    page: 0,
+                  }}
+                  pageSizeOptions={[25, 50, 100]}
+                  pagination
+                  disableRowSelectionOnClick
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  autoHeight
+                  processRowUpdate={async (
+                    newRow: Account,
+                    oldRow: Account,
+                  ): Promise<Account> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateAccount({ newRow: newRow, oldRow: oldRow });
+                      setMessage("Account updated successfully.");
+                      setShowSnackbar(true);
 
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(error, `Update Account ${error.message}`, false);
-                  return error;
-                }
-              }}
-            />
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        `Update Account ${error.message}`,
+                        false,
+                      );
+                      return error;
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
             <div>
               <SnackbarBaseline
                 message={message}

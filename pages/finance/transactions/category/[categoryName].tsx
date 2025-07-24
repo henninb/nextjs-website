@@ -6,7 +6,7 @@ import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import useTransactionByCategory from "../../../../hooks/useTransactionByCategoryFetch";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import Transaction from "../../../../model/Transaction";
-import { Link } from "@mui/material";
+import { Link, Box } from "@mui/material";
 import FinanceLayout from "../../../../layouts/FinanceLayout";
 import { currencyFormat } from "../../../../components/Common";
 import { useAuth } from "../../../../components/AuthProvider";
@@ -119,37 +119,42 @@ export default function TransactionsByCategory() {
           <Spinner />
         ) : (
           <div>
-            <DataGrid
-              rows={fetchedTransactions?.filter((row) => row != null) || []}
-              columns={columns}
-              getRowId={(row) => row.transactionId || 0}
-              checkboxSelection={false}
-              rowSelection={false}
-              pagination
-              paginationModel={paginationModel}
-              onPaginationModelChange={(newModel) =>
-                setPaginationModel(newModel)
-              }
-              pageSizeOptions={[25, 50, 100]}
-              processRowUpdate={async (
-                newRow: Transaction,
-                oldRow: Transaction,
-              ): Promise<Transaction> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updateTransaction({ newRow, oldRow });
-                  setMessage("Transaction updated successfully.");
-                  setShowSnackbar(true);
-                  //return newRow;
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(error, "Update Transaction failure.");
-                  throw error;
-                }
-              }}
-            />
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  rows={fetchedTransactions?.filter((row) => row != null) || []}
+                  columns={columns}
+                  getRowId={(row) => row.transactionId || 0}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  pagination
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  processRowUpdate={async (
+                    newRow: Transaction,
+                    oldRow: Transaction,
+                  ): Promise<Transaction> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateTransaction({ newRow, oldRow });
+                      setMessage("Transaction updated successfully.");
+                      setShowSnackbar(true);
+                      //return newRow;
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(error, "Update Transaction failure.");
+                      throw error;
+                    }
+                  }}
+                  autoHeight
+                />
+              </Box>
+            </Box>
             <SnackbarBaseline
               message={message}
               state={showSnackbar}

@@ -22,23 +22,23 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import HomeIcon from "@mui/icons-material/Home";
-import SyncAltIcon from "@mui/icons-material/SyncAlt"; // Transfers
-import PaymentIcon from "@mui/icons-material/Payment"; // Payments
-import ReceiptIcon from "@mui/icons-material/Receipt"; // PaymentRequired
-import CategoryIcon from "@mui/icons-material/Category"; // Categories
-import DescriptionIcon from "@mui/icons-material/Description"; // Descriptions
-import SettingsIcon from "@mui/icons-material/Settings"; // Configuration
-import ImportExportIcon from "@mui/icons-material/ImportExport"; // Import
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import PaymentIcon from "@mui/icons-material/Payment";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import CategoryIcon from "@mui/icons-material/Category";
+import DescriptionIcon from "@mui/icons-material/Description";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
 import SportsBaseballIcon from "@mui/icons-material/SportsBaseball";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SportsFootballIcon from "@mui/icons-material/SportsFootball";
 import SportsHockeyIcon from "@mui/icons-material/SportsHockey";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
-import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat"; // 🌡️ Temperature
-import MusicNoteIcon from "@mui/icons-material/MusicNote"; // 🎵 Spotify
-import BuildIcon from "@mui/icons-material/Build"; // 🔧 Best for Tools
-import MenuBookIcon from "@mui/icons-material/MenuBook"; // 📖 Best for Howto
-import HowToRegIcon from "@mui/icons-material/HowToReg"; // Registration icon
+import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import BuildIcon from "@mui/icons-material/Build";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArticleIcon from "@mui/icons-material/Article";
@@ -108,11 +108,14 @@ export default function Layout({ children }: LayoutProps) {
   const isModern = uiMode === "modern";
 
   const isFinancePage = pathname.startsWith("/finance");
-  
+
   // Use the appropriate theme based on page and mode
-  const theme = isFinancePage && isModern ? modernTheme : 
-               isFinancePage ? draculaTheme : 
-               globalTheme;
+  const theme =
+    isFinancePage && isModern
+      ? modernTheme
+      : isFinancePage
+        ? draculaTheme
+        : globalTheme;
   const menuLinks = isFinancePage ? financeLinks : generalLinks;
 
   const toggleDrawer = (open: boolean) => () => {
@@ -167,7 +170,11 @@ export default function Layout({ children }: LayoutProps) {
                 : undefined,
             }}
           >
-            <MenuIcon />
+            <MenuIcon
+              sx={{
+                color: isModern ? "#3b82f6" : "inherit",
+              }}
+            />
           </IconButton>
 
           {isFinancePage && <UIToggleInline />}

@@ -230,49 +230,56 @@ export default function Configuration() {
           <Spinner />
         ) : (
           <div>
-            <IconButton onClick={() => setShowModalAdd(true)}>
-              <AddIcon />
-            </IconButton>
-            <DataGrid
-              rows={[...(fetchedParameters || []), ...offlineRows]}
-              columns={columns}
-              getRowId={(row) => row.parameterId || crypto.randomUUID()}
-              checkboxSelection={false}
-              rowSelection={false}
-              pagination
-              paginationModel={paginationModel}
-              onPaginationModelChange={(newModel) =>
-                setPaginationModel(newModel)
-              }
-              pageSizeOptions={[25, 50, 100]}
-              disableRowSelectionOnClick
-              processRowUpdate={async (
-                newRow: Parameter,
-                oldRow: Parameter,
-              ): Promise<Parameter> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updateParameter({
-                    oldParameter: oldRow,
-                    newParameter: newRow,
-                  });
-                  setParameterData(newRow);
-                  setMessage("Parameter updated successfully.");
-                  setShowSnackbar(true);
+            <Box display="flex" justifyContent="center" mb={2}>
+              <IconButton onClick={() => setShowModalAdd(true)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  rows={[...(fetchedParameters || []), ...offlineRows]}
+                  columns={columns}
+                  getRowId={(row) => row.parameterId || crypto.randomUUID()}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  pagination
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  disableRowSelectionOnClick
+                  autoHeight
+                  processRowUpdate={async (
+                    newRow: Parameter,
+                    oldRow: Parameter,
+                  ): Promise<Parameter> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateParameter({
+                        oldParameter: oldRow,
+                        newParameter: newRow,
+                      });
+                      setParameterData(newRow);
+                      setMessage("Parameter updated successfully.");
+                      setShowSnackbar(true);
 
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(
-                    error,
-                    `Parameter Update failure: ${error}`,
-                    false,
-                  );
-                  throw error;
-                }
-              }}
-            />
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        `Parameter Update failure: ${error}`,
+                        false,
+                      );
+                      throw error;
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
             <SnackbarBaseline
               message={message}
               state={showSnackbar}

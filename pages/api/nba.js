@@ -4,7 +4,7 @@ export const runtime = "edge";
 
 export default async function GET() {
   const url = new URL(
-    "https://fixturedownload.com/feed/json/nba-2023/minnesota-timberwolves",
+    "https://fixturedownload.com/feed/json/nba-2024/minnesota-timberwolves",
   );
   const params = {};
 

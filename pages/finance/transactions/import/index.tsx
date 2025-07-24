@@ -328,64 +328,71 @@ export default function TransactionImporter() {
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Enter transactions, e.g.\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary 2000.00"
         />
-        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          <Button variant="contained" onClick={parseTransactions}>
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleDeleteAllPendingTransactions}
-          >
-            Delete All Pending Transactions
-          </Button>
+        <Box display="flex" justifyContent="center" mb={2}>
+          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button variant="contained" onClick={parseTransactions}>
+              Submit
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleDeleteAllPendingTransactions}
+            >
+              Delete All Pending Transactions
+            </Button>
+          </Box>
         </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
           <div>
-            <DataGrid
-              rows={transactions}
-              columns={columns}
-              processRowUpdate={async (
-                newRow: PendingTransaction,
-                oldRow: PendingTransaction,
-              ): Promise<PendingTransaction> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updatePendingTransaction({
-                    oldPendingTransaction: oldRow,
-                    newPendingTransaction: newRow,
-                  });
-                  setMessage("PendingTransaction updated successfully.");
-                  setShowSnackbar(true);
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  rows={transactions}
+                  columns={columns}
+                  processRowUpdate={async (
+                    newRow: PendingTransaction,
+                    oldRow: PendingTransaction,
+                  ): Promise<PendingTransaction> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updatePendingTransaction({
+                        oldPendingTransaction: oldRow,
+                        newPendingTransaction: newRow,
+                      });
+                      setMessage("PendingTransaction updated successfully.");
+                      setShowSnackbar(true);
 
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(
-                    error,
-                    "Update PendingTransaction failure.",
-                    false,
-                  );
-                  throw error;
-                }
-              }}
-              initialState={{
-                columns: {
-                  columnVisibilityModel: {
-                    pendingTransactionId: false, // This will hide the column by default
-                  },
-                },
-                sorting: {
-                  sortModel: [
-                    { field: "transactionDate", sort: "desc" }, // Newest dates first
-                  ],
-                },
-              }}
-              getRowId={(row) => row.guid}
-            />
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        "Update PendingTransaction failure.",
+                        false,
+                      );
+                      throw error;
+                    }
+                  }}
+                  initialState={{
+                    columns: {
+                      columnVisibilityModel: {
+                        pendingTransactionId: false, // This will hide the column by default
+                      },
+                    },
+                    sorting: {
+                      sortModel: [
+                        { field: "transactionDate", sort: "desc" }, // Newest dates first
+                      ],
+                    },
+                  }}
+                  getRowId={(row) => row.guid}
+                  autoHeight
+                />
+              </Box>
+            </Box>
           </div>
         )}
         <SnackbarBaseline

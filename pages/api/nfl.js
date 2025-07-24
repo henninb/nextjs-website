@@ -3,16 +3,10 @@ import { NextResponse } from "next/server";
 export const runtime = "edge";
 
 export default async function GET() {
-  const url = new URL("https://statsapi.mlb.com/api/v1/schedule");
-
-  const params = {
-    startDate: "1/01/2025",
-    endDate: "12/31/2025",
-    gameTypes: "R",
-    sportId: 1,
-    teamId: 142,
-    hydrate: "decisions",
-  };
+  const url = new URL(
+    "https://fixturedownload.com/feed/json/nfl-2025/minnesota-vikings",
+  );
+  const params = {};
 
   url.search = new URLSearchParams(params).toString();
   const apiResponse = await fetch(url.toString(), {

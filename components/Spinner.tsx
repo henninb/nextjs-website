@@ -1,7 +1,7 @@
 import FinanceLayout from "../layouts/FinanceLayout";
 import React from "react";
 
-export default function Spinner() {
+const Spinner = React.memo(function Spinner() {
   return (
     <div className="spinner-page">
       <FinanceLayout>
@@ -22,4 +22,6 @@ export default function Spinner() {
       </FinanceLayout>
     </div>
   );
-}
+});
+
+export default Spinner;

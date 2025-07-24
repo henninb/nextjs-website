@@ -213,38 +213,45 @@ export default function Categories() {
           </Box>
         ) : (
           <div>
-            <IconButton onClick={() => setShowModalAdd(true)}>
-              <AddIcon />
-            </IconButton>
-            <DataGrid
-              //rows={data?.filter((row) => row != null) || []}
-              rows={fetchedCategories || []}
-              columns={columns}
-              getRowId={(row) => row.categoryId || 0}
-              checkboxSelection={false}
-              rowSelection={false}
-              processRowUpdate={async (
-                newRow: Category,
-                oldRow: Category,
-              ): Promise<Category> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updateCategory({
-                    oldCategory: oldRow,
-                    newCategory: newRow,
-                  });
-                  setMessage("Category updated successfully.");
-                  setShowSnackbar(true);
+            <Box display="flex" justifyContent="center" mb={2}>
+              <IconButton onClick={() => setShowModalAdd(true)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  //rows={data?.filter((row) => row != null) || []}
+                  rows={fetchedCategories || []}
+                  columns={columns}
+                  getRowId={(row) => row.categoryId || 0}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  autoHeight
+                  processRowUpdate={async (
+                    newRow: Category,
+                    oldRow: Category,
+                  ): Promise<Category> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateCategory({
+                        oldCategory: oldRow,
+                        newCategory: newRow,
+                      });
+                      setMessage("Category updated successfully.");
+                      setShowSnackbar(true);
 
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(error, "Update Category failure.", false);
-                  throw error;
-                }
-              }}
-            />
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(error, "Update Category failure.", false);
+                      throw error;
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
           </div>
         )}
 

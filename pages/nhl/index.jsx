@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
+import { Box } from "@mui/material";
+import axios from "axios";
 
 export default function Hockey() {
   const [data, setData] = useState(null);
@@ -77,17 +79,22 @@ export default function Hockey() {
     <div>
       <h1>Wild Hockey Scores</h1>
 
-      <div style={{ height: 800, width: "100%" }}>
-        <DataGrid
-          getRowId={() => crypto.randomUUID()}
-          rows={data ? data : []}
-          columns={columns}
-          pageSize={100}
-          rowsPerPageOptions={[100]}
-          checkboxSelection
-          disableSelectionOnClick
-        />
-      </div>
+      <Box display="flex" justifyContent="center">
+        <Box sx={{ width: "fit-content" }}>
+          <div style={{ height: 800, width: "100%" }}>
+            <DataGrid
+              getRowId={() => crypto.randomUUID()}
+              rows={data ? data : []}
+              columns={columns}
+              pageSize={100}
+              rowsPerPageOptions={[100]}
+              checkboxSelection
+              disableSelectionOnClick
+              autoHeight
+            />
+          </div>
+        </Box>
+      </Box>
     </div>
   );
 }

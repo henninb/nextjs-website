@@ -11,7 +11,9 @@ export default function Baseball() {
           <td>{index}</td>
           <td>{game.gameDate}</td>
           <td>{game.teams.away.team.name}</td>
+          <td>{game.teams.away.score || "-"}</td>
           <td>{game.teams.home.team.name}</td>
+          <td>{game.teams.home.score || "-"}</td>
           <td>{game.status.abstractGameState}</td>
         </tr>
       );
@@ -23,8 +25,10 @@ export default function Baseball() {
           <tr>
             <th>ID</th>
             <th>date</th>
-            <th>HomeTeam</th>
             <th>AwayTeam</th>
+            <th>AwayScore</th>
+            <th>HomeTeam</th>
+            <th>HomeScore</th>
             <th>Status</th>
           </tr>
           {rows}

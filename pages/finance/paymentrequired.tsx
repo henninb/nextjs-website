@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../components/Spinner";
 import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
-import { Link } from "@mui/material";
+import { Link, Box } from "@mui/material";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import { useAuth } from "../../components/AuthProvider";
 
@@ -131,18 +131,25 @@ export default function paymentrequired() {
           <Spinner />
         ) : (
           <div data-testid="payment-required-table">
-            <DataGrid
-              columns={columns}
-              rows={fetchedPaymentsRequired?.filter((row) => row != null) || []}
-              paginationModel={{
-                pageSize: fetchedPaymentsRequired?.length,
-                page: 0,
-              }}
-              hideFooterPagination={true}
-              checkboxSelection={false}
-              rowSelection={false}
-              getRowId={(row) => row.accountNameOwner}
-            />
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  columns={columns}
+                  rows={
+                    fetchedPaymentsRequired?.filter((row) => row != null) || []
+                  }
+                  paginationModel={{
+                    pageSize: fetchedPaymentsRequired?.length,
+                    page: 0,
+                  }}
+                  hideFooterPagination={true}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  getRowId={(row) => row.accountNameOwner}
+                  autoHeight
+                />
+              </Box>
+            </Box>
           </div>
         )}
       </FinanceLayout>

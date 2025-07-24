@@ -291,42 +291,53 @@ export default function Payments() {
           <Spinner />
         ) : (
           <div>
-            <IconButton onClick={() => setShowModalAdd(true)}>
-              <AddIcon />
-            </IconButton>
-            <DataGrid
-              rows={fetchedPayments?.filter((row) => row != null) || []}
-              columns={columns}
-              getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
-              checkboxSelection={false}
-              rowSelection={false}
-              pagination
-              paginationModel={paginationModel}
-              onPaginationModelChange={(newModel) =>
-                setPaginationModel(newModel)
-              }
-              pageSizeOptions={[25, 50, 100]}
-              processRowUpdate={async (
-                newRow: Payment,
-                oldRow: Payment,
-              ): Promise<Payment> => {
-                if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                  return oldRow;
-                }
-                try {
-                  await updatePayment({
-                    oldPayment: oldRow,
-                    newPayment: newRow,
-                  });
-                  setMessage("Payment updated successfully.");
-                  setShowSnackbar(true);
-                  return { ...newRow };
-                } catch (error) {
-                  handleError(error, `Update Payment error: ${error}`, false);
-                  throw error;
-                }
-              }}
-            />
+            <Box display="flex" justifyContent="center" mb={2}>
+              <IconButton onClick={() => setShowModalAdd(true)}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "fit-content" }}>
+                <DataGrid
+                  rows={fetchedPayments?.filter((row) => row != null) || []}
+                  columns={columns}
+                  getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  pagination
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  autoHeight
+                  processRowUpdate={async (
+                    newRow: Payment,
+                    oldRow: Payment,
+                  ): Promise<Payment> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updatePayment({
+                        oldPayment: oldRow,
+                        newPayment: newRow,
+                      });
+                      setMessage("Payment updated successfully.");
+                      setShowSnackbar(true);
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        `Update Payment error: ${error}`,
+                        false,
+                      );
+                      throw error;
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
             <div>
               <SnackbarBaseline
                 message={message}

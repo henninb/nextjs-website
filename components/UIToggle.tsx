@@ -7,7 +7,8 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Palette, AutoAwesome } from "@mui/icons-material";
+import Palette from "@mui/icons-material/Palette";
+import AutoAwesome from "@mui/icons-material/AutoAwesome";
 import { useUI } from "../contexts/UIContext";
 
 // Inline version for use in toolbar
@@ -40,12 +41,14 @@ export const UIToggleInline: React.FC = () => {
           <Palette
             sx={{
               fontSize: "1.2rem",
+              color: "#3b82f6",
             }}
           />
         ) : (
           <AutoAwesome
             sx={{
               fontSize: "1.2rem",
+              color: "rgba(80, 250, 123, 1)",
             }}
           />
         )}

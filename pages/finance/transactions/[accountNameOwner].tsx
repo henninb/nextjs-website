@@ -648,48 +648,62 @@ export default function TransactionsByAccount() {
                 </div>
               </div>
 
-              <DataGrid
-                rows={fetchedTransactions?.filter((row) => row != null) || []}
-                columns={columns}
-                getRowId={(row) => row.transactionId || 0}
-                //checkboxSelection={false}
-                checkboxSelection={true}
-                //rowSelection={false}
-                //{...(fetchedTransactions.length > 25 ? { pagination: true } : {})}
-                pagination
-                paginationModel={paginationModel}
-                hideFooter={fetchedTransactions?.length < 25}
-                onPaginationModelChange={(newModel) => {
-                  setPaginationModel(newModel);
-                }}
-                pageSizeOptions={[25, 50, 100]}
-                //disableRowSelectionOnClick
-                // initialState={{
-                //   sorting: {
-                //     sortModel: [{ field: "transactionDate", sort: "desc" }],
-                //   },
-                // }}
-                processRowUpdate={async (
-                  newRow: Transaction,
-                  oldRow: Transaction,
-                ): Promise<Transaction> => {
-                  if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                    return oldRow;
-                  }
-                  try {
-                    await updateTransaction({ newRow: newRow, oldRow: oldRow });
-                    setMessage("Transaction updated successfully.");
-                    setShowSnackbar(true);
-                    return { ...newRow };
-                  } catch (error) {
-                    handleError(error, "Update Transaction failure.", false);
-                    throw error;
-                  }
-                }}
-                disableRowSelectionOnClick={true}
-                rowSelectionModel={rowSelectionModel}
-                onRowSelectionModelChange={setRowSelectionModel}
-              />
+              <Box display="flex" justifyContent="center">
+                <Box sx={{ width: "fit-content" }}>
+                  <DataGrid
+                    rows={
+                      fetchedTransactions?.filter((row) => row != null) || []
+                    }
+                    columns={columns}
+                    getRowId={(row) => row.transactionId || 0}
+                    checkboxSelection={true}
+                    pagination
+                    paginationModel={paginationModel}
+                    hideFooter={fetchedTransactions?.length < 25}
+                    onPaginationModelChange={(newModel) => {
+                      setPaginationModel(newModel);
+                    }}
+                    pageSizeOptions={[25, 50, 100]}
+                    density="compact"
+                    disableColumnFilter
+                    disableColumnMenu
+                    disableVirtualization={false}
+                    autoHeight
+                    // initialState={{
+                    //   sorting: {
+                    //     sortModel: [{ field: "transactionDate", sort: "desc" }],
+                    //   },
+                    // }}
+                    processRowUpdate={async (
+                      newRow: Transaction,
+                      oldRow: Transaction,
+                    ): Promise<Transaction> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updateTransaction({
+                          newRow: newRow,
+                          oldRow: oldRow,
+                        });
+                        setMessage("Transaction updated successfully.");
+                        setShowSnackbar(true);
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(
+                          error,
+                          "Update Transaction failure.",
+                          false,
+                        );
+                        throw error;
+                      }
+                    }}
+                    disableRowSelectionOnClick={true}
+                    rowSelectionModel={rowSelectionModel}
+                    onRowSelectionModelChange={setRowSelectionModel}
+                  />
+                </Box>
+              </Box>
             </div>
 
             <div>
