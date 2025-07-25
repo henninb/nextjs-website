@@ -35,7 +35,7 @@ export default function Configuration() {
   );
   const [offlineRows, setOfflineRows] = useState<Parameter[]>([]);
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: 25,
+    pageSize: 50,
     page: 0,
   });
 

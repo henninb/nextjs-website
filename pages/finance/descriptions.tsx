@@ -36,14 +36,9 @@ export default function Descriptions() {
     null,
   );
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: 25,
+    pageSize: 50,
     page: 0,
   });
-  // const [newDescriptionData, setNewDescriptionData] = useState<Description>({
-  //   descriptionId: 0,
-  //   descriptionName: "",
-  //   activeStatus: true,
-  // });
 
   const {
     data: fetchedDescrptions,

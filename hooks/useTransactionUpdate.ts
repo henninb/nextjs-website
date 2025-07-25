@@ -113,6 +113,7 @@ export default function useTransactionUpdate() {
         const difference = variables.newRow.amount - variables.oldRow.amount;
 
         if (variables.oldRow.amount !== variables.newRow.amount) {
+          totals.totals += difference;
           if (variables.oldRow.transactionState === "future") {
             totals.totalsFuture += difference;
           } else if (variables.oldRow.transactionState === "cleared") {
@@ -179,31 +180,10 @@ export default function useTransactionUpdate() {
           queryClient.setQueryData(oldTotalsKey, oldTotals);
         }
 
-        const newAccountData =
-          (queryClient.getQueryData(newAccountKey) as Transaction[]) || [];
-        queryClient.setQueryData(newAccountKey, [
-          ...newAccountData,
-          updatedRow,
-        ]);
-
-        let newTotals: Totals = {
-          ...(queryClient.getQueryData(newTotalsKey) || {
-            totals: 0,
-            totalsFuture: 0,
-            totalsCleared: 0,
-            totalsOutstanding: 0,
-          }),
-        };
-
-        if (variables.newRow.transactionState === "future") {
-          newTotals.totalsFuture += variables.newRow.amount;
-        } else if (variables.newRow.transactionState === "cleared") {
-          newTotals.totalsCleared += variables.newRow.amount;
-        } else if (variables.newRow.transactionState === "outstanding") {
-          newTotals.totalsOutstanding += variables.newRow.amount;
-        }
-
-        queryClient.setQueryData(newTotalsKey, newTotals);
+        // For destination account, we need to invalidate both transactions and totals
+        // because we don't have the complete current state to do accurate calculations
+        queryClient.invalidateQueries({ queryKey: newAccountKey });
+        queryClient.invalidateQueries({ queryKey: newTotalsKey });
         queryClient.setQueryData(oldAccountKey, newData); // Update transactions
       }
     },

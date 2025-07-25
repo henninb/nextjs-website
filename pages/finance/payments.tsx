@@ -53,7 +53,7 @@ export default function Payments() {
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: 25,
+    pageSize: 50,
     page: 0,
   });
 

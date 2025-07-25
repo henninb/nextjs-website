@@ -41,7 +41,7 @@ export default function Transfers() {
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: 25,
+    pageSize: 50,
     page: 0,
   });
 

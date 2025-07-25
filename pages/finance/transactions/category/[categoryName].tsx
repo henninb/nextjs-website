@@ -16,7 +16,7 @@ export default function TransactionsByCategory() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: 25,
+    pageSize: 50,
     page: 0,
   });
 
