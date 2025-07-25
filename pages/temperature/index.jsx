@@ -1,243 +1,476 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Head from "next/head";
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Grid,
+  Paper,
+  Chip,
+  Alert,
+  Snackbar,
+  CircularProgress,
+  Divider,
+  useTheme,
+  alpha,
+} from "@mui/material";
+import {
+  DeviceThermostat,
+  ThermostatAuto,
+  WbSunny,
+  Air,
+  Compress,
+  Schedule,
+  SwapHoriz,
+} from "@mui/icons-material";
 
 export default function Temperature() {
-  const [data, setData] = useState(null);
-  const [fahrenheitState, setFahrenheitState] = useState({
-    fahrenheit: 50,
-    celsius: 0,
-  });
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fahrenheitValue, setFahrenheitValue] = useState(50);
+  const [celsiusValue, setCelsiusValue] = useState(18);
+  const [fahrenheitResult, setFahrenheitResult] = useState("");
+  const [celsiusResult, setCelsiusResult] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const [celsiusState, setCelsiusState] = useState({
-    fahrenheit: 0,
-    celsius: 18,
-  });
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalContent, setModalContent] = useState("");
-
-  function handleFahrenheitChange(event) {
-    setFahrenheitState({
-      ...fahrenheitState,
-      [event.target.name]: event.target.value,
-    });
-  }
-
-  function handleCelsiusChange(event) {
-    setCelsiusState({
-      ...celsiusState,
-      [event.target.name]: event.target.value,
-    });
-  }
-
-  async function toFahrenheit(event) {
-    event.preventDefault();
-    const apiResponse = await fetch("/api/fahrenheit", {
-      method: "POST",
-      body: JSON.stringify(celsiusState),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const result = await apiResponse.text();
-    setModalContent(result);
-    setModalVisible(true);
-  }
-
-  async function toCelsius(event) {
-    event.preventDefault();
-    const apiResponse = await fetch("/api/celsius", {
-      method: "POST",
-      body: JSON.stringify(fahrenheitState),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const result = await apiResponse.text();
-    setModalContent(result);
-    setModalVisible(true);
-  }
+  const theme = useTheme();
 
   const fetchWeather = useCallback(async () => {
-    const apiResponse = await fetch("/api/weather", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const json = await apiResponse.json();
-    setData(json.observations[0]);
+    try {
+      setLoading(true);
+      const apiResponse = await fetch("/api/weather", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const json = await apiResponse.json();
+      setWeatherData(json.observations[0]);
+    } catch (err) {
+      setError("Failed to fetch weather data");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  function displayWeather(weather) {
-    return (
-      <div>
-        Weather observation time: {weather.obsTimeLocal} <br />
-        Weather temperature: {weather.imperial.temp} <br />
-        Weather windchill: {weather.imperial.windChill} <br />
-        Weather pressure: {weather.imperial.pressure} <br />
-      </div>
-    );
-  }
+  const convertToCelsius = async () => {
+    try {
+      const apiResponse = await fetch("/api/celsius", {
+        method: "POST",
+        body: JSON.stringify({ fahrenheit: fahrenheitValue }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await apiResponse.text();
+      setCelsiusResult(result);
+      setResultMessage(`${fahrenheitValue}°F = ${result}`);
+      setShowResult(true);
+    } catch (err) {
+      setError("Failed to convert temperature");
+    }
+  };
+
+  const convertToFahrenheit = async () => {
+    try {
+      const apiResponse = await fetch("/api/fahrenheit", {
+        method: "POST",
+        body: JSON.stringify({ celsius: celsiusValue }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await apiResponse.text();
+      setFahrenheitResult(result);
+      setResultMessage(`${celsiusValue}°C = ${result}`);
+      setShowResult(true);
+    } catch (err) {
+      setError("Failed to convert temperature");
+    }
+  };
 
   useEffect(() => {
     fetchWeather();
-  }, []);
+  }, [fetchWeather]);
 
   return (
-    <div>
+    <>
       <Head>
-        <title>Temperature</title>
-        <meta name="description" content="" />
+        <title>Temperature Converter</title>
+        <meta
+          name="description"
+          content="Convert temperatures between Fahrenheit and Celsius, plus current Minneapolis weather"
+        />
       </Head>
 
-      <main>
-        <h1>Temperature</h1>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            gutterBottom
+            sx={{
+              fontWeight: 700,
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              mb: 2,
+            }}
+          >
+            Temperature Converter
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+            Convert between Fahrenheit and Celsius with live weather data
+          </Typography>
+        </Box>
 
-        <div className="container">
-          <div className="row mb-3">
-            <div className="col-md-6 mt-4">
-              <div className="card">
-                <h3 className="card-header text-center">
-                  Fahrenheit to Celsius
-                </h3>
-                <div className="card-body">
-                  <div className="version-bulk-form indented">
-                    <form
-                      action="/api/weather"
-                      acceptCharset="UTF-8"
-                      data-remote="true"
-                      method="post"
+        <Grid container spacing={4} sx={{ mb: 6 }}>
+          <Grid item xs={12} md={6}>
+            <Card
+              elevation={4}
+              sx={{
+                height: "100%",
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                transition:
+                  "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: theme.shadows[8],
+                },
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <ThermostatAuto
+                    sx={{
+                      mr: 2,
+                      fontSize: 32,
+                      color: theme.palette.primary.main,
+                    }}
+                  />
+                  <Typography variant="h5" component="h2" fontWeight={600}>
+                    Fahrenheit to Celsius
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    value={fahrenheitValue}
+                    onChange={(e) => setFahrenheitValue(Number(e.target.value))}
+                    label="Temperature in Fahrenheit"
+                    inputProps={{ min: -500, max: 500 }}
+                    sx={{ mb: 2 }}
+                    InputProps={{
+                      endAdornment: (
+                        <Typography color="text.secondary">°F</Typography>
+                      ),
+                    }}
+                  />
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    onClick={convertToCelsius}
+                    startIcon={<SwapHoriz />}
+                    sx={{
+                      py: 1.5,
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                      "&:hover": {
+                        background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                      },
+                    }}
+                  >
+                    Convert to Celsius
+                  </Button>
+                </Box>
+
+                {celsiusResult && (
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      background: alpha(theme.palette.success.main, 0.1),
+                      border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      color="success.main"
+                      textAlign="center"
                     >
-                      <div className="form-inline">
-                        <div className="input-group col">
-                          <input
-                            type="number"
-                            name="fahrenheit"
-                            id="fahrenheit"
-                            min="-500"
-                            max="500"
-                            placeholder="Temperature in fahrenheit"
-                            defaultValue="50"
-                            className="form-control text-right"
-                            onChange={handleFahrenheitChange}
-                          />
-                          <div className="input-group-append">
-                            <button
-                              className="btn btn-secondary"
-                              type="button"
-                              onClick={toCelsius}
-                              id="amount1-btn"
-                            >
-                              Calculate
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-                    <div id="version1-bulk-result"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6 mt-4">
-              <div className="card">
-                <h3 className="card-header text-center">
-                  Celsius to Fahrenheit
-                </h3>
-                <div className="card-body">
-                  <div className="version-bulk-form indented">
-                    <form
-                      name="temperature-to-fahrenheit"
-                      action="/api/weather"
-                      data-remote="true"
-                      method="post"
+                      Result: {celsiusResult}
+                    </Typography>
+                  </Paper>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card
+              elevation={4}
+              sx={{
+                height: "100%",
+                background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+                transition:
+                  "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: theme.shadows[8],
+                },
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <DeviceThermostat
+                    sx={{
+                      mr: 2,
+                      fontSize: 32,
+                      color: theme.palette.secondary.main,
+                    }}
+                  />
+                  <Typography variant="h5" component="h2" fontWeight={600}>
+                    Celsius to Fahrenheit
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    value={celsiusValue}
+                    onChange={(e) => setCelsiusValue(Number(e.target.value))}
+                    label="Temperature in Celsius"
+                    inputProps={{ min: -500, max: 500 }}
+                    sx={{ mb: 2 }}
+                    InputProps={{
+                      endAdornment: (
+                        <Typography color="text.secondary">°C</Typography>
+                      ),
+                    }}
+                  />
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    onClick={convertToFahrenheit}
+                    startIcon={<SwapHoriz />}
+                    sx={{
+                      py: 1.5,
+                      background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+                      "&:hover": {
+                        background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+                      },
+                    }}
+                  >
+                    Convert to Fahrenheit
+                  </Button>
+                </Box>
+
+                {fahrenheitResult && (
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      background: alpha(theme.palette.success.main, 0.1),
+                      border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      color="success.main"
+                      textAlign="center"
                     >
-                      <div className="form-inline">
-                        <div className="input-group col">
-                          <input
-                            type="number"
-                            name="celsius"
-                            id="celsius"
-                            min="-500"
-                            max="500"
-                            placeholder="degrees celsius"
-                            defaultValue="18"
-                            className="form-control text-right"
-                            onChange={handleCelsiusChange}
-                          />
-                          <div className="input-group-append">
-                            <button
-                              className="btn btn-secondary"
-                              type="button"
-                              onClick={toFahrenheit}
-                              id="amount4-btn"
-                            >
-                              Calculate
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-                    <div id="version4-bulk-result"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+                      Result: {fahrenheitResult}
+                    </Typography>
+                  </Paper>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
-        <h1>Weather in Minneapolis</h1>
-        {data ? displayWeather(data) : null}
+        <Divider sx={{ my: 4 }} />
 
-        {modalVisible && (
-          <div className="modal" style={modalStyles}>
-            <div className="modal-content" style={modalContentStyles}>
-              <span
-                className="close-button"
-                style={closeButtonStyles}
-                onClick={() => setModalVisible(false)}
-              >
-                &times;
-              </span>
-              <div>{modalContent}</div>
-            </div>
-          </div>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Typography variant="h4" component="h2" gutterBottom fontWeight={600}>
+            Current Weather in Minneapolis
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Live weather data and conditions
+          </Typography>
+        </Box>
+
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress size={48} />
+          </Box>
+        ) : weatherData ? (
+          <Card
+            elevation={6}
+            sx={{
+              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.05)} 0%, ${alpha(theme.palette.info.main, 0.15)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 3,
+                      textAlign: "center",
+                      background: alpha(theme.palette.background.paper, 0.8),
+                    }}
+                  >
+                    <WbSunny
+                      sx={{
+                        fontSize: 48,
+                        color: theme.palette.warning.main,
+                        mb: 1,
+                      }}
+                    />
+                    <Typography variant="h4" fontWeight={700} color="primary">
+                      {weatherData.imperial.temp}°F
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Temperature
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 3,
+                      textAlign: "center",
+                      background: alpha(theme.palette.background.paper, 0.8),
+                    }}
+                  >
+                    <Air
+                      sx={{
+                        fontSize: 48,
+                        color: theme.palette.info.main,
+                        mb: 1,
+                      }}
+                    />
+                    <Typography variant="h4" fontWeight={700} color="primary">
+                      {weatherData.imperial.windChill}°F
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Wind Chill
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 3,
+                      textAlign: "center",
+                      background: alpha(theme.palette.background.paper, 0.8),
+                    }}
+                  >
+                    <Compress
+                      sx={{
+                        fontSize: 48,
+                        color: theme.palette.success.main,
+                        mb: 1,
+                      }}
+                    />
+                    <Typography variant="h4" fontWeight={700} color="primary">
+                      {weatherData.imperial.pressure}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Pressure (inHg)
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 3,
+                      textAlign: "center",
+                      background: alpha(theme.palette.background.paper, 0.8),
+                    }}
+                  >
+                    <Schedule
+                      sx={{
+                        fontSize: 48,
+                        color: theme.palette.secondary.main,
+                        mb: 1,
+                      }}
+                    />
+                    <Typography
+                      variant="body1"
+                      fontWeight={600}
+                      color="primary"
+                      sx={{ mb: 1 }}
+                    >
+                      {new Date(weatherData.obsTimeLocal).toLocaleTimeString()}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Last Updated
+                    </Typography>
+                    <Chip
+                      label="Live Data"
+                      size="small"
+                      color="success"
+                      sx={{ mt: 1 }}
+                    />
+                  </Paper>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        ) : (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            Weather data is currently unavailable. Please try again later.
+          </Alert>
         )}
-      </main>
-    </div>
+
+        <Snackbar
+          open={showResult}
+          autoHideDuration={4000}
+          onClose={() => setShowResult(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setShowResult(false)}
+            severity="success"
+            variant="filled"
+            sx={{ fontWeight: 600 }}
+          >
+            {resultMessage}
+          </Alert>
+        </Snackbar>
+
+        <Snackbar
+          open={!!error}
+          autoHideDuration={4000}
+          onClose={() => setError("")}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert onClose={() => setError("")} severity="error" variant="filled">
+            {error}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </>
   );
 }
-
-const modalStyles = {
-  position: "fixed",
-  zIndex: 1,
-  left: 0,
-  top: 0,
-  width: "100%",
-  height: "100%",
-  overflow: "auto",
-  backgroundColor: "rgb(0,0,0)",
-  backgroundColor: "rgba(0,0,0,0.4)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
-
-const modalContentStyles = {
-  backgroundColor: "#fefefe",
-  padding: "20px",
-  border: "1px solid #888",
-  width: "80%",
-  maxWidth: "500px",
-};
-
-const closeButtonStyles = {
-  color: "#aaa",
-  float: "right",
-  fontSize: "28px",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
