@@ -1,6 +1,10 @@
+export const config = {
+  runtime: 'edge',
+}
+
 export async function onRequest(context) {
   const { request } = context;
-  
+
   if (request.method !== 'GET') {
     return new Response(JSON.stringify({ message: 'Method not allowed' }), {
       status: 405,
@@ -15,7 +19,7 @@ export async function onRequest(context) {
 
   try {
     const url = "https://fixturedownload.com/feed/json/nfl-2025/minnesota-vikings";
-    
+
     const apiResponse = await fetch(url, {
       method: "GET",
       headers: {
@@ -41,7 +45,7 @@ export async function onRequest(context) {
     }
 
     const response = await apiResponse.json();
-    
+
     return new Response(JSON.stringify(response), {
       status: 200,
       headers: {
@@ -58,8 +62,8 @@ export async function onRequest(context) {
       stack: error.stack,
       name: error.name
     });
-    
-    return new Response(JSON.stringify({ 
+
+    return new Response(JSON.stringify({
       message: 'Failed to fetch NFL data',
       error: error.message,
       timestamp: new Date().toISOString(),
