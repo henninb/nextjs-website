@@ -40,6 +40,7 @@ export default function useValidationAmountFetch(accountNameOwner: string) {
   const queryResult = useQuery({
     queryKey: ["validationAmount", accountNameOwner],
     queryFn: () => fetchValidationAmount(accountNameOwner),
+    enabled: !!accountNameOwner,
   });
 
   if (queryResult.isError) {
