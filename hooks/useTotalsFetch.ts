@@ -13,7 +13,6 @@ const fetchTotals = async (): Promise<Totals> => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          //Authorization: basicAuth(),
         },
       },
     );

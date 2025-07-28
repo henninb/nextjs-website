@@ -916,7 +916,7 @@ export default function TransactionsByAccount() {
               }}
               onBlur={() => {
                 // Format the value when user leaves the field
-                const currentAmount = parseFloat(transactionData?.amount);
+                const currentAmount = parseFloat(String(transactionData?.amount || ''));
                 if (currentAmount && currentAmount !== 0 && currentAmount > 0) {
                   if (!isNaN(currentAmount)) {
                     const formattedValue = currentAmount.toFixed(2);

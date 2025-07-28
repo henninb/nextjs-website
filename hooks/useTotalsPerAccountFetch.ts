@@ -15,7 +15,6 @@ const fetchTotalsPerAccount = async (
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          //Authorization: basicAuth(),
         },
       },
     );
