@@ -882,7 +882,7 @@ export default function TransactionsByAccount() {
             />
 
             <TextField
-              label="Amount"
+              label="Amount ($)"
               fullWidth
               margin="normal"
               type="text"
@@ -890,31 +890,78 @@ export default function TransactionsByAccount() {
               onChange={(e) => {
                 const inputValue = e.target.value;
 
-                // Regular expression to allow only numbers with up to 2 decimal places
-                //const regex = /^\d*\.?\d{0,2}$/;
+                // Allow negative sign at the beginning, digits, and optional decimal with up to 2 places
                 const regex = /^-?\d*\.?\d{0,2}$/;
 
-                if (regex.test(inputValue) || inputValue === "") {
+                // Prevent multiple decimal points
+                const decimalCount = (inputValue.match(/\./g) || []).length;
+
+                // Prevent multiple negative signs or negative sign not at beginning
+                const negativeSignCount = (inputValue.match(/-/g) || []).length;
+                const hasValidNegativePosition = inputValue.indexOf("-") <= 0;
+
+                if (
+                  (regex.test(inputValue) ||
+                    inputValue === "" ||
+                    inputValue === "-") &&
+                  decimalCount <= 1 &&
+                  negativeSignCount <= 1 &&
+                  hasValidNegativePosition
+                ) {
                   setTransactionData((prev: any) => ({
                     ...prev,
-                    amount: inputValue, // Store as string to allow proper input control
+                    amount: inputValue,
                   }));
                 }
               }}
               onBlur={() => {
-                // Ensure value is properly formatted when user leaves the field
-                setTransactionData((prev: any) => ({
-                  ...prev,
-                  amount: prev.amount
-                    ? parseFloat(Number(prev.amount).toFixed(2)).toString() // Format to 2 decimal places
-                    : "",
-                }));
+                // Format the value when user leaves the field
+                const currentAmount = transactionData?.amount;
+                if (
+                  currentAmount &&
+                  currentAmount !== "" &&
+                  currentAmount !== "-"
+                ) {
+                  const numericValue = parseFloat(currentAmount);
+                  if (!isNaN(numericValue)) {
+                    const formattedValue = numericValue.toFixed(2);
+                    setTransactionData((prev: any) => ({
+                      ...prev,
+                      amount: formattedValue,
+                    }));
+                  }
+                } else if (currentAmount === "-") {
+                  // Clear invalid single negative sign
+                  setTransactionData((prev: any) => ({
+                    ...prev,
+                    amount: "",
+                  }));
+                }
+              }}
+              onKeyDown={(e) => {
+                // Prevent invalid characters
+                const invalidChars = ["e", "E", "+"];
+                if (invalidChars.includes(e.key)) {
+                  e.preventDefault();
+                }
               }}
               slotProps={{
                 input: {
                   inputMode: "decimal",
+                  style: {
+                    fontFamily: "monospace",
+                    fontSize: "1.1rem",
+                    textAlign: "right",
+                  },
                 },
               }}
+              helperText="Enter positive or negative amounts (e.g., -123.45, 67.89)"
+              error={
+                transactionData?.amount !== "" &&
+                transactionData?.amount !== undefined &&
+                (isNaN(parseFloat(transactionData?.amount)) ||
+                  transactionData?.amount === "-")
+              }
             />
 
             <Select
