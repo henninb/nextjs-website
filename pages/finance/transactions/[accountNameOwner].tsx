@@ -916,26 +916,15 @@ export default function TransactionsByAccount() {
               }}
               onBlur={() => {
                 // Format the value when user leaves the field
-                const currentAmount = transactionData?.amount;
-                if (
-                  currentAmount &&
-                  currentAmount !== "" &&
-                  currentAmount !== "-"
-                ) {
-                  const numericValue = parseFloat(currentAmount);
-                  if (!isNaN(numericValue)) {
-                    const formattedValue = numericValue.toFixed(2);
+                const currentAmount = parseFloat(transactionData?.amount);
+                if (currentAmount && currentAmount !== 0 && currentAmount > 0) {
+                  if (!isNaN(currentAmount)) {
+                    const formattedValue = currentAmount.toFixed(2);
                     setTransactionData((prev: any) => ({
                       ...prev,
                       amount: formattedValue,
                     }));
                   }
-                } else if (currentAmount === "-") {
-                  // Clear invalid single negative sign
-                  setTransactionData((prev: any) => ({
-                    ...prev,
-                    amount: "",
-                  }));
                 }
               }}
               onKeyDown={(e) => {
@@ -957,10 +946,8 @@ export default function TransactionsByAccount() {
               }}
               helperText="Enter positive or negative amounts (e.g., -123.45, 67.89)"
               error={
-                transactionData?.amount !== "" &&
                 transactionData?.amount !== undefined &&
-                (isNaN(parseFloat(transactionData?.amount)) ||
-                  transactionData?.amount === "-")
+                isNaN(transactionData?.amount)
               }
             />
 
