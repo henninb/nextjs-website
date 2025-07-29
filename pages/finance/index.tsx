@@ -325,7 +325,7 @@ export default function Accounts() {
               </IconButton>
             </Box>
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: "100%", minWidth: "800px" }}>
                 <DataGrid
                   rows={fetchedAccounts?.filter((row) => row != null) || []}
                   columns={columns}
