@@ -264,7 +264,7 @@ export default function Layout({ children }: LayoutProps) {
         onClose={toggleDrawer(false)}
         PaperProps={{
           sx: {
-            width: isModern ? 320 : 250,
+            width: 320,
             height: "100vh",
             maxHeight: "100vh",
             overflow: "hidden",

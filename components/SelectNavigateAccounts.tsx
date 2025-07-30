@@ -234,6 +234,9 @@ export default function SelectNavigateAccounts({
                       width: "20px",
                       height: "20px",
                       padding: "2px",
+                      color: isModern
+                        ? theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)"
+                        : "rgba(248, 248, 242, 0.7)",
                       "&:hover": {
                         backgroundColor: "error.light",
                         color: "error.contrastText",
