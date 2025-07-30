@@ -19,7 +19,6 @@ import { useRouter } from "next/router";
 import useFetchAccount from "../hooks/useAccountFetch";
 import useAccountUsageTracking from "../hooks/useAccountUsageTracking";
 import Account from "../model/Account";
-import FinanceLayout from "../layouts/FinanceLayout";
 
 interface Option {
   value: string;
@@ -28,10 +27,14 @@ interface Option {
 
 interface SelectNavigateAccountsProps {
   onNavigate: () => void; // Accept function to close menu
+  isModern?: boolean;
+  theme?: any;
 }
 
 export default function SelectNavigateAccounts({
   onNavigate,
+  isModern = false,
+  theme,
 }: SelectNavigateAccountsProps) {
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
@@ -119,7 +122,7 @@ export default function SelectNavigateAccounts({
   const mostUsedAccounts = getMostUsedAccounts(data || [], 4);
 
   return (
-    <FinanceLayout>
+    <Box sx={{ width: "100%" }}>
       <Box sx={{ width: "100%" }}>
         <FormControl variant="outlined" sx={{ minWidth: `${maxWidth}px` }}>
           <Autocomplete
@@ -141,6 +144,37 @@ export default function SelectNavigateAccounts({
                 label="Select an account"
                 placeholder="Type to search accounts"
                 variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "transparent",
+                    "& fieldset": {
+                      borderColor: isModern
+                        ? theme?.palette?.divider || "rgba(255, 255, 255, 0.23)"
+                        : "rgba(139, 233, 253, 0.5)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: isModern
+                        ? theme?.palette?.primary?.main || "#3b82f6"
+                        : "rgba(139, 233, 253, 0.8)",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: isModern
+                        ? theme?.palette?.primary?.main || "#3b82f6"
+                        : "rgba(139, 233, 253, 1)",
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: isModern
+                      ? theme?.palette?.text?.secondary ||
+                        "rgba(255, 255, 255, 0.7)"
+                      : "rgba(248, 248, 242, 0.7)",
+                  },
+                  "& .MuiInputBase-input": {
+                    color: isModern
+                      ? theme?.palette?.text?.primary || "#fff"
+                      : "rgba(248, 248, 242, 1)",
+                  },
+                }}
               />
             )}
           />
@@ -153,7 +187,10 @@ export default function SelectNavigateAccounts({
               sx={{
                 display: "block",
                 mb: 1,
-                color: "text.secondary",
+                color: isModern
+                  ? theme?.palette?.text?.secondary ||
+                    "rgba(255, 255, 255, 0.7)"
+                  : "rgba(248, 248, 242, 0.7)",
                 fontSize: "0.75rem",
               }}
             >
@@ -186,12 +223,25 @@ export default function SelectNavigateAccounts({
                       height: "24px",
                       justifyContent: "flex-start",
                       flex: 1,
+                      backgroundColor: "transparent",
+                      borderColor: isModern
+                        ? theme?.palette?.divider || "rgba(255, 255, 255, 0.23)"
+                        : "rgba(139, 233, 253, 0.5)",
+                      color: isModern
+                        ? theme?.palette?.text?.primary || "#fff"
+                        : "rgba(248, 248, 242, 1)",
                       "& .MuiChip-label": {
                         paddingLeft: "8px",
                         paddingRight: "8px",
                       },
                       "&:hover": {
-                        backgroundColor: "action.hover",
+                        backgroundColor: isModern
+                          ? theme?.palette?.action?.hover ||
+                            "rgba(255, 255, 255, 0.08)"
+                          : "rgba(139, 233, 253, 0.1)",
+                        borderColor: isModern
+                          ? theme?.palette?.primary?.main || "#3b82f6"
+                          : "rgba(139, 233, 253, 0.8)",
                       },
                     }}
                   />
@@ -242,6 +292,6 @@ export default function SelectNavigateAccounts({
           </Button>
         </DialogActions>
       </Dialog>
-    </FinanceLayout>
+    </Box>
   );
 }

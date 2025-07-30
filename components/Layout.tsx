@@ -277,9 +277,17 @@ export default function Layout({ children }: LayoutProps) {
           },
         }}
       >
-        <Box sx={{ p: isModern ? 2 : 0 }}>
+        <Box
+          sx={{
+            p: isModern ? 2 : 0,
+            height: "100vh",
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           {isModern && isFinancePage && (
-            <Box sx={{ mb: 3, textAlign: "center" }}>
+            <Box sx={{ mb: 3, textAlign: "center", flexShrink: 0 }}>
               <Chip
                 label="Finance Dashboard"
                 variant="outlined"
@@ -292,7 +300,7 @@ export default function Layout({ children }: LayoutProps) {
               />
             </Box>
           )}
-          <List sx={{ px: isModern ? 1 : 0 }}>
+          <List sx={{ px: isModern ? 1 : 0, flex: 1 }}>
             {menuLinks.map(({ text, href, icon }) => (
               <ListItem
                 key={href}
@@ -369,7 +377,11 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     <ListAltIcon />
                   </ListItemIcon>
-                  <SelectNavigateAccounts onNavigate={() => setIsOpen(false)} />
+                  <SelectNavigateAccounts
+                    onNavigate={() => setIsOpen(false)}
+                    isModern={isModern}
+                    theme={theme}
+                  />
                 </ListItemButton>
               </ListItem>
             )}
