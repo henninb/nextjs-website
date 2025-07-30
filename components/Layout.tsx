@@ -373,9 +373,7 @@ export default function Layout({ children }: LayoutProps) {
                   <ListItemIcon
                     sx={{
                       minWidth: isModern ? 40 : 56,
-                      color: isModern
-                        ? theme.palette.primary.main
-                        : "#10b981",
+                      color: isModern ? theme.palette.primary.main : "#10b981",
                     }}
                   >
                     <ListAltIcon />

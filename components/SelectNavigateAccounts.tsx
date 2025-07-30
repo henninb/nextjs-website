@@ -86,7 +86,6 @@ export default function SelectNavigateAccounts({
     removeAccount(accountNameOwner);
   };
 
-
   if (isError) {
     return (
       <div className="error-message">
@@ -235,7 +234,8 @@ export default function SelectNavigateAccounts({
                       height: "20px",
                       padding: "2px",
                       color: isModern
-                        ? theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)"
+                        ? theme?.palette?.text?.secondary ||
+                          "rgba(255, 255, 255, 0.7)"
                         : "rgba(248, 248, 242, 0.7)",
                       "&:hover": {
                         backgroundColor: "error.light",
@@ -251,7 +251,6 @@ export default function SelectNavigateAccounts({
           </Box>
         )}
       </Box>
-
     </Box>
   );
 }
