@@ -531,9 +531,19 @@ export default function TransactionsByAccount() {
   return (
     <div>
       <FinanceLayout>
-        <h2>
-          {validAccountNameOwner ? validAccountNameOwner.toUpperCase() : ""}
-        </h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            {validAccountNameOwner || "Account Transactions"}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            View and manage all transactions for this account. Track balances,
+            edit transactions, and monitor account activity.
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
@@ -616,15 +626,7 @@ export default function TransactionsByAccount() {
               </div>
 
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginTop: "16px",
-                  }}
-                >
-                  {" "}
-                  {/* Added margin for spacing */}
+                <Box display="flex" justifyContent="center" mt={2}>
                   <Button
                     onClick={() =>
                       handleInsertNewValidationData(
@@ -632,8 +634,8 @@ export default function TransactionsByAccount() {
                         "cleared",
                       )
                     }
-                    variant="contained" // Added variant for better visual appearance
-                    style={{ marginRight: "8px" }} // Added margin for spacing
+                    variant="contained"
+                    sx={{ backgroundColor: "secondary.main" }}
                   >
                     {fetchedValidationData?.amount
                       ? fetchedValidationData?.amount.toLocaleString("en-US", {
@@ -650,10 +652,17 @@ export default function TransactionsByAccount() {
                         : "No Date" // Or handle the absence of a date as needed
                     }
                   </Button>
-                  <IconButton onClick={() => setShowModalAdd(true)}>
-                    <AddIcon />
-                  </IconButton>
-                </div>
+                </Box>
+                <Box display="flex" justifyContent="center" mt={2} mb={2}>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setShowModalAdd(true)}
+                    sx={{ backgroundColor: "primary.main" }}
+                  >
+                    Add Transaction
+                  </Button>
+                </Box>
               </div>
 
               <Box display="flex" justifyContent="center">

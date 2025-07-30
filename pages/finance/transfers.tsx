@@ -322,15 +322,32 @@ export default function Transfers() {
   return (
     <div>
       <FinanceLayout>
-        <h2>Transfer Details</h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Transfer Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Move funds between accounts with automated transaction creation and
+            tracking
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
-              <IconButton onClick={() => setShowModalAdd(true)}>
-                <AddIcon />
-              </IconButton>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Transfer
+              </Button>
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>

@@ -165,15 +165,32 @@ export default function Descriptions() {
   return (
     <div>
       <FinanceLayout>
-        <h2>Description Details</h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Description Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Create and manage transaction descriptions to standardize your
+            financial record keeping
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
-              <IconButton onClick={() => setShowModalAdd(true)}>
-                <AddIcon />
-              </IconButton>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Description
+              </Button>
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>

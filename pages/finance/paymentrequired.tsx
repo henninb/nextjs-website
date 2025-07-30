@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../components/Spinner";
 import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
-import { Link, Box } from "@mui/material";
+import { Link, Box, Typography } from "@mui/material";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import { useAuth } from "../../components/AuthProvider";
 
@@ -126,7 +126,19 @@ export default function paymentrequired() {
   return (
     <div>
       <FinanceLayout>
-        <h2>Payment Required Details</h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Account Balances
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Monitor account balances and track validation amounts across all
+            your accounts
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (

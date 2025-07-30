@@ -286,15 +286,32 @@ export default function Payments() {
   return (
     <div>
       <FinanceLayout>
-        <h2>Payment Details</h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Payment Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Track and manage payments between accounts with automated
+            transaction processing
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
-              <IconButton onClick={() => setShowModalAdd(true)}>
-                <AddIcon />
-              </IconButton>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Payment
+              </Button>
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>

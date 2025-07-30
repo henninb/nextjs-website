@@ -251,7 +251,19 @@ export default function Accounts() {
   return (
     <div>
       <FinanceLayout>
-        <h2>Account Details</h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Account Overview
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            View all accounts with current balances and financial status at a
+            glance
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
@@ -320,9 +332,14 @@ export default function Accounts() {
             </div>
 
             <Box display="flex" justifyContent="center" mb={2}>
-              <IconButton onClick={() => setShowModelAdd(true)}>
-                <AddIcon />
-              </IconButton>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModelAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Account
+              </Button>
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>

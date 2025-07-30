@@ -177,7 +177,19 @@ export default function Categories() {
   return (
     <div>
       <FinanceLayout>
-        <h2>Category Details</h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Category Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Organize your transactions by creating and managing categories for
+            better financial tracking
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : fetchError ? (
@@ -214,9 +226,14 @@ export default function Categories() {
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
-              <IconButton onClick={() => setShowModalAdd(true)}>
-                <AddIcon />
-              </IconButton>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Category
+              </Button>
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>

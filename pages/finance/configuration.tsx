@@ -225,15 +225,32 @@ export default function Configuration() {
   return (
     <div>
       <FinanceLayout>
-        <h2>Configuration Details</h2>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            System Configuration
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage application settings and parameters that control system
+            behavior and defaults
+          </Typography>
+        </Box>
         {showSpinner ? (
           <Spinner />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
-              <IconButton onClick={() => setShowModalAdd(true)}>
-                <AddIcon />
-              </IconButton>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Parameter
+              </Button>
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
