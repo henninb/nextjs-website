@@ -7,7 +7,14 @@ import {
   Link,
   Typography,
   Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
+import { Close as CloseIcon } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import useFetchAccount from "../hooks/useAccountFetch";
 import useAccountUsageTracking from "../hooks/useAccountUsageTracking";
@@ -29,9 +36,12 @@ export default function SelectNavigateAccounts({
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [maxWidth, setMaxWidth] = useState<number>(200);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [accountToRemove, setAccountToRemove] = useState<string | null>(null);
   const router = useRouter();
   const { data, isSuccess, isError } = useFetchAccount();
-  const { trackAccountVisit, getMostUsedAccounts } = useAccountUsageTracking();
+  const { trackAccountVisit, removeAccount, getMostUsedAccounts } =
+    useAccountUsageTracking();
 
   useEffect(() => {
     if (isSuccess && Array.isArray(data)) {
@@ -70,6 +80,28 @@ export default function SelectNavigateAccounts({
     trackAccountVisit(accountNameOwner);
     onNavigate(); // Close menu before navigating
     router.push(`/finance/transactions/${accountNameOwner}`);
+  };
+
+  const handleRemoveAccount = (
+    accountNameOwner: string,
+    event: React.MouseEvent,
+  ) => {
+    event.stopPropagation(); // Prevent chip click from navigating
+    setAccountToRemove(accountNameOwner);
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmRemoveAccount = () => {
+    if (accountToRemove) {
+      removeAccount(accountToRemove);
+      setAccountToRemove(null);
+    }
+    setConfirmDialogOpen(false);
+  };
+
+  const cancelRemoveAccount = () => {
+    setAccountToRemove(null);
+    setConfirmDialogOpen(false);
   };
 
   if (isError) {
@@ -137,31 +169,79 @@ export default function SelectNavigateAccounts({
               }}
             >
               {mostUsedAccounts.map((account) => (
-                <Chip
+                <Box
                   key={account.accountNameOwner}
-                  label={account.accountNameOwner}
-                  variant="outlined"
-                  size="small"
-                  clickable
-                  onClick={() => handleQuickLinkClick(account.accountNameOwner)}
-                  sx={{
-                    fontSize: "0.75rem",
-                    height: "24px",
-                    justifyContent: "flex-start",
-                    "& .MuiChip-label": {
-                      paddingLeft: "8px",
-                      paddingRight: "8px",
-                    },
-                    "&:hover": {
-                      backgroundColor: "action.hover",
-                    },
-                  }}
-                />
+                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                >
+                  <Chip
+                    label={account.accountNameOwner}
+                    variant="outlined"
+                    size="small"
+                    clickable
+                    onClick={() =>
+                      handleQuickLinkClick(account.accountNameOwner)
+                    }
+                    sx={{
+                      fontSize: "0.75rem",
+                      height: "24px",
+                      justifyContent: "flex-start",
+                      flex: 1,
+                      "& .MuiChip-label": {
+                        paddingLeft: "8px",
+                        paddingRight: "8px",
+                      },
+                      "&:hover": {
+                        backgroundColor: "action.hover",
+                      },
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={(e) =>
+                      handleRemoveAccount(account.accountNameOwner, e)
+                    }
+                    sx={{
+                      width: "20px",
+                      height: "20px",
+                      padding: "2px",
+                      "&:hover": {
+                        backgroundColor: "error.light",
+                        color: "error.contrastText",
+                      },
+                    }}
+                  >
+                    <CloseIcon sx={{ fontSize: "12px" }} />
+                  </IconButton>
+                </Box>
               ))}
             </Box>
           </Box>
         )}
       </Box>
+
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={cancelRemoveAccount}
+        maxWidth="sm"
+      >
+        <DialogTitle>Remove Account</DialogTitle>
+        <DialogContent>
+          Are you sure you want to remove "{accountToRemove}" from your most
+          used accounts? This will clear its usage history.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelRemoveAccount} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmRemoveAccount}
+            color="error"
+            variant="contained"
+          >
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
     </FinanceLayout>
   );
 }

@@ -35,6 +35,7 @@ touch .env.local
 npm run prettier
 npx npm-check-updates
 npm install
+netstat -tlnp | grep :3000
 npm run dev
 
 exit 0

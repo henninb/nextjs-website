@@ -70,6 +70,19 @@ export default function useAccountUsageTracking() {
     [saveToStorage],
   );
 
+  const removeAccount = useCallback(
+    (accountNameOwner: string) => {
+      setAccountUsage((prev) => {
+        const updated = prev.filter(
+          (item) => item.accountNameOwner !== accountNameOwner,
+        );
+        saveToStorage(updated);
+        return updated;
+      });
+    },
+    [saveToStorage],
+  );
+
   const getMostUsedAccounts = useCallback(
     (allAccounts: Account[], limit: number = MAX_QUICK_LINKS): Account[] => {
       const sortedUsage = [...accountUsage]
@@ -94,6 +107,7 @@ export default function useAccountUsageTracking() {
 
   return {
     trackAccountVisit,
+    removeAccount,
     getMostUsedAccounts,
     accountUsage,
   };
