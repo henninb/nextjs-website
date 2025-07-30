@@ -8,11 +8,6 @@ import {
   Typography,
   Chip,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { useRouter } from "next/router";
@@ -39,8 +34,6 @@ export default function SelectNavigateAccounts({
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [maxWidth, setMaxWidth] = useState<number>(200);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [accountToRemove, setAccountToRemove] = useState<string | null>(null);
   const router = useRouter();
   const { data, isSuccess, isError } = useFetchAccount();
   const { trackAccountVisit, removeAccount, getMostUsedAccounts } =
@@ -90,22 +83,9 @@ export default function SelectNavigateAccounts({
     event: React.MouseEvent,
   ) => {
     event.stopPropagation(); // Prevent chip click from navigating
-    setAccountToRemove(accountNameOwner);
-    setConfirmDialogOpen(true);
+    removeAccount(accountNameOwner);
   };
 
-  const confirmRemoveAccount = () => {
-    if (accountToRemove) {
-      removeAccount(accountToRemove);
-      setAccountToRemove(null);
-    }
-    setConfirmDialogOpen(false);
-  };
-
-  const cancelRemoveAccount = () => {
-    setAccountToRemove(null);
-    setConfirmDialogOpen(false);
-  };
 
   if (isError) {
     return (
@@ -201,8 +181,8 @@ export default function SelectNavigateAccounts({
                 display: "flex",
                 flexDirection: "column",
                 gap: 0.5,
-                maxHeight: "120px",
-                overflowY: "auto",
+                maxHeight: isModern ? "120px" : "none",
+                overflowY: isModern ? "auto" : "visible",
               }}
             >
               {mostUsedAccounts.map((account) => (
@@ -269,29 +249,6 @@ export default function SelectNavigateAccounts({
         )}
       </Box>
 
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={cancelRemoveAccount}
-        maxWidth="sm"
-      >
-        <DialogTitle>Remove Account</DialogTitle>
-        <DialogContent>
-          Are you sure you want to remove "{accountToRemove}" from your most
-          used accounts? This will clear its usage history.
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelRemoveAccount} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={confirmRemoveAccount}
-            color="error"
-            variant="contained"
-          >
-            Remove
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

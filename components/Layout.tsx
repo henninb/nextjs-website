@@ -265,6 +265,9 @@ export default function Layout({ children }: LayoutProps) {
         PaperProps={{
           sx: {
             width: isModern ? 320 : 250,
+            height: "100vh",
+            maxHeight: "100vh",
+            overflow: "hidden",
             backgroundColor: isModern
               ? theme.palette.background.paper
               : undefined,
@@ -280,8 +283,8 @@ export default function Layout({ children }: LayoutProps) {
         <Box
           sx={{
             p: isModern ? 2 : 0,
-            height: "100vh",
-            overflow: "auto",
+            height: isModern ? "100vh" : "auto",
+            overflow: isModern ? "auto" : "visible",
             display: "flex",
             flexDirection: "column",
           }}
@@ -358,12 +361,12 @@ export default function Layout({ children }: LayoutProps) {
                     px: isModern ? 2 : 2,
                     py: isModern ? 1.5 : 1,
                     backgroundColor: isModern
-                      ? alpha(theme.palette.secondary.main, 0.1)
-                      : "rgba(73, 74, 87, 1)",
+                      ? alpha(theme.palette.primary.main, 0.1)
+                      : alpha("#10b981", 0.1),
                     "&:hover": {
                       backgroundColor: isModern
-                        ? alpha(theme.palette.secondary.main, 0.15)
-                        : "rgba(73, 74, 87, 1)",
+                        ? alpha(theme.palette.primary.main, 0.15)
+                        : alpha("#10b981", 0.15),
                     },
                   }}
                 >
@@ -371,8 +374,8 @@ export default function Layout({ children }: LayoutProps) {
                     sx={{
                       minWidth: isModern ? 40 : 56,
                       color: isModern
-                        ? theme.palette.secondary.main
-                        : "rgba(139, 233, 253, 1)",
+                        ? theme.palette.primary.main
+                        : "#10b981",
                     }}
                   >
                     <ListAltIcon />
