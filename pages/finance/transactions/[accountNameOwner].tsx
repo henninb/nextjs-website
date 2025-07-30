@@ -28,6 +28,7 @@ import useValidationAmountInsert from "../../../hooks/useValidationAmountInsert"
 import useAccountFetch from "../../../hooks/useAccountFetch";
 import useCategoryFetch from "../../../hooks/useCategoryFetch";
 import useDescriptionFetch from "../../../hooks/useDescriptionFetch";
+import useAccountUsageTracking from "../../../hooks/useAccountUsageTracking";
 import { AccountType } from "../../../model/AccountType";
 import Transaction from "../../../model/Transaction";
 import Account from "../../../model/Account";
@@ -140,6 +141,7 @@ export default function TransactionsByAccount() {
     isError: isErrorAccounts,
     error: errorAccounts,
   } = useAccountFetch();
+  const { trackAccountVisit } = useAccountUsageTracking();
   const {
     data: fetchedCategories,
     isSuccess: isSuccessCategories,
@@ -228,6 +230,12 @@ export default function TransactionsByAccount() {
     loading,
     isAuthenticated,
   ]);
+
+  useEffect(() => {
+    if (validAccountNameOwner && isSuccessTransactions) {
+      trackAccountVisit(validAccountNameOwner);
+    }
+  }, [validAccountNameOwner, isSuccessTransactions, trackAccountVisit]);
 
   const handleSnackbarClose = useCallback(() => setShowSnackbar(false), []);
 
