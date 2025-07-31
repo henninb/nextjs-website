@@ -73,9 +73,9 @@ describe("Categories Component", () => {
     });
   });
 
-  it("renders category details heading", () => {
+  it("renders category management heading", () => {
     render(<Categories />, { wrapper: createWrapper() });
-    expect(screen.getByText("Category Details")).toBeInTheDocument();
+    expect(screen.getByText("Category Management")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {

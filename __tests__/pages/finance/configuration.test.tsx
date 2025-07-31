@@ -72,9 +72,9 @@ describe("Configuration Component", () => {
     });
   });
 
-  it("renders configuration details heading", () => {
+  it("renders system configuration heading", () => {
     render(<Configuration />, { wrapper: createWrapper() });
-    expect(screen.getByText("Configuration Details")).toBeInTheDocument();
+    expect(screen.getByText("System Configuration")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {

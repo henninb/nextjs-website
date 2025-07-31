@@ -156,7 +156,7 @@ describe("AccountTransactions Component", () => {
 
   it("renders account name in heading", () => {
     render(<AccountTransactions />, { wrapper: createWrapper() });
-    expect(screen.getByText("TEST ACCOUNT")).toBeInTheDocument();
+    expect(screen.getByText("Test Account")).toBeInTheDocument();
   });
 
   it("shows spinner while loading", () => {

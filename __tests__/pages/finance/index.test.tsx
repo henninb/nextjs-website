@@ -89,9 +89,9 @@ describe("Accounts Component", () => {
     });
   });
 
-  it("renders account details heading", () => {
+  it("renders account overview heading", () => {
     render(<Accounts />, { wrapper: createWrapper() });
-    expect(screen.getByText("Account Details")).toBeInTheDocument();
+    expect(screen.getByText("Account Overview")).toBeInTheDocument();
   });
 
   it("shows spinner while loading", () => {

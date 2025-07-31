@@ -112,9 +112,9 @@ describe("Payments Component", () => {
     });
   });
 
-  it("renders payment details heading", () => {
+  it("renders payment management heading", () => {
     render(<Payments />, { wrapper: createWrapper() });
-    expect(screen.getByText("Payment Details")).toBeInTheDocument();
+    expect(screen.getByText("Payment Management")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {

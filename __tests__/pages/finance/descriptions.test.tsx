@@ -72,9 +72,9 @@ describe("Descriptions Component", () => {
     });
   });
 
-  it("renders description details heading", () => {
+  it("renders description management heading", () => {
     render(<Descriptions />, { wrapper: createWrapper() });
-    expect(screen.getByText("Description Details")).toBeInTheDocument();
+    expect(screen.getByText("Description Management")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {

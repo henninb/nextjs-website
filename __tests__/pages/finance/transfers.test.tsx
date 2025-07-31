@@ -96,9 +96,9 @@ describe("Transfers Component", () => {
     });
   });
 
-  it("renders transfer details heading", () => {
+  it("renders transfer management heading", () => {
     render(<Transfers />, { wrapper: createWrapper() });
-    expect(screen.getByText("Transfer Details")).toBeInTheDocument();
+    expect(screen.getByText("Transfer Management")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {
