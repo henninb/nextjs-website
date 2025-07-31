@@ -18,6 +18,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
 import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
+import USDAmountInput from "../../../components/USDAmountInput";
 import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
 import useTransactionUpdate from "../../../hooks/useTransactionUpdate";
 import useTransactionInsert from "../../../hooks/useTransactionInsert";
@@ -898,75 +899,34 @@ export default function TransactionsByAccount() {
               )}
             />
 
-            <TextField
+            <USDAmountInput
               label="Amount ($)"
-              fullWidth
-              margin="normal"
-              type="text"
               value={transactionData?.amount ?? ""}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-
-                // Allow negative sign at the beginning, digits, and optional decimal with up to 2 places
-                const regex = /^-?\d*\.?\d{0,2}$/;
-
-                // Prevent multiple decimal points
-                const decimalCount = (inputValue.match(/\./g) || []).length;
-
-                // Prevent multiple negative signs or negative sign not at beginning
-                const negativeSignCount = (inputValue.match(/-/g) || []).length;
-                const hasValidNegativePosition = inputValue.indexOf("-") <= 0;
-
-                if (
-                  (regex.test(inputValue) ||
-                    inputValue === "" ||
-                    inputValue === "-") &&
-                  decimalCount <= 1 &&
-                  negativeSignCount <= 1 &&
-                  hasValidNegativePosition
-                ) {
-                  setTransactionData((prev: any) => ({
-                    ...prev,
-                    amount: inputValue,
-                  }));
-                }
+              onChange={(value) => {
+                setTransactionData((prev: any) => ({
+                  ...prev,
+                  amount: value,
+                }));
               }}
               onBlur={() => {
                 // Format the value when user leaves the field
                 const currentAmount = parseFloat(
                   String(transactionData?.amount || ""),
                 );
-                if (currentAmount && currentAmount !== 0 && currentAmount > 0) {
-                  if (!isNaN(currentAmount)) {
-                    const formattedValue = currentAmount.toFixed(2);
-                    setTransactionData((prev: any) => ({
-                      ...prev,
-                      amount: formattedValue,
-                    }));
-                  }
+                if (!isNaN(currentAmount) && currentAmount !== 0) {
+                  const formattedValue = currentAmount.toFixed(2);
+                  setTransactionData((prev: any) => ({
+                    ...prev,
+                    amount: formattedValue,
+                  }));
                 }
               }}
-              onKeyDown={(e) => {
-                // Prevent invalid characters
-                const invalidChars = ["e", "E", "+"];
-                if (invalidChars.includes(e.key)) {
-                  e.preventDefault();
-                }
-              }}
-              slotProps={{
-                input: {
-                  inputMode: "decimal",
-                  style: {
-                    fontFamily: "monospace",
-                    fontSize: "1.1rem",
-                    textAlign: "right",
-                  },
-                },
-              }}
+              fullWidth
+              margin="normal"
               helperText="Enter positive or negative amounts (e.g., -123.45, 67.89)"
               error={
                 transactionData?.amount !== undefined &&
-                isNaN(transactionData?.amount)
+                isNaN(Number(transactionData?.amount))
               }
             />
 

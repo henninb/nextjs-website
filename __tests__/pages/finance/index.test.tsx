@@ -166,7 +166,7 @@ describe("Accounts Component", () => {
 
     // Verify the data grid structure exists
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
-    
+
     // Since the DataGrid is mocked, we can't test the delete buttons directly
     // But we can verify the component renders without errors
     expect(screen.getByText("Account Overview")).toBeInTheDocument();

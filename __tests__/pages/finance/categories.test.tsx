@@ -175,7 +175,7 @@ describe("Categories Component", () => {
     // Look for delete buttons using data-testid
     const deleteButtons = screen.getAllByTestId("DeleteIcon");
     expect(deleteButtons.length).toBeGreaterThan(0);
-    
+
     // For this test, we'll just verify the button exists and can be clicked
     fireEvent.click(deleteButtons[0]);
     // Modal might not open in test environment due to complex state management
@@ -191,7 +191,7 @@ describe("Categories Component", () => {
 
     // Verify delete hook is configured
     expect(mockDeleteCategory).toBeDefined();
-    
+
     // Verify delete buttons exist
     const deleteButtons = screen.getAllByTestId("DeleteIcon");
     expect(deleteButtons.length).toBeGreaterThan(0);
@@ -202,7 +202,7 @@ describe("Categories Component", () => {
     const mockLocalStorage = {
       getItem: jest.fn().mockReturnValue(JSON.stringify(mockCategoryData)),
     };
-    Object.defineProperty(window, 'localStorage', {
+    Object.defineProperty(window, "localStorage", {
       value: mockLocalStorage,
     });
 
@@ -217,7 +217,11 @@ describe("Categories Component", () => {
     render(<Categories />, { wrapper: createWrapper() });
 
     // The component shows an error message instead of cached data text in this case
-    expect(screen.getByText("Failed to load categories. Please check your connection.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Failed to load categories. Please check your connection.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("handles category update via data grid", async () => {

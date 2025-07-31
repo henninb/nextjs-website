@@ -17,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import USDAmountInput from "../../components/USDAmountInput";
 import useFetchPayment from "../../hooks/usePaymentFetch";
 import usePaymentInsert from "../../hooks/usePaymentInsert";
 import usePaymentDelete from "../../hooks/usePaymentDelete";
@@ -490,37 +491,29 @@ export default function Payments() {
                 />
               )}
             />
-            <TextField
+            <USDAmountInput
               label="Amount"
-              fullWidth
-              margin="normal"
-              type="text"
               value={paymentData?.amount ?? ""}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                // Regular expression to allow only numbers with up to 2 decimal places
-                const regex = /^\d*\.?\d{0,2}$/;
-                if (regex.test(inputValue) || inputValue === "") {
-                  setPaymentData((prev: any) => ({
-                    ...prev,
-                    amount: inputValue, // storing as string to control input
-                  }));
-                }
+              onChange={(value) => {
+                setPaymentData((prev: any) => ({
+                  ...prev,
+                  amount: value,
+                }));
               }}
               onBlur={() => {
                 // Format amount properly on blur
-                setPaymentData((prev: any) => ({
-                  ...prev,
-                  amount: prev.amount
-                    ? parseFloat(Number(prev.amount).toFixed(2))
-                    : "",
-                }));
+                const currentValue = parseFloat(
+                  String(paymentData?.amount || ""),
+                );
+                if (!isNaN(currentValue)) {
+                  setPaymentData((prev: any) => ({
+                    ...prev,
+                    amount: currentValue.toFixed(2),
+                  }));
+                }
               }}
-              slotProps={{
-                input: {
-                  inputMode: "decimal",
-                },
-              }}
+              fullWidth
+              margin="normal"
             />
             <Button
               variant="contained"

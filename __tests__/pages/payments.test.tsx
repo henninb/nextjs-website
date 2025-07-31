@@ -47,6 +47,25 @@ jest.mock("next/router", () => ({
   }),
 }));
 
+// Mock USDAmountInput
+jest.mock("../../components/USDAmountInput", () => {
+  return function MockUSDAmountInput({
+    value,
+    onChange,
+    label,
+    ...props
+  }: any) {
+    return (
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label || "Amount"}
+        {...props}
+      />
+    );
+  };
+});
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -391,7 +410,7 @@ describe("Payments Page", () => {
 
     // Verify that the data grid is rendered
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
-    
+
     // Verify that table headers are present
     expect(screen.getByText("Transaction Date")).toBeInTheDocument();
     expect(screen.getByText("Source Account")).toBeInTheDocument();

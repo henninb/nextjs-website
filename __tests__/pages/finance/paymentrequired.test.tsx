@@ -112,7 +112,7 @@ describe("PaymentRequired Component", () => {
 
   it("handles authentication redirect when not authenticated", () => {
     const mockReplace = jest.fn();
-    
+
     // Mock useRouter for this test
     const mockUseRouter = jest.spyOn(require("next/router"), "useRouter");
     mockUseRouter.mockReturnValue({
@@ -127,7 +127,7 @@ describe("PaymentRequired Component", () => {
     render(<PaymentRequired />, { wrapper: createWrapper() });
 
     expect(mockReplace).toHaveBeenCalledWith("/login");
-    
+
     // Cleanup
     mockUseRouter.mockRestore();
   });
@@ -179,8 +179,14 @@ describe("PaymentRequired Component", () => {
     render(<PaymentRequired />, { wrapper: createWrapper() });
 
     const accountLinks = screen.getAllByRole("link");
-    expect(accountLinks[0]).toHaveAttribute("href", "/finance/transactions/Test Account");
-    expect(accountLinks[1]).toHaveAttribute("href", "/finance/transactions/Credit Card");
+    expect(accountLinks[0]).toHaveAttribute(
+      "href",
+      "/finance/transactions/Test Account",
+    );
+    expect(accountLinks[1]).toHaveAttribute(
+      "href",
+      "/finance/transactions/Credit Card",
+    );
   });
 
   it("displays moniker values correctly", () => {

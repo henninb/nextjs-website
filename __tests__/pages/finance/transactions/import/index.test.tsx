@@ -129,8 +129,9 @@ describe("TransactionImporter Component", () => {
     render(<TransactionImporter />, { wrapper: createWrapper() });
 
     const textarea = screen.getByPlaceholderText(/Enter transactions/);
-    const testInput = "2024-01-01 Coffee Shop -4.50\\n2024-01-02 Salary 2000.00";
-    
+    const testInput =
+      "2024-01-01 Coffee Shop -4.50\\n2024-01-02 Salary 2000.00";
+
     fireEvent.change(textarea, { target: { value: testInput } });
     expect(textarea.value).toBe(testInput);
   });
@@ -140,8 +141,9 @@ describe("TransactionImporter Component", () => {
 
     const textarea = screen.getByPlaceholderText(/Enter transactions/);
     const submitButton = screen.getByText("Submit");
-    
-    const testInput = "2024-01-01 Coffee Shop -4.50\\n2024-01-02 Salary 2000.00";
+
+    const testInput =
+      "2024-01-01 Coffee Shop -4.50\\n2024-01-02 Salary 2000.00";
     fireEvent.change(textarea, { target: { value: testInput } });
     fireEvent.click(submitButton);
 
@@ -153,11 +155,11 @@ describe("TransactionImporter Component", () => {
   it("handles transaction approval (check button)", async () => {
     const mockInsertTransaction = jest.fn().mockResolvedValue({});
     const mockDeletePendingTransaction = jest.fn().mockResolvedValue({});
-    
+
     (useTransactionInsert.default as jest.Mock).mockReturnValue({
       mutateAsync: mockInsertTransaction,
     });
-    
+
     (usePendingTransactionDelete.default as jest.Mock).mockReturnValue({
       mutateAsync: mockDeletePendingTransaction,
     });
@@ -166,7 +168,7 @@ describe("TransactionImporter Component", () => {
 
     const checkButtons = screen.getAllByTestId("CheckIcon");
     expect(checkButtons.length).toBeGreaterThan(0);
-    
+
     // For this test, we'll just verify the button exists and hooks are configured
     fireEvent.click(checkButtons[0]);
     expect(mockInsertTransaction).toBeDefined();
@@ -175,7 +177,7 @@ describe("TransactionImporter Component", () => {
 
   it("handles individual transaction deletion", async () => {
     const mockDeletePendingTransaction = jest.fn().mockResolvedValue({});
-    
+
     (usePendingTransactionDelete.default as jest.Mock).mockReturnValue({
       mutateAsync: mockDeletePendingTransaction,
     });
@@ -184,7 +186,7 @@ describe("TransactionImporter Component", () => {
 
     const deleteButtons = screen.getAllByTestId("DeleteIcon");
     expect(deleteButtons.length).toBeGreaterThan(0);
-    
+
     // For this test, we'll just verify the button exists and hook is configured
     fireEvent.click(deleteButtons[0]);
     expect(mockDeletePendingTransaction).toBeDefined();
@@ -192,7 +194,7 @@ describe("TransactionImporter Component", () => {
 
   it("handles delete all pending transactions", async () => {
     const mockDeleteAllPendingTransactions = jest.fn().mockResolvedValue({});
-    
+
     (usePendingTransactionDeleteAll.default as jest.Mock).mockReturnValue({
       mutateAsync: mockDeleteAllPendingTransactions,
     });
@@ -226,7 +228,7 @@ describe("TransactionImporter Component", () => {
 
   it("handles authentication redirect when not authenticated", () => {
     const mockReplace = jest.fn();
-    
+
     // Mock useRouter for this test
     const mockUseRouter = jest.spyOn(require("next/router"), "useRouter");
     mockUseRouter.mockReturnValue({
@@ -241,7 +243,7 @@ describe("TransactionImporter Component", () => {
     render(<TransactionImporter />, { wrapper: createWrapper() });
 
     expect(mockReplace).toHaveBeenCalledWith("/login");
-    
+
     // Cleanup
     mockUseRouter.mockRestore();
   });
@@ -252,7 +254,9 @@ describe("TransactionImporter Component", () => {
       loading: false,
     });
 
-    const { container } = render(<TransactionImporter />, { wrapper: createWrapper() });
+    const { container } = render(<TransactionImporter />, {
+      wrapper: createWrapper(),
+    });
     expect(container.firstChild).toBeNull();
   });
 
@@ -292,7 +296,7 @@ describe("TransactionImporter Component", () => {
 
   it("shows snackbar on successful operations", async () => {
     const mockDeleteAllPendingTransactions = jest.fn().mockResolvedValue({});
-    
+
     (usePendingTransactionDeleteAll.default as jest.Mock).mockReturnValue({
       mutateAsync: mockDeleteAllPendingTransactions,
     });
@@ -303,7 +307,9 @@ describe("TransactionImporter Component", () => {
     fireEvent.click(deleteAllButton);
 
     await waitFor(() => {
-      expect(screen.getByText("All pending transactions have been deleted.")).toBeInTheDocument();
+      expect(
+        screen.getByText("All pending transactions have been deleted."),
+      ).toBeInTheDocument();
     });
   });
 });

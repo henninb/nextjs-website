@@ -2,13 +2,13 @@ import React from "react";
 
 // Mock all MUI icons as simple div elements with data-testid
 const createMockIcon = (name: string) => {
-  return React.forwardRef<HTMLDivElement, any>((props, ref) => 
-    React.createElement("div", { 
-      ...props, 
-      ref, 
+  return React.forwardRef<HTMLDivElement, any>((props, ref) =>
+    React.createElement("div", {
+      ...props,
+      ref,
       "data-testid": name,
-      role: "button"
-    })
+      role: "button",
+    }),
   );
 };
 

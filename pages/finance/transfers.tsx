@@ -17,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import USDAmountInput from "../../components/USDAmountInput";
 import useFetchTransfer from "../../hooks/useTransferFetch";
 import useTransferInsert from "../../hooks/useTransferInsert";
 import useTransferDelete from "../../hooks/useTransferDelete";
@@ -497,39 +498,29 @@ export default function Transfers() {
               )}
             />
 
-            <TextField
+            <USDAmountInput
               label="Amount"
-              fullWidth
-              margin="normal"
-              type="text"
               value={transferData?.amount ?? ""}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-
-                // Regular expression to allow only numbers with up to 2 decimal places
-                const regex = /^\d*\.?\d{0,2}$/;
-
-                if (regex.test(inputValue) || inputValue === "") {
-                  setTransferData((prev: any) => ({
-                    ...prev,
-                    amount: inputValue, // Store as string to allow proper input control
-                  }));
-                }
+              onChange={(value) => {
+                setTransferData((prev: any) => ({
+                  ...prev,
+                  amount: value,
+                }));
               }}
               onBlur={() => {
                 // Ensure value is properly formatted when user leaves the field
-                setTransferData((prev: any) => ({
-                  ...prev,
-                  amount: prev.amount
-                    ? parseFloat(Number(prev.amount).toFixed(2))
-                    : "",
-                }));
+                const currentValue = parseFloat(
+                  String(transferData?.amount || ""),
+                );
+                if (!isNaN(currentValue)) {
+                  setTransferData((prev: any) => ({
+                    ...prev,
+                    amount: currentValue.toFixed(2),
+                  }));
+                }
               }}
-              slotProps={{
-                input: {
-                  inputMode: "decimal",
-                },
-              }}
+              fullWidth
+              margin="normal"
             />
 
             <Button

@@ -21,6 +21,23 @@ jest.mock("../../../hooks/useTransferDelete");
 jest.mock("../../../hooks/useTransferUpdate");
 jest.mock("../../../hooks/useAccountFetch");
 jest.mock("../../../components/AuthProvider");
+jest.mock("../../../components/USDAmountInput", () => {
+  return function MockUSDAmountInput({
+    value,
+    onChange,
+    label,
+    ...props
+  }: any) {
+    return (
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label || "Amount"}
+        {...props}
+      />
+    );
+  };
+});
 
 const mockTransferData = [
   {
