@@ -1,5 +1,6 @@
 // import path from "path";
 // import fs from "fs";
+import bundleAnalyzer from "@next/bundle-analyzer";
 
 // const certPath = path.join(process.cwd(), "ssl", "rootCA.pem");
 
@@ -8,7 +9,11 @@
 //   console.log(`Certificate found and loaded from: ${certPath}`);
 // }
 
-export default {
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+const nextConfig = {
   reactStrictMode: true,
 
   // Add transpilePackages to handle MUI X components
@@ -43,3 +48,5 @@ export default {
     ];
   },
 };
+
+export default withBundleAnalyzer(nextConfig);

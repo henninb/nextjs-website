@@ -1,100 +1,154 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import { Box } from "@mui/material";
-import axios from "axios";
+import React from "react";
+import dynamic from "next/dynamic";
+import { Box, CircularProgress } from "@mui/material";
+import { useSportsData } from "../../hooks/useSportsData";
+
+// Dynamically import the SportsDataGrid component
+const SportsDataGrid = dynamic(
+  () => import("../../components/SportsDataGrid"),
+  {
+    loading: () => (
+      <Box display="flex" justifyContent="center" p={4}>
+        <CircularProgress />
+      </Box>
+    ),
+  },
+);
+
+const columns = [
+  {
+    field: "DateUtc",
+    headerName: "Game Date",
+    width: 200,
+    renderCell: (params) => {
+      const date = new Date(params.value);
+      return (
+        <Box sx={{ fontWeight: 600, color: "#d32f2f" }}>
+          {date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            weekday: "short",
+          })}
+        </Box>
+      );
+    },
+  },
+  {
+    field: "Location",
+    headerName: "Venue",
+    width: 180,
+    renderCell: (params) => (
+      <Box sx={{ fontSize: "0.9rem", color: "#666" }}>🏒 {params.value}</Box>
+    ),
+  },
+  {
+    field: "AwayTeam",
+    headerName: "Away Team",
+    width: 180,
+    renderCell: (params) => (
+      <Box
+        sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
+      >
+        ⛸️ {params.value}
+      </Box>
+    ),
+  },
+  {
+    field: "AwayTeamScore",
+    headerName: "Score",
+    width: 80,
+    align: "center",
+    renderCell: (params) => (
+      <Box
+        sx={{
+          fontWeight: 700,
+          fontSize: "1.1rem",
+          color: params.value > 0 ? "#2e7d32" : "#666",
+          textAlign: "center",
+        }}
+      >
+        {params.value || "-"}
+      </Box>
+    ),
+  },
+  {
+    field: "HomeTeam",
+    headerName: "Home Team",
+    width: 180,
+    renderCell: (params) => (
+      <Box
+        sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
+      >
+        🏠 {params.value}
+      </Box>
+    ),
+  },
+  {
+    field: "HomeTeamScore",
+    headerName: "Score",
+    width: 80,
+    align: "center",
+    renderCell: (params) => (
+      <Box
+        sx={{
+          fontWeight: 700,
+          fontSize: "1.1rem",
+          color: params.value > 0 ? "#2e7d32" : "#666",
+          textAlign: "center",
+        }}
+      >
+        {params.value || "-"}
+      </Box>
+    ),
+  },
+];
 
 export default function Hockey() {
-  const [data, setData] = useState(null);
+  const { data, loading, error, retry } = useSportsData("/api/nhl");
 
-  const columns = [
-    // { field: 'id', headerName: 'id' },
-    {
-      field: "DateUtc",
-      headerName: "date",
-      width: 175,
-      editable: true,
-    },
-    {
-      field: "Location",
-      headerName: "location",
-      width: 150,
-      editable: true,
-    },
-    {
-      field: "HomeTeam",
-      headerName: "home",
-      // type: 'number',
-      width: 150,
-      editable: true,
-    },
-    {
-      field: "HomeTeamScore",
-      headerName: "score",
-      // type: 'number',
-      width: 75,
-      editable: true,
-    },
-    {
-      field: "AwayTeam",
-      headerName: "away",
-      // type: 'number',
-      width: 150,
-      editable: true,
-    },
-    {
-      field: "AwayTeamScore",
-      headerName: "score",
-      width: 75,
-      editable: true,
-    },
-  ];
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  //const rows = [
-  //    //{ id: 1, MatchNumber: 1307, RoundNumber: 28, DateUtc: "2022-04-30 00:00:00Z", Location: "Xcel Energy Center", HomeTeam: "Minnesota Wild", AwayTeam: "Colorado Avalanche", Group: null, HomeTeamScore: null, AwayTeamScore: null },
-  //    { MatchNumber: 1307, RoundNumber: 28, DateUtc: "2022-04-30 00:00:00Z", Location: "Xcel Energy Center", HomeTeam: "Minnesota Wild", AwayTeam: "Colorado Avalanche", Group: null, HomeTeamScore: null, AwayTeamScore: null },
-  //];
-
-  // async function showSchedule(_event) {
-  //   console.log('showSchedule was called #1.');
-  // }
-
-  const fetchHockeySchedule = useCallback(async () => {
-    try {
-      const response = await axios.get("/api/nhl");
-      setData(response.data);
-    } catch (error) {
-      if (error) {
-        console.log(error.data);
-      } else {
-        console.log("error calling apiCall()");
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchHockeySchedule();
-  }, [fetchHockeySchedule]);
+  if (error && (!data || data.length === 0)) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+        p={4}
+      >
+        <div style={{ marginBottom: "16px", textAlign: "center" }}>
+          <strong>Error loading hockey scores:</strong> {error}
+        </div>
+        <button
+          onClick={retry}
+          style={{ padding: "8px 16px", cursor: "pointer" }}
+        >
+          Retry
+        </button>
+      </Box>
+    );
+  }
 
   return (
-    <div>
-      <h1>Wild Hockey Scores</h1>
-
-      <Box display="flex" justifyContent="center">
-        <Box sx={{ width: "fit-content" }}>
-          <div style={{ height: 800, width: "100%" }}>
-            <DataGrid
-              getRowId={() => crypto.randomUUID()}
-              rows={data ? data : []}
-              columns={columns}
-              pageSize={100}
-              rowsPerPageOptions={[100]}
-              checkboxSelection
-              disableSelectionOnClick
-              autoHeight
-            />
-          </div>
-        </Box>
-      </Box>
-    </div>
+    <SportsDataGrid
+      data={data}
+      columns={columns}
+      title="Wild Hockey Scores"
+      getRowId={() => crypto.randomUUID()}
+      sport="hockey"
+    />
   );
 }

@@ -6,7 +6,8 @@
     "start": "next start",
     "test": "npx jest",
     "prettier": "npx prettier --write .",
-    "pages:build": "npx @cloudflare/next-on-pages"
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -40,6 +41,7 @@
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
     "@cloudflare/next-on-pages": "^1.13.13",
+    "@next/bundle-analyzer": "^15.4.5",
     "@swc/core": "^1.13.3",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^6.6.4",

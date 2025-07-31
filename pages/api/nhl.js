@@ -1,21 +1,36 @@
-import { NextResponse } from "next/server";
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
 
-export const runtime = "edge";
+  try {
+    const apiUrl =
+      "https://fixturedownload.com/feed/json/nhl-2024/minnesota-wild";
 
-export default async function GET() {
-  const url = new URL(
-    "https://fixturedownload.com/feed/json/nhl-2023/minnesota-wild",
-  );
-  const params = {};
+    const apiResponse = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; NextJS API)",
+        Accept: "application/json",
+      },
+    });
 
-  url.search = new URLSearchParams(params).toString();
-  const apiResponse = await fetch(url.toString(), {
-    method: "GET",
-    redirect: "follow",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  const response = await apiResponse.json();
-  return NextResponse.json(response);
+    if (!apiResponse.ok) {
+      throw new Error(`HTTP error! status: ${apiResponse.status}`);
+    }
+
+    const response = await apiResponse.json();
+
+    res.setHeader(
+      "Cache-Control",
+      "public, s-maxage=300, stale-while-revalidate=600",
+    );
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("NHL API error:", error.message || error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
 }
