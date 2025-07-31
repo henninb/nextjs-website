@@ -37,11 +37,11 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
           errorMessage = `${errorBody.response}`;
         } else {
           console.log("No error message returned.");
-          throw new Error("No error message returned.");
+          errorMessage = "No error message returned.";
         }
       } catch (error) {
         console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
+        errorMessage = `Failed to parse error response: ${error.message}`;
       }
 
       console.log(errorMessage || "cannot throw a null value");
