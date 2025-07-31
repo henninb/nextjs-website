@@ -1,6 +1,5 @@
 // import path from "path";
 // import fs from "fs";
-import bundleAnalyzer from "@next/bundle-analyzer";
 
 // const certPath = path.join(process.cwd(), "ssl", "rootCA.pem");
 
@@ -9,9 +8,18 @@ import bundleAnalyzer from "@next/bundle-analyzer";
 //   console.log(`Certificate found and loaded from: ${certPath}`);
 // }
 
-const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === "true",
-});
+// Conditionally import bundle analyzer only when needed
+let withBundleAnalyzer = (config) => config;
+if (process.env.ANALYZE === "true") {
+  try {
+    const bundleAnalyzer = await import("@next/bundle-analyzer");
+    withBundleAnalyzer = bundleAnalyzer.default({
+      enabled: true,
+    });
+  } catch (error) {
+    console.warn("Bundle analyzer not available:", error.message);
+  }
+}
 
 const nextConfig = {
   reactStrictMode: true,

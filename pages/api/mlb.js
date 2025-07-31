@@ -1,8 +1,11 @@
-// Traditional Next.js API handler (not edge runtime)
+export const runtime = "edge";
 
-export default async function handler(req, res) {
+export default async function handler(req) {
   if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -41,11 +44,18 @@ export default async function handler(req, res) {
       });
     }
 
-    res.status(200).json(games.flat());
+    return new Response(JSON.stringify(games.flat()), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("MLB API Error:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch MLB data", details: error.message });
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch MLB data", details: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }

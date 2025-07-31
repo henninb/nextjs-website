@@ -1,6 +1,11 @@
-export default async function handler(req, res) {
+export const runtime = "edge";
+
+export default async function handler(req) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return new Response(JSON.stringify({ message: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -21,16 +26,24 @@ export default async function handler(req, res) {
 
     const response = await apiResponse.json();
 
-    res.setHeader(
-      "Cache-Control",
-      "public, s-maxage=300, stale-while-revalidate=600",
-    );
-    return res.status(200).json(response);
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    });
   } catch (error) {
     console.error("NFL API error:", error.message || error);
-    return res.status(500).json({
-      message: "Internal server error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
+    return new Response(
+      JSON.stringify({
+        message: "Internal server error",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }

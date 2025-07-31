@@ -139,25 +139,34 @@ export default function Baseball() {
         }
         const result = await response.json();
         console.log("Direct fetch result:", result.slice(0, 2));
-        console.log("First game structure:", JSON.stringify(result[0], null, 2));
-        
-        // Remove duplicates based on gamePk
-        const uniqueGames = result.filter((game, index, arr) => 
-          arr.findIndex(g => g.gamePk === game.gamePk) === index
+        console.log(
+          "First game structure:",
+          JSON.stringify(result[0], null, 2),
         );
-        console.log("Original length:", result.length, "After dedup:", uniqueGames.length);
-        
+
+        // Remove duplicates based on gamePk
+        const uniqueGames = result.filter(
+          (game, index, arr) =>
+            arr.findIndex((g) => g.gamePk === game.gamePk) === index,
+        );
+        console.log(
+          "Original length:",
+          result.length,
+          "After dedup:",
+          uniqueGames.length,
+        );
+
         // Transform data to flatten nested properties for easier DataGrid access
-        const transformedData = uniqueGames.map(game => ({
+        const transformedData = uniqueGames.map((game) => ({
           ...game,
           venueName: game.venue?.name || "TBD",
-          awayTeamName: game.teams?.away?.team?.name || "TBD", 
+          awayTeamName: game.teams?.away?.team?.name || "TBD",
           awayTeamScore: game.teams?.away?.score || 0,
           homeTeamName: game.teams?.home?.team?.name || "TBD",
           homeTeamScore: game.teams?.home?.score || 0,
-          gameStatus: game.status?.abstractGameState || "Scheduled"
+          gameStatus: game.status?.abstractGameState || "Scheduled",
         }));
-        
+
         console.log("Transformed first game:", transformedData[0]);
         setData(transformedData);
       } catch (err) {
