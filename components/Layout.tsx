@@ -104,10 +104,49 @@ export default function Layout({ children }: LayoutProps) {
   const globalTheme = useTheme();
   const { uiMode } = useUI();
 
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const isModern = uiMode === "modern";
 
   const isFinancePage = pathname.startsWith("/finance");
+
+  // Helper function to safely get user display name with security best practices
+  const getUserDisplayName = (): string => {
+    try {
+      if (!user) {
+        return "User";
+      }
+
+      // Sanitize and validate user data before display
+      const firstName = user.firstName?.trim() || "";
+      const lastName = user.lastName?.trim() || "";
+
+      // Only use alphanumeric characters and common name characters for security
+      const sanitizeInput = (input: string): string => {
+        return input.replace(/[^a-zA-Z0-9\s\-'.]/g, "").substring(0, 20);
+      };
+
+      const sanitizedFirstName = sanitizeInput(firstName);
+      const sanitizedLastName = sanitizeInput(lastName);
+
+      // Return appropriate display name based on available data
+      if (sanitizedFirstName && sanitizedLastName) {
+        return `${sanitizedFirstName} ${sanitizedLastName}`;
+      } else if (sanitizedFirstName) {
+        return sanitizedFirstName;
+      } else if (sanitizedLastName) {
+        return sanitizedLastName;
+      } else if (user.username) {
+        // Fall back to sanitized username if no first/last name
+        const sanitizedUsername = sanitizeInput(user.username);
+        return sanitizedUsername || "User";
+      }
+
+      return "User";
+    } catch (error) {
+      console.error("Error getting user display name:", error);
+      return "User";
+    }
+  };
 
   // Use the appropriate theme based on page and mode
   const theme =
@@ -185,8 +224,12 @@ export default function Layout({ children }: LayoutProps) {
             isModern ? (
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Chip
-                  avatar={<Avatar sx={{ width: 24, height: 24 }}>U</Avatar>}
-                  label="Authenticated"
+                  avatar={
+                    <Avatar sx={{ width: 24, height: 24 }}>
+                      {getUserDisplayName().charAt(0).toUpperCase()}
+                    </Avatar>
+                  }
+                  label={getUserDisplayName()}
                   variant="outlined"
                   size="small"
                   sx={{

@@ -51,11 +51,14 @@ export default async function handler(req) {
   } catch (error) {
     console.error("MLB API Error:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to fetch MLB data", details: error.message }),
+      JSON.stringify({
+        error: "Failed to fetch MLB data",
+        details: error.message,
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

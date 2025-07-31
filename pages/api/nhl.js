@@ -38,12 +38,13 @@ export default async function handler(req) {
     return new Response(
       JSON.stringify({
         message: "Internal server error",
-        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
       }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

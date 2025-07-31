@@ -83,7 +83,26 @@ export default function Login() {
 
     try {
       await userLogin(data);
-      login({ username: "username", password: "password" });
+      // After successful login, fetch user data to get proper user information
+      try {
+        const userResponse = await fetch(
+          "https://finance.bhenning.com/api/me",
+          {
+            credentials: "include",
+          },
+        );
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          login(userData);
+        } else {
+          // Fallback if user data fetch fails
+          login({ username: email, password: "", firstName: "", lastName: "" });
+        }
+      } catch (userError) {
+        console.error("Error fetching user data:", userError);
+        // Fallback if user data fetch fails
+        login({ username: email, password: "", firstName: "", lastName: "" });
+      }
       router.push("/finance");
     } catch (error: any) {
       setErrorMessage(error.message || "Failed login. Please try again.");
