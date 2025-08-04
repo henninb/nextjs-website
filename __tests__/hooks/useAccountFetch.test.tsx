@@ -60,12 +60,9 @@ describe("useAccountFetch", () => {
     ];
 
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return HttpResponse.json(mockAccounts, { status: 200 });
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return HttpResponse.json(mockAccounts, { status: 200 });
+      }),
     );
 
     const { result } = renderHook(() => useAccountFetch(), {
@@ -83,15 +80,9 @@ describe("useAccountFetch", () => {
     const queryClient = createTestQueryClient();
 
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return HttpResponse.json(
-            { message: "Not found" },
-            { status: 404 },
-          );
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return HttpResponse.json({ message: "Not found" }, { status: 404 });
+      }),
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -101,10 +92,13 @@ describe("useAccountFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data when 404
     expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching account data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching account data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -113,15 +107,12 @@ describe("useAccountFetch", () => {
     const queryClient = createTestQueryClient();
 
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return HttpResponse.json(
-            { message: "Internal server error" },
-            { status: 500 },
-          );
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return HttpResponse.json(
+          { message: "Internal server error" },
+          { status: 500 },
+        );
+      }),
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -131,10 +122,13 @@ describe("useAccountFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data on error
     expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching account data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching account data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -143,12 +137,9 @@ describe("useAccountFetch", () => {
     const queryClient = createTestQueryClient();
 
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          return new HttpResponse(null, { status: 204 });
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        return new HttpResponse(null, { status: 204 });
+      }),
     );
 
     const { result } = renderHook(() => useAccountFetch(), {
@@ -165,12 +156,9 @@ describe("useAccountFetch", () => {
     const queryClient = createTestQueryClient();
 
     server.use(
-      http.get(
-        "https://finance.bhenning.com/api/account/select/active",
-        () => {
-          throw new Error("Network failure");
-        },
-      ),
+      http.get("https://finance.bhenning.com/api/account/select/active", () => {
+        throw new Error("Network failure");
+      }),
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -180,8 +168,11 @@ describe("useAccountFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching account data:", expect.anything());
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching account data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });

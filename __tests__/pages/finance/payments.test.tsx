@@ -348,7 +348,7 @@ describe("Payments Page - MSW Tests", () => {
   beforeEach(() => {
     // Clear any existing mocks
     jest.clearAllMocks();
-    
+
     // Set up hook mocks for MSW tests
     (useFetchPayment.default as jest.Mock).mockReturnValue({
       data: mockPayments,

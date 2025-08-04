@@ -139,7 +139,8 @@ export default function Categories() {
     {
       field: "categoryName",
       headerName: "Name",
-      width: 200,
+      flex: 2,
+      minWidth: 150,
       editable: true,
       renderCell: (params) => {
         return (
@@ -152,13 +153,19 @@ export default function Categories() {
     {
       field: "activeStatus",
       headerName: "Status",
-      width: 300,
+      flex: 1,
+      minWidth: 100,
       editable: true,
+      renderCell: (params) => {
+        return params.value ? "Active" : "Inactive";
+      },
     },
     {
       field: "",
       headerName: "Actions",
       width: 100,
+      sortable: false,
+      filterable: false,
       renderCell: (params) => (
         <Tooltip title="delete this row">
           <IconButton
@@ -236,7 +243,7 @@ export default function Categories() {
               </Button>
             </Box>
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: "100%", maxWidth: "800px" }}>
                 <DataGrid
                   //rows={data?.filter((row) => row != null) || []}
                   rows={fetchedCategories || []}
@@ -245,6 +252,14 @@ export default function Categories() {
                   checkboxSelection={false}
                   rowSelection={false}
                   autoHeight
+                  disableColumnResize={false}
+                  sx={{
+                    "& .MuiDataGrid-cell": {
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
                   processRowUpdate={async (
                     newRow: Category,
                     oldRow: Category,

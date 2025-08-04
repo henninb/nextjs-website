@@ -48,12 +48,12 @@ describe("usePaymentInsert", () => {
     const queryClient = createTestQueryClient();
 
     const inputPayment: Payment = {
-      paymentId: 0, 
+      paymentId: 0,
       accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
@@ -63,7 +63,7 @@ describe("usePaymentInsert", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01").toISOString(),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
       dateAdded: new Date().toISOString(),
       dateUpdated: new Date().toISOString(),
@@ -83,7 +83,7 @@ describe("usePaymentInsert", () => {
         sourceAccount: "existing_source",
         destinationAccount: "existing_dest",
         transactionDate: new Date("2023-11-01"),
-        amount: 100.00,
+        amount: 100.0,
         activeStatus: true,
       },
     ];
@@ -111,7 +111,7 @@ describe("usePaymentInsert", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
@@ -139,7 +139,7 @@ describe("usePaymentInsert", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Verify the cache was set with new payment only  
+    // Verify the cache was set with new payment only
     const updatedPayments = queryClient.getQueryData<Payment[]>(["payment"]);
     expect(updatedPayments).toEqual([responsePayment]);
   });
@@ -153,7 +153,7 @@ describe("usePaymentInsert", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: -50.00, // Invalid amount
+      amount: -50.0, // Invalid amount
       activeStatus: true,
     };
 
@@ -191,7 +191,7 @@ describe("usePaymentInsert", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
@@ -226,7 +226,7 @@ describe("usePaymentInsert", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
@@ -262,7 +262,7 @@ describe("usePaymentInsert", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
@@ -282,5 +282,4 @@ describe("usePaymentInsert", () => {
 
     expect(result.current.data).toBeNull();
   });
-
 });

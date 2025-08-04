@@ -82,7 +82,9 @@ describe("useLogin", () => {
     // Execute the login mutation
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isSuccess).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isSuccess).toBe(true),
+    );
 
     // Verify AuthProvider login was called with user data
     expect(mockLogin).toHaveBeenCalledWith(loginPayload);
@@ -117,7 +119,9 @@ describe("useLogin", () => {
 
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isError).toBe(true),
+    );
 
     // Verify error message was set
     expect(result.current.errorMessage).toBe("Invalid username or password");
@@ -149,7 +153,9 @@ describe("useLogin", () => {
 
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isError).toBe(true),
+    );
 
     // Verify default error message was set
     expect(result.current.errorMessage).toBe("Login failed");
@@ -181,7 +187,9 @@ describe("useLogin", () => {
 
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isError).toBe(true),
+    );
 
     // Verify error message was set (MSW converts network errors to "Login failed")
     expect(result.current.errorMessage).toBe("Login failed");
@@ -216,13 +224,14 @@ describe("useLogin", () => {
 
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isError).toBe(true),
+    );
 
     expect(result.current.errorMessage).toBe("Internal server error");
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockLogin).not.toHaveBeenCalled();
   });
-
 
   it("should include credentials in request", async () => {
     const queryClient = createTestQueryClient();
@@ -247,7 +256,9 @@ describe("useLogin", () => {
 
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isSuccess).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isSuccess).toBe(true),
+    );
 
     // Verify correct headers were sent
     expect(capturedHeaders["content-type"]).toBe("application/json");
@@ -264,10 +275,7 @@ describe("useLogin", () => {
     // First attempt - fails
     server.use(
       http.post("https://finance.bhenning.com/api/login", () => {
-        return HttpResponse.json(
-          { error: "First error" },
-          { status: 401 },
-        );
+        return HttpResponse.json({ error: "First error" }, { status: 401 });
       }),
     );
 
@@ -277,7 +285,9 @@ describe("useLogin", () => {
 
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isError).toBe(true),
+    );
     expect(result.current.errorMessage).toBe("First error");
 
     // Second attempt - succeeds
@@ -289,7 +299,9 @@ describe("useLogin", () => {
 
     result.current.loginMutation.mutate(loginPayload);
 
-    await waitFor(() => expect(result.current.loginMutation.isSuccess).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isSuccess).toBe(true),
+    );
 
     // Error message should still be from the first attempt (useState doesn't auto-clear)
     // This test documents the current behavior - error messages persist until new ones are set

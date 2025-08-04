@@ -202,8 +202,9 @@ export default function Payments() {
   const columns: GridColDef[] = [
     {
       field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 175,
+      headerName: "Date",
+      flex: 0.8,
+      minWidth: 120,
       renderCell: (params) => {
         return formatDateForDisplay(params.value);
       },
@@ -214,7 +215,8 @@ export default function Payments() {
     {
       field: "sourceAccount",
       headerName: "Source Account",
-      width: 350,
+      flex: 2,
+      minWidth: 200,
       renderCell: (params) => {
         return (
           <Link href={`/finance/transactions/${params.value}`}>
@@ -226,7 +228,8 @@ export default function Payments() {
     {
       field: "destinationAccount",
       headerName: "Destination Account",
-      width: 350,
+      flex: 2,
+      minWidth: 200,
       renderCell: (params) => {
         return (
           <Link href={`/finance/transactions/${params.value}`}>
@@ -238,7 +241,8 @@ export default function Payments() {
     {
       field: "amount",
       headerName: "Amount",
-      width: 150,
+      flex: 0.6,
+      minWidth: 120,
       type: "number",
       editable: true,
       renderEditCell: (params) => {
@@ -269,6 +273,8 @@ export default function Payments() {
       field: "",
       headerName: "Actions",
       width: 100,
+      sortable: false,
+      filterable: false,
       renderCell: (params: any) => (
         <Tooltip title="delete this row">
           <IconButton
@@ -315,7 +321,7 @@ export default function Payments() {
               </Button>
             </Box>
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 <DataGrid
                   rows={fetchedPayments?.filter((row) => row != null) || []}
                   columns={columns}
@@ -329,6 +335,7 @@ export default function Payments() {
                   }
                   pageSizeOptions={[25, 50, 100]}
                   autoHeight
+                  disableColumnResize={false}
                   processRowUpdate={async (
                     newRow: Payment,
                     oldRow: Payment,
@@ -352,6 +359,13 @@ export default function Payments() {
                       );
                       throw error;
                     }
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-cell": {
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
                   }}
                 />
               </Box>

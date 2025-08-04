@@ -37,7 +37,7 @@ describe("useTotalsFetch", () => {
     const queryClient = createTestQueryClient();
 
     const mockTotals: Totals = {
-      totals: 1500.50,
+      totals: 1500.5,
       totalsFuture: 2000.75,
       totalsCleared: 1200.25,
       totalsOutstanding: 300.25,
@@ -65,10 +65,7 @@ describe("useTotalsFetch", () => {
 
     server.use(
       http.get("https://finance.bhenning.com/api/account/totals", () => {
-        return HttpResponse.json(
-          { message: "Not found" },
-          { status: 404 },
-        );
+        return HttpResponse.json({ message: "Not found" }, { status: 404 });
       }),
     );
 
@@ -79,11 +76,14 @@ describe("useTotalsFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data when 404
     expect(result.current.data).toBeDefined();
     expect(consoleSpy).toHaveBeenCalledWith("Resource not found (404).");
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching totals data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching totals data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -107,10 +107,13 @@ describe("useTotalsFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data on error
     expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching totals data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching totals data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -131,10 +134,13 @@ describe("useTotalsFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data on network error
     expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching totals data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching totals data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -157,7 +163,10 @@ describe("useTotalsFetch", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Should have logged the fetch error
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching totals data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching totals data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -175,10 +184,13 @@ describe("useTotalsFetch", () => {
     let capturedHeaders: any;
 
     server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", ({ request }) => {
-        capturedHeaders = Object.fromEntries(request.headers.entries());
-        return HttpResponse.json(mockTotals, { status: 200 });
-      }),
+      http.get(
+        "https://finance.bhenning.com/api/account/totals",
+        ({ request }) => {
+          capturedHeaders = Object.fromEntries(request.headers.entries());
+          return HttpResponse.json(mockTotals, { status: 200 });
+        },
+      ),
     );
 
     const { result } = renderHook(() => useTotalsFetch(), {
@@ -224,10 +236,7 @@ describe("useTotalsFetch", () => {
 
     server.use(
       http.get("https://finance.bhenning.com/api/account/totals", () => {
-        return HttpResponse.json(
-          { message: "Unauthorized" },
-          { status: 401 },
-        );
+        return HttpResponse.json({ message: "Unauthorized" }, { status: 401 });
       }),
     );
 

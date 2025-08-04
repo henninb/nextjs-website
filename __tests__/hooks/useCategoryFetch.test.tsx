@@ -84,10 +84,7 @@ describe("useCategoryFetch", () => {
       http.get(
         "https://finance.bhenning.com/api/category/select/active",
         () => {
-          return HttpResponse.json(
-            { message: "Not found" },
-            { status: 404 },
-          );
+          return HttpResponse.json({ message: "Not found" }, { status: 404 });
         },
       ),
     );
@@ -99,11 +96,14 @@ describe("useCategoryFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data when 404
     expect(result.current.data).toBeDefined();
     expect(consoleSpy).toHaveBeenCalledWith("Resource not found (404).");
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching category data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching category data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -130,10 +130,13 @@ describe("useCategoryFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data on error
     expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching category data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching category data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -157,10 +160,13 @@ describe("useCategoryFetch", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    
+
     // Should return dummy data on network error
     expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching category data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching category data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -186,7 +192,10 @@ describe("useCategoryFetch", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Should have logged the fetch error
-    expect(consoleSpy).toHaveBeenCalledWith("Error fetching category data:", expect.anything());
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching category data:",
+      expect.anything(),
+    );
 
     consoleSpy.mockRestore();
   });

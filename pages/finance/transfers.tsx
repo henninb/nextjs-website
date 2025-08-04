@@ -261,8 +261,9 @@ export default function Transfers() {
   const columns: GridColDef[] = [
     {
       field: "transactionDate",
-      headerName: "Transaction Date",
-      width: 200,
+      headerName: "Date",
+      flex: 0.8,
+      minWidth: 120,
       renderCell: (params) => {
         return formatDateForDisplay(params.value);
       },
@@ -273,7 +274,8 @@ export default function Transfers() {
     {
       field: "sourceAccount",
       headerName: "Source Account",
-      width: 300,
+      flex: 2,
+      minWidth: 200,
       renderCell: (params) => {
         return (
           <Link href={`/finance/transactions/${params.row.sourceAccount}`}>
@@ -285,7 +287,8 @@ export default function Transfers() {
     {
       field: "destinationAccount",
       headerName: "Destination Account",
-      width: 300,
+      flex: 2,
+      minWidth: 200,
       renderCell: (params) => {
         return (
           <Link href={`/finance/transactions/${params.row.destinationAccount}`}>
@@ -297,7 +300,8 @@ export default function Transfers() {
     {
       field: "amount",
       headerName: "Amount",
-      width: 200,
+      flex: 0.6,
+      minWidth: 120,
       editable: true,
       renderCell: (params) => currencyFormat(params.value),
     },
@@ -305,6 +309,8 @@ export default function Transfers() {
       field: "",
       headerName: "Actions",
       width: 100,
+      sortable: false,
+      filterable: false,
       renderCell: (params) => (
         <Tooltip title="delete this row">
           <IconButton
@@ -351,7 +357,7 @@ export default function Transfers() {
               </Button>
             </Box>
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 <DataGrid
                   //rows={fetchedTransfers?.filter((row) => row != null) || []}
                   rows={transfersToDisplay}
@@ -391,6 +397,14 @@ export default function Transfers() {
                     }
                   }}
                   autoHeight
+                  disableColumnResize={false}
+                  sx={{
+                    "& .MuiDataGrid-cell": {
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
                 />
               </Box>
             </Box>

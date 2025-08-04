@@ -374,7 +374,8 @@ export default function TransactionsByAccount() {
         field: "transactionDate",
         headerName: "Date",
         type: "date",
-        width: 100,
+        flex: 0.6,
+        minWidth: 100,
         renderCell: (params) => {
           return formatDateForDisplay(params.value);
         },
@@ -386,29 +387,33 @@ export default function TransactionsByAccount() {
       {
         field: "description",
         headerName: "Description",
-        width: 180,
+        flex: 1.5,
+        minWidth: 150,
         editable: true,
         renderCell: (params) => <div>{params.value}</div>,
       },
       {
         field: "category",
         headerName: "Category",
-        width: 150,
+        flex: 1,
+        minWidth: 120,
         editable: true,
       },
       {
         field: "amount",
         headerName: "Amount",
         type: "number",
-        width: 90,
+        flex: 0.6,
+        minWidth: 90,
         renderCell: (params: any) => currencyFormat(params.value),
         editable: true,
         cellClassName: "nowrap",
       },
       {
         field: "transactionState",
-        headerName: "transactionState",
-        width: 275,
+        headerName: "State",
+        flex: 1.2,
+        minWidth: 180,
         renderCell: (params: any) => {
           const handleStateChange = async (newState: TransactionState) => {
             try {
@@ -445,6 +450,7 @@ export default function TransactionsByAccount() {
                 return (
                   <Tooltip key={state} title={tooltipText}>
                     <IconButton
+                      size="small"
                       style={{
                         color:
                           params.row.transactionState === state
@@ -453,7 +459,7 @@ export default function TransactionsByAccount() {
                       }}
                       onClick={() => handleStateChange(state)}
                     >
-                      <IconComponent />
+                      <IconComponent fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 );
@@ -465,60 +471,67 @@ export default function TransactionsByAccount() {
       {
         field: "transactionType",
         headerName: "Type",
-        width: 180,
+        flex: 0.8,
+        minWidth: 100,
         renderCell: (params: any) => params.value || "undefined",
       },
       {
         field: "reoccurringType",
         headerName: "Reoccur",
-        width: 150,
+        flex: 0.8,
+        minWidth: 100,
         renderCell: (params: any) => params.value || "undefined",
       },
       {
         field: "notes",
         headerName: "Notes",
-        width: 180,
+        flex: 1.2,
+        minWidth: 120,
         editable: true,
       },
       {
         field: "",
         headerName: "Actions",
         sortable: false,
+        filterable: false,
         width: 120,
         renderCell: (params) => {
           return (
             <div>
               <Tooltip title="Clone this row">
                 <IconButton
+                  size="small"
                   onClick={() => {
                     setSelectedTransaction(params.row);
                     setShowModalClone(true);
                   }}
                 >
-                  <ContentCopyIcon />
+                  <ContentCopyIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
 
               <Tooltip title="Move this row to another account">
                 <IconButton
+                  size="small"
                   onClick={() => {
                     setSelectedTransaction(params.row);
                     setOriginalRow(params.row);
                     setShowModalMove(true);
                   }}
                 >
-                  <SwapVert />
+                  <SwapVert fontSize="small" />
                 </IconButton>
               </Tooltip>
 
               <Tooltip title="Delete this row">
                 <IconButton
+                  size="small"
                   onClick={() => {
                     setSelectedTransaction(params.row);
                     setShowModalDelete(true);
                   }}
                 >
-                  <DeleteIcon />
+                  <DeleteIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </div>
@@ -667,7 +680,7 @@ export default function TransactionsByAccount() {
               </div>
 
               <Box display="flex" justifyContent="center">
-                <Box sx={{ width: "fit-content" }}>
+                <Box sx={{ width: "100%", maxWidth: "1400px" }}>
                   <DataGrid
                     rows={
                       fetchedTransactions?.filter((row) => row != null) || []
@@ -687,6 +700,14 @@ export default function TransactionsByAccount() {
                     disableColumnMenu
                     disableVirtualization={false}
                     autoHeight
+                    disableColumnResize={false}
+                    sx={{
+                      "& .MuiDataGrid-cell": {
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      },
+                    }}
                     // initialState={{
                     //   sorting: {
                     //     sortModel: [{ field: "transactionDate", sort: "desc" }],

@@ -35,3 +35,5 @@ token
 config.js
 ngx_http_pxnginx_module.so
 ssl
+
+tsconfig.tsbuildinfo

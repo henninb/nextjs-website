@@ -53,13 +53,13 @@ describe("usePaymentUpdate", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
     const newPayment: Payment = {
       ...oldPayment,
-      amount: 200.00,
+      amount: 200.0,
       destinationAccount: "new_dest789",
     };
 
@@ -87,7 +87,7 @@ describe("usePaymentUpdate", () => {
         sourceAccount: "other_source",
         destinationAccount: "other_dest",
         transactionDate: new Date("2023-11-01"),
-        amount: 100.00,
+        amount: 100.0,
         activeStatus: true,
       },
     ];
@@ -120,13 +120,13 @@ describe("usePaymentUpdate", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
     const newPayment: Payment = {
       ...oldPayment,
-      amount: 200.00,
+      amount: 200.0,
     };
 
     server.use(
@@ -167,23 +167,20 @@ describe("usePaymentUpdate", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
     const newPayment: Payment = {
       ...oldPayment,
-      amount: -50.00, // Invalid amount
+      amount: -50.0, // Invalid amount
     };
 
     server.use(
       http.put(
         `https://finance.bhenning.com/api/payment/update/${oldPayment.paymentId}`,
         () => {
-          return HttpResponse.json(
-            { message: "Bad Request" },
-            { status: 400 },
-          );
+          return HttpResponse.json({ message: "Bad Request" }, { status: 400 });
         },
       ),
     );
@@ -198,7 +195,9 @@ describe("usePaymentUpdate", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(result.current.error?.message).toContain("Failed to update payment state");
+    expect(result.current.error?.message).toContain(
+      "Failed to update payment state",
+    );
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Error occurred during mutation:"),
     );
@@ -215,13 +214,13 @@ describe("usePaymentUpdate", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
     const newPayment: Payment = {
       ...oldPayment,
-      amount: 200.00,
+      amount: 200.0,
     };
 
     server.use(
@@ -244,7 +243,9 @@ describe("usePaymentUpdate", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("An error occurred: Failed to update payment state: Unhandled Exception"),
+      expect.stringContaining(
+        "An error occurred: Failed to update payment state: Unhandled Exception",
+      ),
     );
 
     consoleSpy.mockRestore();
@@ -259,13 +260,13 @@ describe("usePaymentUpdate", () => {
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
-      amount: 150.00,
+      amount: 150.0,
       activeStatus: true,
     };
 
     const newPayment: Payment = {
       ...oldPayment,
-      amount: 200.00,
+      amount: 200.0,
     };
 
     const responsePayment: Payment = {
@@ -296,5 +297,4 @@ describe("usePaymentUpdate", () => {
     const updatedPayments = queryClient.getQueryData<Payment[]>(["payment"]);
     expect(updatedPayments).toBeUndefined();
   });
-
 });

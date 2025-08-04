@@ -96,7 +96,9 @@ describe("useCategoryUpdate", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Verify the cache was updated correctly using categoryId
-    const updatedCategories = queryClient.getQueryData<Category[]>(["category"]);
+    const updatedCategories = queryClient.getQueryData<Category[]>([
+      "category",
+    ]);
     expect(updatedCategories).toHaveLength(2);
     expect(updatedCategories?.[0]).toEqual({
       ...oldCategory,
@@ -143,7 +145,9 @@ describe("useCategoryUpdate", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(consoleSpy).toHaveBeenCalledWith("Resource not found (404).");
-    expect(result.current.error?.message).toContain("Failed to update transaction state");
+    expect(result.current.error?.message).toContain(
+      "Failed to update transaction state",
+    );
 
     consoleSpy.mockRestore();
   });
@@ -167,10 +171,7 @@ describe("useCategoryUpdate", () => {
       http.put(
         `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`,
         () => {
-          return HttpResponse.json(
-            { message: "Bad Request" },
-            { status: 400 },
-          );
+          return HttpResponse.json({ message: "Bad Request" }, { status: 400 });
         },
       ),
     );
@@ -185,7 +186,9 @@ describe("useCategoryUpdate", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(result.current.error?.message).toContain("Failed to update transaction state");
+    expect(result.current.error?.message).toContain(
+      "Failed to update transaction state",
+    );
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Error occurred during mutation:"),
     );
@@ -227,9 +230,13 @@ describe("useCategoryUpdate", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(result.current.error?.message).toBe("Failed to update transaction state: Unhandled Exception");
+    expect(result.current.error?.message).toBe(
+      "Failed to update transaction state: Unhandled Exception",
+    );
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Error occurred during mutation: Failed to update transaction state: Unhandled Exception"),
+      expect.stringContaining(
+        "Error occurred during mutation: Failed to update transaction state: Unhandled Exception",
+      ),
     );
 
     consoleSpy.mockRestore();
@@ -275,10 +282,11 @@ describe("useCategoryUpdate", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Cache should remain empty since onSuccess only updates if oldData exists
-    const updatedCategories = queryClient.getQueryData<Category[]>(["category"]);
+    const updatedCategories = queryClient.getQueryData<Category[]>([
+      "category",
+    ]);
     expect(updatedCategories).toBeUndefined();
   });
-
 
   it("should update category based on categoryId match", async () => {
     const queryClient = createTestQueryClient();
@@ -335,7 +343,9 @@ describe("useCategoryUpdate", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Verify the cache was updated based on categoryId (123), not categoryName
-    const updatedCategories = queryClient.getQueryData<Category[]>(["category"]);
+    const updatedCategories = queryClient.getQueryData<Category[]>([
+      "category",
+    ]);
     expect(updatedCategories).toHaveLength(2);
     expect(updatedCategories?.[0]).toEqual({
       ...existingCategories[0],

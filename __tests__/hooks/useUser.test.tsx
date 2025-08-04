@@ -40,7 +40,6 @@ describe("useUser", () => {
     expect(result.current.isError).toBe(undefined);
   });
 
-
   it("should include credentials in request", async () => {
     let requestOptions: any;
 

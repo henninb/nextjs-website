@@ -101,7 +101,9 @@ describe("useAccountInsert", () => {
     expect(updatedAccounts).toEqual([responseAccount, ...existingAccounts]);
 
     // Verify console.log was called with payload
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("accountNameOwner"));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("accountNameOwner"),
+    );
 
     consoleSpy.mockRestore();
   });
@@ -285,5 +287,4 @@ describe("useAccountInsert", () => {
 
     expect(result.current.data).toBeNull();
   });
-
 });
