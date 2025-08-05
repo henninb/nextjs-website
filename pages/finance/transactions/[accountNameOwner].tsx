@@ -62,6 +62,8 @@ import {
   TableContainer,
 } from "@mui/material";
 import { useAuth } from "../../../components/AuthProvider";
+import { useUI } from "../../../contexts/UIContext";
+import { useTheme } from "@mui/material/styles";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -165,6 +167,8 @@ export default function TransactionsByAccount() {
 
   const transactionStates = ["outstanding", "future", "cleared"];
   const { isAuthenticated, loading } = useAuth();
+  const { uiMode } = useUI();
+  const theme = useTheme();
 
   useEffect(() => {
     const { ids } = rowSelectionModel;
@@ -454,8 +458,10 @@ export default function TransactionsByAccount() {
                       style={{
                         color:
                           params.row.transactionState === state
-                            ? "rgba(189, 147, 249, 1)" // Purple color for active state
-                            : "rgba(255, 255, 255, 1)", // White color for inactive state, // Default color for inactive state
+                            ? uiMode === "original" 
+                              ? "rgba(189, 147, 249, 1)" // Purple color for legacy UI
+                              : theme.palette.primary.main // Use theme primary color for modern UI
+                            : "rgba(255, 255, 255, 1)", // White color for inactive state
                       }}
                       onClick={() => handleStateChange(state)}
                     >

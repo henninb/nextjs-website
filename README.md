@@ -1,71 +1,153 @@
-# website
+# NextJS Website
 
-hosted on cloudflare pages
-hosted on vercel
-hosted on netlify
-hosted on gcp
-hosted on aws
+A comprehensive Next.js application featuring personal finance management, sports data, blog functionality, and various utility tools. Built with TypeScript, React 19, and Material-UI.
 
-npm install -D @cloudflare/next-on-pages
+## 🚀 Live Deployments
 
-## aws
+The application is deployed across multiple platforms:
 
-aws s3 mb s3://bh-nextjs-website --region us-east-1
+- **Cloudflare Pages**: `https://pages.bhenning.com`
+- **Vercel**: Production deployment
+- **Netlify**: Alternative hosting
+- **Google Cloud Platform**: Custom VM deployment
+- **AWS**: S3 static hosting
 
-aws s3 cp --recursive .next/ s3://bh-nextjs-website/ --region us-east-1
+## 🛠️ Tech Stack
 
-aws s3api put-bucket-policy --bucket bh-nextjs-website --policy '{
-"Version": "2012-10-17",
-"Statement": [
-{
-"Effect": "Allow",
-"Principal": "\*",
-"Action": ["s3:GetObject"]
-}
-]
-}'
+- **Framework**: Next.js 15.4.5 with React 19.1.1
+- **Language**: TypeScript (relaxed strict mode)
+- **Styling**: Material-UI with custom themes (Dracula & Modern)
+- **State Management**: React Query + SWR for server state, React hooks for client state
+- **Testing**: Jest with SWC, React Testing Library, MSW for API mocking
+- **Node.js**: Supports versions 20.x, 22.x, 23.x, 24.x
 
-local.env
-NEXT_PUBLIC_AWS_S3_REGION=us-east-1
-NEXT_PUBLIC_AWS_S3_ACCESS_KEY_ID=123
-NEXT_PUBLIC_AWS_S3_SECRET_ACCESS_KEY=123
-NEXT_PUBLIC_AWS_S3_BUCKET_NAME=test
+## 📋 Features
 
-gcloud compute firewall-rules create allow-profile-rule \
- --network default \
- --allow tcp:3000 \
- --priority 1000
+### Personal Finance Management
+- Account management and tracking
+- Transaction import and categorization
+- Payment scheduling and transfers
+- Budget tracking and reporting
+- Data visualization with MUI DataGrid
 
-gcloud compute firewall-rules list
+### Sports Data Integration
+- NFL, NBA, MLB, NHL statistics
+- Real-time sports data APIs
+- Interactive data displays
 
-nc -v -z 35.226.225.26 3000
-nc -v -z 35.226.225.26 3001
+### Blog System
+- MDX support for rich content
+- Dynamic routing for blog posts
+- Gray matter for frontmatter parsing
 
-aws lambda create-function --function-name my-function \
---zip-file fileb://function.zip --handler index.handler --runtime nodejs20.x \
---role arn:aws:iam::123456789012:role/lambda-ex
+### Utility Tools
+- Temperature conversion (Celsius/Fahrenheit)
+- Lead generation forms
+- Authentication system with JWT
 
-gcloud compute firewall-rules create allow-ssh-from-workstation \
- --direction=INGRESS \
- --priority=1000 \
- --network=default \
- --action=ALLOW \
- --rules=tcp:22 \
- --source-ranges=68.46.77.58/32
+## 🚦 Getting Started
 
-gcloud compute firewall-rules create allow-port-3000-instance-group \
- --network default \
- --allow tcp:3000 \
---source-ranges 0.0.0.0/0
+### Prerequisites
+- Node.js (20.x, 22.x, 23.x, or 24.x)
+- npm or yarn package manager
 
-gcloud compute firewall-rules create allow-port-80-instance-group \
- --network default \
- --allow tcp:80 \
---source-ranges 0.0.0.0/0
+### Installation
 
-## create new vm instance
+```bash
+# Clone the repository
+git clone <repository-url>
+cd nextjs-website
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Available Scripts
+
+```bash
+# Development
+npm run dev          # Start dev server with deprecation warnings suppressed
+npm run build        # Build for production
+npm run start        # Start production server
+
+# Testing
+npm test             # Run all Jest tests
+npm test -- -t "test name"  # Run specific test
+npm test -- --testPathPattern=path/to/test  # Run tests in specific path
+
+# Code Quality
+npm run prettier     # Format code with Prettier
+
+# Deployment
+npm run pages:build  # Build for Cloudflare Pages
+npm run analyze      # Analyze bundle size
+```
+
+## 🏗️ Project Structure
 
 ```
+├── components/          # Reusable UI components
+├── contexts/           # React contexts (UIContext)
+├── hooks/              # Custom React hooks (40+ hooks)
+├── layouts/            # Page layout components
+├── model/              # TypeScript interfaces and types
+├── pages/              # Next.js pages and API routes
+│   ├── api/           # API endpoints
+│   ├── finance/       # Finance management pages
+│   ├── blog/          # Blog system
+│   └── tools/         # Utility tools
+├── themes/            # MUI theme configurations
+├── __tests__/         # Jest test files
+├── __mocks__/         # Mock implementations
+└── data/              # Test data and dummy data
+```
+
+## 🧪 Testing
+
+The project uses Jest with comprehensive testing setup:
+
+- **Environment**: jsdom for React components
+- **Transpilation**: SWC for fast builds
+- **Mocking**: MSW v2.10.4 for API mocking
+- **Coverage**: Configured for all TypeScript/JavaScript files
+
+### Test Categories
+- **Hook Tests**: Finance operations, user management, data fetching
+- **Component Tests**: UI components with React Testing Library
+- **Page Tests**: Full page functionality testing
+
+## ☁️ Deployment
+
+### AWS S3 Static Hosting
+
+```bash
+# Create S3 bucket
+aws s3 mb s3://bh-nextjs-website --region us-east-1
+
+# Deploy build files
+aws s3 cp --recursive .next/ s3://bh-nextjs-website/ --region us-east-1
+
+# Set bucket policy for public access
+aws s3api put-bucket-policy --bucket bh-nextjs-website --policy '{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": ["s3:GetObject"],
+      "Resource": "arn:aws:s3:::bh-nextjs-website/*"
+    }
+  ]
+}'
+```
+
+### Google Cloud Platform
+
+#### VM Instance Creation
+```bash
 gcloud compute instances create nginx-bhenning \
     --zone=us-central1-b \
     --image-family=debian-11 \
@@ -74,55 +156,103 @@ gcloud compute instances create nginx-bhenning \
     --tags=nginx-server
 ```
 
-connect to nginx-bhenning
+#### Firewall Configuration
+```bash
+# Allow development server
+gcloud compute firewall-rules create allow-profile-rule \
+    --network default \
+    --allow tcp:3000 \
+    --priority 1000
 
+# Allow HTTP traffic
+gcloud compute firewall-rules create allow-port-80-instance-group \
+    --network default \
+    --allow tcp:80 \
+    --source-ranges 0.0.0.0/0
+
+# SSH access from specific IP
+gcloud compute firewall-rules create allow-ssh-from-workstation \
+    --direction=INGRESS \
+    --priority=1000 \
+    --network=default \
+    --action=ALLOW \
+    --rules=tcp:22 \
+    --source-ranges=68.46.77.58/32
 ```
+
+#### VM Connection
+```bash
+# Connect to instances
 gcloud compute ssh nginx-bhenning --zone=us-central1-b
+gcloud compute ssh www-bhenning-com --zone=us-central1-b
+
+# File transfer
 gcloud compute scp ./ngx_http_pxnginx_module.so nginx-bhenning:/home/brianhenning/ngx_http_pxnginx_module.so --zone=us-central1-b
 ```
 
-connect to www-bhenning-com
+### Cloudflare Pages
 
+```bash
+# Install Cloudflare Pages CLI
+npm install -D @cloudflare/next-on-pages
+
+# Build for Cloudflare Pages
+npm run pages:build
 ```
-gcloud compute ssh www-bhenning-com --zone=us-central1-b
+
+## 🔧 Environment Variables
+
+Create a `.env.local` file for local development:
+
+```env
+NEXT_PUBLIC_AWS_S3_REGION=us-east-1
+NEXT_PUBLIC_AWS_S3_ACCESS_KEY_ID=your_access_key
+NEXT_PUBLIC_AWS_S3_SECRET_ACCESS_KEY=your_secret_key
+NEXT_PUBLIC_AWS_S3_BUCKET_NAME=your_bucket_name
 ```
 
-## curl nginx
+## 🧰 Development Tools
 
-http://34.170.134.90/
-
-Wells Fargo
-
-```
+### Wells Fargo Transaction Scraper
+```javascript
 const transactions = [...document.querySelectorAll("tr.TransactionsRow__transaction-row___IjXn8")].map(row => {
     const cells = row.querySelectorAll("td");
 
     return {
-        date: cells[1]?.innerText.trim(), // Transaction Date
-        postedDate: cells[2]?.innerText.trim(), // Posted Date
-        description: cells[3]?.querySelector("span")?.innerText.trim(), // Merchant/Description
-        transactionId: cells[3]?.querySelector(".OneLinkNoTx")?.innerText.trim(), // Transaction ID
-        amount: cells[4]?.innerText.trim(), // Transaction Amount
-        balance: cells[5]?.innerText.trim() // Running Balance
+        date: cells[1]?.innerText.trim(),
+        postedDate: cells[2]?.innerText.trim(),
+        description: cells[3]?.querySelector("span")?.innerText.trim(),
+        transactionId: cells[3]?.querySelector(".OneLinkNoTx")?.innerText.trim(),
+        amount: cells[4]?.innerText.trim(),
+        balance: cells[5]?.innerText.trim()
     };
 });
 
-// Print to console
 console.table(transactions);
 ```
 
+### API Testing
+
+```bash
+# Test temperature conversion API
 curl -X 'POST' 'https://pages.bhenning.com/api/celsius' \
- -H 'accept: _/_' \
+ -H 'accept: */*' \
  -H 'content-type: application/json' \
- -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
-AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" \
+ -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" \
  --data-raw '{"fahrenheit":50}'
+```
 
-curl -X 'POST' 'https://www.brianhenning.com/api/celsius' \
- -H 'accept: _/_' \
- -H 'content-type: application/json' \
- -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
-AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36" \
- --data-raw '{"fahrenheit":100}'
+## 📚 Documentation
 
-https://captcha.px-cdn.net/PXjJ0cYtn9/captcha.js?a=c&u=1d0953eb-63f9-11f0-807c-1201d10bfd28&v=09daa62b-63f9-11f0-8948-82c124838a96&m=0&b=aHR0cHM6Ly93d3cuYmhlbm5pbmcuY29tL2FwaS9jZWxzaXVz&h=UE9TVA==
+For detailed development guidelines and project conventions, see [CLAUDE.md](./CLAUDE.md).
+
+## 🤝 Contributing
+
+1. Follow the TypeScript and React conventions outlined in CLAUDE.md
+2. Write tests for new features using Jest and React Testing Library
+3. Use the established project structure and naming conventions
+4. Run tests and linting before submitting changes
+
+## 📄 License
+
+This project is private and proprietary.
