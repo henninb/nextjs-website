@@ -42,7 +42,7 @@ const initialPaymentData: Payment = {
   destinationAccount: "",
   sourceAccount: "",
   activeStatus: true,
-  amount: 0,
+  amount: 0.0,
 };
 
 export default function Payments() {
@@ -507,7 +507,7 @@ export default function Payments() {
             />
             <USDAmountInput
               label="Amount"
-              value={paymentData?.amount ?? ""}
+              value={paymentData?.amount ? paymentData.amount : ""}
               onChange={(value) => {
                 setPaymentData((prev: any) => ({
                   ...prev,

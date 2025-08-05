@@ -51,7 +51,7 @@ export default function Transfers() {
     sourceAccount: "",
     destinationAccount: "",
     transactionDate: new Date(),
-    amount: 0,
+    amount: 0.0,
     guidSource: "",
     guidDestination: "",
     activeStatus: true,
@@ -243,7 +243,7 @@ export default function Transfers() {
         sourceAccount: newData.sourceAccount,
         destinationAccount: newData.destinationAccount,
         transactionDate: newData.transactionDate,
-        amount: 0,
+        amount: 0.0,
         guidSource: "",
         guidDestination: "",
         activeStatus: true,
@@ -514,7 +514,7 @@ export default function Transfers() {
 
             <USDAmountInput
               label="Amount"
-              value={transferData?.amount ?? ""}
+              value={transferData?.amount ? transferData.amount : ""}
               onChange={(value) => {
                 setTransferData((prev: any) => ({
                   ...prev,

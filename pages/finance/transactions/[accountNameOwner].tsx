@@ -922,7 +922,7 @@ export default function TransactionsByAccount() {
 
             <USDAmountInput
               label="Amount ($)"
-              value={transactionData?.amount ?? ""}
+              value={transactionData?.amount ? transactionData.amount : ""}
               onChange={(value) => {
                 setTransactionData((prev: any) => ({
                   ...prev,
