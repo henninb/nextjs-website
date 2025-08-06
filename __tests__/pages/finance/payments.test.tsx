@@ -67,12 +67,21 @@ jest.mock("../../../components/USDAmountInput", () => {
     value,
     onChange,
     label,
+    disabled,
+    placeholder,
+    // Filter out non-DOM props to avoid React warnings
+    fullWidth,
+    margin,
+    error,
+    helperText,
     ...props
   }: any) {
     return (
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        placeholder={placeholder}
         aria-label={label || "Amount"}
         {...props}
       />
@@ -414,7 +423,7 @@ describe("Payments Page - MSW Tests", () => {
     expect(screen.getByText("Payment Management")).toBeInTheDocument();
 
     // Check that the DataGrid is rendered with data
-    expect(screen.getByText("Transaction Date")).toBeInTheDocument();
+    expect(screen.getByText("Date")).toBeInTheDocument();
     expect(screen.getByText("Source Account")).toBeInTheDocument();
     expect(screen.getByText("Destination Account")).toBeInTheDocument();
     expect(screen.getByText("Amount")).toBeInTheDocument();
@@ -453,7 +462,7 @@ describe("Payments Page - MSW Tests", () => {
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
 
     // Verify that table headers are present
-    expect(screen.getByText("Transaction Date")).toBeInTheDocument();
+    expect(screen.getByText("Date")).toBeInTheDocument();
     expect(screen.getByText("Source Account")).toBeInTheDocument();
     expect(screen.getByText("Destination Account")).toBeInTheDocument();
     expect(screen.getByText("Amount")).toBeInTheDocument();
