@@ -11,7 +11,7 @@ export default function useLogout() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://finance.bhenning.com/api/logout", {
+      const response = await fetch("/api/logout", {
         method: "POST",
         credentials: "include", // Ensure cookies are sent with the request
       });

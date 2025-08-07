@@ -114,7 +114,10 @@ export default function USDAmountInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const stringValue = value === 0 || value === 0.0 || value === "0" || value === "0.0" || !value ? "" : String(value);
+    const stringValue =
+      value === 0 || value === 0.0 || value === "0" || value === "0.0" || !value
+        ? ""
+        : String(value);
     setDisplayValue(stringValue);
     setShowDecimalPlaceholder(!stringValue.includes(".") && stringValue !== "");
   }, [value]);

@@ -64,13 +64,13 @@ describe("DataGridDynamic Component", () => {
       ];
 
       renderWithTheme(
-        <DataGridDynamic 
-          rows={mockRows} 
+        <DataGridDynamic
+          rows={mockRows}
           columns={mockColumns}
           pageSize={25}
           disableSelectionOnClick
           autoHeight
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -103,11 +103,15 @@ describe("DataGridDynamic Component", () => {
         { field: "amount", headerName: "Amount", width: 150 },
       ];
 
-      renderWithTheme(<DataGridDynamic rows={largeDataset} columns={columns} />);
+      renderWithTheme(
+        <DataGridDynamic rows={largeDataset} columns={columns} />,
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId("mocked-datagrid")).toBeInTheDocument();
-        expect(screen.getByText("Mocked DataGrid - 1000 rows")).toBeInTheDocument();
+        expect(
+          screen.getByText("Mocked DataGrid - 1000 rows"),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -119,15 +123,15 @@ describe("DataGridDynamic Component", () => {
           id: 1,
           accountNameOwner: "Chase Checking",
           transactionDate: "2024-01-01",
-          amount: 1500.00,
+          amount: 1500.0,
           category: "Salary",
           description: "Monthly Salary",
         },
         {
           id: 2,
-          accountNameOwner: "Chase Checking", 
+          accountNameOwner: "Chase Checking",
           transactionDate: "2024-01-02",
-          amount: -85.50,
+          amount: -85.5,
           category: "Groceries",
           description: "Supermarket Purchase",
         },
@@ -142,13 +146,13 @@ describe("DataGridDynamic Component", () => {
       ];
 
       renderWithTheme(
-        <DataGridDynamic 
-          rows={financeData} 
+        <DataGridDynamic
+          rows={financeData}
           columns={financeColumns}
           pageSize={50}
           disableSelectionOnClick
           autoHeight
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -165,7 +169,7 @@ describe("DataGridDynamic Component", () => {
           pageSize={100}
           disableSelectionOnClick
           autoHeight
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -177,9 +181,7 @@ describe("DataGridDynamic Component", () => {
 
   describe("Error Handling", () => {
     it("handles empty rows gracefully", async () => {
-      const columns = [
-        { field: "name", headerName: "Name", width: 200 },
-      ];
+      const columns = [{ field: "name", headerName: "Name", width: 200 }];
 
       renderWithTheme(<DataGridDynamic rows={[]} columns={columns} />);
 
@@ -202,7 +204,9 @@ describe("DataGridDynamic Component", () => {
   describe("Accessibility", () => {
     it("maintains accessibility through dynamic loading", async () => {
       const rows = [{ id: 1, name: "Test Transaction" }];
-      const columns = [{ field: "name", headerName: "Transaction Name", width: 200 }];
+      const columns = [
+        { field: "name", headerName: "Transaction Name", width: 200 },
+      ];
 
       renderWithTheme(<DataGridDynamic rows={rows} columns={columns} />);
 

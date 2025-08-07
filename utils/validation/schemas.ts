@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Financial constants for boundary checks
 export const FINANCIAL_LIMITS = {
@@ -18,61 +18,71 @@ const isValidDate = (date: string | Date) => {
 
 const dateString = z
   .string()
-  .refine(isValidDate, { message: 'Invalid date format' })
+  .refine(isValidDate, { message: "Invalid date format" })
   .or(z.date());
 
 // Common field validations
 const accountNameOwner = z
   .string()
-  .min(1, 'Account name is required')
-  .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, 'Account name too long')
-  .regex(/^[a-zA-Z0-9_-]+$/, 'Account name contains invalid characters');
+  .min(1, "Account name is required")
+  .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, "Account name too long")
+  .regex(/^[a-zA-Z0-9_-]+$/, "Account name contains invalid characters");
 
 const financialAmount = z
   .number()
-  .min(FINANCIAL_LIMITS.MIN_AMOUNT, `Amount cannot be less than ${FINANCIAL_LIMITS.MIN_AMOUNT}`)
-  .max(FINANCIAL_LIMITS.MAX_AMOUNT, `Amount cannot exceed ${FINANCIAL_LIMITS.MAX_AMOUNT}`)
+  .min(
+    FINANCIAL_LIMITS.MIN_AMOUNT,
+    `Amount cannot be less than ${FINANCIAL_LIMITS.MIN_AMOUNT}`,
+  )
+  .max(
+    FINANCIAL_LIMITS.MAX_AMOUNT,
+    `Amount cannot exceed ${FINANCIAL_LIMITS.MAX_AMOUNT}`,
+  )
   .refine(
     (val) => {
-      const decimalPlaces = (val.toString().split('.')[1] || '').length;
+      const decimalPlaces = (val.toString().split(".")[1] || "").length;
       return decimalPlaces <= FINANCIAL_LIMITS.MAX_DECIMAL_PLACES;
     },
-    { message: `Amount cannot have more than ${FINANCIAL_LIMITS.MAX_DECIMAL_PLACES} decimal places` }
+    {
+      message: `Amount cannot have more than ${FINANCIAL_LIMITS.MAX_DECIMAL_PLACES} decimal places`,
+    },
   );
 
 const description = z
   .string()
-  .min(1, 'Description is required')
-  .max(FINANCIAL_LIMITS.MAX_DESCRIPTION_LENGTH, 'Description too long')
+  .min(1, "Description is required")
+  .max(FINANCIAL_LIMITS.MAX_DESCRIPTION_LENGTH, "Description too long")
   .trim();
 
 const category = z
   .string()
-  .min(1, 'Category is required')
-  .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, 'Category name too long')
+  .min(1, "Category is required")
+  .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, "Category name too long")
   .trim();
 
 const notes = z
   .string()
-  .max(FINANCIAL_LIMITS.MAX_NOTES_LENGTH, 'Notes too long')
+  .max(FINANCIAL_LIMITS.MAX_NOTES_LENGTH, "Notes too long")
   .optional()
-  .default('');
+  .default("");
 
 // Enum validations
-const accountTypeEnum = z.enum(['credit', 'debit'], {
-  errorMap: () => ({ message: 'Account type must be either credit or debit' })
+const accountTypeEnum = z.enum(["credit", "debit"], {
+  errorMap: () => ({ message: "Account type must be either credit or debit" }),
 });
 
-const transactionStateEnum = z.enum(['cleared', 'outstanding', 'future'], {
-  errorMap: () => ({ message: 'Transaction state must be cleared, outstanding, or future' })
+const transactionStateEnum = z.enum(["cleared", "outstanding", "future"], {
+  errorMap: () => ({
+    message: "Transaction state must be cleared, outstanding, or future",
+  }),
 });
 
-const transactionTypeEnum = z.enum(['debit', 'credit'], {
-  errorMap: () => ({ message: 'Transaction type must be debit or credit' })
+const transactionTypeEnum = z.enum(["debit", "credit"], {
+  errorMap: () => ({ message: "Transaction type must be debit or credit" }),
 });
 
-const reoccurringTypeEnum = z.enum(['onetime', 'monthly', 'weekly', 'yearly'], {
-  errorMap: () => ({ message: 'Invalid reoccurring type' })
+const reoccurringTypeEnum = z.enum(["onetime", "monthly", "weekly", "yearly"], {
+  errorMap: () => ({ message: "Invalid reoccurring type" }),
 });
 
 // User validation schema
@@ -80,26 +90,29 @@ export const UserSchema = z.object({
   userId: z.number().int().positive().optional(),
   username: z
     .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(50, 'Username cannot exceed 50 characters')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
+    .min(3, "Username must be at least 3 characters")
+    .max(50, "Username cannot exceed 50 characters")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores",
+    ),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password cannot exceed 128 characters')
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password cannot exceed 128 characters")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'Password must contain at least one lowercase letter, uppercase letter, number, and special character'
+      "Password must contain at least one lowercase letter, uppercase letter, number, and special character",
     ),
   firstName: z
     .string()
-    .max(50, 'First name cannot exceed 50 characters')
-    .regex(/^[a-zA-Z\s'-]+$/, 'First name contains invalid characters')
+    .max(50, "First name cannot exceed 50 characters")
+    .regex(/^[a-zA-Z\s'-]+$/, "First name contains invalid characters")
     .optional(),
   lastName: z
     .string()
-    .max(50, 'Last name cannot exceed 50 characters')
-    .regex(/^[a-zA-Z\s'-]+$/, 'Last name contains invalid characters')
+    .max(50, "Last name cannot exceed 50 characters")
+    .regex(/^[a-zA-Z\s'-]+$/, "Last name contains invalid characters")
     .optional(),
 });
 
@@ -111,9 +124,9 @@ export const AccountSchema = z.object({
   activeStatus: z.boolean().default(true),
   moniker: z
     .string()
-    .min(1, 'Moniker is required')
-    .max(20, 'Moniker cannot exceed 20 characters')
-    .regex(/^[a-zA-Z0-9]+$/, 'Moniker can only contain letters and numbers'),
+    .min(1, "Moniker is required")
+    .max(20, "Moniker cannot exceed 20 characters")
+    .regex(/^[a-zA-Z0-9]+$/, "Moniker can only contain letters and numbers"),
   outstanding: financialAmount.default(0),
   future: financialAmount.default(0),
   cleared: financialAmount.default(0),
@@ -126,10 +139,7 @@ export const AccountSchema = z.object({
 // Transaction validation schema
 export const TransactionSchema = z.object({
   transactionId: z.number().int().positive().optional(),
-  guid: z
-    .string()
-    .uuid('Invalid GUID format')
-    .optional(), // Will be generated server-side
+  guid: z.string().uuid("Invalid GUID format").optional(), // Will be generated server-side
   accountId: z.number().int().positive().optional(),
   accountType: accountTypeEnum,
   accountNameOwner,
@@ -137,10 +147,10 @@ export const TransactionSchema = z.object({
   description,
   category,
   amount: financialAmount,
-  transactionState: transactionStateEnum.default('outstanding'),
+  transactionState: transactionStateEnum.default("outstanding"),
   transactionType: transactionTypeEnum,
   activeStatus: z.boolean().default(true),
-  reoccurringType: reoccurringTypeEnum.default('onetime'),
+  reoccurringType: reoccurringTypeEnum.default("onetime"),
   notes,
   dueDate: z.string().optional(),
 });
@@ -184,27 +194,30 @@ export interface ValidationError {
 }
 
 // Schema validation function
-export function validateSchema<T>(schema: z.ZodSchema<T>, data: unknown): {
+export function validateSchema<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown,
+): {
   success: boolean;
   data?: T;
   errors?: ValidationError[];
 } {
   try {
     const result = schema.safeParse(data);
-    
+
     if (result.success) {
       return {
         success: true,
         data: result.data,
       };
     }
-    
-    const errors: ValidationError[] = result.error.errors.map(err => ({
-      field: err.path.join('.'),
+
+    const errors: ValidationError[] = result.error.errors.map((err) => ({
+      field: err.path.join("."),
       message: err.message,
       code: err.code,
     }));
-    
+
     return {
       success: false,
       errors,
@@ -214,9 +227,9 @@ export function validateSchema<T>(schema: z.ZodSchema<T>, data: unknown): {
       success: false,
       errors: [
         {
-          field: 'validation',
-          message: 'Schema validation failed',
-          code: 'VALIDATION_ERROR',
+          field: "validation",
+          message: "Schema validation failed",
+          code: "VALIDATION_ERROR",
         },
       ],
     };

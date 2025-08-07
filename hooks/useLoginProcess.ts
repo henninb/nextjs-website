@@ -3,7 +3,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../components/AuthProvider";
 import { useRouter } from "next/router";
 import User from "../model/User";
-import { DataValidator, hookValidators, InputSanitizer } from "../utils/validation";
+import {
+  DataValidator,
+  hookValidators,
+  InputSanitizer,
+} from "../utils/validation";
 
 // interface LoginPayload {
 //   email: string;
@@ -21,18 +25,23 @@ export default function useLogin() {
       const validation = hookValidators.validateApiPayload(
         payload,
         DataValidator.validateUser,
-        'login'
+        "login",
       );
-      
+
       if (!validation.isValid) {
-        const errorMessages = validation.errors?.map(err => err.message).join(', ') || 'Validation failed';
+        const errorMessages =
+          validation.errors?.map((err) => err.message).join(", ") ||
+          "Validation failed";
         throw new Error(`Login validation failed: ${errorMessages}`);
       }
-      
+
       // Don't log credentials - security improvement
-      console.log("Login attempt for user:", InputSanitizer.sanitizeUsername(payload.username));
-      
-      const response = await fetch("https://finance.bhenning.com/api/login", {
+      console.log(
+        "Login attempt for user:",
+        InputSanitizer.sanitizeUsername(payload.username),
+      );
+
+      const response = await fetch("/api/login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

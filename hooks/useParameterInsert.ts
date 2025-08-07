@@ -4,7 +4,7 @@ import Parameter from "../model/Parameter";
 
 const insertParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
-    const endpoint = "https://finance.bhenning.com/api/parameter/insert";
+    const endpoint = "/api/parameter/insert";
 
     const response = await fetch(endpoint, {
       method: "POST",

@@ -24,6 +24,7 @@ The application is deployed across multiple platforms:
 ## 📋 Features
 
 ### Personal Finance Management
+
 - Account management and tracking
 - Transaction import and categorization
 - Payment scheduling and transfers
@@ -31,16 +32,19 @@ The application is deployed across multiple platforms:
 - Data visualization with MUI DataGrid
 
 ### Sports Data Integration
+
 - NFL, NBA, MLB, NHL statistics
 - Real-time sports data APIs
 - Interactive data displays
 
 ### Blog System
+
 - MDX support for rich content
 - Dynamic routing for blog posts
 - Gray matter for frontmatter parsing
 
 ### Utility Tools
+
 - Temperature conversion (Celsius/Fahrenheit)
 - Lead generation forms
 - Authentication system with JWT
@@ -48,6 +52,7 @@ The application is deployed across multiple platforms:
 ## 🚦 Getting Started
 
 ### Prerequisites
+
 - Node.js (20.x, 22.x, 23.x, or 24.x)
 - npm or yarn package manager
 
@@ -115,6 +120,7 @@ The project uses Jest with comprehensive testing setup:
 - **Coverage**: Configured for all TypeScript/JavaScript files
 
 ### Test Categories
+
 - **Hook Tests**: Finance operations, user management, data fetching
 - **Component Tests**: UI components with React Testing Library
 - **Page Tests**: Full page functionality testing
@@ -147,6 +153,7 @@ aws s3api put-bucket-policy --bucket bh-nextjs-website --policy '{
 ### Google Cloud Platform
 
 #### VM Instance Creation
+
 ```bash
 gcloud compute instances create nginx-bhenning \
     --zone=us-central1-b \
@@ -157,6 +164,7 @@ gcloud compute instances create nginx-bhenning \
 ```
 
 #### Firewall Configuration
+
 ```bash
 # Allow development server
 gcloud compute firewall-rules create allow-profile-rule \
@@ -181,6 +189,7 @@ gcloud compute firewall-rules create allow-ssh-from-workstation \
 ```
 
 #### VM Connection
+
 ```bash
 # Connect to instances
 gcloud compute ssh nginx-bhenning --zone=us-central1-b
@@ -214,18 +223,21 @@ NEXT_PUBLIC_AWS_S3_BUCKET_NAME=your_bucket_name
 ## 🧰 Development Tools
 
 ### Wells Fargo Transaction Scraper
-```javascript
-const transactions = [...document.querySelectorAll("tr.TransactionsRow__transaction-row___IjXn8")].map(row => {
-    const cells = row.querySelectorAll("td");
 
-    return {
-        date: cells[1]?.innerText.trim(),
-        postedDate: cells[2]?.innerText.trim(),
-        description: cells[3]?.querySelector("span")?.innerText.trim(),
-        transactionId: cells[3]?.querySelector(".OneLinkNoTx")?.innerText.trim(),
-        amount: cells[4]?.innerText.trim(),
-        balance: cells[5]?.innerText.trim()
-    };
+```javascript
+const transactions = [
+  ...document.querySelectorAll("tr.TransactionsRow__transaction-row___IjXn8"),
+].map((row) => {
+  const cells = row.querySelectorAll("td");
+
+  return {
+    date: cells[1]?.innerText.trim(),
+    postedDate: cells[2]?.innerText.trim(),
+    description: cells[3]?.querySelector("span")?.innerText.trim(),
+    transactionId: cells[3]?.querySelector(".OneLinkNoTx")?.innerText.trim(),
+    amount: cells[4]?.innerText.trim(),
+    balance: cells[5]?.innerText.trim(),
+  };
 });
 
 console.table(transactions);

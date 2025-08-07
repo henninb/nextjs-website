@@ -6,7 +6,7 @@ import { dummyPayments } from "../data/dummyPayments";
 const fetchPaymentData = async (): Promise<Payment[]> => {
   try {
     const response = await fetch(
-      "https://finance.bhenning.com/api/payment/select",
+      "/api/payment/select",
       {
         method: "GET",
         credentials: "include",

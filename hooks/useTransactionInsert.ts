@@ -2,7 +2,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
-import { DataValidator, hookValidators, ValidationError } from "../utils/validation";
+import {
+  DataValidator,
+  hookValidators,
+  ValidationError,
+} from "../utils/validation";
+import { generateSecureUUID } from "../utils/security/secureUUID";
 //import { basicAuth } from "../Common";
 
 export type TransactionInsertType = {
@@ -19,12 +24,15 @@ const getAccountKey = (accountNameOwner: string) => [
 
 const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
 
-const setupNewTransaction = (
+const setupNewTransaction = async (
   payload: Transaction,
   accountNameOwner: string,
-): Transaction => {
+): Promise<Transaction> => {
+  // Generate secure UUID server-side
+  const secureGuid = await generateSecureUUID();
+
   return {
-    guid: crypto.randomUUID(), // TODO: Replace with server-side generation for security
+    guid: secureGuid, // Now using secure server-side generation
     transactionDate: payload.transactionDate,
     description: payload.description,
     category: payload.category || "undefined",
@@ -50,20 +58,25 @@ const insertTransaction = async (
   const validation = hookValidators.validateApiPayload(
     payload,
     DataValidator.validateTransaction,
-    'insertTransaction'
+    "insertTransaction",
   );
-  
+
   if (!validation.isValid) {
-    const errorMessages = validation.errors?.map(err => err.message).join(', ') || 'Validation failed';
+    const errorMessages =
+      validation.errors?.map((err) => err.message).join(", ") ||
+      "Validation failed";
     throw new Error(`Transaction validation failed: ${errorMessages}`);
   }
-  
-  let endpoint = "https://finance.bhenning.com/api/transaction/insert";
+
+  let endpoint = "/api/transaction/insert";
   if (isFutureTransaction) {
-    endpoint = "https://finance.bhenning.com/api/transaction/future/insert";
+    endpoint = "/api/transaction/future/insert";
   }
 
-  const newPayload = setupNewTransaction(validation.validatedData, accountNameOwner);
+  const newPayload = await setupNewTransaction(
+    validation.validatedData,
+    accountNameOwner,
+  );
 
   try {
     const response = await fetch(endpoint, {

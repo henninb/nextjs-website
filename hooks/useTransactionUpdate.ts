@@ -33,7 +33,7 @@ const updateTransaction = async (
   try {
     const sanitizedGuid = sanitizeGuid(oldData.guid);
 
-    const endpoint = `https://finance.bhenning.com/api/transaction/update/${sanitizedGuid}`;
+    const endpoint = `/api/transaction/update/${sanitizedGuid}`;
 
     if (newData.receiptImage !== undefined) {
       newData["receiptImage"].image = newData["receiptImage"].image.replace(

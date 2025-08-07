@@ -112,9 +112,7 @@ const createWrapper = () => {
   });
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <UIProvider>
-        {children}
-      </UIProvider>
+      <UIProvider>{children}</UIProvider>
     </QueryClientProvider>
   );
 };

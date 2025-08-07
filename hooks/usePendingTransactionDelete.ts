@@ -3,7 +3,7 @@ import PendingTransaction from "../model/PendingTransaction";
 
 const deletePendingTransaction = async (id: number): Promise<void> => {
   try {
-    const endpoint = `https://finance.bhenning.com/api/pending/transaction/delete/${id}`;
+    const endpoint = `/api/pending/transaction/delete/${id}`;
     console.log(`Deleting pending transaction with id: ${id}`);
 
     const response = await fetch(endpoint, {

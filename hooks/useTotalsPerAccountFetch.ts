@@ -7,8 +7,7 @@ const fetchTotalsPerAccount = async (
 ): Promise<Totals> => {
   try {
     const response = await fetch(
-      "https://finance.bhenning.com/api/transaction/account/totals/" +
-        accountNameOwner,
+      "/api/transaction/account/totals/" + accountNameOwner,
       {
         method: "GET",
         credentials: "include",

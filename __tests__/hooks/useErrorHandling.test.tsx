@@ -7,42 +7,48 @@ const useErrorHandling = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [retryCount, setRetryCount] = React.useState(0);
 
-  const handleAsyncError = React.useCallback(async (
-    asyncOperation: () => Promise<any>,
-    errorKey: string,
-    maxRetries: number = 0 // Default to 0 to avoid retry complexity in tests
-  ) => {
-    setIsLoading(true);
-    setErrors(prev => {
-      const newErrors = { ...prev };
-      delete newErrors[errorKey];
-      return newErrors;
-    });
+  const handleAsyncError = React.useCallback(
+    async (
+      asyncOperation: () => Promise<any>,
+      errorKey: string,
+      maxRetries: number = 0, // Default to 0 to avoid retry complexity in tests
+    ) => {
+      setIsLoading(true);
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[errorKey];
+        return newErrors;
+      });
 
-    try {
-      const result = await asyncOperation();
-      setRetryCount(0);
-      setIsLoading(false);
-      return result;
-    } catch (error: any) {
-      const errorMessage = error?.message || error?.response?.data?.message || "An unexpected error occurred";
-      setErrors(prev => ({ ...prev, [errorKey]: errorMessage }));
-      setRetryCount(0);
-      setIsLoading(false);
-      throw error;
-    }
-  }, []);
+      try {
+        const result = await asyncOperation();
+        setRetryCount(0);
+        setIsLoading(false);
+        return result;
+      } catch (error: any) {
+        const errorMessage =
+          error?.message ||
+          error?.response?.data?.message ||
+          "An unexpected error occurred";
+        setErrors((prev) => ({ ...prev, [errorKey]: errorMessage }));
+        setRetryCount(0);
+        setIsLoading(false);
+        throw error;
+      }
+    },
+    [],
+  );
 
   const isRetriableError = (error: any): boolean => {
     if (error?.response?.status) {
       const status = error.response.status;
       return status >= 500 || status === 429 || status === 408;
     }
-    
+
     if (error?.code) {
       return ["NETWORK_ERROR", "TIMEOUT", "ECONNABORTED"].includes(error.code);
     }
-    
+
     return false;
   };
 
@@ -50,9 +56,9 @@ const useErrorHandling = () => {
     return Math.min(1000 * Math.pow(2, attempt), 30000);
   };
 
-  const handleValidationErrors = (validationResult: { 
-    isValid: boolean; 
-    errors?: Record<string, string> 
+  const handleValidationErrors = (validationResult: {
+    isValid: boolean;
+    errors?: Record<string, string>;
   }) => {
     if (!validationResult.isValid && validationResult.errors) {
       setErrors(validationResult.errors);
@@ -63,7 +69,7 @@ const useErrorHandling = () => {
   };
 
   const clearError = (errorKey: string) => {
-    setErrors(prev => {
+    setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors[errorKey];
       return newErrors;
@@ -130,7 +136,7 @@ describe("useErrorHandling Hook", () => {
       await act(async () => {
         const resultValue = await result.current.handleAsyncError(
           successfulOperation,
-          "test-error"
+          "test-error",
         );
         expect(resultValue).toBe("success");
       });
@@ -144,7 +150,9 @@ describe("useErrorHandling Hook", () => {
         wrapper: createWrapper(queryClient),
       });
 
-      const failingOperation = jest.fn().mockRejectedValue(new Error("Operation failed"));
+      const failingOperation = jest
+        .fn()
+        .mockRejectedValue(new Error("Operation failed"));
 
       await act(async () => {
         try {
@@ -190,16 +198,32 @@ describe("useErrorHandling Hook", () => {
         wrapper: createWrapper(queryClient),
       });
 
-      expect(result.current.isRetriableError({ response: { status: 500 } })).toBe(true);
-      expect(result.current.isRetriableError({ response: { status: 502 } })).toBe(true);
-      expect(result.current.isRetriableError({ response: { status: 429 } })).toBe(true);
-      expect(result.current.isRetriableError({ response: { status: 408 } })).toBe(true);
-      expect(result.current.isRetriableError({ code: "NETWORK_ERROR" })).toBe(true);
+      expect(
+        result.current.isRetriableError({ response: { status: 500 } }),
+      ).toBe(true);
+      expect(
+        result.current.isRetriableError({ response: { status: 502 } }),
+      ).toBe(true);
+      expect(
+        result.current.isRetriableError({ response: { status: 429 } }),
+      ).toBe(true);
+      expect(
+        result.current.isRetriableError({ response: { status: 408 } }),
+      ).toBe(true);
+      expect(result.current.isRetriableError({ code: "NETWORK_ERROR" })).toBe(
+        true,
+      );
       expect(result.current.isRetriableError({ code: "TIMEOUT" })).toBe(true);
-      
-      expect(result.current.isRetriableError({ response: { status: 400 } })).toBe(false);
-      expect(result.current.isRetriableError({ response: { status: 404 } })).toBe(false);
-      expect(result.current.isRetriableError({ code: "VALIDATION_ERROR" })).toBe(false);
+
+      expect(
+        result.current.isRetriableError({ response: { status: 400 } }),
+      ).toBe(false);
+      expect(
+        result.current.isRetriableError({ response: { status: 404 } }),
+      ).toBe(false);
+      expect(
+        result.current.isRetriableError({ code: "VALIDATION_ERROR" }),
+      ).toBe(false);
     });
 
     it("calculates exponential backoff delays", () => {
@@ -219,10 +243,18 @@ describe("useErrorHandling Hook", () => {
         wrapper: createWrapper(queryClient),
       });
 
-      expect(result.current.isRetriableError({ response: { status: 500 } })).toBe(true);
-      expect(result.current.isRetriableError({ response: { status: 400 } })).toBe(false);
-      expect(result.current.isRetriableError({ code: "NETWORK_ERROR" })).toBe(true);
-      expect(result.current.isRetriableError({ code: "VALIDATION_ERROR" })).toBe(false);
+      expect(
+        result.current.isRetriableError({ response: { status: 500 } }),
+      ).toBe(true);
+      expect(
+        result.current.isRetriableError({ response: { status: 400 } }),
+      ).toBe(false);
+      expect(result.current.isRetriableError({ code: "NETWORK_ERROR" })).toBe(
+        true,
+      );
+      expect(
+        result.current.isRetriableError({ code: "VALIDATION_ERROR" }),
+      ).toBe(false);
     });
 
     it("does not retry non-retriable errors", async () => {
@@ -230,12 +262,18 @@ describe("useErrorHandling Hook", () => {
         wrapper: createWrapper(queryClient),
       });
 
-      const nonRetriableError = { response: { status: 400 }, message: "Bad request" };
+      const nonRetriableError = {
+        response: { status: 400 },
+        message: "Bad request",
+      };
       const failingOperation = jest.fn().mockRejectedValue(nonRetriableError);
 
       await act(async () => {
         try {
-          await result.current.handleAsyncError(failingOperation, "no-retry-error");
+          await result.current.handleAsyncError(
+            failingOperation,
+            "no-retry-error",
+          );
         } catch (error) {
           expect(error).toBe(nonRetriableError);
         }
@@ -287,7 +325,9 @@ describe("useErrorHandling Hook", () => {
 
       // Then clear them with valid validation
       act(() => {
-        const isValid = result.current.handleValidationErrors({ isValid: true });
+        const isValid = result.current.handleValidationErrors({
+          isValid: true,
+        });
         expect(isValid).toBe(true);
       });
 
@@ -379,7 +419,10 @@ describe("useErrorHandling Hook", () => {
       const fastOperation = jest.fn().mockResolvedValue("success");
 
       await act(async () => {
-        const resultValue = await result.current.handleAsyncError(fastOperation, "test");
+        const resultValue = await result.current.handleAsyncError(
+          fastOperation,
+          "test",
+        );
         expect(resultValue).toBe("success");
       });
 
@@ -408,10 +451,16 @@ describe("useErrorHandling Hook", () => {
         result.current.handleValidationErrors(transactionErrors);
       });
 
-      expect(result.current.getError("amount")).toBe("Amount cannot exceed $999,999.99");
+      expect(result.current.getError("amount")).toBe(
+        "Amount cannot exceed $999,999.99",
+      );
       expect(result.current.getError("category")).toBe("Category is required");
-      expect(result.current.getError("description")).toBe("Description cannot be empty");
-      expect(result.current.getError("transactionDate")).toBe("Date cannot be in the future");
+      expect(result.current.getError("description")).toBe(
+        "Description cannot be empty",
+      );
+      expect(result.current.getError("transactionDate")).toBe(
+        "Date cannot be in the future",
+      );
     });
 
     it("handles account-related errors", async () => {
@@ -430,13 +479,18 @@ describe("useErrorHandling Hook", () => {
 
       await act(async () => {
         try {
-          await result.current.handleAsyncError(failingAccountOperation, "account-error");
+          await result.current.handleAsyncError(
+            failingAccountOperation,
+            "account-error",
+          );
         } catch (error) {
           expect(error).toBe(accountError);
         }
       });
 
-      expect(result.current.getError("account-error")).toBe("Insufficient permissions to access this account");
+      expect(result.current.getError("account-error")).toBe(
+        "Insufficient permissions to access this account",
+      );
     });
 
     it("handles network connectivity issues", async () => {
@@ -453,13 +507,18 @@ describe("useErrorHandling Hook", () => {
 
       await act(async () => {
         try {
-          await result.current.handleAsyncError(failingNetworkOperation, "network-error");
+          await result.current.handleAsyncError(
+            failingNetworkOperation,
+            "network-error",
+          );
         } catch (error) {
           expect(error).toBe(networkError);
         }
       });
 
-      expect(result.current.getError("network-error")).toBe("Network request failed");
+      expect(result.current.getError("network-error")).toBe(
+        "Network request failed",
+      );
       expect(result.current.isRetriableError(networkError)).toBe(true);
     });
   });

@@ -7,7 +7,7 @@ const updateAccount = async (
   newRow: Account,
 ): Promise<Account> => {
   try {
-    let endpoint = `https://finance.bhenning.com/api/account/update/${oldRow.accountNameOwner}`;
+    let endpoint = `/api/account/update/${oldRow.accountNameOwner}`;
 
     const response = await fetch(endpoint, {
       method: "PUT",

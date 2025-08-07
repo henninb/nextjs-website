@@ -33,11 +33,15 @@ jest.mock("../../hooks/useAccountUsageTracking", () => ({
 
 // Mock the component using the same approach as the other tests
 jest.mock("../../components/SelectNavigateAccounts", () => {
-  return function MockSelectNavigateAccounts({ onNavigate, isModern = false, theme }: any) {
+  return function MockSelectNavigateAccounts({
+    onNavigate,
+    isModern = false,
+    theme,
+  }: any) {
     // Use the mocked hook to get the current test state
     const useFetchAccount = require("../../hooks/useAccountFetch").default;
     const { data, isSuccess, isError } = useFetchAccount();
-    
+
     // Error state
     if (isError) {
       return (
@@ -46,7 +50,7 @@ jest.mock("../../components/SelectNavigateAccounts", () => {
         </div>
       );
     }
-    
+
     // Loading state
     if (!isSuccess) {
       return <div>Loading accounts or no accounts available...</div>;
@@ -72,7 +76,10 @@ jest.mock("../../components/SelectNavigateAccounts", () => {
         <div>
           <span>Most Used:</span>
           {mostUsedAccounts.map((account) => (
-            <div key={account.accountNameOwner} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div
+              key={account.accountNameOwner}
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+            >
               <button
                 role="button"
                 aria-label={account.accountNameOwner}
@@ -115,7 +122,9 @@ const renderWithTheme = (component: React.ReactElement) => {
 
 describe("SelectNavigateAccounts Component", () => {
   const mockOnNavigate = jest.fn();
-  const mockUseFetchAccount = useFetchAccount as jest.MockedFunction<typeof useFetchAccount>;
+  const mockUseFetchAccount = useFetchAccount as jest.MockedFunction<
+    typeof useFetchAccount
+  >;
 
   const mockAccountData = [
     { accountNameOwner: "Chase Checking" },
@@ -132,7 +141,7 @@ describe("SelectNavigateAccounts Component", () => {
       isLoading: false,
       error: null,
     } as any);
-    
+
     mockGetMostUsedAccounts.mockReturnValue([
       { accountNameOwner: "Chase Checking" },
       { accountNameOwner: "Savings Account" },
@@ -144,7 +153,9 @@ describe("SelectNavigateAccounts Component", () => {
       renderWithTheme(<SelectNavigateAccounts onNavigate={mockOnNavigate} />);
 
       expect(screen.getByLabelText("Select an account")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Type to search accounts")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Type to search accounts"),
+      ).toBeInTheDocument();
     });
 
     it("shows most used accounts section", () => {
@@ -161,12 +172,16 @@ describe("SelectNavigateAccounts Component", () => {
       renderWithTheme(<SelectNavigateAccounts onNavigate={mockOnNavigate} />);
 
       // Click on the Chase Checking chip in the most used section
-      const chaseButton = screen.getByRole("button", { name: "Chase Checking" });
+      const chaseButton = screen.getByRole("button", {
+        name: "Chase Checking",
+      });
       fireEvent.click(chaseButton);
 
       expect(mockOnNavigate).toHaveBeenCalled();
       expect(mockTrackAccountVisit).toHaveBeenCalledWith("Chase Checking");
-      expect(mockPush).toHaveBeenCalledWith("/finance/transactions/Chase Checking");
+      expect(mockPush).toHaveBeenCalledWith(
+        "/finance/transactions/Chase Checking",
+      );
     });
 
     it("has remove buttons for most used accounts", () => {
@@ -174,8 +189,10 @@ describe("SelectNavigateAccounts Component", () => {
 
       // Should have CloseIcon buttons for removing accounts (buttons with × text)
       const allButtons = screen.getAllByRole("button");
-      const closeButtons = allButtons.filter(button => 
-        button.textContent === '×' || button.className.includes('MuiIconButton-root')
+      const closeButtons = allButtons.filter(
+        (button) =>
+          button.textContent === "×" ||
+          button.className.includes("MuiIconButton-root"),
       );
       expect(closeButtons.length).toBeGreaterThanOrEqual(2);
     });
@@ -186,8 +203,10 @@ describe("SelectNavigateAccounts Component", () => {
       // Find and click a remove button (IconButton with CloseIcon)
       const removeButtons = screen.getAllByRole("button");
       // Find the small icon buttons (remove buttons)
-      const iconButtons = removeButtons.filter(button => button.getAttribute('class')?.includes('IconButton'));
-      
+      const iconButtons = removeButtons.filter((button) =>
+        button.getAttribute("class")?.includes("IconButton"),
+      );
+
       if (iconButtons.length > 0) {
         fireEvent.click(iconButtons[0]);
         expect(mockRemoveAccount).toHaveBeenCalled();
@@ -204,11 +223,11 @@ describe("SelectNavigateAccounts Component", () => {
       });
 
       renderWithTheme(
-        <SelectNavigateAccounts 
-          onNavigate={mockOnNavigate} 
-          isModern={true} 
-          theme={modernTheme} 
-        />
+        <SelectNavigateAccounts
+          onNavigate={mockOnNavigate}
+          isModern={true}
+          theme={modernTheme}
+        />,
       );
 
       expect(screen.getByLabelText("Select an account")).toBeInTheDocument();
@@ -228,7 +247,7 @@ describe("SelectNavigateAccounts Component", () => {
 
       const combobox = screen.getByRole("combobox");
       expect(combobox).toBeVisible();
-      
+
       combobox.focus();
       expect(combobox).toHaveFocus();
     });
@@ -246,7 +265,9 @@ describe("SelectNavigateAccounts Component", () => {
 
       renderWithTheme(<SelectNavigateAccounts onNavigate={mockOnNavigate} />);
 
-      expect(screen.getByText("Error fetching accounts. Please try again.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Error fetching accounts. Please try again."),
+      ).toBeInTheDocument();
     });
 
     it("shows loading state when accounts are not loaded", () => {
@@ -260,7 +281,9 @@ describe("SelectNavigateAccounts Component", () => {
 
       renderWithTheme(<SelectNavigateAccounts onNavigate={mockOnNavigate} />);
 
-      expect(screen.getByText("Loading accounts or no accounts available...")).toBeInTheDocument();
+      expect(
+        screen.getByText("Loading accounts or no accounts available..."),
+      ).toBeInTheDocument();
     });
   });
 });

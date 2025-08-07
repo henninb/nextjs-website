@@ -6,7 +6,7 @@ import { dummyCategories } from "../data/dummyCategories";
 const fetchCategoryData = async (): Promise<Category[]> => {
   try {
     const response = await fetch(
-      "https://finance.bhenning.com/api/category/select/active",
+      "/api/category/select/active",
       {
         method: "GET",
         credentials: "include",

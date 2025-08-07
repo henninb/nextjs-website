@@ -29,7 +29,7 @@ const useProvideAuth = () => {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("https://finance.bhenning.com/api/me", {
+        const res = await fetch("/api/me", {
           credentials: "include",
         });
         if (res.ok) {

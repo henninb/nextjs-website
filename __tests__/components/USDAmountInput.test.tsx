@@ -4,26 +4,36 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 // Mock the USDAmountInput component since direct import is causing issues in tests
 jest.mock("../../components/USDAmountInput", () => {
-  return function MockUSDAmountInput({ 
-    value, 
-    onChange, 
+  return function MockUSDAmountInput({
+    value,
+    onChange,
     onBlur,
-    label = "USD Amount", 
+    label = "USD Amount",
     disabled = false,
     error = false,
     helperText,
     placeholder,
     fullWidth,
     margin,
-    ...props 
+    ...props
   }: any) {
     const [displayValue, setDisplayValue] = React.useState<string>("");
-    const [showDecimalPlaceholder, setShowDecimalPlaceholder] = React.useState(true);
-    
+    const [showDecimalPlaceholder, setShowDecimalPlaceholder] =
+      React.useState(true);
+
     React.useEffect(() => {
-      const stringValue = value === 0 || value === 0.0 || value === "0" || value === "0.0" || !value ? "" : String(value);
+      const stringValue =
+        value === 0 ||
+        value === 0.0 ||
+        value === "0" ||
+        value === "0.0" ||
+        !value
+          ? ""
+          : String(value);
       setDisplayValue(stringValue);
-      setShowDecimalPlaceholder(!stringValue.includes(".") && stringValue !== "");
+      setShowDecimalPlaceholder(
+        !stringValue.includes(".") && stringValue !== "",
+      );
     }, [value]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +56,9 @@ jest.mock("../../components/USDAmountInput", () => {
         hasValidNegativePosition
       ) {
         setDisplayValue(inputValue);
-        setShowDecimalPlaceholder(!inputValue.includes(".") && inputValue !== "");
+        setShowDecimalPlaceholder(
+          !inputValue.includes(".") && inputValue !== "",
+        );
         onChange(inputValue);
       }
     };
@@ -109,7 +121,7 @@ jest.mock("../../components/USDAmountInput", () => {
     return (
       <div data-testid="usd-amount-input">
         <span className="MUI-currency-symbol">$</span>
-        
+
         <input
           value={displayValue}
           onChange={handleInputChange}
@@ -118,20 +130,20 @@ jest.mock("../../components/USDAmountInput", () => {
           disabled={disabled}
           placeholder={placeholder}
           aria-label={label}
-          style={{ 
-            paddingLeft: "35px", 
-            paddingRight: "50px", 
+          style={{
+            paddingLeft: "35px",
+            paddingRight: "50px",
             fontFamily: "monospace",
-            textAlign: "right" 
+            textAlign: "right",
           }}
         />
         <label>{label}</label>
-        
+
         {showDecimalPlaceholder &&
           displayValue !== "" &&
           displayValue !== "-" && (
             <span className="MUI-decimal-placeholder">.00</span>
-        )}
+          )}
 
         <button
           onClick={toggleSign}
@@ -141,7 +153,7 @@ jest.mock("../../components/USDAmountInput", () => {
         >
           {isNegative ? "+" : "-"}
         </button>
-        
+
         {error && helperText && <div>{helperText}</div>}
       </div>
     );
@@ -177,7 +189,9 @@ describe("USDAmountInput Component", () => {
     });
 
     it("displays custom label when provided", () => {
-      renderWithTheme(<USDAmountInput {...defaultProps} label="Custom Amount" />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} label="Custom Amount" />,
+      );
 
       expect(screen.getByLabelText("Custom Amount")).toBeInTheDocument();
     });
@@ -190,7 +204,13 @@ describe("USDAmountInput Component", () => {
 
     it("shows decimal placeholder for whole numbers", async () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} value="123" onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          value="123"
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.getByText(".00")).toBeInTheDocument();
     });
@@ -199,7 +219,9 @@ describe("USDAmountInput Component", () => {
   describe("Input Validation", () => {
     it("accepts valid decimal numbers", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} onChange={mockOnChange} />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "123.45" } });
@@ -209,7 +231,9 @@ describe("USDAmountInput Component", () => {
 
     it("accepts negative numbers", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} onChange={mockOnChange} />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "-123.45" } });
@@ -219,7 +243,13 @@ describe("USDAmountInput Component", () => {
 
     it("prevents multiple decimal points", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} value="123.45" onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          value="123.45"
+          onChange={mockOnChange}
+        />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "123.45.67" } });
@@ -229,7 +259,9 @@ describe("USDAmountInput Component", () => {
 
     it("prevents more than 2 decimal places", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} onChange={mockOnChange} />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "123.456" } });
@@ -239,7 +271,9 @@ describe("USDAmountInput Component", () => {
 
     it("prevents multiple negative signs", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} onChange={mockOnChange} />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "--123" } });
@@ -249,7 +283,9 @@ describe("USDAmountInput Component", () => {
 
     it("prevents negative sign in middle of number", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} onChange={mockOnChange} />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "12-3" } });
@@ -259,10 +295,12 @@ describe("USDAmountInput Component", () => {
 
     it("prevents invalid characters like 'e' and '+'", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} onChange={mockOnChange} />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
-      
+
       fireEvent.keyDown(input, { key: "e" });
       fireEvent.keyDown(input, { key: "E" });
       fireEvent.keyDown(input, { key: "+" });
@@ -275,7 +313,13 @@ describe("USDAmountInput Component", () => {
   describe("Sign Toggle Functionality", () => {
     it("toggles from positive to negative", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} value="123.45" onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          value="123.45"
+          onChange={mockOnChange}
+        />,
+      );
 
       const toggleButton = screen.getByTitle("Toggle positive/negative");
       fireEvent.click(toggleButton);
@@ -285,7 +329,13 @@ describe("USDAmountInput Component", () => {
 
     it("toggles from negative to positive", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} value="-123.45" onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          value="-123.45"
+          onChange={mockOnChange}
+        />,
+      );
 
       const toggleButton = screen.getByTitle("Toggle positive/negative");
       fireEvent.click(toggleButton);
@@ -295,7 +345,9 @@ describe("USDAmountInput Component", () => {
 
     it("does not toggle sign for zero values", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} value="0" onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} value="0" onChange={mockOnChange} />,
+      );
 
       const toggleButton = screen.getByTitle("Toggle positive/negative");
       fireEvent.click(toggleButton);
@@ -305,7 +357,9 @@ describe("USDAmountInput Component", () => {
 
     it("does not toggle sign for empty values", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} value="" onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} value="" onChange={mockOnChange} />,
+      );
 
       const toggleButton = screen.getByTitle("Toggle positive/negative");
       fireEvent.click(toggleButton);
@@ -315,7 +369,7 @@ describe("USDAmountInput Component", () => {
 
     it("shows correct icon for negative values", () => {
       renderWithTheme(<USDAmountInput {...defaultProps} value="-123.45" />);
-      
+
       const toggleButton = screen.getByTitle("Toggle positive/negative");
       expect(toggleButton).toBeInTheDocument();
     });
@@ -325,7 +379,13 @@ describe("USDAmountInput Component", () => {
     it("formats whole numbers with .00 on blur", () => {
       const mockOnChange = jest.fn();
       const mockOnBlur = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} onBlur={mockOnBlur} />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+        />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "123" } });
@@ -337,7 +397,13 @@ describe("USDAmountInput Component", () => {
     it("does not format numbers that already have decimals", () => {
       const mockOnChange = jest.fn();
       const mockOnBlur = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} onBlur={mockOnBlur} />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+        />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "123.5" } });
@@ -350,7 +416,13 @@ describe("USDAmountInput Component", () => {
     it("does not format lone negative sign", () => {
       const mockOnChange = jest.fn();
       const mockOnBlur = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} onBlur={mockOnBlur} />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+        />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
       fireEvent.change(input, { target: { value: "-" } });
@@ -363,14 +435,16 @@ describe("USDAmountInput Component", () => {
 
   describe("Accessibility", () => {
     it("has proper aria labels", () => {
-      renderWithTheme(<USDAmountInput {...defaultProps} label="Payment Amount" />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} label="Payment Amount" />,
+      );
 
       expect(screen.getByLabelText("Payment Amount")).toBeInTheDocument();
     });
 
     it("supports keyboard navigation", () => {
       renderWithTheme(<USDAmountInput {...defaultProps} />);
-      
+
       const input = screen.getByLabelText("USD Amount");
       const toggleButton = screen.getByTitle("Toggle positive/negative");
 
@@ -381,7 +455,13 @@ describe("USDAmountInput Component", () => {
 
   describe("Error States", () => {
     it("displays error state when error prop is true", () => {
-      renderWithTheme(<USDAmountInput {...defaultProps} error={true} helperText="Invalid amount" />);
+      renderWithTheme(
+        <USDAmountInput
+          {...defaultProps}
+          error={true}
+          helperText="Invalid amount"
+        />,
+      );
 
       expect(screen.getByText("Invalid amount")).toBeInTheDocument();
     });
@@ -411,7 +491,7 @@ describe("USDAmountInput Component", () => {
           fullWidth
           margin="normal"
           placeholder="Enter amount"
-        />
+        />,
       );
 
       expect(screen.getByLabelText("Transaction Amount")).toBeInTheDocument();
@@ -420,23 +500,25 @@ describe("USDAmountInput Component", () => {
 
     it("handles complex value changes correctly", () => {
       const mockOnChange = jest.fn();
-      renderWithTheme(<USDAmountInput {...defaultProps} onChange={mockOnChange} />);
+      renderWithTheme(
+        <USDAmountInput {...defaultProps} onChange={mockOnChange} />,
+      );
 
       const input = screen.getByLabelText("USD Amount");
-      
+
       // Test complex sequence of inputs
       fireEvent.change(input, { target: { value: "1" } });
       expect(mockOnChange).toHaveBeenCalledWith("1");
-      
+
       fireEvent.change(input, { target: { value: "12" } });
       expect(mockOnChange).toHaveBeenCalledWith("12");
-      
+
       fireEvent.change(input, { target: { value: "12." } });
       expect(mockOnChange).toHaveBeenCalledWith("12.");
-      
+
       fireEvent.change(input, { target: { value: "12.5" } });
       expect(mockOnChange).toHaveBeenCalledWith("12.5");
-      
+
       fireEvent.change(input, { target: { value: "12.56" } });
       expect(mockOnChange).toHaveBeenCalledWith("12.56");
     });

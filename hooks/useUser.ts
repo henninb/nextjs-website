@@ -10,7 +10,7 @@ const fetcher = (url: string) =>
 
 export function useUser() {
   const { data, error } = useSWR(
-    "https://finance.bhenning.com/api/me",
+    "/api/me",
     fetcher,
   );
   return {

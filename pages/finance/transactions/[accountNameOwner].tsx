@@ -458,7 +458,7 @@ export default function TransactionsByAccount() {
                       style={{
                         color:
                           params.row.transactionState === state
-                            ? uiMode === "original" 
+                            ? uiMode === "original"
                               ? "rgba(189, 147, 249, 1)" // Purple color for legacy UI
                               : theme.palette.primary.main // Use theme primary color for modern UI
                             : "rgba(255, 255, 255, 1)", // White color for inactive state

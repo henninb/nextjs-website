@@ -6,7 +6,7 @@ const updateDescription = async (
   oldDescription: Description,
   newDescription: Description,
 ): Promise<Description> => {
-  const endpoint = `https://finance.bhenning.com/api/description/update/${oldDescription.descriptionName}`;
+  const endpoint = `/api/description/update/${oldDescription.descriptionName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",

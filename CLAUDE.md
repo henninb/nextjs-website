@@ -26,15 +26,18 @@ Jest is configured with:
 ### Test Examples by Category:
 
 **Hook Tests:**
+
 - Finance hooks: useAccountFetch, usePaymentInsert, useTransactionDelete, etc.
 - User hooks: useUser, useLoginProcess
 - Category/Description hooks: useCategoryFetch, useDescriptionDelete
 
 **Component Tests:**
+
 - USDAmountInput component test
 - Basic React component tests
 
 **Page Tests:**
+
 - Finance pages: categories, payments, transactions, transfers
 - Import functionality tests
 
@@ -48,11 +51,11 @@ MSW is fully configured for API mocking with worker in public/ directory.
 - **Components**: Functional components with TypeScript interfaces for props
 - **Naming Conventions**:
   - React components: PascalCase
-  - Hooks: camelCase with 'use' prefix  
+  - Hooks: camelCase with 'use' prefix
   - Interfaces/Types: PascalCase
   - Files: camelCase for utilities, PascalCase for components
 - **Error Handling**: Use try/catch with specific error messages and logging
-- **State Management**: 
+- **State Management**:
   - Server state: React Query (@tanstack/react-query@5.84.1)
   - Client state: React hooks
   - Also uses SWR for some data fetching
@@ -61,6 +64,7 @@ MSW is fully configured for API mocking with worker in public/ directory.
 ## Project Structure
 
 ### Core Directories:
+
 - `/components`: Reusable UI components (Layout, DataGrid, Auth, etc.)
 - `/hooks`: Custom React hooks for data fetching/mutations (40+ hooks)
 - `/model`: TypeScript interfaces and types for data models
@@ -70,11 +74,13 @@ MSW is fully configured for API mocking with worker in public/ directory.
 - `/themes`: MUI theme configurations (draculaTheme, modernTheme)
 
 ### Testing:
+
 - `/__tests__`: Jest test files organized by type (hooks/, components/, pages/)
 - `/__mocks__`: Mock implementations for testing
 - `/data`: Test data and dummy data files
 
 ### Configuration:
+
 - **Node.js**: Supports versions 20.x, 22.x, 23.x, 24.x
 - **React**: Version 19.1.1
 - **Next.js**: Version 15.4.5

@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 const deleteAllPendingTransactions = async (): Promise<void> => {
   try {
     const endpoint =
-      "https://finance.bhenning.com/api/pending/transaction/delete/all";
+      "/api/pending/transaction/delete/all";
     console.log("Deleting all pending transactions");
 
     const response = await fetch(endpoint, {

@@ -1,7 +1,7 @@
 // Main exports for validation utilities
-export * from './schemas';
-export * from './sanitization';
-export * from './validator';
+export * from "./schemas";
+export * from "./sanitization";
+export * from "./validator";
 
 // Re-export commonly used types and functions
 export {
@@ -17,15 +17,8 @@ export {
   type ValidatedPayment,
   type ValidatedTransfer,
   type ValidationError,
-} from './schemas';
+} from "./schemas";
 
-export {
-  InputSanitizer,
-  sanitize,
-  SecurityLogger,
-} from './sanitization';
+export { InputSanitizer, sanitize, SecurityLogger } from "./sanitization";
 
-export {
-  DataValidator,
-  hookValidators,
-} from './validator';
+export { DataValidator, hookValidators } from "./validator";

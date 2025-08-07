@@ -7,7 +7,7 @@ import { dummyValidationAmount } from "../data/dummyValidationAmount";
 export const fetchValidationAmount = async (
   accountNameOwner: string,
 ): Promise<ValidationAmount> => {
-  const endpoint = `https://finance.bhenning.com/api/validation/amount/select/${accountNameOwner}/cleared`;
+  const endpoint = `/api/validation/amount/select/${accountNameOwner}/cleared`;
 
   try {
     const response = await fetch(endpoint, {

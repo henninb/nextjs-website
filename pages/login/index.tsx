@@ -42,7 +42,7 @@ export default function Login() {
     email: string;
     password: string;
   }): Promise<void> => {
-    const endpoint = "https://finance.bhenning.com/api/login";
+    const endpoint = "/api/login";
 
     // Map the form's "email" value to the "username" key expected by the API.
     const loginPayload: User = {
@@ -86,7 +86,7 @@ export default function Login() {
       // After successful login, fetch user data to get proper user information
       try {
         const userResponse = await fetch(
-          "https://finance.bhenning.com/api/me",
+          "/api/me",
           {
             credentials: "include",
           },

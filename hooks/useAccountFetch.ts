@@ -6,7 +6,7 @@ import { dummyAccounts } from "../data/dummyAccounts";
 const fetchAccountData = async (): Promise<Account[] | null> => {
   try {
     const response = await fetch(
-      "https://finance.bhenning.com/api/account/select/active",
+      "/api/account/select/active",
       {
         method: "GET",
         credentials: "include",

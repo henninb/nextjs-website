@@ -22,12 +22,10 @@ const createWrapper = () => {
     },
   });
   const theme = createTheme();
-  
+
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        {children}
-      </ThemeProvider>
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </QueryClientProvider>
   );
 };
@@ -47,28 +45,28 @@ describe("Finance Totals Integration", () => {
       const mockTotals = [
         {
           accountNameOwner: "Chase Checking",
-          totalAmount: 1500.00,
+          totalAmount: 1500.0,
           transactionCount: 25,
           category: "Income",
         },
         {
           accountNameOwner: "Savings Account",
-          totalAmount: -200.50,
+          totalAmount: -200.5,
           transactionCount: 8,
           category: "Expenses",
         },
       ];
 
       expect(mockTotals).toHaveLength(2);
-      expect(mockTotals[0].totalAmount).toBe(1500.00);
-      expect(mockTotals[1].totalAmount).toBe(-200.50);
+      expect(mockTotals[0].totalAmount).toBe(1500.0);
+      expect(mockTotals[1].totalAmount).toBe(-200.5);
     });
 
     it("calculates net totals correctly", () => {
-      const income = 2500.00;
+      const income = 2500.0;
       const expenses = -850.75;
       const netTotal = income + expenses;
-      
+
       expect(netTotal).toBe(1649.25);
     });
   });
@@ -81,9 +79,15 @@ describe("Finance Totals Integration", () => {
         { month: "March", income: 2800, expenses: -1300 },
       ];
 
-      const totalIncome = monthlyData.reduce((sum, month) => sum + month.income, 0);
-      const totalExpenses = monthlyData.reduce((sum, month) => sum + month.expenses, 0);
-      
+      const totalIncome = monthlyData.reduce(
+        (sum, month) => sum + month.income,
+        0,
+      );
+      const totalExpenses = monthlyData.reduce(
+        (sum, month) => sum + month.expenses,
+        0,
+      );
+
       expect(totalIncome).toBe(9000);
       expect(totalExpenses).toBe(-3600);
       expect(totalIncome + totalExpenses).toBe(5400);
@@ -91,67 +95,72 @@ describe("Finance Totals Integration", () => {
 
     it("groups transactions by category", () => {
       const transactions = [
-        { category: "Food", amount: -125.50 },
+        { category: "Food", amount: -125.5 },
         { category: "Food", amount: -89.25 },
-        { category: "Transportation", amount: -45.00 },
-        { category: "Income", amount: 2500.00 },
+        { category: "Transportation", amount: -45.0 },
+        { category: "Income", amount: 2500.0 },
       ];
 
-      const categoryTotals = transactions.reduce((acc, transaction) => {
-        if (!acc[transaction.category]) {
-          acc[transaction.category] = 0;
-        }
-        acc[transaction.category] += transaction.amount;
-        return acc;
-      }, {} as Record<string, number>);
+      const categoryTotals = transactions.reduce(
+        (acc, transaction) => {
+          if (!acc[transaction.category]) {
+            acc[transaction.category] = 0;
+          }
+          acc[transaction.category] += transaction.amount;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
       expect(categoryTotals["Food"]).toBe(-214.75);
-      expect(categoryTotals["Transportation"]).toBe(-45.00);
-      expect(categoryTotals["Income"]).toBe(2500.00);
+      expect(categoryTotals["Transportation"]).toBe(-45.0);
+      expect(categoryTotals["Income"]).toBe(2500.0);
     });
   });
 
   describe("Account Balance Calculations", () => {
     it("calculates running balance", () => {
       const transactions = [
-        { date: "2024-01-01", amount: 1000.00 },
-        { date: "2024-01-02", amount: -150.50 },
-        { date: "2024-01-03", amount: 500.00 },
+        { date: "2024-01-01", amount: 1000.0 },
+        { date: "2024-01-02", amount: -150.5 },
+        { date: "2024-01-03", amount: 500.0 },
         { date: "2024-01-04", amount: -75.25 },
       ];
 
       let runningBalance = 0;
-      const balances = transactions.map(transaction => {
+      const balances = transactions.map((transaction) => {
         runningBalance += transaction.amount;
         return { ...transaction, balance: runningBalance };
       });
 
-      expect(balances[0].balance).toBe(1000.00);
-      expect(balances[1].balance).toBe(849.50);
-      expect(balances[2].balance).toBe(1349.50);
+      expect(balances[0].balance).toBe(1000.0);
+      expect(balances[1].balance).toBe(849.5);
+      expect(balances[2].balance).toBe(1349.5);
       expect(balances[3].balance).toBe(1274.25);
     });
 
     it("handles multiple account balances", () => {
       const accounts = [
-        { name: "Chase Checking", balance: 2500.00 },
-        { name: "Savings Account", balance: 15000.00 },
-        { name: "Credit Card", balance: -850.50 },
+        { name: "Chase Checking", balance: 2500.0 },
+        { name: "Savings Account", balance: 15000.0 },
+        { name: "Credit Card", balance: -850.5 },
       ];
 
       const totalAssets = accounts
-        .filter(account => account.balance > 0)
+        .filter((account) => account.balance > 0)
         .reduce((sum, account) => sum + account.balance, 0);
-        
-      const totalLiabilities = Math.abs(accounts
-        .filter(account => account.balance < 0)
-        .reduce((sum, account) => sum + account.balance, 0));
+
+      const totalLiabilities = Math.abs(
+        accounts
+          .filter((account) => account.balance < 0)
+          .reduce((sum, account) => sum + account.balance, 0),
+      );
 
       const netWorth = totalAssets - totalLiabilities;
 
-      expect(totalAssets).toBe(17500.00);
-      expect(totalLiabilities).toBe(850.50);
-      expect(netWorth).toBe(16649.50);
+      expect(totalAssets).toBe(17500.0);
+      expect(totalLiabilities).toBe(850.5);
+      expect(netWorth).toBe(16649.5);
     });
   });
 
@@ -168,13 +177,15 @@ describe("Finance Totals Integration", () => {
       const startDate = new Date("2024-01-01");
       const endDate = new Date("2024-02-28");
 
-      const filteredTransactions = allTransactions.filter(transaction => {
+      const filteredTransactions = allTransactions.filter((transaction) => {
         const transactionDate = new Date(transaction.date);
         return transactionDate >= startDate && transactionDate <= endDate;
       });
 
       expect(filteredTransactions).toHaveLength(4);
-      expect(filteredTransactions.map(t => t.amount)).toEqual([1000, -200, 1500, -300]);
+      expect(filteredTransactions.map((t) => t.amount)).toEqual([
+        1000, -200, 1500, -300,
+      ]);
     });
 
     it("calculates totals for specific time periods", () => {
@@ -186,12 +197,13 @@ describe("Finance Totals Integration", () => {
         { date: "2024-02-01", amount: 3000 }, // Different month
       ];
 
-      const currentMonthTransactions = transactions.filter(t => 
-        t.date.startsWith(currentMonth)
+      const currentMonthTransactions = transactions.filter((t) =>
+        t.date.startsWith(currentMonth),
       );
 
       const monthlyTotal = currentMonthTransactions.reduce(
-        (sum, t) => sum + t.amount, 0
+        (sum, t) => sum + t.amount,
+        0,
       );
 
       expect(currentMonthTransactions).toHaveLength(3);
@@ -210,8 +222,8 @@ describe("Finance Totals Integration", () => {
       ];
 
       const validAmounts = transactions
-        .map(t => t.amount)
-        .filter(amount => typeof amount === "number" && !isNaN(amount));
+        .map((t) => t.amount)
+        .filter((amount) => typeof amount === "number" && !isNaN(amount));
 
       const total = validAmounts.reduce((sum, amount) => sum + amount, 0);
 
@@ -221,20 +233,19 @@ describe("Finance Totals Integration", () => {
 
     it("handles invalid number formats", () => {
       const amounts = ["100.50", "invalid", "200", "", null, undefined, 150.75];
-      
-      const validAmounts = amounts
-        .map(amount => {
-          if (typeof amount === "number") return amount;
-          if (typeof amount === "string" && amount.trim() !== "") {
-            const parsed = parseFloat(amount);
-            return isNaN(parsed) ? 0 : parsed;
-          }
-          return 0;
-        });
+
+      const validAmounts = amounts.map((amount) => {
+        if (typeof amount === "number") return amount;
+        if (typeof amount === "string" && amount.trim() !== "") {
+          const parsed = parseFloat(amount);
+          return isNaN(parsed) ? 0 : parsed;
+        }
+        return 0;
+      });
 
       const total = validAmounts.reduce((sum, amount) => sum + amount, 0);
 
-      expect(validAmounts).toEqual([100.50, 0, 200, 0, 0, 0, 150.75]);
+      expect(validAmounts).toEqual([100.5, 0, 200, 0, 0, 0, 150.75]);
       expect(total).toBe(451.25);
     });
   });
@@ -248,9 +259,10 @@ describe("Finance Totals Integration", () => {
       }));
 
       const startTime = performance.now();
-      
-      const total = largeDataset.reduce((sum, transaction) => 
-        sum + transaction.amount, 0
+
+      const total = largeDataset.reduce(
+        (sum, transaction) => sum + transaction.amount,
+        0,
       );
 
       const endTime = performance.now();
@@ -263,17 +275,17 @@ describe("Finance Totals Integration", () => {
 
     it("memoizes expensive calculations", () => {
       let calculationCount = 0;
-      
+
       const expensiveCalculation = (data: number[]) => {
         calculationCount++;
         return data.reduce((sum, val) => sum + val * val, 0);
       };
 
       const data = [1, 2, 3, 4, 5];
-      
+
       // Simulate memoization by caching result
       let cachedResult: number | null = null;
-      
+
       const memoizedCalculation = (data: number[]) => {
         if (cachedResult === null) {
           cachedResult = expensiveCalculation(data);

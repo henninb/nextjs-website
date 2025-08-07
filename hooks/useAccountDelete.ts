@@ -7,18 +7,24 @@ const deleteAccount = async (payload: Account): Promise<Account | null> => {
   try {
     // Validate and sanitize account identifier for deletion
     if (!payload.accountNameOwner) {
-      throw new Error('Account name is required for deletion');
+      throw new Error("Account name is required for deletion");
     }
-    
-    const sanitizedAccountName = InputSanitizer.sanitizeAccountName(payload.accountNameOwner);
+
+    const sanitizedAccountName = InputSanitizer.sanitizeAccountName(
+      payload.accountNameOwner,
+    );
     if (!sanitizedAccountName) {
-      throw new Error('Invalid account name provided');
+      throw new Error("Invalid account name provided");
     }
-    
+
     // Log security-sensitive deletion attempt
-    SecurityLogger.logSanitizationAttempt('accountNameOwner', payload.accountNameOwner, sanitizedAccountName);
-    
-    const endpoint = `https://finance.bhenning.com/api/account/delete/${sanitizedAccountName}`;
+    SecurityLogger.logSanitizationAttempt(
+      "accountNameOwner",
+      payload.accountNameOwner,
+      sanitizedAccountName,
+    );
+
+    const endpoint = `/api/account/delete/${sanitizedAccountName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

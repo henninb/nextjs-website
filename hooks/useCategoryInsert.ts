@@ -4,7 +4,7 @@ import Category from "../model/Category";
 
 const insertCategory = async (category: Category): Promise<Category | null> => {
   try {
-    const endpoint = "https://finance.bhenning.com/api/category/insert";
+    const endpoint = "/api/category/insert";
     //const payload = { category: categoryName, activeStatus: true };
 
     console.log("passed: " + JSON.stringify(category));

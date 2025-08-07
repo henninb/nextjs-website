@@ -6,7 +6,7 @@ const updatePendingTransaction = async (
   oldPendingTransaction: PendingTransaction,
   newPendingTransaction: PendingTransaction,
 ): Promise<PendingTransaction> => {
-  const endpoint = `https://finance.bhenning.com/api/pending/transaction/update/${oldPendingTransaction.pendingTransactionId}`;
+  const endpoint = `/api/pending/transaction/update/${oldPendingTransaction.pendingTransactionId}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
