@@ -1,11 +1,25 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import User from "../model/User";
+import { DataValidator, hookValidators, ValidationError } from "../utils/validation";
 
 const userAccountRegister = async (payload: User): Promise<User | null> => {
   try {
+    // Validate and sanitize the user registration data
+    const validation = hookValidators.validateApiPayload(
+      payload,
+      DataValidator.validateUser,
+      'userAccountRegister'
+    );
+    
+    if (!validation.isValid) {
+      const errorMessages = validation.errors?.map(err => err.message).join(', ') || 'Validation failed';
+      throw new Error(`User registration validation failed: ${errorMessages}`);
+    }
+    
     const endpoint = "https://finance.bhenning.com/api/user/register";
 
-    console.log("Register payload:", JSON.stringify(payload));
+    // Remove sensitive logging - security improvement
+    console.log("User registration attempt for username:", validation.validatedData.username);
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -13,7 +27,7 @@ const userAccountRegister = async (payload: User): Promise<User | null> => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(validation.validatedData),
     });
 
     if (!response.ok) {

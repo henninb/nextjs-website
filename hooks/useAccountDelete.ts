@@ -1,10 +1,24 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
+import { InputSanitizer, SecurityLogger } from "../utils/validation";
 //import { basicAuth } from "../Common";
 
 const deleteAccount = async (payload: Account): Promise<Account | null> => {
   try {
-    const endpoint = `https://finance.bhenning.com/api/account/delete/${payload.accountNameOwner}`;
+    // Validate and sanitize account identifier for deletion
+    if (!payload.accountNameOwner) {
+      throw new Error('Account name is required for deletion');
+    }
+    
+    const sanitizedAccountName = InputSanitizer.sanitizeAccountName(payload.accountNameOwner);
+    if (!sanitizedAccountName) {
+      throw new Error('Invalid account name provided');
+    }
+    
+    // Log security-sensitive deletion attempt
+    SecurityLogger.logSanitizationAttempt('accountNameOwner', payload.accountNameOwner, sanitizedAccountName);
+    
+    const endpoint = `https://finance.bhenning.com/api/account/delete/${sanitizedAccountName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

@@ -16,10 +16,13 @@
     "@mui/x-data-grid": "^8.9.2",
     "@mui/x-date-pickers": "^8.9.2",
     "@tanstack/react-query": "^5.84.1",
+    "@types/dompurify": "^3.0.5",
+    "@types/validator": "^13.15.2",
     "@vercel/node": "^5.3.10",
     "@vercel/routing-utils": "^5.1.1",
     "axios": "^1.11.0",
     "date-fns": "^4.1.0",
+    "dompurify": "^3.2.6",
     "gray-matter": "^4.0.3",
     "jose": "^6.0.12",
     "js-cookie": "^3.0.5",
@@ -30,7 +33,9 @@
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "react-hook-form": "^7.62.0",
-    "swr": "^2.3.4"
+    "swr": "^2.3.4",
+    "validator": "^13.15.15",
+    "zod": "^4.0.15"
   },
   "engines": {
     "node": "20.x || 22.x || 23.x || 24.x"

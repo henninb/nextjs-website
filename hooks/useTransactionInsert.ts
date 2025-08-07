@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
+import { DataValidator, hookValidators, ValidationError } from "../utils/validation";
 //import { basicAuth } from "../Common";
 
 export type TransactionInsertType = {
@@ -23,7 +24,7 @@ const setupNewTransaction = (
   accountNameOwner: string,
 ): Transaction => {
   return {
-    guid: crypto.randomUUID(),
+    guid: crypto.randomUUID(), // TODO: Replace with server-side generation for security
     transactionDate: payload.transactionDate,
     description: payload.description,
     category: payload.category || "undefined",
@@ -45,12 +46,24 @@ const insertTransaction = async (
   isFutureTransaction: boolean,
   isImportTransaction: boolean,
 ): Promise<Transaction> => {
+  // Validate and sanitize the transaction data
+  const validation = hookValidators.validateApiPayload(
+    payload,
+    DataValidator.validateTransaction,
+    'insertTransaction'
+  );
+  
+  if (!validation.isValid) {
+    const errorMessages = validation.errors?.map(err => err.message).join(', ') || 'Validation failed';
+    throw new Error(`Transaction validation failed: ${errorMessages}`);
+  }
+  
   let endpoint = "https://finance.bhenning.com/api/transaction/insert";
   if (isFutureTransaction) {
     endpoint = "https://finance.bhenning.com/api/transaction/future/insert";
   }
 
-  const newPayload = setupNewTransaction(payload, accountNameOwner);
+  const newPayload = setupNewTransaction(validation.validatedData, accountNameOwner);
 
   try {
     const response = await fetch(endpoint, {

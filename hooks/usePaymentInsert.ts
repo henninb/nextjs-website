@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
+import { DataValidator, hookValidators, ValidationError } from "../utils/validation";
 //import { basicAuth } from "../Common";
 
 const setupNewPayment = (payload: Payment) => {
@@ -14,8 +15,20 @@ const setupNewPayment = (payload: Payment) => {
 
 const insertPayment = async (payload: Payment): Promise<Payment> => {
   try {
+    // Validate and sanitize the payment data
+    const validation = hookValidators.validateApiPayload(
+      payload,
+      DataValidator.validatePayment,
+      'insertPayment'
+    );
+    
+    if (!validation.isValid) {
+      const errorMessages = validation.errors?.map(err => err.message).join(', ') || 'Validation failed';
+      throw new Error(`Payment validation failed: ${errorMessages}`);
+    }
+    
     const endpoint = "https://finance.bhenning.com/api/payment/insert";
-    const newPayload = setupNewPayment(payload);
+    const newPayload = setupNewPayment(validation.validatedData);
 
     const response = await fetch(endpoint, {
       method: "POST",

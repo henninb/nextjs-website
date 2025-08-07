@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
+import { DataValidator, hookValidators, ValidationError } from "../utils/validation";
 //import { basicAuth } from "../Common";
 
 const setupNewAccount = (payload: Account) => {
@@ -18,10 +19,22 @@ const setupNewAccount = (payload: Account) => {
 
 const insertAccount = async (payload: Account): Promise<Account | null> => {
   try {
+    // Validate and sanitize the account data
+    const validation = hookValidators.validateApiPayload(
+      payload,
+      DataValidator.validateAccount,
+      'insertAccount'
+    );
+    
+    if (!validation.isValid) {
+      const errorMessages = validation.errors?.map(err => err.message).join(', ') || 'Validation failed';
+      throw new Error(`Account validation failed: ${errorMessages}`);
+    }
+    
     const endpoint = "https://finance.bhenning.com/api/account/insert";
-    const newPayload = setupNewAccount(payload);
+    const newPayload = setupNewAccount(validation.validatedData);
 
-    console.log(JSON.stringify(newPayload));
+    console.log("Inserting account for:", validation.validatedData.accountNameOwner);
 
     const response = await fetch(endpoint, {
       method: "POST",
