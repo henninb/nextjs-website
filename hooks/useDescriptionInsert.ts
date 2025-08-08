@@ -7,7 +7,7 @@ const insertDescription = async (
 ): Promise<Description> => {
   try {
     const endpoint = "/api/description/insert";
-    const payload = { description: descriptionName, activeStatus: true };
+    const payload = { descriptionName: descriptionName, activeStatus: true };
 
     const response = await fetch(endpoint, {
       method: "POST",

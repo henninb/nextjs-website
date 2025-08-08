@@ -23,12 +23,12 @@ jest.mock("../../../components/AuthProvider");
 const mockDescriptionData = [
   {
     descriptionId: 1,
-    description: "Grocery Store",
+    descriptionName: "Grocery Store",
     activeStatus: "active",
   },
   {
     descriptionId: 2,
-    description: "Gas Station",
+    descriptionName: "Gas Station",
     activeStatus: "active",
   },
 ];
