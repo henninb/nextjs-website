@@ -94,28 +94,6 @@ export default function TransactionsByAccount() {
   const validAccountNameOwner =
     typeof accountNameOwner === "string" ? accountNameOwner : "";
 
-  const initialTransactionData: Transaction = useMemo(
-    () => ({
-      transactionDate: new Date(),
-      accountNameOwner: validAccountNameOwner,
-      reoccurringType: "onetime" as ReoccurringType,
-      amount: 0.0,
-      transactionState: "outstanding" as TransactionState,
-      transactionType: "undefined" as TransactionType,
-      guid: crypto.randomUUID(),
-      description: "",
-      category: "",
-      accountType: "undefined" as AccountType,
-      activeStatus: true,
-      notes: "",
-    }),
-    [validAccountNameOwner],
-  );
-
-  const [transactionData, setTransactionData] = useState<Transaction>(
-    initialTransactionData,
-  );
-
   const {
     data: fetchedTransactions,
     isSuccess: isSuccessTransactions,
@@ -144,6 +122,52 @@ export default function TransactionsByAccount() {
     isError: isErrorAccounts,
     error: errorAccounts,
   } = useAccountFetch();
+
+  const initialTransactionData: Transaction = useMemo(
+    () => {
+      // Determine accountType from the current account
+      const currentAccount = fetchedAccounts?.find(
+        account => account.accountNameOwner === validAccountNameOwner
+      );
+      const accountType = currentAccount?.accountType || "debit" as AccountType;
+      
+      return {
+        transactionDate: new Date(),
+        accountNameOwner: validAccountNameOwner,
+        reoccurringType: "onetime" as ReoccurringType,
+        amount: 0.0,
+        transactionState: "outstanding" as TransactionState,
+        transactionType: "expense" as TransactionType, // Default to expense for new transactions
+        guid: crypto.randomUUID(),
+        description: "",
+        category: "",
+        accountType: accountType,
+        activeStatus: true,
+        notes: "",
+      };
+    },
+    [validAccountNameOwner, fetchedAccounts],
+  );
+
+  const [transactionData, setTransactionData] = useState<Transaction>(
+    initialTransactionData,
+  );
+
+  // Update transactionData when accounts are loaded or accountNameOwner changes
+  useEffect(() => {
+    if (fetchedAccounts && validAccountNameOwner) {
+      const currentAccount = fetchedAccounts.find(
+        account => account.accountNameOwner === validAccountNameOwner
+      );
+      if (currentAccount) {
+        setTransactionData(prev => ({
+          ...prev,
+          accountType: currentAccount.accountType,
+          accountNameOwner: validAccountNameOwner,
+        }));
+      }
+    }
+  }, [fetchedAccounts, validAccountNameOwner]);
   const { trackAccountVisit } = useAccountUsageTracking();
   const {
     data: fetchedCategories,
@@ -989,6 +1013,23 @@ export default function TransactionsByAccount() {
               <MenuItem value="onetime">One-Time</MenuItem>
               <MenuItem value="weekly">Weekly</MenuItem>
               <MenuItem value="monthly">Monthly</MenuItem>
+            </Select>
+
+            <Select
+              label="Transaction Type"
+              value={transactionData?.transactionType || "expense"}
+              onChange={(e) =>
+                setTransactionData((prev: any) => ({
+                  ...prev,
+                  transactionType: e.target.value,
+                }))
+              }
+              fullWidth
+              style={{ marginTop: 16 }}
+            >
+              <MenuItem value="expense">Expense</MenuItem>
+              <MenuItem value="income">Income</MenuItem>
+              <MenuItem value="transfer">Transfer</MenuItem>
             </Select>
 
             <TextField

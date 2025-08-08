@@ -66,7 +66,7 @@ const notes = z
   .optional()
   .default("");
 
-// Enum validations
+// Enum validations  
 const accountTypeEnum = z.enum(["credit", "debit"], {
   message: "Account type must be either credit or debit",
 });
@@ -75,8 +75,8 @@ const transactionStateEnum = z.enum(["cleared", "outstanding", "future"], {
   message: "Transaction state must be cleared, outstanding, or future",
 });
 
-const transactionTypeEnum = z.enum(["debit", "credit"], {
-  message: "Transaction type must be debit or credit",
+const transactionTypeEnum = z.enum(["expense", "income", "transfer"], {
+  message: "Transaction type must be expense, income, or transfer",
 });
 
 const reoccurringTypeEnum = z.enum(["onetime", "monthly", "weekly", "yearly"], {

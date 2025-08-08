@@ -35,14 +35,14 @@ const setupNewTransaction = async (
     guid: secureGuid, // Now using secure server-side generation
     transactionDate: payload.transactionDate,
     description: payload.description,
-    category: payload.category || "undefined",
+    category: payload.category || "",
     notes: payload.notes || "",
     amount: payload.amount,
     dueDate: payload.dueDate || undefined,
-    transactionType: payload.transactionType || "undefined",
+    transactionType: payload.transactionType || "expense",
     transactionState: payload.transactionState || "outstanding",
     activeStatus: true,
-    accountType: payload.accountType || "undefined",
+    accountType: payload.accountType || "debit",
     reoccurringType: payload.reoccurringType || "onetime",
     accountNameOwner: payload.accountNameOwner || "",
   };
