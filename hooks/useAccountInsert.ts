@@ -8,23 +8,17 @@ import {
 //import { basicAuth } from "../Common";
 
 const setupNewAccount = (payload: Account) => {
-  const baseAccount: any = {
+  return {
     cleared: 0.0,
     future: 0.0,
     outstanding: 0.0,
+    dateClosed: new Date(0), // January 1, 1970 to indicate "not closed"
     dateAdded: new Date(),
     dateUpdated: new Date(),
     activeStatus: true,
     validationDate: new Date(0),
     ...payload,
   };
-  
-  // Only include dateClosed if it's not null
-  if (payload.dateClosed !== null && payload.dateClosed !== undefined) {
-    baseAccount.dateClosed = payload.dateClosed;
-  }
-  
-  return baseAccount;
 };
 
 const insertAccount = async (payload: Account): Promise<Account | null> => {

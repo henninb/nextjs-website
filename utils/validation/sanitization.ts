@@ -230,7 +230,7 @@ export const sanitize = {
     cleared: InputSanitizer.sanitizeAmount(data.cleared),
     dateClosed: data.dateClosed
       ? InputSanitizer.sanitizeDate(data.dateClosed)
-      : undefined,
+      : new Date(0).toISOString(), // Default to January 1, 1970 for non-closed accounts
     validationDate: data.validationDate
       ? InputSanitizer.sanitizeDate(data.validationDate)
       : undefined,
