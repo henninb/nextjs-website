@@ -132,7 +132,7 @@ const nextConfig = {
             key: "Access-Control-Allow-Origin",
             value:
               process.env.NODE_ENV === "production"
-                ? "https://yourdomain.com"
+                ? "https://vercel.bhenning.com"
                 : "http://dev.finance.bhenning.com:3000", // Development domain for JWT cookies
           },
 
@@ -202,10 +202,6 @@ const nextConfig = {
           {
             key: "X-Frame-Options",
             value: "DENY",
-          },
-          {
-            key: "Content-Security-Policy",
-            value: "default-src 'none'; script-src 'none'; object-src 'none';",
           },
         ],
       },
