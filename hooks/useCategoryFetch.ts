@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Category from "../model/Category";
 import { dummyCategories } from "../data/dummyCategories";
+import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
 const fetchCategoryData = async (): Promise<Category[]> => {
@@ -30,9 +31,12 @@ const fetchCategoryData = async (): Promise<Category[]> => {
 };
 
 export default function useCategoryFetch() {
+  const { isAuthenticated, loading } = useAuth();
+
   const queryResult = useQuery<Category[], Error>({
     queryKey: ["category"], // Make the key an array to support caching and refetching better
     queryFn: fetchCategoryData,
+    enabled: !loading && isAuthenticated,
   });
 
   if (queryResult.isError) {

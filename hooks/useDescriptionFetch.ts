@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Description from "../model/Description";
 import { dummyDescriptions } from "../data/dummyDescriptions";
+import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
 const fetchDescriptionData = async (): Promise<Description[]> => {
@@ -30,9 +31,12 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
 };
 
 export default function useDescriptionFetch() {
+  const { isAuthenticated, loading } = useAuth();
+
   const queryResult = useQuery<Description[], Error>({
     queryKey: ["description"], // Make the key an array to support caching and refetching better
     queryFn: fetchDescriptionData,
+    enabled: !loading && isAuthenticated,
   });
 
   if (queryResult.isError) {

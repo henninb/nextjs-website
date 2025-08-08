@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 import { dummyTransactions } from "../data/dummyTransactions";
+import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
 const fetchTransactionsByAccount = async (
@@ -37,12 +38,15 @@ const fetchTransactionsByAccount = async (
 };
 
 export default function useTransactionByAccountFetch(accountNameOwner: string) {
+  const { isAuthenticated, loading } = useAuth();
+
   const queryResult = useQuery({
     queryKey: ["accounts", accountNameOwner],
     queryFn: () => fetchTransactionsByAccount(accountNameOwner),
     staleTime: 5 * 60 * 1000, // 5 minutes
     //cacheTime: 10 * 60 * 1000, // 10 minutes
     retry: 1,
+    enabled: !loading && isAuthenticated && !!accountNameOwner,
   });
   if (queryResult.isError) {
     console.log(

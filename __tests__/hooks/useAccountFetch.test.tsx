@@ -4,6 +4,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Create a fresh QueryClient for each test
 const createTestQueryClient = () =>
   new QueryClient({

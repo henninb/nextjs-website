@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Totals from "../model/Totals";
+import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
 const fetchTotalsPerAccount = async (
@@ -41,9 +42,12 @@ const fetchTotalsPerAccount = async (
 };
 
 export default function useTotalsPerAccountFetch(accountNameOwner: string) {
+  const { isAuthenticated, loading } = useAuth();
+
   const queryResult = useQuery({
     queryKey: ["totals", accountNameOwner],
     queryFn: () => fetchTotalsPerAccount(accountNameOwner),
+    enabled: !loading && isAuthenticated && !!accountNameOwner,
   });
   if (queryResult.isError) {
     console.log(

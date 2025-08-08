@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TransactionState } from "../model/TransactionState";
 import ValidationAmount from "../model/ValidationAmount";
 import { dummyValidationAmount } from "../data/dummyValidationAmount";
+import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
 export const fetchValidationAmount = async (
@@ -37,10 +38,12 @@ export const fetchValidationAmount = async (
 };
 
 export default function useValidationAmountFetch(accountNameOwner: string) {
+  const { isAuthenticated, loading } = useAuth();
+
   const queryResult = useQuery({
     queryKey: ["validationAmount", accountNameOwner],
     queryFn: () => fetchValidationAmount(accountNameOwner),
-    enabled: !!accountNameOwner,
+    enabled: !loading && isAuthenticated && !!accountNameOwner,
   });
 
   if (queryResult.isError) {
