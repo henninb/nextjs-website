@@ -1,4 +1,5 @@
-import DOMPurify from "dompurify";
+// Use require for better compatibility with built-in types
+const DOMPurify = require("dompurify");
 import validator from "validator";
 
 // Configure DOMPurify for server-side usage (if running in Node.js)

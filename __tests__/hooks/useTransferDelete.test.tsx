@@ -142,13 +142,11 @@ describe("useDeleteTransfer", () => {
 
     // Mock the global fetch function to return 500 error
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Network error" }), {
-          status: 500,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Network error" }), {
+        status: 500,
+      }),
+    );
 
     // Render the hook
     const { result } = renderHook(() => useTransferDelete(), {

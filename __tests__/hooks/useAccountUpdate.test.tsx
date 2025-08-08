@@ -163,13 +163,11 @@ describe("useAccountUpdate", () => {
     };
 
     // Mock the fetch call to return a 404 error
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Account not found" }), {
-          status: 404,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Account not found" }), {
+        status: 404,
+      }),
+    );
 
     // Render the hook
     const { result } = renderHook(() => useAccountUpdate(), {

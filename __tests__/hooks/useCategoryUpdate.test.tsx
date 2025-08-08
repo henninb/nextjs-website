@@ -121,13 +121,11 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call to return a 404 error
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Category not found" }), {
-          status: 404,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Category not found" }), {
+        status: 404,
+      }),
+    );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -163,13 +161,11 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call to return a 400 error
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Bad Request" }), {
-          status: 400,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Bad Request" }), {
+        status: 400,
+      }),
+    );
 
     const { result } = renderHook(() => useCategoryUpdate(), {
       wrapper: createWrapper(queryClient),

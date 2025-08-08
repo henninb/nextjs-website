@@ -107,13 +107,11 @@ describe("useAccountFetch", () => {
 
     // Mock the global fetch function to return 500 error
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Internal server error" }), {
-          status: 500,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Internal server error" }), {
+        status: 500,
+      }),
+    );
 
     const consoleSpy = jest.spyOn(console, "log");
 

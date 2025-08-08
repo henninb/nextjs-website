@@ -166,13 +166,11 @@ describe("useAccountInsert", () => {
     };
 
     // Mock the fetch call to return an error response
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ response: "Account already exists" }), {
-          status: 400,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Account already exists" }), {
+        status: 400,
+      }),
+    );
 
     const { result } = renderHook(() => useAccountInsert(), {
       wrapper: createWrapper(queryClient),

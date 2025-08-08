@@ -217,13 +217,11 @@ describe("useLogin", () => {
 
     // Mock the global fetch function to return 500 with error message
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: "Internal server error" }), {
-          status: 500,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+      }),
+    );
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),

@@ -174,13 +174,11 @@ describe("useTransactionDelete", () => {
     };
 
     // Mock the fetch call to return a network error
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Network error" }), {
-          status: 500,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Network error" }), {
+        status: 500,
+      }),
+    );
 
     // Render the hook
     const { result } = renderHook(() => useTransactionDelete(), {

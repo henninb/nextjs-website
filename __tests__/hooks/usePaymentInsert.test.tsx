@@ -156,13 +156,11 @@ describe("usePaymentInsert", () => {
 
     // Mock the global fetch function to return 400 error
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ response: "Invalid payment amount" }), {
-          status: 400,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Invalid payment amount" }), {
+        status: 400,
+      }),
+    );
 
     const { result } = renderHook(() => usePaymentInsert(), {
       wrapper: createWrapper(queryClient),

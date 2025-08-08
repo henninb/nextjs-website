@@ -128,13 +128,11 @@ describe("usePaymentUpdate", () => {
     };
 
     // Mock the fetch call to return a 404 error
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Payment not found" }), {
-          status: 404,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Payment not found" }), {
+        status: 404,
+      }),
+    );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -172,13 +170,11 @@ describe("usePaymentUpdate", () => {
     };
 
     // Mock the fetch call to return a 400 error
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Bad Request" }), {
-          status: 400,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Bad Request" }), {
+        status: 400,
+      }),
+    );
 
     const { result } = renderHook(() => usePaymentUpdate(), {
       wrapper: createWrapper(queryClient),

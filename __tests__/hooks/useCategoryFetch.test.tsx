@@ -106,13 +106,11 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 500 error
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Internal server error" }), {
-          status: 500,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Internal server error" }), {
+        status: 500,
+      }),
+    );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -231,13 +229,11 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 401 error
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Unauthorized" }), {
-          status: 401,
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      }),
+    );
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
