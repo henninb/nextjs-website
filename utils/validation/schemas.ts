@@ -68,21 +68,19 @@ const notes = z
 
 // Enum validations
 const accountTypeEnum = z.enum(["credit", "debit"], {
-  errorMap: () => ({ message: "Account type must be either credit or debit" }),
+  message: "Account type must be either credit or debit",
 });
 
 const transactionStateEnum = z.enum(["cleared", "outstanding", "future"], {
-  errorMap: () => ({
-    message: "Transaction state must be cleared, outstanding, or future",
-  }),
+  message: "Transaction state must be cleared, outstanding, or future",
 });
 
 const transactionTypeEnum = z.enum(["debit", "credit"], {
-  errorMap: () => ({ message: "Transaction type must be debit or credit" }),
+  message: "Transaction type must be debit or credit",
 });
 
 const reoccurringTypeEnum = z.enum(["onetime", "monthly", "weekly", "yearly"], {
-  errorMap: () => ({ message: "Invalid reoccurring type" }),
+  message: "Invalid reoccurring type",
 });
 
 // User validation schema
