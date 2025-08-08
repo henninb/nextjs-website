@@ -24,7 +24,7 @@ const setupNewAccount = (payload: any) => ({
   cleared: 0.0,
   future: 0.0,
   outstanding: 0.0,
-  dateClosed: new Date(0),
+  dateClosed: null,
   dateAdded: new Date(),
   dateUpdated: new Date(),
   activeStatus: true,
