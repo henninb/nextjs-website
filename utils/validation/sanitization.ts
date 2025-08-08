@@ -265,7 +265,7 @@ export const sanitize = {
   }),
 
   payment: (data: any) => ({
-    paymentId: parseInt(data.paymentId),
+    paymentId: data.paymentId ? parseInt(data.paymentId) : undefined,
     accountNameOwner: InputSanitizer.sanitizeAccountName(data.accountNameOwner),
     sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
     destinationAccount: InputSanitizer.sanitizeAccountName(

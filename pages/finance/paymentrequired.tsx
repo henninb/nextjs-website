@@ -144,7 +144,7 @@ export default function paymentrequired() {
         ) : (
           <div data-testid="payment-required-table">
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: "100%", maxWidth: 1200 }}>
                 <DataGrid
                   columns={columns}
                   rows={
