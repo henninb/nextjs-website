@@ -64,10 +64,9 @@ describe("useAccountInsert", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/account/insert", () => {
-        return HttpResponse.json(responseAccount, { status: 201 });
-      }),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseAccount), { status: 201 })
     );
 
     // Set existing accounts in cache
@@ -100,9 +99,10 @@ describe("useAccountInsert", () => {
     const updatedAccounts = queryClient.getQueryData<Account[]>(["account"]);
     expect(updatedAccounts).toEqual([responseAccount, ...existingAccounts]);
 
-    // Verify console.log was called with payload
+    // Verify console.log was called with account name
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("accountNameOwner"),
+      "Inserting account for:",
+      "test_account"
     );
 
     consoleSpy.mockRestore();
@@ -128,10 +128,9 @@ describe("useAccountInsert", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/account/insert", () => {
-        return HttpResponse.json(responseAccount, { status: 201 });
-      }),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseAccount), { status: 201 })
     );
 
     // Don't set any initial cache data
@@ -162,13 +161,9 @@ describe("useAccountInsert", () => {
       cleared: 0,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/account/insert", () => {
-        return HttpResponse.json(
-          { response: "Account already exists" },
-          { status: 400 },
-        );
-      }),
+    // Mock the fetch call to return an error response
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Account already exists" }), { status: 400 })
     );
 
     const { result } = renderHook(() => useAccountInsert(), {
@@ -200,10 +195,9 @@ describe("useAccountInsert", () => {
       cleared: 0,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/account/insert", () => {
-        return HttpResponse.json({}, { status: 400 });
-      }),
+    // Mock the fetch call to return an error response with no message
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({}), { status: 400 })
     );
 
     const { result } = renderHook(() => useAccountInsert(), {
@@ -235,10 +229,9 @@ describe("useAccountInsert", () => {
       cleared: 0,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/account/insert", () => {
-        return new HttpResponse("Server error", { status: 500 });
-      }),
+    // Mock the fetch call to return a non-JSON response
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response("Server error", { status: 500 })
     );
 
     const { result } = renderHook(() => useAccountInsert(), {
@@ -271,10 +264,9 @@ describe("useAccountInsert", () => {
       cleared: 0,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/account/insert", () => {
-        return new HttpResponse(null, { status: 204 });
-      }),
+    // Mock the fetch call to return 204 no content
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     const { result } = renderHook(() => useAccountInsert(), {

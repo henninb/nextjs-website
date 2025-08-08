@@ -1,8 +1,6 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
 import usePaymentInsert from "../../hooks/usePaymentInsert";
 import Payment from "../../model/Payment";
 
@@ -16,13 +14,6 @@ jest.mock("next/router", () => ({
     query: {},
   }),
 }));
-
-// Setup MSW server for Node environment
-const server = setupServer();
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
 
 // Create a fresh QueryClient for each test
 const createTestQueryClient = () =>
@@ -52,7 +43,7 @@ describe("usePaymentInsert", () => {
       accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
-      transactionDate: new Date("2023-12-01"),
+      transactionDate: new Date("2024-12-01"),
       amount: 150.0,
       activeStatus: true,
     };
@@ -62,17 +53,16 @@ describe("usePaymentInsert", () => {
       accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
-      transactionDate: new Date("2023-12-01").toISOString(),
+      transactionDate: new Date("2024-12-01").toISOString(),
       amount: 150.0,
       activeStatus: true,
       dateAdded: new Date().toISOString(),
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/payment/insert", () => {
-        return HttpResponse.json(responsePayment, { status: 201 });
-      }),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responsePayment), { status: 201 })
     );
 
     // Set existing payments in cache
@@ -82,7 +72,7 @@ describe("usePaymentInsert", () => {
         accountNameOwner: "existing_owner",
         sourceAccount: "existing_source",
         destinationAccount: "existing_dest",
-        transactionDate: new Date("2023-11-01"),
+        transactionDate: new Date("2024-11-01"),
         amount: 100.0,
         activeStatus: true,
       },
@@ -110,7 +100,7 @@ describe("usePaymentInsert", () => {
       accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
-      transactionDate: new Date("2023-12-01"),
+      transactionDate: new Date("2024-12-01"),
       amount: 150.0,
       activeStatus: true,
     };
@@ -118,15 +108,15 @@ describe("usePaymentInsert", () => {
     const responsePayment: Payment = {
       paymentId: 789,
       ...inputPayment,
-      transactionDate: new Date("2023-12-01").toISOString(),
+      transactionDate: new Date("2024-12-01").toISOString(),
       dateAdded: new Date().toISOString(),
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/payment/insert", () => {
-        return HttpResponse.json(responsePayment, { status: 201 });
-      }),
+    // Mock the global fetch function
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responsePayment), { status: 201 })
     );
 
     // Don't set any initial cache data - cache will be undefined
@@ -142,6 +132,9 @@ describe("usePaymentInsert", () => {
     // Verify the cache was set with new payment only
     const updatedPayments = queryClient.getQueryData<Payment[]>(["payment"]);
     expect(updatedPayments).toEqual([responsePayment]);
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should handle API errors with response message", async () => {
@@ -152,18 +145,15 @@ describe("usePaymentInsert", () => {
       accountNameOwner: "invalid_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
-      transactionDate: new Date("2023-12-01"),
+      transactionDate: new Date("2024-12-01"),
       amount: -50.0, // Invalid amount
       activeStatus: true,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/payment/insert", () => {
-        return HttpResponse.json(
-          { response: "Invalid payment amount" },
-          { status: 400 },
-        );
-      }),
+    // Mock the global fetch function to return 400 error
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Invalid payment amount" }), { status: 400 })
     );
 
     const { result } = renderHook(() => usePaymentInsert(), {
@@ -180,6 +170,7 @@ describe("usePaymentInsert", () => {
     expect(result.current.error?.message).toBe("Invalid payment amount");
 
     consoleSpy.mockRestore();
+    global.fetch = originalFetch;
   });
 
   it("should handle API errors without response message", async () => {
@@ -190,15 +181,15 @@ describe("usePaymentInsert", () => {
       accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
-      transactionDate: new Date("2023-12-01"),
+      transactionDate: new Date("2024-12-01"),
       amount: 150.0,
       activeStatus: true,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/payment/insert", () => {
-        return HttpResponse.json({}, { status: 400 });
-      }),
+    // Mock the global fetch function to return 400 with empty response
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({}), { status: 400 })
     );
 
     const { result } = renderHook(() => usePaymentInsert(), {
@@ -215,6 +206,7 @@ describe("usePaymentInsert", () => {
     expect(result.current.error?.message).toBe("No error message returned.");
 
     consoleSpy.mockRestore();
+    global.fetch = originalFetch;
   });
 
   it("should handle non-JSON error responses", async () => {
@@ -225,15 +217,15 @@ describe("usePaymentInsert", () => {
       accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
-      transactionDate: new Date("2023-12-01"),
+      transactionDate: new Date("2024-12-01"),
       amount: 150.0,
       activeStatus: true,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/payment/insert", () => {
-        return new HttpResponse("Server error", { status: 500 });
-      }),
+    // Mock the global fetch function to return non-JSON response
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response("Server error", { status: 500 })
     );
 
     const { result } = renderHook(() => usePaymentInsert(), {
@@ -251,6 +243,7 @@ describe("usePaymentInsert", () => {
     );
 
     consoleSpy.mockRestore();
+    global.fetch = originalFetch;
   });
 
   it("should handle 204 no content response", async () => {
@@ -261,15 +254,15 @@ describe("usePaymentInsert", () => {
       accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
-      transactionDate: new Date("2023-12-01"),
+      transactionDate: new Date("2024-12-01"),
       amount: 150.0,
       activeStatus: true,
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/payment/insert", () => {
-        return new HttpResponse(null, { status: 204 });
-      }),
+    // Mock the global fetch function to return 204 no content
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     const { result } = renderHook(() => usePaymentInsert(), {
@@ -281,5 +274,7 @@ describe("usePaymentInsert", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(result.current.data).toBeNull();
+
+    global.fetch = originalFetch;
   });
 });

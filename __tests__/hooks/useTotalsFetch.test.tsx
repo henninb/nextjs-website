@@ -43,10 +43,9 @@ describe("useTotalsFetch", () => {
       totalsOutstanding: 300.25,
     };
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", () => {
-        return HttpResponse.json(mockTotals, { status: 200 });
-      }),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(mockTotals), { status: 200 })
     );
 
     const { result } = renderHook(() => useTotalsFetch(), {
@@ -63,10 +62,9 @@ describe("useTotalsFetch", () => {
   it("should handle 404 errors and return dummy data", async () => {
     const queryClient = createTestQueryClient();
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", () => {
-        return HttpResponse.json({ message: "Not found" }, { status: 404 });
-      }),
+    // Mock the fetch call to return a 404 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Not found" }), { status: 404 })
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -91,13 +89,9 @@ describe("useTotalsFetch", () => {
   it("should handle 500 server errors and return dummy data", async () => {
     const queryClient = createTestQueryClient();
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", () => {
-        return HttpResponse.json(
-          { message: "Internal server error" },
-          { status: 500 },
-        );
-      }),
+    // Mock the fetch call to return a 500 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 })
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -121,10 +115,9 @@ describe("useTotalsFetch", () => {
   it("should handle network errors and return dummy data", async () => {
     const queryClient = createTestQueryClient();
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", () => {
-        throw new Error("Network failure");
-      }),
+    // Mock the fetch call to throw a network error
+    global.fetch = jest.fn().mockRejectedValueOnce(
+      new Error("Network failure")
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -148,10 +141,9 @@ describe("useTotalsFetch", () => {
   it("should log errors when query has error state", async () => {
     const queryClient = createTestQueryClient();
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", () => {
-        throw new Error("Persistent error");
-      }),
+    // Mock the fetch call to throw a persistent error
+    global.fetch = jest.fn().mockRejectedValueOnce(
+      new Error("Persistent error")
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -183,15 +175,11 @@ describe("useTotalsFetch", () => {
 
     let capturedHeaders: any;
 
-    server.use(
-      http.get(
-        "https://finance.bhenning.com/api/account/totals",
-        ({ request }) => {
-          capturedHeaders = Object.fromEntries(request.headers.entries());
-          return HttpResponse.json(mockTotals, { status: 200 });
-        },
-      ),
-    );
+    // Mock the fetch call and capture headers - note: with direct fetch mock we can't capture headers the same way
+    global.fetch = jest.fn().mockImplementation((url, options) => {
+      capturedHeaders = options?.headers || {};
+      return Promise.resolve(new Response(JSON.stringify(mockTotals), { status: 200 }));
+    });
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
@@ -199,9 +187,9 @@ describe("useTotalsFetch", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Verify correct headers were sent
-    expect(capturedHeaders["content-type"]).toBe("application/json");
-    expect(capturedHeaders["accept"]).toBe("application/json");
+    // Verify correct headers were sent (note: headers are case-sensitive)
+    expect(capturedHeaders["Content-Type"]).toBe("application/json");
+    expect(capturedHeaders["Accept"]).toBe("application/json");
   });
 
   it("should use payment_required as query key", async () => {
@@ -214,10 +202,9 @@ describe("useTotalsFetch", () => {
       totalsOutstanding: 50.0,
     };
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", () => {
-        return HttpResponse.json(mockTotals, { status: 200 });
-      }),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(mockTotals), { status: 200 })
     );
 
     const { result } = renderHook(() => useTotalsFetch(), {
@@ -234,10 +221,9 @@ describe("useTotalsFetch", () => {
   it("should return object structure from dummy data on error", async () => {
     const queryClient = createTestQueryClient();
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/account/totals", () => {
-        return HttpResponse.json({ message: "Unauthorized" }, { status: 401 });
-      }),
+    // Mock the fetch call to return a 401 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })
     );
 
     const { result } = renderHook(() => useTotalsFetch(), {

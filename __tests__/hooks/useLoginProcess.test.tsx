@@ -1,8 +1,6 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
 import useLogin from "../../hooks/useLoginProcess";
 import User from "../../model/User";
 
@@ -28,15 +26,9 @@ jest.mock("../../components/AuthProvider", () => ({
   }),
 }));
 
-// Setup MSW server for Node environment
-const server = setupServer();
-
-beforeAll(() => server.listen());
 afterEach(() => {
-  server.resetHandlers();
   jest.clearAllMocks();
 });
-afterAll(() => server.close());
 
 // Create a fresh QueryClient for each test
 const createTestQueryClient = () =>
@@ -63,13 +55,13 @@ describe("useLogin", () => {
 
     const loginPayload: User = {
       username: "testuser",
-      password: "testpassword",
+      password: "TestPassword123!",
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", () => {
-        return new HttpResponse(null, { status: 204 });
-      }),
+    // Mock the global fetch function to return 204 success
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     const { result } = renderHook(() => useLogin(), {
@@ -94,6 +86,9 @@ describe("useLogin", () => {
 
     // No error message should be set
     expect(result.current.errorMessage).toBe("");
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should handle login error with error message in response", async () => {
@@ -101,16 +96,13 @@ describe("useLogin", () => {
 
     const loginPayload: User = {
       username: "invaliduser",
-      password: "wrongpassword",
+      password: "WrongPassword123!",
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", () => {
-        return HttpResponse.json(
-          { error: "Invalid username or password" },
-          { status: 401 },
-        );
-      }),
+    // Mock the global fetch function to return 401 with error message
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "Invalid username or password" }), { status: 401 })
     );
 
     const { result } = renderHook(() => useLogin(), {
@@ -131,6 +123,9 @@ describe("useLogin", () => {
 
     // Verify AuthProvider login was not called
     expect(mockLogin).not.toHaveBeenCalled();
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should handle login error without specific error message", async () => {
@@ -138,13 +133,13 @@ describe("useLogin", () => {
 
     const loginPayload: User = {
       username: "testuser",
-      password: "testpassword",
+      password: "TestPassword123!",
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", () => {
-        return HttpResponse.json({}, { status: 401 });
-      }),
+    // Mock the global fetch function to return 401 without error message
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({}), { status: 401 })
     );
 
     const { result } = renderHook(() => useLogin(), {
@@ -165,6 +160,9 @@ describe("useLogin", () => {
 
     // Verify AuthProvider login was not called
     expect(mockLogin).not.toHaveBeenCalled();
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should handle network errors", async () => {
@@ -172,13 +170,13 @@ describe("useLogin", () => {
 
     const loginPayload: User = {
       username: "testuser",
-      password: "testpassword",
+      password: "TestPassword123!",
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", () => {
-        throw new Error("Network failure");
-      }),
+    // Mock the global fetch function to throw network error
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockRejectedValueOnce(
+      new Error("Network failure")
     );
 
     const { result } = renderHook(() => useLogin(), {
@@ -191,14 +189,17 @@ describe("useLogin", () => {
       expect(result.current.loginMutation.isError).toBe(true),
     );
 
-    // Verify error message was set (MSW converts network errors to "Login failed")
-    expect(result.current.errorMessage).toBe("Login failed");
+    // Verify error message was set (network errors use the actual error message)
+    expect(result.current.errorMessage).toBe("Network failure");
 
     // Verify no redirect occurred
     expect(mockPush).not.toHaveBeenCalled();
 
     // Verify AuthProvider login was not called
     expect(mockLogin).not.toHaveBeenCalled();
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should handle 500 server errors", async () => {
@@ -206,16 +207,13 @@ describe("useLogin", () => {
 
     const loginPayload: User = {
       username: "testuser",
-      password: "testpassword",
+      password: "TestPassword123!",
     };
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", () => {
-        return HttpResponse.json(
-          { error: "Internal server error" },
-          { status: 500 },
-        );
-      }),
+    // Mock the global fetch function to return 500 with error message
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 })
     );
 
     const { result } = renderHook(() => useLogin(), {
@@ -231,6 +229,9 @@ describe("useLogin", () => {
     expect(result.current.errorMessage).toBe("Internal server error");
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockLogin).not.toHaveBeenCalled();
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should include credentials in request", async () => {
@@ -238,17 +239,17 @@ describe("useLogin", () => {
 
     const loginPayload: User = {
       username: "testuser",
-      password: "testpassword",
+      password: "TestPassword123!",
     };
 
     let capturedHeaders: any;
 
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", ({ request }) => {
-        capturedHeaders = Object.fromEntries(request.headers.entries());
-        return new HttpResponse(null, { status: 204 });
-      }),
-    );
+    // Mock the global fetch function and capture headers
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockImplementation((url, options) => {
+      capturedHeaders = options?.headers || {};
+      return Promise.resolve(new Response(null, { status: 204 }));
+    });
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),
@@ -260,8 +261,11 @@ describe("useLogin", () => {
       expect(result.current.loginMutation.isSuccess).toBe(true),
     );
 
-    // Verify correct headers were sent
-    expect(capturedHeaders["content-type"]).toBe("application/json");
+    // Verify correct headers were sent (case-sensitive)
+    expect(capturedHeaders["Content-Type"]).toBe("application/json");
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should clear error message on new login attempt", async () => {
@@ -269,14 +273,13 @@ describe("useLogin", () => {
 
     const loginPayload: User = {
       username: "testuser",
-      password: "testpassword",
+      password: "TestPassword123!",
     };
 
-    // First attempt - fails
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", () => {
-        return HttpResponse.json({ error: "First error" }, { status: 401 });
-      }),
+    // Mock the global fetch function - first attempt fails
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "First error" }), { status: 401 })
     );
 
     const { result } = renderHook(() => useLogin(), {
@@ -290,11 +293,9 @@ describe("useLogin", () => {
     );
     expect(result.current.errorMessage).toBe("First error");
 
-    // Second attempt - succeeds
-    server.use(
-      http.post("https://finance.bhenning.com/api/login", () => {
-        return new HttpResponse(null, { status: 204 });
-      }),
+    // Second attempt - mock fetch for success
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     result.current.loginMutation.mutate(loginPayload);
@@ -306,5 +307,8 @@ describe("useLogin", () => {
     // Error message should still be from the first attempt (useState doesn't auto-clear)
     // This test documents the current behavior - error messages persist until new ones are set
     expect(result.current.errorMessage).toBe("First error");
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 });

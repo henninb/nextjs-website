@@ -157,7 +157,7 @@ export const TransactionSchema = z.object({
 
 // Payment validation schema
 export const PaymentSchema = z.object({
-  paymentId: z.number().int().positive(),
+  paymentId: z.number().int().min(0).optional(),
   accountNameOwner,
   sourceAccount: accountNameOwner,
   destinationAccount: accountNameOwner,
@@ -212,11 +212,26 @@ export function validateSchema<T>(
       };
     }
 
-    const errors: ValidationError[] = result.error.errors.map((err) => ({
-      field: err.path.join("."),
-      message: err.message,
-      code: err.code,
-    }));
+    // Handle ZodError structure (uses 'issues' instead of 'errors')
+    const zodError = result.error as any;
+    if (zodError && zodError.issues) {
+      const errors: ValidationError[] = zodError.issues.map((issue: any) => ({
+        field: issue.path?.join(".") || "unknown",
+        message: issue.message || "Validation failed",
+        code: issue.code || "VALIDATION_ERROR",
+      }));
+
+      return {
+        success: false,
+        errors,
+      };
+    }
+
+    const errors: ValidationError[] = [{
+      field: "validation",
+      message: result.error?.message || "Unknown validation error",
+      code: "VALIDATION_ERROR",
+    }];
 
     return {
       success: false,

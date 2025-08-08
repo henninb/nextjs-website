@@ -66,13 +66,9 @@ describe("useCategoryUpdate", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`,
-        () => {
-          return HttpResponse.json(responseCategory, { status: 200 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseCategory), { status: 200 })
     );
 
     // Set existing categories in cache
@@ -122,16 +118,9 @@ describe("useCategoryUpdate", () => {
       categoryName: "updated_category",
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`,
-        () => {
-          return HttpResponse.json(
-            { message: "Category not found" },
-            { status: 404 },
-          );
-        },
-      ),
+    // Mock the fetch call to return a 404 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Category not found" }), { status: 404 })
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -167,13 +156,9 @@ describe("useCategoryUpdate", () => {
       categoryName: "", // Invalid empty name
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`,
-        () => {
-          return HttpResponse.json({ message: "Bad Request" }, { status: 400 });
-        },
-      ),
+    // Mock the fetch call to return a 400 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Bad Request" }), { status: 400 })
     );
 
     const { result } = renderHook(() => useCategoryUpdate(), {
@@ -211,13 +196,9 @@ describe("useCategoryUpdate", () => {
       categoryName: "updated_category",
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`,
-        () => {
-          throw new Error("Network failure");
-        },
-      ),
+    // Mock the fetch call to throw a network error
+    global.fetch = jest.fn().mockRejectedValueOnce(
+      new Error("Network failure")
     );
 
     const { result } = renderHook(() => useCategoryUpdate(), {
@@ -231,11 +212,11 @@ describe("useCategoryUpdate", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(result.current.error?.message).toBe(
-      "Failed to update transaction state: Unhandled Exception",
+      "Network failure",
     );
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining(
-        "Error occurred during mutation: Failed to update transaction state: Unhandled Exception",
+        "Error occurred during mutation: Network failure",
       ),
     );
 
@@ -262,13 +243,9 @@ describe("useCategoryUpdate", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`,
-        () => {
-          return HttpResponse.json(responseCategory, { status: 200 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseCategory), { status: 200 })
     );
 
     // Don't set any initial cache data
@@ -308,13 +285,9 @@ describe("useCategoryUpdate", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/category/update/${oldCategory.categoryName}`,
-        () => {
-          return HttpResponse.json(responseCategory, { status: 200 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseCategory), { status: 200 })
     );
 
     // Set cache with categories having same categoryId but different names

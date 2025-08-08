@@ -61,13 +61,9 @@ describe("useCategoryDelete", () => {
       dateUpdated: new Date(),
     };
 
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
-        () => {
-          return new HttpResponse(null, { status: 204 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     // Set initial cache data
@@ -103,17 +99,9 @@ describe("useCategoryDelete", () => {
       dateUpdated: new Date(),
     };
 
-    // Mock an API error
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
-        () => {
-          return HttpResponse.json(
-            { response: "Cannot delete this category" },
-            { status: 400 },
-          );
-        },
-      ),
+    // Mock the fetch call to return an error response
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Cannot delete this category" }), { status: 400 })
     );
 
     // Render the hook
@@ -150,17 +138,9 @@ describe("useCategoryDelete", () => {
       dateUpdated: new Date(),
     };
 
-    // Mock a network error
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/category/delete/${mockCategory.categoryName}`,
-        () => {
-          return HttpResponse.json(
-            { message: "Network error" },
-            { status: 500 },
-          );
-        },
-      ),
+    // Mock the fetch call to return a network error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Network error" }), { status: 500 })
     );
 
     // Render the hook

@@ -69,13 +69,9 @@ describe("useAccountUpdate", () => {
       outstanding: 150,
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        () => {
-          return HttpResponse.json(newAccount, { status: 200 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(newAccount), { status: 200 })
     );
 
     queryClient.setQueryData(["account"], [oldAccount]);
@@ -115,17 +111,9 @@ describe("useAccountUpdate", () => {
       moniker: "1111",
     };
 
-    // Mock an API error
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        () => {
-          return HttpResponse.json(
-            { response: "Cannot update this account" },
-            { status: 400 },
-          );
-        },
-      ),
+    // Mock the fetch call to return an error response
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Cannot update this account" }), { status: 400 })
     );
 
     // Render the hook
@@ -167,17 +155,9 @@ describe("useAccountUpdate", () => {
       moniker: "1111",
     };
 
-    // Mock a 404 error
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        () => {
-          return HttpResponse.json(
-            { message: "Account not found" },
-            { status: 404 },
-          );
-        },
-      ),
+    // Mock the fetch call to return a 404 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Account not found" }), { status: 404 })
     );
 
     // Render the hook
@@ -222,13 +202,9 @@ describe("useAccountUpdate", () => {
       accountNameOwner: "test_brian",
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/account/update/${oldAccount.accountNameOwner}`,
-        () => {
-          return HttpResponse.json(newAccount, { status: 200 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(newAccount), { status: 200 })
     );
 
     // Don't set any initial cache data

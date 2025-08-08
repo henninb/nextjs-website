@@ -1,15 +1,19 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
+import { SWRConfig } from "swr";
 import { useUser } from "../../hooks/useUser";
 
-// Setup MSW server for Node environment
-const server = setupServer();
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+// SWR provider for testing
+const createWrapper = () => ({ children }: { children: React.ReactNode }) => (
+  <SWRConfig 
+    value={{
+      dedupingInterval: 0,
+      provider: () => new Map(),
+    }}
+  >
+    {children}
+  </SWRConfig>
+);
 
 describe("useUser", () => {
   it("should fetch user data successfully", async () => {
@@ -20,13 +24,15 @@ describe("useUser", () => {
       roles: ["user"],
     };
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/me", () => {
-        return HttpResponse.json(mockUser, { status: 200 });
-      }),
+    // Mock the global fetch function
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(mockUser), { status: 200 })
     );
 
-    const { result } = renderHook(() => useUser());
+    const { result } = renderHook(() => useUser(), { 
+      wrapper: createWrapper() 
+    });
 
     // Initially loading
     expect(result.current.isLoading).toBe(true);
@@ -38,24 +44,35 @@ describe("useUser", () => {
 
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.isError).toBe(undefined);
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should include credentials in request", async () => {
-    let requestOptions: any;
+    const mockUser = { id: 1, username: "test" };
+    let fetchCall: any;
 
-    server.use(
-      http.get("https://finance.bhenning.com/api/me", ({ request }) => {
-        // Capture request for verification
-        requestOptions = request;
-        return HttpResponse.json({ id: 1, username: "test" });
-      }),
-    );
+    // Mock the global fetch function and capture the call
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockImplementation((url, options) => {
+      fetchCall = { url, options };
+      return Promise.resolve(
+        new Response(JSON.stringify(mockUser), { status: 200 })
+      );
+    });
 
-    const { result } = renderHook(() => useUser());
+    const { result } = renderHook(() => useUser(), { 
+      wrapper: createWrapper() 
+    });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // SWR will make the request with credentials: 'include'
+    // Verify the request was made with credentials: 'include'
     expect(result.current.user).toBeDefined();
+    expect(fetchCall.options.credentials).toBe('include');
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 });

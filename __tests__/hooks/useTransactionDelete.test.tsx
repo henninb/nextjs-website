@@ -69,11 +69,9 @@ describe("useTransactionDelete", () => {
       dueDate: "2025-03-05",
     };
 
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/transaction/delete/${mockTransaction.guid}`,
-        () => new HttpResponse(null, { status: 204 }),
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     // Set initial cache data
@@ -122,16 +120,9 @@ describe("useTransactionDelete", () => {
       dueDate: "2025-03-05",
     };
 
-    // Mock an API error
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/transaction/delete/${mockTransaction.guid}`,
-        () =>
-          HttpResponse.json(
-            { response: "Cannot delete this transaction" },
-            { status: 400 },
-          ),
-      ),
+    // Mock the fetch call to return an error response
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ response: "Cannot delete this transaction" }), { status: 400 })
     );
 
     // Render the hook
@@ -177,12 +168,9 @@ describe("useTransactionDelete", () => {
       dueDate: "2025-03-05",
     };
 
-    // Mock a network error
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/transaction/delete/${mockTransaction.guid}`,
-        () => HttpResponse.json({ message: "Network error" }, { status: 500 }),
-      ),
+    // Mock the fetch call to return a network error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Network error" }), { status: 500 })
     );
 
     // Render the hook

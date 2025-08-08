@@ -69,13 +69,9 @@ describe("usePaymentUpdate", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/payment/update/${oldPayment.paymentId}`,
-        () => {
-          return HttpResponse.json(responsePayment, { status: 200 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responsePayment), { status: 200 })
     );
 
     // Set existing payments in cache
@@ -129,16 +125,9 @@ describe("usePaymentUpdate", () => {
       amount: 200.0,
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/payment/update/${oldPayment.paymentId}`,
-        () => {
-          return HttpResponse.json(
-            { message: "Payment not found" },
-            { status: 404 },
-          );
-        },
-      ),
+    // Mock the fetch call to return a 404 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Payment not found" }), { status: 404 })
     );
 
     const consoleSpy = jest.spyOn(console, "log");
@@ -176,13 +165,9 @@ describe("usePaymentUpdate", () => {
       amount: -50.0, // Invalid amount
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/payment/update/${oldPayment.paymentId}`,
-        () => {
-          return HttpResponse.json({ message: "Bad Request" }, { status: 400 });
-        },
-      ),
+    // Mock the fetch call to return a 400 error
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Bad Request" }), { status: 400 })
     );
 
     const { result } = renderHook(() => usePaymentUpdate(), {
@@ -223,13 +208,9 @@ describe("usePaymentUpdate", () => {
       amount: 200.0,
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/payment/update/${oldPayment.paymentId}`,
-        () => {
-          throw new Error("Network failure");
-        },
-      ),
+    // Mock the fetch call to throw a network error
+    global.fetch = jest.fn().mockRejectedValueOnce(
+      new Error("Network failure")
     );
 
     const { result } = renderHook(() => usePaymentUpdate(), {
@@ -244,7 +225,7 @@ describe("usePaymentUpdate", () => {
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining(
-        "An error occurred: Failed to update payment state: Unhandled Exception",
+        "An error occurred: Network failure",
       ),
     );
 
@@ -274,13 +255,9 @@ describe("usePaymentUpdate", () => {
       dateUpdated: new Date(),
     };
 
-    server.use(
-      http.put(
-        `https://finance.bhenning.com/api/payment/update/${oldPayment.paymentId}`,
-        () => {
-          return HttpResponse.json(responsePayment, { status: 200 });
-        },
-      ),
+    // Mock the fetch call directly for this test
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responsePayment), { status: 200 })
     );
 
     // Don't set any initial cache data

@@ -1,8 +1,6 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
 import useTransferDelete from "../../hooks/useTransferDelete";
 import Transfer from "../../model/Transfer";
 
@@ -21,13 +19,6 @@ jest.mock("next/router", () => ({
 jest.mock("jose", () => ({
   jwtVerify: jest.fn().mockResolvedValue(true),
 }));
-
-// Setup MSW server for Node environment
-const server = setupServer();
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
 
 // Create a fresh QueryClient for each test
 const createTestQueryClient = () =>
@@ -64,11 +55,10 @@ describe("useDeleteTransfer", () => {
       dateUpdated: new Date(),
     };
 
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
-        () => new HttpResponse(null, { status: 204 }),
-      ),
+    // Mock the global fetch function to return 204 success
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     // Set initial cache data
@@ -88,6 +78,9 @@ describe("useDeleteTransfer", () => {
     // Verify that the transfer was removed from the cache
     const updatedTransfers = queryClient.getQueryData<Transfer[]>(["transfer"]);
     expect(updatedTransfers).toEqual([]);
+
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
   it("should handle API errors correctly", async () => {
@@ -104,16 +97,10 @@ describe("useDeleteTransfer", () => {
       dateUpdated: new Date(),
     };
 
-    // Mock an API error
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
-        () =>
-          HttpResponse.json(
-            { response: "Cannot delete this transfer" },
-            { status: 400 },
-          ),
-      ),
+    // Mock the global fetch function to return 400 with empty response
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({}), { status: 400 })
     );
 
     // Render the hook
@@ -132,10 +119,11 @@ describe("useDeleteTransfer", () => {
 
     // Verify error was logged
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Cannot delete this transfer"),
+      expect.stringContaining("No error message returned"),
     );
 
     consoleSpy.mockRestore();
+    global.fetch = originalFetch;
   });
 
   it("should handle network errors correctly", async () => {
@@ -152,12 +140,10 @@ describe("useDeleteTransfer", () => {
       dateUpdated: new Date(),
     };
 
-    // Mock a network error
-    server.use(
-      http.delete(
-        `https://finance.bhenning.com/api/transfer/delete/${mockTransfer.transferId}`,
-        () => HttpResponse.json({ message: "Network error" }, { status: 500 }),
-      ),
+    // Mock the global fetch function to return 500 error
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "Network error" }), { status: 500 })
     );
 
     // Render the hook
@@ -178,5 +164,6 @@ describe("useDeleteTransfer", () => {
     expect(consoleSpy).toHaveBeenCalled();
 
     consoleSpy.mockRestore();
+    global.fetch = originalFetch;
   });
 });

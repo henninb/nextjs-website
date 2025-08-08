@@ -91,7 +91,7 @@ export class DataValidator {
       const sanitizedData = sanitize.transaction(data);
 
       // Additional financial boundary checks
-      const financialValidation = this.validateFinancialBoundaries({
+      const financialValidation = DataValidator.validateFinancialBoundaries({
         amount: sanitizedData.amount,
         transactionDate: sanitizedData.transactionDate,
       });
@@ -133,7 +133,7 @@ export class DataValidator {
       const sanitizedData = sanitize.payment(data);
 
       // Additional checks for payments
-      const financialValidation = this.validateFinancialBoundaries({
+      const financialValidation = DataValidator.validateFinancialBoundaries({
         amount: sanitizedData.amount,
         transactionDate: sanitizedData.transactionDate,
       });
@@ -237,7 +237,7 @@ export class DataValidator {
     }
 
     // Suspicious amount patterns (potential fraud detection)
-    if (this.isSuspiciousAmount(data.amount)) {
+    if (DataValidator.isSuspiciousAmount(data.amount)) {
       errors.push({
         field: "amount",
         message: "Amount flagged for review due to suspicious pattern",
@@ -254,7 +254,7 @@ export class DataValidator {
   /**
    * Detect suspicious financial amounts (basic fraud detection)
    */
-  private static isSuspiciousAmount(amount: number): boolean {
+  static isSuspiciousAmount(amount: number): boolean {
     const absAmount = Math.abs(amount);
 
     // Flag round numbers over $10,000

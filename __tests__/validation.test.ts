@@ -27,7 +27,6 @@ describe("Input Validation and Sanitization", () => {
       };
 
       const result = DataValidator.validateUser(actuallyInvalidUser);
-      console.log("Debug result:", JSON.stringify(result, null, 2));
       expect(result.success).toBe(false);
       expect(result.errors).toBeDefined();
       expect(result.errors?.some((err) => err.field === "username")).toBe(true);
