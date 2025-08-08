@@ -57,9 +57,9 @@ describe("useDeleteTransfer", () => {
 
     // Mock the global fetch function to return 204 success
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     // Set initial cache data
     queryClient.setQueryData(["transfer"], [mockTransfer]);
@@ -99,9 +99,9 @@ describe("useDeleteTransfer", () => {
 
     // Mock the global fetch function to return 400 with empty response
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({}), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 400 }));
 
     // Render the hook
     const { result } = renderHook(() => useTransferDelete(), {
@@ -142,9 +142,13 @@ describe("useDeleteTransfer", () => {
 
     // Mock the global fetch function to return 500 error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Network error" }), { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Network error" }), {
+          status: 500,
+        }),
+      );
 
     // Render the hook
     const { result } = renderHook(() => useTransferDelete(), {

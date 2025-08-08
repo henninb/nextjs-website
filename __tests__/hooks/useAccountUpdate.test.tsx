@@ -70,9 +70,11 @@ describe("useAccountUpdate", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(newAccount), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(newAccount), { status: 200 }),
+      );
 
     queryClient.setQueryData(["account"], [oldAccount]);
 
@@ -112,9 +114,14 @@ describe("useAccountUpdate", () => {
     };
 
     // Mock the fetch call to return an error response
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ response: "Cannot update this account" }), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ response: "Cannot update this account" }),
+          { status: 400 },
+        ),
+      );
 
     // Render the hook
     const { result } = renderHook(() => useAccountUpdate(), {
@@ -156,9 +163,13 @@ describe("useAccountUpdate", () => {
     };
 
     // Mock the fetch call to return a 404 error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Account not found" }), { status: 404 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Account not found" }), {
+          status: 404,
+        }),
+      );
 
     // Render the hook
     const { result } = renderHook(() => useAccountUpdate(), {
@@ -203,9 +214,11 @@ describe("useAccountUpdate", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(newAccount), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(newAccount), { status: 200 }),
+      );
 
     // Don't set any initial cache data
 

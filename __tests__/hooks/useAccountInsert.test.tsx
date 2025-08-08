@@ -65,9 +65,11 @@ describe("useAccountInsert", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseAccount), { status: 201 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseAccount), { status: 201 }),
+      );
 
     // Set existing accounts in cache
     const existingAccounts: Account[] = [
@@ -102,7 +104,7 @@ describe("useAccountInsert", () => {
     // Verify console.log was called with account name
     expect(consoleSpy).toHaveBeenCalledWith(
       "Inserting account for:",
-      "test_account"
+      "test_account",
     );
 
     consoleSpy.mockRestore();
@@ -129,9 +131,11 @@ describe("useAccountInsert", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseAccount), { status: 201 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseAccount), { status: 201 }),
+      );
 
     // Don't set any initial cache data
 
@@ -162,9 +166,13 @@ describe("useAccountInsert", () => {
     };
 
     // Mock the fetch call to return an error response
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ response: "Account already exists" }), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ response: "Account already exists" }), {
+          status: 400,
+        }),
+      );
 
     const { result } = renderHook(() => useAccountInsert(), {
       wrapper: createWrapper(queryClient),
@@ -196,9 +204,9 @@ describe("useAccountInsert", () => {
     };
 
     // Mock the fetch call to return an error response with no message
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({}), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 400 }));
 
     const { result } = renderHook(() => useAccountInsert(), {
       wrapper: createWrapper(queryClient),
@@ -230,9 +238,9 @@ describe("useAccountInsert", () => {
     };
 
     // Mock the fetch call to return a non-JSON response
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response("Server error", { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response("Server error", { status: 500 }));
 
     const { result } = renderHook(() => useAccountInsert(), {
       wrapper: createWrapper(queryClient),
@@ -265,9 +273,9 @@ describe("useAccountInsert", () => {
     };
 
     // Mock the fetch call to return 204 no content
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     const { result } = renderHook(() => useAccountInsert(), {
       wrapper: createWrapper(queryClient),

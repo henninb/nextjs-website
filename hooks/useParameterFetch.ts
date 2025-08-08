@@ -5,18 +5,15 @@ import { dummyParameters } from "../data/dummyParameters";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
   try {
-    const response = await fetch(
-      "/api/parameter/select/active",
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          //Authorization: basicAuth(),
-        },
+    const response = await fetch("/api/parameter/select/active", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        //Authorization: basicAuth(),
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 404) {

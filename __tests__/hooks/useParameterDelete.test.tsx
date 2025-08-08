@@ -58,9 +58,9 @@ describe("useParameterDelete", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     // Set initial cache data
     queryClient.setQueryData(["parameter"], [mockParameter]);
@@ -96,9 +96,14 @@ describe("useParameterDelete", () => {
     };
 
     // Mock the fetch call to return an error response
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ response: "Cannot delete this parameter" }), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ response: "Cannot delete this parameter" }),
+          { status: 400 },
+        ),
+      );
 
     // Render the hook
     const { result } = renderHook(() => useParameterDelete(), {
@@ -135,9 +140,13 @@ describe("useParameterDelete", () => {
     };
 
     // Mock the fetch call to return a network error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Network error" }), { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Network error" }), {
+          status: 500,
+        }),
+      );
 
     // Render the hook
     const { result } = renderHook(() => useParameterDelete(), {

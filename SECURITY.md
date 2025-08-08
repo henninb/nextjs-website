@@ -43,17 +43,17 @@ const secureId = await generateSecureUUID();
 
 ```
 default-src 'self';
-script-src 'self' 'unsafe-inline' 'unsafe-eval' 
-  https://finance.bhenning.com 
-  https://client.px-cloud.net 
+script-src 'self' 'unsafe-inline' 'unsafe-eval'
+  https://finance.bhenning.com
+  https://client.px-cloud.net
   https://henninb.github.io
   https://statsapi.mlb.com
   https://api.weather.com;
-style-src 'self' 'unsafe-inline' 
-  https://fonts.googleapis.com 
+style-src 'self' 'unsafe-inline'
+  https://fonts.googleapis.com
   https://cdnjs.cloudflare.com;
-font-src 'self' 
-  https://fonts.gstatic.com 
+font-src 'self'
+  https://fonts.gstatic.com
   https://cdnjs.cloudflare.com;
 object-src 'none';
 frame-ancestors 'none';

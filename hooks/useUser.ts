@@ -9,10 +9,7 @@ const fetcher = (url: string) =>
   });
 
 export function useUser() {
-  const { data, error } = useSWR(
-    "/api/me",
-    fetcher,
-  );
+  const { data, error } = useSWR("/api/me", fetcher);
   return {
     user: data,
     isLoading: !error && !data,

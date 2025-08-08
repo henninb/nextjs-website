@@ -52,9 +52,11 @@ describe("useAccountFetch", () => {
 
     // Mock the global fetch function
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockAccounts), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockAccounts), { status: 200 }),
+      );
 
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),
@@ -75,9 +77,11 @@ describe("useAccountFetch", () => {
 
     // Mock the global fetch function to return 404
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Not found" }), { status: 404 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Not found" }), { status: 404 }),
+      );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -103,9 +107,13 @@ describe("useAccountFetch", () => {
 
     // Mock the global fetch function to return 500 error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Internal server error" }), {
+          status: 500,
+        }),
+      );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -131,9 +139,9 @@ describe("useAccountFetch", () => {
 
     // Mock the global fetch function to return 204
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),
@@ -152,9 +160,9 @@ describe("useAccountFetch", () => {
 
     // Mock the global fetch function to throw an error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockRejectedValueOnce(
-      new Error("Network failure")
-    );
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("Network failure"));
 
     const consoleSpy = jest.spyOn(console, "log");
 

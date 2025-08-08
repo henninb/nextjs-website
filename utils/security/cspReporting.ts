@@ -17,7 +17,7 @@ export interface CSPViolation {
 }
 
 export interface CSPViolationReport {
-  'csp-report': CSPViolation;
+  "csp-report": CSPViolation;
 }
 
 /**
@@ -41,8 +41,8 @@ export class CSPManager {
       if (firstKey) this.violations.delete(firstKey);
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('🛡️ CSP Violation:', {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("🛡️ CSP Violation:", {
         directive: violation.violatedDirective,
         blockedURI: violation.blockedURI,
         documentURI: violation.documentURI,
@@ -54,13 +54,17 @@ export class CSPManager {
   /**
    * Get common CSP violations for policy updates
    */
-  static getCommonViolations(): Array<{ pattern: string; count: number; suggestion: string }> {
+  static getCommonViolations(): Array<{
+    pattern: string;
+    count: number;
+    suggestion: string;
+  }> {
     const sorted = Array.from(this.violations.entries())
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10);
 
     return sorted.map(([pattern, count]) => {
-      const [directive, uri] = pattern.split(':');
+      const [directive, uri] = pattern.split(":");
       return {
         pattern,
         count,
@@ -74,17 +78,17 @@ export class CSPManager {
    */
   private static getSuggestion(directive: string, uri: string): string {
     const domain = this.extractDomain(uri);
-    
+
     switch (directive) {
-      case 'script-src':
+      case "script-src":
         return `Add "https://${domain}" to script-src directive`;
-      case 'style-src':
+      case "style-src":
         return `Add "https://${domain}" to style-src directive`;
-      case 'font-src':
+      case "font-src":
         return `Add "https://${domain}" to font-src directive`;
-      case 'img-src':
+      case "img-src":
         return `Add "https://${domain}" to img-src directive`;
-      case 'connect-src':
+      case "connect-src":
         return `Add "https://${domain}" to connect-src directive`;
       default:
         return `Add "https://${domain}" to ${directive} directive`;
@@ -110,14 +114,14 @@ export class CSPManager {
    */
   static generatePolicyUpdate(): string {
     const violations = this.getCommonViolations();
-    
+
     if (violations.length === 0) {
-      return 'No CSP violations detected - current policy looks good!';
+      return "No CSP violations detected - current policy looks good!";
     }
 
     const suggestions = violations
-      .map(v => `// ${v.suggestion} (${v.count} violations)`)
-      .join('\n');
+      .map((v) => `// ${v.suggestion} (${v.count} violations)`)
+      .join("\n");
 
     return `CSP Policy Update Suggestions:\n\n${suggestions}`;
   }
@@ -127,71 +131,78 @@ export class CSPManager {
    */
   static shouldTrustDomain(domain: string): boolean {
     const trustedDomains = [
-      'fonts.googleapis.com',
-      'fonts.gstatic.com',
-      'cdnjs.cloudflare.com',
-      'api.weather.com',
-      'statsapi.mlb.com',
-      'fixturedownload.com',
-      'finance.bhenning.com',
-      'henninb.github.io'
+      "fonts.googleapis.com",
+      "fonts.gstatic.com",
+      "cdnjs.cloudflare.com",
+      "api.weather.com",
+      "statsapi.mlb.com",
+      "fixturedownload.com",
+      "finance.bhenning.com",
+      "henninb.github.io",
     ];
 
     const suspiciousDomains = [
-      'malicious-site.com',
-      'evil.com',
-      'phishing-site.net'
+      "malicious-site.com",
+      "evil.com",
+      "phishing-site.net",
     ];
 
     if (suspiciousDomains.includes(domain)) {
       return false;
     }
 
-    return trustedDomains.includes(domain) || 
-           domain.endsWith('.amazonaws.com') ||
-           domain.endsWith('.px-cloud.net');
+    return (
+      trustedDomains.includes(domain) ||
+      domain.endsWith(".amazonaws.com") ||
+      domain.endsWith(".px-cloud.net")
+    );
   }
 
   /**
    * Security assessment of blocked resources
    */
   static assessBlockedResource(uri: string): {
-    risk: 'low' | 'medium' | 'high';
+    risk: "low" | "medium" | "high";
     reason: string;
     recommendation: string;
   } {
     const domain = this.extractDomain(uri);
 
     // High risk indicators
-    if (uri.includes('eval') || uri.includes('inline') || uri.includes('javascript:')) {
+    if (
+      uri.includes("eval") ||
+      uri.includes("inline") ||
+      uri.includes("javascript:")
+    ) {
       return {
-        risk: 'high',
-        reason: 'Contains potentially dangerous code execution patterns',
-        recommendation: 'Do not add to CSP - review code for safer alternatives'
+        risk: "high",
+        reason: "Contains potentially dangerous code execution patterns",
+        recommendation:
+          "Do not add to CSP - review code for safer alternatives",
       };
     }
 
     // Medium risk indicators
-    if (!uri.startsWith('https://')) {
+    if (!uri.startsWith("https://")) {
       return {
-        risk: 'medium',
-        reason: 'Non-HTTPS resource could be intercepted',
-        recommendation: 'Use HTTPS version if available'
+        risk: "medium",
+        reason: "Non-HTTPS resource could be intercepted",
+        recommendation: "Use HTTPS version if available",
       };
     }
 
     if (!this.shouldTrustDomain(domain)) {
       return {
-        risk: 'medium',
-        reason: 'Domain not in trusted list',
-        recommendation: 'Verify domain legitimacy before adding to CSP'
+        risk: "medium",
+        reason: "Domain not in trusted list",
+        recommendation: "Verify domain legitimacy before adding to CSP",
       };
     }
 
     return {
-      risk: 'low',
-      reason: 'Trusted domain with secure connection',
-      recommendation: 'Safe to add to CSP if resource is needed'
+      risk: "low",
+      reason: "Trusted domain with secure connection",
+      recommendation: "Safe to add to CSP if resource is needed",
     };
   }
 }
@@ -199,8 +210,8 @@ export class CSPManager {
 /**
  * Development helper to monitor CSP violations in real-time
  */
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  document.addEventListener('securitypolicyviolation', (e) => {
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  document.addEventListener("securitypolicyviolation", (e) => {
     CSPManager.logViolation({
       documentURI: e.documentURI,
       referrer: e.referrer,

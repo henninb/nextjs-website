@@ -67,9 +67,11 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseCategory), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseCategory), { status: 200 }),
+      );
 
     // Set existing categories in cache
     const existingCategories: Category[] = [
@@ -119,9 +121,13 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call to return a 404 error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Category not found" }), { status: 404 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Category not found" }), {
+          status: 404,
+        }),
+      );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -157,9 +163,13 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call to return a 400 error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Bad Request" }), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Bad Request" }), {
+          status: 400,
+        }),
+      );
 
     const { result } = renderHook(() => useCategoryUpdate(), {
       wrapper: createWrapper(queryClient),
@@ -197,9 +207,9 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call to throw a network error
-    global.fetch = jest.fn().mockRejectedValueOnce(
-      new Error("Network failure")
-    );
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("Network failure"));
 
     const { result } = renderHook(() => useCategoryUpdate(), {
       wrapper: createWrapper(queryClient),
@@ -211,9 +221,7 @@ describe("useCategoryUpdate", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(result.current.error?.message).toBe(
-      "Network failure",
-    );
+    expect(result.current.error?.message).toBe("Network failure");
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining(
         "Error occurred during mutation: Network failure",
@@ -244,9 +252,11 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseCategory), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseCategory), { status: 200 }),
+      );
 
     // Don't set any initial cache data
 
@@ -286,9 +296,11 @@ describe("useCategoryUpdate", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseCategory), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseCategory), { status: 200 }),
+      );
 
     // Set cache with categories having same categoryId but different names
     const existingCategories: Category[] = [

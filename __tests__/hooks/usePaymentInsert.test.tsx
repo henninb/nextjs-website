@@ -61,9 +61,11 @@ describe("usePaymentInsert", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responsePayment), { status: 201 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responsePayment), { status: 201 }),
+      );
 
     // Set existing payments in cache
     const existingPayments: Payment[] = [
@@ -115,9 +117,11 @@ describe("usePaymentInsert", () => {
 
     // Mock the global fetch function
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responsePayment), { status: 201 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responsePayment), { status: 201 }),
+      );
 
     // Don't set any initial cache data - cache will be undefined
 
@@ -152,9 +156,13 @@ describe("usePaymentInsert", () => {
 
     // Mock the global fetch function to return 400 error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ response: "Invalid payment amount" }), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ response: "Invalid payment amount" }), {
+          status: 400,
+        }),
+      );
 
     const { result } = renderHook(() => usePaymentInsert(), {
       wrapper: createWrapper(queryClient),
@@ -188,9 +196,9 @@ describe("usePaymentInsert", () => {
 
     // Mock the global fetch function to return 400 with empty response
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({}), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 400 }));
 
     const { result } = renderHook(() => usePaymentInsert(), {
       wrapper: createWrapper(queryClient),
@@ -224,9 +232,9 @@ describe("usePaymentInsert", () => {
 
     // Mock the global fetch function to return non-JSON response
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response("Server error", { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response("Server error", { status: 500 }));
 
     const { result } = renderHook(() => usePaymentInsert(), {
       wrapper: createWrapper(queryClient),
@@ -261,9 +269,9 @@ describe("usePaymentInsert", () => {
 
     // Mock the global fetch function to return 204 no content
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     const { result } = renderHook(() => usePaymentInsert(), {
       wrapper: createWrapper(queryClient),

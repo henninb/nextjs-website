@@ -5,8 +5,7 @@ const insertPendingTransaction = async (
   pendingTransaction: PendingTransaction,
 ): Promise<PendingTransaction | null> => {
   try {
-    const endpoint =
-      "/api/pending/transaction/insert";
+    const endpoint = "/api/pending/transaction/insert";
     console.log("Sending data: " + JSON.stringify(pendingTransaction));
 
     const response = await fetch(endpoint, {

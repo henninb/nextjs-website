@@ -44,9 +44,11 @@ describe("useTotalsFetch", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockTotals), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockTotals), { status: 200 }),
+      );
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
@@ -63,9 +65,11 @@ describe("useTotalsFetch", () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to return a 404 error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Not found" }), { status: 404 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Not found" }), { status: 404 }),
+      );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -90,9 +94,13 @@ describe("useTotalsFetch", () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to return a 500 error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Internal server error" }), {
+          status: 500,
+        }),
+      );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -116,9 +124,9 @@ describe("useTotalsFetch", () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to throw a network error
-    global.fetch = jest.fn().mockRejectedValueOnce(
-      new Error("Network failure")
-    );
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("Network failure"));
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -142,9 +150,9 @@ describe("useTotalsFetch", () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to throw a persistent error
-    global.fetch = jest.fn().mockRejectedValueOnce(
-      new Error("Persistent error")
-    );
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("Persistent error"));
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -178,7 +186,9 @@ describe("useTotalsFetch", () => {
     // Mock the fetch call and capture headers - note: with direct fetch mock we can't capture headers the same way
     global.fetch = jest.fn().mockImplementation((url, options) => {
       capturedHeaders = options?.headers || {};
-      return Promise.resolve(new Response(JSON.stringify(mockTotals), { status: 200 }));
+      return Promise.resolve(
+        new Response(JSON.stringify(mockTotals), { status: 200 }),
+      );
     });
 
     const { result } = renderHook(() => useTotalsFetch(), {
@@ -203,9 +213,11 @@ describe("useTotalsFetch", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockTotals), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockTotals), { status: 200 }),
+      );
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
@@ -222,9 +234,13 @@ describe("useTotalsFetch", () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to return a 401 error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Unauthorized" }), {
+          status: 401,
+        }),
+      );
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),

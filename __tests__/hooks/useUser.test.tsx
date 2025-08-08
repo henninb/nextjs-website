@@ -4,16 +4,18 @@ import { SWRConfig } from "swr";
 import { useUser } from "../../hooks/useUser";
 
 // SWR provider for testing
-const createWrapper = () => ({ children }: { children: React.ReactNode }) => (
-  <SWRConfig 
-    value={{
-      dedupingInterval: 0,
-      provider: () => new Map(),
-    }}
-  >
-    {children}
-  </SWRConfig>
-);
+const createWrapper =
+  () =>
+  ({ children }: { children: React.ReactNode }) => (
+    <SWRConfig
+      value={{
+        dedupingInterval: 0,
+        provider: () => new Map(),
+      }}
+    >
+      {children}
+    </SWRConfig>
+  );
 
 describe("useUser", () => {
   it("should fetch user data successfully", async () => {
@@ -26,12 +28,14 @@ describe("useUser", () => {
 
     // Mock the global fetch function
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockUser), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockUser), { status: 200 }),
+      );
 
-    const { result } = renderHook(() => useUser(), { 
-      wrapper: createWrapper() 
+    const { result } = renderHook(() => useUser(), {
+      wrapper: createWrapper(),
     });
 
     // Initially loading
@@ -58,19 +62,19 @@ describe("useUser", () => {
     global.fetch = jest.fn().mockImplementation((url, options) => {
       fetchCall = { url, options };
       return Promise.resolve(
-        new Response(JSON.stringify(mockUser), { status: 200 })
+        new Response(JSON.stringify(mockUser), { status: 200 }),
       );
     });
 
-    const { result } = renderHook(() => useUser(), { 
-      wrapper: createWrapper() 
+    const { result } = renderHook(() => useUser(), {
+      wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Verify the request was made with credentials: 'include'
     expect(result.current.user).toBeDefined();
-    expect(fetchCall.options.credentials).toBe('include');
+    expect(fetchCall.options.credentials).toBe("include");
 
     // Restore original fetch
     global.fetch = originalFetch;

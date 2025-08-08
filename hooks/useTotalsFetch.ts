@@ -5,17 +5,14 @@ import { dummyTotals } from "../data/dummyTotals";
 
 const fetchTotals = async (): Promise<Totals> => {
   try {
-    const response = await fetch(
-      "/api/account/totals",
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+    const response = await fetch("/api/account/totals", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
-    );
+    });
 
     if (!response.ok) {
       if (response.status === 404) {

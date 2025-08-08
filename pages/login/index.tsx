@@ -85,12 +85,9 @@ export default function Login() {
       await userLogin(data);
       // After successful login, fetch user data to get proper user information
       try {
-        const userResponse = await fetch(
-          "/api/me",
-          {
-            credentials: "include",
-          },
-        );
+        const userResponse = await fetch("/api/me", {
+          credentials: "include",
+        });
         if (userResponse.ok) {
           const userData = await userResponse.json();
           login(userData);

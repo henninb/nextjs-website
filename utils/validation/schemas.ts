@@ -227,11 +227,13 @@ export function validateSchema<T>(
       };
     }
 
-    const errors: ValidationError[] = [{
-      field: "validation",
-      message: result.error?.message || "Unknown validation error",
-      code: "VALIDATION_ERROR",
-    }];
+    const errors: ValidationError[] = [
+      {
+        field: "validation",
+        message: result.error?.message || "Unknown validation error",
+        code: "VALIDATION_ERROR",
+      },
+    ];
 
     return {
       success: false,

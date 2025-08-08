@@ -41,15 +41,12 @@ export default function Register() {
 
     try {
       console.log(`reg=${JSON.stringify(registrationPayload)}`);
-      const response = await fetch(
-        "/api/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(registrationPayload),
-          credentials: "include",
-        },
-      );
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registrationPayload),
+        credentials: "include",
+      });
 
       if (response.status === 201) {
         router.push("/login");

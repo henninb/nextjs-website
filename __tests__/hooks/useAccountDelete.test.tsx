@@ -65,9 +65,9 @@ describe("useAccountDelete", () => {
     };
 
     // Mock the fetch call directly for this test
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     queryClient.setQueryData(["account"], [mockAccount]);
 
@@ -102,9 +102,14 @@ describe("useAccountDelete", () => {
     };
 
     // Mock the fetch call to return an error response
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ response: "Cannot delete this account" }), { status: 400 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ response: "Cannot delete this account" }),
+          { status: 400 },
+        ),
+      );
 
     // Render the hook
     const { result } = renderHook(() => useAccountDelete(), {
@@ -143,9 +148,13 @@ describe("useAccountDelete", () => {
     };
 
     // Mock the fetch call to return a network error
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Network error" }), { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Network error" }), {
+          status: 500,
+        }),
+      );
 
     // Render the hook
     const { result } = renderHook(() => useAccountDelete(), {

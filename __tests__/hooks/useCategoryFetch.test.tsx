@@ -50,9 +50,11 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockCategories), { status: 200 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockCategories), { status: 200 }),
+      );
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
@@ -73,9 +75,11 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 404
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Not found" }), { status: 404 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Not found" }), { status: 404 }),
+      );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -102,9 +106,13 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 500 error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Internal server error" }), {
+          status: 500,
+        }),
+      );
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -130,9 +138,9 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to throw network error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockRejectedValueOnce(
-      new Error("Network failure")
-    );
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("Network failure"));
 
     const consoleSpy = jest.spyOn(console, "log");
 
@@ -158,7 +166,8 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to throw persistent error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn()
+    global.fetch = jest
+      .fn()
       .mockRejectedValueOnce(new Error("Persistent network error"))
       .mockRejectedValueOnce(new Error("Persistent network error"))
       .mockRejectedValueOnce(new Error("Persistent network error"));
@@ -199,7 +208,9 @@ describe("useCategoryFetch", () => {
     const originalFetch = global.fetch;
     global.fetch = jest.fn().mockImplementation((url, options) => {
       capturedHeaders = options?.headers || {};
-      return Promise.resolve(new Response(JSON.stringify(mockCategories), { status: 200 }));
+      return Promise.resolve(
+        new Response(JSON.stringify(mockCategories), { status: 200 }),
+      );
     });
 
     const { result } = renderHook(() => useCategoryFetch(), {
@@ -220,9 +231,13 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 401 error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "Unauthorized" }), {
+          status: 401,
+        }),
+      );
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),

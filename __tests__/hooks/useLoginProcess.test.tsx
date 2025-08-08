@@ -60,9 +60,9 @@ describe("useLogin", () => {
 
     // Mock the global fetch function to return 204 success
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),
@@ -101,9 +101,14 @@ describe("useLogin", () => {
 
     // Mock the global fetch function to return 401 with error message
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ error: "Invalid username or password" }), { status: 401 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ error: "Invalid username or password" }),
+          { status: 401 },
+        ),
+      );
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),
@@ -138,9 +143,9 @@ describe("useLogin", () => {
 
     // Mock the global fetch function to return 401 without error message
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({}), { status: 401 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 401 }));
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),
@@ -175,9 +180,9 @@ describe("useLogin", () => {
 
     // Mock the global fetch function to throw network error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockRejectedValueOnce(
-      new Error("Network failure")
-    );
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("Network failure"));
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),
@@ -212,9 +217,13 @@ describe("useLogin", () => {
 
     // Mock the global fetch function to return 500 with error message
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "Internal server error" }), {
+          status: 500,
+        }),
+      );
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),
@@ -278,9 +287,11 @@ describe("useLogin", () => {
 
     // Mock the global fetch function - first attempt fails
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify({ error: "First error" }), { status: 401 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "First error" }), { status: 401 }),
+      );
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(queryClient),
@@ -294,9 +305,9 @@ describe("useLogin", () => {
     expect(result.current.errorMessage).toBe("First error");
 
     // Second attempt - mock fetch for success
-    global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(null, { status: 204 })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     result.current.loginMutation.mutate(loginPayload);
 
