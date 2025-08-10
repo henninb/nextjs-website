@@ -1,21 +1,8 @@
 import React from "react";
-import dynamic from "next/dynamic";
-import { Box, CircularProgress, Typography, Paper, Chip } from "@mui/material";
+import { Box, Typography, Paper, Chip } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import SportsIcon from "@mui/icons-material/Sports";
-
-// Dynamically import DataGrid to reduce initial bundle size
-const DataGrid = dynamic(
-  () => import("@mui/x-data-grid").then((mod) => ({ default: mod.DataGrid })),
-  {
-    loading: () => (
-      <Box display="flex" justifyContent="center" p={4}>
-        <CircularProgress sx={{ color: "#1976d2" }} />
-      </Box>
-    ),
-    ssr: false, // DataGrid has issues with SSR
-  },
-);
+import { DataGrid } from "@mui/x-data-grid";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",

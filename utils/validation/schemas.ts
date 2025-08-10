@@ -66,7 +66,7 @@ const notes = z
   .optional()
   .default("");
 
-// Enum validations  
+// Enum validations
 const accountTypeEnum = z.enum(["credit", "debit"], {
   message: "Account type must be either credit or debit",
 });

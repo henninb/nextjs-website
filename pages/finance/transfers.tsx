@@ -27,6 +27,7 @@ import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import { dummyTransfers } from "../../data/dummyTransfers";
+import { generateSecureUUID } from "../../utils/security/secureUUID";
 import {
   currencyFormat,
   normalizeTransactionDate,
@@ -228,10 +229,15 @@ export default function Transfers() {
 
   const handleAddRow = async (newData: Transfer) => {
     try {
+      const [guidDestination, guidSource] = await Promise.all([
+        generateSecureUUID(),
+        generateSecureUUID(),
+      ]);
+
       const insertThisValue = {
         ...newData,
-        guidDestination: crypto.randomUUID(),
-        guidSource: crypto.randomUUID(),
+        guidDestination,
+        guidSource,
       };
       console.log(`Transfer Insert: ${JSON.stringify(insertThisValue)}`);
       await insertTransfer({ payload: insertThisValue });

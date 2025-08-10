@@ -24,14 +24,34 @@ if (process.env.ANALYZE === "true") {
 const nextConfig = {
   reactStrictMode: true,
 
+  // Configure allowed development origins to prevent cross-origin warnings
+  allowedDevOrigins: [
+    "dev.finance.bhenning.com",
+    "localhost:3000",
+    "127.0.0.1:3000",
+  ],
+
   // Add transpilePackages to handle MUI X components
   transpilePackages: ["@mui/x-data-grid"],
+
+  async redirects() {
+    return [
+      {
+        source: "/users/sign_in",
+        destination: "/login",
+        permanent: false,
+      },
+    ];
+  },
 
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "https://finance.bhenning.com/api/:path*",
+        destination:
+          process.env.NODE_ENV === "development"
+            ? "http://192.168.10.10:8443/api/:path*"
+            : "https://finance.bhenning.com/api/:path*",
         basePath: false,
       },
     ];
@@ -55,13 +75,13 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               process.env.NODE_ENV === "development"
-                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https:"
+                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://dev.finance.bhenning.com:3000 http: https:"
                 : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://finance.bhenning.com https://vercel.bhenning.com https://statsapi.mlb.com https://api.weather.com https://fixturedownload.com https://f5x3msep1f.execute-api.us-east-1.amazonaws.com https://client.px-cloud.net https://henninb.github.io",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
               "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "img-src 'self' data: https:",
               process.env.NODE_ENV === "development"
-                ? "connect-src 'self' http: https: ws:"
+                ? "connect-src 'self' http://dev.finance.bhenning.com:3000 http: https: ws:"
                 : "connect-src 'self' https://finance.bhenning.com https://vercel.bhenning.com https://statsapi.mlb.com https://api.weather.com https://fixturedownload.com https://f5x3msep1f.execute-api.us-east-1.amazonaws.com https://client.px-cloud.net https://tzm.px-cloud.net https://collector-pxjj0cytn9.px-cloud.net https://collector-pxjj0cytn9.px-cdn.net https://collector-pxjj0cytn9.pxchk.net https://b.px-cdn.net",
               "object-src 'none'",
               "base-uri 'self'",

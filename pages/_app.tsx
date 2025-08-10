@@ -23,11 +23,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   );
 
   useEffect(() => {
-    // Disable Next.js development overlay and turbopack widgets
-    if (typeof window !== "undefined") {
-      (window as any).__NEXT_DEV_OVERLAY = false;
-      (window as any).__turbopack_dev_overlay = false;
-      (window as any).__TURBOPACK_DEV_OVERLAY_ENABLED__ = false;
+    // Only disable overlay for build errors, keep HMR functionality
+    if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+      // Disable only the error overlay, not the entire HMR system
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        // Filter out specific HMR warnings that aren't critical
+        if (args[0] && typeof args[0] === 'string' && 
+            args[0].includes('[HMR] Invalid message')) {
+          return; // Suppress this specific warning
+        }
+        originalConsoleError.apply(console, args);
+      };
     }
 
     (window as any)._pxCustomAbrDomains = [

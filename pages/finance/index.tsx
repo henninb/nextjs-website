@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { GridColDef } from "@mui/x-data-grid";
-import DataGrid from "../../components/DataGridDynamic";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,

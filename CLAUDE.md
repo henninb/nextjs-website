@@ -85,3 +85,8 @@ MSW is fully configured for API mocking with worker in public/ directory.
 - **React**: Version 19.1.1
 - **Next.js**: Version 15.4.5
 - **TypeScript**: Configured with relaxed strict mode
+
+## Middleware Configuration
+
+- **Runtime**: Keep `experimental-edge` runtime in middleware.js - DO NOT change to standard `edge` runtime
+- The experimental-edge runtime is intentionally used for specific functionality requirements

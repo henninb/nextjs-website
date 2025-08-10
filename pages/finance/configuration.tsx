@@ -22,6 +22,7 @@ import Parameter from "../../model/Parameter";
 import useParameterUpdate from "../../hooks/useParameterUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import { useAuth } from "../../components/AuthProvider";
+import { generateSecureUUID } from "../../utils/security/secureUUID";
 
 export default function Configuration() {
   const [message, setMessage] = useState("");
@@ -159,10 +160,9 @@ export default function Configuration() {
   const handleAddRow = async (newData: Parameter) => {
     try {
       await insertParameter({ payload: newData });
+      const secureId = await generateSecureUUID();
       setParameterData((prev: any) =>
-        prev?.parameterId
-          ? prev
-          : { ...newData, parameterId: crypto.randomUUID() },
+        prev?.parameterId ? prev : { ...newData, parameterId: secureId },
       );
       setShowModalAdd(false);
       setMessage("Configuration added successfully.");
@@ -174,7 +174,8 @@ export default function Configuration() {
         !navigator.onLine ||
         (error.message && error.message.includes("Failed to fetch"))
       ) {
-        const newOfflineRow = { ...newData, parameterId: crypto.randomUUID() };
+        const offlineId = await generateSecureUUID();
+        const newOfflineRow = { ...newData, parameterId: offlineId };
         const updatedOfflineRows = [...offlineRows, newOfflineRow];
 
         setOfflineRows(updatedOfflineRows as [Parameter]); // 🔹 Ensure UI updates immediately
@@ -257,7 +258,9 @@ export default function Configuration() {
                 <DataGrid
                   rows={[...(fetchedParameters || []), ...offlineRows]}
                   columns={columns}
-                  getRowId={(row) => row.parameterId || crypto.randomUUID()}
+                  getRowId={(row) =>
+                    row.parameterId || `fallback-${Date.now()}-${Math.random()}`
+                  }
                   checkboxSelection={false}
                   rowSelection={false}
                   pagination

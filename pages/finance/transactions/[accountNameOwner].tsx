@@ -64,6 +64,7 @@ import {
 import { useAuth } from "../../../components/AuthProvider";
 import { useUI } from "../../../contexts/UIContext";
 import { useTheme } from "@mui/material/styles";
+import { generateSecureUUID } from "../../../utils/security/secureUUID";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -123,31 +124,28 @@ export default function TransactionsByAccount() {
     error: errorAccounts,
   } = useAccountFetch();
 
-  const initialTransactionData: Transaction = useMemo(
-    () => {
-      // Determine accountType from the current account
-      const currentAccount = fetchedAccounts?.find(
-        account => account.accountNameOwner === validAccountNameOwner
-      );
-      const accountType = currentAccount?.accountType || "debit" as AccountType;
-      
-      return {
-        transactionDate: new Date(),
-        accountNameOwner: validAccountNameOwner,
-        reoccurringType: "onetime" as ReoccurringType,
-        amount: 0.0,
-        transactionState: "outstanding" as TransactionState,
-        transactionType: "expense" as TransactionType, // Default to expense for new transactions
-        guid: crypto.randomUUID(),
-        description: "",
-        category: "",
-        accountType: accountType,
-        activeStatus: true,
-        notes: "",
-      };
-    },
-    [validAccountNameOwner, fetchedAccounts],
-  );
+  const initialTransactionData: Transaction = useMemo(() => {
+    // Determine accountType from the current account
+    const currentAccount = fetchedAccounts?.find(
+      (account) => account.accountNameOwner === validAccountNameOwner,
+    );
+    const accountType = currentAccount?.accountType || ("debit" as AccountType);
+
+    return {
+      transactionDate: new Date(),
+      accountNameOwner: validAccountNameOwner,
+      reoccurringType: "onetime" as ReoccurringType,
+      amount: 0.0,
+      transactionState: "outstanding" as TransactionState,
+      transactionType: "expense" as TransactionType, // Default to expense for new transactions
+      guid: "pending-uuid", // Will be replaced with server-generated UUID
+      description: "",
+      category: "",
+      accountType: accountType,
+      activeStatus: true,
+      notes: "",
+    };
+  }, [validAccountNameOwner, fetchedAccounts]);
 
   const [transactionData, setTransactionData] = useState<Transaction>(
     initialTransactionData,
@@ -157,10 +155,10 @@ export default function TransactionsByAccount() {
   useEffect(() => {
     if (fetchedAccounts && validAccountNameOwner) {
       const currentAccount = fetchedAccounts.find(
-        account => account.accountNameOwner === validAccountNameOwner
+        (account) => account.accountNameOwner === validAccountNameOwner,
       );
       if (currentAccount) {
-        setTransactionData(prev => ({
+        setTransactionData((prev) => ({
           ...prev,
           accountType: currentAccount.accountType,
           accountNameOwner: validAccountNameOwner,

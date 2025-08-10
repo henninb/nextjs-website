@@ -27,6 +27,7 @@ import usePendingTransactionDelete from "../../../../hooks/usePendingTransaction
 import PendingTransaction from "../../../../model/PendingTransaction";
 import usePendingTransactionUpdate from "../../../../hooks/usePendingTransactionUpdate";
 import { useAuth } from "../../../../components/AuthProvider";
+import { generateSecureUUID } from "../../../../utils/security/secureUUID";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -73,20 +74,24 @@ export default function TransactionImporter() {
 
   useEffect(() => {
     if (isPendingTransactionsLoaded && fetchedPendingTransactions) {
-      const transactionsWithGUID = fetchedPendingTransactions.map(
-        (transaction) => ({
-          ...transaction,
-          guid: crypto.randomUUID(),
-          reoccurringType: "onetime" as ReoccurringType,
-          transactionState: "outstanding" as TransactionState,
-          transactionType: "undefined" as TransactionType,
-          category: "",
-          accountType: "undefined" as AccountType,
-          activeStatus: true,
-          notes: "imported",
-        }),
-      );
-      setTransactions(transactionsWithGUID);
+      const generateTransactionsWithGUID = async () => {
+        const transactionsWithGUID = await Promise.all(
+          fetchedPendingTransactions.map(async (transaction) => ({
+            ...transaction,
+            guid: await generateSecureUUID(),
+            reoccurringType: "onetime" as ReoccurringType,
+            transactionState: "outstanding" as TransactionState,
+            transactionType: "undefined" as TransactionType,
+            category: "",
+            accountType: "undefined" as AccountType,
+            activeStatus: true,
+            notes: "imported",
+          })),
+        );
+        setTransactions(transactionsWithGUID);
+      };
+
+      generateTransactionsWithGUID();
     }
   }, [isPendingTransactionsLoaded, fetchedPendingTransactions]);
 
@@ -184,7 +189,7 @@ export default function TransactionImporter() {
           amount: parseFloat(parts[3]),
           transactionState: "outstanding",
           transactionType: "undefined",
-          guid: crypto.randomUUID(),
+          guid: "pending-uuid", // Will be replaced with server-generated UUID during insertion
           description: parts[2],
           category: "",
           accountType: "undefined",

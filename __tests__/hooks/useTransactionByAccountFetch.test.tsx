@@ -53,7 +53,7 @@ describe("useTransactionByAccountFetch", () => {
         transactionDate: new Date("2024-01-01"),
         description: "Test transaction",
         category: "Test category",
-        amount: 100.00,
+        amount: 100.0,
         transactionState: "cleared",
         activeStatus: true,
         reoccurringType: "onetime",
@@ -64,14 +64,14 @@ describe("useTransactionByAccountFetch", () => {
     server.use(
       http.get("/api/transaction/account/select/test-account", () => {
         return HttpResponse.json(mockTransactions);
-      })
+      }),
     );
 
     const { result } = renderHook(
       () => useTransactionByAccountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -86,14 +86,14 @@ describe("useTransactionByAccountFetch", () => {
     server.use(
       http.get("/api/transaction/account/select/test-account", () => {
         return HttpResponse.json({ message: "Error" }, { status: 500 });
-      })
+      }),
     );
 
     const { result } = renderHook(
       () => useTransactionByAccountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -118,7 +118,7 @@ describe("useTransactionByAccountFetch", () => {
       () => useTransactionByAccountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     expect(result.current.isPending).toBe(true);

@@ -43,23 +43,23 @@ describe("useTotalsPerAccountFetch", () => {
   it("should fetch totals per account successfully", async () => {
     const queryClient = createTestQueryClient();
     const mockTotals: Totals = {
-      totalsOutstanding: 100.00,
-      totalsFuture: 200.00,
-      totalsCleared: 300.00,
-      totals: 600.00,
+      totalsOutstanding: 100.0,
+      totalsFuture: 200.0,
+      totalsCleared: 300.0,
+      totals: 600.0,
     };
 
     server.use(
       http.get("/api/transaction/account/totals/test-account", () => {
         return HttpResponse.json(mockTotals);
-      })
+      }),
     );
 
     const { result } = renderHook(
       () => useTotalsPerAccountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -77,14 +77,14 @@ describe("useTotalsPerAccountFetch", () => {
     server.use(
       http.get("/api/transaction/account/totals/test-account", () => {
         return HttpResponse.json({ message: "Error" }, { status: 500 });
-      })
+      }),
     );
 
     const { result } = renderHook(
       () => useTotalsPerAccountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -103,7 +103,7 @@ describe("useTotalsPerAccountFetch", () => {
       () => useTotalsPerAccountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     expect(result.current.isPending).toBe(true);

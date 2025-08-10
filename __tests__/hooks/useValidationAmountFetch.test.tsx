@@ -45,7 +45,7 @@ describe("useValidationAmountFetch", () => {
     const mockValidationAmount: ValidationAmount = {
       validationId: 1,
       activeStatus: true,
-      amount: 100.00,
+      amount: 100.0,
       transactionState: "cleared",
       validationDate: new Date("2024-01-01"),
     };
@@ -53,14 +53,14 @@ describe("useValidationAmountFetch", () => {
     server.use(
       http.get("/api/validation/amount/select/test-account/cleared", () => {
         return HttpResponse.json(mockValidationAmount);
-      })
+      }),
     );
 
     const { result } = renderHook(
       () => useValidationAmountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -77,14 +77,14 @@ describe("useValidationAmountFetch", () => {
     server.use(
       http.get("/api/validation/amount/select/test-account/cleared", () => {
         return HttpResponse.json({ message: "Error" }, { status: 500 });
-      })
+      }),
     );
 
     const { result } = renderHook(
       () => useValidationAmountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -98,7 +98,7 @@ describe("useValidationAmountFetch", () => {
       () => useValidationAmountFetch("test-account"),
       {
         wrapper: createWrapper(queryClient),
-      }
+      },
     );
 
     expect(result.current.isPending).toBe(true);
