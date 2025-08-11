@@ -350,12 +350,26 @@ export default function TransactionsByAccount() {
 
   const handleCloneRow = async (): Promise<void> => {
     try {
+      // Generate a secure UUID from the server before cloning
+      const uuidResponse = await fetch('/api/uuid/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!uuidResponse.ok) {
+        throw new Error(`UUID generation failed: ${uuidResponse.status}`);
+      }
+
+      const { uuid } = await uuidResponse.json();
+
       const result = await insertTransaction({
         accountNameOwner: validAccountNameOwner,
-        //newRow: selectedTransaction,
         newRow: {
           ...selectedTransaction,
           accountNameOwner: validAccountNameOwner,
+          guid: uuid, // Use the server-generated UUID
         },
         isFutureTransaction: true,
         isImportTransaction: false,
@@ -371,10 +385,30 @@ export default function TransactionsByAccount() {
 
   const handleAddRow = async (newData: Transaction): Promise<Transaction> => {
     try {
+      // Generate a secure UUID from the server before inserting
+      const uuidResponse = await fetch('/api/uuid/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!uuidResponse.ok) {
+        throw new Error(`UUID generation failed: ${uuidResponse.status}`);
+      }
+
+      const { uuid } = await uuidResponse.json();
+      
+      // Replace the pending UUID with the server-generated one
+      const transactionWithUuid = {
+        ...newData,
+        accountNameOwner: validAccountNameOwner,
+        guid: uuid,
+      };
+
       const result = await insertTransaction({
         accountNameOwner: validAccountNameOwner,
-        //newRow: newData,
-        newRow: { ...newData, accountNameOwner: validAccountNameOwner },
+        newRow: transactionWithUuid,
         isFutureTransaction: false,
         isImportTransaction: false,
       });
