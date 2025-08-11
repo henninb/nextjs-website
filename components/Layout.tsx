@@ -42,6 +42,7 @@ import HowToRegIcon from "@mui/icons-material/HowToReg";
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArticleIcon from "@mui/icons-material/Article";
+import RestoreIcon from "@mui/icons-material/Restore";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -78,6 +79,11 @@ const financeLinks = [
     text: "Import",
     href: "/finance/transactions/import",
     icon: <ImportExportIcon />,
+  },
+  {
+    text: "Backup/Restore",
+    href: "/finance/backup",
+    icon: <RestoreIcon />,
   },
 ];
 

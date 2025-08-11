@@ -85,14 +85,14 @@ export default function Login() {
       await userLogin(data);
       // After successful login, fetch user data to get proper user information
       // Add a small delay to ensure cookie is properly set by the browser
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       // Debug: Check if the token cookie was set
       const tokenCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('token='));
-      console.log('Token cookie after login:', tokenCookie);
-      
+        .split("; ")
+        .find((row) => row.startsWith("token="));
+      console.log("Token cookie after login:", tokenCookie);
+
       try {
         const userResponse = await fetch("/api/me", {
           credentials: "include",

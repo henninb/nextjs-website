@@ -24,13 +24,19 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     // Only disable overlay for build errors, keep HMR functionality
-    if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV === "development"
+    ) {
       // Disable only the error overlay, not the entire HMR system
       const originalConsoleError = console.error;
       console.error = (...args) => {
         // Filter out specific HMR warnings that aren't critical
-        if (args[0] && typeof args[0] === 'string' && 
-            args[0].includes('[HMR] Invalid message')) {
+        if (
+          args[0] &&
+          typeof args[0] === "string" &&
+          args[0].includes("[HMR] Invalid message")
+        ) {
           return; // Suppress this specific warning
         }
         originalConsoleError.apply(console, args);

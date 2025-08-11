@@ -16,10 +16,14 @@ class MyDocument extends Document {
             async
           ></script>
 
-          <script src="https://henninb.github.io/human-challenge/human-challenge.js"></script>
+          <script
+            src="https://henninb.github.io/human-challenge/human-challenge.js"
+            async
+          ></script>
           <script
             type="applicatoin/javascript"
             src="https://henninb.github.io/human-challenge/hello.js"
+            async
           ></script>
 
           <link
@@ -31,7 +35,6 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/icon?family=Material+Icons"
           />
 
-          <script>console.log('printing');</script>
         </Head>
         <body>
           <Main />
