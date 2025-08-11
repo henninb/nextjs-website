@@ -132,7 +132,7 @@ describe("BackupRestore", () => {
         payload: backupData.accounts[0],
       });
       expect(mockInsertCategory).toHaveBeenCalledWith({
-        payload: backupData.categories[0],
+        category: backupData.categories[0],
       });
       expect(screen.getByText("Restore successful!")).toBeInTheDocument();
     });

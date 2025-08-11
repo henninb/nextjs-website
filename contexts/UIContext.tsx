@@ -41,12 +41,22 @@ export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
   const toggleUIMode = () => {
     const newMode: UIMode = uiMode === "original" ? "modern" : "original";
     setUIMode(newMode);
-    localStorage.setItem("financeUIMode", newMode);
+    try {
+      localStorage.setItem("financeUIMode", newMode);
+    } catch (error) {
+      // Handle localStorage errors gracefully (e.g., quota exceeded)
+      console.warn("Failed to save UI mode to localStorage:", error);
+    }
   };
 
   const handleSetUIMode = (mode: UIMode) => {
     setUIMode(mode);
-    localStorage.setItem("financeUIMode", mode);
+    try {
+      localStorage.setItem("financeUIMode", mode);
+    } catch (error) {
+      // Handle localStorage errors gracefully (e.g., quota exceeded)
+      console.warn("Failed to save UI mode to localStorage:", error);
+    }
   };
 
   return (

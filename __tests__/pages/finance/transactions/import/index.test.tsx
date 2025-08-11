@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TransactionImporter from "../../../../../pages/finance/transactions/import/index";
 import * as usePendingTransactions from "../../../../../hooks/usePendingTransactionFetch";
@@ -92,12 +92,14 @@ describe("TransactionImporter Component", () => {
     });
   });
 
-  it("renders transaction importer heading", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("renders transaction importer heading", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
     expect(screen.getByText("Paste Transactions")).toBeInTheDocument();
   });
 
-  it("shows spinner while loading", () => {
+  it("shows spinner while loading", async () => {
     (usePendingTransactions.default as jest.Mock).mockReturnValue({
       data: null,
       isSuccess: false,
@@ -105,47 +107,61 @@ describe("TransactionImporter Component", () => {
       error: null,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
 
-  it("renders transaction input textarea", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("renders transaction input textarea", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     const textarea = screen.getByPlaceholderText(/Enter transactions/);
     expect(textarea).toBeInTheDocument();
   });
 
-  it("renders data grid with pending transactions", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("renders data grid with pending transactions", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
     expect(screen.getByText("Test Transaction")).toBeInTheDocument();
     expect(screen.getByText("Another Transaction")).toBeInTheDocument();
   });
 
-  it("handles text input for transaction parsing", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("handles text input for transaction parsing", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     const textarea = screen.getByPlaceholderText(/Enter transactions/);
     const testInput =
       "2024-01-01 Coffee Shop -4.50\\n2024-01-02 Salary 2000.00";
 
-    fireEvent.change(textarea, { target: { value: testInput } });
+    await act(async () => {
+      fireEvent.change(textarea, { target: { value: testInput } });
+    });
     expect(textarea.value).toBe(testInput);
   });
 
-  it("parses transactions correctly when submit is clicked", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("parses transactions correctly when submit is clicked", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     const textarea = screen.getByPlaceholderText(/Enter transactions/);
     const submitButton = screen.getByText("Submit");
 
     const testInput =
       "2024-01-01 Coffee Shop -4.50\\n2024-01-02 Salary 2000.00";
-    fireEvent.change(textarea, { target: { value: testInput } });
-    fireEvent.click(submitButton);
+    await act(async () => {
+      fireEvent.change(textarea, { target: { value: testInput } });
+      fireEvent.click(submitButton);
+    });
 
     // The parsing logic would update the internal state and re-render
     // This test verifies the button works without throwing errors
@@ -164,13 +180,17 @@ describe("TransactionImporter Component", () => {
       mutateAsync: mockDeletePendingTransaction,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     const checkButtons = screen.getAllByTestId("CheckIcon");
     expect(checkButtons.length).toBeGreaterThan(0);
 
     // For this test, we'll just verify the button exists and hooks are configured
-    fireEvent.click(checkButtons[0]);
+    await act(async () => {
+      fireEvent.click(checkButtons[0]);
+    });
     expect(mockInsertTransaction).toBeDefined();
     expect(mockDeletePendingTransaction).toBeDefined();
   });
@@ -182,13 +202,17 @@ describe("TransactionImporter Component", () => {
       mutateAsync: mockDeletePendingTransaction,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     const deleteButtons = screen.getAllByTestId("DeleteIcon");
     expect(deleteButtons.length).toBeGreaterThan(0);
 
     // For this test, we'll just verify the button exists and hook is configured
-    fireEvent.click(deleteButtons[0]);
+    await act(async () => {
+      fireEvent.click(deleteButtons[0]);
+    });
     expect(mockDeletePendingTransaction).toBeDefined();
   });
 
@@ -199,25 +223,33 @@ describe("TransactionImporter Component", () => {
       mutateAsync: mockDeleteAllPendingTransactions,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     const deleteAllButton = screen.getByText("Delete All Pending Transactions");
-    fireEvent.click(deleteAllButton);
+    await act(async () => {
+      fireEvent.click(deleteAllButton);
+    });
 
     await waitFor(() => {
       expect(mockDeleteAllPendingTransactions).toHaveBeenCalled();
     });
   });
 
-  it("displays currency amounts correctly", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("displays currency amounts correctly", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     expect(screen.getByText("-$50.00")).toBeInTheDocument();
     expect(screen.getByText("-$25.00")).toBeInTheDocument();
   });
 
-  it("formats transaction dates correctly", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("formats transaction dates correctly", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     // Check for formatted dates (the mock data should render these)
     expect(screen.getByText("1/1/2024")).toBeInTheDocument();
@@ -226,7 +258,7 @@ describe("TransactionImporter Component", () => {
     expect(dateElements.length).toBeGreaterThan(0);
   });
 
-  it("handles authentication redirect when not authenticated", () => {
+  it("handles authentication redirect when not authenticated", async () => {
     const mockReplace = jest.fn();
 
     // Mock useRouter for this test
@@ -240,7 +272,9 @@ describe("TransactionImporter Component", () => {
       loading: false,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     expect(mockReplace).toHaveBeenCalledWith("/login");
 
@@ -248,39 +282,47 @@ describe("TransactionImporter Component", () => {
     mockUseRouter.mockRestore();
   });
 
-  it("returns null when not authenticated and not loading", () => {
+  it("returns null when not authenticated and not loading", async () => {
     (AuthProvider.useAuth as jest.Mock).mockReturnValue({
       isAuthenticated: false,
       loading: false,
     });
 
-    const { container } = render(<TransactionImporter />, {
-      wrapper: createWrapper(),
+    let container;
+    await act(async () => {
+      const result = render(<TransactionImporter />, {
+        wrapper: createWrapper(),
+      });
+      container = result.container;
     });
     expect(container.firstChild).toBeNull();
   });
 
-  it("shows spinner when authentication is loading", () => {
+  it("shows spinner when authentication is loading", async () => {
     (AuthProvider.useAuth as jest.Mock).mockReturnValue({
       isAuthenticated: false,
       loading: true,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     // When loading is true and not authenticated, component should render nothing or a loader
     // Let's just verify the component doesn't crash
     expect(document.body).toBeInTheDocument();
   });
 
-  it("displays transaction type and reoccurring type correctly", () => {
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+  it("displays transaction type and reoccurring type correctly", async () => {
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     // These would be "undefined" initially as set by the transformation logic
     expect(screen.getAllByText("undefined").length).toBeGreaterThan(0);
   });
 
-  it("handles empty pending transactions gracefully", () => {
+  it("handles empty pending transactions gracefully", async () => {
     (usePendingTransactions.default as jest.Mock).mockReturnValue({
       data: [],
       isSuccess: true,
@@ -288,7 +330,9 @@ describe("TransactionImporter Component", () => {
       error: null,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
     expect(screen.queryByText("Test Transaction")).not.toBeInTheDocument();
@@ -301,10 +345,14 @@ describe("TransactionImporter Component", () => {
       mutateAsync: mockDeleteAllPendingTransactions,
     });
 
-    render(<TransactionImporter />, { wrapper: createWrapper() });
+    await act(async () => {
+      render(<TransactionImporter />, { wrapper: createWrapper() });
+    });
 
     const deleteAllButton = screen.getByText("Delete All Pending Transactions");
-    fireEvent.click(deleteAllButton);
+    await act(async () => {
+      fireEvent.click(deleteAllButton);
+    });
 
     await waitFor(() => {
       expect(
