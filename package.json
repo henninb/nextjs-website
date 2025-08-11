@@ -60,7 +60,8 @@
     "jest-environment-jsdom": "^30.0.5",
     "msw": "^2.10.4",
     "node-fetch": "^3.3.2",
-    "ts-jest": "^29.4.1"
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
   },
   "overrides": {
     "esbuild": "^0.25.8",

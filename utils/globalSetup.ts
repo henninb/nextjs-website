@@ -71,21 +71,6 @@ export function setupGlobalAPIs() {
     }
   }
 
-  // Development-only console modifications
-  if (process.env.NODE_ENV === "development") {
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      // Filter out specific HMR warnings that aren't critical
-      if (
-        args[0] &&
-        typeof args[0] === "string" &&
-        args[0].includes("[HMR] Invalid message")
-      ) {
-        return; // Suppress this specific warning
-      }
-      originalConsoleError.apply(console, args);
-    };
-  }
 
   isSetupComplete = true;
 
