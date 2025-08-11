@@ -36,7 +36,6 @@ const useProvideAuth = () => {
           const data = await res.json();
           setUser(data);
           setIsAuthenticated(true);
-          //localStorage.setItem("user", JSON.stringify(data));
         } else {
           setIsAuthenticated(false);
           setUser(null);
@@ -45,11 +44,11 @@ const useProvideAuth = () => {
         setIsAuthenticated(false);
         setUser(null);
       } finally {
-        setLoading(false); // Finished loading regardless of outcome
+        setLoading(false);
       }
     }
     fetchUser();
-  }, []);
+  }, []); // Empty dependency array is correct
 
   const login = (user: User) => {
     setUser(user);

@@ -22,7 +22,12 @@ if (process.env.ANALYZE === "true") {
 }
 
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Disable React Strict Mode for development stability
+
+  // Disable all experimental features that might interfere with HMR
+  experimental: {
+    // Completely disable experimental optimizations for stability
+  },
 
   // Configure allowed development origins to prevent cross-origin warnings
   allowedDevOrigins: [
@@ -33,6 +38,27 @@ const nextConfig = {
 
   // Add transpilePackages to handle MUI X components
   transpilePackages: ["@mui/x-data-grid"],
+
+  // Minimal webpack configuration - let Next.js handle everything
+  webpack: (config, { dev, isServer, webpack }) => {
+    if (dev && !isServer) {
+      // Force enable HMR and ensure proper configuration
+      config.cache = false; // Disable webpack cache completely
+
+      // Ensure proper HMR plugin configuration using webpack from parameters
+      config.plugins = config.plugins.filter(
+        (plugin) => !(plugin instanceof webpack.HotModuleReplacementPlugin),
+      );
+      config.plugins.push(new webpack.HotModuleReplacementPlugin());
+
+      // Ensure dev server respects rewrites
+      if (config.devServer) {
+        config.devServer.historyApiFallback = false;
+      }
+    }
+
+    return config;
+  },
 
   async redirects() {
     return [
@@ -48,13 +74,18 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? "http://192.168.10.10:8443/api/:path*"
-            : "https://finance.bhenning.com/api/:path*",
-        basePath: false,
+        destination: "https://finance.bhenning.com/api/:path*",
       },
     ];
+  },
+
+  // Add server configuration to ensure proper handling
+  serverRuntimeConfig: {
+    // Will only be available on the server side
+  },
+  publicRuntimeConfig: {
+    // Will be available on both server and client
+    apiUrl: "https://finance.bhenning.com",
   },
 
   async headers() {

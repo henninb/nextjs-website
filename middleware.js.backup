@@ -35,6 +35,9 @@ const pxConfig = {
 const human = perimeterx(pxConfig);
 
 export async function middleware(request) {
+  // Temporarily disable all middleware to fix API rewrite issues
+  return NextResponse.next();
+
   // human.enforce(request);
   // Check for authentication token in the request header
   // const token = request.headers.get("Authorization");
@@ -56,7 +59,16 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/nba", "/nhl"], // Apply middleware only to these routes
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - api routes (to allow rewrites to work)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api/|_next/static|_next/image|favicon.ico).*)",
+  ],
 };
 
 async function validateToken(token) {

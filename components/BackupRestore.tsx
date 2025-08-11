@@ -29,7 +29,7 @@ const BackupRestore: React.FC = () => {
   const { data: parameters } = useParameterFetch();
   const { data: payments } = usePaymentFetch();
   const { data: pendingTransactions } = usePendingTransactionFetch();
-  const { data: transactions } = useTransactionByAccountFetch();
+  const { data: transactions } = useTransactionByAccountFetch("");
   const { data: transfers } = useTransferFetch();
 
   const { mutateAsync: insertAccount } = useAccountInsert();
@@ -104,12 +104,12 @@ const BackupRestore: React.FC = () => {
         }
         if (backupData.categories) {
           for (const item of backupData.categories) {
-            await insertCategory({ payload: item });
+            await insertCategory({ category: item });
           }
         }
         if (backupData.descriptions) {
           for (const item of backupData.descriptions) {
-            await insertDescription({ payload: item });
+            await insertDescription({ descriptionName: item.descriptionName });
           }
         }
         if (backupData.parameters) {
@@ -124,12 +124,12 @@ const BackupRestore: React.FC = () => {
         }
         if (backupData.pendingTransactions) {
           for (const item of backupData.pendingTransactions) {
-            await insertPendingTransaction({ payload: item });
+            await insertPendingTransaction({ pendingTransaction: item });
           }
         }
         if (backupData.transactions) {
           for (const item of backupData.transactions) {
-            await insertTransaction({ payload: item });
+            await insertTransaction(item);
           }
         }
         if (backupData.transfers) {
