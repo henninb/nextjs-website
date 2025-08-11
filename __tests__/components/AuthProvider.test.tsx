@@ -16,14 +16,21 @@ const mockLogoutNow = jest.fn();
 // Test component to access auth context
 const TestComponent = () => {
   const { isAuthenticated, user, loading, login, logout } = useAuth();
-  
+
   return (
     <div>
       <div data-testid="auth-status">
-        {loading ? "loading" : isAuthenticated ? "authenticated" : "unauthenticated"}
+        {loading
+          ? "loading"
+          : isAuthenticated
+            ? "authenticated"
+            : "unauthenticated"}
       </div>
       <div data-testid="user-data">{user ? user.username : "no-user"}</div>
-      <button data-testid="login-btn" onClick={() => login({ username: "testuser", password: "" })}>
+      <button
+        data-testid="login-btn"
+        onClick={() => login({ username: "testuser", password: "" })}
+      >
         Login
       </button>
       <button data-testid="logout-btn" onClick={logout}>
@@ -40,11 +47,11 @@ global.fetch = mockFetch;
 describe("AuthProvider Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
     });
-    
+
     (useLogoutProcess.default as jest.Mock).mockReturnValue({
       logoutNow: mockLogoutNow,
     });
@@ -56,15 +63,15 @@ describe("AuthProvider Component", () => {
 
   describe("Initial Loading State", () => {
     it("starts in loading state", async () => {
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
+      mockFetch.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100)),
       );
 
       await act(async () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
@@ -84,12 +91,14 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("authenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "authenticated",
+        );
         expect(screen.getByTestId("user-data")).toHaveTextContent("testuser");
       });
 
@@ -110,12 +119,14 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("unauthenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "unauthenticated",
+        );
         expect(screen.getByTestId("user-data")).toHaveTextContent("no-user");
       });
     });
@@ -127,12 +138,14 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("unauthenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "unauthenticated",
+        );
         expect(screen.getByTestId("user-data")).toHaveTextContent("no-user");
       });
     });
@@ -149,12 +162,14 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("unauthenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "unauthenticated",
+        );
       });
 
       await act(async () => {
@@ -162,7 +177,9 @@ describe("AuthProvider Component", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("authenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "authenticated",
+        );
         expect(screen.getByTestId("user-data")).toHaveTextContent("testuser");
       });
     });
@@ -175,19 +192,21 @@ describe("AuthProvider Component", () => {
         ok: true,
         json: jest.fn().mockResolvedValue(userData),
       });
-      
+
       mockLogoutNow.mockResolvedValue({});
 
       await act(async () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("authenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "authenticated",
+        );
       });
 
       await act(async () => {
@@ -196,7 +215,9 @@ describe("AuthProvider Component", () => {
 
       await waitFor(() => {
         expect(mockLogoutNow).toHaveBeenCalled();
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("unauthenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "unauthenticated",
+        );
         expect(screen.getByTestId("user-data")).toHaveTextContent("no-user");
         expect(mockPush).toHaveBeenCalledWith("/login");
       });
@@ -205,12 +226,14 @@ describe("AuthProvider Component", () => {
 
   describe("Context Error Handling", () => {
     it("throws error when useAuth is used outside AuthProvider", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-      
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       expect(() => {
         render(<TestComponent />);
       }).toThrow("useAuth must be used within an AuthProvider");
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -226,7 +249,7 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
@@ -247,12 +270,14 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("unauthenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "unauthenticated",
+        );
       });
     });
   });
@@ -260,13 +285,18 @@ describe("AuthProvider Component", () => {
   describe("Loading State Management", () => {
     it("properly transitions from loading to authenticated state", async () => {
       const userData = { username: "testuser", id: 1 };
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve({
-            ok: true,
-            json: jest.fn().mockResolvedValue(userData),
-          }), 10)
-        )
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: jest.fn().mockResolvedValue(userData),
+                }),
+              10,
+            ),
+          ),
       );
 
       let component: any;
@@ -274,7 +304,7 @@ describe("AuthProvider Component", () => {
         component = render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
@@ -283,25 +313,32 @@ describe("AuthProvider Component", () => {
 
       // Then authenticated after API call
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("authenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "authenticated",
+        );
       });
     });
 
     it("properly transitions from loading to unauthenticated state", async () => {
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve({
-            ok: false,
-            status: 401,
-          }), 10)
-        )
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: false,
+                  status: 401,
+                }),
+              10,
+            ),
+          ),
       );
 
       await act(async () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
@@ -310,7 +347,9 @@ describe("AuthProvider Component", () => {
 
       // Then unauthenticated after API call
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("unauthenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "unauthenticated",
+        );
       });
     });
   });
@@ -326,12 +365,14 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("unauthenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "unauthenticated",
+        );
       });
     });
 
@@ -345,12 +386,14 @@ describe("AuthProvider Component", () => {
         render(
           <AuthProvider>
             <TestComponent />
-          </AuthProvider>
+          </AuthProvider>,
         );
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("auth-status")).toHaveTextContent("authenticated");
+        expect(screen.getByTestId("auth-status")).toHaveTextContent(
+          "authenticated",
+        );
         expect(screen.getByTestId("user-data")).toHaveTextContent("no-user");
       });
     });

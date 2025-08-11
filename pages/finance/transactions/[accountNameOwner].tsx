@@ -351,10 +351,10 @@ export default function TransactionsByAccount() {
   const handleCloneRow = async (): Promise<void> => {
     try {
       // Generate a secure UUID from the server before cloning
-      const uuidResponse = await fetch('/api/uuid/generate', {
-        method: 'POST',
+      const uuidResponse = await fetch("/api/uuid/generate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -386,10 +386,10 @@ export default function TransactionsByAccount() {
   const handleAddRow = async (newData: Transaction): Promise<Transaction> => {
     try {
       // Generate a secure UUID from the server before inserting
-      const uuidResponse = await fetch('/api/uuid/generate', {
-        method: 'POST',
+      const uuidResponse = await fetch("/api/uuid/generate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -398,7 +398,7 @@ export default function TransactionsByAccount() {
       }
 
       const { uuid } = await uuidResponse.json();
-      
+
       // Replace the pending UUID with the server-generated one
       const transactionWithUuid = {
         ...newData,

@@ -71,7 +71,6 @@ export function setupGlobalAPIs() {
     }
   }
 
-
   isSetupComplete = true;
 
   function shouldSyncCookies(url: string): boolean {

@@ -19,21 +19,24 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
 
 // Test component to access UI context
 const TestComponent = () => {
   const { uiMode, toggleUIMode, setUIMode } = useUI();
-  
+
   return (
     <div>
       <div data-testid="current-mode">{uiMode}</div>
       <button data-testid="toggle-btn" onClick={toggleUIMode}>
         Toggle Mode
       </button>
-      <button data-testid="set-original-btn" onClick={() => setUIMode("original")}>
+      <button
+        data-testid="set-original-btn"
+        onClick={() => setUIMode("original")}
+      >
         Set Original
       </button>
       <button data-testid="set-modern-btn" onClick={() => setUIMode("modern")}>
@@ -57,7 +60,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
@@ -69,7 +72,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
@@ -81,7 +84,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
@@ -93,7 +96,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
@@ -112,7 +115,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
@@ -129,7 +132,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       // Original -> Modern
@@ -159,7 +162,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
@@ -176,7 +179,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
@@ -193,7 +196,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
@@ -212,7 +215,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       act(() => {
@@ -231,9 +234,13 @@ describe("UIContext", () => {
     it("handles localStorage errors gracefully", () => {
       // Mock localStorage to throw error
       const originalSetItem = localStorage.setItem;
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
-      
+      const consoleErrorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      const consoleWarnSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
       localStorage.setItem = jest.fn().mockImplementation(() => {
         throw new Error("Storage quota exceeded");
       });
@@ -241,7 +248,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       // Should not crash when localStorage throws
@@ -250,7 +257,10 @@ describe("UIContext", () => {
       });
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-      expect(consoleWarnSpy).toHaveBeenCalledWith("Failed to save UI mode to localStorage:", expect.any(Error));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "Failed to save UI mode to localStorage:",
+        expect.any(Error),
+      );
 
       // Restore original localStorage and console
       localStorage.setItem = originalSetItem;
@@ -261,12 +271,14 @@ describe("UIContext", () => {
 
   describe("Context Error Handling", () => {
     it("throws error when useUI is used outside UIProvider", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-      
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       expect(() => {
         render(<TestComponent />);
       }).toThrow("useUI must be used within a UIProvider");
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -282,7 +294,7 @@ describe("UIContext", () => {
         <UIProvider>
           <TestComponent />
           <SecondTestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
@@ -304,7 +316,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
@@ -318,7 +330,7 @@ describe("UIContext", () => {
       render(
         <UIProvider>
           <TestComponent />
-        </UIProvider>
+        </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");

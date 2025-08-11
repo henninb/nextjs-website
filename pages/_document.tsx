@@ -1,4 +1,11 @@
-import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from "next/document";
+import Document, {
+  DocumentContext,
+  DocumentInitialProps,
+  Head,
+  Html,
+  Main,
+  NextScript,
+} from "next/document";
 import React from "react";
 
 export default function MyDocument() {
@@ -43,7 +50,9 @@ export default function MyDocument() {
   );
 }
 
-MyDocument.getInitialProps = async (ctx: DocumentContext): Promise<DocumentInitialProps> => {
+MyDocument.getInitialProps = async (
+  ctx: DocumentContext,
+): Promise<DocumentInitialProps> => {
   const initialProps = await Document.getInitialProps(ctx);
   return { ...initialProps };
 };

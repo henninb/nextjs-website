@@ -4,7 +4,8 @@ import { DataGridProps } from "@mui/x-data-grid";
 
 // Dynamically import the DataGrid component
 const DataGridDynamic: React.FC<DataGridProps> = (props) => {
-  const [DataGridComponent, setDataGridComponent] = useState<React.ComponentType<DataGridProps> | null>(null);
+  const [DataGridComponent, setDataGridComponent] =
+    useState<React.ComponentType<DataGridProps> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -277,5 +277,4 @@ GET /login 200 in 2457ms
 **Solution:** Latest versions + configuration fixes + webpack (not Turbopack)  
 **Result:** Stable development environment with latest Next.js 15.4.6 + React 19.1.1
 
-
 The real issue is that Next.js rewrites for external URLs don't work in development mode the way we expect.
