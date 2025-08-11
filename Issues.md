@@ -278,3 +278,67 @@ GET /login 200 in 2457ms
 **Result:** Stable development environment with latest Next.js 15.4.6 + React 19.1.1
 
 The real issue is that Next.js rewrites for external URLs don't work in development mode the way we expect.
+
+## HMR Configuration Reversal - December 2024
+
+**Date:** 2025-08-11  
+**Context:** Attempted to fix HMR error `TypeError: Cannot read properties of undefined (reading 'components')`
+
+### Problem with "Fixed" Configuration
+
+The attempt to fix the HMR error by simplifying the webpack configuration in `next.config.mjs` introduced a **worse problem**:
+
+**Symptoms after configuration changes:**
+
+```
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+GET /finance 200 in 221ms
+GET /_next/static/webpack/ebb013627dbf4539.webpack.hot-update.json 404 in 244ms
+⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+```
+
+**Analysis:**
+
+- **Original HMR error**: `[HMR] Invalid message: {"action":"isrManifest","data":{...}}` + components undefined
+- **After "fix"**: Continuous Fast Refresh full reloads (much worse user experience)
+- **Root cause**: Removing the custom HMR plugin management broke webpack's hot update manifest generation
+
+### Decision: Revert Configuration
+
+**Action taken:**
+
+```bash
+git checkout HEAD -- next.config.mjs
+```
+
+**Rationale:**
+
+1. **Lesser of two evils**: Original HMR error is intermittent and doesn't break development flow
+2. **Fast Refresh loops**: Make development completely unusable with constant full page reloads
+3. **Missing manifests**: 404 errors on webpack hot-update.json indicate broken HMR infrastructure
+4. **Experimental edge runtime warning**: Persists in both configurations, unrelated to the HMR issue
+
+### Current Status: Original Configuration Restored
+
+**HMR Error (acceptable):**
+
+- Occasional `TypeError: Cannot read properties of undefined (reading 'components')`
+- Does not prevent development work
+- Fast Refresh works for most changes
+- Only affects specific ISR manifest handling edge cases
+
+**Alternative that was causing worse problems (reverted):**
+
+- Constant Fast Refresh full reloads
+- Missing webpack hot-update manifests
+- Complete breakdown of incremental updates
+- Development productivity severely impacted
+
+### Future Recommendations
+
+1. **Leave current config untouched** - The original configuration provides the best development experience despite occasional HMR errors
+2. **Next.js upgrade monitoring** - Check if future Next.js versions resolve the ISR manifest issue
+3. **Alternative**: Consider using `npm run dev:turbo` when available for different HMR implementation
+4. **Experimental edge runtime**: This warning is related to middleware.js runtime configuration, not the HMR issue
+
+**Decision:** Keep original webpack configuration with manual HMR plugin management as it provides the most stable development experience.
