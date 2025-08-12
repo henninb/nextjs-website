@@ -137,7 +137,7 @@ export default function TransactionsByAccount() {
       reoccurringType: "onetime" as ReoccurringType,
       amount: 0.0,
       transactionState: "outstanding" as TransactionState,
-      transactionType: "expense" as TransactionType, // Default to expense for new transactions
+      transactionType: undefined as TransactionType, // Default to undefined - will be set intentionally by user
       guid: "pending-uuid", // Will be replaced with server-generated UUID
       description: "",
       category: "",
@@ -1049,7 +1049,7 @@ export default function TransactionsByAccount() {
 
             <Select
               label="Transaction Type"
-              value={transactionData?.transactionType || "expense"}
+              value={transactionData?.transactionType || ""}
               onChange={(e) =>
                 setTransactionData((prev: any) => ({
                   ...prev,
@@ -1059,6 +1059,7 @@ export default function TransactionsByAccount() {
               fullWidth
               style={{ marginTop: 16 }}
             >
+              <MenuItem value="">Undefined</MenuItem>
               <MenuItem value="expense">Expense</MenuItem>
               <MenuItem value="income">Income</MenuItem>
               <MenuItem value="transfer">Transfer</MenuItem>

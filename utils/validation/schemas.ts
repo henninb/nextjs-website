@@ -75,9 +75,11 @@ const transactionStateEnum = z.enum(["cleared", "outstanding", "future"], {
   message: "Transaction state must be cleared, outstanding, or future",
 });
 
-const transactionTypeEnum = z.enum(["expense", "income", "transfer"], {
-  message: "Transaction type must be expense, income, or transfer",
-});
+const transactionTypeEnum = z
+  .enum(["expense", "income", "transfer"], {
+    message: "Transaction type must be expense, income, or transfer",
+  })
+  .optional();
 
 const reoccurringTypeEnum = z.enum(["onetime", "monthly", "weekly", "yearly"], {
   message: "Invalid reoccurring type",

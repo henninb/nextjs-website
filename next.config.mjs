@@ -70,15 +70,6 @@ const nextConfig = {
     ];
   },
 
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "https://finance.bhenning.com/api/:path*",
-      },
-    ];
-  },
-
   // Add server configuration to ensure proper handling
   serverRuntimeConfig: {
     // Will only be available on the server side

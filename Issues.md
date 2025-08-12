@@ -342,3 +342,95 @@ git checkout HEAD -- next.config.mjs
 4. **Experimental edge runtime**: This warning is related to middleware.js runtime configuration, not the HMR issue
 
 **Decision:** Keep original webpack configuration with manual HMR plugin management as it provides the most stable development experience.
+
+## API Proxy Cookie Authentication Issue - August 2025
+
+**Date:** 2025-08-12  
+**Context:** Middleware proxy working but authentication failing due to cookie domain restrictions
+
+### Problem Description
+
+The Next.js middleware successfully proxies `/api/*` requests from `localhost:3000` to `https://finance.bhenning.com`, but JWT authentication was failing because:
+
+1. **Set-Cookie Domain Mismatch**: finance.bhenning.com returns `Set-Cookie: token=...` headers
+2. **Browser Security Restrictions**: Browsers won't set cookies from different domains (finance.bhenning.com → localhost:3000)
+3. **Secure Flag Issues**: Production cookies have `Secure` flag requiring HTTPS, but localhost uses HTTP
+4. **SameSite Policy**: Production uses `SameSite=None` which doesn't work well with localhost
+
+### Symptoms
+
+```
+🍪 Cookies being forwarded: pxcts=...; _pxvid=...; __pxvid=...; _pxhd=...
+```
+
+- PerimeterX tracking cookies present
+- **Missing "token" cookie** required for JWT authentication
+- 403 Forbidden responses from `/api/me` and other authenticated endpoints
+- Login process completes but doesn't set authentication cookie on localhost
+
+### Root Cause Analysis
+
+**Backend Authentication Flow (raspi-finance-endpoint):**
+
+1. `JwtAuthenticationFilter.kt` looks for cookie named "token"
+2. `LoginController.kt` sets cookie with domain-specific settings
+3. WebSecurityConfig requires authentication for all `/api/*` except login/register
+
+**Frontend Proxy Issue:**
+
+- Middleware correctly forwards requests and responses
+- Set-Cookie headers from backend not compatible with localhost domain
+- Browser rejects cross-domain cookie setting attempts
+
+### Solution: Cookie Header Rewriting in Middleware
+
+**File:** `middleware.js:70-84`  
+**Action:** Added Set-Cookie header transformation for development
+
+```javascript
+// Rewrite Set-Cookie headers to work with localhost
+if (key.toLowerCase() === "set-cookie") {
+  console.log("🍪 Original Set-Cookie header:", value);
+  // Remove domain restrictions and secure flags for localhost
+  const modifiedCookie = value
+    .replace(/;\s*Domain=[^;]*/gi, "") // Remove domain restrictions
+    .replace(/;\s*Secure/gi, "") // Remove Secure flag for localhost
+    .replace(/;\s*SameSite=None/gi, "; SameSite=Lax"); // Change SameSite for localhost
+  console.log("🍪 Modified Set-Cookie header:", modifiedCookie);
+  responseHeaders.set(key, modifiedCookie);
+}
+```
+
+### Transformations Applied
+
+1. **Remove Domain Restrictions**: `Domain=finance.bhenning.com` → (removed)
+2. **Remove Secure Flag**: `Secure` → (removed for HTTP localhost)
+3. **Adjust SameSite Policy**: `SameSite=None` → `SameSite=Lax`
+4. **Preserve Other Attributes**: HttpOnly, Path, Max-Age remain unchanged
+
+### Test Results
+
+**✅ SUCCESSFUL AUTHENTICATION:**
+
+- Login through localhost:3000 now sets "token" cookie correctly
+- Browser dev tools show cookie set on localhost:3000 domain
+- Subsequent `/api/me` requests include proper JWT token
+- 200 OK responses instead of 403 Forbidden
+- Full authentication flow working in development
+
+### Current Status: ✅ RESOLVED
+
+**Solution:** Development middleware correctly rewrites Set-Cookie headers for localhost compatibility while preserving production security.
+
+**Benefits:**
+
+- Seamless authentication in development environment
+- No changes required to backend security configuration
+- Production security policies remain intact
+- Enhanced logging for cookie debugging
+
+**Future Considerations:**
+
+- Monitor for any cookie-related issues with other authentication flows
+- Consider domain-specific cookie handling if multiple development domains needed
+- Ensure production deployment doesn't include cookie rewriting logic

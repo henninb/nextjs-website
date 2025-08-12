@@ -39,7 +39,7 @@ const setupNewTransaction = async (
     notes: payload.notes || "",
     amount: payload.amount,
     dueDate: payload.dueDate || undefined,
-    transactionType: payload.transactionType || "expense",
+    transactionType: payload.transactionType || undefined,
     transactionState: payload.transactionState || "outstanding",
     activeStatus: true,
     accountType: payload.accountType || "debit",

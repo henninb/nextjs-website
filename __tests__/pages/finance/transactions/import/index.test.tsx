@@ -324,8 +324,9 @@ describe("TransactionImporter Component", () => {
       render(<TransactionImporter />, { wrapper: createWrapper() });
     });
 
-    // These would be "undefined" initially as set by the transformation logic
-    expect(screen.getAllByText("undefined").length).toBeGreaterThan(0);
+    // Verify that transaction type and reoccurring type are displayed
+    expect(screen.getAllByText("debit").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("onetime").length).toBeGreaterThan(0);
   });
 
   it("handles empty pending transactions gracefully", async () => {

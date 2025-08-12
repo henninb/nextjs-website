@@ -25,18 +25,23 @@ if [ "$ENV" = "prod" ]; then
   #docker run -d -p 3000:3000 --name nextjs-website nextjs-website:latest
   exit 0
 
-fi
+elif [ "$ENV" = "dev" ]; then # Add this elif block
+  export NODE_ENV=development # Set NODE_ENV for development
+  echo npx create-next-app example-nextjs
+  echo 'http://localhost:3000'
+  echo npx npm-check-updates -u
+  rm -rf .next
+  #npm install
+  touch .env.local
+  npm run prettier
+  npx npm-check-updates
+  npm install
+  netstat -tlnp | grep :3000
+  npm run dev
 
-echo npx create-next-app example-nextjs
-echo 'http://localhost:3000'
-echo npx npm-check-updates -u
-rm -rf .next
-#npm install
-touch .env.local
-npm run prettier
-npx npm-check-updates
-npm install
-netstat -tlnp | grep :3000
-npm run dev
+else # Handle invalid argument
+  echo "Usage: $0 <prod|dev>"
+  exit 1
+fi
 
 exit 0

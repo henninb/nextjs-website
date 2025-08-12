@@ -445,7 +445,9 @@ describe("Payments Page - MSW Tests", () => {
 
     // With our mocked Modal component, check for the modal content
     expect(screen.getByText("Add New Payment")).toBeInTheDocument();
-    expect(screen.getByText("Add")).toBeInTheDocument();
+    // Check for submit button in modal (should show "Add Payment" when no amount is entered)
+    const submitButton = screen.getAllByText("Add Payment")[1]; // Get the second one (the submit button)
+    expect(submitButton).toBeInTheDocument();
   });
 
   it("renders payment data correctly in table", async () => {
@@ -589,7 +591,7 @@ describe("Payments Component - Hook Mock Tests", () => {
     fireEvent.change(amountInput, { target: { value: "100.00" } });
 
     // Submit form
-    const submitButton = screen.getByRole("button", { name: "Add" });
+    const submitButton = screen.getByRole("button", { name: "Pay $100.00" });
     fireEvent.click(submitButton);
 
     await waitFor(() => {

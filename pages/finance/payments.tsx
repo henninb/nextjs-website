@@ -533,7 +533,9 @@ export default function Payments() {
               variant="contained"
               onClick={() => paymentData && handleAddRow(paymentData)}
             >
-              Add
+              {paymentData?.amount && parseFloat(String(paymentData.amount)) > 0
+                ? `Pay ${currencyFormat(paymentData.amount)}`
+                : "Add Payment"}
             </Button>
           </Paper>
         </Modal>
