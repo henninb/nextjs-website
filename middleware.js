@@ -100,8 +100,8 @@ export async function middleware(request) {
               // Secure rewriting: only remove problematic attributes for auth cookies
               const modifiedCookie =
                 value
-                  // Remove domain only if it's the external domain
-                  .replace(/;\s*Domain=finance\.bhenning\.com/gi, "")
+                  // Remove domain for any bhenning.com domain
+                  .replace(/;\s*Domain=\.?bhenning\.com/gi, "")
                   // Remove Secure flag only for localhost HTTP
                   .replace(/;\s*Secure(?=;|$)/gi, "")
                   // Adjust SameSite for localhost compatibility

@@ -547,7 +547,10 @@ export default function Transfers() {
               variant="contained"
               onClick={() => transferData && handleAddRow(transferData)}
             >
-              Add
+              {transferData?.amount &&
+              parseFloat(String(transferData.amount)) > 0
+                ? `Transfer ${currencyFormat(transferData.amount)}`
+                : "Add Transfer"}
             </Button>
           </Paper>
         </Modal>
