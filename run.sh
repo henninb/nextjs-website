@@ -36,7 +36,14 @@ elif [ "$ENV" = "dev" ]; then # Add this elif block
   npm run prettier
   npx npm-check-updates
   npm install
-  netstat -tlnp | grep :3000
+  # Check for processes on port 3000 with OS-specific netstat flags
+  if [ "$(uname)" = "Darwin" ]; then
+    # macOS doesn't support -p flag, use -an instead
+    netstat -an | grep :3000
+  else
+    # Linux supports -tlnp
+    netstat -tlnp | grep :3000
+  fi
   npm run dev
 
 else # Handle invalid argument

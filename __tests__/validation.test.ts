@@ -109,6 +109,50 @@ describe("Input Validation and Sanitization", () => {
       expect(result.success).toBe(false);
       expect(result.errors?.some((err) => err.field === "amount")).toBe(true);
     });
+
+    it("should validate transaction with undefined transactionType", () => {
+      const undefinedTypeTransaction = {
+        accountType: "debit" as const,
+        accountNameOwner: "test_account",
+        transactionDate: new Date().toISOString(),
+        description: "Test transaction",
+        category: "groceries",
+        amount: 25.99,
+        transactionState: "outstanding" as const,
+        transactionType: undefined,
+        activeStatus: true,
+        reoccurringType: "onetime" as const,
+        notes: "Test notes",
+      };
+
+      const result = DataValidator.validateTransaction(
+        undefinedTypeTransaction,
+      );
+      expect(result.success).toBe(true);
+      expect(result.data?.transactionType).toBe("undefined");
+    });
+
+    it("should validate transaction with string 'undefined' transactionType", () => {
+      const stringUndefinedTypeTransaction = {
+        accountType: "debit" as const,
+        accountNameOwner: "test_account",
+        transactionDate: new Date().toISOString(),
+        description: "Test transaction",
+        category: "groceries",
+        amount: 25.99,
+        transactionState: "outstanding" as const,
+        transactionType: "undefined" as const,
+        activeStatus: true,
+        reoccurringType: "onetime" as const,
+        notes: "Test notes",
+      };
+
+      const result = DataValidator.validateTransaction(
+        stringUndefinedTypeTransaction,
+      );
+      expect(result.success).toBe(true);
+      expect(result.data?.transactionType).toBe("undefined");
+    });
   });
 
   describe("DataValidator.validatePayment", () => {

@@ -255,7 +255,10 @@ export const sanitize = {
     category: InputSanitizer.sanitizeCategory(data.category),
     amount: InputSanitizer.sanitizeAmount(data.amount),
     transactionState: InputSanitizer.sanitizeText(data.transactionState),
-    transactionType: InputSanitizer.sanitizeText(data.transactionType),
+    transactionType:
+      data.transactionType !== undefined
+        ? InputSanitizer.sanitizeText(data.transactionType)
+        : "undefined",
     activeStatus: Boolean(data.activeStatus),
     reoccurringType: InputSanitizer.sanitizeText(data.reoccurringType),
     notes: InputSanitizer.sanitizeNotes(data.notes || ""),

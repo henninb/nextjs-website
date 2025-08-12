@@ -76,8 +76,8 @@ const transactionStateEnum = z.enum(["cleared", "outstanding", "future"], {
 });
 
 const transactionTypeEnum = z
-  .enum(["expense", "income", "transfer"], {
-    message: "Transaction type must be expense, income, or transfer",
+  .enum(["expense", "income", "transfer", "undefined"], {
+    message: "Transaction type must be expense, income, transfer, or undefined",
   })
   .optional();
 
