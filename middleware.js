@@ -32,16 +32,13 @@ export async function middleware(request) {
 
   const url = request.nextUrl.clone();
 
-  // Only proxy /api/* requests in development
-  if (
-    process.env.NODE_ENV === "development" &&
-    url.pathname.startsWith("/api/")
-  ) {
+  // Proxy /api/* requests in both development and production
+  if (url.pathname.startsWith("/api/")) {
     console.log(
-      "✅ CONDITIONS MET: Entering proxy logic for development API route",
+      "✅ CONDITIONS MET: Entering proxy logic for API route",
     );
     console.log("Path starts with /api/:", url.pathname.startsWith("/api/"));
-    console.log("Is development:", process.env.NODE_ENV === "development");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
     try {
       // Build the target URL
       const targetUrl = `https://finance.bhenning.com${url.pathname}${url.search}`;
@@ -162,12 +159,6 @@ export async function middleware(request) {
   } else {
     console.log("❌ CONDITIONS NOT MET - Not proxying");
     console.log("Path starts with /api/:", url.pathname.startsWith("/api/"));
-    console.log("Is development:", process.env.NODE_ENV === "development");
-    console.log(
-      "Both conditions:",
-      process.env.NODE_ENV === "development" &&
-        url.pathname.startsWith("/api/"),
-    );
   }
 
   // Continue with normal processing for non-API routes

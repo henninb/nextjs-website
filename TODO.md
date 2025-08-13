@@ -93,64 +93,75 @@
 ## 3. Account Balance Reconciliation Issue - centerpoint_brian (Resolved: Aug 2025)
 
 ### Problem Description
+
 The centerpoint_brian utility account was showing a negative balance of -$6,230.99 instead of balancing to zero. This occurred because payments were being recorded without corresponding bill/expense transactions, causing the account to appear as if payments were being made for non-existent bills.
 
 ### Root Cause Analysis
+
 - Each payment created a negative transaction entry but no corresponding positive expense entry
 - This violated double-entry accounting principles where utility payments should have matching bill expenses
 - The account appeared to be "overpaying" by the total amount of unmatched payments
 - Issue existed across multiple years (2023-2025)
 
 ### Data Analysis Results
+
 **2025 Data:**
+
 - 9 payments totaling $893.27 missing corresponding bills ($860.06 after excluding $0 entry)
 - Transaction entries: 17 total, balanced to $0.00 after fix
 
-**2024 Data:**  
+**2024 Data:**
+
 - 14 payments totaling $861.14 missing corresponding bills
 - Transaction entries: 28 total, balanced to $0.00 after fix
 
 **2023 Data:**
+
 - 17 payments with 6 suspicious $1.00 entries (likely test data) and 11 legitimate payments totaling $896.34
 - Transaction entries: 22 total, balanced to $0.00 after fix
 
 ### Solution Implementation
 
 #### Phase 1: 2025 Fix
+
 - Created 8 matching "centerpoint energy" expense transactions for legitimate payments
 - All transactions properly categorized as 'utilities' with 'expense' type
 - Used account_id 1059 for centerpoint_brian account
 
-#### Phase 2: 2024 Fix  
+#### Phase 2: 2024 Fix
+
 - Created 14 matching "centerpoint energy" expense transactions for all payments
 - Applied same categorization and account structure as 2025
 
 #### Phase 3: 2023 Cleanup
+
 - **Data Cleaning**: Deactivated 6 suspicious $1.00 payments (appeared to be test entries)
 - **Bill Generation**: Created 7 new expense transactions for orphaned legitimate payments
 - **Deduplication**: Preserved 4 existing bills that already matched payments, removed 4 duplicate generated bills
 
 ### Final Results
+
 - **Total Data Fixed**: $2,650.75 in missing bill entries across three years
 - **Data Cleaned**: $6.00 in suspicious test payments removed
 - **All Years Balanced**: 2023, 2024, and 2025 now show $0.00 transaction totals
 - **Accounting Integrity**: Proper double-entry accounting restored
 
 ### Technical Implementation Details
+
 ```sql
 -- Example of bill generation for payments
 INSERT INTO t_transaction (
-    guid, account_id, account_type, account_name_owner, 
-    transaction_date, amount, description, category, 
-    transaction_type, transaction_state, active_status, 
+    guid, account_id, account_type, account_name_owner,
+    transaction_date, amount, description, category,
+    transaction_type, transaction_state, active_status,
     reoccurring_type, notes
 )
-SELECT 
+SELECT
     gen_random_uuid()::text, 1059, 'credit', 'centerpoint_brian',
     transaction_date, ABS(amount), 'centerpoint energy', 'utilities',
     'expense', 'cleared', true, 'onetime',
     'auto-generated bill for payment balancing'
-FROM t_transaction 
+FROM t_transaction
 WHERE account_name_owner = 'centerpoint_brian'
 AND active_status = true
 AND EXTRACT(YEAR FROM transaction_date) = [YEAR]
@@ -158,33 +169,36 @@ AND amount < 0;
 ```
 
 ### Prevention Recommendations
+
 1. **Automatic Bill Generation**: Implement code in `usePaymentInsert.ts` to auto-generate matching transactions when payments are made to utility accounts
 2. **Account Type Parameters**: Add configuration to identify accounts requiring automatic expense creation
 3. **Validation Rules**: Add database constraints to prevent payment-only entries for utility accounts
 4. **Monitoring**: Implement balance monitoring to detect similar issues early
 
 ### Code Changes Suggested
+
 ```typescript
 // In usePaymentInsert.ts - after payment insertion
-const utilityAccounts = ['centerpoint_brian', 'att_brian', 'water_bill_brian'];
+const utilityAccounts = ["centerpoint_brian", "att_brian", "water_bill_brian"];
 
 if (utilityAccounts.includes(newData.destinationAccount)) {
   const billTransaction = {
     accountNameOwner: newData.destinationAccount,
     transactionDate: newData.transactionDate,
     amount: newData.amount,
-    description: `${newData.destinationAccount.replace('_', ' ').toUpperCase()} Bill`,
-    category: 'utilities',
-    transactionType: 'expense' as TransactionType,
-    transactionState: 'cleared',
-    notes: 'Auto-generated from payment'
+    description: `${newData.destinationAccount.replace("_", " ").toUpperCase()} Bill`,
+    category: "utilities",
+    transactionType: "expense" as TransactionType,
+    transactionState: "cleared",
+    notes: "Auto-generated from payment",
   };
-  
+
   await insertTransaction({ payload: billTransaction });
 }
 ```
 
 ### Lessons Learned
+
 - **Data Validation**: Need systematic validation of account balances during data entry
 - **Account Types**: Utility accounts require special handling due to their payment-first nature
 - **Historical Data**: Regular reconciliation can prevent large-scale data inconsistencies
