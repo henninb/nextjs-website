@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import PaymentRequired from "../model/PaymentRequired";
-import { dummyPaymentsRequired } from "../data/dummyPaymentsRequired";
 //import { basicAuth } from "../Common";
 
 const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
@@ -24,9 +23,9 @@ const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
 
     const data = await response.json();
     return data;
-  } catch (error) {
-    console.log("Error fetching payment required data:", error);
-    return dummyPaymentsRequired;
+  } catch (error: any) {
+    console.error("Error fetching payment required data:", error);
+    throw new Error(`Failed to fetch payment required data: ${error.message}`);
   }
 };
 

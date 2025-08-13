@@ -75,7 +75,10 @@ describe("PaymentRequired Component", () => {
 
     render(<PaymentRequired />, { wrapper: createWrapper() });
 
-    expect(screen.getByTestId("loader")).toBeInTheDocument();
+    // Check for either the old spinner or new LoadingState component
+    const loader = screen.queryByTestId("loader");
+    const progressbar = screen.queryByRole("progressbar");
+    expect(loader || progressbar).toBeInTheDocument();
   });
 
   it("renders payment required table when data is loaded", () => {
@@ -140,7 +143,10 @@ describe("PaymentRequired Component", () => {
 
     render(<PaymentRequired />, { wrapper: createWrapper() });
 
-    expect(screen.getByTestId("loader")).toBeInTheDocument();
+    // Check for either the old spinner or new LoadingState component
+    const loader = screen.queryByTestId("loader");
+    const progressbar = screen.queryByRole("progressbar");
+    expect(loader || progressbar).toBeInTheDocument();
   });
 
   it("stops showing spinner when data loading completes", () => {

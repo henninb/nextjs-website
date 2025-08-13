@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import PendingTransaction from "../model/PendingTransaction";
-import { dummyPendingTransactions } from "../data/dummyPendingTransactions";
 
 const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
   try {
@@ -16,15 +15,17 @@ const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log("No pending transactions found (404).");
+        return []; // Return empty array for 404, meaning no pending transactions
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
-  } catch (error) {
-    console.log("Error fetching pending transactions:", error);
-    //return []; // Return an empty array in case of error
-    return dummyPendingTransactions;
+  } catch (error: any) {
+    console.error("Error fetching pending transaction data:", error);
+    throw new Error(
+      `Failed to fetch pending transaction data: ${error.message}`,
+    );
   }
 };
 

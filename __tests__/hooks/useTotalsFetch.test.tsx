@@ -61,7 +61,7 @@ describe("useTotalsFetch", () => {
     expect(result.current.isError).toBe(false);
   });
 
-  it("should handle 404 errors and return dummy data", async () => {
+  it("should handle 404 errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to return a 404 error
@@ -71,17 +71,19 @@ describe("useTotalsFetch", () => {
         new Response(JSON.stringify({ message: "Not found" }), { status: 404 }),
       );
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should return dummy data when 404
-    expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Resource not found (404).");
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Failed to fetch");
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching totals data:",
       expect.anything(),
@@ -90,7 +92,7 @@ describe("useTotalsFetch", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should handle 500 server errors and return dummy data", async () => {
+  it("should handle 500 server errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to return a 500 error
@@ -100,16 +102,19 @@ describe("useTotalsFetch", () => {
       }),
     );
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should return dummy data on error
-    expect(result.current.data).toBeDefined();
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Failed to fetch");
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching totals data:",
       expect.anything(),
@@ -118,7 +123,7 @@ describe("useTotalsFetch", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should handle network errors and return dummy data", async () => {
+  it("should handle network errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to throw a network error
@@ -126,16 +131,18 @@ describe("useTotalsFetch", () => {
       .fn()
       .mockRejectedValueOnce(new Error("Network failure"));
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should return dummy data on network error
-    expect(result.current.data).toBeDefined();
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching totals data:",
       expect.anything(),
@@ -144,7 +151,7 @@ describe("useTotalsFetch", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should log errors when query has error state", async () => {
+  it("should handle persistent errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to throw a persistent error
@@ -152,15 +159,18 @@ describe("useTotalsFetch", () => {
       .fn()
       .mockRejectedValueOnce(new Error("Persistent error"));
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should have logged the fetch error
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching totals data:",
       expect.anything(),
@@ -228,7 +238,7 @@ describe("useTotalsFetch", () => {
     expect(cachedData).toEqual(mockTotals);
   });
 
-  it("should return object structure from dummy data on error", async () => {
+  it("should handle 401 unauthorized errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the fetch call to return a 401 error
@@ -238,18 +248,46 @@ describe("useTotalsFetch", () => {
       }),
     );
 
+    const consoleSpy = jest.spyOn(console, "error");
+
+    const { result } = renderHook(() => useTotalsFetch(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Failed to fetch");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("should provide refetch capability", async () => {
+    const queryClient = createTestQueryClient();
+
+    const mockTotals: Totals = {
+      totals: 100.0,
+      totalsFuture: 200.0,
+      totalsCleared: 150.0,
+      totalsOutstanding: 50.0,
+    };
+
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockTotals), { status: 200 }),
+      );
+
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Should return dummy totals (object format)
-    expect(typeof result.current.data).toBe("object");
-    expect(result.current.data).toBeDefined();
-    expect(result.current.data).toHaveProperty("totals");
-    expect(result.current.data).toHaveProperty("totalsFuture");
-    expect(result.current.data).toHaveProperty("totalsCleared");
-    expect(result.current.data).toHaveProperty("totalsOutstanding");
+    expect(result.current.refetch).toBeDefined();
+    expect(typeof result.current.refetch).toBe("function");
   });
 });

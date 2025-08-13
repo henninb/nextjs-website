@@ -16,6 +16,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import EmptyState from "../../components/EmptyState";
+import LoadingState from "../../components/LoadingState";
 import useFetchDescription from "../../hooks/useDescriptionFetch";
 import useDescriptionInsert from "../../hooks/useDescriptionInsert";
 import useDescriptionDelete from "../../hooks/useDescriptionDelete";
@@ -46,6 +49,7 @@ export default function Descriptions() {
     isLoading: isFetchingDescriptions,
     isError: isErrorDescriptions,
     error: errorDescriptions,
+    refetch: refetchDescriptions,
   } = useFetchDescription();
   const { mutateAsync: insertDescription } = useDescriptionInsert();
   const { mutateAsync: updateDescription } = useDescriptionUpdate();
@@ -162,6 +166,33 @@ export default function Descriptions() {
     },
   ];
 
+  // Handle error states first
+  if (isErrorDescriptions) {
+    return (
+      <FinanceLayout>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Description Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Create and manage transaction descriptions to standardize your
+            financial record keeping
+          </Typography>
+        </Box>
+        <ErrorDisplay
+          error={errorDescriptions}
+          variant="card"
+          showRetry={true}
+          onRetry={() => refetchDescriptions()}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -179,7 +210,7 @@ export default function Descriptions() {
           </Typography>
         </Box>
         {showSpinner ? (
-          <Spinner />
+          <LoadingState variant="card" message="Loading descriptions..." />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
@@ -194,44 +225,58 @@ export default function Descriptions() {
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
-                <DataGrid
-                  rows={fetchedDescrptions?.filter((row) => row != null) || []}
-                  columns={columns}
-                  getRowId={(row) => row.descriptionId || 0}
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  pagination
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  autoHeight
-                  processRowUpdate={async (
-                    newRow: Description,
-                    oldRow: Description,
-                  ): Promise<Description> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
+                {fetchedDescrptions && fetchedDescrptions.length > 0 ? (
+                  <DataGrid
+                    rows={
+                      fetchedDescrptions?.filter((row) => row != null) || []
                     }
-                    try {
-                      await updateDescription({
-                        oldDescription: oldRow,
-                        newDescription: newRow,
-                      });
-                      setMessage("Description updated successfully.");
-                      setShowSnackbar(true);
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Update Description error: ${error.message}`,
-                        false,
-                      );
-                      throw error;
+                    columns={columns}
+                    getRowId={(row) => row.descriptionId || 0}
+                    checkboxSelection={false}
+                    rowSelection={false}
+                    pagination
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={(newModel) =>
+                      setPaginationModel(newModel)
                     }
-                  }}
-                />
+                    pageSizeOptions={[25, 50, 100]}
+                    autoHeight
+                    processRowUpdate={async (
+                      newRow: Description,
+                      oldRow: Description,
+                    ): Promise<Description> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updateDescription({
+                          oldDescription: oldRow,
+                          newDescription: newRow,
+                        });
+                        setMessage("Description updated successfully.");
+                        setShowSnackbar(true);
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(
+                          error,
+                          `Update Description error: ${error.message}`,
+                          false,
+                        );
+                        throw error;
+                      }
+                    }}
+                  />
+                ) : (
+                  <EmptyState
+                    title="No Descriptions Found"
+                    message="You haven't created any descriptions yet. Create your first description to standardize your transaction records."
+                    dataType="descriptions"
+                    variant="create"
+                    actionLabel="Add Description"
+                    onAction={() => setShowModalAdd(true)}
+                    onRefresh={() => refetchDescriptions()}
+                  />
+                )}
               </Box>
             </Box>
             <div>

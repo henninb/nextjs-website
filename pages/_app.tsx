@@ -23,7 +23,34 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             staleTime: 5 * 60 * 1000, // 5 minutes
             gcTime: 10 * 60 * 1000, // 10 minutes
             refetchOnWindowFocus: false,
-            retry: 1,
+            retry: (failureCount, error: any) => {
+              // Don't retry on certain errors
+              if (
+                error?.message?.includes("401") ||
+                error?.message?.includes("403")
+              ) {
+                return false; // Authentication/authorization errors
+              }
+              if (error?.message?.includes("404")) {
+                return false; // Not found errors
+              }
+              // Retry network errors up to 3 times with exponential backoff
+              return failureCount < 3;
+            },
+            retryDelay: (attemptIndex) =>
+              Math.min(1000 * 2 ** attemptIndex, 30000),
+            throwOnError: false, // Let components handle errors gracefully
+          },
+          mutations: {
+            retry: (failureCount, error: any) => {
+              // Don't retry mutations on client errors (4xx)
+              if (error?.message?.includes("4")) {
+                return false;
+              }
+              // Only retry server errors (5xx) once
+              return failureCount < 1;
+            },
+            throwOnError: false,
           },
         },
       }),

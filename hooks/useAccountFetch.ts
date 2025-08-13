@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Account from "../model/Account";
-import { dummyAccounts } from "../data/dummyAccounts";
 import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
@@ -19,8 +18,8 @@ const fetchAccountData = async (): Promise<Account[] | null> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
-        //return dataTest; // Return mock data on 404
+        console.log("No accounts found (404).");
+        return []; // Return empty array for 404, meaning no accounts
       }
       const errorDetails = await response.json();
       throw new Error(
@@ -30,8 +29,8 @@ const fetchAccountData = async (): Promise<Account[] | null> => {
 
     return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
-    console.log("Error fetching account data:", error);
-    return dummyAccounts;
+    console.error("Error fetching account data:", error);
+    throw new Error(`Failed to fetch account data: ${error.message}`);
   }
 };
 

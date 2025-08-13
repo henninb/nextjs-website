@@ -17,6 +17,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import EmptyState from "../../components/EmptyState";
+import LoadingState from "../../components/LoadingState";
 import USDAmountInput from "../../components/USDAmountInput";
 import useFetchPayment from "../../hooks/usePaymentFetch";
 import usePaymentInsert from "../../hooks/usePaymentInsert";
@@ -63,12 +66,14 @@ export default function Payments() {
     isSuccess: isSuccessPayments,
     isFetching: isFetchingPayments,
     error: errorPayments,
+    refetch: refetchPayments,
   } = useFetchPayment();
   const {
     data: fetchedAccounts,
     isSuccess: isSuccessAccounts,
     isFetching: isFetchingAccounts,
     error: errorAccounts,
+    refetch: refetchAccounts,
   } = useAccountFetch();
 
   const {
@@ -76,6 +81,7 @@ export default function Payments() {
     isSuccess: isSuccessParameters,
     isFetching: isFetchingParameters,
     error: errorParameters,
+    refetch: refetchParameters,
   } = useParameterFetch();
 
   const { mutateAsync: insertPayment } = usePaymentInsert();
@@ -103,16 +109,14 @@ export default function Payments() {
     }
     if (isSuccessPayments && isSuccessAccounts && isSuccessParameters) {
       setShowSpinner(false);
-    } else if (errorPayments || errorAccounts || errorParameters) {
-      setShowSpinner(false);
-      setMessage("Error fetching data.");
-      setShowSnackbar(true);
     }
   }, [
     isSuccessPayments,
     isSuccessAccounts,
+    isSuccessParameters,
     errorPayments,
     errorAccounts,
+    errorParameters,
     isFetchingPayments,
     isFetchingAccounts,
     isFetchingParameters,
@@ -290,6 +294,37 @@ export default function Payments() {
     },
   ];
 
+  // Handle error states first
+  if (errorPayments || errorAccounts || errorParameters) {
+    return (
+      <FinanceLayout>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Payment Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Track and manage payments between accounts with automated
+            transaction processing
+          </Typography>
+        </Box>
+        <ErrorDisplay
+          error={errorPayments || errorAccounts || errorParameters}
+          variant="card"
+          showRetry={true}
+          onRetry={() => {
+            if (errorPayments) refetchPayments();
+            if (errorAccounts) refetchAccounts();
+            if (errorParameters) refetchParameters();
+          }}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -307,7 +342,10 @@ export default function Payments() {
           </Typography>
         </Box>
         {showSpinner ? (
-          <Spinner />
+          <LoadingState
+            variant="card"
+            message="Loading payments and accounts..."
+          />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
@@ -370,23 +408,19 @@ export default function Payments() {
                     }}
                   />
                 ) : (
-                  <Paper sx={{ p: 4, textAlign: "center", minWidth: 600 }}>
-                    <Typography
-                      variant="h6"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      No Payments Found
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}
-                    >
-                      No payments have been recorded yet. Click "Add Payment" to
-                      create your first payment.
-                    </Typography>
-                  </Paper>
+                  <EmptyState
+                    title="No Payments Found"
+                    message="No payments have been recorded yet. Create your first payment to get started."
+                    dataType="payments"
+                    variant="create"
+                    actionLabel="Add Payment"
+                    onAction={() => setShowModalAdd(true)}
+                    onRefresh={() => {
+                      refetchPayments();
+                      refetchAccounts();
+                      refetchParameters();
+                    }}
+                  />
                 )}
               </Box>
             </Box>

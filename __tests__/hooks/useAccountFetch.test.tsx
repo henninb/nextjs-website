@@ -21,6 +21,10 @@ const createTestQueryClient = () =>
     defaultOptions: {
       queries: {
         retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
       },
       mutations: {
         retry: false,
@@ -83,14 +87,14 @@ describe("useAccountFetch", () => {
     global.fetch = originalFetch;
   });
 
-  it("should handle 404 errors and return dummy data", async () => {
+  it("should handle 404 as empty data (no accounts found)", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to return 404
     const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
-      .mockResolvedValueOnce(
+      .mockResolvedValue(
         new Response(JSON.stringify({ message: "Not found" }), { status: 404 }),
       );
 
@@ -100,40 +104,47 @@ describe("useAccountFetch", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    // Wait for the success state with empty data
+    await waitFor(() => expect(result.current.isSuccess).toBe(true), {
+      timeout: 5000,
+    });
 
-    // Should return dummy data when 404
-    expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching account data:",
-      expect.anything(),
-    );
+    // Should return empty array for 404 (no accounts found)
+    expect(result.current.data).toEqual([]);
+    expect(result.current.isSuccess).toBe(true);
+    expect(result.current.isError).toBe(false);
+    expect(consoleSpy).toHaveBeenCalledWith("No accounts found (404).");
 
     consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 
-  it("should handle network errors and return dummy data", async () => {
+  it("should handle network errors properly", async () => {
     const queryClient = createTestQueryClient();
 
-    // Mock the global fetch function to return 500 error
+    // Mock the global fetch function to return 500 error for all calls
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
+    global.fetch = jest.fn().mockResolvedValue(
       new Response(JSON.stringify({ message: "Internal server error" }), {
         status: 500,
       }),
     );
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
 
-    // Should return dummy data on error
-    expect(result.current.data).toBeDefined();
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Failed to fetch");
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching account data:",
       expect.anything(),
@@ -164,16 +175,58 @@ describe("useAccountFetch", () => {
     global.fetch = originalFetch;
   });
 
-  it("should log errors when query fails", async () => {
+  it("should handle fetch rejection errors properly", async () => {
     const queryClient = createTestQueryClient();
 
-    // Mock the global fetch function to throw an error
+    // Mock the global fetch function to throw an error for all calls
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
+
+    const consoleSpy = jest.spyOn(console, "error");
+
+    const { result } = renderHook(() => useAccountFetch(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
+
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching account data:",
+      expect.anything(),
+    );
+
+    consoleSpy.mockRestore();
+    global.fetch = originalFetch;
+  });
+
+  it("should provide refetch capability", async () => {
+    const queryClient = createTestQueryClient();
+
+    const mockAccounts: Account[] = [
+      {
+        accountId: 1,
+        accountNameOwner: "test_account",
+        accountType: "debit",
+        activeStatus: true,
+        moniker: "1111",
+        outstanding: 100,
+        future: 300,
+        cleared: 200,
+      },
+    ];
+
     const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
-      .mockRejectedValueOnce(new Error("Network failure"));
-
-    const consoleSpy = jest.spyOn(console, "log");
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockAccounts), { status: 200 }),
+      );
 
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),
@@ -181,12 +234,9 @@ describe("useAccountFetch", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching account data:",
-      expect.anything(),
-    );
+    expect(result.current.refetch).toBeDefined();
+    expect(typeof result.current.refetch).toBe("function");
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 });

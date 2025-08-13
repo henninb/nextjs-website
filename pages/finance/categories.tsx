@@ -17,6 +17,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import EmptyState from "../../components/EmptyState";
+import LoadingState from "../../components/LoadingState";
 import useFetchCategory from "../../hooks/useCategoryFetch";
 import useCategoryInsert from "../../hooks/useCategoryInsert";
 import useCategoryDelete from "../../hooks/useCategoryDelete";
@@ -43,6 +46,7 @@ export default function Categories() {
     isSuccess: isSuccessCategories,
     isLoading: isFetchingCategories,
     isError: isErrorCategories,
+    error: errorCategories,
     refetch,
   } = useFetchCategory();
   const { mutateAsync: insertCategory } = useCategoryInsert();
@@ -64,17 +68,6 @@ export default function Categories() {
     }
     if (isSuccessCategories) {
       setShowSpinner(false);
-      setFetchError(null);
-      if (typeof window !== "undefined") {
-        const cachedData = localStorage.getItem("cachedCategories");
-        if (cachedData) {
-          setFallbackData(JSON.parse(cachedData));
-        }
-      }
-    }
-    if (isErrorCategories) {
-      setShowSpinner(false);
-      setFetchError("Failed to load categories. Please check your connection.");
     }
   }, [
     isSuccessCategories,
@@ -181,6 +174,33 @@ export default function Categories() {
     },
   ];
 
+  // Handle error states first
+  if (isErrorCategories) {
+    return (
+      <FinanceLayout>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Category Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Organize your transactions by creating and managing categories for
+            better financial tracking
+          </Typography>
+        </Box>
+        <ErrorDisplay
+          error={errorCategories}
+          variant="card"
+          showRetry={true}
+          onRetry={() => refetch()}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -198,38 +218,7 @@ export default function Categories() {
           </Typography>
         </Box>
         {showSpinner ? (
-          <Spinner />
-        ) : fetchError ? (
-          <Box sx={{ textAlign: "center", mt: 3 }}>
-            <Alert severity="error">{fetchError}</Alert>
-            {fallbackData.length > 0 ? (
-              <>
-                <Typography variant="body1" sx={{ mt: 2 }}>
-                  Showing cached data instead:
-                </Typography>
-                <DataGrid
-                  rows={fallbackData}
-                  columns={columns}
-                  getRowId={(row) => row.categoryId || 0}
-                />
-              </>
-            ) : (
-              <Typography variant="body1" sx={{ mt: 2 }}>
-                No cached data available.
-              </Typography>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-              onClick={() => {
-                setShowSpinner(true);
-                refetch();
-              }}
-            >
-              Retry
-            </Button>
-          </Box>
+          <LoadingState variant="card" message="Loading categories..." />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
@@ -244,44 +233,55 @@ export default function Categories() {
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "100%", maxWidth: "800px" }}>
-                <DataGrid
-                  //rows={data?.filter((row) => row != null) || []}
-                  rows={fetchedCategories || []}
-                  columns={columns}
-                  getRowId={(row) => row.categoryId || 0}
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  autoHeight
-                  disableColumnResize={false}
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                  processRowUpdate={async (
-                    newRow: Category,
-                    oldRow: Category,
-                  ): Promise<Category> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
-                    }
-                    try {
-                      await updateCategory({
-                        oldCategory: oldRow,
-                        newCategory: newRow,
-                      });
-                      setMessage("Category updated successfully.");
-                      setShowSnackbar(true);
+                {fetchedCategories && fetchedCategories.length > 0 ? (
+                  <DataGrid
+                    rows={fetchedCategories || []}
+                    columns={columns}
+                    getRowId={(row) => row.categoryId || 0}
+                    checkboxSelection={false}
+                    rowSelection={false}
+                    autoHeight
+                    disableColumnResize={false}
+                    sx={{
+                      "& .MuiDataGrid-cell": {
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      },
+                    }}
+                    processRowUpdate={async (
+                      newRow: Category,
+                      oldRow: Category,
+                    ): Promise<Category> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updateCategory({
+                          oldCategory: oldRow,
+                          newCategory: newRow,
+                        });
+                        setMessage("Category updated successfully.");
+                        setShowSnackbar(true);
 
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(error, "Update Category failure.", false);
-                      throw error;
-                    }
-                  }}
-                />
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(error, "Update Category failure.", false);
+                        throw error;
+                      }
+                    }}
+                  />
+                ) : (
+                  <EmptyState
+                    title="No Categories Found"
+                    message="You haven't created any categories yet. Create your first category to organize your transactions."
+                    dataType="categories"
+                    variant="create"
+                    actionLabel="Add Category"
+                    onAction={() => setShowModalAdd(true)}
+                    onRefresh={() => refetch()}
+                  />
+                )}
               </Box>
             </Box>
           </div>

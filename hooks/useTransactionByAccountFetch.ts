@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
-import { dummyTransactions } from "../data/dummyTransactions";
 import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
@@ -31,9 +30,11 @@ const fetchTransactionsByAccount = async (
     }
 
     return response.status !== 204 ? await response.json() : null;
-  } catch (error) {
-    console.log("Error fetching transactionsByAccount data:", error);
-    return dummyTransactions;
+  } catch (error: any) {
+    console.error("Error fetching transaction by account data:", error);
+    throw new Error(
+      `Failed to fetch transaction by account data: ${error.message}`,
+    );
   }
 };
 

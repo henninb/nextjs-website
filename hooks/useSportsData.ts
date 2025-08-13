@@ -43,9 +43,7 @@ export function useSportsData(apiEndpoint: string): SportsDataHook {
 
       setError(errorMessage);
       console.error("Error fetching sports data:", err);
-
-      // Set empty array as fallback data to show empty table instead of error
-      setData([]);
+      throw new Error(`Failed to fetch sports data: ${errorMessage}`);
     } finally {
       setLoading(false);
     }

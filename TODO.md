@@ -213,7 +213,7 @@ This issue resolution restored proper accounting integrity and eliminated a sign
 ### Hooks Using External Dummy Data Files:
 
 1. **useAccountFetch.ts** - Returns `dummyAccounts` from `../data/dummyAccounts` (line 34)
-2. **useCategoryFetch.ts** - Returns `dummyCategories` from `../data/dummyCategories` (line 29) 
+2. **useCategoryFetch.ts** - Returns `dummyCategories` from `../data/dummyCategories` (line 29)
 3. **useDescriptionFetch.ts** - Returns `dummyDescriptions` from `../data/dummyDescriptions` (line 29)
 4. **useParameterFetch.ts** - Returns `dummyParameters` from `../data/dummyParameters` (line 31)
 5. **usePaymentFetch.ts** - Returns `dummyPayments` from `../data/dummyPayments` (line 31)
@@ -226,10 +226,11 @@ This issue resolution restored proper accounting integrity and eliminated a sign
 ### Hooks Using Hardcoded Dummy Data:
 
 11. **useTotalsPerAccountFetch.ts** - Returns hardcoded totals object (lines 35-41):
+
     ```typescript
     {
       totalsOutstanding: 1.0,
-      totalsFuture: 25.45, 
+      totalsFuture: 25.45,
       totalsCleared: -25.45,
       totals: 0.0
     }
@@ -242,12 +243,14 @@ This issue resolution restored proper accounting integrity and eliminated a sign
 14. **useSportsData.ts** - Returns empty array `[]` as fallback (line 48)
 
 ### Summary:
+
 - **Total hooks analyzed:** 44
 - **Hooks with dummy data:** 14 (31.8%)
 - **Pattern:** All dummy data is returned in catch blocks when API calls fail
 - **Purpose:** Ensures application continues functioning with fallback data when backend is unavailable
 
 ### Recommendations:
+
 - Consider adding visual indicators when dummy data is being displayed
 - Review if all dummy data sources are still needed
 - Evaluate whether some hooks should show loading states instead of dummy data

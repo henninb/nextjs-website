@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Description from "../model/Description";
-import { dummyDescriptions } from "../data/dummyDescriptions";
 import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
@@ -18,15 +17,16 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Resource not found (404).");
+        console.log("No descriptions found (404).");
+        return []; // Return empty array for 404, meaning no descriptions
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
-  } catch (error) {
-    console.log("Error fetching description data:", error);
-    return dummyDescriptions;
+  } catch (error: any) {
+    console.error("Error fetching description data:", error);
+    throw new Error(`Failed to fetch description data: ${error.message}`);
   }
 };
 

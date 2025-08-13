@@ -18,6 +18,9 @@ import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
 import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
+import ErrorDisplay from "../../../components/ErrorDisplay";
+import EmptyState from "../../../components/EmptyState";
+import LoadingState from "../../../components/LoadingState";
 import USDAmountInput from "../../../components/USDAmountInput";
 import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
 import useTransactionUpdate from "../../../hooks/useTransactionUpdate";
@@ -101,6 +104,7 @@ export default function TransactionsByAccount() {
     isLoading: isFetchingTransactions,
     isError: isErrorTransactions,
     error: errorTransactions,
+    refetch: refetchTransactions,
   } = useTransactionByAccountFetch(validAccountNameOwner);
   const {
     data: fetchedTotals,
@@ -108,6 +112,7 @@ export default function TransactionsByAccount() {
     isLoading: isFetchingTotals,
     isError: isErrorTotals,
     error: errorTotals,
+    refetch: refetchTotals,
   } = useTotalsPerAccountFetch(validAccountNameOwner);
   const {
     data: fetchedValidationData,
@@ -115,6 +120,7 @@ export default function TransactionsByAccount() {
     isLoading: isFetchingValidationTotals,
     isError: isErrorValidationTotals,
     error: errorValidationTotals,
+    refetch: refetchValidationData,
   } = useValidationAmountFetch(validAccountNameOwner);
   const {
     data: fetchedAccounts,
@@ -122,6 +128,7 @@ export default function TransactionsByAccount() {
     isLoading: isFetchingAccounts,
     isError: isErrorAccounts,
     error: errorAccounts,
+    refetch: refetchAccounts,
   } = useAccountFetch();
 
   const initialTransactionData: Transaction = useMemo(() => {
@@ -173,6 +180,7 @@ export default function TransactionsByAccount() {
     isLoading: isFetchingCategories,
     isError: isErrorCategories,
     error: errorCategories,
+    refetch: refetchCategories,
   } = useCategoryFetch();
   const {
     data: fetchedDescriptions,
@@ -180,6 +188,7 @@ export default function TransactionsByAccount() {
     isLoading: isFetchingDescriptions,
     isError: isErrorDescriptions,
     error: errorDescriptions,
+    refetch: refetchDescriptions,
   } = useDescriptionFetch();
 
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
@@ -604,6 +613,54 @@ export default function TransactionsByAccount() {
     [updateTransaction, handleError],
   );
 
+  // Handle error states first
+  if (
+    isErrorTransactions ||
+    isErrorTotals ||
+    isErrorValidationTotals ||
+    isErrorAccounts ||
+    isErrorCategories ||
+    isErrorDescriptions
+  ) {
+    return (
+      <FinanceLayout>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            {validAccountNameOwner || "Account Transactions"}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            View and manage all transactions for this account. Track balances,
+            edit transactions, and monitor account activity.
+          </Typography>
+        </Box>
+        <ErrorDisplay
+          error={
+            errorTransactions ||
+            errorTotals ||
+            errorValidationTotals ||
+            errorAccounts ||
+            errorCategories ||
+            errorDescriptions
+          }
+          variant="card"
+          showRetry={true}
+          onRetry={() => {
+            if (errorTransactions) refetchTransactions();
+            if (errorTotals) refetchTotals();
+            if (errorValidationTotals) refetchValidationData();
+            if (errorAccounts) refetchAccounts();
+            if (errorCategories) refetchCategories();
+            if (errorDescriptions) refetchDescriptions();
+          }}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -621,7 +678,10 @@ export default function TransactionsByAccount() {
           </Typography>
         </Box>
         {showSpinner ? (
-          <Spinner />
+          <LoadingState
+            variant="card"
+            message="Loading account transactions..."
+          />
         ) : (
           <div>
             <div>
@@ -805,23 +865,19 @@ export default function TransactionsByAccount() {
                       onRowSelectionModelChange={setRowSelectionModel}
                     />
                   ) : (
-                    <Paper sx={{ p: 4, textAlign: "center", minWidth: 800 }}>
-                      <Typography
-                        variant="h6"
-                        color="text.secondary"
-                        gutterBottom
-                      >
-                        No Transactions Found
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 2 }}
-                      >
-                        This account doesn't have any transactions yet. Click
-                        "Add Transaction" to create your first transaction.
-                      </Typography>
-                    </Paper>
+                    <EmptyState
+                      title="No Transactions Found"
+                      message="This account doesn't have any transactions yet. Create your first transaction to get started."
+                      dataType="transactions"
+                      variant="create"
+                      actionLabel="Add Transaction"
+                      onAction={() => setShowModalAdd(true)}
+                      onRefresh={() => {
+                        refetchTransactions();
+                        refetchTotals();
+                        refetchValidationData();
+                      }}
+                    />
                   )}
                 </Box>
               </Box>

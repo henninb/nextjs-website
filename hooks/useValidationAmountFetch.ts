@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { TransactionState } from "../model/TransactionState";
 import ValidationAmount from "../model/ValidationAmount";
-import { dummyValidationAmount } from "../data/dummyValidationAmount";
 import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
@@ -31,9 +30,9 @@ export const fetchValidationAmount = async (
     }
 
     return response.json();
-  } catch (error) {
-    console.log("Error fetching validationAmount data:", error);
-    return dummyValidationAmount;
+  } catch (error: any) {
+    console.error("Error fetching validation amount data:", error);
+    throw new Error(`Failed to fetch validation amount data: ${error.message}`);
   }
 };
 

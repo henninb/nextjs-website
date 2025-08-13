@@ -20,6 +20,8 @@ import FinanceLayout from "../../../../layouts/FinanceLayout";
 import usePendingTransactions from "../../../../hooks/usePendingTransactionFetch";
 import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
+import ErrorDisplay from "../../../../components/ErrorDisplay";
+import LoadingState from "../../../../components/LoadingState";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import { currencyFormat } from "../../../../components/Common";
 import usePendingTransactionDeleteAll from "../../../../hooks/usePendingTransactionDeleteAll";
@@ -41,6 +43,7 @@ export default function TransactionImporter() {
     isSuccess: isPendingTransactionsLoaded,
     isFetching: isFetchingPendingTransactions,
     error: errorPendingTransactions,
+    refetch: refetchPendingTransactions,
   } = usePendingTransactions();
 
   const { mutateAsync: insertTransaction } = useTransactionInsert();
@@ -321,6 +324,21 @@ export default function TransactionImporter() {
     },
   ];
 
+  // Handle error states first
+  if (errorPendingTransactions) {
+    return (
+      <FinanceLayout>
+        <Typography variant="h6">Transaction Import</Typography>
+        <ErrorDisplay
+          error={errorPendingTransactions}
+          variant="card"
+          showRetry={true}
+          onRetry={() => refetchPendingTransactions()}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -348,7 +366,10 @@ export default function TransactionImporter() {
           </Box>
         </Box>
         {showSpinner ? (
-          <Spinner />
+          <LoadingState
+            variant="card"
+            message="Loading pending transactions..."
+          />
         ) : (
           <div>
             <Box display="flex" justifyContent="center">

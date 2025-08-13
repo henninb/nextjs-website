@@ -17,6 +17,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import EmptyState from "../../components/EmptyState";
+import LoadingState from "../../components/LoadingState";
 import USDAmountInput from "../../components/USDAmountInput";
 import useFetchTransfer from "../../hooks/useTransferFetch";
 import useTransferInsert from "../../hooks/useTransferInsert";
@@ -81,18 +84,18 @@ export default function Transfers() {
     isSuccess: isSuccessAccounts,
     isFetching: isFetchingAccounts,
     error: errorAccounts,
+    refetch: refetchAccounts,
   } = useAccountFetch();
   const {
     data: fetchedTransfers,
     isSuccess: isSuccessTransfers,
     isFetching: isFetchingTransfers,
     error: errorTransfers,
+    refetch: refetchTransfers,
   } = useFetchTransfer();
 
-  const transfersToDisplay = errorTransfers
-    ? dummyTransfers
-    : fetchedTransfers?.filter((row) => row != null) || [];
-  //const transfersToDisplay = fetchedTransfers || [];
+  const transfersToDisplay =
+    fetchedTransfers?.filter((row) => row != null) || [];
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -117,10 +120,6 @@ export default function Transfers() {
     }
     if (isSuccessTransfers && isSuccessAccounts) {
       setShowSpinner(false);
-    } else if (errorTransfers || errorAccounts) {
-      setShowSpinner(false);
-      setMessage("Error fetching data.");
-      setShowSnackbar(true);
     }
   }, [
     isSuccessTransfers,
@@ -332,6 +331,36 @@ export default function Transfers() {
     },
   ];
 
+  // Handle error states first
+  if (errorTransfers || errorAccounts) {
+    return (
+      <FinanceLayout>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Transfer Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Move funds between accounts with automated transaction creation and
+            tracking
+          </Typography>
+        </Box>
+        <ErrorDisplay
+          error={errorTransfers || errorAccounts}
+          variant="card"
+          showRetry={true}
+          onRetry={() => {
+            if (errorTransfers) refetchTransfers();
+            if (errorAccounts) refetchAccounts();
+          }}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -349,7 +378,10 @@ export default function Transfers() {
           </Typography>
         </Box>
         {showSpinner ? (
-          <Spinner />
+          <LoadingState
+            variant="card"
+            message="Loading transfers and accounts..."
+          />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
@@ -416,23 +448,18 @@ export default function Transfers() {
                     }}
                   />
                 ) : (
-                  <Paper sx={{ p: 4, textAlign: "center", minWidth: 600 }}>
-                    <Typography
-                      variant="h6"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      No Transfers Found
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}
-                    >
-                      No transfers have been created yet. Click "Add Transfer"
-                      to move funds between accounts.
-                    </Typography>
-                  </Paper>
+                  <EmptyState
+                    title="No Transfers Found"
+                    message="No transfers have been created yet. Create your first transfer to move funds between accounts."
+                    dataType="transfers"
+                    variant="create"
+                    actionLabel="Add Transfer"
+                    onAction={() => setShowModalAdd(true)}
+                    onRefresh={() => {
+                      refetchTransfers();
+                      refetchAccounts();
+                    }}
+                  />
                 )}
               </Box>
             </Box>

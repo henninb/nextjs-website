@@ -93,6 +93,9 @@ describe("Configuration Component", () => {
 
     render(<Configuration />, { wrapper: createWrapper() });
 
-    expect(screen.getByTestId("loader")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    expect(
+      screen.getByText("Loading configuration parameters..."),
+    ).toBeInTheDocument();
   });
 });

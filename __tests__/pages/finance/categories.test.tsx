@@ -95,7 +95,8 @@ describe("Categories Component", () => {
 
     render(<Categories />, { wrapper: createWrapper() });
 
-    expect(screen.getByTestId("loader")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    expect(screen.getByText("Loading categories...")).toBeInTheDocument();
   });
 
   it("shows error state with retry button", () => {
@@ -111,12 +112,10 @@ describe("Categories Component", () => {
     render(<Categories />, { wrapper: createWrapper() });
 
     expect(
-      screen.getByText(
-        "Failed to load categories. Please check your connection.",
-      ),
+      screen.getByText("An unexpected error occurred. Please try again."),
     ).toBeInTheDocument();
 
-    const retryButton = screen.getByText("Retry");
+    const retryButton = screen.getByText("Try Again");
     fireEvent.click(retryButton);
     expect(mockRefetch).toHaveBeenCalled();
   });
@@ -218,9 +217,7 @@ describe("Categories Component", () => {
 
     // The component shows an error message instead of cached data text in this case
     expect(
-      screen.getByText(
-        "Failed to load categories. Please check your connection.",
-      ),
+      screen.getByText("An unexpected error occurred. Please try again."),
     ).toBeInTheDocument();
   });
 

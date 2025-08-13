@@ -30,14 +30,11 @@ const fetchTotalsPerAccount = async (
 
     const data = await response.json();
     return data;
-  } catch (error) {
-    console.log("Error fetching totalsPerAccount data:", error);
-    return {
-      totalsOutstanding: 1.0,
-      totalsFuture: 25.45,
-      totalsCleared: -25.45,
-      totals: 0.0,
-    };
+  } catch (error: any) {
+    console.error("Error fetching totals per account data:", error);
+    throw new Error(
+      `Failed to fetch totals per account data: ${error.message}`,
+    );
   }
 };
 

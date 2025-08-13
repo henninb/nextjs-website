@@ -9,6 +9,8 @@ import {
   Chip,
   IconButton,
 } from "@mui/material";
+import ErrorDisplay from "./ErrorDisplay";
+import LoadingState from "./LoadingState";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { useRouter } from "next/router";
 import useFetchAccount from "../hooks/useAccountFetch";
@@ -35,7 +37,8 @@ export default function SelectNavigateAccounts({
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [maxWidth, setMaxWidth] = useState<number>(200);
   const router = useRouter();
-  const { data, isSuccess, isError } = useFetchAccount();
+  const { data, isSuccess, isError, error, isLoading, refetch } =
+    useFetchAccount();
   const { trackAccountVisit, removeAccount, getMostUsedAccounts } =
     useAccountUsageTracking();
 
@@ -88,14 +91,38 @@ export default function SelectNavigateAccounts({
 
   if (isError) {
     return (
-      <div className="error-message">
-        <p>Error fetching accounts. Please try again.</p>
-      </div>
+      <Box sx={{ width: "100%" }}>
+        <ErrorDisplay
+          error={error}
+          variant="inline"
+          showRetry={true}
+          onRetry={() => refetch()}
+        />
+      </Box>
     );
   }
 
-  if (!isSuccess || options.length === 0) {
-    return <div>Loading accounts or no accounts available...</div>;
+  if (isLoading || !isSuccess) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LoadingState
+          variant="skeleton"
+          message="Loading accounts..."
+          size="small"
+          rows={1}
+        />
+      </Box>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <Box sx={{ width: "100%", p: 2, textAlign: "center" }}>
+        <Typography variant="body2" color="text.secondary">
+          No accounts available
+        </Typography>
+      </Box>
+    );
   }
 
   const mostUsedAccounts = getMostUsedAccounts(data || [], 4);

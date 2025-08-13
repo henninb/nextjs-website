@@ -1,5 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Box, Button, Typography } from "@mui/material";
+import ErrorDisplay from "./ErrorDisplay";
+import LoadingState from "./LoadingState";
 import useAccountFetch from "../hooks/useAccountFetch";
 import useCategoryFetch from "../hooks/useCategoryFetch";
 import useDescriptionFetch from "../hooks/useDescriptionFetch";
@@ -23,14 +25,54 @@ const BackupRestore: React.FC = () => {
   const [message, setMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: accounts } = useAccountFetch();
-  const { data: categories } = useCategoryFetch();
-  const { data: descriptions } = useDescriptionFetch();
-  const { data: parameters } = useParameterFetch();
-  const { data: payments } = usePaymentFetch();
-  const { data: pendingTransactions } = usePendingTransactionFetch();
-  const { data: transactions } = useTransactionByAccountFetch("");
-  const { data: transfers } = useTransferFetch();
+  const {
+    data: accounts,
+    isError: isErrorAccounts,
+    error: errorAccounts,
+    refetch: refetchAccounts,
+  } = useAccountFetch();
+  const {
+    data: categories,
+    isError: isErrorCategories,
+    error: errorCategories,
+    refetch: refetchCategories,
+  } = useCategoryFetch();
+  const {
+    data: descriptions,
+    isError: isErrorDescriptions,
+    error: errorDescriptions,
+    refetch: refetchDescriptions,
+  } = useDescriptionFetch();
+  const {
+    data: parameters,
+    isError: isErrorParameters,
+    error: errorParameters,
+    refetch: refetchParameters,
+  } = useParameterFetch();
+  const {
+    data: payments,
+    isError: isErrorPayments,
+    error: errorPayments,
+    refetch: refetchPayments,
+  } = usePaymentFetch();
+  const {
+    data: pendingTransactions,
+    isError: isErrorPendingTransactions,
+    error: errorPendingTransactions,
+    refetch: refetchPendingTransactions,
+  } = usePendingTransactionFetch();
+  const {
+    data: transactions,
+    isError: isErrorTransactions,
+    error: errorTransactions,
+    refetch: refetchTransactions,
+  } = useTransactionByAccountFetch("");
+  const {
+    data: transfers,
+    isError: isErrorTransfers,
+    error: errorTransfers,
+    refetch: refetchTransfers,
+  } = useTransferFetch();
 
   const { mutateAsync: insertAccount } = useAccountInsert();
   const { mutateAsync: insertCategory } = useCategoryInsert();
@@ -153,6 +195,66 @@ const BackupRestore: React.FC = () => {
     fileInputRef.current?.click();
   };
 
+  // Handle error states first
+  const hasErrors =
+    isErrorAccounts ||
+    isErrorCategories ||
+    isErrorDescriptions ||
+    isErrorParameters ||
+    isErrorPayments ||
+    isErrorPendingTransactions ||
+    isErrorTransactions ||
+    isErrorTransfers;
+
+  if (hasErrors) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Backup and Restore
+        </Typography>
+        <ErrorDisplay
+          error={
+            errorAccounts ||
+            errorCategories ||
+            errorDescriptions ||
+            errorParameters ||
+            errorPayments ||
+            errorPendingTransactions ||
+            errorTransactions ||
+            errorTransfers
+          }
+          variant="card"
+          showRetry={true}
+          onRetry={() => {
+            if (errorAccounts) refetchAccounts();
+            if (errorCategories) refetchCategories();
+            if (errorDescriptions) refetchDescriptions();
+            if (errorParameters) refetchParameters();
+            if (errorPayments) refetchPayments();
+            if (errorPendingTransactions) refetchPendingTransactions();
+            if (errorTransactions) refetchTransactions();
+            if (errorTransfers) refetchTransfers();
+          }}
+        />
+      </Box>
+    );
+  }
+
+  // Handle loading states
+  if (isBackingUp || isRestoring) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Backup and Restore
+        </Typography>
+        <LoadingState
+          variant="card"
+          message={isBackingUp ? "Creating backup..." : "Restoring data..."}
+        />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h6" gutterBottom>
@@ -162,7 +264,7 @@ const BackupRestore: React.FC = () => {
         <Button
           variant="contained"
           onClick={handleBackup}
-          disabled={isBackingUp}
+          disabled={isBackingUp || !accounts}
         >
           {isBackingUp ? "Backing up..." : "Backup to File"}
         </Button>

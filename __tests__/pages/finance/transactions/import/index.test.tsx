@@ -117,7 +117,10 @@ describe("TransactionImporter Component", () => {
       render(<TransactionImporter />, { wrapper: createWrapper() });
     });
 
-    expect(screen.getByTestId("loader")).toBeInTheDocument();
+    // Check for either the old spinner or new LoadingState component
+    const loader = screen.queryByTestId("loader");
+    const progressbar = screen.queryByRole("progressbar");
+    expect(loader || progressbar).toBeInTheDocument();
   });
 
   it("renders transaction input textarea", async () => {

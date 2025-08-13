@@ -327,6 +327,47 @@ jest.mock("../../../components/Spinner", () => {
   };
 });
 
+jest.mock("../../../components/ErrorDisplay", () => {
+  return {
+    __esModule: true,
+    default: ({ error, onRetry }: { error: any; onRetry?: () => void }) => (
+      <div data-testid="error-display">
+        <div>An unexpected error occurred. Please try again.</div>
+        {onRetry && (
+          <button onClick={onRetry} data-testid="retry-button">
+            Try Again
+          </button>
+        )}
+      </div>
+    ),
+  };
+});
+
+jest.mock("../../../components/EmptyState", () => {
+  return {
+    __esModule: true,
+    default: ({ title, message, onAction, onRefresh }: any) => (
+      <div data-testid="empty-state">
+        <div>{title}</div>
+        <div>{message}</div>
+        {onAction && <button onClick={onAction}>Create</button>}
+        {onRefresh && <button onClick={onRefresh}>Refresh</button>}
+      </div>
+    ),
+  };
+});
+
+jest.mock("../../../components/LoadingState", () => {
+  return {
+    __esModule: true,
+    default: ({ message }: { message: string }) => (
+      <div data-testid="loading-state" role="progressbar">
+        {message}
+      </div>
+    ),
+  };
+});
+
 jest.mock("../../../components/SnackbarBaseline", () => {
   return {
     __esModule: true,
@@ -406,7 +447,11 @@ describe("Payments Page - MSW Tests", () => {
 
     render(<Payments />, { wrapper: createWrapper(queryClient) });
 
-    expect(screen.getByTestId("spinner")).toBeInTheDocument();
+    // Check for the loading state component instead of spinner
+    expect(screen.getByTestId("loading-state")).toBeInTheDocument();
+    expect(
+      screen.getByText("Loading payments and accounts..."),
+    ).toBeInTheDocument();
   });
 
   it("renders payment data after loading", async () => {
@@ -416,7 +461,7 @@ describe("Payments Page - MSW Tests", () => {
 
     // Wait for data to load and spinner to disappear
     await waitFor(() => {
-      expect(screen.queryByTestId("spinner")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("loading-state")).not.toBeInTheDocument();
     });
 
     // Check that the page title is rendered
@@ -436,7 +481,7 @@ describe("Payments Page - MSW Tests", () => {
 
     // Wait for data to load
     await waitFor(() => {
-      expect(screen.queryByTestId("spinner")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("loading-state")).not.toBeInTheDocument();
     });
 
     // Click the add button (it's an IconButton with AddIcon)
@@ -457,7 +502,7 @@ describe("Payments Page - MSW Tests", () => {
 
     // Wait for data to load
     await waitFor(() => {
-      expect(screen.queryByTestId("spinner")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("loading-state")).not.toBeInTheDocument();
     });
 
     // Verify that the data grid is rendered
@@ -481,24 +526,16 @@ describe("Payments Page - MSW Tests", () => {
       error: new Error("Server error"),
     });
 
-    const { container } = render(<Payments />, {
+    render(<Payments />, {
       wrapper: createWrapper(queryClient),
     });
 
-    // Wait for error to be processed
-    await waitFor(() => {
-      expect(screen.queryByTestId("spinner")).not.toBeInTheDocument();
-    });
-
-    // Force the snackbar to be shown for test purposes
-    const snackbarElement = screen.getByTestId("snackbar");
-    Object.defineProperty(snackbarElement, "textContent", {
-      writable: true,
-      value: "Error fetching data.",
-    });
-
-    // Simply test that the snackbar element exists
-    expect(snackbarElement).toBeInTheDocument();
+    // Should show the error display component with the sanitized error message
+    expect(screen.getByTestId("error-display")).toBeInTheDocument();
+    expect(
+      screen.getByText("An unexpected error occurred. Please try again."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Payment Management")).toBeInTheDocument();
   });
 });
 
@@ -562,7 +599,8 @@ describe("Payments Component - Hook Mock Tests", () => {
 
     render(<Payments />, { wrapper: createMockWrapper() });
 
-    expect(screen.getByTestId("spinner")).toBeInTheDocument();
+    // Check for the loading state component instead of spinner
+    expect(screen.getByTestId("loading-state")).toBeInTheDocument();
   });
 
   it("opens add payment modal when Add Payment button is clicked", () => {
@@ -665,7 +703,11 @@ describe("Payments Component - Hook Mock Tests", () => {
 
     render(<Payments />, { wrapper: createMockWrapper() });
 
-    expect(screen.getByText("Error fetching data.")).toBeInTheDocument();
+    // Should show the error display component with the sanitized error message
+    expect(screen.getByTestId("error-display")).toBeInTheDocument();
+    expect(
+      screen.getByText("An unexpected error occurred. Please try again."),
+    ).toBeInTheDocument();
   });
 
   it("processes payment amount correctly on blur", () => {

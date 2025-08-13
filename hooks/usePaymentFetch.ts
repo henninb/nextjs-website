@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Payment from "../model/Payment";
-import { dummyPayments } from "../data/dummyPayments";
 //import { basicAuth } from "../Common";
 
 const fetchPaymentData = async (): Promise<Payment[]> => {
@@ -17,7 +16,8 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Data not found (404)");
+        console.log("No payments found (404).");
+        return []; // Return empty array for 404, meaning no payments
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -26,9 +26,9 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
     // Uncomment the line below for debugging
     // console.debug(JSON.stringify(data));
     return data;
-  } catch (error) {
-    console.log("Error fetching payment data:", error);
-    return dummyPayments;
+  } catch (error: any) {
+    console.error("Error fetching payment data:", error);
+    throw new Error(`Failed to fetch payment data: ${error.message}`);
   }
 };
 

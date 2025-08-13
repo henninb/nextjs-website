@@ -134,6 +134,9 @@ describe("Transfers Component", () => {
 
     render(<Transfers />, { wrapper: createWrapper() });
 
-    expect(screen.getByTestId("loader")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    expect(
+      screen.getByText("Loading transfers and accounts..."),
+    ).toBeInTheDocument();
   });
 });

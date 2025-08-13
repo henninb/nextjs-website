@@ -17,6 +17,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import EmptyState from "../../components/EmptyState";
+import LoadingState from "../../components/LoadingState";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import useAccountInsert from "../../hooks/useAccountInsert";
 import useAccountDelete from "../../hooks/useAccountDelete";
@@ -56,12 +59,14 @@ export default function Accounts() {
     isSuccess: isSuccessAccounts,
     isFetching: isFetchingAccounts,
     error: errorAccounts,
+    refetch: refetchAccounts,
   } = useAccountFetch();
   const {
     data: fetchedTotals,
     isSuccess: isSuccessTotals,
     isFetching: isFetchingTotals,
     error: errorTotals,
+    refetch: refetchTotals,
   } = useTotalsFetch();
 
   const { mutateAsync: insertAccount } = useAccountInsert();
@@ -247,6 +252,36 @@ export default function Accounts() {
     },
   ];
 
+  // Handle error states first
+  if (errorAccounts || errorTotals) {
+    return (
+      <FinanceLayout>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            Account Overview
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            View all accounts with current balances and financial status at a
+            glance
+          </Typography>
+        </Box>
+        <ErrorDisplay
+          error={errorAccounts || errorTotals}
+          variant="card"
+          showRetry={true}
+          onRetry={() => {
+            if (errorAccounts) refetchAccounts();
+            if (errorTotals) refetchTotals();
+          }}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -264,7 +299,10 @@ export default function Accounts() {
           </Typography>
         </Box>
         {showSpinner ? (
-          <Spinner />
+          <LoadingState
+            variant="card"
+            message="Loading accounts and totals..."
+          />
         ) : (
           <div>
             <div
@@ -381,23 +419,18 @@ export default function Accounts() {
                     }}
                   />
                 ) : (
-                  <Paper sx={{ p: 4, textAlign: "center", minWidth: 400 }}>
-                    <Typography
-                      variant="h6"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      No Accounts Found
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}
-                    >
-                      You haven't created any accounts yet. Click "Add Account"
-                      to get started.
-                    </Typography>
-                  </Paper>
+                  <EmptyState
+                    title="No Accounts Found"
+                    message="You haven't created any accounts yet. Get started by adding your first account."
+                    dataType="accounts"
+                    variant="create"
+                    actionLabel="Add Account"
+                    onAction={() => setShowModelAdd(true)}
+                    onRefresh={() => {
+                      refetchAccounts();
+                      refetchTotals();
+                    }}
+                  />
                 )}
               </Box>
             </Box>

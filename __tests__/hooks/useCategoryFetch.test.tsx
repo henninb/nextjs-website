@@ -81,7 +81,7 @@ describe("useCategoryFetch", () => {
     global.fetch = originalFetch;
   });
 
-  it("should handle 404 errors and return dummy data", async () => {
+  it("should handle 404 errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to return 404
@@ -100,19 +100,17 @@ describe("useCategoryFetch", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Should return dummy data when 404
-    expect(result.current.data).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith("Resource not found (404).");
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching category data:",
-      expect.anything(),
-    );
+    // Should be successful with empty data for 404
+    expect(result.current.data).toEqual([]);
+    expect(result.current.isError).toBe(false);
+    expect(result.current.error).toBeNull();
+    expect(consoleSpy).toHaveBeenCalledWith("No categories found (404).");
 
     consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 
-  it("should handle 500 server errors and return dummy data", async () => {
+  it("should handle 500 server errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to return 500 error
@@ -123,16 +121,19 @@ describe("useCategoryFetch", () => {
       }),
     );
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should return dummy data on error
-    expect(result.current.data).toBeDefined();
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Failed to fetch");
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching category data:",
       expect.anything(),
@@ -142,7 +143,7 @@ describe("useCategoryFetch", () => {
     global.fetch = originalFetch;
   });
 
-  it("should handle network errors and return dummy data", async () => {
+  it("should handle network errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to throw network error
@@ -151,16 +152,18 @@ describe("useCategoryFetch", () => {
       .fn()
       .mockRejectedValueOnce(new Error("Network failure"));
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should return dummy data on network error
-    expect(result.current.data).toBeDefined();
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching category data:",
       expect.anything(),
@@ -170,26 +173,27 @@ describe("useCategoryFetch", () => {
     global.fetch = originalFetch;
   });
 
-  it("should log errors when query has error state", async () => {
+  it("should handle persistent errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to throw persistent error
     const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
-      .mockRejectedValueOnce(new Error("Persistent network error"))
-      .mockRejectedValueOnce(new Error("Persistent network error"))
       .mockRejectedValueOnce(new Error("Persistent network error"));
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should have logged the fetch error
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching category data:",
       expect.anything(),
@@ -235,7 +239,7 @@ describe("useCategoryFetch", () => {
     global.fetch = originalFetch;
   });
 
-  it("should return empty array structure from dummy data on error", async () => {
+  it("should handle 401 unauthorized errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to return 401 error
@@ -246,15 +250,51 @@ describe("useCategoryFetch", () => {
       }),
     );
 
+    const consoleSpy = jest.spyOn(console, "error");
+
+    const { result } = renderHook(() => useCategoryFetch(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Failed to fetch");
+
+    consoleSpy.mockRestore();
+    global.fetch = originalFetch;
+  });
+
+  it("should provide refetch capability", async () => {
+    const queryClient = createTestQueryClient();
+
+    const mockCategories: Category[] = [
+      {
+        categoryId: 1,
+        categoryName: "test",
+        activeStatus: true,
+        categoryCount: 1,
+      },
+    ];
+
+    const originalFetch = global.fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockCategories), { status: 200 }),
+      );
+
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Should return dummy categories (array format)
-    expect(Array.isArray(result.current.data)).toBe(true);
-    expect(result.current.data).toBeDefined();
+    expect(result.current.refetch).toBeDefined();
+    expect(typeof result.current.refetch).toBe("function");
 
     global.fetch = originalFetch;
   });

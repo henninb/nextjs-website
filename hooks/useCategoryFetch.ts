@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Category from "../model/Category";
-import { dummyCategories } from "../data/dummyCategories";
 import { useAuth } from "../components/AuthProvider";
 //import { basicAuth } from "../Common";
 
@@ -18,15 +17,16 @@ const fetchCategoryData = async (): Promise<Category[]> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Resource not found (404).");
+        console.log("No categories found (404).");
+        return []; // Return empty array for 404, meaning no categories
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
-  } catch (error) {
-    console.log("Error fetching category data:", error);
-    return dummyCategories;
+  } catch (error: any) {
+    console.error("Error fetching category data:", error);
+    throw new Error(`Failed to fetch category data: ${error.message}`);
   }
 };
 

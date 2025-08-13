@@ -28,7 +28,13 @@ afterAll(() => server.close());
 const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
-      queries: { retry: false },
+      queries: {
+        retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
       mutations: { retry: false },
     },
   });
@@ -49,11 +55,13 @@ describe("useTotalsPerAccountFetch", () => {
       totals: 600.0,
     };
 
-    server.use(
-      http.get("/api/transaction/account/totals/test-account", () => {
-        return HttpResponse.json(mockTotals);
-      }),
-    );
+    // Mock the global fetch function
+    const originalFetch = global.fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify(mockTotals), { status: 200 }),
+      );
 
     const { result } = renderHook(
       () => useTotalsPerAccountFetch("test-account"),
@@ -63,22 +71,101 @@ describe("useTotalsPerAccountFetch", () => {
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    // The hook returns dummy data on any error, so we just check that data exists with correct structure
-    expect(result.current.data).toBeDefined();
-    expect(result.current.data).toHaveProperty("totals");
-    expect(result.current.data).toHaveProperty("totalsCleared");
-    expect(result.current.data).toHaveProperty("totalsOutstanding");
-    expect(result.current.data).toHaveProperty("totalsFuture");
+
+    expect(result.current.data).toEqual(mockTotals);
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isError).toBe(false);
+
+    global.fetch = originalFetch;
   });
 
-  it("should return dummy data on error", async () => {
+  it("should handle server errors properly", async () => {
     const queryClient = createTestQueryClient();
 
-    server.use(
-      http.get("/api/transaction/account/totals/test-account", () => {
-        return HttpResponse.json({ message: "Error" }, { status: 500 });
-      }),
+    // Mock the global fetch function to return 500 error
+    const originalFetch = global.fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ message: "Error" }), { status: 500 }),
+      );
+
+    const consoleSpy = jest.spyOn(console, "error");
+
+    const { result } = renderHook(
+      () => useTotalsPerAccountFetch("test-account"),
+      {
+        wrapper: createWrapper(queryClient),
+      },
     );
+
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
+
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Failed to fetch");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching totals per account data:",
+      expect.anything(),
+    );
+
+    consoleSpy.mockRestore();
+    global.fetch = originalFetch;
+  });
+
+  it("should handle network errors properly", async () => {
+    const queryClient = createTestQueryClient();
+
+    // Mock fetch to throw network error
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
+
+    const consoleSpy = jest.spyOn(console, "error");
+
+    const { result } = renderHook(
+      () => useTotalsPerAccountFetch("test-account"),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    );
+
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
+
+    // Should be in error state
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching totals per account data:",
+      expect.anything(),
+    );
+
+    consoleSpy.mockRestore();
+    global.fetch = originalFetch;
+  });
+
+  it("should provide refetch capability", async () => {
+    const queryClient = createTestQueryClient();
+    const mockTotals: Totals = {
+      totalsOutstanding: 100.0,
+      totalsFuture: 200.0,
+      totalsCleared: 300.0,
+      totals: 600.0,
+    };
+
+    // Mock the global fetch function
+    const originalFetch = global.fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify(mockTotals), { status: 200 }),
+      );
 
     const { result } = renderHook(
       () => useTotalsPerAccountFetch("test-account"),
@@ -88,13 +175,11 @@ describe("useTotalsPerAccountFetch", () => {
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    // Should return dummy data from the hook's catch block
-    expect(result.current.data).toEqual({
-      totalsOutstanding: 1.0,
-      totalsFuture: 25.45,
-      totalsCleared: -25.45,
-      totals: 0.0,
-    });
+
+    expect(result.current.refetch).toBeDefined();
+    expect(typeof result.current.refetch).toBe("function");
+
+    global.fetch = originalFetch;
   });
 
   it("should not fetch when not authenticated", () => {

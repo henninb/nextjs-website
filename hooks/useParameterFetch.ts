@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
-import { dummyParameters } from "../data/dummyParameters";
 //import { basicAuth } from "../Common";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
@@ -17,7 +16,8 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Data not found (404)");
+        console.log("No parameters found (404).");
+        return []; // Return empty array for 404, meaning no parameters
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -26,9 +26,9 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     // Uncomment the line below for debugging
     // console.debug(JSON.stringify(data));
     return data;
-  } catch (error) {
-    console.log("Error fetching parameters data:", error);
-    return dummyParameters;
+  } catch (error: any) {
+    console.error("Error fetching parameter data:", error);
+    throw new Error(`Failed to fetch parameter data: ${error.message}`);
   }
 };
 

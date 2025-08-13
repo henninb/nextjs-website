@@ -16,7 +16,8 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("Resource not found (404)");
+        console.log("No transfers found (404).");
+        return []; // Return empty array for 404, meaning no transfers
       }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

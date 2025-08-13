@@ -15,6 +15,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import EmptyState from "../../components/EmptyState";
+import LoadingState from "../../components/LoadingState";
 import useParameterFetch from "../../hooks/useParameterFetch";
 import useParameterInsert from "../../hooks/useParameterInsert";
 import useParameterDelete from "../../hooks/useParameterDelete";
@@ -44,7 +47,9 @@ export default function Configuration() {
     data: fetchedParameters,
     isSuccess: isSuccessParameters,
     isLoading: isFetchingParameters,
+    isError: isErrorParameters,
     error: errorParameters,
+    refetch: refetchParameters,
   } = useParameterFetch();
   const { mutateAsync: insertParameter } = useParameterInsert();
   const { mutateAsync: updateParameter } = useParameterUpdate();
@@ -66,7 +71,13 @@ export default function Configuration() {
     if (isSuccessParameters) {
       setShowSpinner(false);
     }
-  }, [isSuccessParameters, isFetchingParameters, loading, isAuthenticated]);
+  }, [
+    isSuccessParameters,
+    isErrorParameters,
+    isFetchingParameters,
+    loading,
+    isAuthenticated,
+  ]);
 
   useEffect(() => {
     const storedRows = localStorage.getItem("offlineParameters");
@@ -223,6 +234,33 @@ export default function Configuration() {
     },
   ];
 
+  // Handle error states first
+  if (isErrorParameters) {
+    return (
+      <FinanceLayout>
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
+            System Configuration
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage application settings and parameters that control system
+            behavior and defaults
+          </Typography>
+        </Box>
+        <ErrorDisplay
+          error={errorParameters}
+          variant="card"
+          showRetry={true}
+          onRetry={() => refetchParameters()}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -240,7 +278,10 @@ export default function Configuration() {
           </Typography>
         </Box>
         {showSpinner ? (
-          <Spinner />
+          <LoadingState
+            variant="card"
+            message="Loading configuration parameters..."
+          />
         ) : (
           <div>
             <Box display="flex" justifyContent="center" mb={2}>
@@ -255,49 +296,63 @@ export default function Configuration() {
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
-                <DataGrid
-                  rows={[...(fetchedParameters || []), ...offlineRows]}
-                  columns={columns}
-                  getRowId={(row) =>
-                    row.parameterId || `fallback-${Date.now()}-${Math.random()}`
-                  }
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  pagination
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  disableRowSelectionOnClick
-                  autoHeight
-                  processRowUpdate={async (
-                    newRow: Parameter,
-                    oldRow: Parameter,
-                  ): Promise<Parameter> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
+                {(fetchedParameters && fetchedParameters.length > 0) ||
+                offlineRows.length > 0 ? (
+                  <DataGrid
+                    rows={[...(fetchedParameters || []), ...offlineRows]}
+                    columns={columns}
+                    getRowId={(row) =>
+                      row.parameterId ||
+                      `fallback-${Date.now()}-${Math.random()}`
                     }
-                    try {
-                      await updateParameter({
-                        oldParameter: oldRow,
-                        newParameter: newRow,
-                      });
-                      setParameterData(newRow);
-                      setMessage("Parameter updated successfully.");
-                      setShowSnackbar(true);
+                    checkboxSelection={false}
+                    rowSelection={false}
+                    pagination
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={(newModel) =>
+                      setPaginationModel(newModel)
+                    }
+                    pageSizeOptions={[25, 50, 100]}
+                    disableRowSelectionOnClick
+                    autoHeight
+                    processRowUpdate={async (
+                      newRow: Parameter,
+                      oldRow: Parameter,
+                    ): Promise<Parameter> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updateParameter({
+                          oldParameter: oldRow,
+                          newParameter: newRow,
+                        });
+                        setParameterData(newRow);
+                        setMessage("Parameter updated successfully.");
+                        setShowSnackbar(true);
 
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Parameter Update failure: ${error}`,
-                        false,
-                      );
-                      throw error;
-                    }
-                  }}
-                />
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(
+                          error,
+                          `Parameter Update failure: ${error}`,
+                          false,
+                        );
+                        throw error;
+                      }
+                    }}
+                  />
+                ) : (
+                  <EmptyState
+                    title="No Parameters Found"
+                    message="No configuration parameters have been set up yet. Create your first parameter to configure system behavior."
+                    dataType="parameters"
+                    variant="create"
+                    actionLabel="Add Parameter"
+                    onAction={() => setShowModalAdd(true)}
+                    onRefresh={() => refetchParameters()}
+                  />
+                )}
               </Box>
             </Box>
             <SnackbarBaseline
