@@ -32,7 +32,7 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText("No error")).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();
@@ -56,10 +56,12 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
-    expect(screen.getByText("Error Details (Development Mode):")).toBeInTheDocument();
+    expect(
+      screen.getByText("Error Details (Development Mode):"),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Test error/)).toBeInTheDocument();
 
     process.env.NODE_ENV = originalEnv;
@@ -72,10 +74,12 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
-    expect(screen.queryByText("Error Details (Development Mode):")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Error Details (Development Mode):"),
+    ).not.toBeInTheDocument();
 
     process.env.NODE_ENV = originalEnv;
   });
@@ -86,12 +90,12 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary onError={onErrorMock}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(onErrorMock).toHaveBeenCalledWith(
       expect.objectContaining({ message: "Test error" }),
-      expect.objectContaining({ componentStack: expect.any(String) })
+      expect.objectContaining({ componentStack: expect.any(String) }),
     );
   });
 
@@ -101,7 +105,7 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary fallback={fallback}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText("Custom error fallback")).toBeInTheDocument();
@@ -112,15 +116,17 @@ describe("ErrorBoundary", () => {
     // Create a test component that can conditionally throw errors
     const ConditionalThrowError = () => {
       const [shouldThrow, setShouldThrow] = React.useState(true);
-      
+
       if (shouldThrow) {
         throw new Error("Test error");
       }
-      
+
       return (
         <div>
           <div>No error</div>
-          <button onClick={() => setShouldThrow(true)}>Trigger Error Again</button>
+          <button onClick={() => setShouldThrow(true)}>
+            Trigger Error Again
+          </button>
         </div>
       );
     };
@@ -128,7 +134,7 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary>
         <ConditionalThrowError />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     // Initially should show error
@@ -139,7 +145,7 @@ describe("ErrorBoundary", () => {
     fireEvent.click(tryAgainButton);
 
     // After reset, the component should re-render
-    // Since we can't easily control the throwing state after reset, 
+    // Since we can't easily control the throwing state after reset,
     // we'll just verify the error UI is cleared (component will re-throw)
     // This tests that the handleRetry function works correctly
     expect(screen.getByText("Try Again")).toBeInTheDocument();
@@ -152,13 +158,13 @@ describe("ErrorBoundary", () => {
     renderWithTheme(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "ErrorBoundary caught an error:",
       expect.objectContaining({ message: "Test error" }),
-      expect.objectContaining({ componentStack: expect.any(String) })
+      expect.objectContaining({ componentStack: expect.any(String) }),
     );
 
     process.env.NODE_ENV = originalEnv;
@@ -172,8 +178,8 @@ describe("ErrorBoundary", () => {
 
       return (
         <ErrorBoundary onError={onErrorMock}>
-          <button 
-            onClick={() => setErrorCount(count => count + 1)}
+          <button
+            onClick={() => setErrorCount((count) => count + 1)}
             data-testid="trigger-error"
           >
             Trigger Error

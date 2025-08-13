@@ -73,19 +73,33 @@ class ErrorBoundary extends Component<Props, State> {
             color: "error.contrastText",
           }}
         >
-          <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            gap={2}
+          >
             <ErrorOutline sx={{ fontSize: 48, color: "error.main" }} />
-            
+
             <Typography variant="h5" component="h2" gutterBottom>
               Something went wrong
             </Typography>
-            
+
             <Typography variant="body1" color="text.secondary" paragraph>
-              We're sorry, but something unexpected happened. Please try refreshing the page.
+              We're sorry, but something unexpected happened. Please try
+              refreshing the page.
             </Typography>
 
             {process.env.NODE_ENV === "development" && this.state.error && (
-              <Box sx={{ mt: 2, p: 2, bgcolor: "grey.100", borderRadius: 1, maxWidth: "100%" }}>
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  bgcolor: "grey.100",
+                  borderRadius: 1,
+                  maxWidth: "100%",
+                }}
+              >
                 <Typography variant="h6" color="error" gutterBottom>
                   Error Details (Development Mode):
                 </Typography>
