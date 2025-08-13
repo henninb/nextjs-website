@@ -24,6 +24,8 @@ export const CheckIcon = createMockIcon("CheckIcon");
 export const EditIcon = createMockIcon("EditIcon");
 export const SaveIcon = createMockIcon("SaveIcon");
 export const CancelIcon = createMockIcon("CancelIcon");
+export const ErrorOutline = createMockIcon("ErrorOutline");
+export const Refresh = createMockIcon("Refresh");
 
 // Default export for any icon not explicitly mocked
 export default createMockIcon("DefaultIcon");

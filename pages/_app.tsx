@@ -1,6 +1,7 @@
 import "../styles/index.css";
 import Layout from "../components/Layout";
 import AuthProvider from "../components/AuthProvider";
+import ErrorBoundary from "../components/ErrorBoundary";
 import { UIProvider } from "../contexts/UIContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
@@ -29,14 +30,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <UIProvider>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        </UIProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <UIProvider>
+            <Layout>
+              <ErrorBoundary>
+                <Component {...pageProps} />
+              </ErrorBoundary>
+            </Layout>
+          </UIProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
