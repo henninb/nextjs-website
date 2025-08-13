@@ -364,54 +364,76 @@ export default function Transfers() {
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-                <DataGrid
-                  //rows={fetchedTransfers?.filter((row) => row != null) || []}
-                  rows={transfersToDisplay}
-                  columns={columns}
-                  getRowId={(row) => row.transferId || `temp-${Math.random()}`}
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  pagination
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  processRowUpdate={async (
-                    newRow: Transfer,
-                    oldRow: Transfer,
-                  ): Promise<Transfer> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
+                {transfersToDisplay && transfersToDisplay.length > 0 ? (
+                  <DataGrid
+                    //rows={fetchedTransfers?.filter((row) => row != null) || []}
+                    rows={transfersToDisplay}
+                    columns={columns}
+                    getRowId={(row) =>
+                      row.transferId || `temp-${Math.random()}`
                     }
-                    try {
-                      await updateTransfer({
-                        oldTransfer: oldRow,
-                        newTransfer: newRow,
-                      });
-                      setMessage("Transfer updated successfully.");
-                      setShowSnackbar(true);
-                      //return newRow;
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Update Transfer error: ${error}`,
-                        false,
-                      );
-                      throw error;
+                    checkboxSelection={false}
+                    rowSelection={false}
+                    pagination
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={(newModel) =>
+                      setPaginationModel(newModel)
                     }
-                  }}
-                  autoHeight
-                  disableColumnResize={false}
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                />
+                    pageSizeOptions={[25, 50, 100]}
+                    processRowUpdate={async (
+                      newRow: Transfer,
+                      oldRow: Transfer,
+                    ): Promise<Transfer> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updateTransfer({
+                          oldTransfer: oldRow,
+                          newTransfer: newRow,
+                        });
+                        setMessage("Transfer updated successfully.");
+                        setShowSnackbar(true);
+                        //return newRow;
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(
+                          error,
+                          `Update Transfer error: ${error}`,
+                          false,
+                        );
+                        throw error;
+                      }
+                    }}
+                    autoHeight
+                    disableColumnResize={false}
+                    sx={{
+                      "& .MuiDataGrid-cell": {
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      },
+                    }}
+                  />
+                ) : (
+                  <Paper sx={{ p: 4, textAlign: "center", minWidth: 600 }}>
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      No Transfers Found
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
+                      No transfers have been created yet. Click "Add Transfer"
+                      to move funds between accounts.
+                    </Typography>
+                  </Paper>
+                )}
               </Box>
             </Box>
             <div>

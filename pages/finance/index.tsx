@@ -342,43 +342,63 @@ export default function Accounts() {
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
-                <DataGrid
-                  rows={fetchedAccounts?.filter((row) => row != null) || []}
-                  columns={columns}
-                  getRowId={(row) => row.accountId || 0}
-                  paginationModel={{
-                    pageSize: fetchedAccounts?.length,
-                    page: 0,
-                  }}
-                  pageSizeOptions={[25, 50, 100]}
-                  pagination
-                  disableRowSelectionOnClick
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  autoHeight
-                  processRowUpdate={async (
-                    newRow: Account,
-                    oldRow: Account,
-                  ): Promise<Account> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
-                    }
-                    try {
-                      await updateAccount({ newRow: newRow, oldRow: oldRow });
-                      setMessage("Account updated successfully.");
-                      setShowSnackbar(true);
+                {fetchedAccounts && fetchedAccounts.length > 0 ? (
+                  <DataGrid
+                    rows={fetchedAccounts?.filter((row) => row != null) || []}
+                    columns={columns}
+                    getRowId={(row) => row.accountId || 0}
+                    paginationModel={{
+                      pageSize: fetchedAccounts?.length,
+                      page: 0,
+                    }}
+                    pageSizeOptions={[25, 50, 100]}
+                    pagination
+                    disableRowSelectionOnClick
+                    checkboxSelection={false}
+                    rowSelection={false}
+                    autoHeight
+                    processRowUpdate={async (
+                      newRow: Account,
+                      oldRow: Account,
+                    ): Promise<Account> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updateAccount({ newRow: newRow, oldRow: oldRow });
+                        setMessage("Account updated successfully.");
+                        setShowSnackbar(true);
 
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Update Account ${error.message}`,
-                        false,
-                      );
-                      return error;
-                    }
-                  }}
-                />
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(
+                          error,
+                          `Update Account ${error.message}`,
+                          false,
+                        );
+                        return error;
+                      }
+                    }}
+                  />
+                ) : (
+                  <Paper sx={{ p: 4, textAlign: "center", minWidth: 400 }}>
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      No Accounts Found
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
+                      You haven't created any accounts yet. Click "Add Account"
+                      to get started.
+                    </Typography>
+                  </Paper>
+                )}
               </Box>
             </Box>
             <div>
@@ -512,7 +532,13 @@ export default function Accounts() {
                   </Button>
                   <Button
                     variant="contained"
-                    onClick={() => accountData && handleAddRow(accountData)}
+                    onClick={() =>
+                      accountData &&
+                      handleAddRow({
+                        ...accountData,
+                        validationDate: new Date(0), // January 1, 1970 at midnight
+                      })
+                    }
                   >
                     Add
                   </Button>

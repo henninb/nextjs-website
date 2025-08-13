@@ -743,66 +743,86 @@ export default function TransactionsByAccount() {
 
               <Box display="flex" justifyContent="center">
                 <Box sx={{ width: "100%", maxWidth: "1400px" }}>
-                  <DataGrid
-                    rows={
-                      fetchedTransactions?.filter((row) => row != null) || []
-                    }
-                    columns={columns}
-                    getRowId={(row) => row.transactionId || 0}
-                    checkboxSelection={true}
-                    pagination
-                    paginationModel={paginationModel}
-                    hideFooter={fetchedTransactions?.length < 25}
-                    onPaginationModelChange={(newModel) => {
-                      setPaginationModel(newModel);
-                    }}
-                    pageSizeOptions={[25, 50, 100]}
-                    density="compact"
-                    disableColumnFilter
-                    disableColumnMenu
-                    disableVirtualization={false}
-                    autoHeight
-                    disableColumnResize={false}
-                    sx={{
-                      "& .MuiDataGrid-cell": {
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      },
-                    }}
-                    // initialState={{
-                    //   sorting: {
-                    //     sortModel: [{ field: "transactionDate", sort: "desc" }],
-                    //   },
-                    // }}
-                    processRowUpdate={async (
-                      newRow: Transaction,
-                      oldRow: Transaction,
-                    ): Promise<Transaction> => {
-                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                        return oldRow;
+                  {fetchedTransactions && fetchedTransactions.length > 0 ? (
+                    <DataGrid
+                      rows={
+                        fetchedTransactions?.filter((row) => row != null) || []
                       }
-                      try {
-                        await updateTransaction({
-                          newRow: newRow,
-                          oldRow: oldRow,
-                        });
-                        setMessage("Transaction updated successfully.");
-                        setShowSnackbar(true);
-                        return { ...newRow };
-                      } catch (error) {
-                        handleError(
-                          error,
-                          "Update Transaction failure.",
-                          false,
-                        );
-                        throw error;
-                      }
-                    }}
-                    disableRowSelectionOnClick={true}
-                    rowSelectionModel={rowSelectionModel}
-                    onRowSelectionModelChange={setRowSelectionModel}
-                  />
+                      columns={columns}
+                      getRowId={(row) => row.transactionId || 0}
+                      checkboxSelection={true}
+                      pagination
+                      paginationModel={paginationModel}
+                      hideFooter={fetchedTransactions?.length < 25}
+                      onPaginationModelChange={(newModel) => {
+                        setPaginationModel(newModel);
+                      }}
+                      pageSizeOptions={[25, 50, 100]}
+                      density="compact"
+                      disableColumnFilter
+                      disableColumnMenu
+                      disableVirtualization={false}
+                      autoHeight
+                      disableColumnResize={false}
+                      sx={{
+                        "& .MuiDataGrid-cell": {
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        },
+                      }}
+                      // initialState={{
+                      //   sorting: {
+                      //     sortModel: [{ field: "transactionDate", sort: "desc" }],
+                      //   },
+                      // }}
+                      processRowUpdate={async (
+                        newRow: Transaction,
+                        oldRow: Transaction,
+                      ): Promise<Transaction> => {
+                        if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                          return oldRow;
+                        }
+                        try {
+                          await updateTransaction({
+                            newRow: newRow,
+                            oldRow: oldRow,
+                          });
+                          setMessage("Transaction updated successfully.");
+                          setShowSnackbar(true);
+                          return { ...newRow };
+                        } catch (error) {
+                          handleError(
+                            error,
+                            "Update Transaction failure.",
+                            false,
+                          );
+                          throw error;
+                        }
+                      }}
+                      disableRowSelectionOnClick={true}
+                      rowSelectionModel={rowSelectionModel}
+                      onRowSelectionModelChange={setRowSelectionModel}
+                    />
+                  ) : (
+                    <Paper sx={{ p: 4, textAlign: "center", minWidth: 800 }}>
+                      <Typography
+                        variant="h6"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        No Transactions Found
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 2 }}
+                      >
+                        This account doesn't have any transactions yet. Click
+                        "Add Transaction" to create your first transaction.
+                      </Typography>
+                    </Paper>
+                  )}
                 </Box>
               </Box>
             </div>

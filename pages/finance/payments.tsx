@@ -322,52 +322,72 @@ export default function Payments() {
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-                <DataGrid
-                  rows={fetchedPayments?.filter((row) => row != null) || []}
-                  columns={columns}
-                  getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  pagination
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  autoHeight
-                  disableColumnResize={false}
-                  processRowUpdate={async (
-                    newRow: Payment,
-                    oldRow: Payment,
-                  ): Promise<Payment> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
+                {fetchedPayments && fetchedPayments.length > 0 ? (
+                  <DataGrid
+                    rows={fetchedPayments?.filter((row) => row != null) || []}
+                    columns={columns}
+                    getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
+                    checkboxSelection={false}
+                    rowSelection={false}
+                    pagination
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={(newModel) =>
+                      setPaginationModel(newModel)
                     }
-                    try {
-                      await updatePayment({
-                        oldPayment: oldRow,
-                        newPayment: newRow,
-                      });
-                      setMessage("Payment updated successfully.");
-                      setShowSnackbar(true);
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Update Payment error: ${error}`,
-                        false,
-                      );
-                      throw error;
-                    }
-                  }}
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                />
+                    pageSizeOptions={[25, 50, 100]}
+                    autoHeight
+                    disableColumnResize={false}
+                    processRowUpdate={async (
+                      newRow: Payment,
+                      oldRow: Payment,
+                    ): Promise<Payment> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updatePayment({
+                          oldPayment: oldRow,
+                          newPayment: newRow,
+                        });
+                        setMessage("Payment updated successfully.");
+                        setShowSnackbar(true);
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(
+                          error,
+                          `Update Payment error: ${error}`,
+                          false,
+                        );
+                        throw error;
+                      }
+                    }}
+                    sx={{
+                      "& .MuiDataGrid-cell": {
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      },
+                    }}
+                  />
+                ) : (
+                  <Paper sx={{ p: 4, textAlign: "center", minWidth: 600 }}>
+                    <Typography
+                      variant="h6"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      No Payments Found
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
+                      No payments have been recorded yet. Click "Add Payment" to
+                      create your first payment.
+                    </Typography>
+                  </Paper>
+                )}
               </Box>
             </Box>
             <div>

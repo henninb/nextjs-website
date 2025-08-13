@@ -34,9 +34,7 @@ export async function middleware(request) {
 
   // Proxy /api/* requests in both development and production
   if (url.pathname.startsWith("/api/")) {
-    console.log(
-      "✅ CONDITIONS MET: Entering proxy logic for API route",
-    );
+    console.log("✅ CONDITIONS MET: Entering proxy logic for API route");
     console.log("Path starts with /api/:", url.pathname.startsWith("/api/"));
     console.log("NODE_ENV:", process.env.NODE_ENV);
     try {
