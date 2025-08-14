@@ -1,32 +1,38 @@
 import { NextResponse } from "next/server";
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: [
+    "/api/:path*",
+    // Apply to non-static assets: exclude Next internals and favicon; handle
+    // extension-based static assets in code below.
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
   runtime: "experimental-edge",
 };
 
 export async function middleware(request) {
-  console.log("=== MIDDLEWARE DEBUG START ===");
-  console.log("Middleware triggered for path:", request.nextUrl.pathname);
-  console.log("Full URL:", request.nextUrl.href);
-  console.log("Method:", request.method);
-  console.log("Host:", request.headers.get("host"));
-  console.log("NODE_ENV:", process.env.NODE_ENV);
+  const isProduction = process.env.NODE_ENV === "production";
+  const isDev = !isProduction;
+  if (isDev) {
+    console.log(
+      "[MW] path=",
+      request.nextUrl.pathname,
+      "method=",
+      request.method,
+    );
+  }
 
   // SECURITY: Additional safeguards
   const host = request.headers.get("host");
-  const isProduction = process.env.NODE_ENV === "production";
   const isLocalhost =
     host?.includes("localhost") || host?.includes("127.0.0.1");
 
   // CRITICAL: Prevent cookie rewriting in production
-  if (isProduction) {
-    console.log("🔒 PRODUCTION MODE: Cookie rewriting disabled for security");
-  }
+  // (no logging of headers/cookies)
 
   // SECURITY: Only allow proxy for approved localhost/development hosts
   if (!isProduction && !isLocalhost) {
-    console.log("🚨 SECURITY: Unauthorized host attempted proxy:", host);
+    if (isDev) console.log("[MW] blocked unauthorized host");
     return new NextResponse("Forbidden", { status: 403 });
   }
 
@@ -34,17 +40,13 @@ export async function middleware(request) {
 
   // Proxy /api/* requests in both development and production
   if (url.pathname.startsWith("/api/")) {
-    console.log("✅ CONDITIONS MET: Entering proxy logic for API route");
-    console.log("Path starts with /api/:", url.pathname.startsWith("/api/"));
-    console.log("NODE_ENV:", process.env.NODE_ENV);
+    if (isDev) console.log("[MW] proxying API route");
     try {
       // Build the target URL
       const targetUrl = `https://finance.bhenning.com${url.pathname}${url.search}`;
-      console.log("Proxying request to:", targetUrl);
+      if (isDev) console.log("[MW] target=", targetUrl);
 
-      // Log all cookies being forwarded
-      const cookies = request.headers.get("cookie");
-      console.log("🍪 Cookies being forwarded:", cookies);
+      // Do not log cookies or headers
 
       // Forward the request
       const response = await fetch(targetUrl, {
@@ -62,14 +64,7 @@ export async function middleware(request) {
             ? await request.blob()
             : undefined,
       });
-      console.log(
-        "Received response from external API with status:",
-        response.status,
-      );
-      console.log(
-        "Response headers:",
-        Object.fromEntries(response.headers.entries()),
-      );
+      if (isDev) console.log("[MW] upstream status=", response.status);
 
       // Create response with all headers
       const responseHeaders = new Headers();
@@ -82,8 +77,6 @@ export async function middleware(request) {
         ) {
           // Secure Set-Cookie header rewriting for development only
           if (key.toLowerCase() === "set-cookie") {
-            console.log("🍪 Original Set-Cookie header:", value);
-
             // SECURITY: Only rewrite specific authentication cookies in development
             const isAuthCookie = /^(token|session|auth)=/i.test(value);
             const isDevelopment = process.env.NODE_ENV === "development";
@@ -103,14 +96,9 @@ export async function middleware(request) {
                   .replace(/;\s*SameSite=None/gi, "; SameSite=Lax") +
                 // Ensure HttpOnly is preserved for security
                 (!/HttpOnly/i.test(value) ? "; HttpOnly" : "");
-
-              console.log("🔒 Securely modified auth cookie:", modifiedCookie);
               responseHeaders.set(key, modifiedCookie);
             } else {
               // Non-auth cookies or production: pass through unchanged
-              console.log(
-                "🔒 Cookie passed through unchanged (non-auth or production)",
-              );
               responseHeaders.set(key, value);
             }
           } else {
@@ -120,32 +108,28 @@ export async function middleware(request) {
       });
 
       // Add CORS headers for development
-      responseHeaders.set(
-        "Access-Control-Allow-Origin",
-        request.headers.get("origin") || "*",
-      );
-      responseHeaders.set("Access-Control-Allow-Credentials", "true");
-      responseHeaders.set(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS",
-      );
-      responseHeaders.set(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, X-Requested-With, Accept, Origin",
-      );
-      console.log("✅ RETURNING PROXIED RESPONSE");
-      console.log(
-        "Final response headers:",
-        Object.fromEntries(responseHeaders.entries()),
-      );
+      if (isDev) {
+        responseHeaders.set(
+          "Access-Control-Allow-Origin",
+          request.headers.get("origin") || "http://localhost:3000",
+        );
+        responseHeaders.set("Access-Control-Allow-Credentials", "true");
+        responseHeaders.set(
+          "Access-Control-Allow-Methods",
+          "GET, POST, PUT, DELETE, OPTIONS",
+        );
+        responseHeaders.set(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+        );
+      }
       return new NextResponse(response.body, {
         status: response.status,
         statusText: response.statusText,
         headers: responseHeaders,
       });
     } catch (error) {
-      console.error("❌ PROXY ERROR:", error);
-      console.error("Error details:", error.message, error.stack);
+      console.error("[MW] proxy error:", isDev ? error : error?.message);
       return new NextResponse(
         JSON.stringify({ error: "Proxy error", message: error.message }),
         {
@@ -155,12 +139,22 @@ export async function middleware(request) {
       );
     }
   } else {
-    console.log("❌ CONDITIONS NOT MET - Not proxying");
-    console.log("Path starts with /api/:", url.pathname.startsWith("/api/"));
+    // Non-API routes: enforce no-store for dynamic/HTML content
+    const pathname = url.pathname || "";
+    const isStaticAsset =
+      /\.(js|css|svg|png|jpg|jpeg|gif|webp|ico|ttf|otf|woff|woff2)$/i.test(
+        pathname,
+      );
+    if (isStaticAsset || pathname.startsWith("/_next/")) {
+      return NextResponse.next();
+    }
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "no-store");
+    if (isDev) console.log("[MW] set no-store on dynamic route");
+    return res;
   }
 
   // Continue with normal processing for non-API routes
-  console.log("🔄 CONTINUING WITH NEXTRESPONSE.NEXT()");
-  console.log("=== MIDDLEWARE DEBUG END ===");
+  // (no header/cookie logging)
   return NextResponse.next();
 }

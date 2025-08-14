@@ -1,23 +1,60 @@
 export const runtime = "edge";
 
+import { z } from "zod";
+import validator from "validator";
+
+const LeadSchema = z.object({
+  vin: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-HJ-NPR-Z0-9]{11,17}$/i, "Invalid VIN")
+    .max(17),
+  color: z.string().trim().min(1).max(30),
+  name: z.string().trim().min(1).max(100),
+  email: z.string().trim().email(),
+});
+
+function sanitizeLead(input) {
+  return {
+    vin: input.vin.toUpperCase(),
+    color: validator.escape(input.color.trim()),
+    name: validator.escape(input.name.trim()),
+    email: validator.normalizeEmail(input.email.trim()) || input.email.trim(),
+  };
+}
+
 export default async function POST(request) {
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   let requestBody = {};
   try {
     requestBody = await request.json();
   } catch (e) {
-    console.log("failed to parse json");
     return new Response(JSON.stringify({ error: "Invalid JSON" }), {
       status: 400,
     });
   }
 
-  const { vin, color, name, email } = requestBody;
-
-  if (!vin || !color || !name || !email) {
-    return new Response(JSON.stringify({ error: "Missing required fields" }), {
-      status: 400,
-    });
+  const parse = LeadSchema.safeParse(requestBody);
+  if (!parse.success) {
+    return new Response(
+      JSON.stringify({
+        error: "Validation failed",
+        details: parse.error.issues,
+      }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
+
+  const { vin, color, name, email } = sanitizeLead(parse.data);
 
   const data = {
     vin,
@@ -26,20 +63,7 @@ export default async function POST(request) {
     email,
   };
 
-  const cookies = request.headers.get("cookie");
-  if (!cookies) {
-    console.log("no cookies");
-  } else {
-    console.log("cookies found");
-    console.log(cookies);
-  }
-
-  const pxCookies = request.headers.get("x-px-cookies") || "";
-  if (!pxCookies) {
-    console.log("pxCookies not found");
-  } else {
-    console.log(pxCookies);
-  }
+  // Do not log cookies or header values
 
   try {
     const apiResponse = await fetch(
@@ -59,32 +83,29 @@ export default async function POST(request) {
     try {
       responseBody = await apiResponse.json();
     } catch (jsonError) {
-      console.log("Failed to parse response JSON", jsonError);
       responseBody = await apiResponse.text();
     }
 
     if (!apiResponse.ok) {
-      console.error("API call failed with status:", apiResponse.status);
-      console.error("API response body:", responseBody);
-      return new Response(
-        JSON.stringify({ error: "Failed to call API", details: responseBody }),
-        {
-          status: apiResponse.status,
-        },
-      );
+      return new Response(JSON.stringify({ error: "Lead service error" }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(JSON.stringify(responseBody), {
+    const res = new Response(JSON.stringify(responseBody), {
       status: apiResponse.status,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
     });
+    res.headers.set("Cache-Control", "no-store");
+    return res;
   } catch (error) {
-    console.log(error);
-    return new Response(JSON.stringify({ error: "Failed to call API" }), {
+    return new Response(JSON.stringify({ error: "Failed to submit lead" }), {
       status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 }

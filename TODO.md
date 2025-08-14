@@ -118,6 +118,96 @@ The centerpoint_brian utility account was showing a negative balance of -$6,230.
 **2023 Data:**
 
 - 17 payments with 6 suspicious $1.00 entries (likely test data) and 11 legitimate payments totaling $896.34
+
+## 4. Security Review (Aug 2025)
+
+Summary: Performed static security review of Next.js config, middleware, API routes, components, hooks, and utils. Key risks and targeted remediations below.
+
+- Critical: Middleware logs sensitive cookies/headers
+  - Risk: `middleware.js` logs request `cookie` and upstream `Set-Cookie` values; leaks credentials to logs.
+  - Fix: Remove cookie/header logging entirely. Gate all debug logs behind `NODE_ENV !== 'production'` and exclude secrets.
+
+- Critical: Overly permissive CORS on proxy responses
+  - Risk: Proxy layer reflects `Access-Control-Allow-Origin` from request origin or `*` and always sets `Access-Control-Allow-Credentials: true`.
+  - Fix: Remove CORS headers from proxy responses or restrict to an explicit allowlist (use `utils/security/corsMiddleware.ts`). Never combine wildcard with credentials. Only enable relaxed CORS in dev.
+
+- High: CSP allows `unsafe-inline` and `unsafe-eval` in production
+  - Risk: `next.config.mjs` uses `'unsafe-inline' 'unsafe-eval'` for `script-src`; greatly weakens XSS protections.
+  - Fix: In production, remove both; use nonces or hashes for any inline scripts. Keep strict `default-src 'self'` and explicit hosts.
+
+- High: Global caching policy may expose private pages
+  - Risk: `Cache-Control: public, max-age=3600` applied to all routes (including authenticated HTML) can cause CDN/browser caching of sensitive content.
+  - Fix: Default HTML/dynamic routes to `Cache-Control: no-store` (or `private, no-store`); keep `public, max-age` only for static assets.
+
+- High: Headers inspection page exposes request headers
+  - Risk: `pages/headers.tsx` renders and logs full request headers (including cookies) to server logs; dangerous if reachable in prod.
+  - Fix: Remove the page, or guard it behind strict auth and redact sensitive headers. Only enable in development.
+
+- High: Hardcoded API key in code
+  - Risk: `pages/api/weather.js` includes a committed Weather API key.
+  - Fix: Move to `process.env.WEATHER_API_KEY`; rotate the key; never commit secrets. Use `env.local` only.
+
+- Medium: Proxy forwards most incoming headers verbatim
+  - Risk: Passing through arbitrary client headers can cause header-smuggling or origin confusion upstream.
+  - Fix: Construct a sanitized header set (e.g., `cookie`, `authorization`, `content-type`, `accept`) and drop `origin`, `referer`, hop-by-hop, and unneeded custom headers. Keep `host` fixed.
+
+- Medium: Proxy captures all `/api/*`, shadowing local routes
+  - Risk: `matcher: /api/:path*` proxies everything to external host, bypassing local API handlers and per-route security.
+  - Fix: Narrow matcher to only paths intended for proxy (e.g., `/api/proxy/:path*`) or add explicit excludes for local API routes (e.g., `/api/uuid/*`).
+
+- Medium: Missing CSRF protections for state-changing endpoints
+  - Risk: POST/PUT/DELETE endpoints rely on cookies with no CSRF token checks.
+  - Fix: Implement double-submit cookie or header token validation. `utils/security/corsMiddleware.ts` includes a `validateCSRFToken` placeholder—wire it into handlers.
+
+- Medium: Excessive logging of sensitive context
+  - Risk: Many routes log full error objects/headers/URLs in production.
+  - Fix: Introduce a centralized logger with redaction (e.g., strip cookies, tokens, emails). Log less in prod, more in dev.
+
+- Medium: `X-Powered-By` not fully disabled
+  - Risk: Custom header set, but Next.js default may still be present.
+  - Fix: Set `poweredByHeader: false` in `next.config.mjs` and remove custom `X-Powered-By` override.
+
+- Medium: Rate-limiting only on UUID route
+  - Risk: Other sensitive API routes lack throttling.
+  - Fix: Add lightweight rate limits (IP-based) on auth and data-modifying endpoints. For edge, consider KV/Upstash or provider-level rules.
+
+- Low: Global `experimental-edge` usage
+  - Risk: Experimental runtime across middleware/pages may change behavior and complicate security assumptions.
+  - Fix: Prefer stable `edge` where needed; otherwise use Node runtime for consistency.
+
+Actionable changes (proposed):
+
+- `middleware.js`
+  - Remove all cookie/Set-Cookie logging; guard logs by env.
+  - Do not add CORS headers on proxy responses in prod; if needed, reflect only from allowlist.
+  - Sanitize forwarded headers subset; drop `origin`, `referer`, hop-by-hop headers.
+  - Restrict matcher to intended proxy paths; exclude local API routes.
+  - Disallow unsupported/unsafe methods (e.g., TRACE, CONNECT).
+
+- `next.config.mjs`
+  - Production CSP: remove `'unsafe-inline' 'unsafe-eval'`; adopt nonces/hashes for any inline needs.
+  - Set `poweredByHeader: false` and remove custom `X-Powered-By` header.
+  - Remove global `Access-Control-*` headers; enforce per-route via `utils/security/corsMiddleware.ts`.
+  - Default `Cache-Control` for HTML/app routes to `no-store`; keep `public, max-age` only for static assets.
+
+- API routes
+  - `pages/api/weather.js`: move key to `process.env.WEATHER_API_KEY`; rotate key; add simple rate limit and error normalization.
+  - `pages/api/lead.js`: stop logging cookies; validate and sanitize inputs (use `zod`/`validator`), and unify error responses.
+  - Add CSRF checks to state-changing handlers using `validateCSRFToken`.
+
+- Pages/components
+  - Remove or dev-gate `pages/headers.tsx`; never render raw headers in prod.
+  - Audit any future `dangerouslySetInnerHTML` usage; none found currently—keep DOMPurify ready for untrusted HTML.
+
+- Secrets/config
+  - Keep secrets in `.env.local` (already gitignored); run periodic secret scans and rotate any previously committed keys.
+
+Verification steps:
+
+- Run `npm test` and add targeted tests for CSP header generation and proxy header sanitation.
+- Manually verify no sensitive headers/cookies appear in logs in production mode.
+- Validate CSP via browser devtools and an online CSP evaluator; ensure critical functionality works without inline/eval.
+
 - Transaction entries: 22 total, balanced to $0.00 after fix
 
 ### Solution Implementation
