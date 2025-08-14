@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
+import ErrorDisplay from "../../../../components/ErrorDisplay";
 import useTransactionByDescription from "../../../../hooks/useTransactionByDescriptionFetch";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import Transaction from "../../../../model/Transaction";
@@ -28,6 +29,7 @@ export default function TransactionsByDescription() {
     isSuccess: isTransactionsLoaded,
     isFetching: isFetchingTransactions,
     error: errorTransactions,
+    refetch: refetchTransactions,
   } = useTransactionByDescription(descriptionName);
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
   const { isAuthenticated, loading } = useAuth();
@@ -46,10 +48,14 @@ export default function TransactionsByDescription() {
       setShowSpinner(true);
       return;
     }
+    if (errorTransactions) {
+      setShowSpinner(false);
+      return;
+    }
     if (isTransactionsLoaded) {
       setShowSpinner(false);
     }
-  }, [isTransactionsLoaded, isFetchingTransactions]);
+  }, [isTransactionsLoaded, isFetchingTransactions, errorTransactions]);
 
   // can be eliminated
   if (loading || (!loading && !isAuthenticated)) {
@@ -124,12 +130,21 @@ export default function TransactionsByDescription() {
           <Spinner />
         ) : (
           <div>
+            {errorTransactions && (
+              <ErrorDisplay
+                error={errorTransactions}
+                onRetry={() => refetchTransactions && refetchTransactions()}
+              />
+            )}
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
                 <DataGrid
                   rows={fetchedTransactions?.filter((row) => row != null) || []}
                   columns={columns}
-                  getRowId={(row) => row.transactionId || 0}
+                  getRowId={(row) =>
+                    row.transactionId ??
+                    `${row.accountNameOwner}-${row.transactionDate}-${row.description}-${row.amount}`
+                  }
                   checkboxSelection={false}
                   rowSelection={false}
                   pagination
