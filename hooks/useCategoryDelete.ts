@@ -1,18 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
+import { getSecureHeaders } from "../utils/csrfUtils";
 //import { basicAuth } from "../Common";
 
 const deleteCategory = async (payload: Category): Promise<Category | null> => {
   try {
     const endpoint = `/api/category/delete/${payload.categoryName}`;
 
+    const headers = await getSecureHeaders({
+      //Authorization: basicAuth(),
+    });
+
     const response = await fetch(endpoint, {
       method: "DELETE",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        //Authorization: basicAuth(),
-      },
+      headers,
     });
 
     if (!response.ok) {

@@ -5,6 +5,7 @@ import {
   hookValidators,
   ValidationError,
 } from "../utils/validation";
+import { getSecureHeaders } from "../utils/csrfUtils";
 //import { basicAuth } from "../Common";
 
 const setupNewPayment = (payload: Payment) => {
@@ -36,14 +37,15 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
     const endpoint = "/api/payment/insert";
     const newPayload = setupNewPayment(validation.validatedData);
 
+    const headers = await getSecureHeaders({
+      Accept: "application/json",
+      //Authorization: basicAuth(),
+    });
+
     const response = await fetch(endpoint, {
       method: "POST",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        //Authorization: basicAuth(),
-      },
+      headers,
       body: JSON.stringify(newPayload),
     });
 

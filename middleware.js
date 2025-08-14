@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+import {
+  sanitizeRequestHeaders,
+  sanitizeResponseHeaders,
+  validateHeaders,
+  checkHeaderRateLimit,
+} from "./utils/security/headerSanitization";
 
 export const config = {
   matcher: [
@@ -42,23 +48,99 @@ export async function middleware(request) {
   if (url.pathname.startsWith("/api/")) {
     if (isDev) console.log("[MW] proxying API route");
     try {
+      // SECURITY: Get client IP for rate limiting
+      const clientIP =
+        request.headers.get("x-forwarded-for") ||
+        request.headers.get("x-real-ip") ||
+        "unknown";
+
+      // SECURITY: Rate limit header validation requests
+      if (!checkHeaderRateLimit(clientIP)) {
+        console.warn(`[MW] Header rate limit exceeded for IP: ${clientIP}`);
+        return new NextResponse("Too Many Requests", { status: 429 });
+      }
+
+      // SECURITY: Validate headers for suspicious patterns
+      if (!validateHeaders(request.headers)) {
+        console.warn(`[MW] Suspicious headers detected from IP: ${clientIP}`);
+        return new NextResponse("Bad Request", { status: 400 });
+      }
+
+      // SECURITY: Basic CSRF validation for state-changing methods
+      const method = request.method?.toLowerCase();
+      if (method && ["post", "put", "delete", "patch"].includes(method)) {
+        // Exempt authentication and public endpoints from CSRF protection
+        const authEndpoints = [
+          "/api/users/sign_in",
+          "/api/login",
+          "/api/register",
+          "/api/auth",
+          "/api/csrf/token",
+          "/api/uuid/generate",
+        ];
+
+        const isAuthEndpoint = authEndpoints.some((endpoint) =>
+          url.pathname.includes(endpoint),
+        );
+
+        if (!isAuthEndpoint) {
+          const csrfHeader = request.headers.get("x-csrf-token");
+          const origin = request.headers.get("origin");
+
+          // Require CSRF token for state-changing operations (except auth)
+          if (!csrfHeader) {
+            console.warn(
+              `[MW] Missing CSRF token for ${method.toUpperCase()} request from IP: ${clientIP}, path: ${url.pathname}`,
+            );
+            return new NextResponse("CSRF token required", { status: 403 });
+          }
+
+          // Validate origin for state-changing requests (except auth)
+          if (!origin) {
+            console.warn(
+              `[MW] Missing origin header for ${method.toUpperCase()} request from IP: ${clientIP}, path: ${url.pathname}`,
+            );
+            return new NextResponse("Origin header required", { status: 403 });
+          }
+
+          // Check if origin matches expected hosts
+          const allowedOrigins = isProduction
+            ? ["https://vercel.bhenning.com", "https://finance.bhenning.com"]
+            : [
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://dev.finance.bhenning.com:3000",
+              ];
+
+          if (!allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
+            console.warn(
+              `[MW] Invalid origin for ${method.toUpperCase()} request: ${origin} from IP: ${clientIP}, path: ${url.pathname}`,
+            );
+            return new NextResponse("Invalid origin", { status: 403 });
+          }
+        } else {
+          if (isDev)
+            console.log(
+              `[MW] Exempting auth endpoint from CSRF: ${url.pathname}`,
+            );
+        }
+      }
+
       // Build the target URL
       const targetUrl = `https://finance.bhenning.com${url.pathname}${url.search}`;
       if (isDev) console.log("[MW] target=", targetUrl);
 
-      // Do not log cookies or headers
+      // SECURITY: Sanitize request headers before forwarding
+      const sanitizedHeaders = sanitizeRequestHeaders(
+        request.headers,
+        "finance.bhenning.com",
+        request.headers.get("host") || "unknown",
+      );
 
-      // Forward the request
+      // Forward the request with sanitized headers
       const response = await fetch(targetUrl, {
         method: request.method,
-        headers: {
-          ...Object.fromEntries(request.headers.entries()),
-          // Ensure proper host header
-          host: "finance.bhenning.com",
-          // Forward the original host for CORS if needed
-          "x-forwarded-host": request.headers.get("host"),
-          "x-forwarded-proto": "https",
-        },
+        headers: sanitizedHeaders,
         body:
           request.method !== "GET" && request.method !== "HEAD"
             ? await request.blob()
@@ -66,42 +148,34 @@ export async function middleware(request) {
       });
       if (isDev) console.log("[MW] upstream status=", response.status);
 
-      // Create response with all headers
-      const responseHeaders = new Headers();
-      response.headers.forEach((value, key) => {
-        // Skip headers that shouldn't be forwarded
-        if (
-          !["content-encoding", "transfer-encoding", "connection"].includes(
-            key.toLowerCase(),
-          )
-        ) {
-          // Secure Set-Cookie header rewriting for development only
-          if (key.toLowerCase() === "set-cookie") {
-            // SECURITY: Only rewrite specific authentication cookies in development
-            const isAuthCookie = /^(token|session|auth)=/i.test(value);
-            const isDevelopment = process.env.NODE_ENV === "development";
-            const isLocalhost = request.headers
-              .get("host")
-              ?.includes("localhost");
+      // SECURITY: Sanitize response headers
+      const responseHeaders = sanitizeResponseHeaders(response.headers);
 
-            if (isAuthCookie && isDevelopment && isLocalhost) {
-              // Secure rewriting: only remove problematic attributes for auth cookies
-              const modifiedCookie =
-                value
-                  // Remove domain for any bhenning.com domain
-                  .replace(/;\s*Domain=\.?bhenning\.com/gi, "")
-                  // Remove Secure flag only for localhost HTTP
-                  .replace(/;\s*Secure(?=;|$)/gi, "")
-                  // Adjust SameSite for localhost compatibility
-                  .replace(/;\s*SameSite=None/gi, "; SameSite=Lax") +
-                // Ensure HttpOnly is preserved for security
-                (!/HttpOnly/i.test(value) ? "; HttpOnly" : "");
-              responseHeaders.set(key, modifiedCookie);
-            } else {
-              // Non-auth cookies or production: pass through unchanged
-              responseHeaders.set(key, value);
-            }
+      // Special handling for Set-Cookie headers (preserve existing logic)
+      response.headers.forEach((value, key) => {
+        if (key.toLowerCase() === "set-cookie") {
+          // SECURITY: Only rewrite specific authentication cookies in development
+          const isAuthCookie = /^(token|session|auth)=/i.test(value);
+          const isDevelopment = process.env.NODE_ENV === "development";
+          const isLocalhost = request.headers
+            .get("host")
+            ?.includes("localhost");
+
+          if (isAuthCookie && isDevelopment && isLocalhost) {
+            // Secure rewriting: only remove problematic attributes for auth cookies
+            const modifiedCookie =
+              value
+                // Remove domain for any bhenning.com domain
+                .replace(/;\s*Domain=\.?bhenning\.com/gi, "")
+                // Remove Secure flag only for localhost HTTP
+                .replace(/;\s*Secure(?=;|$)/gi, "")
+                // Adjust SameSite for localhost compatibility
+                .replace(/;\s*SameSite=None/gi, "; SameSite=Lax") +
+              // Ensure HttpOnly is preserved for security
+              (!/HttpOnly/i.test(value) ? "; HttpOnly" : "");
+            responseHeaders.set(key, modifiedCookie);
           } else {
+            // Non-auth cookies or production: pass through unchanged
             responseHeaders.set(key, value);
           }
         }
@@ -111,7 +185,7 @@ export async function middleware(request) {
       if (isDev) {
         responseHeaders.set(
           "Access-Control-Allow-Origin",
-          request.headers.get("origin") || "http://localhost:3000",
+          request.headers.get("origin") || "http://localhost:3001",
         );
         responseHeaders.set("Access-Control-Allow-Credentials", "true");
         responseHeaders.set(
@@ -120,7 +194,7 @@ export async function middleware(request) {
         );
         responseHeaders.set(
           "Access-Control-Allow-Headers",
-          "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+          "Content-Type, Authorization, X-Requested-With, Accept, Origin, x-csrf-token",
         );
       }
       return new NextResponse(response.body, {

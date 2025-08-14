@@ -5,6 +5,7 @@ import {
   hookValidators,
   ValidationError,
 } from "../utils/validation";
+import { getSecureHeaders } from "../utils/csrfUtils";
 //import { basicAuth } from "../Common";
 
 const setupNewAccount = (payload: Account) => {
@@ -45,13 +46,14 @@ const insertAccount = async (payload: Account): Promise<Account | null> => {
       validation.validatedData.accountNameOwner,
     );
 
+    const headers = await getSecureHeaders({
+      //Authorization: basicAuth(),
+    });
+
     const response = await fetch(endpoint, {
       method: "POST",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        //Authorization: basicAuth(),
-      },
+      headers,
       body: JSON.stringify(newPayload),
     });
 

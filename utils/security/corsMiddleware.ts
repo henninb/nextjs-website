@@ -210,19 +210,23 @@ export function smartCORSMiddleware(req: NextApiRequest, res: NextApiResponse) {
 
 /**
  * CSRF protection utility (works with CORS)
+ * @deprecated Use enhancedCSRFProtection from csrfProtection.ts instead
  */
 export function validateCSRFToken(req: NextApiRequest): boolean {
+  console.warn(
+    "validateCSRFToken is deprecated. Use enhancedCSRFProtection from csrfProtection.ts",
+  );
+
   if (["POST", "PUT", "DELETE", "PATCH"].includes(req.method || "")) {
     const csrfToken = req.headers["x-csrf-token"] as string;
     const sessionToken = req.headers["authorization"] as string;
 
-    // Basic CSRF validation - implement proper token generation/validation
+    // Basic CSRF validation - use enhancedCSRFProtection for full protection
     if (!csrfToken || !sessionToken) {
       return false;
     }
 
-    // Add your CSRF token validation logic here
-    // This is a placeholder - implement based on your auth system
+    // This is a basic check - use the full CSRF protection module for production
     return true;
   }
 

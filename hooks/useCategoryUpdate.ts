@@ -1,6 +1,7 @@
 //import { basicAuth } from "../Common";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
+import { getSecureHeaders } from "../utils/csrfUtils";
 
 const updateCategory = async (
   oldCategory: Category,
@@ -8,14 +9,15 @@ const updateCategory = async (
 ): Promise<Category> => {
   const endpoint = `/api/category/update/${oldCategory.categoryName}`;
   try {
+    const headers = await getSecureHeaders({
+      Accept: "application/json",
+      //Authorization: basicAuth(),
+    });
+
     const response = await fetch(endpoint, {
       method: "PUT",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        //Authorization: basicAuth(),
-      },
+      headers,
       body: JSON.stringify(newCategory),
     });
 
