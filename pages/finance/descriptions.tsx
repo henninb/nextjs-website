@@ -26,6 +26,7 @@ import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import { useAuth } from "../../components/AuthProvider";
+import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
 export default function Descriptions() {
   const [message, setMessage] = useState("");
@@ -292,10 +293,12 @@ export default function Descriptions() {
         {/* Delete Modal */}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
             <Typography>
-              Are you sure you want to delete the description "
-              {selectedDescription ? selectedDescription.descriptionName : ""}"?
+              {modalBodies.confirmDeletion(
+                "description",
+                selectedDescription?.descriptionName ?? "",
+              )}
             </Typography>
 
             <Box mt={2} display="flex" justifyContent="space-between">
@@ -320,7 +323,9 @@ export default function Descriptions() {
         {/* Modal Add Description */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
           <Paper>
-            <h3>Add New Description</h3>
+            <Typography variant="h6">
+              {modalTitles.addNew("description")}
+            </Typography>
             <TextField
               label="Name"
               fullWidth

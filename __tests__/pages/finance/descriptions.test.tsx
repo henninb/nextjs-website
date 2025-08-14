@@ -19,6 +19,11 @@ jest.mock("../../../hooks/useDescriptionInsert");
 jest.mock("../../../hooks/useDescriptionDelete");
 jest.mock("../../../hooks/useDescriptionUpdate");
 jest.mock("../../../components/AuthProvider");
+// Ensure MUI Modal always renders children in tests
+jest.mock("@mui/material/Modal", () => ({
+  __esModule: true,
+  default: ({ children }: any) => <div data-testid="modal">{children}</div>,
+}));
 
 const mockDescriptionData = [
   {
@@ -95,5 +100,14 @@ describe("Descriptions Component", () => {
 
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
     expect(screen.getByText("Loading descriptions...")).toBeInTheDocument();
+  });
+
+  it("opens add description modal with standardized title", () => {
+    render(<Descriptions />, { wrapper: createWrapper() });
+
+    const addButton = screen.getByText("Add Description");
+    addButton.click();
+
+    expect(screen.getByText("Add New Description")).toBeInTheDocument();
   });
 });

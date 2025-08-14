@@ -21,6 +21,11 @@ jest.mock("../../../hooks/useTransferDelete");
 jest.mock("../../../hooks/useTransferUpdate");
 jest.mock("../../../hooks/useAccountFetch");
 jest.mock("../../../components/AuthProvider");
+// Ensure MUI Modal always renders children in tests
+jest.mock("@mui/material/Modal", () => ({
+  __esModule: true,
+  default: ({ children }: any) => <div data-testid="modal">{children}</div>,
+}));
 jest.mock("../../../components/USDAmountInput", () => {
   return function MockUSDAmountInput({
     value,
@@ -122,6 +127,15 @@ describe("Transfers Component", () => {
     render(<Transfers />, { wrapper: createWrapper() });
 
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
+  });
+
+  it("opens add transfer modal with standardized title", () => {
+    render(<Transfers />, { wrapper: createWrapper() });
+
+    const addButtons = screen.getAllByText("Add Transfer");
+    addButtons[0].click();
+
+    expect(screen.getByText("Add New Transfer")).toBeInTheDocument();
   });
 
   it("shows spinner while loading", () => {

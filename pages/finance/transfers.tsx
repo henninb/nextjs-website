@@ -38,6 +38,7 @@ import {
   formatDateForDisplay,
 } from "../../components/Common";
 import { useAuth } from "../../components/AuthProvider";
+import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
 export default function Transfers() {
   const [message, setMessage] = useState("");
@@ -476,10 +477,12 @@ export default function Transfers() {
         {/* Confirmation Delete Modal */}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
             <Typography>
-              Are you sure you want to delete the transfer "
-              {selectedTransfer?.transferId}"?
+              {modalBodies.confirmDeletion(
+                "transfer",
+                selectedTransfer?.transferId ?? "",
+              )}
             </Typography>
             <Box mt={2} display="flex" justifyContent="space-between">
               <Button
@@ -503,7 +506,9 @@ export default function Transfers() {
         {/* Modal to add a transaction */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
           <Paper>
-            <h3>Add New Transfer</h3>
+            <Typography variant="h6">
+              {modalTitles.addNew("transfer")}
+            </Typography>
 
             <TextField
               label="Transaction Date"

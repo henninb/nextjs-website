@@ -26,6 +26,7 @@ import useParameterUpdate from "../../hooks/useParameterUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import { useAuth } from "../../components/AuthProvider";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
+import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
 export default function Configuration() {
   const [message, setMessage] = useState("");
@@ -365,11 +366,12 @@ export default function Configuration() {
 
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
             <Typography>
-              Are you sure you want to delete "
-              {selectedParameter?.parameterName}
-              "?
+              {modalBodies.confirmDeletion(
+                "parameter",
+                selectedParameter?.parameterName ?? "",
+              )}
             </Typography>
             <Box mt={2} display="flex" justifyContent="space-between">
               <Button
@@ -393,7 +395,9 @@ export default function Configuration() {
         {/* Modal Add Parameter */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
           <Paper>
-            <h3>Add New Parameter</h3>
+            <Typography variant="h6">
+              {modalTitles.addNew("parameter")}
+            </Typography>
             <TextField
               label="Name"
               fullWidth

@@ -32,6 +32,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import { useAuth } from "../../components/AuthProvider";
+import { modalTitles, modalBodies } from "../../utils/modalMessages";
 import {
   Table,
   TableHead,
@@ -444,141 +445,105 @@ export default function Accounts() {
           </div>
         )}
 
-        {/* Confirmation Deleting Modal */}
+        {/* Confirmation Delete Modal */}
         <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 400,
-              maxWidth: "90vw",
-              p: 3,
-            }}
-          >
-            <Paper>
-              <Box sx={{ p: 2 }}>
-                <Typography variant="h6">Confirm Deletion</Typography>
-                <Typography>
-                  Are you sure you want to delete the account "
-                  {selectedAccount?.accountNameOwner}"?
-                </Typography>
-                <Box mt={2} display="flex" justifyContent="space-between">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleDeleteRow}
-                  >
-                    Delete
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => setShowModelDelete(false)}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              </Box>
-            </Paper>
-          </Box>
+          <Paper>
+            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
+            <Typography>
+              {modalBodies.confirmDeletion(
+                "account",
+                selectedAccount?.accountNameOwner ?? "",
+              )}
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDeleteRow}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowModelDelete(false)}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Paper>
         </Modal>
 
         {/* Modal Add Account */}
         <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 400,
-              maxWidth: "90vw",
-              p: 3,
-            }}
-          >
-            <Paper>
-              <Box sx={{ p: 3 }}>
-                <Typography variant="h5" sx={{ mb: 2 }}>
-                  Add New Account
-                </Typography>
+          <Paper>
+            <Typography variant="h6">
+              {modalTitles.addNew("account")}
+            </Typography>
+            <TextField
+              label="Account"
+              fullWidth
+              margin="normal"
+              value={accountData?.accountNameOwner || ""}
+              onChange={(e) =>
+                setAccountData((prev) => ({
+                  ...prev,
+                  accountNameOwner: e.target.value,
+                }))
+              }
+            />
+
+            <Autocomplete
+              freeSolo
+              options={accountTypeOptions}
+              value={accountData?.accountType || ""}
+              onChange={(event, newValue) =>
+                setAccountData((prev: any) => ({
+                  ...prev,
+                  accountType: newValue || "",
+                }))
+              }
+              renderInput={(params) => (
                 <TextField
-                  label="Account"
+                  {...params}
+                  label="Account Type"
                   fullWidth
                   margin="normal"
-                  value={accountData?.accountNameOwner || ""}
-                  onChange={(e) =>
-                    setAccountData((prev) => ({
-                      ...prev,
-                      accountNameOwner: e.target.value,
-                    }))
-                  }
+                  onKeyDown={handleAccountTypeKeyDown}
                 />
+              )}
+            />
 
-                <Autocomplete
-                  freeSolo
-                  options={accountTypeOptions}
-                  value={accountData?.accountType || ""}
-                  onChange={(event, newValue) =>
-                    setAccountData((prev: any) => ({
-                      ...prev,
-                      accountType: newValue || "",
-                    }))
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Account Type"
-                      fullWidth
-                      margin="normal"
-                      onKeyDown={handleAccountTypeKeyDown}
-                    />
-                  )}
-                />
-
-                <TextField
-                  label="Moniker"
-                  fullWidth
-                  margin="normal"
-                  value={accountData?.moniker || ""}
-                  onChange={(e) =>
-                    setAccountData((prev: any) => ({
-                      ...prev,
-                      moniker: e.target.value,
-                    }))
-                  }
-                />
-                <Box
-                  sx={{
-                    mt: 2,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: 1,
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    onClick={() => setShowModelAdd(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={() =>
-                      accountData &&
-                      handleAddRow({
-                        ...accountData,
-                        validationDate: new Date(0), // January 1, 1970 at midnight
-                      })
-                    }
-                  >
-                    Add
-                  </Button>
-                </Box>
-              </Box>
-            </Paper>
-          </Box>
+            <TextField
+              label="Moniker"
+              fullWidth
+              margin="normal"
+              value={accountData?.moniker || ""}
+              onChange={(e) =>
+                setAccountData((prev: any) => ({
+                  ...prev,
+                  moniker: e.target.value,
+                }))
+              }
+            />
+            <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
+              <Button variant="outlined" onClick={() => setShowModelAdd(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() =>
+                  accountData &&
+                  handleAddRow({
+                    ...accountData,
+                    validationDate: new Date(0), // January 1, 1970 at midnight
+                  })
+                }
+              >
+                Add
+              </Button>
+            </Box>
+          </Paper>
         </Modal>
       </FinanceLayout>
     </div>

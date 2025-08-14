@@ -27,6 +27,7 @@ import Category from "../../model/Category";
 import useCategoryUpdate from "../../hooks/useCategoryUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import { useAuth } from "../../components/AuthProvider";
+import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
 export default function Categories() {
   const [message, setMessage] = useState("");
@@ -296,10 +297,12 @@ export default function Categories() {
         {/* Confirmation Delete Modal */}
         <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
             <Typography>
-              Are you sure you want to delete the category "
-              {JSON.stringify(selectedCategory)}"?
+              {modalBodies.confirmDeletion(
+                "category",
+                selectedCategory?.categoryName ?? "",
+              )}
             </Typography>
             <Box mt={2} display="flex" justifyContent="space-between">
               <Button
@@ -323,7 +326,9 @@ export default function Categories() {
         {/* Modal Add Category */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
           <Paper>
-            <h3>Add New Category</h3>
+            <Typography variant="h6">
+              {modalTitles.addNew("category")}
+            </Typography>
             <TextField
               label="Name"
               fullWidth

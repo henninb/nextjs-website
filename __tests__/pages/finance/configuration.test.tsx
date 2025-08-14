@@ -19,6 +19,11 @@ jest.mock("../../../hooks/useParameterInsert");
 jest.mock("../../../hooks/useParameterDelete");
 jest.mock("../../../hooks/useParameterUpdate");
 jest.mock("../../../components/AuthProvider");
+// Ensure MUI Modal always renders children in tests
+jest.mock("@mui/material/Modal", () => ({
+  __esModule: true,
+  default: ({ children }: any) => <div data-testid="modal">{children}</div>,
+}));
 
 const mockParameterData = [
   {
@@ -97,5 +102,14 @@ describe("Configuration Component", () => {
     expect(
       screen.getByText("Loading configuration parameters..."),
     ).toBeInTheDocument();
+  });
+
+  it("opens add parameter modal with standardized title", () => {
+    render(<Configuration />, { wrapper: createWrapper() });
+
+    const addButton = screen.getByText("Add Parameter");
+    addButton.click();
+
+    expect(screen.getByText("Add New Parameter")).toBeInTheDocument();
   });
 });

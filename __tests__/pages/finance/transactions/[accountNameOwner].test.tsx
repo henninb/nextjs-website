@@ -227,7 +227,7 @@ describe("AccountTransactions Component", () => {
     const addButton = screen.getByText("Add Transaction");
     fireEvent.click(addButton);
 
-    expect(screen.getByText("Add A New Transaction")).toBeInTheDocument();
+    expect(screen.getByText("Add New Transaction")).toBeInTheDocument();
   });
 
   it("handles transaction form submission", async () => {
@@ -243,7 +243,7 @@ describe("AccountTransactions Component", () => {
     fireEvent.click(addButton);
 
     // Verify modal opened
-    expect(screen.getByText("Add A New Transaction")).toBeInTheDocument();
+    expect(screen.getByText("Add New Transaction")).toBeInTheDocument();
 
     // For this test, we'll just verify the modal opens and the hook is configured
     // The actual form submission would require complex autocomplete mocking

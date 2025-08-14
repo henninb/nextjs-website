@@ -68,6 +68,7 @@ import { useAuth } from "../../../components/AuthProvider";
 import { useUI } from "../../../contexts/UIContext";
 import { useTheme } from "@mui/material/styles";
 import { generateSecureUUID } from "../../../utils/security/secureUUID";
+import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
 export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -896,10 +897,12 @@ export default function TransactionsByAccount() {
         {/* Modal Clone Transaction */}
         <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Clone</Typography>
+            <Typography variant="h6">{modalTitles.confirmClone}</Typography>
             <Typography>
-              Are you sure you want to clone the transaction "
-              {selectedTransaction?.guid}"?
+              {modalBodies.confirmClone(
+                "transaction",
+                selectedTransaction?.guid ?? "",
+              )}
             </Typography>
             <Box mt={2} display="flex" justifyContent="space-between">
               <Button
@@ -923,10 +926,12 @@ export default function TransactionsByAccount() {
         {/* Modal Delete Transaction */}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Delete</Typography>
+            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
             <Typography>
-              Are you sure you want to delete the transaction "
-              {selectedTransaction?.guid}"?
+              {modalBodies.confirmDeletion(
+                "transaction",
+                selectedTransaction?.guid ?? "",
+              )}
             </Typography>
             <Box mt={2} display="flex" justifyContent="space-between">
               <Button
@@ -959,7 +964,9 @@ export default function TransactionsByAccount() {
           aria-describedby="transaction-form-modal-description"
         >
           <Paper>
-            <Typography variant="h6">Add A New Transaction</Typography>
+            <Typography variant="h6">
+              {modalTitles.addNew("transaction")}
+            </Typography>
 
             <TextField
               label="Transaction Date"
@@ -1183,10 +1190,12 @@ export default function TransactionsByAccount() {
         {/* Modal Move Transaction */}
         <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Move</Typography>
+            <Typography variant="h6">{modalTitles.confirmMove}</Typography>
             <Typography>
-              Are you sure you want to move the transaction "
-              {selectedTransaction?.guid}"?
+              {modalBodies.confirmMove(
+                "transaction",
+                selectedTransaction?.guid ?? "",
+              )}
             </Typography>
             <Autocomplete
               options={

@@ -37,6 +37,7 @@ import {
   formatDateForDisplay,
 } from "../../components/Common";
 import { useAuth } from "../../components/AuthProvider";
+import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
 const initialPaymentData: Payment = {
   paymentId: undefined,
@@ -437,10 +438,12 @@ export default function Payments() {
         {/* Confirmation Delete Modal */}
         <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
           <Paper>
-            <Typography variant="h6">Confirm Deletion</Typography>
+            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
             <Typography>
-              Are you sure you want to delete the payment "
-              {selectedPayment?.paymentId}"?
+              {modalBodies.confirmDeletion(
+                "payment",
+                selectedPayment?.paymentId ?? "",
+              )}
             </Typography>
             <Box mt={2} display="flex" justifyContent="space-between">
               <Button
@@ -464,7 +467,9 @@ export default function Payments() {
         {/* Modal to Add or Edit */}
         <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
           <Paper>
-            <Typography variant="h6">Add New Payment</Typography>
+            <Typography variant="h6">
+              {modalTitles.addNew("payment")}
+            </Typography>
             <TextField
               label="Transaction Date"
               fullWidth
