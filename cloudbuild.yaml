@@ -9,10 +9,24 @@ steps:
       - |
         npm install
         npm run build
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["build", "-t", "gcr.io/$PROJECT_ID/nextjs-website:$COMMIT_SHA", "."]
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/$PROJECT_ID/nextjs-website:$COMMIT_SHA"]
+  - name: "us-docker.pkg.dev/cloud-builders/ga/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA",
+        ".",
+      ]
+  - name: "us-docker.pkg.dev/cloud-builders/ga/docker"
+    args:
+      [
+        "push",
+        "$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA",
+      ]
 
 images:
-  - "gcr.io/$PROJECT_ID/nextjs-website:$COMMIT_SHA"
+  - "$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA"
+
+substitutions:
+  _LOCATION: "us"
+  _REPOSITORY: "containers"
