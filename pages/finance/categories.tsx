@@ -238,7 +238,10 @@ export default function Categories() {
                   <DataGrid
                     rows={fetchedCategories || []}
                     columns={columns}
-                    getRowId={(row) => row.categoryId || 0}
+                    getRowId={(row) =>
+                      row.categoryId ??
+                      `${row.categoryName}-${row.activeStatus}`
+                    }
                     checkboxSelection={false}
                     rowSelection={false}
                     autoHeight

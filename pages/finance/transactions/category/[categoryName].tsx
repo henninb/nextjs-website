@@ -122,6 +122,19 @@ export default function TransactionsByCategory() {
     { field: "notes", headerName: "Notes", width: 200, editable: true },
   ];
 
+  // Early error state for consistency with other finance pages
+  if (errorTransactions) {
+    return (
+      <FinanceLayout>
+        <h2>{`${categoryName}`}</h2>
+        <ErrorDisplay
+          error={errorTransactions}
+          onRetry={() => refetchTransactions && refetchTransactions()}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -130,12 +143,6 @@ export default function TransactionsByCategory() {
           <Spinner />
         ) : (
           <div>
-            {errorTransactions && (
-              <ErrorDisplay
-                error={errorTransactions}
-                onRetry={() => refetchTransactions && refetchTransactions()}
-              />
-            )}
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
                 <DataGrid
@@ -164,7 +171,6 @@ export default function TransactionsByCategory() {
                       await updateTransaction({ newRow, oldRow });
                       setMessage("Transaction updated successfully.");
                       setShowSnackbar(true);
-                      //return newRow;
                       return { ...newRow };
                     } catch (error) {
                       handleError(error, "Update Transaction failure.");

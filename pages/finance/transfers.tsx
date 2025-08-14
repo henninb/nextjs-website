@@ -403,7 +403,8 @@ export default function Transfers() {
                     rows={transfersToDisplay}
                     columns={columns}
                     getRowId={(row) =>
-                      row.transferId || `temp-${Math.random()}`
+                      row.transferId ??
+                      `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
                     }
                     checkboxSelection={false}
                     rowSelection={false}

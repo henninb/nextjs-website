@@ -385,7 +385,7 @@ export default function Accounts() {
                   <DataGrid
                     rows={fetchedAccounts?.filter((row) => row != null) || []}
                     columns={columns}
-                    getRowId={(row) => row.accountId || 0}
+                    getRowId={(row) => row.accountId ?? row.accountNameOwner}
                     paginationModel={{
                       pageSize: fetchedAccounts?.length,
                       page: 0,

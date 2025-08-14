@@ -365,7 +365,10 @@ export default function Payments() {
                   <DataGrid
                     rows={fetchedPayments?.filter((row) => row != null) || []}
                     columns={columns}
-                    getRowId={(row) => row.paymentId || `temp-${Math.random()}`}
+                    getRowId={(row) =>
+                      row.paymentId ??
+                      `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
+                    }
                     checkboxSelection={false}
                     rowSelection={false}
                     pagination

@@ -232,7 +232,10 @@ export default function Descriptions() {
                       fetchedDescrptions?.filter((row) => row != null) || []
                     }
                     columns={columns}
-                    getRowId={(row) => row.descriptionId || 0}
+                    getRowId={(row) =>
+                      row.descriptionId ??
+                      `${row.descriptionName}-${row.activeStatus}`
+                    }
                     checkboxSelection={false}
                     rowSelection={false}
                     pagination

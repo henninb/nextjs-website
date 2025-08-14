@@ -122,6 +122,19 @@ export default function TransactionsByDescription() {
     { field: "notes", headerName: "Notes", width: 200, editable: true },
   ];
 
+  // Early error state for consistency with other finance pages
+  if (errorTransactions) {
+    return (
+      <FinanceLayout>
+        <h2>{`${descriptionName}`}</h2>
+        <ErrorDisplay
+          error={errorTransactions}
+          onRetry={() => refetchTransactions && refetchTransactions()}
+        />
+      </FinanceLayout>
+    );
+  }
+
   return (
     <div>
       <FinanceLayout>
@@ -130,12 +143,6 @@ export default function TransactionsByDescription() {
           <Spinner />
         ) : (
           <div>
-            {errorTransactions && (
-              <ErrorDisplay
-                error={errorTransactions}
-                onRetry={() => refetchTransactions && refetchTransactions()}
-              />
-            )}
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
                 <DataGrid

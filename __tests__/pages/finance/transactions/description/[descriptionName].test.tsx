@@ -121,9 +121,7 @@ describe("TransactionsByDescription page", () => {
     expect(grid).toBeInTheDocument();
     expect(screen.getByText("Test Checking")).toBeInTheDocument();
     // Ensure we match the row content, not the heading
-    expect(
-      within(grid).getByText("Grocery Store"),
-    ).toBeInTheDocument();
+    expect(within(grid).getByText("Grocery Store")).toBeInTheDocument();
     expect(screen.getByText("-$25.00")).toBeInTheDocument();
   });
 
