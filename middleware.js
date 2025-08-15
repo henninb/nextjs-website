@@ -27,12 +27,16 @@ export async function middleware(request) {
   const isLocalhost =
     host?.includes("localhost") || host?.includes("127.0.0.1");
 
+  if (isDev) {
+    console.log(`[MW] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}`);
+  }
+
   // CRITICAL: Prevent cookie rewriting in production
   // (no logging of headers/cookies)
 
   // SECURITY: Only allow proxy for approved localhost/development hosts
   if (!isProduction && !isLocalhost) {
-    if (isDev) console.log("[MW] blocked unauthorized host");
+    if (isDev) console.log(`[MW] blocked unauthorized host: ${host}`);
     return new NextResponse("Forbidden", { status: 403 });
   }
 
