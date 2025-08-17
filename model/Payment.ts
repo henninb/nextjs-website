@@ -3,6 +3,8 @@ export default interface Payment {
   accountNameOwner: string;
   sourceAccount: string;
   destinationAccount: string;
+  guidSource?: string;
+  guidDestination?: string;
   transactionDate: Date;
   amount: number;
   activeStatus: boolean;
