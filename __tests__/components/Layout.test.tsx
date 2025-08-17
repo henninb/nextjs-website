@@ -38,7 +38,11 @@ jest.mock("../../contexts/UIContext", () => ({
 }));
 
 jest.mock("../../components/SelectNavigateAccounts", () => {
-  return function MockSelectNavigateAccounts({ onNavigate, isModern, theme }: any) {
+  return function MockSelectNavigateAccounts({
+    onNavigate,
+    isModern,
+    theme,
+  }: any) {
     return (
       <div data-testid="select-navigate-accounts">
         <button onClick={onNavigate}>Mock Account Selector</button>
@@ -48,7 +52,11 @@ jest.mock("../../components/SelectNavigateAccounts", () => {
 });
 
 jest.mock("../../layouts/FinanceLayout", () => {
-  return function MockFinanceLayout({ children }: { children: React.ReactNode }) {
+  return function MockFinanceLayout({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) {
     return <div data-testid="finance-layout">{children}</div>;
   };
 });
@@ -81,7 +89,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div data-testid="test-content">Test Content</div>
-        </Layout>
+        </Layout>,
       );
 
       expect(screen.getByTestId("test-content")).toBeInTheDocument();
@@ -91,7 +99,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       expect(screen.getByLabelText("menu")).toBeInTheDocument();
@@ -101,7 +109,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Finance Content</div>
-        </Layout>
+        </Layout>,
       );
 
       expect(screen.getByTestId("finance-layout")).toBeInTheDocument();
@@ -113,7 +121,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const menuButton = screen.getByLabelText("menu");
@@ -130,7 +138,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const menuButton = screen.getByLabelText("menu");
@@ -148,20 +156,22 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const menuButton = screen.getByLabelText("menu");
       fireEvent.click(menuButton);
 
-      expect(screen.getByTestId("select-navigate-accounts")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("select-navigate-accounts"),
+      ).toBeInTheDocument();
     });
 
     it("closes drawer when navigation item is clicked", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const menuButton = screen.getByLabelText("menu");
@@ -183,7 +193,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       // Should show user display name (John Doe)
@@ -194,7 +204,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const logoutButton = screen.getByText("Logout");
@@ -205,7 +215,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const logoutButton = screen.getByText("Logout");
@@ -220,7 +230,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       expect(screen.getByTestId("ui-toggle")).toBeInTheDocument();
@@ -230,7 +240,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       // The component should render without errors in modern mode
@@ -246,7 +256,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       // Should show default "User" text in avatar
@@ -257,14 +267,14 @@ describe("Layout Component", () => {
       // Mock user with potentially unsafe characters
       mockUser = {
         firstName: "John<script>",
-        lastName: "Doe", 
+        lastName: "Doe",
         username: "johndoe",
       };
 
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       // Should handle sanitization - the actual implementation sanitizes the input
@@ -281,7 +291,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       // Should show username fallback
@@ -301,7 +311,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       // Should not crash and show fallback
@@ -314,7 +324,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const menuButton = screen.getByLabelText("menu");
@@ -331,7 +341,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       expect(screen.getByLabelText("menu")).toBeInTheDocument();
@@ -341,7 +351,7 @@ describe("Layout Component", () => {
       renderWithTheme(
         <Layout>
           <div>Content</div>
-        </Layout>
+        </Layout>,
       );
 
       const menuButton = screen.getByLabelText("menu");
@@ -370,7 +380,7 @@ describe("Layout Component - Non-Finance Pages", () => {
     renderWithTheme(
       <Layout>
         <div>General Content</div>
-      </Layout>
+      </Layout>,
     );
 
     const menuButton = screen.getByLabelText("menu");
@@ -388,7 +398,7 @@ describe("Layout Component - Non-Finance Pages", () => {
     renderWithTheme(
       <Layout>
         <div>General Content</div>
-      </Layout>
+      </Layout>,
     );
 
     expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
@@ -398,7 +408,7 @@ describe("Layout Component - Non-Finance Pages", () => {
     renderWithTheme(
       <Layout>
         <div>General Content</div>
-      </Layout>
+      </Layout>,
     );
 
     expect(screen.queryByTestId("ui-toggle")).not.toBeInTheDocument();
@@ -419,7 +429,7 @@ describe("Layout Component - Unauthenticated", () => {
     renderWithTheme(
       <Layout>
         <div>Content</div>
-      </Layout>
+      </Layout>,
     );
 
     expect(screen.getByText("Login")).toBeInTheDocument();
@@ -430,7 +440,7 @@ describe("Layout Component - Unauthenticated", () => {
     renderWithTheme(
       <Layout>
         <div>Content</div>
-      </Layout>
+      </Layout>,
     );
 
     expect(screen.queryByText("John Doe")).not.toBeInTheDocument();

@@ -85,7 +85,7 @@ describe("useCategoryInsert", () => {
     });
 
     it("logs the category data being passed", async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       const inputCategory: Category = {
         categoryId: 0,
@@ -115,7 +115,7 @@ describe("useCategoryInsert", () => {
       });
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        `passed: ${JSON.stringify(inputCategory)}`
+        `passed: ${JSON.stringify(inputCategory)}`,
       );
 
       consoleSpy.mockRestore();
@@ -123,8 +123,18 @@ describe("useCategoryInsert", () => {
 
     it("updates query cache correctly after successful insertion", async () => {
       const existingCategories: Category[] = [
-        { categoryId: 1, category: "food", activeStatus: true, accountNameOwner: "user1" },
-        { categoryId: 2, category: "transport", activeStatus: true, accountNameOwner: "user1" },
+        {
+          categoryId: 1,
+          category: "food",
+          activeStatus: true,
+          accountNameOwner: "user1",
+        },
+        {
+          categoryId: 2,
+          category: "transport",
+          activeStatus: true,
+          accountNameOwner: "user1",
+        },
       ];
 
       // Set initial query data
@@ -234,7 +244,7 @@ describe("useCategoryInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Category name already exists")
+        new Error("Category name already exists"),
       );
     });
 
@@ -258,7 +268,7 @@ describe("useCategoryInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Failed to parse error response: No error message returned.")
+        new Error("Failed to parse error response: No error message returned."),
       );
     });
 
@@ -284,13 +294,13 @@ describe("useCategoryInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Failed to parse error response: Malformed JSON")
+        new Error("Failed to parse error response: Malformed JSON"),
       );
     });
 
     it("handles network errors", async () => {
       (global.fetch as jest.Mock).mockRejectedValueOnce(
-        new Error("Connection timeout")
+        new Error("Connection timeout"),
       );
 
       const { result } = renderHook(() => useCategoryInsert(), {
@@ -309,10 +319,10 @@ describe("useCategoryInsert", () => {
     });
 
     it("logs errors correctly in onError callback", async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       (global.fetch as jest.Mock).mockRejectedValueOnce(
-        new Error("Test error message")
+        new Error("Test error message"),
       );
 
       const { result } = renderHook(() => useCategoryInsert(), {
@@ -333,7 +343,7 @@ describe("useCategoryInsert", () => {
     });
 
     it("handles null/undefined errors in onError callback", async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       // Mock a scenario where error might be null/undefined
       const { result } = renderHook(() => useCategoryInsert(), {
@@ -450,7 +460,7 @@ describe("useCategoryInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Category name cannot be empty")
+        new Error("Category name cannot be empty"),
       );
     });
 
@@ -602,7 +612,7 @@ describe("useCategoryInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Category already exists for this user")
+        new Error("Category already exists for this user"),
       );
     });
 
@@ -628,7 +638,7 @@ describe("useCategoryInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Invalid category data format")
+        new Error("Invalid category data format"),
       );
     });
   });

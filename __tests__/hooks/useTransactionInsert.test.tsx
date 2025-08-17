@@ -20,9 +20,10 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: class ValidationError extends Error {},
 }));
 
-const mockGenerateSecureUUID = secureUUID.generateSecureUUID as jest.MockedFunction<
-  typeof secureUUID.generateSecureUUID
->;
+const mockGenerateSecureUUID =
+  secureUUID.generateSecureUUID as jest.MockedFunction<
+    typeof secureUUID.generateSecureUUID
+  >;
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -53,7 +54,7 @@ describe("useTransactionInsert", () => {
     jest.clearAllMocks();
     queryClient = createTestQueryClient();
     mockGenerateSecureUUID.mockResolvedValue("test-uuid-123");
-    
+
     // Mock validation success by default
     const { hookValidators } = require("../../utils/validation");
     hookValidators.validateApiPayload.mockReturnValue({
@@ -61,7 +62,7 @@ describe("useTransactionInsert", () => {
       validatedData: {
         transactionDate: new Date("2024-01-01"),
         description: "Test Transaction",
-        amount: 100.50,
+        amount: 100.5,
         category: "groceries",
         notes: "Test notes",
         transactionType: "expense",
@@ -86,7 +87,7 @@ describe("useTransactionInsert", () => {
         accountNameOwner: "test_account",
         transactionDate: new Date("2024-01-01"),
         description: "Test Transaction",
-        amount: 100.50,
+        amount: 100.5,
         category: "groceries",
         transactionType: "expense",
         transactionState: "cleared",
@@ -111,7 +112,7 @@ describe("useTransactionInsert", () => {
         accountNameOwner: "test_account",
         transactionDate: new Date("2024-01-01"),
         description: "Test Transaction",
-        amount: 100.50,
+        amount: 100.5,
         category: "groceries",
         transactionType: "expense",
         transactionState: "cleared",
@@ -163,7 +164,7 @@ describe("useTransactionInsert", () => {
         accountNameOwner: "test_account",
         transactionDate: new Date("2025-01-01"),
         description: "Future Transaction",
-        amount: 200.00,
+        amount: 200.0,
         transactionState: "future",
       };
 
@@ -182,7 +183,7 @@ describe("useTransactionInsert", () => {
         accountNameOwner: "test_account",
         transactionDate: new Date("2025-01-01"),
         description: "Future Transaction",
-        amount: 200.00,
+        amount: 200.0,
         transactionState: "future",
       };
 
@@ -210,25 +211,28 @@ describe("useTransactionInsert", () => {
 
     it("updates query cache correctly for non-import transactions", async () => {
       const existingTransactions = [
-        { guid: "existing-1", amount: 50.00, accountNameOwner: "test_account" },
-        { guid: "existing-2", amount: 75.00, accountNameOwner: "test_account" },
+        { guid: "existing-1", amount: 50.0, accountNameOwner: "test_account" },
+        { guid: "existing-2", amount: 75.0, accountNameOwner: "test_account" },
       ];
 
       const existingTotals = {
-        totals: 125.00,
+        totals: 125.0,
         totalsFuture: 0,
-        totalsCleared: 125.00,
+        totalsCleared: 125.0,
         totalsOutstanding: 0,
       };
 
       // Set initial query data
-      queryClient.setQueryData(["accounts", "test_account"], existingTransactions);
+      queryClient.setQueryData(
+        ["accounts", "test_account"],
+        existingTransactions,
+      );
       queryClient.setQueryData(["totals", "test_account"], existingTotals);
 
       const mockResponse = {
         guid: "new-uuid-123",
         accountNameOwner: "test_account",
-        amount: 100.50,
+        amount: 100.5,
         transactionState: "cleared",
       };
 
@@ -254,14 +258,23 @@ describe("useTransactionInsert", () => {
       });
 
       // Check that cache was updated
-      const updatedTransactions = queryClient.getQueryData(["accounts", "test_account"]);
-      expect(updatedTransactions).toEqual([mockResponse, ...existingTransactions]);
+      const updatedTransactions = queryClient.getQueryData([
+        "accounts",
+        "test_account",
+      ]);
+      expect(updatedTransactions).toEqual([
+        mockResponse,
+        ...existingTransactions,
+      ]);
 
-      const updatedTotals = queryClient.getQueryData(["totals", "test_account"]);
+      const updatedTotals = queryClient.getQueryData([
+        "totals",
+        "test_account",
+      ]);
       expect(updatedTotals).toEqual({
-        totals: 225.50,
+        totals: 225.5,
         totalsFuture: 0,
-        totalsCleared: 225.50,
+        totalsCleared: 225.5,
         totalsOutstanding: 0,
       });
     });
@@ -280,7 +293,7 @@ describe("useTransactionInsert", () => {
       const outstandingResponse = {
         guid: "outstanding-uuid",
         accountNameOwner: "test_account",
-        amount: 100.00,
+        amount: 100.0,
         transactionState: "outstanding",
       };
 
@@ -305,20 +318,29 @@ describe("useTransactionInsert", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      const updatedTotals = queryClient.getQueryData(["totals", "test_account"]);
+      const updatedTotals = queryClient.getQueryData([
+        "totals",
+        "test_account",
+      ]);
       expect(updatedTotals).toEqual({
-        totals: 100.00,
+        totals: 100.0,
         totalsFuture: 0,
         totalsCleared: 0,
-        totalsOutstanding: 100.00,
+        totalsOutstanding: 100.0,
       });
     });
 
     it("does not update cache for import transactions", async () => {
       const existingTransactions = [{ guid: "existing-1" }];
-      queryClient.setQueryData(["accounts", "test_account"], existingTransactions);
+      queryClient.setQueryData(
+        ["accounts", "test_account"],
+        existingTransactions,
+      );
 
-      const mockResponse = { guid: "import-uuid", accountNameOwner: "test_account" };
+      const mockResponse = {
+        guid: "import-uuid",
+        accountNameOwner: "test_account",
+      };
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
@@ -342,7 +364,10 @@ describe("useTransactionInsert", () => {
       });
 
       // Cache should remain unchanged
-      const transactions = queryClient.getQueryData(["accounts", "test_account"]);
+      const transactions = queryClient.getQueryData([
+        "accounts",
+        "test_account",
+      ]);
       expect(transactions).toEqual(existingTransactions);
     });
   });
@@ -375,7 +400,9 @@ describe("useTransactionInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Transaction validation failed: Transaction date is required, Amount must be a number")
+        new Error(
+          "Transaction validation failed: Transaction date is required, Amount must be a number",
+        ),
       );
 
       // Should not make API call
@@ -406,7 +433,7 @@ describe("useTransactionInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Transaction validation failed: Validation failed")
+        new Error("Transaction validation failed: Validation failed"),
       );
     });
   });
@@ -437,7 +464,7 @@ describe("useTransactionInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Invalid transaction data")
+        new Error("Invalid transaction data"),
       );
     });
 
@@ -464,7 +491,7 @@ describe("useTransactionInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Failed to parse error response: No error message returned.")
+        new Error("Failed to parse error response: No error message returned."),
       );
     });
 
@@ -493,13 +520,13 @@ describe("useTransactionInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Failed to parse error response: Invalid JSON")
+        new Error("Failed to parse error response: Invalid JSON"),
       );
     });
 
     it("handles network errors", async () => {
       (global.fetch as jest.Mock).mockRejectedValueOnce(
-        new Error("Network error")
+        new Error("Network error"),
       );
 
       const { result } = renderHook(() => useTransactionInsert(), {
@@ -521,7 +548,9 @@ describe("useTransactionInsert", () => {
     });
 
     it("handles UUID generation errors", async () => {
-      mockGenerateSecureUUID.mockRejectedValueOnce(new Error("UUID generation failed"));
+      mockGenerateSecureUUID.mockRejectedValueOnce(
+        new Error("UUID generation failed"),
+      );
 
       const { result } = renderHook(() => useTransactionInsert(), {
         wrapper: createWrapper(queryClient),
@@ -582,7 +611,7 @@ describe("useTransactionInsert", () => {
       const minimalTransaction: Partial<Transaction> = {
         transactionDate: new Date("2024-01-01"),
         description: "Minimal Transaction",
-        amount: 50.00,
+        amount: 50.0,
       };
 
       const mockResponse = {
@@ -590,7 +619,7 @@ describe("useTransactionInsert", () => {
         accountNameOwner: "test_account",
         transactionDate: new Date("2024-01-01"),
         description: "Minimal Transaction",
-        amount: 50.00,
+        amount: 50.0,
         category: "",
         notes: "",
         transactionType: "undefined",
@@ -625,13 +654,18 @@ describe("useTransactionInsert", () => {
     });
 
     it("handles unknown transaction state in totals calculation", async () => {
-      const existingTotals = { totals: 0, totalsFuture: 0, totalsCleared: 0, totalsOutstanding: 0 };
+      const existingTotals = {
+        totals: 0,
+        totalsFuture: 0,
+        totalsCleared: 0,
+        totalsOutstanding: 0,
+      };
       queryClient.setQueryData(["totals", "test_account"], existingTotals);
 
       const mockResponse = {
         guid: "unknown-state-uuid",
         accountNameOwner: "test_account",
-        amount: 100.00,
+        amount: 100.0,
         transactionState: "unknown_state",
       };
 
@@ -641,7 +675,7 @@ describe("useTransactionInsert", () => {
         json: async () => mockResponse,
       });
 
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       const { result } = renderHook(() => useTransactionInsert(), {
         wrapper: createWrapper(queryClient),
@@ -662,9 +696,12 @@ describe("useTransactionInsert", () => {
       expect(consoleSpy).toHaveBeenCalledWith("cannot adjust totals.");
 
       // Totals should still update the main total
-      const updatedTotals = queryClient.getQueryData(["totals", "test_account"]);
+      const updatedTotals = queryClient.getQueryData([
+        "totals",
+        "test_account",
+      ]);
       expect(updatedTotals).toEqual({
-        totals: 100.00,
+        totals: 100.0,
         totalsFuture: 0,
         totalsCleared: 0,
         totalsOutstanding: 0,

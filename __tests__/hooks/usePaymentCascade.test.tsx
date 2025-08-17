@@ -108,10 +108,7 @@ describe("usePaymentUpdate cascade behavior (TDD)", () => {
 
     // Seed React Query caches for transaction-by-account
     queryClient.setQueryData(["accounts", sourceAccount], initialSourceTxns);
-    queryClient.setQueryData(
-      ["accounts", destinationAccount],
-      initialDestTxns,
-    );
+    queryClient.setQueryData(["accounts", destinationAccount], initialDestTxns);
 
     // Prepare old/new payment values (user edits amount and date)
     const oldPayment: Payment = {
@@ -189,4 +186,3 @@ describe("usePaymentUpdate cascade behavior (TDD)", () => {
     expect(dstOther).toEqual(initialDestTxns[1]);
   });
 });
-

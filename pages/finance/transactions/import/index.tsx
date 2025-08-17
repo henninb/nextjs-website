@@ -99,7 +99,12 @@ export default function TransactionImporter() {
     if (isPendingTransactionsLoaded && isSuccessAccounts) {
       setShowSpinner(false);
     }
-  }, [isPendingTransactionsLoaded, isFetchingPendingTransactions, isSuccessAccounts, isFetchingAccounts]);
+  }, [
+    isPendingTransactionsLoaded,
+    isFetchingPendingTransactions,
+    isSuccessAccounts,
+    isFetchingAccounts,
+  ]);
 
   useEffect(() => {
     if (isPendingTransactionsLoaded && fetchedPendingTransactions) {
@@ -129,13 +134,15 @@ export default function TransactionImporter() {
   }
 
   // Filter transactions based on account selection
-  const filteredTransactions = accountFilter 
-    ? transactions.filter(transaction => transaction.accountNameOwner === accountFilter)
+  const filteredTransactions = accountFilter
+    ? transactions.filter(
+        (transaction) => transaction.accountNameOwner === accountFilter,
+      )
     : transactions;
 
   // Get unique account names for the filter dropdown
   const uniqueAccounts = Array.from(
-    new Set(transactions.map(t => t.accountNameOwner))
+    new Set(transactions.map((t) => t.accountNameOwner)),
   ).filter(Boolean);
 
   const handleInsertTransaction = async (
@@ -209,21 +216,23 @@ export default function TransactionImporter() {
   const validateFormat = (text: string) => {
     const lines = text.split("\n").filter((line) => line.trim() !== "");
     const errors: string[] = [];
-    
+
     lines.forEach((line, index) => {
       const parts = line.match(/(\d{4}-\d{2}-\d{2})\s(.+)\s(-?\d+\.\d{2})/);
       if (!parts) {
-        errors.push(`Line ${index + 1}: "${line.substring(0, 50)}${line.length > 50 ? '...' : ''}"`);
+        errors.push(
+          `Line ${index + 1}: "${line.substring(0, 50)}${line.length > 50 ? "..." : ""}"`,
+        );
       }
     });
-    
+
     setFormatErrors(errors);
     return errors.length === 0;
   };
 
   const handleInputChange = (value: string) => {
     setInputText(value);
-    
+
     // Debounced validation
     setIsValidating(true);
     setTimeout(() => {
@@ -248,7 +257,9 @@ export default function TransactionImporter() {
         const parts = line.match(/(\d{4}-\d{2}-\d{2})\s(.+)\s(-?\d+\.\d{2})/);
         if (!parts) {
           console.warn(`Failed to parse line ${index + 1}: "${line}"`);
-          errors.push(`Line ${index + 1}: "${line.substring(0, 50)}${line.length > 50 ? '...' : ''}"`);
+          errors.push(
+            `Line ${index + 1}: "${line.substring(0, 50)}${line.length > 50 ? "..." : ""}"`,
+          );
           failedCount++;
           return null;
         }
@@ -273,14 +284,18 @@ export default function TransactionImporter() {
     console.log(
       `Successfully parsed transactions: ${parsedTransactions.length}`,
     );
-    
+
     if (failedCount > 0) {
       console.warn(`Failed to parse ${failedCount} transaction(s).`);
-      setMessage(`Successfully parsed ${parsedTransactions.length} transactions. ${failedCount} lines failed to parse.`);
+      setMessage(
+        `Successfully parsed ${parsedTransactions.length} transactions. ${failedCount} lines failed to parse.`,
+      );
     } else {
-      setMessage(`Successfully parsed ${parsedTransactions.length} transactions.`);
+      setMessage(
+        `Successfully parsed ${parsedTransactions.length} transactions.`,
+      );
     }
-    
+
     setShowSnackbar(true);
     setTransactions(parsedTransactions);
   };
@@ -416,7 +431,11 @@ export default function TransactionImporter() {
     <div>
       <FinanceLayout>
         <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography variant="h4" component="h1" sx={{ mb: 1, fontWeight: 600 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ mb: 1, fontWeight: 600 }}
+          >
             Transaction Import
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -425,12 +444,12 @@ export default function TransactionImporter() {
         </Box>
 
         {/* Input Section */}
-        <Card sx={{ mb: 4, border: '2px solid', borderColor: 'primary.main' }}>
+        <Card sx={{ mb: 4, border: "2px solid", borderColor: "primary.main" }}>
           <CardHeader
-            title={(
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            title={
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Typography variant="h6">Paste Transaction Data</Typography>
-                <IconButton 
+                <IconButton
                   onClick={() => setShowFormatHelp(!showFormatHelp)}
                   size="small"
                   sx={{ ml: 1 }}
@@ -438,57 +457,64 @@ export default function TransactionImporter() {
                   <HelpIcon />
                 </IconButton>
               </Box>
-            )}
+            }
             action={
               <Button
                 onClick={() => setShowFormatHelp(!showFormatHelp)}
-                startIcon={showFormatHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                startIcon={
+                  showFormatHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                }
                 size="small"
               >
-                {showFormatHelp ? 'Hide' : 'Show'} Format Guide
+                {showFormatHelp ? "Hide" : "Show"} Format Guide
               </Button>
             }
           />
           <Collapse in={showFormatHelp}>
             <CardContent sx={{ pt: 0 }}>
               <Alert severity="info" sx={{ mb: 2 }}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: "bold" }}>
                   Required Format: YYYY-MM-DD Description Amount
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  Each transaction must be on a separate line with exactly this format:
+                  Each transaction must be on a separate line with exactly this
+                  format:
                 </Typography>
                 <List dense sx={{ pl: 2 }}>
                   <ListItem sx={{ py: 0 }}>
-                    <ListItemText 
+                    <ListItemText
                       primary="Date: YYYY-MM-DD (e.g., 2024-02-25)"
-                      primaryTypographyProps={{ variant: 'body2' }}
+                      primaryTypographyProps={{ variant: "body2" }}
                     />
                   </ListItem>
                   <ListItem sx={{ py: 0 }}>
-                    <ListItemText 
+                    <ListItemText
                       primary="Description: Any text (e.g., Coffee Shop, Salary Payment)"
-                      primaryTypographyProps={{ variant: 'body2' }}
+                      primaryTypographyProps={{ variant: "body2" }}
                     />
                   </ListItem>
                   <ListItem sx={{ py: 0 }}>
-                    <ListItemText 
+                    <ListItemText
                       primary="Amount: Number with 2 decimal places (e.g., -4.50, 2000.00)"
-                      primaryTypographyProps={{ variant: 'body2' }}
+                      primaryTypographyProps={{ variant: "body2" }}
                     />
                   </ListItem>
                 </List>
-                <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
+                <Typography variant="body2" sx={{ mt: 1, fontWeight: "bold" }}>
                   Examples:
                 </Typography>
-                <Typography variant="body2" component="pre" sx={{ 
-                  fontFamily: 'monospace', 
-                  bgcolor: 'grey.100', 
-                  p: 1, 
-                  borderRadius: 1,
-                  mt: 1
-                }}>
-{`2024-02-25 Coffee Shop -4.50
+                <Typography
+                  variant="body2"
+                  component="pre"
+                  sx={{
+                    fontFamily: "monospace",
+                    bgcolor: "grey.100",
+                    p: 1,
+                    borderRadius: 1,
+                    mt: 1,
+                  }}
+                >
+                  {`2024-02-25 Coffee Shop -4.50
 2024-02-26 Salary Payment 2000.00
 2024-02-27 Grocery Store -45.67`}
                 </Typography>
@@ -505,45 +531,54 @@ export default function TransactionImporter() {
               placeholder="Paste your transaction data here...\n\nExample:\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary Payment 2000.00\n2024-02-27 Grocery Store -45.67"
               variant="outlined"
               sx={{
-                '& .MuiInputBase-root': {
-                  fontFamily: 'monospace',
-                  fontSize: '0.9rem',
+                "& .MuiInputBase-root": {
+                  fontFamily: "monospace",
+                  fontSize: "0.9rem",
                 },
-                '& .MuiInputBase-input': {
+                "& .MuiInputBase-input": {
                   lineHeight: 1.6,
-                }
+                },
               }}
-              helperText={`${inputText.split('\n').filter(line => line.trim()).length} lines entered`}
+              helperText={`${inputText.split("\n").filter((line) => line.trim()).length} lines entered`}
             />
-            
+
             {/* Format Validation Feedback */}
             {formatErrors.length > 0 && (
               <Alert severity="error" sx={{ mt: 2 }}>
-                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
                   Format errors found in {formatErrors.length} line(s):
                 </Typography>
                 {formatErrors.slice(0, 5).map((error, index) => (
-                  <Typography key={index} variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                  <Typography
+                    key={index}
+                    variant="body2"
+                    sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}
+                  >
                     {error}
                   </Typography>
                 ))}
                 {formatErrors.length > 5 && (
-                  <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 1, fontStyle: "italic" }}
+                  >
                     ... and {formatErrors.length - 5} more errors
                   </Typography>
                 )}
               </Alert>
             )}
-            
+
             {inputText.trim() && formatErrors.length === 0 && !isValidating && (
               <Alert severity="success" sx={{ mt: 2 }}>
                 All lines appear to be in the correct format!
               </Alert>
             )}
 
-            <Box sx={{ display: "flex", gap: 2, mt: 3, justifyContent: 'center' }}>
-              <Button 
-                variant="contained" 
+            <Box
+              sx={{ display: "flex", gap: 2, mt: 3, justifyContent: "center" }}
+            >
+              <Button
+                variant="contained"
                 onClick={parseTransactions}
                 disabled={!inputText.trim() || formatErrors.length > 0}
                 size="large"
@@ -553,7 +588,7 @@ export default function TransactionImporter() {
               <Button
                 variant="outlined"
                 onClick={() => {
-                  setInputText('');
+                  setInputText("");
                   setFormatErrors([]);
                 }}
               >
@@ -568,11 +603,13 @@ export default function TransactionImporter() {
         {/* Results Section */}
         <Card>
           <CardHeader
-            title={(
+            title={
               <Typography variant="h6">
-                {transactions.length > 0 ? `Parsed Transactions (${transactions.length} total)` : 'Transactions'}
+                {transactions.length > 0
+                  ? `Parsed Transactions (${transactions.length} total)`
+                  : "Transactions"}
               </Typography>
-            )}
+            }
             action={
               transactions.length > 0 && (
                 <Button
@@ -587,114 +624,126 @@ export default function TransactionImporter() {
             }
           />
           <CardContent>
-              {showSpinner ? (
-                <LoadingState
-                  variant="card"
-                  message="Loading pending transactions..."
-                />
-              ) : (
-                <div>
-                  {/* Account Filter Controls */}
-                  <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
-                    <Autocomplete
-                      options={uniqueAccounts}
-                      value={accountFilter || null}
-                      onChange={(_, newValue) => setAccountFilter(newValue || "")}
-                      sx={{ minWidth: 250 }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Filter by Account"
-                          placeholder="All accounts"
-                          variant="outlined"
-                          size="small"
-                        />
-                      )}
-                    />
-                    {accountFilter && (
-                      <Button 
-                        variant="outlined" 
-                        size="small"
-                        onClick={() => setAccountFilter("")}
-                      >
-                        Clear Filter
-                      </Button>
-                    )}
-                    {/* Quick filter chips for common accounts */}
-                    {uniqueAccounts.slice(0, 3).map((account) => (
-                      <Chip
-                        key={account}
-                        label={account}
-                        onClick={() => setAccountFilter(account)}
-                        variant={accountFilter === account ? "filled" : "outlined"}
-                        color={accountFilter === account ? "primary" : "default"}
+            {showSpinner ? (
+              <LoadingState
+                variant="card"
+                message="Loading pending transactions..."
+              />
+            ) : (
+              <div>
+                {/* Account Filter Controls */}
+                <Box
+                  sx={{
+                    mb: 3,
+                    display: "flex",
+                    gap: 2,
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Autocomplete
+                    options={uniqueAccounts}
+                    value={accountFilter || null}
+                    onChange={(_, newValue) => setAccountFilter(newValue || "")}
+                    sx={{ minWidth: 250 }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Filter by Account"
+                        placeholder="All accounts"
+                        variant="outlined"
                         size="small"
                       />
-                    ))}
-                  </Box>
-                  
-                  {/* Transaction count display */}
-                  <Box sx={{ mb: 2, textAlign: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Showing {filteredTransactions.length} of {transactions.length} transactions
-                      {accountFilter && ` (filtered by: ${accountFilter})`}
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ width: "100%", overflowX: 'auto' }}>
-                    <DataGrid
-                      rows={filteredTransactions}
-                      columns={columns}
-                      processRowUpdate={async (
-                        newRow: PendingTransaction,
-                        oldRow: PendingTransaction,
-                      ): Promise<PendingTransaction> => {
-                        if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                          return oldRow;
-                        }
-                        try {
-                          await updatePendingTransaction({
-                            oldPendingTransaction: oldRow,
-                            newPendingTransaction: newRow,
-                          });
-                          setMessage("PendingTransaction updated successfully.");
-                          setShowSnackbar(true);
-
-                          return { ...newRow };
-                        } catch (error) {
-                          handleError(
-                            error,
-                            "Update PendingTransaction failure.",
-                            false,
-                          );
-                          throw error;
-                        }
-                      }}
-                      initialState={{
-                        columns: {
-                          columnVisibilityModel: {
-                            pendingTransactionId: false, // This will hide the column by default
-                          },
-                        },
-                        sorting: {
-                          sortModel: [
-                            { field: "transactionDate", sort: "desc" }, // Newest dates first
-                          ],
-                        },
-                      }}
-                      getRowId={(row) => row.guid}
-                      autoHeight
-                      sx={{
-                        '& .MuiDataGrid-root': {
-                          border: 'none',
-                        },
-                      }}
+                    )}
+                  />
+                  {accountFilter && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setAccountFilter("")}
+                    >
+                      Clear Filter
+                    </Button>
+                  )}
+                  {/* Quick filter chips for common accounts */}
+                  {uniqueAccounts.slice(0, 3).map((account) => (
+                    <Chip
+                      key={account}
+                      label={account}
+                      onClick={() => setAccountFilter(account)}
+                      variant={
+                        accountFilter === account ? "filled" : "outlined"
+                      }
+                      color={accountFilter === account ? "primary" : "default"}
+                      size="small"
                     />
-                  </Box>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  ))}
+                </Box>
+
+                {/* Transaction count display */}
+                <Box sx={{ mb: 2, textAlign: "center" }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Showing {filteredTransactions.length} of{" "}
+                    {transactions.length} transactions
+                    {accountFilter && ` (filtered by: ${accountFilter})`}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ width: "100%", overflowX: "auto" }}>
+                  <DataGrid
+                    rows={filteredTransactions}
+                    columns={columns}
+                    processRowUpdate={async (
+                      newRow: PendingTransaction,
+                      oldRow: PendingTransaction,
+                    ): Promise<PendingTransaction> => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      try {
+                        await updatePendingTransaction({
+                          oldPendingTransaction: oldRow,
+                          newPendingTransaction: newRow,
+                        });
+                        setMessage("PendingTransaction updated successfully.");
+                        setShowSnackbar(true);
+
+                        return { ...newRow };
+                      } catch (error) {
+                        handleError(
+                          error,
+                          "Update PendingTransaction failure.",
+                          false,
+                        );
+                        throw error;
+                      }
+                    }}
+                    initialState={{
+                      columns: {
+                        columnVisibilityModel: {
+                          pendingTransactionId: false, // This will hide the column by default
+                        },
+                      },
+                      sorting: {
+                        sortModel: [
+                          { field: "transactionDate", sort: "desc" }, // Newest dates first
+                        ],
+                      },
+                    }}
+                    getRowId={(row) => row.guid}
+                    autoHeight
+                    sx={{
+                      "& .MuiDataGrid-root": {
+                        border: "none",
+                      },
+                    }}
+                  />
+                </Box>
+              </div>
+            )}
+          </CardContent>
+        </Card>
         <SnackbarBaseline
           message={message}
           state={showSnackbar}

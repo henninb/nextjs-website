@@ -34,11 +34,11 @@ describe("Payment Update Cascade Functionality", () => {
   describe("when payment amount and date are updated", () => {
     it("should cascade changes to linked transactions in both source and destination accounts", async () => {
       const queryClient = createTestQueryClient();
-      
+
       const sourceAccount = "checking_john";
       const destinationAccount = "savings_john";
       const paymentId = 12345;
-      
+
       const initialSourceTransactions: Transaction[] = [
         {
           guid: "source-linked-txn",
@@ -101,8 +101,14 @@ describe("Payment Update Cascade Functionality", () => {
         },
       ];
 
-      queryClient.setQueryData(["accounts", sourceAccount], initialSourceTransactions);
-      queryClient.setQueryData(["accounts", destinationAccount], initialDestTransactions);
+      queryClient.setQueryData(
+        ["accounts", sourceAccount],
+        initialSourceTransactions,
+      );
+      queryClient.setQueryData(
+        ["accounts", destinationAccount],
+        initialDestTransactions,
+      );
 
       const originalPayment: Payment = {
         paymentId,
@@ -121,27 +127,29 @@ describe("Payment Update Cascade Functionality", () => {
       };
 
       global.fetch = jest.fn().mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          ...updatedPayment,
-          transactionDate: updatedPayment.transactionDate.toISOString(),
-        }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            ...updatedPayment,
+            transactionDate: updatedPayment.transactionDate.toISOString(),
+          }),
+          { status: 200 },
+        ),
       );
 
       const { result } = renderHook(() => usePaymentUpdate(), {
         wrapper: createWrapper(queryClient),
       });
 
-      result.current.mutate({ 
-        oldPayment: originalPayment, 
-        newPayment: updatedPayment 
+      result.current.mutate({
+        oldPayment: originalPayment,
+        newPayment: updatedPayment,
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      const updatedSourceTransactions = queryClient.getQueryData<Transaction[]>([
-        "accounts",
-        sourceAccount,
-      ]);
+      const updatedSourceTransactions = queryClient.getQueryData<Transaction[]>(
+        ["accounts", sourceAccount],
+      );
       const updatedDestTransactions = queryClient.getQueryData<Transaction[]>([
         "accounts",
         destinationAccount,
@@ -151,35 +159,37 @@ describe("Payment Update Cascade Functionality", () => {
       expect(updatedDestTransactions).toBeDefined();
 
       const sourceLinkedTransaction = updatedSourceTransactions?.find(
-        (t) => t.guid === "source-linked-txn"
+        (t) => t.guid === "source-linked-txn",
       );
       const sourceUnlinkedTransaction = updatedSourceTransactions?.find(
-        (t) => t.guid === "source-unlinked-txn"
+        (t) => t.guid === "source-unlinked-txn",
       );
       const destLinkedTransaction = updatedDestTransactions?.find(
-        (t) => t.guid === "dest-linked-txn"
+        (t) => t.guid === "dest-linked-txn",
       );
       const destUnlinkedTransaction = updatedDestTransactions?.find(
-        (t) => t.guid === "dest-unlinked-txn"
+        (t) => t.guid === "dest-unlinked-txn",
       );
 
       expect(sourceLinkedTransaction?.amount).toBe(-300.0);
-      expect(new Date(sourceLinkedTransaction?.transactionDate as any).toDateString()).toBe(
-        updatedPayment.transactionDate.toDateString()
-      );
-      
+      expect(
+        new Date(
+          sourceLinkedTransaction?.transactionDate as any,
+        ).toDateString(),
+      ).toBe(updatedPayment.transactionDate.toDateString());
+
       expect(destLinkedTransaction?.amount).toBe(300.0);
-      expect(new Date(destLinkedTransaction?.transactionDate as any).toDateString()).toBe(
-        updatedPayment.transactionDate.toDateString()
-      );
-      
+      expect(
+        new Date(destLinkedTransaction?.transactionDate as any).toDateString(),
+      ).toBe(updatedPayment.transactionDate.toDateString());
+
       expect(sourceUnlinkedTransaction).toEqual(initialSourceTransactions[1]);
       expect(destUnlinkedTransaction).toEqual(initialDestTransactions[1]);
     });
 
     it("should handle case where linked transactions don't exist", async () => {
       const queryClient = createTestQueryClient();
-      
+
       const sourceAccount = "checking_empty";
       const destinationAccount = "savings_empty";
       const paymentId = 99999;
@@ -202,25 +212,26 @@ describe("Payment Update Cascade Functionality", () => {
         amount: 150.0,
       };
 
-      global.fetch = jest.fn().mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedPayment), { status: 200 })
-      );
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(updatedPayment), { status: 200 }),
+        );
 
       const { result } = renderHook(() => usePaymentUpdate(), {
         wrapper: createWrapper(queryClient),
       });
 
-      result.current.mutate({ 
-        oldPayment: originalPayment, 
-        newPayment: updatedPayment 
+      result.current.mutate({
+        oldPayment: originalPayment,
+        newPayment: updatedPayment,
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      const updatedSourceTransactions = queryClient.getQueryData<Transaction[]>([
-        "accounts",
-        sourceAccount,
-      ]);
+      const updatedSourceTransactions = queryClient.getQueryData<Transaction[]>(
+        ["accounts", sourceAccount],
+      );
       const updatedDestTransactions = queryClient.getQueryData<Transaction[]>([
         "accounts",
         destinationAccount,
@@ -232,7 +243,7 @@ describe("Payment Update Cascade Functionality", () => {
 
     it("should only update transactions with matching paymentId in notes", async () => {
       const queryClient = createTestQueryClient();
-      
+
       const sourceAccount = "checking_multi";
       const paymentId1 = 1001;
       const paymentId2 = 1002;
@@ -285,17 +296,19 @@ describe("Payment Update Cascade Functionality", () => {
         amount: 150.0,
       };
 
-      global.fetch = jest.fn().mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedPayment), { status: 200 })
-      );
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(updatedPayment), { status: 200 }),
+        );
 
       const { result } = renderHook(() => usePaymentUpdate(), {
         wrapper: createWrapper(queryClient),
       });
 
-      result.current.mutate({ 
-        oldPayment: originalPayment, 
-        newPayment: updatedPayment 
+      result.current.mutate({
+        oldPayment: originalPayment,
+        newPayment: updatedPayment,
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -305,8 +318,12 @@ describe("Payment Update Cascade Functionality", () => {
         sourceAccount,
       ]);
 
-      const payment1Txn = updatedTransactions?.find(t => t.guid === "txn-payment1");
-      const payment2Txn = updatedTransactions?.find(t => t.guid === "txn-payment2");
+      const payment1Txn = updatedTransactions?.find(
+        (t) => t.guid === "txn-payment1",
+      );
+      const payment2Txn = updatedTransactions?.find(
+        (t) => t.guid === "txn-payment2",
+      );
 
       expect(payment1Txn?.amount).toBe(-150.0);
       expect(payment2Txn?.amount).toBe(-50.0);
@@ -316,8 +333,8 @@ describe("Payment Update Cascade Functionality", () => {
   describe("cascade error handling", () => {
     it("should continue payment update even if cascade fails", async () => {
       const queryClient = createTestQueryClient();
-      
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       const mockGetQueryData = jest.fn().mockImplementation((key) => {
         if (key[0] === "accounts") {
@@ -325,7 +342,7 @@ describe("Payment Update Cascade Functionality", () => {
         }
         return [];
       });
-      
+
       queryClient.getQueryData = mockGetQueryData;
 
       const originalPayment: Payment = {
@@ -343,23 +360,27 @@ describe("Payment Update Cascade Functionality", () => {
         amount: 150.0,
       };
 
-      global.fetch = jest.fn().mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedPayment), { status: 200 })
-      );
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(updatedPayment), { status: 200 }),
+        );
 
       const { result } = renderHook(() => usePaymentUpdate(), {
         wrapper: createWrapper(queryClient),
       });
 
-      result.current.mutate({ 
-        oldPayment: originalPayment, 
-        newPayment: updatedPayment 
+      result.current.mutate({
+        oldPayment: originalPayment,
+        newPayment: updatedPayment,
       });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Payment cascade to transactions failed (non-fatal)")
+        expect.stringContaining(
+          "Payment cascade to transactions failed (non-fatal)",
+        ),
       );
 
       consoleSpy.mockRestore();

@@ -45,7 +45,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "checking_account",
         destinationAccount: "savings_account",
         transactionDate: new Date("2024-01-15"),
-        amount: 500.00,
+        amount: 500.0,
         description: "Monthly savings transfer",
         category: "transfer",
         notes: "Regular transfer",
@@ -58,7 +58,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "checking_account",
         destinationAccount: "savings_account",
         transactionDate: new Date("2024-01-15"),
-        amount: 500.00,
+        amount: 500.0,
         description: "Monthly savings transfer",
         category: "transfer",
         notes: "Regular transfer",
@@ -156,8 +156,8 @@ describe("useTransferInsert", () => {
 
     it("updates query cache correctly after successful insertion", async () => {
       const existingTransfers = [
-        { transferId: 1, amount: 100.00, sourceAccount: "account_1" },
-        { transferId: 2, amount: 200.00, sourceAccount: "account_2" },
+        { transferId: 1, amount: 100.0, sourceAccount: "account_1" },
+        { transferId: 2, amount: 200.0, sourceAccount: "account_2" },
       ];
 
       // Set initial query data
@@ -168,7 +168,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "account_3",
         destinationAccount: "account_4",
         transactionDate: new Date("2024-01-01"),
-        amount: 300.00,
+        amount: 300.0,
         description: "New transfer",
       };
 
@@ -206,7 +206,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "account_1",
         destinationAccount: "account_2",
         transactionDate: new Date("2024-01-01"),
-        amount: 150.00,
+        amount: 150.0,
         description: "First transfer",
       };
 
@@ -242,7 +242,8 @@ describe("useTransferInsert", () => {
         ok: false,
         status: 400,
         json: async () => ({
-          response: "Invalid transfer data: Source and destination accounts cannot be the same",
+          response:
+            "Invalid transfer data: Source and destination accounts cannot be the same",
         }),
       });
 
@@ -255,7 +256,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "same_account",
         destinationAccount: "same_account",
         transactionDate: new Date(),
-        amount: 100.00,
+        amount: 100.0,
         description: "Invalid transfer",
       };
 
@@ -268,7 +269,9 @@ describe("useTransferInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Invalid transfer data: Source and destination accounts cannot be the same")
+        new Error(
+          "Invalid transfer data: Source and destination accounts cannot be the same",
+        ),
       );
     });
 
@@ -292,7 +295,7 @@ describe("useTransferInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Failed to parse error response: No error message returned.")
+        new Error("Failed to parse error response: No error message returned."),
       );
     });
 
@@ -318,13 +321,13 @@ describe("useTransferInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error("Failed to parse error response: Invalid JSON response")
+        new Error("Failed to parse error response: Invalid JSON response"),
       );
     });
 
     it("handles network errors", async () => {
       (global.fetch as jest.Mock).mockRejectedValueOnce(
-        new Error("Network connection failed")
+        new Error("Network connection failed"),
       );
 
       const { result } = renderHook(() => useTransferInsert(), {
@@ -339,14 +342,16 @@ describe("useTransferInsert", () => {
         expect(result.current.isError).toBe(true);
       });
 
-      expect(result.current.error).toEqual(new Error("Network connection failed"));
+      expect(result.current.error).toEqual(
+        new Error("Network connection failed"),
+      );
     });
 
     it("logs error correctly in onError callback", async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       (global.fetch as jest.Mock).mockRejectedValueOnce(
-        new Error("Test error")
+        new Error("Test error"),
       );
 
       const { result } = renderHook(() => useTransferInsert(), {
@@ -367,7 +372,7 @@ describe("useTransferInsert", () => {
     });
 
     it("handles undefined errors in onError callback", async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
 
       // Force an undefined error condition
       const { result } = renderHook(() => useTransferInsert(), {
@@ -418,7 +423,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "account_a",
         destinationAccount: "account_b",
         transactionDate: new Date("2024-01-01"),
-        amount: 1.00,
+        amount: 1.0,
         description: "Minimal",
       };
 
@@ -454,7 +459,8 @@ describe("useTransferInsert", () => {
         amount: 1234.56,
         description: "Detailed transfer with all fields",
         category: "savings",
-        notes: "This is a comprehensive transfer with all optional fields filled",
+        notes:
+          "This is a comprehensive transfer with all optional fields filled",
         activeStatus: true,
         accountNameOwner: "detailed_user",
         dueDate: new Date("2024-06-20"),
@@ -508,7 +514,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "account_1",
         destinationAccount: "account_2",
         transactionDate: new Date("2024-01-01"),
-        amount: 0.00,
+        amount: 0.0,
         description: "Zero amount transfer",
       };
 
@@ -541,7 +547,7 @@ describe("useTransferInsert", () => {
         sourceAccount: "account_1",
         destinationAccount: "account_2",
         transactionDate: new Date("2024-01-01"),
-        amount: -100.00,
+        amount: -100.0,
         description: "Reversal transfer",
       };
 

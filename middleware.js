@@ -28,7 +28,9 @@ export async function middleware(request) {
     host?.includes("localhost") || host?.includes("127.0.0.1");
 
   if (isDev) {
-    console.log(`[MW] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}`);
+    console.log(
+      `[MW] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}`,
+    );
   }
 
   // CRITICAL: Prevent cookie rewriting in production

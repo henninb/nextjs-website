@@ -210,8 +210,30 @@ export default function Payments() {
       headerName: "Date",
       flex: 0.8,
       minWidth: 120,
+      editable: true,
       renderCell: (params) => {
         return formatDateForDisplay(params.value);
+      },
+      renderEditCell: (params) => {
+        const value = params.value ? formatDateForInput(params.value) : "";
+        return (
+          <TextField
+            type="date"
+            value={value}
+            onChange={(event) => {
+              const newValue = event.target.value;
+              const normalizedDate = normalizeTransactionDate(newValue);
+              params.api.setEditCellValue({
+                id: params.id,
+                field: params.field,
+                value: normalizedDate,
+              });
+            }}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
+        );
       },
       valueGetter: (params) => {
         return normalizeTransactionDate(params);
@@ -386,6 +408,7 @@ export default function Payments() {
                       if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
                         return oldRow;
                       }
+
                       try {
                         await updatePayment({
                           oldPayment: oldRow,

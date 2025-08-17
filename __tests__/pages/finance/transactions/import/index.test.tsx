@@ -30,7 +30,7 @@ jest.mock("../../../../../hooks/usePendingTransactionUpdate");
 jest.mock("../../../../../hooks/useAccountFetch");
 jest.mock("../../../../../components/AuthProvider");
 jest.mock("../../../../../utils/security/secureUUID", () => ({
-  generateSecureUUID: jest.fn().mockResolvedValue("mock-uuid-123")
+  generateSecureUUID: jest.fn().mockResolvedValue("mock-uuid-123"),
 }));
 
 const mockPendingTransactions = [
@@ -147,7 +147,9 @@ describe("TransactionImporter Component", () => {
       render(<TransactionImporter />, { wrapper: createWrapper() });
     });
 
-    const textarea = screen.getByPlaceholderText(/Paste your transaction data here/);
+    const textarea = screen.getByPlaceholderText(
+      /Paste your transaction data here/,
+    );
     expect(textarea).toBeInTheDocument();
   });
 
@@ -166,7 +168,9 @@ describe("TransactionImporter Component", () => {
       render(<TransactionImporter />, { wrapper: createWrapper() });
     });
 
-    const textarea = screen.getByPlaceholderText(/Paste your transaction data here/);
+    const textarea = screen.getByPlaceholderText(
+      /Paste your transaction data here/,
+    );
     const testInput =
       "2024-01-01 Coffee Shop -4.50\\n2024-01-02 Salary 2000.00";
 
@@ -181,7 +185,9 @@ describe("TransactionImporter Component", () => {
       render(<TransactionImporter />, { wrapper: createWrapper() });
     });
 
-    const textarea = screen.getByPlaceholderText(/Paste your transaction data here/);
+    const textarea = screen.getByPlaceholderText(
+      /Paste your transaction data here/,
+    );
     const submitButton = screen.getByText("Parse & Import Transactions");
 
     const testInput =
@@ -189,7 +195,7 @@ describe("TransactionImporter Component", () => {
     await act(async () => {
       fireEvent.change(textarea, { target: { value: testInput } });
       // Wait for validation to complete
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
       fireEvent.click(submitButton);
     });
 
@@ -265,13 +271,15 @@ describe("TransactionImporter Component", () => {
     });
 
     // Need to add some transactions first to show the results section
-    const textarea = screen.getByPlaceholderText(/Paste your transaction data here/);
+    const textarea = screen.getByPlaceholderText(
+      /Paste your transaction data here/,
+    );
     const submitButton = screen.getByText("Parse & Import Transactions");
-    
+
     const testInput = "2024-01-01 Coffee Shop -4.50";
     await act(async () => {
       fireEvent.change(textarea, { target: { value: testInput } });
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
       fireEvent.click(submitButton);
     });
 
@@ -398,13 +406,15 @@ describe("TransactionImporter Component", () => {
     });
 
     // Parse some transactions first to show the results section
-    const textarea = screen.getByPlaceholderText(/Paste your transaction data here/);
+    const textarea = screen.getByPlaceholderText(
+      /Paste your transaction data here/,
+    );
     const submitButton = screen.getByText("Parse & Import Transactions");
-    
+
     const testInput = "2024-01-01 Coffee Shop -4.50";
     await act(async () => {
       fireEvent.change(textarea, { target: { value: testInput } });
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
       fireEvent.click(submitButton);
     });
 
