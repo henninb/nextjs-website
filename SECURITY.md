@@ -306,5 +306,5 @@ const clean = InputSanitizer.sanitizeHtml(userInput);
 
 ---
 
-_Last Updated: January 2025_  
+_Last Updated: January 2025_
 _Security Review Required: Every 3 months_
