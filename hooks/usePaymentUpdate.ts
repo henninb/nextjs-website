@@ -32,21 +32,21 @@ const updatePayment = async (
       // Build payload that satisfies validation but signals changes correctly
       body: JSON.stringify({
         // Always include valid values for required validation fields
-        accountNameOwner: oldPayment.accountNameOwner || "dummy_account",
-        sourceAccount: oldPayment.sourceAccount || "dummy_source", 
-        destinationAccount: oldPayment.destinationAccount || "dummy_destination",
-        guidSource: oldPayment.guidSource || "00000000-0000-0000-0000-000000000000",
-        guidDestination: oldPayment.guidDestination || "00000000-0000-0000-0000-000000000000",
-        activeStatus: oldPayment.activeStatus !== undefined ? oldPayment.activeStatus : true,
-        
+        accountNameOwner: oldPayment.accountNameOwner,
+        sourceAccount: oldPayment.sourceAccount,
+        destinationAccount: oldPayment.destinationAccount,
+        guidSource: oldPayment.guidSource,
+        guidDestination: oldPayment.guidDestination,
+        activeStatus: oldPayment.activeStatus,
+
         // Send actual values for fields being updated, or use current values to preserve them
-        transactionDate: newPayment.transactionDate && 
+        transactionDate: newPayment.transactionDate &&
           new Date(newPayment.transactionDate).toDateString() !== new Date(oldPayment.transactionDate).toDateString()
           ? new Date(newPayment.transactionDate).toISOString().split('T')[0]
           : new Date(oldPayment.transactionDate).toISOString().split('T')[0],  // Current date to preserve
-          
+
         amount: newPayment.amount !== undefined && Number(newPayment.amount) !== Number(oldPayment.amount)
-          ? Number(newPayment.amount) 
+          ? Number(newPayment.amount)
           : Number(oldPayment.amount),  // Current amount to preserve
       }),
     });
