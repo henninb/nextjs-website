@@ -52,9 +52,10 @@ jest.mock("../../../hooks/useTotalsFetch", () => ({
   __esModule: true,
   default: jest.fn(),
 }));
+const insertAccountMock = jest.fn().mockResolvedValue({});
 jest.mock("../../../hooks/useAccountInsert", () => ({
   __esModule: true,
-  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+  default: () => ({ mutateAsync: insertAccountMock }),
 }));
 jest.mock("../../../hooks/useAccountUpdate", () => ({
   __esModule: true,
@@ -175,6 +176,117 @@ describe("pages/finance/index (Accounts)", () => {
     // Open the add modal
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
     expect(screen.getByText(/Add New Account/i)).toBeInTheDocument();
+  });
+
+  it("adds a new account (happy path)", async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseAccountFetch.mockReturnValue({
+      data: [
+        {
+          accountId: 9,
+          accountNameOwner: "Seed",
+          accountType: "debit",
+          activeStatus: true,
+          moniker: "S",
+          outstanding: 0,
+          future: 0,
+          cleared: 0,
+        },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    mockUseTotalsFetch.mockReturnValue({
+      data: { totals: 0, totalsCleared: 0, totalsOutstanding: 0, totalsFuture: 0 },
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AccountsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add account/i }));
+    fireEvent.change(screen.getByLabelText(/account$/i), { target: { value: "New Account" } });
+    fireEvent.change(screen.getByLabelText(/moniker/i), { target: { value: "House" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertAccountMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Account inserted successfully/i)).toBeInTheDocument();
+  });
+
+  it("shows error when add account fails", async () => {
+    insertAccountMock.mockRejectedValueOnce(new Error("Boom"));
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseAccountFetch.mockReturnValue({
+      data: [
+        {
+          accountId: 9,
+          accountNameOwner: "Seed",
+          accountType: "debit",
+          activeStatus: true,
+          moniker: "S",
+          outstanding: 0,
+          future: 0,
+          cleared: 0,
+        },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    mockUseTotalsFetch.mockReturnValue({
+      data: { totals: 0, totalsCleared: 0, totalsOutstanding: 0, totalsFuture: 0 },
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AccountsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add account/i }));
+    fireEvent.change(screen.getByLabelText(/account$/i), { target: { value: "A" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertAccountMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Add Account Boom/i)).toBeInTheDocument();
+  });
+
+  it("does not submit when Add Account form is empty", () => {
+    jest.clearAllMocks();
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    // Provide seed data to avoid EmptyState
+    mockUseAccountFetch.mockReturnValue({
+      data: [
+        {
+          accountId: 99,
+          accountNameOwner: "Seed",
+          accountType: "debit",
+          activeStatus: true,
+          moniker: "S",
+          outstanding: 0,
+          future: 0,
+          cleared: 0,
+        },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    mockUseTotalsFetch.mockReturnValue({
+      data: { totals: 0, totalsCleared: 0, totalsOutstanding: 0, totalsFuture: 0 },
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AccountsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add account/i }));
+    // Without typing anything, clicking Add should not call insert
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertAccountMock).not.toHaveBeenCalled();
   });
 
   it("opens delete confirmation from actions and confirms", () => {

@@ -31,9 +31,10 @@ jest.mock("../../../hooks/useParameterFetch", () => ({
   __esModule: true,
   default: jest.fn(),
 }));
+const insertParameterMock = jest.fn().mockResolvedValue({});
 jest.mock("../../../hooks/useParameterInsert", () => ({
   __esModule: true,
-  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+  default: () => ({ mutateAsync: insertParameterMock }),
 }));
 jest.mock("../../../hooks/useParameterUpdate", () => ({
   __esModule: true,
@@ -93,5 +94,64 @@ describe("pages/finance/configuration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
     expect(screen.getByText(/Add New Parameter/i)).toBeInTheDocument();
+  });
+
+  it("adds a parameter (happy path)", async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [{ parameterId: "id1", parameterName: "x", parameterValue: "y" }],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "key" } });
+    fireEvent.change(screen.getByLabelText(/value/i), { target: { value: "val" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertParameterMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Configuration added successfully/i)).toBeInTheDocument();
+  });
+
+  it("shows error when add parameter fails", async () => {
+    insertParameterMock.mockRejectedValueOnce(new Error("Server error"));
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [{ parameterId: "id1", parameterName: "x", parameterValue: "y" }],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "k" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertParameterMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Add Configuration: Server error/i)).toBeInTheDocument();
+  });
+
+  it("does not submit when Add Parameter form is empty", () => {
+    jest.clearAllMocks();
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [{ parameterId: "id1", parameterName: "x", parameterValue: "y" }],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
+    // No input changes; clicking Add should not call insert
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertParameterMock).not.toHaveBeenCalled();
   });
 });

@@ -45,6 +45,7 @@ elif [ "$ENV" = "dev" ]; then # Add this elif block
     netstat -tlnp | grep :3000
   fi
   npm run dev
+  echo 'npm test --silent -- --coverage'
 
 else # Handle invalid argument
   echo "Usage: $0 <prod|dev>"

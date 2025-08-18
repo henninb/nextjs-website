@@ -43,9 +43,10 @@ jest.mock("../../../hooks/useDescriptionFetch", () => ({
   __esModule: true,
   default: jest.fn(),
 }));
+const insertDescriptionMock = jest.fn().mockResolvedValue({});
 jest.mock("../../../hooks/useDescriptionInsert", () => ({
   __esModule: true,
-  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+  default: () => ({ mutateAsync: insertDescriptionMock }),
 }));
 const deleteDescriptionMock = jest.fn().mockResolvedValue({});
 jest.mock("../../../hooks/useDescriptionDelete", () => ({
@@ -119,6 +120,70 @@ describe("pages/finance/descriptions", () => {
       screen.getByRole("button", { name: /add description/i }),
     );
     expect(screen.getByText(/Add New Description/i)).toBeInTheDocument();
+  });
+
+  it("adds a new description (happy path)", async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 99, descriptionName: "Seed", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add description/i }));
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Grocery" } });
+    fireEvent.change(screen.getByLabelText(/status/i), { target: { value: "true" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertDescriptionMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Description inserted successfully/i)).toBeInTheDocument();
+  });
+
+  it("shows error when add description fails", async () => {
+    insertDescriptionMock.mockRejectedValueOnce(new Error("Boom"));
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 99, descriptionName: "Seed", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add description/i }));
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "G" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertDescriptionMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Add Description error: Boom/i)).toBeInTheDocument();
+  });
+
+  it("does not submit when Add Description form is empty", () => {
+    jest.clearAllMocks();
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 99, descriptionName: "Seed", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add description/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertDescriptionMock).not.toHaveBeenCalled();
   });
 
   it("opens delete confirmation from actions and confirms", () => {

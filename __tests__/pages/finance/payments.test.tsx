@@ -54,9 +54,10 @@ jest.mock("../../../hooks/usePaymentFetch", () => ({
   __esModule: true,
   default: jest.fn(),
 }));
+const insertPaymentMock = jest.fn().mockResolvedValue({});
 jest.mock("../../../hooks/usePaymentInsert", () => ({
   __esModule: true,
-  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+  default: () => ({ mutateAsync: insertPaymentMock }),
 }));
 const deletePaymentMock = jest.fn().mockResolvedValue({});
 jest.mock("../../../hooks/usePaymentDelete", () => ({
@@ -199,6 +200,99 @@ describe("pages/finance/payments", () => {
     render(<PaymentsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
     expect(screen.getByText(/Add New Payment/i)).toBeInTheDocument();
+  });
+
+  it("adds a new payment (happy path)", async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+
+    mockUsePaymentFetch.mockReturnValue({
+      data: [
+        {
+          paymentId: 2,
+          transactionDate: new Date("2024-01-02"),
+          sourceAccount: "Chase",
+          destinationAccount: "Amex",
+          activeStatus: true,
+          amount: 10,
+        },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    mockUseAccountFetch.mockReturnValue({
+      data: [
+        { accountNameOwner: "Chase", accountType: "debit" },
+        { accountNameOwner: "Amex", accountType: "credit" },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    mockUseParameterFetch.mockReturnValue({
+      data: [{ parameterName: "payment_account", parameterValue: "Chase" }],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<PaymentsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
+    // Minimal interaction; just click the Add button in modal
+    fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
+    expect(insertPaymentMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Payment added successfully/i)).toBeInTheDocument();
+  });
+
+  it("shows error when add payment fails", async () => {
+    insertPaymentMock.mockRejectedValueOnce(new Error("Boom"));
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+
+    mockUsePaymentFetch.mockReturnValue({
+      data: [
+        {
+          paymentId: 2,
+          transactionDate: new Date("2024-01-02"),
+          sourceAccount: "Chase",
+          destinationAccount: "Amex",
+          activeStatus: true,
+          amount: 10,
+        },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    mockUseAccountFetch.mockReturnValue({
+      data: [
+        { accountNameOwner: "Chase", accountType: "debit" },
+        { accountNameOwner: "Amex", accountType: "credit" },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    mockUseParameterFetch.mockReturnValue({
+      data: [{ parameterName: "payment_account", parameterValue: "Chase" }],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<PaymentsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
+    fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
+    expect(insertPaymentMock).toHaveBeenCalled();
+    expect(await screen.findByText(/Add Payment error:/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Boom/i)).toBeInTheDocument();
   });
 
   it("opens delete confirmation from actions and confirms", () => {
