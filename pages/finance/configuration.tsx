@@ -38,6 +38,10 @@ export default function Configuration() {
   const [selectedParameter, setSelectedParameter] = useState<Parameter | null>(
     null,
   );
+  const [formErrors, setFormErrors] = useState<{
+    parameterName?: string;
+    parameterValue?: string;
+  }>({});
   const [offlineRows, setOfflineRows] = useState<Parameter[]>([]);
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 50,
@@ -170,6 +174,21 @@ export default function Configuration() {
   };
 
   const handleAddRow = async (newData: Parameter) => {
+    const errs: { parameterName?: string; parameterValue?: string } = {};
+    if (!newData?.parameterName || newData.parameterName.trim() === "") {
+      errs.parameterName = "Name is required";
+    }
+    if (
+      !newData?.parameterValue ||
+      newData.parameterValue.toString().trim() === ""
+    ) {
+      errs.parameterValue = "Value is required";
+    }
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      return;
+    }
+
     try {
       await insertParameter({ payload: newData });
       const secureId = await generateSecureUUID();
@@ -403,6 +422,8 @@ export default function Configuration() {
               fullWidth
               margin="normal"
               value={parameterData?.parameterName || ""}
+              error={!!formErrors.parameterName}
+              helperText={formErrors.parameterName}
               onChange={(e) =>
                 setParameterData(
                   (prev) =>
@@ -418,6 +439,8 @@ export default function Configuration() {
               fullWidth
               margin="normal"
               value={parameterData?.parameterValue || ""}
+              error={!!formErrors.parameterValue}
+              helperText={formErrors.parameterValue}
               onChange={(e) =>
                 setParameterData((prev) => ({
                   ...prev,
@@ -427,7 +450,12 @@ export default function Configuration() {
             />
             <Button
               variant="contained"
-              onClick={() => parameterData && handleAddRow(parameterData)}
+              onClick={() =>
+                handleAddRow(
+                  (parameterData as Parameter) ||
+                    ({ parameterName: "", parameterValue: "" } as Parameter),
+                )
+              }
             >
               Add
             </Button>

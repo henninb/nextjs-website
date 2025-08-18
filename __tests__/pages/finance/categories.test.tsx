@@ -104,9 +104,7 @@ describe("pages/finance/categories", () => {
   it("opens Add Category modal", () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseCategoryFetch.mockReturnValue({
-      data: [
-        { categoryId: 1, categoryName: "Groceries", activeStatus: true },
-      ],
+      data: [{ categoryId: 1, categoryName: "Groceries", activeStatus: true }],
       isSuccess: true,
       isLoading: false,
       isError: false,
@@ -122,9 +120,7 @@ describe("pages/finance/categories", () => {
   it("adds a new category (happy path)", async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseCategoryFetch.mockReturnValue({
-      data: [
-        { categoryId: 2, categoryName: "Seed", activeStatus: true },
-      ],
+      data: [{ categoryId: 2, categoryName: "Seed", activeStatus: true }],
       isSuccess: true,
       isLoading: false,
       isError: false,
@@ -134,20 +130,24 @@ describe("pages/finance/categories", () => {
 
     render(<CategoriesPage />);
     fireEvent.click(screen.getByRole("button", { name: /add category/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Groceries" } });
-    fireEvent.change(screen.getByLabelText(/status/i), { target: { value: "true" } });
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "Groceries" },
+    });
+    fireEvent.change(screen.getByLabelText(/status/i), {
+      target: { value: "true" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertCategoryMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Category inserted successfully/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Category inserted successfully/i),
+    ).toBeInTheDocument();
   });
 
   it("shows error when add category fails", async () => {
     insertCategoryMock.mockRejectedValueOnce(new Error("Boom"));
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseCategoryFetch.mockReturnValue({
-      data: [
-        { categoryId: 2, categoryName: "Seed", activeStatus: true },
-      ],
+      data: [{ categoryId: 2, categoryName: "Seed", activeStatus: true }],
       isSuccess: true,
       isLoading: false,
       isError: false,
@@ -157,19 +157,21 @@ describe("pages/finance/categories", () => {
 
     render(<CategoriesPage />);
     fireEvent.click(screen.getByRole("button", { name: /add category/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "G" } });
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "G" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertCategoryMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Add Category error: Boom/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Add Category error: Boom/i),
+    ).toBeInTheDocument();
   });
 
   it("does not submit when Add Category form is empty", () => {
     jest.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseCategoryFetch.mockReturnValue({
-      data: [
-        { categoryId: 2, categoryName: "Seed", activeStatus: true },
-      ],
+      data: [{ categoryId: 2, categoryName: "Seed", activeStatus: true }],
       isSuccess: true,
       isLoading: false,
       isError: false,
@@ -181,13 +183,14 @@ describe("pages/finance/categories", () => {
     fireEvent.click(screen.getByRole("button", { name: /add category/i }));
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertCategoryMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
   });
 
-  it("opens delete confirmation from actions and confirms", () => {
+  it("shows error when Status is not true/false", () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseCategoryFetch.mockReturnValue({
       data: [
-        { categoryId: 1, categoryName: "Groceries", activeStatus: true },
+        { categoryId: 2, categoryName: "Seed", activeStatus: true },
       ],
       isSuccess: true,
       isLoading: false,
@@ -197,9 +200,27 @@ describe("pages/finance/categories", () => {
     });
 
     render(<CategoriesPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add category/i }));
+    fireEvent.change(screen.getByLabelText(/status/i), { target: { value: "yes" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(screen.getByText(/Status must be true or false/i)).toBeInTheDocument();
+  });
+
+  it("opens delete confirmation from actions and confirms", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseCategoryFetch.mockReturnValue({
+      data: [{ categoryId: 1, categoryName: "Groceries", activeStatus: true }],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<CategoriesPage />);
     const actionsCell = screen.getByTestId("cell-0-actions");
-    const delBtn = actionsCell.querySelector('button');
-    if (!delBtn) throw new Error('Delete button not found');
+    const delBtn = actionsCell.querySelector("button");
+    if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /delete/i }));

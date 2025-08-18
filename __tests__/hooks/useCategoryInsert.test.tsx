@@ -365,6 +365,7 @@ describe("useCategoryInsert", () => {
   });
 
   describe("Input Validation and Edge Cases", () => {
+    // Note: client-side type guard is minimal to avoid breaking API semantics.
     it("handles categories with minimal required fields", async () => {
       const minimalCategory: Category = {
         categoryId: 0,

@@ -4,6 +4,15 @@ import Category from "../model/Category";
 
 const insertCategory = async (category: Category): Promise<Category | null> => {
   try {
+    // Lightweight client-side validation to guard payload shape
+    if (
+      category &&
+      Object.prototype.hasOwnProperty.call(category, "activeStatus") &&
+      typeof (category as any).activeStatus !== "boolean"
+    ) {
+      throw new Error("Category validation failed: activeStatus must be boolean");
+    }
+
     const endpoint = "/api/category/insert";
     //const payload = { category: categoryName, activeStatus: true };
 

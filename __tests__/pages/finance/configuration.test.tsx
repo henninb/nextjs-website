@@ -81,7 +81,11 @@ describe("pages/finance/configuration", () => {
     // Provide at least one row to avoid EmptyState branch (icon tree issues in JSDOM)
     mockUseParameterFetch.mockReturnValue({
       data: [
-        { parameterId: "p1", parameterName: "payment_account", parameterValue: "Chase" },
+        {
+          parameterId: "p1",
+          parameterName: "payment_account",
+          parameterValue: "Chase",
+        },
       ],
       isSuccess: true,
       isLoading: false,
@@ -109,11 +113,17 @@ describe("pages/finance/configuration", () => {
 
     render(<ConfigurationPage />);
     fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "key" } });
-    fireEvent.change(screen.getByLabelText(/value/i), { target: { value: "val" } });
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "key" },
+    });
+    fireEvent.change(screen.getByLabelText(/value/i), {
+      target: { value: "val" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertParameterMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Configuration added successfully/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Configuration added successfully/i),
+    ).toBeInTheDocument();
   });
 
   it("shows error when add parameter fails", async () => {
@@ -130,10 +140,17 @@ describe("pages/finance/configuration", () => {
 
     render(<ConfigurationPage />);
     fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "k" } });
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "k" },
+    });
+    fireEvent.change(screen.getByLabelText(/value/i), {
+      target: { value: "v" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertParameterMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Add Configuration: Server error/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Add Configuration: Server error/i),
+    ).toBeInTheDocument();
   });
 
   it("does not submit when Add Parameter form is empty", () => {
@@ -150,8 +167,10 @@ describe("pages/finance/configuration", () => {
 
     render(<ConfigurationPage />);
     fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
-    // No input changes; clicking Add should not call insert
+    // No input changes; clicking Add should not call insert and shows validation
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertParameterMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Value is required/i)).toBeInTheDocument();
   });
 });

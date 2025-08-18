@@ -6,6 +6,9 @@ const insertDescription = async (
   descriptionName: string,
 ): Promise<Description> => {
   try {
+    if (typeof descriptionName !== "string" || descriptionName.trim() === "") {
+      throw new Error("Description validation failed: name is required");
+    }
     const endpoint = "/api/description/insert";
     const payload = { descriptionName: descriptionName, activeStatus: true };
 

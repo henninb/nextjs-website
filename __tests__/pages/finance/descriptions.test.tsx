@@ -64,7 +64,8 @@ import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 
 describe("pages/finance/descriptions", () => {
   const mockUseAuth = useAuthMock as unknown as jest.Mock;
-  const mockUseDescriptionFetch = useDescriptionFetchMock as unknown as jest.Mock;
+  const mockUseDescriptionFetch =
+    useDescriptionFetchMock as unknown as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -116,9 +117,7 @@ describe("pages/finance/descriptions", () => {
     });
 
     render(<DescriptionsPage />);
-    fireEvent.click(
-      screen.getByRole("button", { name: /add description/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /add description/i }));
     expect(screen.getByText(/Add New Description/i)).toBeInTheDocument();
   });
 
@@ -137,11 +136,17 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add description/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Grocery" } });
-    fireEvent.change(screen.getByLabelText(/status/i), { target: { value: "true" } });
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "Grocery" },
+    });
+    fireEvent.change(screen.getByLabelText(/status/i), {
+      target: { value: "true" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertDescriptionMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Description inserted successfully/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Description inserted successfully/i),
+    ).toBeInTheDocument();
   });
 
   it("shows error when add description fails", async () => {
@@ -160,10 +165,14 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add description/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "G" } });
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "G" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertDescriptionMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Add Description error: Boom/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Add Description error: Boom/i),
+    ).toBeInTheDocument();
   });
 
   it("does not submit when Add Description form is empty", () => {
@@ -184,6 +193,27 @@ describe("pages/finance/descriptions", () => {
     fireEvent.click(screen.getByRole("button", { name: /add description/i }));
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertDescriptionMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+  });
+
+  it("shows error when Status is not true/false", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 99, descriptionName: "Seed", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add description/i }));
+    fireEvent.change(screen.getByLabelText(/status/i), { target: { value: "maybe" } });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(screen.getByText(/Status must be true or false/i)).toBeInTheDocument();
   });
 
   it("opens delete confirmation from actions and confirms", () => {
@@ -201,8 +231,8 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     const actionsCell = screen.getByTestId("cell-0-actions");
-    const delBtn = actionsCell.querySelector('button');
-    if (!delBtn) throw new Error('Delete button not found');
+    const delBtn = actionsCell.querySelector("button");
+    if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /delete/i }));

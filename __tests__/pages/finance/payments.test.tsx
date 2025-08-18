@@ -246,7 +246,9 @@ describe("pages/finance/payments", () => {
     // Minimal interaction; just click the Add button in modal
     fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
     expect(insertPaymentMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Payment added successfully/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Payment added successfully/i),
+    ).toBeInTheDocument();
   });
 
   it("shows error when add payment fails", async () => {
@@ -336,8 +338,8 @@ describe("pages/finance/payments", () => {
 
     render(<PaymentsPage />);
     const actionsCell = screen.getByTestId("cell-0-actions");
-    const delBtn = actionsCell.querySelector('button');
-    if (!delBtn) throw new Error('Delete button not found');
+    const delBtn = actionsCell.querySelector("button");
+    if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /delete/i }));

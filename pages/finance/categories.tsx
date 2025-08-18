@@ -41,6 +41,7 @@ export default function Categories() {
   );
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fallbackData, setFallbackData] = useState<Category[]>([]);
+  const [formErrors, setFormErrors] = useState<{ categoryName?: string; activeStatus?: string }>({});
 
   const {
     data: fetchedCategories,
@@ -111,6 +112,24 @@ export default function Categories() {
   };
 
   const handleAddRow = async (newData: Category) => {
+    const errs: { categoryName?: string; activeStatus?: string } = {};
+    if (!newData?.categoryName || newData.categoryName.trim() === "") {
+      errs.categoryName = "Name is required";
+    }
+    // Validate status: must be boolean; allow string 'true'/'false'
+    const statusValue = (newData as any)?.activeStatus;
+    if (typeof statusValue !== "boolean") {
+      if (statusValue === "true" || statusValue === "false") {
+        newData.activeStatus = statusValue === "true";
+      } else if (statusValue !== undefined) {
+        errs.activeStatus = "Status must be true or false";
+      }
+    }
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      return;
+    }
+
     try {
       console.log("from handleAddRow: " + JSON.stringify(newData));
       await insertCategory({ category: newData });
@@ -337,6 +356,8 @@ export default function Categories() {
               fullWidth
               margin="normal"
               value={categoryData?.categoryName || ""}
+              error={!!formErrors.categoryName}
+              helperText={formErrors.categoryName}
               onChange={(e) =>
                 setCategoryData((prev) => ({
                   ...prev,
@@ -349,6 +370,8 @@ export default function Categories() {
               fullWidth
               margin="normal"
               value={categoryData?.activeStatus || ""}
+              error={!!formErrors.activeStatus}
+              helperText={formErrors.activeStatus}
               onChange={(e) =>
                 setCategoryData((prev: any) => ({
                   ...prev,
@@ -358,9 +381,12 @@ export default function Categories() {
             />
             <Button
               variant="contained"
-              onClick={() => {
-                categoryData && handleAddRow(categoryData);
-              }}
+              onClick={() =>
+                handleAddRow(
+                  (categoryData as Category) ||
+                    ({ categoryName: "", activeStatus: true } as any),
+                )
+              }
             >
               Add
             </Button>

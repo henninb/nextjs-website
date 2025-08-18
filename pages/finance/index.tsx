@@ -50,6 +50,10 @@ export default function Accounts() {
   const [showModelDelete, setShowModelDelete] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [formErrors, setFormErrors] = useState<{
+    accountNameOwner?: string;
+    accountType?: string;
+  }>({});
   // const [paginationModel, setPaginationModel] = useState({
   //   pageSize: 25,
   //   page: 0,
@@ -155,6 +159,25 @@ export default function Accounts() {
   };
 
   const handleAddRow = async (newData: Account) => {
+    // Basic required field validation
+    const errs: { accountNameOwner?: string; accountType?: string } = {};
+    if (!newData?.accountNameOwner || newData.accountNameOwner.trim() === "") {
+      errs.accountNameOwner = "Account name is required";
+    }
+    if (!newData?.accountType || String(newData.accountType).trim() === "") {
+      errs.accountType = "Account type is required";
+    } else {
+      const typeNorm = String(newData.accountType).toLowerCase();
+      if (!accountTypeOptions.includes(typeNorm)) {
+        errs.accountType = "Account type must be debit or credit";
+      }
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      return;
+    }
+
     try {
       await insertAccount({ payload: newData });
       setShowModelAdd(false);
@@ -485,6 +508,8 @@ export default function Accounts() {
               fullWidth
               margin="normal"
               value={accountData?.accountNameOwner || ""}
+              error={!!formErrors.accountNameOwner}
+              helperText={formErrors.accountNameOwner}
               onChange={(e) =>
                 setAccountData((prev) => ({
                   ...prev,
@@ -503,12 +528,20 @@ export default function Accounts() {
                   accountType: newValue || "",
                 }))
               }
+              onInputChange={(event, newInputValue) =>
+                setAccountData((prev: any) => ({
+                  ...prev,
+                  accountType: newInputValue || "",
+                }))
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Account Type"
                   fullWidth
                   margin="normal"
+                  error={!!formErrors.accountType}
+                  helperText={formErrors.accountType}
                   onKeyDown={handleAccountTypeKeyDown}
                 />
               )}
@@ -533,11 +566,12 @@ export default function Accounts() {
               <Button
                 variant="contained"
                 onClick={() =>
-                  accountData &&
                   handleAddRow({
-                    ...accountData,
-                    validationDate: new Date(0), // January 1, 1970 at midnight
-                  })
+                    ...(accountData as Account),
+                    accountNameOwner: accountData?.accountNameOwner || "",
+                    accountType: (accountData?.accountType as any) || "",
+                    validationDate: new Date(0),
+                  } as Account)
                 }
               >
                 Add

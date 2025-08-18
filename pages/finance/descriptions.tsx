@@ -43,6 +43,10 @@ export default function Descriptions() {
     pageSize: 50,
     page: 0,
   });
+  const [formErrors, setFormErrors] = useState<{
+    descriptionName?: string;
+    activeStatus?: string;
+  }>({});
 
   const {
     data: fetchedDescrptions,
@@ -107,6 +111,23 @@ export default function Descriptions() {
   };
 
   const handleAddRow = async (newData: Description) => {
+    const errs: { descriptionName?: string; activeStatus?: string } = {};
+    if (!newData?.descriptionName || newData.descriptionName.trim() === "") {
+      errs.descriptionName = "Name is required";
+    }
+    const statusValue = (newData as any)?.activeStatus;
+    if (typeof statusValue !== "boolean") {
+      if (statusValue === "true" || statusValue === "false") {
+        newData.activeStatus = statusValue === "true";
+      } else if (statusValue !== undefined) {
+        errs.activeStatus = "Status must be true or false";
+      }
+    }
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      return;
+    }
+
     try {
       await insertDescription(newData);
       setMessage(`Description inserted successfully.`);
@@ -334,6 +355,8 @@ export default function Descriptions() {
               fullWidth
               margin="normal"
               value={descriptionData?.descriptionName || ""}
+              error={!!formErrors.descriptionName}
+              helperText={formErrors.descriptionName}
               onChange={(e) =>
                 setDescriptionData((prev) => ({
                   ...prev,
@@ -346,6 +369,8 @@ export default function Descriptions() {
               fullWidth
               margin="normal"
               value={descriptionData?.activeStatus || ""}
+              error={!!formErrors.activeStatus}
+              helperText={formErrors.activeStatus}
               onChange={(e) =>
                 setDescriptionData((prev: any) => ({
                   ...prev,
@@ -355,7 +380,12 @@ export default function Descriptions() {
             />
             <Button
               variant="contained"
-              onClick={() => descriptionData && handleAddRow(descriptionData)}
+              onClick={() =>
+                handleAddRow(
+                  (descriptionData as Description) ||
+                    ({ descriptionName: "", activeStatus: true } as any),
+                )
+              }
             >
               Add
             </Button>
