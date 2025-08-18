@@ -161,7 +161,7 @@ export default function Accounts() {
 
   const handleAddRow = async (newData: Account) => {
     // Basic required field validation
-    const errs: { accountNameOwner?: string; accountType?: string } = {};
+    const errs: { accountNameOwner?: string; accountType?: string; moniker?: string } = {};
     if (!newData?.accountNameOwner || newData.accountNameOwner.trim() === "") {
       errs.accountNameOwner = "Account name is required";
     } else if (!/^[a-zA-Z0-9_-]+$/.test(newData.accountNameOwner)) {
