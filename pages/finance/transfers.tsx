@@ -200,7 +200,12 @@ export default function Transfers() {
     if (selectedTransfer) {
       try {
         await deleteTransfer({ oldRow: selectedTransfer });
-        setMessage("Transfer deleted successfully.");
+        const when = formatDateForDisplay(selectedTransfer.transactionDate);
+        const amt = currencyFormat(selectedTransfer.amount);
+        setMessage(
+          `Transfer deleted: ${amt} from ${selectedTransfer.sourceAccount} to ${selectedTransfer.destinationAccount} on ${when}.`,
+        );
+        setShowSnackbar(true);
       } catch (error) {
         handleError(error, `Delete Transfer error: ${error}`, false);
       } finally {
@@ -242,7 +247,11 @@ export default function Transfers() {
       console.log(`Transfer Insert: ${JSON.stringify(insertThisValue)}`);
       await insertTransfer({ payload: insertThisValue });
       setShowModalAdd(false);
-      setMessage("Transfer inserted Successfully.");
+      const when = formatDateForDisplay(newData.transactionDate);
+      setMessage(
+        `Transferred ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
+      );
+      setShowSnackbar(true);
       setShowSpinner(false);
       setTransferData({
         transferId: 0,
@@ -426,7 +435,12 @@ export default function Transfers() {
                           oldTransfer: oldRow,
                           newTransfer: newRow,
                         });
-                        setMessage("Transfer updated successfully.");
+                        const when = formatDateForDisplay(
+                          newRow.transactionDate,
+                        );
+                        setMessage(
+                          `Transfer updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
+                        );
                         setShowSnackbar(true);
                         //return newRow;
                         return { ...newRow };

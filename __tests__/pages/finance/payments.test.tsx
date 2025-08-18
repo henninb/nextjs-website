@@ -299,7 +299,7 @@ describe("pages/finance/payments", () => {
     // and skip the actual form submission for now to make tests pass
   });
 
-  it("opens delete confirmation from actions and confirms", () => {
+  it("opens delete confirmation from actions and confirms", async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
 
     mockUsePaymentFetch.mockReturnValue({
@@ -346,5 +346,11 @@ describe("pages/finance/payments", () => {
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /delete/i }));
     expect(deletePaymentMock).toHaveBeenCalled();
+    // Snackbar message should include amount, accounts, and date (flexible date format)
+    expect(
+      await screen.findByText(
+        /Payment deleted:\s+\$20\.50 from Chase to Amex on .*\./i,
+      ),
+    ).toBeInTheDocument();
   });
 });

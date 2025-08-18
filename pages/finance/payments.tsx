@@ -159,7 +159,11 @@ export default function Payments() {
     if (selectedPayment) {
       try {
         await deletePayment({ oldRow: selectedPayment });
-        setMessage("Payment deleted successfully.");
+        const when = formatDateForDisplay(selectedPayment.transactionDate);
+        const amt = currencyFormat(selectedPayment.amount);
+        setMessage(
+          `Payment deleted: ${amt} from ${selectedPayment.sourceAccount} to ${selectedPayment.destinationAccount} on ${when}.`,
+        );
         setShowSnackbar(true);
       } catch (error) {
         handleError(error, `Delete Payment error: ${error}`, false);
@@ -210,8 +214,11 @@ export default function Payments() {
 
     try {
       await insertPayment({ payload: newData });
-      setShowModalAdd(true);
-      setMessage("Payment added successfully.");
+      setShowModalAdd(false);
+      const when = formatDateForDisplay(newData.transactionDate);
+      setMessage(
+        `Payment added: ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
+      );
       setShowSnackbar(true);
     } catch (error) {
       handleError(error, `Add Payment error: ${error}`, false);
@@ -434,7 +441,12 @@ export default function Payments() {
                           oldPayment: oldRow,
                           newPayment: newRow,
                         });
-                        setMessage("Payment updated successfully.");
+                        const when = formatDateForDisplay(
+                          newRow.transactionDate,
+                        );
+                        setMessage(
+                          `Payment updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
+                        );
                         setShowSnackbar(true);
                         return { ...newRow };
                       } catch (error) {

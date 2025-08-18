@@ -131,9 +131,9 @@ export const DataGrid = ({ children, rows, columns, ...otherProps }: any) => {
             }),
           ],
 
-          // Add delete button for other types of rows (categories, payments)
+          // Add delete button for other types of rows (categories, payments, transfers)
           !row.transactionId &&
-            (row.categoryId || row.paymentId) &&
+            (row.categoryId || row.paymentId || row.transferId) &&
             React.createElement("div", {
               key: "DeleteIcon",
               "data-testid": "DeleteIcon",
