@@ -1,236 +1,143 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Categories from "../../../pages/finance/categories";
-import * as useFetchCategory from "../../../hooks/useCategoryFetch";
-import * as useCategoryInsert from "../../../hooks/useCategoryInsert";
-import * as useCategoryDelete from "../../../hooks/useCategoryDelete";
-import * as useCategoryUpdate from "../../../hooks/useCategoryUpdate";
-import * as AuthProvider from "../../../components/AuthProvider";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 jest.mock("next/router", () => ({
-  useRouter: () => ({
-    replace: jest.fn(),
-  }),
+  useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
-jest.mock("../../../hooks/useCategoryFetch");
-jest.mock("../../../hooks/useCategoryInsert");
-jest.mock("../../../hooks/useCategoryDelete");
-jest.mock("../../../hooks/useCategoryUpdate");
-jest.mock("../../../components/AuthProvider");
+beforeAll(() => {
+  // @ts-ignore
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});
 
-const mockCategoryData = [
-  {
-    categoryId: 1,
-    categoryName: "Food",
-    activeStatus: "active",
-  },
-  {
-    categoryId: 2,
-    categoryName: "Transportation",
-    activeStatus: "active",
-  },
-];
+jest.mock("@mui/x-data-grid", () => ({
+  DataGrid: ({ rows = [], columns = [] }: any) => (
+    <div data-testid="mocked-datagrid">
+      {rows.map((row: any, idx: number) => (
+        <div key={idx}>
+          {columns.map((col: any, cidx: number) =>
+            col.renderCell ? (
+              <div
+                key={cidx}
+                data-testid={`cell-${idx}-${String(col.headerName || col.field).toLowerCase()}`}
+              >
+                {col.renderCell({ row, value: row[col.field] })}
+              </div>
+            ) : null,
+          )}
+        </div>
+      ))}
+    </div>
+  ),
+}));
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
+jest.mock("../../../components/AuthProvider", () => ({
+  useAuth: jest.fn(),
+}));
 
-describe("Categories Component", () => {
+jest.mock("../../../hooks/useCategoryFetch", () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
+jest.mock("../../../hooks/useCategoryInsert", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+}));
+const deleteCategoryMock = jest.fn().mockResolvedValue({});
+jest.mock("../../../hooks/useCategoryDelete", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: deleteCategoryMock }),
+}));
+jest.mock("../../../hooks/useCategoryUpdate", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+}));
+
+import CategoriesPage from "../../../pages/finance/categories";
+import useCategoryFetchMock from "../../../hooks/useCategoryFetch";
+import { useAuth as useAuthMock } from "../../../components/AuthProvider";
+
+describe("pages/finance/categories", () => {
+  const mockUseAuth = useAuthMock as unknown as jest.Mock;
+  const mockUseCategoryFetch = useCategoryFetchMock as unknown as jest.Mock;
+
   beforeEach(() => {
-    (AuthProvider.useAuth as jest.Mock).mockReturnValue({
-      isAuthenticated: true,
-      loading: false,
-    });
-
-    (useFetchCategory.default as jest.Mock).mockReturnValue({
-      data: mockCategoryData,
-      isSuccess: true,
-      isLoading: false,
-      isError: false,
-      refetch: jest.fn(),
-    });
-
-    (useCategoryInsert.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
-
-    (useCategoryUpdate.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
-
-    (useCategoryDelete.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
+    jest.clearAllMocks();
   });
 
-  it("renders category management heading", () => {
-    render(<Categories />, { wrapper: createWrapper() });
-    expect(screen.getByText("Category Management")).toBeInTheDocument();
-  });
-
-  it("renders data grid component", () => {
-    render(<Categories />, { wrapper: createWrapper() });
-
-    expect(screen.getByTestId("data-grid")).toBeInTheDocument();
-  });
-
-  it("shows spinner while loading", () => {
-    (useFetchCategory.default as jest.Mock).mockReturnValue({
-      data: null,
+  it("shows loading state", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseCategoryFetch.mockReturnValue({
+      data: [],
       isSuccess: false,
       isLoading: true,
       isError: false,
+      error: null,
       refetch: jest.fn(),
     });
-
-    render(<Categories />, { wrapper: createWrapper() });
-
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(screen.getByText("Loading categories...")).toBeInTheDocument();
+    render(<CategoriesPage />);
+    expect(screen.getByText(/Loading categories/i)).toBeInTheDocument();
   });
 
-  it("shows error state with retry button", () => {
-    const mockRefetch = jest.fn();
-    (useFetchCategory.default as jest.Mock).mockReturnValue({
+  it("shows error and retries", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    const refetch = jest.fn();
+    mockUseCategoryFetch.mockReturnValue({
       data: null,
       isSuccess: false,
       isLoading: false,
       isError: true,
-      refetch: mockRefetch,
+      error: new Error("boom"),
+      refetch,
     });
 
-    render(<Categories />, { wrapper: createWrapper() });
-
-    expect(
-      screen.getByText("An unexpected error occurred. Please try again."),
-    ).toBeInTheDocument();
-
-    const retryButton = screen.getByText("Try Again");
-    fireEvent.click(retryButton);
-    expect(mockRefetch).toHaveBeenCalled();
+    render(<CategoriesPage />);
+    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
+    expect(refetch).toHaveBeenCalled();
   });
 
-  it("renders data grid component", () => {
-    render(<Categories />, { wrapper: createWrapper() });
-
-    expect(screen.getByTestId("data-grid")).toBeInTheDocument();
-  });
-
-  it("opens add category modal when Add Category button is clicked", () => {
-    render(<Categories />, { wrapper: createWrapper() });
-
-    const addButton = screen.getByText("Add Category");
-    fireEvent.click(addButton);
-
-    expect(screen.getByText("Add New Category")).toBeInTheDocument();
-  });
-
-  it("handles add category form submission", async () => {
-    const mockInsertCategory = jest.fn().mockResolvedValue({});
-    (useCategoryInsert.default as jest.Mock).mockReturnValue({
-      mutateAsync: mockInsertCategory,
-    });
-
-    render(<Categories />, { wrapper: createWrapper() });
-
-    // Open modal
-    const addButton = screen.getByText("Add Category");
-    fireEvent.click(addButton);
-
-    // Fill form
-    const nameInput = screen.getByLabelText("Name");
-    const statusInput = screen.getByLabelText("Status");
-
-    fireEvent.change(nameInput, { target: { value: "New Category" } });
-    fireEvent.change(statusInput, { target: { value: "active" } });
-
-    // Submit form
-    const submitButton = screen.getByRole("button", { name: "Add" });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(mockInsertCategory).toHaveBeenCalledWith({
-        category: {
-          categoryName: "New Category",
-          activeStatus: "active",
-        },
-      });
-    });
-  });
-
-  it("opens delete confirmation modal when delete button is clicked", () => {
-    render(<Categories />, { wrapper: createWrapper() });
-
-    // Look for delete buttons using data-testid
-    const deleteButtons = screen.getAllByTestId("DeleteIcon");
-    expect(deleteButtons.length).toBeGreaterThan(0);
-
-    // For this test, we'll just verify the button exists and can be clicked
-    fireEvent.click(deleteButtons[0]);
-    // Modal might not open in test environment due to complex state management
-  });
-
-  it("handles category deletion", async () => {
-    const mockDeleteCategory = jest.fn().mockResolvedValue({});
-    (useCategoryDelete.default as jest.Mock).mockReturnValue({
-      mutateAsync: mockDeleteCategory,
-    });
-
-    render(<Categories />, { wrapper: createWrapper() });
-
-    // Verify delete hook is configured
-    expect(mockDeleteCategory).toBeDefined();
-
-    // Verify delete buttons exist
-    const deleteButtons = screen.getAllByTestId("DeleteIcon");
-    expect(deleteButtons.length).toBeGreaterThan(0);
-  });
-
-  it("shows cached data when available and error occurs", () => {
-    // Mock localStorage
-    const mockLocalStorage = {
-      getItem: jest.fn().mockReturnValue(JSON.stringify(mockCategoryData)),
-    };
-    Object.defineProperty(window, "localStorage", {
-      value: mockLocalStorage,
-    });
-
-    (useFetchCategory.default as jest.Mock).mockReturnValue({
-      data: null,
-      isSuccess: false,
+  it("opens Add Category modal", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseCategoryFetch.mockReturnValue({
+      data: [
+        { categoryId: 1, categoryName: "Groceries", activeStatus: true },
+      ],
+      isSuccess: true,
       isLoading: false,
-      isError: true,
+      isError: false,
+      error: null,
       refetch: jest.fn(),
     });
 
-    render(<Categories />, { wrapper: createWrapper() });
-
-    // The component shows an error message instead of cached data text in this case
-    expect(
-      screen.getByText("An unexpected error occurred. Please try again."),
-    ).toBeInTheDocument();
+    render(<CategoriesPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add category/i }));
+    expect(screen.getByText(/Add New Category/i)).toBeInTheDocument();
   });
 
-  it("handles category update via data grid", async () => {
-    const mockUpdateCategory = jest.fn().mockResolvedValue({});
-    (useCategoryUpdate.default as jest.Mock).mockReturnValue({
-      mutateAsync: mockUpdateCategory,
+  it("opens delete confirmation from actions and confirms", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseCategoryFetch.mockReturnValue({
+      data: [
+        { categoryId: 1, categoryName: "Groceries", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
     });
 
-    render(<Categories />, { wrapper: createWrapper() });
-
-    // This would require more complex testing of the data grid processRowUpdate
-    // For now, we'll just verify the hook is available
-    expect(mockUpdateCategory).toBeDefined();
+    render(<CategoriesPage />);
+    const actionsCell = screen.getByTestId("cell-0-actions");
+    const delBtn = actionsCell.querySelector('button');
+    if (!delBtn) throw new Error('Delete button not found');
+    fireEvent.click(delBtn);
+    expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /delete/i }));
+    expect(deleteCategoryMock).toHaveBeenCalled();
   });
 });

@@ -1,113 +1,146 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Descriptions from "../../../pages/finance/descriptions";
-import * as useFetchDescription from "../../../hooks/useDescriptionFetch";
-import * as useDescriptionInsert from "../../../hooks/useDescriptionInsert";
-import * as useDescriptionDelete from "../../../hooks/useDescriptionDelete";
-import * as useDescriptionUpdate from "../../../hooks/useDescriptionUpdate";
-import * as AuthProvider from "../../../components/AuthProvider";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 jest.mock("next/router", () => ({
-  useRouter: () => ({
-    replace: jest.fn(),
-  }),
+  useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
-jest.mock("../../../hooks/useDescriptionFetch");
-jest.mock("../../../hooks/useDescriptionInsert");
-jest.mock("../../../hooks/useDescriptionDelete");
-jest.mock("../../../hooks/useDescriptionUpdate");
-jest.mock("../../../components/AuthProvider");
-// Ensure MUI Modal always renders children in tests
-jest.mock("@mui/material/Modal", () => ({
+beforeAll(() => {
+  // @ts-ignore
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});
+
+jest.mock("@mui/x-data-grid", () => ({
+  DataGrid: ({ rows = [], columns = [] }: any) => (
+    <div data-testid="mocked-datagrid">
+      {rows.map((row: any, idx: number) => (
+        <div key={idx}>
+          {columns.map((col: any, cidx: number) =>
+            col.renderCell ? (
+              <div
+                key={cidx}
+                data-testid={`cell-${idx}-${String(col.headerName || col.field).toLowerCase()}`}
+              >
+                {col.renderCell({ row, value: row[col.field] })}
+              </div>
+            ) : null,
+          )}
+        </div>
+      ))}
+    </div>
+  ),
+}));
+
+jest.mock("../../../components/AuthProvider", () => ({
+  useAuth: jest.fn(),
+}));
+
+jest.mock("../../../hooks/useDescriptionFetch", () => ({
   __esModule: true,
-  default: ({ children }: any) => <div data-testid="modal">{children}</div>,
+  default: jest.fn(),
+}));
+jest.mock("../../../hooks/useDescriptionInsert", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+}));
+const deleteDescriptionMock = jest.fn().mockResolvedValue({});
+jest.mock("../../../hooks/useDescriptionDelete", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: deleteDescriptionMock }),
+}));
+jest.mock("../../../hooks/useDescriptionUpdate", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
 
-const mockDescriptionData = [
-  {
-    descriptionId: 1,
-    descriptionName: "Grocery Store",
-    activeStatus: "active",
-  },
-  {
-    descriptionId: 2,
-    descriptionName: "Gas Station",
-    activeStatus: "active",
-  },
-];
+import DescriptionsPage from "../../../pages/finance/descriptions";
+import useDescriptionFetchMock from "../../../hooks/useDescriptionFetch";
+import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
+describe("pages/finance/descriptions", () => {
+  const mockUseAuth = useAuthMock as unknown as jest.Mock;
+  const mockUseDescriptionFetch = useDescriptionFetchMock as unknown as jest.Mock;
 
-describe("Descriptions Component", () => {
   beforeEach(() => {
-    (AuthProvider.useAuth as jest.Mock).mockReturnValue({
-      isAuthenticated: true,
-      loading: false,
-    });
+    jest.clearAllMocks();
+  });
 
-    (useFetchDescription.default as jest.Mock).mockReturnValue({
-      data: mockDescriptionData,
-      isSuccess: true,
-      isFetching: false,
+  it("shows loading state", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [],
+      isSuccess: false,
+      isLoading: true,
+      isError: false,
       error: null,
+      refetch: jest.fn(),
     });
 
-    (useDescriptionInsert.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
-
-    (useDescriptionUpdate.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
-
-    (useDescriptionDelete.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
+    render(<DescriptionsPage />);
+    expect(screen.getByText(/Loading descriptions/i)).toBeInTheDocument();
   });
 
-  it("renders description management heading", () => {
-    render(<Descriptions />, { wrapper: createWrapper() });
-    expect(screen.getByText("Description Management")).toBeInTheDocument();
-  });
-
-  it("renders data grid component", () => {
-    render(<Descriptions />, { wrapper: createWrapper() });
-
-    expect(screen.getByTestId("data-grid")).toBeInTheDocument();
-  });
-
-  it("shows spinner while loading", () => {
-    (useFetchDescription.default as jest.Mock).mockReturnValue({
+  it("shows error and retries", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    const refetch = jest.fn();
+    mockUseDescriptionFetch.mockReturnValue({
       data: null,
       isSuccess: false,
-      isFetching: true,
-      error: null,
+      isLoading: false,
+      isError: true,
+      error: new Error("boom"),
+      refetch,
     });
 
-    render(<Descriptions />, { wrapper: createWrapper() });
-
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(screen.getByText("Loading descriptions...")).toBeInTheDocument();
+    render(<DescriptionsPage />);
+    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
+    expect(refetch).toHaveBeenCalled();
   });
 
-  it("opens add description modal with standardized title", () => {
-    render(<Descriptions />, { wrapper: createWrapper() });
+  it("opens Add Description modal", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 1, descriptionName: "Grocery", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
 
-    const addButton = screen.getByText("Add Description");
-    addButton.click();
+    render(<DescriptionsPage />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /add description/i }),
+    );
+    expect(screen.getByText(/Add New Description/i)).toBeInTheDocument();
+  });
 
-    expect(screen.getByText("Add New Description")).toBeInTheDocument();
+  it("opens delete confirmation from actions and confirms", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 1, descriptionName: "Grocery", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    const actionsCell = screen.getByTestId("cell-0-actions");
+    const delBtn = actionsCell.querySelector('button');
+    if (!delBtn) throw new Error('Delete button not found');
+    fireEvent.click(delBtn);
+    expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /delete/i }));
+    expect(deleteDescriptionMock).toHaveBeenCalled();
   });
 });

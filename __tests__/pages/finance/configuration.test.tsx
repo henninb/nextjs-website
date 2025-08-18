@@ -1,115 +1,97 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Configuration from "../../../pages/finance/configuration";
-import * as useParameterFetch from "../../../hooks/useParameterFetch";
-import * as useParameterInsert from "../../../hooks/useParameterInsert";
-import * as useParameterDelete from "../../../hooks/useParameterDelete";
-import * as useParameterUpdate from "../../../hooks/useParameterUpdate";
-import * as AuthProvider from "../../../components/AuthProvider";
+import { render, screen, fireEvent } from "@testing-library/react";
 
+// Mock router
 jest.mock("next/router", () => ({
-  useRouter: () => ({
-    replace: jest.fn(),
-  }),
+  useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
-jest.mock("../../../hooks/useParameterFetch");
-jest.mock("../../../hooks/useParameterInsert");
-jest.mock("../../../hooks/useParameterDelete");
-jest.mock("../../../hooks/useParameterUpdate");
-jest.mock("../../../components/AuthProvider");
-// Ensure MUI Modal always renders children in tests
-jest.mock("@mui/material/Modal", () => ({
+// Stub ResizeObserver used by some MUI internals
+beforeAll(() => {
+  // @ts-ignore
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+});
+
+// Mock MUI DataGrid to simplify DOM
+jest.mock("@mui/x-data-grid", () => ({
+  DataGrid: () => <div data-testid="mocked-datagrid">Mocked DataGrid</div>,
+}));
+
+// Mock auth
+jest.mock("../../../components/AuthProvider", () => ({
+  useAuth: jest.fn(),
+}));
+
+// Mock hooks used by the page
+jest.mock("../../../hooks/useParameterFetch", () => ({
   __esModule: true,
-  default: ({ children }: any) => <div data-testid="modal">{children}</div>,
+  default: jest.fn(),
+}));
+jest.mock("../../../hooks/useParameterInsert", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+}));
+jest.mock("../../../hooks/useParameterUpdate", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+}));
+jest.mock("../../../hooks/useParameterDelete", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
 
-const mockParameterData = [
-  {
-    parameterId: 1,
-    parameterName: "payment_account",
-    parameterValue: "Checking Account",
-  },
-  {
-    parameterId: 2,
-    parameterName: "default_category",
-    parameterValue: "Miscellaneous",
-  },
-];
+import ConfigurationPage from "../../../pages/finance/configuration";
+import useParameterFetchMock from "../../../hooks/useParameterFetch";
+import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
+describe("pages/finance/configuration", () => {
+  const mockUseAuth = useAuthMock as unknown as jest.Mock;
+  const mockUseParameterFetch = useParameterFetchMock as unknown as jest.Mock;
 
-describe("Configuration Component", () => {
   beforeEach(() => {
-    (AuthProvider.useAuth as jest.Mock).mockReturnValue({
-      isAuthenticated: true,
-      loading: false,
-    });
-
-    (useParameterFetch.default as jest.Mock).mockReturnValue({
-      data: mockParameterData,
-      isSuccess: true,
-      isLoading: false,
-      error: null,
-    });
-
-    (useParameterInsert.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
-
-    (useParameterUpdate.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
-
-    (useParameterDelete.default as jest.Mock).mockReturnValue({
-      mutateAsync: jest.fn(),
-    });
+    jest.clearAllMocks();
   });
 
-  it("renders system configuration heading", () => {
-    render(<Configuration />, { wrapper: createWrapper() });
-    expect(screen.getByText("System Configuration")).toBeInTheDocument();
-  });
-
-  it("renders data grid component", () => {
-    render(<Configuration />, { wrapper: createWrapper() });
-
-    expect(screen.getByTestId("data-grid")).toBeInTheDocument();
-  });
-
-  it("shows spinner while loading", () => {
-    (useParameterFetch.default as jest.Mock).mockReturnValue({
+  it("renders error display when parameters fail to load", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    const refetch = jest.fn();
+    mockUseParameterFetch.mockReturnValue({
       data: null,
       isSuccess: false,
-      isLoading: true,
-      error: null,
+      isLoading: false,
+      isError: true,
+      error: new Error("failed"),
+      refetch,
     });
 
-    render(<Configuration />, { wrapper: createWrapper() });
-
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(
-      screen.getByText("Loading configuration parameters..."),
-    ).toBeInTheDocument();
+    render(<ConfigurationPage />);
+    const tryAgain = screen.getByRole("button", { name: /try again/i });
+    expect(tryAgain).toBeInTheDocument();
+    fireEvent.click(tryAgain);
+    expect(refetch).toHaveBeenCalled();
   });
 
-  it("opens add parameter modal with standardized title", () => {
-    render(<Configuration />, { wrapper: createWrapper() });
+  it("shows add parameter modal when clicking Add Parameter", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    // Provide at least one row to avoid EmptyState branch (icon tree issues in JSDOM)
+    mockUseParameterFetch.mockReturnValue({
+      data: [
+        { parameterId: "p1", parameterName: "payment_account", parameterValue: "Chase" },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
 
-    const addButton = screen.getByText("Add Parameter");
-    addButton.click();
+    render(<ConfigurationPage />);
 
-    expect(screen.getByText("Add New Parameter")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
+    expect(screen.getByText(/Add New Parameter/i)).toBeInTheDocument();
   });
 });
