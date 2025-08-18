@@ -58,8 +58,8 @@ export default function Login() {
       credentials: "include",
     });
 
-    // If the response is 204 (No Content), treat it as success.
-    if (response.status === 204) {
+    // If the response is 200 (OK), treat it as success.
+    if (response.status === 200) {
       return;
     } else {
       // Try to parse error details if available.
