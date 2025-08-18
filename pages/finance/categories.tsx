@@ -12,6 +12,8 @@ import {
   TextField,
   Typography,
   Alert,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -41,7 +43,10 @@ export default function Categories() {
   );
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fallbackData, setFallbackData] = useState<Category[]>([]);
-  const [formErrors, setFormErrors] = useState<{ categoryName?: string; activeStatus?: string }>({});
+  const [formErrors, setFormErrors] = useState<{
+    categoryName?: string;
+    activeStatus?: string;
+  }>({});
 
   const {
     data: fetchedCategories,
@@ -113,8 +118,15 @@ export default function Categories() {
 
   const handleAddRow = async (newData: Category) => {
     const errs: { categoryName?: string; activeStatus?: string } = {};
-    if (!newData?.categoryName || newData.categoryName.trim() === "") {
+    const name = newData?.categoryName || "";
+    if (!name || name.trim() === "") {
       errs.categoryName = "Name is required";
+    } else {
+      if (name.length > 255) {
+        errs.categoryName = "Name too long";
+      } else if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
+        errs.categoryName = "Name contains invalid characters";
+      }
     }
     // Validate status: must be boolean; allow string 'true'/'false'
     const statusValue = (newData as any)?.activeStatus;
@@ -365,20 +377,27 @@ export default function Categories() {
                 }))
               }
             />
-            <TextField
-              label="Status"
-              fullWidth
-              margin="normal"
-              value={categoryData?.activeStatus || ""}
-              error={!!formErrors.activeStatus}
-              helperText={formErrors.activeStatus}
-              onChange={(e) =>
-                setCategoryData((prev: any) => ({
-                  ...prev,
-                  activeStatus: e.target.value,
-                }))
-              }
-            />
+            <Box mt={1}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={!!categoryData?.activeStatus}
+                    onChange={(e) =>
+                      setCategoryData((prev: any) => ({
+                        ...prev,
+                        activeStatus: e.target.checked,
+                      }))
+                    }
+                  />
+                }
+                label="Status"
+              />
+              {formErrors.activeStatus && (
+                <Typography color="error" variant="caption">
+                  {formErrors.activeStatus}
+                </Typography>
+              )}
+            </Box>
             <Button
               variant="contained"
               onClick={() =>

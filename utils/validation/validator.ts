@@ -178,6 +178,68 @@ export class DataValidator {
   }
 
   /**
+   * Validate and sanitize category data
+   */
+  static validateCategory(data: any): {
+    success: boolean;
+    data?: any;
+    errors?: ValidationError[];
+  } {
+    try {
+      const sanitizedData = sanitize.category(data);
+      const { validateSchema } = require("./schemas");
+      const { CategorySchema } = require("./schemas");
+      const result = validateSchema(CategorySchema, sanitizedData);
+      if (!result.success) {
+        SecurityLogger.logValidationFailure(result.errors || [], data);
+      }
+      return result;
+    } catch (error: any) {
+      return {
+        success: false,
+        errors: [
+          {
+            field: "validation",
+            message: error.message || "Category validation failed",
+            code: "VALIDATION_ERROR",
+          },
+        ],
+      };
+    }
+  }
+
+  /**
+   * Validate and sanitize description data
+   */
+  static validateDescription(data: any): {
+    success: boolean;
+    data?: any;
+    errors?: ValidationError[];
+  } {
+    try {
+      const sanitizedData = sanitize.description(data);
+      const { validateSchema } = require("./schemas");
+      const { DescriptionSchema } = require("./schemas");
+      const result = validateSchema(DescriptionSchema, sanitizedData);
+      if (!result.success) {
+        SecurityLogger.logValidationFailure(result.errors || [], data);
+      }
+      return result;
+    } catch (error: any) {
+      return {
+        success: false,
+        errors: [
+          {
+            field: "validation",
+            message: error.message || "Description validation failed",
+            code: "VALIDATION_ERROR",
+          },
+        ],
+      };
+    }
+  }
+
+  /**
    * Enhanced financial boundary checks
    */
   static validateFinancialBoundaries(data: {

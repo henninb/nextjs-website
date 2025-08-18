@@ -60,6 +60,10 @@ export default function Payments() {
     pageSize: 50,
     page: 0,
   });
+  const [formErrors, setFormErrors] = useState<{
+    amount?: string;
+    accounts?: string;
+  }>({});
 
   const {
     data: fetchedPayments,
@@ -184,6 +188,26 @@ export default function Payments() {
   };
 
   const handleAddRow = async (newData: Payment) => {
+    // UI validations: amount > 0 and source != destination
+    const errs: { amount?: string; accounts?: string } = {};
+    const amt = parseFloat(String(newData?.amount ?? 0));
+    if (isNaN(amt) || amt <= 0) {
+      errs.amount = "Amount must be greater than zero";
+    }
+    if (
+      newData?.sourceAccount &&
+      newData?.destinationAccount &&
+      newData.sourceAccount === newData.destinationAccount
+    ) {
+      errs.accounts = "Source and destination must be different";
+    }
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      setMessage(errs.accounts || errs.amount || "Validation failed");
+      setShowSnackbar(true);
+      return;
+    }
+
     try {
       await insertPayment({ payload: newData });
       setShowModalAdd(true);
@@ -609,6 +633,8 @@ export default function Payments() {
               }}
               fullWidth
               margin="normal"
+              error={!!formErrors.amount}
+              helperText={formErrors.amount}
             />
             <Button
               variant="contained"

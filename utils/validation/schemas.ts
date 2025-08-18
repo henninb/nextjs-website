@@ -185,6 +185,36 @@ export type ValidatedTransaction = z.infer<typeof TransactionSchema>;
 export type ValidatedPayment = z.infer<typeof PaymentSchema>;
 export type ValidatedTransfer = z.infer<typeof TransferSchema>;
 
+// Category validation schema
+export const CategorySchema = z.object({
+  categoryId: z.number().int().positive().optional(),
+  categoryName: z
+    .string()
+    .min(1, "Category name is required")
+    .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, "Category name too long")
+    .regex(/^[a-zA-Z0-9 _-]+$/, "Category name contains invalid characters"),
+  activeStatus: z.boolean().default(true),
+  dateAdded: dateString.optional(),
+  dateUpdated: dateString.optional(),
+});
+
+// Description validation schema
+export const DescriptionSchema = z.object({
+  descriptionId: z.number().int().positive().optional(),
+  descriptionName: z
+    .string()
+    .min(1, "Description name is required")
+    .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, "Description name too long")
+    .regex(/^[a-zA-Z0-9 _-]+$/, "Description name contains invalid characters"),
+  activeStatus: z.boolean().default(true),
+  descriptionCount: z.number().int().optional(),
+  dateAdded: dateString.optional(),
+  dateUpdated: dateString.optional(),
+});
+
+export type ValidatedCategory = z.infer<typeof CategorySchema>;
+export type ValidatedDescription = z.infer<typeof DescriptionSchema>;
+
 // Validation error type
 export interface ValidationError {
   field: string;

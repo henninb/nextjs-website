@@ -4,8 +4,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useCategoryInsert from "../../hooks/useCategoryInsert";
 import Category from "../../model/Category";
 
+// Mock the validation utilities to avoid rate limiting issues in tests
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateCategory: jest.fn(),
+  },
+  hookValidators: {
+    validateApiPayload: jest.fn(),
+  },
+}));
+
 // Mock fetch globally
 global.fetch = jest.fn();
+
+// Import the mocked utilities
+import { hookValidators } from "../../utils/validation";
+const mockHookValidators = hookValidators as jest.Mocked<typeof hookValidators>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -32,6 +46,12 @@ describe("useCategoryInsert", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     queryClient = createTestQueryClient();
+
+    // Set up default successful validation mock
+    mockHookValidators.validateApiPayload.mockReturnValue({
+      isValid: true,
+      validatedData: {}, // Will be overridden by individual tests
+    });
   });
 
   afterEach(() => {
@@ -53,6 +73,12 @@ describe("useCategoryInsert", () => {
         activeStatus: true,
         accountNameOwner: "test_user",
       };
+
+      // Mock validation to return the input category as valid
+      mockHookValidators.validateApiPayload.mockReturnValue({
+        isValid: true,
+        validatedData: inputCategory,
+      });
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,

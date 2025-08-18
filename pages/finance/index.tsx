@@ -53,6 +53,7 @@ export default function Accounts() {
   const [formErrors, setFormErrors] = useState<{
     accountNameOwner?: string;
     accountType?: string;
+    moniker?: string;
   }>({});
   // const [paginationModel, setPaginationModel] = useState({
   //   pageSize: 25,
@@ -163,6 +164,9 @@ export default function Accounts() {
     const errs: { accountNameOwner?: string; accountType?: string } = {};
     if (!newData?.accountNameOwner || newData.accountNameOwner.trim() === "") {
       errs.accountNameOwner = "Account name is required";
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(newData.accountNameOwner)) {
+      errs.accountNameOwner =
+        "Account name can only contain letters, numbers, underscores, or hyphens";
     }
     if (!newData?.accountType || String(newData.accountType).trim() === "") {
       errs.accountType = "Account type is required";
@@ -171,6 +175,14 @@ export default function Accounts() {
       if (!accountTypeOptions.includes(typeNorm)) {
         errs.accountType = "Account type must be debit or credit";
       }
+    }
+
+    // Moniker: required and alphanumeric only
+    const moniker = newData?.moniker || "";
+    if (!moniker || moniker.trim() === "") {
+      errs.moniker = "Moniker is required";
+    } else if (!/^[a-zA-Z0-9]+$/.test(moniker)) {
+      errs.moniker = "Moniker can only contain letters and numbers";
     }
 
     if (Object.keys(errs).length > 0) {
@@ -552,6 +564,8 @@ export default function Accounts() {
               fullWidth
               margin="normal"
               value={accountData?.moniker || ""}
+              error={!!formErrors.moniker}
+              helperText={formErrors.moniker}
               onChange={(e) =>
                 setAccountData((prev: any) => ({
                   ...prev,

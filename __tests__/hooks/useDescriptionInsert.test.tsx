@@ -45,4 +45,3 @@ describe("useDescriptionInsert (validation)", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });
-

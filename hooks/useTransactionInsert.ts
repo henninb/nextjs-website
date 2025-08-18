@@ -65,7 +65,7 @@ const insertTransaction = async (
     const errorMessages =
       validation.errors?.map((err) => err.message).join(", ") ||
       "Validation failed";
-    throw new Error(`Transaction validation failed: ${errorMessages}`);
+    throw new Error(errorMessages);
   }
 
   let endpoint = "/api/transaction/insert";

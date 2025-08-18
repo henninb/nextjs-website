@@ -139,9 +139,10 @@ describe("pages/finance/descriptions", () => {
     fireEvent.change(screen.getByLabelText(/name/i), {
       target: { value: "Grocery" },
     });
-    fireEvent.change(screen.getByLabelText(/status/i), {
-      target: { value: "true" },
-    });
+    const statusSwitch = screen.getByRole("switch", { name: /status/i });
+    if (!(statusSwitch as HTMLInputElement).checked) {
+      fireEvent.click(statusSwitch);
+    }
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertDescriptionMock).toHaveBeenCalled();
     expect(
@@ -196,7 +197,7 @@ describe("pages/finance/descriptions", () => {
     expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
   });
 
-  it("shows error when Status is not true/false", () => {
+  it("toggles status switch without errors", () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseDescriptionFetch.mockReturnValue({
       data: [
@@ -211,9 +212,10 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add description/i }));
-    fireEvent.change(screen.getByLabelText(/status/i), { target: { value: "maybe" } });
-    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    expect(screen.getByText(/Status must be true or false/i)).toBeInTheDocument();
+    const sw = screen.getByRole("switch", { name: /status/i });
+    const initialChecked = (sw as HTMLInputElement).checked;
+    fireEvent.click(sw);
+    expect((sw as HTMLInputElement).checked).toBe(!initialChecked);
   });
 
   it("opens delete confirmation from actions and confirms", () => {

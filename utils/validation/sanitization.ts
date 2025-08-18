@@ -284,6 +284,39 @@ export const sanitize = {
       ? InputSanitizer.sanitizeDate(data.dateUpdated)
       : undefined,
   }),
+
+  category: (data: any) => ({
+    categoryId: data.categoryId ? parseInt(data.categoryId) : undefined,
+    categoryName: InputSanitizer.sanitizeCategory(
+      data.categoryName ?? data.category ?? "",
+    ),
+    activeStatus: Boolean(data.activeStatus),
+    dateAdded: data.dateAdded
+      ? InputSanitizer.sanitizeDate(data.dateAdded)
+      : undefined,
+    dateUpdated: data.dateUpdated
+      ? InputSanitizer.sanitizeDate(data.dateUpdated)
+      : undefined,
+  }),
+
+  description: (data: any) => ({
+    descriptionId: data.descriptionId
+      ? parseInt(data.descriptionId)
+      : undefined,
+    descriptionName: InputSanitizer.sanitizeCategory(
+      data.descriptionName ?? data.description ?? "",
+    ),
+    activeStatus: Boolean(data.activeStatus ?? true),
+    descriptionCount: data.descriptionCount
+      ? parseInt(data.descriptionCount)
+      : undefined,
+    dateAdded: data.dateAdded
+      ? InputSanitizer.sanitizeDate(data.dateAdded)
+      : undefined,
+    dateUpdated: data.dateUpdated
+      ? InputSanitizer.sanitizeDate(data.dateUpdated)
+      : undefined,
+  }),
 };
 
 /**

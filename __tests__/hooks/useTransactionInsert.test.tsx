@@ -400,9 +400,7 @@ describe("useTransactionInsert", () => {
       });
 
       expect(result.current.error).toEqual(
-        new Error(
-          "Transaction validation failed: Transaction date is required, Amount must be a number",
-        ),
+        new Error("Transaction date is required, Amount must be a number"),
       );
 
       // Should not make API call
@@ -432,9 +430,7 @@ describe("useTransactionInsert", () => {
         expect(result.current.isError).toBe(true);
       });
 
-      expect(result.current.error).toEqual(
-        new Error("Transaction validation failed: Validation failed"),
-      );
+      expect(result.current.error).toEqual(new Error("Validation failed"));
     });
   });
 

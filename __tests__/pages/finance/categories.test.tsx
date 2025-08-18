@@ -133,9 +133,10 @@ describe("pages/finance/categories", () => {
     fireEvent.change(screen.getByLabelText(/name/i), {
       target: { value: "Groceries" },
     });
-    fireEvent.change(screen.getByLabelText(/status/i), {
-      target: { value: "true" },
-    });
+    const statusSwitch = screen.getByRole("switch", { name: /status/i });
+    if (!(statusSwitch as HTMLInputElement).checked) {
+      fireEvent.click(statusSwitch);
+    }
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertCategoryMock).toHaveBeenCalled();
     expect(
@@ -186,12 +187,10 @@ describe("pages/finance/categories", () => {
     expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
   });
 
-  it("shows error when Status is not true/false", () => {
+  it("toggles status switch without errors", () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseCategoryFetch.mockReturnValue({
-      data: [
-        { categoryId: 2, categoryName: "Seed", activeStatus: true },
-      ],
+      data: [{ categoryId: 2, categoryName: "Seed", activeStatus: true }],
       isSuccess: true,
       isLoading: false,
       isError: false,
@@ -201,9 +200,10 @@ describe("pages/finance/categories", () => {
 
     render(<CategoriesPage />);
     fireEvent.click(screen.getByRole("button", { name: /add category/i }));
-    fireEvent.change(screen.getByLabelText(/status/i), { target: { value: "yes" } });
-    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    expect(screen.getByText(/Status must be true or false/i)).toBeInTheDocument();
+    const sw = screen.getByRole("switch", { name: /status/i });
+    const initialChecked = (sw as HTMLInputElement).checked;
+    fireEvent.click(sw);
+    expect((sw as HTMLInputElement).checked).toBe(!initialChecked);
   });
 
   it("opens delete confirmation from actions and confirms", () => {

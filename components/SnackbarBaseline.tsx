@@ -6,7 +6,13 @@ export default function SnackbarBaseline({
   message,
   state,
   handleSnackbarClose,
-}: any) {
+  severity = "info",
+}: {
+  message: string;
+  state: boolean;
+  handleSnackbarClose: () => void;
+  severity?: "error" | "warning" | "info" | "success";
+}) {
   const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
@@ -21,13 +27,13 @@ export default function SnackbarBaseline({
           vertical: "bottom",
           horizontal: "center",
         }}
-        autoHideDuration={4500}
+        autoHideDuration={severity === "error" ? 8000 : 4500}
         onClose={() => {
           setShowSnackbar(false);
           handleSnackbarClose();
         }}
       >
-        <Alert severity="info">{message}</Alert>
+        <Alert severity={severity}>{message}</Alert>
       </Snackbar>
     </div>
   );

@@ -11,6 +11,8 @@ import {
   Modal,
   TextField,
   Typography,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -112,8 +114,15 @@ export default function Descriptions() {
 
   const handleAddRow = async (newData: Description) => {
     const errs: { descriptionName?: string; activeStatus?: string } = {};
-    if (!newData?.descriptionName || newData.descriptionName.trim() === "") {
+    const name = newData?.descriptionName || "";
+    if (!name || name.trim() === "") {
       errs.descriptionName = "Name is required";
+    } else {
+      if (name.length > 255) {
+        errs.descriptionName = "Name too long";
+      } else if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
+        errs.descriptionName = "Name contains invalid characters";
+      }
     }
     const statusValue = (newData as any)?.activeStatus;
     if (typeof statusValue !== "boolean") {
@@ -364,20 +373,27 @@ export default function Descriptions() {
                 }))
               }
             />
-            <TextField
-              label="Status"
-              fullWidth
-              margin="normal"
-              value={descriptionData?.activeStatus || ""}
-              error={!!formErrors.activeStatus}
-              helperText={formErrors.activeStatus}
-              onChange={(e) =>
-                setDescriptionData((prev: any) => ({
-                  ...prev,
-                  activeStatus: e.target.value,
-                }))
-              }
-            />
+            <Box mt={1}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={!!descriptionData?.activeStatus}
+                    onChange={(e) =>
+                      setDescriptionData((prev: any) => ({
+                        ...prev,
+                        activeStatus: e.target.checked,
+                      }))
+                    }
+                  />
+                }
+                label="Status"
+              />
+              {formErrors.activeStatus && (
+                <Typography color="error" variant="caption">
+                  {formErrors.activeStatus}
+                </Typography>
+              )}
+            </Box>
             <Button
               variant="contained"
               onClick={() =>

@@ -1,16 +1,26 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
+import { DataValidator, hookValidators } from "../utils/validation";
 //import { basicAuth } from "../Common";
 
 const insertDescription = async (
   descriptionName: string,
 ): Promise<Description> => {
   try {
-    if (typeof descriptionName !== "string" || descriptionName.trim() === "") {
-      throw new Error("Description validation failed: name is required");
+    // Validate and sanitize via shared validator
+    const validation = hookValidators.validateApiPayload(
+      { descriptionName, activeStatus: true },
+      DataValidator.validateDescription,
+      "insertDescription",
+    );
+    if (!validation.isValid) {
+      const errorMessages =
+        validation.errors?.map((e) => e.message).join(", ") ||
+        "Validation failed";
+      throw new Error(`Description validation failed: ${errorMessages}`);
     }
     const endpoint = "/api/description/insert";
-    const payload = { descriptionName: descriptionName, activeStatus: true };
+    const payload = validation.validatedData;
 
     const response = await fetch(endpoint, {
       method: "POST",

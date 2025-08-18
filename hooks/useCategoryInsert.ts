@@ -1,16 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
+import { DataValidator, hookValidators } from "../utils/validation";
 //import { basicAuth } from "../Common";
 
 const insertCategory = async (category: Category): Promise<Category | null> => {
   try {
-    // Lightweight client-side validation to guard payload shape
-    if (
-      category &&
-      Object.prototype.hasOwnProperty.call(category, "activeStatus") &&
-      typeof (category as any).activeStatus !== "boolean"
-    ) {
-      throw new Error("Category validation failed: activeStatus must be boolean");
+    // Validate and sanitize using shared validator
+    const validation = hookValidators.validateApiPayload(
+      category,
+      DataValidator.validateCategory,
+      "insertCategory",
+    );
+
+    if (!validation.isValid) {
+      const errorMessages =
+        validation.errors?.map((e) => e.message).join(", ") ||
+        "Validation failed";
+      throw new Error(`Category validation failed: ${errorMessages}`);
     }
 
     const endpoint = "/api/category/insert";
@@ -25,7 +31,7 @@ const insertCategory = async (category: Category): Promise<Category | null> => {
         "Content-Type": "application/json",
         //Authorization: basicAuth(),
       },
-      body: JSON.stringify(category),
+      body: JSON.stringify(validation.validatedData),
     });
 
     if (!response.ok) {

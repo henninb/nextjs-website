@@ -74,6 +74,9 @@ export default function TransactionsByAccount() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "error" | "warning" | "info" | "success"
+  >("info");
   const [showModalMove, setShowModalMove] = useState<boolean>(false);
   const [showModalAdd, setShowModalAdd] = useState<boolean>(false);
   const [showModalClone, setShowModalClone] = useState<boolean>(false);
@@ -283,6 +286,7 @@ export default function TransactionsByAccount() {
         : `${moduleName}: Failure`;
 
       setMessage(errorMessage);
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
 
       console.error(errorMessage);
@@ -291,6 +295,12 @@ export default function TransactionsByAccount() {
     },
     [],
   );
+
+  const handleSuccess = useCallback((successMessage: string) => {
+    setMessage(successMessage);
+    setSnackbarSeverity("success");
+    setShowSnackbar(true);
+  }, []);
 
   const handleInsertNewValidationData = async (
     accountNameOwner: string,
@@ -313,8 +323,7 @@ export default function TransactionsByAccount() {
         accountNameOwner: accountNameOwner,
         payload: payload,
       });
-      setMessage(`ValidationAmount inserted successfully`);
-      setShowSnackbar(true);
+      handleSuccess(`ValidationAmount inserted successfully`);
     } catch (error) {
       handleError(
         error,
@@ -336,8 +345,7 @@ export default function TransactionsByAccount() {
       setOriginalRow(null);
       setSelectedTransaction(null);
       setShowModalMove(false);
-      setMessage(`Transaction moved successfully.`);
-      setShowSnackbar(true);
+      handleSuccess(`Transaction moved successfully.`);
     } catch (error) {
       handleError(error, `Move Transaction failure: ${error}`, false);
     }
@@ -347,8 +355,7 @@ export default function TransactionsByAccount() {
     if (selectedTransaction) {
       try {
         await deleteTransaction({ oldRow: selectedTransaction });
-        setMessage(`Transaction deleted successfully.`);
-        setShowSnackbar(true);
+        handleSuccess(`Transaction deleted successfully.`);
       } catch (error) {
         handleError(error, `Delete Transaction failure: ${error}`, false);
       } finally {
@@ -385,8 +392,7 @@ export default function TransactionsByAccount() {
         isImportTransaction: false,
       });
 
-      setMessage(`Transaction cloned successfully: ${JSON.stringify(result)}`);
-      setShowSnackbar(true);
+      handleSuccess(`Transaction cloned successfully.`);
     } catch (error) {
       handleError(error, `handleCloneRow error: ${error}`, false);
       throw error;
@@ -423,18 +429,19 @@ export default function TransactionsByAccount() {
         isImportTransaction: false,
       });
       console.log(`Transaction added successfully: ${JSON.stringify(result)}`);
-      setMessage(`Transaction added successfully: ${JSON.stringify(result)}`);
-      setShowSnackbar(true);
+      handleSuccess(`Transaction added successfully.`);
 
       return result;
     } catch (error) {
-      handleError(error, "handleAddRow", false);
+      handleError(error, "Add Transaction", false);
       if (
         !navigator.onLine ||
         (error.message && error.message.includes("Failed to fetch"))
       ) {
+        console.log("Network error detected");
       }
-      throw error;
+      // Don't re-throw the error - handle it gracefully with snackbar
+      return null;
     }
   };
 
@@ -492,8 +499,7 @@ export default function TransactionsByAccount() {
                 newRow: updatedRow,
                 oldRow: params.row,
               });
-              setMessage("TransactionState updated Successfully.");
-              setShowSnackbar(true);
+              handleSuccess("TransactionState updated Successfully.");
             } catch (error) {
               handleError(error, "TransactionState failure.", false);
             }
@@ -849,8 +855,7 @@ export default function TransactionsByAccount() {
                             newRow: newRow,
                             oldRow: oldRow,
                           });
-                          setMessage("Transaction updated successfully.");
-                          setShowSnackbar(true);
+                          handleSuccess("Transaction updated successfully.");
                           return { ...newRow };
                         } catch (error) {
                           handleError(
@@ -889,6 +894,7 @@ export default function TransactionsByAccount() {
                 message={message}
                 state={showSnackbar}
                 handleSnackbarClose={handleSnackbarClose}
+                severity={snackbarSeverity}
               />
             </div>
           </div>
@@ -1167,7 +1173,17 @@ export default function TransactionsByAccount() {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => transactionData && handleAddRow(transactionData)}
+                onClick={async () => {
+                  if (transactionData) {
+                    const result = await handleAddRow(transactionData);
+                    if (result) {
+                      // Success - close modal and reset form
+                      setShowModalAdd(false);
+                      setTransactionData(initialTransactionData);
+                    }
+                    // If result is null, error was handled via snackbar, keep modal open
+                  }
+                }}
                 style={{ marginTop: 16 }}
               >
                 Add
