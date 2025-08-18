@@ -40,7 +40,6 @@ describe("usePaymentInsert", () => {
 
     const inputPayment: Payment = {
       paymentId: 0,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2024-12-01"),
@@ -50,7 +49,6 @@ describe("usePaymentInsert", () => {
 
     const responsePayment: Payment = {
       paymentId: 789,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2024-12-01").toISOString(),
@@ -71,7 +69,6 @@ describe("usePaymentInsert", () => {
     const existingPayments: Payment[] = [
       {
         paymentId: 1,
-        accountNameOwner: "existing_owner",
         sourceAccount: "existing_source",
         destinationAccount: "existing_dest",
         transactionDate: new Date("2024-11-01"),
@@ -99,7 +96,6 @@ describe("usePaymentInsert", () => {
 
     const inputPayment: Payment = {
       paymentId: 0,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2024-12-01"),
@@ -146,7 +142,6 @@ describe("usePaymentInsert", () => {
 
     const inputPayment: Payment = {
       paymentId: 0,
-      accountNameOwner: "invalid_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2024-12-01"),
@@ -184,7 +179,6 @@ describe("usePaymentInsert", () => {
 
     const inputPayment: Payment = {
       paymentId: 0,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2024-12-01"),
@@ -220,7 +214,6 @@ describe("usePaymentInsert", () => {
 
     const inputPayment: Payment = {
       paymentId: 0,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2024-12-01"),
@@ -257,7 +250,6 @@ describe("usePaymentInsert", () => {
 
     const inputPayment: Payment = {
       paymentId: 0,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2024-12-01"),

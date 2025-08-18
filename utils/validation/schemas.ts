@@ -158,7 +158,6 @@ export const TransactionSchema = z.object({
 // Payment validation schema
 export const PaymentSchema = z.object({
   paymentId: z.number().int().min(0).optional(),
-  accountNameOwner,
   sourceAccount: accountNameOwner,
   destinationAccount: accountNameOwner,
   transactionDate: dateString,

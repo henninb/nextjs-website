@@ -49,7 +49,6 @@ describe("usePaymentUpdate", () => {
 
     const oldPayment: Payment = {
       paymentId: 123,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
@@ -81,7 +80,6 @@ describe("usePaymentUpdate", () => {
       oldPayment,
       {
         paymentId: 456,
-        accountNameOwner: "other_owner",
         sourceAccount: "other_source",
         destinationAccount: "other_dest",
         transactionDate: new Date("2023-11-01"),
@@ -114,7 +112,6 @@ describe("usePaymentUpdate", () => {
 
     const oldPayment: Payment = {
       paymentId: 999,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
@@ -156,7 +153,6 @@ describe("usePaymentUpdate", () => {
 
     const oldPayment: Payment = {
       paymentId: 123,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
@@ -201,7 +197,6 @@ describe("usePaymentUpdate", () => {
 
     const oldPayment: Payment = {
       paymentId: 123,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),
@@ -241,7 +236,6 @@ describe("usePaymentUpdate", () => {
 
     const oldPayment: Payment = {
       paymentId: 123,
-      accountNameOwner: "test_owner",
       sourceAccount: "source123",
       destinationAccount: "dest456",
       transactionDate: new Date("2023-12-01"),

@@ -3,7 +3,6 @@ import Payment from "../model/Payment";
 export const dummyPayments: Payment[] = [
   {
     paymentId: 3001,
-    accountNameOwner: "macys_brian",
     sourceAccount: "bank_brian",
     destinationAccount: "macys_brian",
     transactionDate: new Date("2024-10-01"),
@@ -12,7 +11,6 @@ export const dummyPayments: Payment[] = [
   },
   {
     paymentId: 3002,
-    accountNameOwner: "amex_brian",
     sourceAccount: "bank_brian",
     destinationAccount: "amex_brian",
     transactionDate: new Date("2024-10-02"),
@@ -21,7 +19,6 @@ export const dummyPayments: Payment[] = [
   },
   {
     paymentId: 3003,
-    accountNameOwner: "chase_brian",
     sourceAccount: "bank_brian",
     destinationAccount: "chase_brian",
     transactionDate: new Date("2024-10-03"),
@@ -30,7 +27,6 @@ export const dummyPayments: Payment[] = [
   },
   {
     paymentId: 3004,
-    accountNameOwner: "boa_brian",
     sourceAccount: "bank_brian",
     destinationAccount: "boa_brian",
     transactionDate: new Date("2024-10-04"),
@@ -39,7 +35,6 @@ export const dummyPayments: Payment[] = [
   },
   {
     paymentId: 3005,
-    accountNameOwner: "citibank_brian",
     sourceAccount: "bank_brian",
     destinationAccount: "citibank_brian",
     transactionDate: new Date("2024-10-05"),

@@ -42,7 +42,6 @@ import { modalTitles, modalBodies } from "../../utils/modalMessages";
 const initialPaymentData: Payment = {
   paymentId: undefined,
   transactionDate: new Date(),
-  accountNameOwner: "",
   destinationAccount: "",
   sourceAccount: "",
   activeStatus: true,
@@ -186,10 +185,7 @@ export default function Payments() {
 
   const handleAddRow = async (newData: Payment) => {
     try {
-      //await insertPayment({ payload: newData });
-      await insertPayment({
-        payload: { ...newData, accountNameOwner: newData.destinationAccount },
-      });
+      await insertPayment({ payload: newData });
       setShowModalAdd(true);
       setMessage("Payment added successfully.");
       setShowSnackbar(true);

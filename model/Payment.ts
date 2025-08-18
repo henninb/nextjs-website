@@ -1,6 +1,5 @@
 export default interface Payment {
   paymentId: number;
-  accountNameOwner: string;
   sourceAccount: string;
   destinationAccount: string;
   guidSource?: string;
