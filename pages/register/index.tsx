@@ -9,8 +9,36 @@ import {
   Typography,
   Button,
   Alert,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
+import { Check, Close } from "@mui/icons-material";
 import useUserAccountRegister from "../../hooks/useUserAccountRegister";
+
+interface PasswordValidation {
+  hasUppercase: boolean;
+  hasLowercase: boolean;
+  hasDigit: boolean;
+  hasSpecialChar: boolean;
+  isValid: boolean;
+}
+
+const validatePassword = (password: string): PasswordValidation => {
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasDigit = /\d/.test(password);
+  const hasSpecialChar = /[@$!%*?&]/.test(password);
+  
+  return {
+    hasUppercase,
+    hasLowercase,
+    hasDigit,
+    hasSpecialChar,
+    isValid: hasUppercase && hasLowercase && hasDigit && hasSpecialChar,
+  };
+};
 
 export default function Register() {
   const [firstName, setFirstName] = useState<string>("");
@@ -19,12 +47,24 @@ export default function Register() {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>({
+    hasUppercase: false,
+    hasLowercase: false,
+    hasDigit: false,
+    hasSpecialChar: false,
+    isValid: false,
+  });
 
   const router = useRouter();
   const registerUserAccount = useUserAccountRegister();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!passwordValidation.isValid) {
+      setErrorMessage("Password does not meet the required criteria.");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setErrorMessage("Passwords do not match.");
@@ -110,8 +150,72 @@ export default function Register() {
               name="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setPasswordValidation(validatePassword(e.target.value));
+              }}
             />
+            {password && (
+              <Box sx={{ mt: 1, mb: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  Password requirements:
+                </Typography>
+                <List dense>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {passwordValidation.hasUppercase ? (
+                        <Check color="success" fontSize="small" />
+                      ) : (
+                        <Close color="error" fontSize="small" />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="At least one uppercase letter" 
+                      primaryTypographyProps={{ variant: "body2" }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {passwordValidation.hasLowercase ? (
+                        <Check color="success" fontSize="small" />
+                      ) : (
+                        <Close color="error" fontSize="small" />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="At least one lowercase letter" 
+                      primaryTypographyProps={{ variant: "body2" }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {passwordValidation.hasDigit ? (
+                        <Check color="success" fontSize="small" />
+                      ) : (
+                        <Close color="error" fontSize="small" />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="At least one digit" 
+                      primaryTypographyProps={{ variant: "body2" }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {passwordValidation.hasSpecialChar ? (
+                        <Check color="success" fontSize="small" />
+                      ) : (
+                        <Close color="error" fontSize="small" />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="At least one special character (@$!%*?&)" 
+                      primaryTypographyProps={{ variant: "body2" }}
+                    />
+                  </ListItem>
+                </List>
+              </Box>
+            )}
             <TextField
               margin="normal"
               required
