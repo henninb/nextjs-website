@@ -384,7 +384,7 @@ describe("useUserAccountRegister", () => {
 
     // Verify password is not logged anywhere
     const allLogs = consoleSpy.mock.calls.flat();
-    const passwordInLogs = allLogs.some(log => 
+    const passwordInLogs = allLogs.some(log =>
       typeof log === 'string' && log.includes(validUser.password)
     );
     expect(passwordInLogs).toBe(false);

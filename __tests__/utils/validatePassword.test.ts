@@ -13,7 +13,7 @@ const validatePassword = (password: string): PasswordValidation => {
   const hasLowercase = /[a-z]/.test(password);
   const hasDigit = /\d/.test(password);
   const hasSpecialChar = /[@$!%*?&]/.test(password);
-  
+
   return {
     hasUppercase,
     hasLowercase,
@@ -26,7 +26,7 @@ const validatePassword = (password: string): PasswordValidation => {
 describe("validatePassword", () => {
   it("should validate password with all requirements met", () => {
     const result = validatePassword("Test123@");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -36,7 +36,7 @@ describe("validatePassword", () => {
 
   it("should invalidate password missing uppercase letter", () => {
     const result = validatePassword("test123@");
-    
+
     expect(result.hasUppercase).toBe(false);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -46,7 +46,7 @@ describe("validatePassword", () => {
 
   it("should invalidate password missing lowercase letter", () => {
     const result = validatePassword("TEST123@");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(false);
     expect(result.hasDigit).toBe(true);
@@ -56,7 +56,7 @@ describe("validatePassword", () => {
 
   it("should invalidate password missing digit", () => {
     const result = validatePassword("TestABC@");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(false);
@@ -66,7 +66,7 @@ describe("validatePassword", () => {
 
   it("should invalidate password missing special character", () => {
     const result = validatePassword("Test123");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -76,7 +76,7 @@ describe("validatePassword", () => {
 
   it("should handle empty password", () => {
     const result = validatePassword("");
-    
+
     expect(result.hasUppercase).toBe(false);
     expect(result.hasLowercase).toBe(false);
     expect(result.hasDigit).toBe(false);
@@ -86,7 +86,7 @@ describe("validatePassword", () => {
 
   it("should validate all allowed special characters", () => {
     const specialChars = ["@", "$", "!", "%", "*", "?", "&"];
-    
+
     specialChars.forEach(char => {
       const result = validatePassword(`Test123${char}`);
       expect(result.hasSpecialChar).toBe(true);
@@ -96,7 +96,7 @@ describe("validatePassword", () => {
 
   it("should invalidate password with non-allowed special characters", () => {
     const invalidSpecialChars = ["#", "^", "(", ")", "-", "_", "=", "+"];
-    
+
     invalidSpecialChars.forEach(char => {
       const result = validatePassword(`Test123${char}`);
       expect(result.hasSpecialChar).toBe(false);
@@ -106,7 +106,7 @@ describe("validatePassword", () => {
 
   it("should handle password with multiple uppercase letters", () => {
     const result = validatePassword("TEST123@");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(false);
     expect(result.hasDigit).toBe(true);
@@ -116,7 +116,7 @@ describe("validatePassword", () => {
 
   it("should handle password with multiple lowercase letters", () => {
     const result = validatePassword("test123@");
-    
+
     expect(result.hasUppercase).toBe(false);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -126,7 +126,7 @@ describe("validatePassword", () => {
 
   it("should handle password with multiple digits", () => {
     const result = validatePassword("Test456789@");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -136,7 +136,7 @@ describe("validatePassword", () => {
 
   it("should handle password with multiple special characters", () => {
     const result = validatePassword("Test123@$!");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -146,7 +146,7 @@ describe("validatePassword", () => {
 
   it("should handle very short password meeting all requirements", () => {
     const result = validatePassword("T1@a");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -157,7 +157,7 @@ describe("validatePassword", () => {
   it("should handle very long password meeting all requirements", () => {
     const longPassword = "TestPassword123456789@$!%*?&".repeat(5);
     const result = validatePassword(longPassword);
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -167,7 +167,7 @@ describe("validatePassword", () => {
 
   it("should handle password with mixed case and requirements", () => {
     const result = validatePassword("MySecureP@ssw0rd");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -177,7 +177,7 @@ describe("validatePassword", () => {
 
   it("should handle password with only letters", () => {
     const result = validatePassword("TestPassword");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(false);
@@ -187,7 +187,7 @@ describe("validatePassword", () => {
 
   it("should handle password with only numbers", () => {
     const result = validatePassword("123456789");
-    
+
     expect(result.hasUppercase).toBe(false);
     expect(result.hasLowercase).toBe(false);
     expect(result.hasDigit).toBe(true);
@@ -197,7 +197,7 @@ describe("validatePassword", () => {
 
   it("should handle password with only special characters", () => {
     const result = validatePassword("@$!%*?&");
-    
+
     expect(result.hasUppercase).toBe(false);
     expect(result.hasLowercase).toBe(false);
     expect(result.hasDigit).toBe(false);
@@ -207,7 +207,7 @@ describe("validatePassword", () => {
 
   it("should handle password with whitespace", () => {
     const result = validatePassword("Test 123@");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);
@@ -217,7 +217,7 @@ describe("validatePassword", () => {
 
   it("should handle password with unicode characters", () => {
     const result = validatePassword("Test123@ñáéí");
-    
+
     expect(result.hasUppercase).toBe(true);
     expect(result.hasLowercase).toBe(true);
     expect(result.hasDigit).toBe(true);

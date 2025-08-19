@@ -30,7 +30,7 @@ const validatePassword = (password: string): PasswordValidation => {
   const hasLowercase = /[a-z]/.test(password);
   const hasDigit = /\d/.test(password);
   const hasSpecialChar = /[@$!%*?&]/.test(password);
-  
+
   return {
     hasUppercase,
     hasLowercase,
@@ -169,8 +169,8 @@ export default function Register() {
                         <Close color="error" fontSize="small" />
                       )}
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="At least one uppercase letter" 
+                    <ListItemText
+                      primary="At least one uppercase letter"
                       primaryTypographyProps={{ variant: "body2" }}
                     />
                   </ListItem>
@@ -182,8 +182,8 @@ export default function Register() {
                         <Close color="error" fontSize="small" />
                       )}
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="At least one lowercase letter" 
+                    <ListItemText
+                      primary="At least one lowercase letter"
                       primaryTypographyProps={{ variant: "body2" }}
                     />
                   </ListItem>
@@ -195,8 +195,8 @@ export default function Register() {
                         <Close color="error" fontSize="small" />
                       )}
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="At least one digit" 
+                    <ListItemText
+                      primary="At least one digit"
                       primaryTypographyProps={{ variant: "body2" }}
                     />
                   </ListItem>
@@ -208,8 +208,8 @@ export default function Register() {
                         <Close color="error" fontSize="small" />
                       )}
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="At least one special character (@$!%*?&)" 
+                    <ListItemText
+                      primary="At least one special character (@$!%*?&)"
                       primaryTypographyProps={{ variant: "body2" }}
                     />
                   </ListItem>
