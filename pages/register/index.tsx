@@ -48,6 +48,9 @@ export default function Register() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [firstNameError, setFirstNameError] = useState<string>("");
+  const [lastNameError, setLastNameError] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
@@ -64,8 +67,48 @@ export default function Register() {
   const router = useRouter();
   const registerUserAccount = useUserAccountRegister();
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const hasSpace = (s: string) => /\s/.test(s);
+
+  const validateNamesAndEmail = (): boolean => {
+    let ok = true;
+    if (!firstName.trim()) {
+      setFirstNameError("First name is required.");
+      ok = false;
+    } else if (hasSpace(firstName)) {
+      setFirstNameError("First name cannot contain spaces.");
+      ok = false;
+    } else {
+      setFirstNameError("");
+    }
+
+    if (!lastName.trim()) {
+      setLastNameError("Last name is required.");
+      ok = false;
+    } else if (hasSpace(lastName)) {
+      setLastNameError("Last name cannot contain spaces.");
+      ok = false;
+    } else {
+      setLastNameError("");
+    }
+
+    if (!email.trim()) {
+      setEmailError("Email is required.");
+      ok = false;
+    } else if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address.");
+      ok = false;
+    } else {
+      setEmailError("");
+    }
+    return ok;
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!validateNamesAndEmail()) {
+      return;
+    }
 
     if (!passwordValidation.isValid) {
       setErrorMessage("Password does not meet the required criteria.");
@@ -124,7 +167,17 @@ export default function Register() {
               label="First Name"
               name="firstName"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setFirstName(v);
+                if (!v.trim()) setFirstNameError("First name is required.");
+                else if (hasSpace(v))
+                  setFirstNameError("First name cannot contain spaces.");
+                else setFirstNameError("");
+              }}
+              error={!!firstNameError}
+              helperText={firstNameError || ""}
+              FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
             />
             <TextField
               margin="normal"
@@ -134,7 +187,17 @@ export default function Register() {
               label="Last Name"
               name="lastName"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setLastName(v);
+                if (!v.trim()) setLastNameError("Last name is required.");
+                else if (hasSpace(v))
+                  setLastNameError("Last name cannot contain spaces.");
+                else setLastNameError("");
+              }}
+              error={!!lastNameError}
+              helperText={lastNameError || ""}
+              FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
             />
             <TextField
               margin="normal"
@@ -145,7 +208,17 @@ export default function Register() {
               name="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setEmail(v);
+                if (!v.trim()) setEmailError("Email is required.");
+                else if (!emailRegex.test(v))
+                  setEmailError("Please enter a valid email address.");
+                else setEmailError("");
+              }}
+              error={!!emailError}
+              helperText={emailError || ""}
+              FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
             />
             <TextField
               margin="normal"

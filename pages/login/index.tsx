@@ -96,7 +96,8 @@ export default function Login() {
       }
       router.push("/finance");
     } catch (error: any) {
-      setErrorMessage(error.message || "Failed login. Please try again.");
+      // Standardize error copy for user-facing message
+      setErrorMessage("Login failed. Please try again.");
       console.error("Login error:", error);
     } finally {
       setIsLoading(false);

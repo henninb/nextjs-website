@@ -62,14 +62,14 @@ export default function ContactForm() {
     pattern?: RegExp;
     placeholder?: string;
   }[] = [
-    { label: "First Name", name: "firstName", required: true },
+    { label: "First Name", name: "firstName", required: true, pattern: /^\S+$/ },
     { label: "Middle Initial (optional)", name: "middleInitial" },
-    { label: "Last Name", name: "lastName", required: true },
+    { label: "Last Name", name: "lastName", required: true, pattern: /^\S+$/ },
     {
       label: "Email Address",
       name: "email",
       required: true,
-      pattern: /.+@.+\..+/,
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
     { label: "Create Username", name: "username", required: true },
     {
