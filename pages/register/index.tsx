@@ -13,8 +13,10 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { Check, Close } from "@mui/icons-material";
+import { Check, Close, Visibility, VisibilityOff } from "@mui/icons-material";
 import useUserAccountRegister from "../../hooks/useUserAccountRegister";
 
 interface PasswordValidation {
@@ -46,6 +48,9 @@ export default function Register() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [passwordValidation, setPasswordValidation] =
     useState<PasswordValidation>({
@@ -149,11 +154,23 @@ export default function Register() {
               id="password"
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
                 setPasswordValidation(validatePassword(e.target.value));
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
             />
             {password && (
@@ -224,12 +241,24 @@ export default function Register() {
               id="confirmPassword"
               label="Confirm Password"
               name="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             {errorMessage && (
-              <Alert severity="error" sx={{ mt: 2 }}>
+              <Alert severity="error" variant="outlined" sx={{ mt: 2 }}>
                 {errorMessage}
               </Alert>
             )}

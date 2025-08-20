@@ -21,14 +21,16 @@ jest.mock("../../../hooks/useUserAccountRegister", () => {
 // Mock MUI icons
 jest.mock("@mui/icons-material", () => ({
   Check: ({ ...props }: any) => (
-    <span data-testid="CheckIcon" {...props}>
-      ✓
-    </span>
+    <span data-testid="CheckIcon" {...props}>✓</span>
   ),
   Close: ({ ...props }: any) => (
-    <span data-testid="CloseIcon" {...props}>
-      ✗
-    </span>
+    <span data-testid="CloseIcon" {...props}>✗</span>
+  ),
+  Visibility: ({ ...props }: any) => (
+    <span data-testid="VisibilityIcon" {...props}>👁️</span>
+  ),
+  VisibilityOff: ({ ...props }: any) => (
+    <span data-testid="VisibilityOffIcon" {...props}>🙈</span>
   ),
 }));
 

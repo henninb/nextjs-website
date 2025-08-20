@@ -1,5 +1,16 @@
 import React from "react";
-import { useState, useEffect, FormEvent } from "react";
+import { useState, FormEvent } from "react";
+import {
+  TextField,
+  InputAdornment,
+  IconButton,
+  Button,
+  Container,
+  Paper,
+  Box,
+  Typography,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 interface FormData {
   firstName: string;
@@ -8,6 +19,7 @@ interface FormData {
   email: string;
   username: string;
   password: string;
+  confirmPassword: string;
   securityQuestion: string;
   securityAnswer: string;
   phoneNumber: string;
@@ -28,6 +40,7 @@ export default function ContactForm() {
     email: "",
     username: "",
     password: "",
+    confirmPassword: "",
     securityQuestion: "",
     securityAnswer: "",
     phoneNumber: "",
@@ -37,6 +50,9 @@ export default function ContactForm() {
 
   const [values, setValues] = useState<FormData>(initialValues);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
 
   const descriptors: {
     label: string;
@@ -59,6 +75,12 @@ export default function ContactForm() {
     {
       label: "Create Password",
       name: "password",
+      required: true,
+      type: "password",
+    },
+    {
+      label: "Confirm Password",
+      name: "confirmPassword",
       required: true,
       type: "password",
     },
@@ -88,12 +110,19 @@ export default function ContactForm() {
     for (const d of descriptors) {
       const v = (values[d.name] as unknown as string) || "";
       if (d.required && !v.trim()) {
-        errs[d.name] = `${d.label} is required`;
+        errs[d.name] = `${d.label} is required.`;
         continue;
       }
       if (d.pattern && v && !d.pattern.test(v)) {
-        errs[d.name] = `Invalid ${d.label.toLowerCase()}`;
+        errs[d.name] = `Invalid ${d.label.toLowerCase()}.`;
       }
+    }
+    if (
+      values.password &&
+      values.confirmPassword &&
+      values.password !== values.confirmPassword
+    ) {
+      errs.confirmPassword = "Passwords do not match.";
     }
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -112,97 +141,153 @@ export default function ContactForm() {
     setFormErrors({});
   };
 
-  useEffect(() => {
-    // Function to insert a script tag at the very top of <head>
-    const insertScript = (src) => {
-      const existingScript = document.querySelector(`script[src="${src}"]`);
-      if (!existingScript) {
-        const script = document.createElement("script");
-        script.src = src;
-        script.async = true;
-        script.defer = false; // Execute immediately
-        document.head.prepend(script); // Insert at the top of <head>
-      }
-    };
-
-    insertScript("https://code.jquery.com/jquery-3.7.1.min.js");
-  }, []);
+  const renderField = (
+    label: string,
+    name: keyof FormData,
+    required?: boolean,
+    type: string = "text",
+    placeholder?: string,
+  ) => {
+    const isPassword = name === "password";
+    const isConfirmPassword = name === "confirmPassword";
+    const value = (values[name] as unknown as string) ?? "";
+    const errorText = formErrors[name];
+    return (
+      <TextField
+        key={name}
+        id={name}
+        name={name}
+        label={label}
+        required={!!required}
+        fullWidth
+        margin="normal"
+        type={
+          isPassword
+            ? showPassword
+              ? "text"
+              : "password"
+            : isConfirmPassword
+              ? showConfirmPassword
+                ? "text"
+                : "password"
+              : type
+        }
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) =>
+          setValues((prev) => ({
+            ...prev,
+            [name]: e.target.value,
+          }))
+        }
+        error={!!errorText}
+        helperText={errorText || ""}
+        FormHelperTextProps={{
+          sx: { ml: 0, mt: 0.5, lineHeight: 1.25 },
+        }}
+        InputProps={(() => {
+          if (isPassword) {
+            return {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword((p) => !p)}
+                    edge="end"
+                    size="small"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            } as const;
+          }
+          if (isConfirmPassword) {
+            return {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle confirm password visibility"
+                    onClick={() => setShowConfirmPassword((p) => !p)}
+                    edge="end"
+                    size="small"
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            } as const;
+          }
+          return undefined;
+        })()}
+      />
+    );
+  };
 
   return (
-    <div className="form-container">
-      <div className="form-card">
-        <h2 className="form-title">Contact Information</h2>
-        <p className="form-description">
+    <Container maxWidth="sm" sx={{ py: 6 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Register
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
           Please fill in your details as they appear on official documents.
-        </p>
+        </Typography>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <Box component="form" onSubmit={onSubmit} noValidate>
           {descriptors.map(
-            ({
-              label,
-              name,
-              required,
-              type = "text",
-              pattern,
-              placeholder,
-            }) => (
-              <div key={name} className="form-group">
-                <label htmlFor={name} className="form-label">
-                  {label}
-                </label>
-                <input
-                  id={name}
-                  name={name}
-                  type={type}
-                  placeholder={placeholder}
-                  className="form-input"
-                  value={(values[name] as unknown as string) ?? ""}
-                  onChange={(e) =>
-                    setValues((prev) => ({
-                      ...prev,
-                      [name]: e.target.value,
-                    }))
-                  }
-                  aria-invalid={!!formErrors[name]}
-                />
-                {formErrors[name] && (
-                  <p className="form-error">{formErrors[name]}</p>
-                )}
-              </div>
-            ),
+            ({ label, name, required, type = "text", placeholder }) =>
+              renderField(label, name, required, type, placeholder),
           )}
 
-          <div className="mt-6">
-            <button type="submit" className="form-button">
-              Submit
-            </button>
-          </div>
-        </form>
+          <Box sx={{ mt: 3 }}>
+            <Button type="submit" variant="contained">
+              Register
+            </Button>
+          </Box>
+        </Box>
 
         {/* Modal for displaying summary */}
         {submitted && formData && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <h3 className="modal-title">Form Submission Summary</h3>
-              <div className="modal-summary">
+          <Box
+            role="dialog"
+            aria-modal="true"
+            sx={{
+              position: "fixed",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.5)",
+              zIndex: 1300,
+            }}
+          >
+            <Paper sx={{ p: 3, maxWidth: 480, width: "90%" }}>
+              <Typography variant="h6" gutterBottom>
+                Form Submission Summary
+              </Typography>
+              <Box sx={{ maxHeight: 300, overflow: "auto" }}>
                 {Object.entries(formData).map(([key, value]) => (
-                  <div key={key} className="py-1">
-                    <strong className="modal-summary">
+                  <Box key={key} sx={{ py: 0.5 }}>
+                    <Typography
+                      component="strong"
+                      sx={{ fontWeight: 600, mr: 1 }}
+                    >
                       {key.replace(/([A-Z])/g, " $1")}:
-                    </strong>
-                    {value}
-                  </div>
+                    </Typography>
+                    {String(value)}
+                  </Box>
                 ))}
-              </div>
-              <div className="mt-6 flex justify-center">
-                <button onClick={handleModalClose} className="modal-button">
+              </Box>
+              <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+                <Button onClick={handleModalClose} variant="contained">
                   OK
-                </button>
-              </div>
-            </div>
-          </div>
+                </Button>
+              </Box>
+            </Paper>
+          </Box>
         )}
-      </div>
-    </div>
+      </Paper>
+    </Container>
   );
 }
