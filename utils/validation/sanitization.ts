@@ -1,24 +1,13 @@
-// Use require for better compatibility with built-in types
-const DOMPurify = require("dompurify");
-
-// Configure DOMPurify for server-side usage (if running in Node.js)
-let purify: typeof DOMPurify;
-
-if (typeof window === "undefined") {
-  // Server-side - use a simpler approach for now
-  purify = {
-    sanitize: (input: string, config?: any) => {
-      // Basic server-side sanitization without JSDOM dependency
-      return input
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-        .replace(/<[^>]*>/g, "")
-        .trim();
-    },
-  } as any;
-} else {
-  // Client-side
-  purify = DOMPurify;
-}
+// Lightweight sanitizer used both server- and client-side, no external deps
+const purify = {
+  sanitize: (input: string) =>
+    typeof input === "string"
+      ? input
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+          .replace(/<[^>]*>/g, "")
+          .trim()
+      : "",
+};
 
 /**
  * Sanitization utilities for preventing XSS and injection attacks
@@ -30,11 +19,8 @@ export class InputSanitizer {
   static sanitizeHtml(input: string): string {
     if (typeof input !== "string") return "";
 
-    return purify.sanitize(input, {
-      ALLOWED_TAGS: [], // No HTML tags allowed
-      ALLOWED_ATTR: [],
-      KEEP_CONTENT: true, // Keep text content, remove tags
-    });
+    // Our purify implementation already strips tags and script blocks
+    return purify.sanitize(input);
   }
 
   /**

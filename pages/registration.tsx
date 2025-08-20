@@ -1,6 +1,5 @@
 import React from "react";
-import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 
 interface FormData {
   firstName: string;
@@ -16,24 +15,101 @@ interface FormData {
   citizenship: string;
 }
 
+type FormErrors = Partial<Record<keyof FormData, string>>;
+
 export default function ContactForm() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>();
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData | null>(null);
 
-  const onSubmit = (data: FormData) => {
-    setFormData(data);
+  const initialValues: FormData = {
+    firstName: "",
+    middleInitial: "",
+    lastName: "",
+    email: "",
+    username: "",
+    password: "",
+    securityQuestion: "",
+    securityAnswer: "",
+    phoneNumber: "",
+    zipCode: "",
+    citizenship: "",
+  };
+
+  const [values, setValues] = useState<FormData>(initialValues);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+
+  const descriptors: {
+    label: string;
+    name: keyof FormData;
+    required?: boolean;
+    type?: string;
+    pattern?: RegExp;
+    placeholder?: string;
+  }[] = [
+    { label: "First Name", name: "firstName", required: true },
+    { label: "Middle Initial (optional)", name: "middleInitial" },
+    { label: "Last Name", name: "lastName", required: true },
+    {
+      label: "Email Address",
+      name: "email",
+      required: true,
+      pattern: /.+@.+\..+/,
+    },
+    { label: "Create Username", name: "username", required: true },
+    {
+      label: "Create Password",
+      name: "password",
+      required: true,
+      type: "password",
+    },
+    {
+      label: "Security Question",
+      name: "securityQuestion",
+      required: true,
+    },
+    { label: "Answer", name: "securityAnswer", required: true },
+    {
+      label: "Phone Number",
+      name: "phoneNumber",
+      required: true,
+      placeholder: "(XXX) XXX-XXXX",
+    },
+    { label: "Zip/Postal Code", name: "zipCode", required: true },
+    {
+      label: "Citizenship",
+      name: "citizenship",
+      required: true,
+      placeholder: "Search Citizenship...",
+    },
+  ];
+
+  const validate = (): boolean => {
+    const errs: FormErrors = {};
+    for (const d of descriptors) {
+      const v = (values[d.name] as unknown as string) || "";
+      if (d.required && !v.trim()) {
+        errs[d.name] = `${d.label} is required`;
+        continue;
+      }
+      if (d.pattern && v && !d.pattern.test(v)) {
+        errs[d.name] = `Invalid ${d.label.toLowerCase()}`;
+      }
+    }
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setFormData(values);
     setSubmitted(true);
   };
 
   const handleModalClose = () => {
     setSubmitted(false);
-    reset();
+    setValues(initialValues);
+    setFormErrors({});
   };
 
   useEffect(() => {
@@ -60,44 +136,8 @@ export default function ContactForm() {
           Please fill in your details as they appear on official documents.
         </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {[
-            { label: "First Name", name: "firstName", required: true },
-            { label: "Middle Initial (optional)", name: "middleInitial" },
-            { label: "Last Name", name: "lastName", required: true },
-            {
-              label: "Email Address",
-              name: "email",
-              required: true,
-              pattern: /.+@.+\..+/,
-            },
-            { label: "Create Username", name: "username", required: true },
-            {
-              label: "Create Password",
-              name: "password",
-              required: true,
-              type: "password",
-            },
-            {
-              label: "Security Question",
-              name: "securityQuestion",
-              required: true,
-            },
-            { label: "Answer", name: "securityAnswer", required: true },
-            {
-              label: "Phone Number",
-              name: "phoneNumber",
-              required: true,
-              placeholder: "(XXX) XXX-XXXX",
-            },
-            { label: "Zip/Postal Code", name: "zipCode", required: true },
-            {
-              label: "Citizenship",
-              name: "citizenship",
-              required: true,
-              placeholder: "Search Citizenship...",
-            },
-          ].map(
+        <form onSubmit={onSubmit} className="space-y-4">
+          {descriptors.map(
             ({
               label,
               name,
@@ -111,21 +151,22 @@ export default function ContactForm() {
                   {label}
                 </label>
                 <input
-                  {...register(
-                    name as keyof FormData,
-                    required
-                      ? { required: `${label} is required`, pattern }
-                      : {},
-                  )}
+                  id={name}
+                  name={name}
                   type={type}
                   placeholder={placeholder}
-                  id={name}
                   className="form-input"
+                  value={(values[name] as unknown as string) ?? ""}
+                  onChange={(e) =>
+                    setValues((prev) => ({
+                      ...prev,
+                      [name]: e.target.value,
+                    }))
+                  }
+                  aria-invalid={!!formErrors[name]}
                 />
-                {errors[name as keyof FormData] && (
-                  <p className="form-error">
-                    {errors[name as keyof FormData]?.message}
-                  </p>
+                {formErrors[name] && (
+                  <p className="form-error">{formErrors[name]}</p>
                 )}
               </div>
             ),

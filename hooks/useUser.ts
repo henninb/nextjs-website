@@ -8,11 +8,10 @@ async function fetchUser(): Promise<any | null> {
 }
 
 export function useUser() {
-  const {
-    data,
-    error,
-    isLoading,
-  } = useQuery<any | null, Error>({ queryKey: ["me"], queryFn: fetchUser });
+  const { data, error, isLoading } = useQuery<any | null, Error>({
+    queryKey: ["me"],
+    queryFn: fetchUser,
+  });
 
   return {
     user: data,
