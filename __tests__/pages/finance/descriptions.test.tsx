@@ -35,6 +35,19 @@ jest.mock("@mui/x-data-grid", () => ({
   ),
 }));
 
+// Mock EmptyState component
+jest.mock("../../../components/EmptyState", () => ({
+  __esModule: true,
+  default: ({ title, message, onAction, onRefresh }: any) => (
+    <div data-testid="empty-state">
+      <div>{title}</div>
+      <div>{message}</div>
+      {onAction && <button onClick={onAction}>Add Description</button>}
+      {onRefresh && <button onClick={onRefresh}>Refresh</button>}
+    </div>
+  ),
+}));
+
 jest.mock("../../../components/AuthProvider", () => ({
   useAuth: jest.fn(),
 }));
@@ -239,5 +252,156 @@ describe("pages/finance/descriptions", () => {
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /delete/i }));
     expect(deleteDescriptionMock).toHaveBeenCalled();
+  });
+
+  it("validates description name length", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    // Get the main Add Description button (not the one in empty state)
+    const addButtons = screen.getAllByRole("button", { name: /add description/i });
+    fireEvent.click(addButtons[0]); // Click the first one (main button)
+    
+    // Test name too long
+    const longName = "a".repeat(256);
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: longName },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    
+    expect(insertDescriptionMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Name too long/i)).toBeInTheDocument();
+  });
+
+  it("validates description name contains only valid characters", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    const addButtons = screen.getAllByRole("button", { name: /add description/i });
+    fireEvent.click(addButtons[0]); // Click the first one (main button)
+    
+    // Test invalid characters
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "Invalid@#$%" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    
+    expect(insertDescriptionMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Name contains invalid characters/i)).toBeInTheDocument();
+  });
+
+  it("shows empty state when no descriptions exist", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    expect(screen.getByText(/No Descriptions Found/i)).toBeInTheDocument();
+    expect(screen.getByText(/You haven't created any descriptions yet/i)).toBeInTheDocument();
+  });
+
+  it("handles empty state action to open add modal", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    const refetch = jest.fn();
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch,
+    });
+
+    render(<DescriptionsPage />);
+    
+    // Click the action button in empty state (use the main Add Description button)
+    const addButtons = screen.getAllByRole("button", { name: /add description/i });
+    fireEvent.click(addButtons[0]); // Main button
+    expect(screen.getByText(/Add New Description/i)).toBeInTheDocument();
+  });
+
+  it("renders description links correctly", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 1, descriptionName: "Test Description", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    const link = screen.getByText("Test Description").closest("a");
+    expect(link).toHaveAttribute("href", "/finance/transactions/description/Test Description");
+  });
+
+  it("cancels delete modal when cancel button is clicked", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 1, descriptionName: "Grocery", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+    const actionsCell = screen.getByTestId("cell-0-actions");
+    const delBtn = actionsCell.querySelector("button");
+    if (!delBtn) throw new Error("Delete button not found");
+    fireEvent.click(delBtn);
+    
+    expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+    
+    expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
+    expect(deleteDescriptionMock).not.toHaveBeenCalled();
+  });
+
+  it("handles empty state refresh action", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    const refetch = jest.fn();
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch,
+    });
+
+    render(<DescriptionsPage />);
+    
+    // Find and click refresh button in empty state
+    fireEvent.click(screen.getByText(/Refresh/i));
+    expect(refetch).toHaveBeenCalled();
   });
 });

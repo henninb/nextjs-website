@@ -21,6 +21,19 @@ jest.mock("@mui/x-data-grid", () => ({
   DataGrid: () => <div data-testid="mocked-datagrid">Mocked DataGrid</div>,
 }));
 
+// Mock EmptyState component
+jest.mock("../../../components/EmptyState", () => ({
+  __esModule: true,
+  default: ({ title, message, onAction, onRefresh }: any) => (
+    <div data-testid="empty-state">
+      <div>{title}</div>
+      <div>{message}</div>
+      {onAction && <button onClick={onAction}>Create</button>}
+      {onRefresh && <button onClick={onRefresh}>Refresh</button>}
+    </div>
+  ),
+}));
+
 // Mock auth
 jest.mock("../../../components/AuthProvider", () => ({
   useAuth: jest.fn(),
@@ -49,12 +62,36 @@ import ConfigurationPage from "../../../pages/finance/configuration";
 import useParameterFetchMock from "../../../hooks/useParameterFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 
+// Mock localStorage for offline functionality tests
+const mockLocalStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+
+// Mock navigator.onLine
+Object.defineProperty(navigator, 'onLine', {
+  writable: true,
+  value: true,
+});
+
 describe("pages/finance/configuration", () => {
   const mockUseAuth = useAuthMock as unknown as jest.Mock;
   const mockUseParameterFetch = useParameterFetchMock as unknown as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset localStorage mocks
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true,
+    });
+    mockLocalStorage.getItem.mockReturnValue(null);
+    mockLocalStorage.setItem.mockClear();
+    mockLocalStorage.removeItem.mockClear();
+    // Reset online status
+    Object.defineProperty(navigator, 'onLine', { writable: true, value: true });
   });
 
   it("renders error display when parameters fail to load", () => {
@@ -172,5 +209,158 @@ describe("pages/finance/configuration", () => {
     expect(insertParameterMock).not.toHaveBeenCalled();
     expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
     expect(screen.getByText(/Value is required/i)).toBeInTheDocument();
+  });
+
+  it("submits parameter with long name (no validation constraints)", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [{ parameterId: "id1", parameterName: "x", parameterValue: "y" }],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
+    
+    // Test long name - should be accepted
+    const longName = "a".repeat(101);
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: longName },
+    });
+    fireEvent.change(screen.getByLabelText(/value/i), {
+      target: { value: "valid_value" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    
+    expect(insertParameterMock).toHaveBeenCalled();
+  });
+
+  it("submits parameter with long value (no validation constraints)", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [{ parameterId: "id1", parameterName: "x", parameterValue: "y" }],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
+    
+    // Test long value - should be accepted
+    const longValue = "a".repeat(501);
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "valid_name" },
+    });
+    fireEvent.change(screen.getByLabelText(/value/i), {
+      target: { value: longValue },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    
+    expect(insertParameterMock).toHaveBeenCalled();
+  });
+
+  it("shows loading state while fetching parameters", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: null,
+      isSuccess: false,
+      isLoading: true,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    expect(screen.getByText(/Loading configuration/i)).toBeInTheDocument();
+  });
+
+  it("shows empty state when no parameters exist", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    // Configuration page shows empty state component
+    expect(screen.getByTestId("empty-state")).toBeInTheDocument();
+    expect(screen.getByText(/No Parameters Found/i)).toBeInTheDocument();
+  });
+
+  it("loads offline parameters from localStorage on mount", () => {
+    const offlineData = JSON.stringify([
+      { parameterId: "offline1", parameterName: "offline_param", parameterValue: "offline_value" }
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(offlineData);
+    
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith("offlineParameters");
+  });
+
+  it("handles offline parameter creation when navigator is offline", async () => {
+    // Set navigator offline
+    Object.defineProperty(navigator, 'onLine', { writable: true, value: false });
+    insertParameterMock.mockRejectedValue(new Error("Failed to fetch"));
+    
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "offline_param" },
+    });
+    fireEvent.change(screen.getByLabelText(/value/i), {
+      target: { value: "offline_value" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    
+    // Should show offline message - check for "Parameter saved offline"
+    expect(await screen.findByText(/Parameter saved offline/i)).toBeInTheDocument();
+  });
+
+  it("handles authentication redirect when not authenticated", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: false, loading: false });
+    mockUseParameterFetch.mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ConfigurationPage />);
+    
+    // Should show spinner while redirecting
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    expect(screen.getByText(/Loading configuration/i)).toBeInTheDocument();
   });
 });
