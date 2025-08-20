@@ -26,16 +26,24 @@ jest.mock("../../../components/AuthProvider", () => ({
 // Mock MUI icons to simple spans for stability
 jest.mock("@mui/icons-material", () => ({
   Email: ({ ...props }: any) => (
-    <span data-testid="EmailIcon" {...props}>✉️</span>
+    <span data-testid="EmailIcon" {...props}>
+      ✉️
+    </span>
   ),
   Lock: ({ ...props }: any) => (
-    <span data-testid="LockIcon" {...props}>🔒</span>
+    <span data-testid="LockIcon" {...props}>
+      🔒
+    </span>
   ),
   Visibility: ({ ...props }: any) => (
-    <span data-testid="VisibilityIcon" {...props}>👁️</span>
+    <span data-testid="VisibilityIcon" {...props}>
+      👁️
+    </span>
   ),
   VisibilityOff: ({ ...props }: any) => (
-    <span data-testid="VisibilityOffIcon" {...props}>🙈</span>
+    <span data-testid="VisibilityOffIcon" {...props}>
+      🙈
+    </span>
   ),
 }));
 
@@ -78,7 +86,9 @@ describe("Login Page", () => {
   it("toggles password visibility", () => {
     render(<Login />);
 
-    const passwordInput = document.getElementById("password") as HTMLInputElement;
+    const passwordInput = document.getElementById(
+      "password",
+    ) as HTMLInputElement;
     expect(passwordInput.type).toBe("password");
 
     const toggle = screen.getByLabelText("toggle password visibility");
@@ -91,7 +101,10 @@ describe("Login Page", () => {
 
   it("handles successful login and navigates", async () => {
     // First call: /api/login
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ status: 200, ok: true });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      status: 200,
+      ok: true,
+    });
     // Second call: /api/me
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
@@ -133,7 +146,10 @@ describe("Login Page", () => {
   });
 
   it("shows error on login failure (HTTP)", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ status: 400, ok: false });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      status: 400,
+      ok: false,
+    });
 
     render(<Login />);
 
@@ -156,7 +172,9 @@ describe("Login Page", () => {
   });
 
   it("shows error on network failure", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+    (global.fetch as jest.Mock).mockRejectedValueOnce(
+      new Error("Network error"),
+    );
 
     render(<Login />);
 
@@ -176,4 +194,3 @@ describe("Login Page", () => {
     });
   });
 });
-

@@ -19,22 +19,34 @@ jest.mock("../../../hooks/useUserAccountRegister", () => ({
 // Mock MUI icons
 jest.mock("@mui/icons-material", () => ({
   Check: ({ ...props }: any) => (
-    <span data-testid="CheckIcon" {...props}>✓</span>
+    <span data-testid="CheckIcon" {...props}>
+      ✓
+    </span>
   ),
   Close: ({ ...props }: any) => (
-    <span data-testid="CloseIcon" {...props}>✗</span>
+    <span data-testid="CloseIcon" {...props}>
+      ✗
+    </span>
   ),
   Visibility: ({ ...props }: any) => (
-    <span data-testid="VisibilityIcon" {...props}>👁️</span>
+    <span data-testid="VisibilityIcon" {...props}>
+      👁️
+    </span>
   ),
   VisibilityOff: ({ ...props }: any) => (
-    <span data-testid="VisibilityOffIcon" {...props}>🙈</span>
+    <span data-testid="VisibilityOffIcon" {...props}>
+      🙈
+    </span>
   ),
   Email: ({ ...props }: any) => (
-    <span data-testid="EmailIcon" {...props}>✉️</span>
+    <span data-testid="EmailIcon" {...props}>
+      ✉️
+    </span>
   ),
   Lock: ({ ...props }: any) => (
-    <span data-testid="LockIcon" {...props}>🔒</span>
+    <span data-testid="LockIcon" {...props}>
+      🔒
+    </span>
   ),
 }));
 

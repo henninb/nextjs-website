@@ -62,7 +62,12 @@ export default function ContactForm() {
     pattern?: RegExp;
     placeholder?: string;
   }[] = [
-    { label: "First Name", name: "firstName", required: true, pattern: /^\S+$/ },
+    {
+      label: "First Name",
+      name: "firstName",
+      required: true,
+      pattern: /^\S+$/,
+    },
     { label: "Middle Initial (optional)", name: "middleInitial" },
     { label: "Last Name", name: "lastName", required: true, pattern: /^\S+$/ },
     {
@@ -248,12 +253,12 @@ export default function ContactForm() {
                 name === "email"
                   ? "email"
                   : name === "password" || name === "confirmPassword"
-                  ? "new-password"
-                  : name === "firstName"
-                  ? "given-name"
-                  : name === "lastName"
-                  ? "family-name"
-                  : undefined,
+                    ? "new-password"
+                    : name === "firstName"
+                      ? "given-name"
+                      : name === "lastName"
+                        ? "family-name"
+                        : undefined,
               ),
           )}
 

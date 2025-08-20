@@ -164,7 +164,12 @@ export default function Register() {
           <Typography variant="h4" component="h1" gutterBottom>
             Register
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate data-testid="auth-form">
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            data-testid="auth-form"
+          >
             <TextField
               margin="normal"
               required
@@ -366,7 +371,12 @@ export default function Register() {
               }}
             />
             {errorMessage && (
-              <Alert severity="error" variant="outlined" sx={{ mt: 2 }} data-testid="alert-error">
+              <Alert
+                severity="error"
+                variant="outlined"
+                sx={{ mt: 2 }}
+                data-testid="alert-error"
+              >
                 {errorMessage}
               </Alert>
             )}
@@ -379,7 +389,7 @@ export default function Register() {
               data-testid="btn-submit"
             >
               Register
-              </Button>
+            </Button>
           </Box>
         </Paper>
       </Container>

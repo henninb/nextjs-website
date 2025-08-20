@@ -140,7 +140,7 @@ export default function Login() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                      <EmailIcon />
+                    <EmailIcon />
                   </InputAdornment>
                 ),
               }}
@@ -161,7 +161,7 @@ export default function Login() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                      <LockIcon />
+                    <LockIcon />
                   </InputAdornment>
                 ),
                 endAdornment: (
