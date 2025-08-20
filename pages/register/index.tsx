@@ -16,7 +16,14 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { Check, Close, Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Check,
+  Close,
+  Visibility,
+  VisibilityOff,
+  Email as EmailIcon,
+  Lock as LockIcon,
+} from "@mui/icons-material";
 import useUserAccountRegister from "../../hooks/useUserAccountRegister";
 
 interface PasswordValidation {
@@ -129,7 +136,6 @@ export default function Register() {
     };
 
     try {
-      console.log(`reg=${JSON.stringify(registrationPayload)}`);
       const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -158,7 +164,7 @@ export default function Register() {
           <Typography variant="h4" component="h1" gutterBottom>
             Register
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Box component="form" onSubmit={handleSubmit} noValidate data-testid="auth-form">
             <TextField
               margin="normal"
               required
@@ -166,6 +172,8 @@ export default function Register() {
               id="firstName"
               label="First Name"
               name="firstName"
+              autoComplete="given-name"
+              inputProps={{ "data-testid": "input-firstName" }}
               value={firstName}
               onChange={(e) => {
                 const v = e.target.value;
@@ -186,6 +194,8 @@ export default function Register() {
               id="lastName"
               label="Last Name"
               name="lastName"
+              autoComplete="family-name"
+              inputProps={{ "data-testid": "input-lastName" }}
               value={lastName}
               onChange={(e) => {
                 const v = e.target.value;
@@ -207,6 +217,8 @@ export default function Register() {
               label="Email"
               name="email"
               type="email"
+              autoComplete="email"
+              inputProps={{ "data-testid": "input-email" }}
               value={email}
               onChange={(e) => {
                 const v = e.target.value;
@@ -219,6 +231,13 @@ export default function Register() {
               error={!!emailError}
               helperText={emailError || ""}
               FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon />
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               margin="normal"
@@ -228,16 +247,24 @@ export default function Register() {
               label="Password"
               name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              inputProps={{ "data-testid": "input-password" }}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
                 setPasswordValidation(validatePassword(e.target.value));
               }}
               InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon />
+                  </InputAdornment>
+                ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
+                      data-testid="toggle-password-visibility"
                       onClick={() => setShowPassword((prev) => !prev)}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -315,13 +342,21 @@ export default function Register() {
               label="Confirm Password"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
+              inputProps={{ "data-testid": "input-confirmPassword" }}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon />
+                  </InputAdornment>
+                ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle confirm password visibility"
+                      data-testid="toggle-confirm-password-visibility"
                       onClick={() => setShowConfirmPassword((prev) => !prev)}
                     >
                       {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
@@ -331,18 +366,20 @@ export default function Register() {
               }}
             />
             {errorMessage && (
-              <Alert severity="error" variant="outlined" sx={{ mt: 2 }}>
+              <Alert severity="error" variant="outlined" sx={{ mt: 2 }} data-testid="alert-error">
                 {errorMessage}
               </Alert>
             )}
             <Button
+              id="submit"
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              data-testid="btn-submit"
             >
               Register
-            </Button>
+              </Button>
           </Box>
         </Paper>
       </Container>

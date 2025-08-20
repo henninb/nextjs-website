@@ -147,6 +147,7 @@ export default function ContactForm() {
     required?: boolean,
     type: string = "text",
     placeholder?: string,
+    autoComplete?: string,
   ) => {
     const isPassword = name === "password";
     const isConfirmPassword = name === "confirmPassword";
@@ -173,6 +174,7 @@ export default function ContactForm() {
               : type
         }
         placeholder={placeholder}
+        autoComplete={autoComplete}
         value={value}
         onChange={(e) =>
           setValues((prev) => ({
@@ -237,7 +239,22 @@ export default function ContactForm() {
         <Box component="form" onSubmit={onSubmit} noValidate>
           {descriptors.map(
             ({ label, name, required, type = "text", placeholder }) =>
-              renderField(label, name, required, type, placeholder),
+              renderField(
+                label,
+                name,
+                required,
+                type,
+                placeholder,
+                name === "email"
+                  ? "email"
+                  : name === "password" || name === "confirmPassword"
+                  ? "new-password"
+                  : name === "firstName"
+                  ? "given-name"
+                  : name === "lastName"
+                  ? "family-name"
+                  : undefined,
+              ),
           )}
 
           <Box sx={{ mt: 3 }}>
