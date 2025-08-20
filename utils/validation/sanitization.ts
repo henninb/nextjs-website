@@ -1,6 +1,5 @@
 // Use require for better compatibility with built-in types
 const DOMPurify = require("dompurify");
-import validator from "validator";
 
 // Configure DOMPurify for server-side usage (if running in Node.js)
 let purify: typeof DOMPurify;
@@ -135,12 +134,14 @@ export class InputSanitizer {
     if (typeof input !== "string") return "";
 
     const trimmed = input.trim().toLowerCase();
-
-    if (!validator.isEmail(trimmed)) {
+    // Basic email validation (RFC5322-lite)
+    const emailRegex =
+      /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
+    if (!emailRegex.test(trimmed)) {
       throw new Error("Invalid email format");
     }
-
-    return validator.normalizeEmail(trimmed) || trimmed;
+    // Simple normalization: lowercase, trim
+    return trimmed;
   }
 
   /**
@@ -193,13 +194,13 @@ export class InputSanitizer {
   static sanitizeGuid(input: string): string {
     if (typeof input !== "string") return "";
 
-    const cleaned = input.replace(/[^a-fA-F0-9-]/g, "");
-
-    if (!validator.isUUID(cleaned)) {
+    const cleaned = input.replace(/[^a-fA-F0-9-]/g, "").toLowerCase();
+    const uuidV4Regex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidV4Regex.test(cleaned)) {
       throw new Error("Invalid GUID format");
     }
-
-    return cleaned.toLowerCase();
+    return cleaned;
   }
 }
 

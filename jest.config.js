@@ -17,6 +17,8 @@ module.exports = {
     "^@/components/(.*)$": "<rootDir>/components/$1",
     "^@/pages/(.*)$": "<rootDir>/pages/$1",
     "^@/styles/(.*)$": "<rootDir>/styles/$1",
+    // Stub removed/optional runtime deps
+    "^jose$": "<rootDir>/__mocks__/jose.ts",
     // Handle CSS imports (if you use CSS modules)
     "\\.(scss|sass|css)$": "identity-obj-proxy",
   },

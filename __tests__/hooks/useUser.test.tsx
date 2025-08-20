@@ -1,21 +1,17 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
-import { SWRConfig } from "swr";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useUser } from "../../hooks/useUser";
 
-// SWR provider for testing
-const createWrapper =
-  () =>
-  ({ children }: { children: React.ReactNode }) => (
-    <SWRConfig
-      value={{
-        dedupingInterval: 0,
-        provider: () => new Map(),
-      }}
-    >
-      {children}
-    </SWRConfig>
+// React Query provider for testing
+const createWrapper = () => {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
+};
 
 describe("useUser", () => {
   it("should fetch user data successfully", async () => {
@@ -41,13 +37,13 @@ describe("useUser", () => {
     // Initially loading
     expect(result.current.isLoading).toBe(true);
     expect(result.current.user).toBe(undefined);
-    expect(result.current.isError).toBe(undefined);
+    expect(result.current.isError).toBeNull();
 
     // Wait for data to load
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.user).toEqual(mockUser);
-    expect(result.current.isError).toBe(undefined);
+    expect(result.current.isError).toBeNull();
 
     // Restore original fetch
     global.fetch = originalFetch;

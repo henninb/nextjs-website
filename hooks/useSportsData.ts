@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 
 interface SportsDataHook {
   data: any[] | null;
@@ -14,37 +13,47 @@ export function useSportsData(apiEndpoint: string): SportsDataHook {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get(apiEndpoint, {
-        timeout: 10000, // 10 second timeout
-        headers: {
-          Accept: "application/json",
-        },
-      });
-      setData(response.data);
-    } catch (err) {
-      let errorMessage = "Failed to fetch sports data";
+    setLoading(true);
+    setError(null);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 500) {
-          errorMessage =
+    try {
+      const res = await fetch(apiEndpoint, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        let message = "Failed to fetch sports data";
+        if (res.status === 500) {
+          message =
             "Server error. The sports data service may be temporarily unavailable.";
-        } else if (err.response?.status === 404) {
-          errorMessage = "Sports data not found for this season.";
-        } else if (err.code === "ECONNRETRY" || err.code === "ETIMEDOUT") {
-          errorMessage =
-            "Connection timeout. Please check your internet connection.";
-        } else if (err.response?.data?.message) {
-          errorMessage = err.response.data.message;
+        } else if (res.status === 404) {
+          message = "Sports data not found for this season.";
         }
+        try {
+          const body = await res.json();
+          if (body?.message) message = body.message;
+        } catch {}
+        throw new Error(message);
       }
 
-      setError(errorMessage);
+      const data = await res.json();
+      setData(data);
+    } catch (err: any) {
+      const isAbort = err?.name === "AbortError";
+      const message = isAbort
+        ? "Connection timeout. Please check your internet connection."
+        : err?.message || "Failed to fetch sports data";
+      setError(message);
       console.error("Error fetching sports data:", err);
-      throw new Error(`Failed to fetch sports data: ${errorMessage}`);
+      // Re-throw to keep behavioral parity with previous implementation
+      throw new Error(`Failed to fetch sports data: ${message}`);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   }, [apiEndpoint]);

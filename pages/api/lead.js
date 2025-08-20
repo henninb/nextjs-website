@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { z } from "zod";
-import validator from "validator";
+import { InputSanitizer } from "../../utils/validation/sanitization";
 
 const LeadSchema = z.object({
   vin: z
@@ -17,10 +17,10 @@ const LeadSchema = z.object({
 
 function sanitizeLead(input) {
   return {
-    vin: input.vin.toUpperCase(),
-    color: validator.escape(input.color.trim()),
-    name: validator.escape(input.name.trim()),
-    email: validator.normalizeEmail(input.email.trim()) || input.email.trim(),
+    vin: String(input.vin || "").toUpperCase(),
+    color: InputSanitizer.sanitizeText(String(input.color || "")),
+    name: InputSanitizer.sanitizeText(String(input.name || "")),
+    email: InputSanitizer.sanitizeEmail(String(input.email || "")),
   };
 }
 
