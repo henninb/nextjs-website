@@ -9,14 +9,12 @@ jest.mock("next/router", () => ({
   }),
 }));
 
-jest.mock("../../../hooks/useUserAccountRegister", () => {
-  return {
-    __esModule: true,
-    default: () => ({
-      mutateAsync: jest.fn(),
-    }),
-  };
-});
+jest.mock("../../../hooks/useUserAccountRegister", () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    mutateAsync: jest.fn(),
+  })),
+}));
 
 // Mock MUI icons
 jest.mock("@mui/icons-material", () => ({
@@ -31,6 +29,12 @@ jest.mock("@mui/icons-material", () => ({
   ),
   VisibilityOff: ({ ...props }: any) => (
     <span data-testid="VisibilityOffIcon" {...props}>🙈</span>
+  ),
+  Email: ({ ...props }: any) => (
+    <span data-testid="EmailIcon" {...props}>✉️</span>
+  ),
+  Lock: ({ ...props }: any) => (
+    <span data-testid="LockIcon" {...props}>🔒</span>
   ),
 }));
 
