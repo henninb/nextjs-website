@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Account from "../model/Account";
 import { useAuth } from "../components/AuthProvider";
-//import { basicAuth } from "../Common";
 
 const fetchAccountData = async (): Promise<Account[] | null> => {
   try {
@@ -11,8 +10,6 @@ const fetchAccountData = async (): Promise<Account[] | null> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        // Uncomment and implement if authorization is required
-        // "Authorization": basicAuth(),
       },
     });
 
@@ -41,7 +38,6 @@ export default function useAccountFetch() {
     queryKey: ["account"],
     queryFn: fetchAccountData,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    //cacheTime: 10 * 60 * 1000, // 10 minutes
     retry: 1,
     enabled: !loading && isAuthenticated,
   });

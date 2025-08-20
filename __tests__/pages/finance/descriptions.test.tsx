@@ -6,7 +6,7 @@ jest.mock("next/router", () => ({
 }));
 
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -267,16 +267,18 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     // Get the main Add Description button (not the one in empty state)
-    const addButtons = screen.getAllByRole("button", { name: /add description/i });
+    const addButtons = screen.getAllByRole("button", {
+      name: /add description/i,
+    });
     fireEvent.click(addButtons[0]); // Click the first one (main button)
-    
+
     // Test name too long
     const longName = "a".repeat(256);
     fireEvent.change(screen.getByLabelText(/name/i), {
       target: { value: longName },
     });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    
+
     expect(insertDescriptionMock).not.toHaveBeenCalled();
     expect(screen.getByText(/Name too long/i)).toBeInTheDocument();
   });
@@ -293,17 +295,21 @@ describe("pages/finance/descriptions", () => {
     });
 
     render(<DescriptionsPage />);
-    const addButtons = screen.getAllByRole("button", { name: /add description/i });
+    const addButtons = screen.getAllByRole("button", {
+      name: /add description/i,
+    });
     fireEvent.click(addButtons[0]); // Click the first one (main button)
-    
+
     // Test invalid characters
     fireEvent.change(screen.getByLabelText(/name/i), {
       target: { value: "Invalid@#$%" },
     });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    
+
     expect(insertDescriptionMock).not.toHaveBeenCalled();
-    expect(screen.getByText(/Name contains invalid characters/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Name contains invalid characters/i),
+    ).toBeInTheDocument();
   });
 
   it("shows empty state when no descriptions exist", () => {
@@ -319,7 +325,9 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     expect(screen.getByText(/No Descriptions Found/i)).toBeInTheDocument();
-    expect(screen.getByText(/You haven't created any descriptions yet/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/You haven't created any descriptions yet/i),
+    ).toBeInTheDocument();
   });
 
   it("handles empty state action to open add modal", () => {
@@ -335,9 +343,11 @@ describe("pages/finance/descriptions", () => {
     });
 
     render(<DescriptionsPage />);
-    
+
     // Click the action button in empty state (use the main Add Description button)
-    const addButtons = screen.getAllByRole("button", { name: /add description/i });
+    const addButtons = screen.getAllByRole("button", {
+      name: /add description/i,
+    });
     fireEvent.click(addButtons[0]); // Main button
     expect(screen.getByText(/Add New Description/i)).toBeInTheDocument();
   });
@@ -346,7 +356,11 @@ describe("pages/finance/descriptions", () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseDescriptionFetch.mockReturnValue({
       data: [
-        { descriptionId: 1, descriptionName: "Test Description", activeStatus: true },
+        {
+          descriptionId: 1,
+          descriptionName: "Test Description",
+          activeStatus: true,
+        },
       ],
       isSuccess: true,
       isLoading: false,
@@ -357,7 +371,10 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     const link = screen.getByText("Test Description").closest("a");
-    expect(link).toHaveAttribute("href", "/finance/transactions/description/Test Description");
+    expect(link).toHaveAttribute(
+      "href",
+      "/finance/transactions/description/Test Description",
+    );
   });
 
   it("cancels delete modal when cancel button is clicked", () => {
@@ -378,10 +395,10 @@ describe("pages/finance/descriptions", () => {
     const delBtn = actionsCell.querySelector("button");
     if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
-    
+
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
-    
+
     expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
     expect(deleteDescriptionMock).not.toHaveBeenCalled();
   });
@@ -399,7 +416,7 @@ describe("pages/finance/descriptions", () => {
     });
 
     render(<DescriptionsPage />);
-    
+
     // Find and click refresh button in empty state
     fireEvent.click(screen.getByText(/Refresh/i));
     expect(refetch).toHaveBeenCalled();

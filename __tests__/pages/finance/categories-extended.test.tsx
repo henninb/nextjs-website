@@ -6,7 +6,7 @@ jest.mock("next/router", () => ({
 }));
 
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -145,7 +145,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       });
 
       render(<CategoriesPage />);
-      
+
       // Should show loading while redirecting
       expect(screen.getByText(/Loading categories/i)).toBeInTheDocument();
     });
@@ -162,13 +162,13 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       });
 
       render(<CategoriesPage />);
-      
+
       expect(screen.getByText(/Loading categories/i)).toBeInTheDocument();
     });
 
     it("handles authentication state changes", () => {
       const { rerender } = render(<CategoriesPage />);
-      
+
       // Initially authenticated
       mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
       mockUseCategoryFetch.mockReturnValue({
@@ -179,7 +179,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
         error: null,
         refetch: jest.fn(),
       });
-      
+
       rerender(<CategoriesPage />);
       expect(screen.getByText("Category Management")).toBeInTheDocument();
 
@@ -208,12 +208,14 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "Groceries@#$%" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByText("Name contains invalid characters")).toBeInTheDocument();
+        expect(
+          screen.getByText("Name contains invalid characters"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -223,11 +225,13 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "Café & Résturant" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
-      expect(screen.getByText(/Name contains invalid characters/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Name contains invalid characters/i),
+      ).toBeInTheDocument();
     });
 
     it("allows valid category names with underscores and hyphens", async () => {
@@ -236,20 +240,20 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "Food_and-Dining" } });
-      
+
       const statusSwitch = screen.getByRole("switch", { name: /status/i });
       if (!(statusSwitch as HTMLInputElement).checked) {
         fireEvent.click(statusSwitch);
       }
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
         expect(insertCategoryMock).toHaveBeenCalledWith({
           category: expect.objectContaining({
             categoryName: "Food_and-Dining",
-            activeStatus: true
-          })
+            activeStatus: true,
+          }),
         });
       });
     });
@@ -260,20 +264,20 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "  Groceries  " } });
-      
+
       const statusSwitch = screen.getByRole("switch", { name: /status/i });
       if (!(statusSwitch as HTMLInputElement).checked) {
         fireEvent.click(statusSwitch);
       }
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
         expect(insertCategoryMock).toHaveBeenCalledWith({
           category: expect.objectContaining({
             categoryName: "  Groceries  ", // The component doesn't trim, it validates as-is
-            activeStatus: true
-          })
+            activeStatus: true,
+          }),
         });
       });
     });
@@ -285,7 +289,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       const nameInput = screen.getByLabelText(/name/i);
       const longName = "a".repeat(256);
       fireEvent.change(nameInput, { target: { value: longName } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
@@ -300,7 +304,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "   " } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
@@ -331,11 +335,11 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       // Simulate receiving a string value from form submission
       const form = { categoryName: "Test Category", activeStatus: "true" };
-      
+
       // This simulates what would happen in handleAddRow with string conversion
       const convertedForm = {
         ...form,
-        activeStatus: form.activeStatus === "true"
+        activeStatus: form.activeStatus === "true",
       };
 
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
@@ -355,7 +359,9 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       // Mock an invalid status value being passed somehow
       // This would need to be tested at the form data level
       // For now, we can verify the validation logic exists
-      expect(screen.getByRole("switch", { name: /status/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("switch", { name: /status/i }),
+      ).toBeInTheDocument();
     });
 
     it("defaults to inactive status when switch is not toggled", async () => {
@@ -364,22 +370,24 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "Inactive Category" } });
-      
+
       // Don't toggle the switch - should remain inactive
       const statusSwitch = screen.getByRole("switch", { name: /status/i });
       expect((statusSwitch as HTMLInputElement).checked).toBe(false);
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
         // The form might not include activeStatus when unchecked, the component handles this
         expect(insertCategoryMock).toHaveBeenCalledWith({
           category: expect.objectContaining({
-            categoryName: "Inactive Category"
-          })
+            categoryName: "Inactive Category",
+          }),
         });
         // Verify success message appears
-        expect(screen.getByText("Category inserted successfully.")).toBeInTheDocument();
+        expect(
+          screen.getByText("Category inserted successfully."),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -398,17 +406,25 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
     it("renders category links with correct URLs", () => {
       render(<CategoriesPage />);
-      
+
       const groceriesLink = screen.getByText("Groceries").closest("a");
-      const transportationLink = screen.getByText("Transportation").closest("a");
-      
-      expect(groceriesLink).toHaveAttribute("href", "/finance/transactions/category/Groceries");
-      expect(transportationLink).toHaveAttribute("href", "/finance/transactions/category/Transportation");
+      const transportationLink = screen
+        .getByText("Transportation")
+        .closest("a");
+
+      expect(groceriesLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/category/Groceries",
+      );
+      expect(transportationLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/category/Transportation",
+      );
     });
 
     it("displays status as Active/Inactive text", () => {
       render(<CategoriesPage />);
-      
+
       // Should show Active status for active categories
       expect(screen.getAllByText("Active").length).toBeGreaterThan(0);
       // Should show Inactive status for inactive categories
@@ -417,7 +433,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
     it("handles row updates with processRowUpdate", async () => {
       render(<CategoriesPage />);
-      
+
       const updateButton = screen.getByTestId("update-row-0");
       fireEvent.click(updateButton);
 
@@ -425,39 +441,43 @@ describe("CategoriesPage - Extended Test Coverage", () => {
         expect(updateCategoryMock).toHaveBeenCalledWith({
           oldCategory: mockCategories[0],
           newCategory: expect.objectContaining({
-            categoryName: "Updated Category"
-          })
+            categoryName: "Updated Category",
+          }),
         });
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Category updated successfully.")).toBeInTheDocument();
+        expect(
+          screen.getByText("Category updated successfully."),
+        ).toBeInTheDocument();
       });
     });
 
     it("handles update errors gracefully", async () => {
       updateCategoryMock.mockRejectedValueOnce(new Error("Update failed"));
-      
+
       render(<CategoriesPage />);
-      
+
       const updateButton = screen.getByTestId("update-row-0");
       fireEvent.click(updateButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Update Category failure/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Update Category failure/i),
+        ).toBeInTheDocument();
       });
     });
 
     it("prevents unnecessary updates when data is unchanged", async () => {
       render(<CategoriesPage />);
-      
+
       // Simulate processRowUpdate with identical data
       const noChangeButton = document.createElement("button");
       noChangeButton.onclick = () => {
         const processRowUpdate = jest.fn();
         processRowUpdate(mockCategories[0], mockCategories[0]);
       };
-      
+
       fireEvent.click(noChangeButton);
 
       // Should not call update when data is the same
@@ -466,7 +486,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
     it("uses correct row ID generation", () => {
       render(<CategoriesPage />);
-      
+
       // The component uses categoryId or falls back to a compound key
       expect(screen.getByTestId("mocked-datagrid")).toBeInTheDocument();
     });
@@ -486,30 +506,36 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
     it("shows category name in delete confirmation", () => {
       render(<CategoriesPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
       // Check for delete and cancel buttons instead of specific category name
-      expect(screen.getByRole("button", { name: /delete/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /delete/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /cancel/i }),
+      ).toBeInTheDocument();
     });
 
     it("handles delete success with proper cleanup", async () => {
       render(<CategoriesPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       const confirmButton = screen.getByRole("button", { name: /delete/i });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(deleteCategoryMock).toHaveBeenCalledWith(mockCategories[0]);
-        expect(screen.getByText(/Category deleted successfully/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Category deleted successfully/i),
+        ).toBeInTheDocument();
       });
 
       // Modal should be closed and selected category cleared
@@ -518,18 +544,20 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
     it("handles delete errors with proper error handling", async () => {
       deleteCategoryMock.mockRejectedValueOnce(new Error("Delete failed"));
-      
+
       render(<CategoriesPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       const confirmButton = screen.getByRole("button", { name: /delete/i });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Delete Category failure/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Delete Category failure/i),
+        ).toBeInTheDocument();
       });
 
       // Modal should still be closed even on error
@@ -538,19 +566,20 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
     it("prevents deletion when no category is selected", async () => {
       render(<CategoriesPage />);
-      
+
       // Try to trigger delete without selecting a category first
       // This should not cause any issues due to the safety check
       const confirmButton = document.createElement("button");
       confirmButton.onclick = async () => {
         // Simulate handleDeleteRow being called with no selectedCategory
-        if (!null) { // selectedCategory is null
+        if (!null) {
+          // selectedCategory is null
           return;
         }
       };
-      
+
       fireEvent.click(confirmButton);
-      
+
       expect(deleteCategoryMock).not.toHaveBeenCalled();
     });
   });
@@ -568,46 +597,50 @@ describe("CategoriesPage - Extended Test Coverage", () => {
     });
 
     it("handles offline insertion attempts", async () => {
-      Object.defineProperty(navigator, 'onLine', {
+      Object.defineProperty(navigator, "onLine", {
         writable: true,
         value: false,
       });
 
       insertCategoryMock.mockRejectedValueOnce(new Error("Failed to fetch"));
-      
+
       render(<CategoriesPage />);
       fireEvent.click(screen.getByRole("button", { name: /add category/i }));
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "Offline Category" } });
-      
+
       const statusSwitch = screen.getByRole("switch", { name: /status/i });
       if (!(statusSwitch as HTMLInputElement).checked) {
         fireEvent.click(statusSwitch);
       }
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/Add Category error.*Failed to fetch/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Add Category error.*Failed to fetch/i),
+        ).toBeInTheDocument();
       });
     });
 
     it("detects network failures", async () => {
       insertCategoryMock.mockRejectedValueOnce(new Error("Failed to fetch"));
-      
+
       render(<CategoriesPage />);
       fireEvent.click(screen.getByRole("button", { name: /add category/i }));
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "Network Test" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
         expect(insertCategoryMock).toHaveBeenCalled();
         // Component handles network failure in error handler
-        expect(screen.getByText(/Add Category error.*Failed to fetch/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Add Category error.*Failed to fetch/i),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -632,12 +665,12 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "New Category" } });
-      
+
       const statusSwitch = screen.getByRole("switch", { name: /status/i });
       if (!(statusSwitch as HTMLInputElement).checked) {
         fireEvent.click(statusSwitch);
       }
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
@@ -683,9 +716,11 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       });
 
       render(<CategoriesPage />);
-      
+
       expect(screen.getByText("No Categories Found")).toBeInTheDocument();
-      expect(screen.getByText(/You haven't created any categories yet/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/You haven't created any categories yet/i),
+      ).toBeInTheDocument();
     });
 
     it("handles null data gracefully", () => {
@@ -699,7 +734,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       });
 
       render(<CategoriesPage />);
-      
+
       expect(screen.getByText("No Categories Found")).toBeInTheDocument();
     });
   });

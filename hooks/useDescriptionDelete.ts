@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
-//import { basicAuth } from "../Common";
 
 const deleteDescription = async (
   oldRow: Description,
@@ -14,7 +13,6 @@ const deleteDescription = async (
       headers: {
         "Content-Type": "application/json",
         // Uncomment and modify if authentication is required
-        // Authorization: basicAuth(),
       },
     });
 

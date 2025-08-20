@@ -45,7 +45,7 @@ jest.mock("../../../components/AuthProvider");
 // Ensure MUI Modal always renders children in tests
 jest.mock("@mui/material/Modal", () => ({
   __esModule: true,
-  default: ({ children, open }: any) => 
+  default: ({ children, open }: any) =>
     open ? <div data-testid="modal">{children}</div> : null,
 }));
 
@@ -184,7 +184,7 @@ describe("Transfers Component", () => {
 
     const addButtons = screen.getAllByText("Add Transfer");
     expect(addButtons.length).toBeGreaterThan(0);
-    
+
     // Just verify the button exists and is clickable
     expect(addButtons[0]).toBeInTheDocument();
   });
@@ -243,7 +243,9 @@ describe("Transfers Component", () => {
     render(<Transfers />, { wrapper: createWrapper() });
 
     expect(screen.getByText(/No Transfers Found/i)).toBeInTheDocument();
-    expect(screen.getByText(/No transfers have been created yet/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/No transfers have been created yet/i),
+    ).toBeInTheDocument();
   });
 
   it("handles delete confirmation modal", () => {
@@ -253,7 +255,7 @@ describe("Transfers Component", () => {
     const actionsCell = screen.getByTestId("cell-0-actions");
     const deleteButton = actionsCell.querySelector("button");
     if (!deleteButton) throw new Error("Delete button not found");
-    
+
     fireEvent.click(deleteButton);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
   });
@@ -270,9 +272,15 @@ describe("Transfers Component", () => {
 
     const sourceLink = screen.getByText("Checking Account").closest("a");
     const destinationLink = screen.getByText("Savings Account").closest("a");
-    
-    expect(sourceLink).toHaveAttribute("href", "/finance/transactions/Checking Account");
-    expect(destinationLink).toHaveAttribute("href", "/finance/transactions/Savings Account");
+
+    expect(sourceLink).toHaveAttribute(
+      "href",
+      "/finance/transactions/Checking Account",
+    );
+    expect(destinationLink).toHaveAttribute(
+      "href",
+      "/finance/transactions/Savings Account",
+    );
   });
 
   it("handles authentication redirect when not authenticated", () => {
@@ -285,7 +293,9 @@ describe("Transfers Component", () => {
 
     // Should show spinner while redirecting
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(screen.getByText("Loading transfers and accounts...")).toBeInTheDocument();
+    expect(
+      screen.getByText("Loading transfers and accounts..."),
+    ).toBeInTheDocument();
   });
 
   it("closes modal when clicking cancel in delete confirmation", () => {
@@ -295,22 +305,22 @@ describe("Transfers Component", () => {
     const actionsCell = screen.getByTestId("cell-0-actions");
     const deleteButton = actionsCell.querySelector("button");
     if (!deleteButton) throw new Error("Delete button not found");
-    
+
     fireEvent.click(deleteButton);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-    
+
     // Click cancel - find button in modal
     const cancelButtons = screen.getAllByRole("button", { name: /cancel/i });
-    const modalCancelButton = cancelButtons.find(btn => 
-      btn.closest('[data-testid="modal"]')
+    const modalCancelButton = cancelButtons.find((btn) =>
+      btn.closest('[data-testid="modal"]'),
     );
-    
+
     if (modalCancelButton) {
       fireEvent.click(modalCancelButton);
     } else {
       fireEvent.click(cancelButtons[0]);
     }
-    
+
     expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
   });
 
@@ -326,23 +336,23 @@ describe("Transfers Component", () => {
     const actionsCell = screen.getByTestId("cell-0-actions");
     const deleteButton = actionsCell.querySelector("button");
     if (!deleteButton) throw new Error("Delete button not found");
-    
+
     fireEvent.click(deleteButton);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-    
+
     // Get all delete buttons and click the one in the modal (not the one in the data grid)
     const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
-    const modalDeleteButton = deleteButtons.find(btn => 
-      btn.closest('[data-testid="modal"]')
+    const modalDeleteButton = deleteButtons.find((btn) =>
+      btn.closest('[data-testid="modal"]'),
     );
-    
+
     if (modalDeleteButton) {
       fireEvent.click(modalDeleteButton);
     } else {
       // Fallback: click the last delete button (should be modal)
       fireEvent.click(deleteButtons[deleteButtons.length - 1]);
     }
-    
+
     expect(mockDeleteTransfer).toHaveBeenCalled();
   });
 

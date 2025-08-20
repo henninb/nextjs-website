@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ValidationAmount from "../model/ValidationAmount";
-//import { basicAuth } from "../Common";
 
 const insertValidationAmount = async (
   accountNameOwner: string,
@@ -15,7 +14,6 @@ const insertValidationAmount = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(payload),
     });

@@ -5,7 +5,6 @@ import {
   hookValidators,
   ValidationError,
 } from "../utils/validation";
-//import { basicAuth } from "../Common";
 
 const setupNewPayment = (payload: Payment) => {
   return {
@@ -43,7 +42,6 @@ const insertPayment = async (payload: Payment): Promise<Payment> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),
     });

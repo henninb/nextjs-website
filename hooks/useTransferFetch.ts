@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
-//import { basicAuth } from "../Common";
 
 const fetchTransferData = async (): Promise<Transfer[]> => {
   try {
@@ -10,7 +9,6 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 
@@ -23,8 +21,7 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
     }
 
     const data = await response.json();
-    // Uncomment the line below for debugging
-    // console.debug(JSON.stringify(data));
+
     return data;
   } catch (error) {
     console.log("Error fetching transfer data:", error);

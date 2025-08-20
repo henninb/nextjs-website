@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
-//import { basicAuth } from "../Common";
 
 const overRideTransferValues = (payload: Transfer) => {
   return {
@@ -15,14 +14,12 @@ const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
     const endpoint = "/api/transfer/insert";
     const newPayload = overRideTransferValues(payload);
 
-    //console.log("" + JSON.stringify(newPayload));
     const response = await fetch(endpoint, {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),
     });

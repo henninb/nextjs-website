@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
 import Transaction from "../model/Transaction";
-//import { basicAuth } from "../Common";
 
 const updatePayment = async (
   oldPayment: Payment,
@@ -27,7 +26,6 @@ const updatePayment = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       // Build payload that satisfies validation but signals changes correctly
       body: JSON.stringify({

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-//import { basicAuth } from "../Common";
+
 import Account from "../model/Account";
 
 const updateAccount = async (
@@ -14,7 +14,6 @@ const updateAccount = async (
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(newRow),
     });

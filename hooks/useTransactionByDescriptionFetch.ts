@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
-//import { basicAuth } from "../Common";
 
 const fetchTransactionsByDescription = async (
   description: string,
@@ -14,7 +13,6 @@ const fetchTransactionsByDescription = async (
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          //Authorization: basicAuth(),
         },
       },
     );

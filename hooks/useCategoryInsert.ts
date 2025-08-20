@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 import { DataValidator, hookValidators } from "../utils/validation";
-//import { basicAuth } from "../Common";
 
 const insertCategory = async (category: Category): Promise<Category | null> => {
   try {
@@ -29,7 +28,6 @@ const insertCategory = async (category: Category): Promise<Category | null> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(validation.validatedData),
     });

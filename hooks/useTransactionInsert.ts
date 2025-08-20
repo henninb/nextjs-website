@@ -8,7 +8,6 @@ import {
   ValidationError,
 } from "../utils/validation";
 import { generateSecureUUID } from "../utils/security/secureUUID";
-//import { basicAuth } from "../Common";
 
 export type TransactionInsertType = {
   accountNameOwner: string;
@@ -85,7 +84,6 @@ const insertTransaction = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),
     });

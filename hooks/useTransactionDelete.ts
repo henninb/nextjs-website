@@ -12,15 +12,12 @@ const deleteTransaction = async (
   try {
     const endpoint = `/api/transaction/delete/${payload.guid}`;
 
-    //console.log(endpoint);
-    //console.log(JSON.stringify(payload));
     const response = await fetch(endpoint, {
       method: "DELETE",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: `Basic ${btoa("username:password")}`, // Replace with dynamic basicAuth if needed
       },
     });
 

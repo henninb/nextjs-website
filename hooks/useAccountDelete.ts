@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
 import { InputSanitizer, SecurityLogger } from "../utils/validation";
-//import { basicAuth } from "../Common";
 
 const deleteAccount = async (payload: Account): Promise<Account | null> => {
   try {
@@ -31,7 +30,6 @@ const deleteAccount = async (payload: Account): Promise<Account | null> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

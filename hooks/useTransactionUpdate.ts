@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
 import { UpdateTransactionOptions } from "../model/UpdateTransactionOptions";
-//import { basicAuth } from "../Common";
 
 const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
 
@@ -49,7 +48,6 @@ const updateTransaction = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(newData),
     });

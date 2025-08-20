@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import PaymentRequired from "../model/PaymentRequired";
-//import { basicAuth } from "../Common";
 
 const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
   try {
@@ -10,7 +9,6 @@ const fetchPaymentRequiredData = async (): Promise<PaymentRequired[]> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

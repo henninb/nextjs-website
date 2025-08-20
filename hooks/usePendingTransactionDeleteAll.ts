@@ -8,9 +8,6 @@ const deleteAllPendingTransactions = async (): Promise<void> => {
     const response = await fetch(endpoint, {
       method: "DELETE",
       credentials: "include",
-      //   headers: {
-      //     "Accept": "application/json",
-      //   },
     });
 
     if (!response.ok) {

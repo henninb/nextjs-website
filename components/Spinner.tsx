@@ -6,8 +6,6 @@ const Spinner = React.memo(function Spinner() {
     <div className="spinner-page">
       <FinanceLayout>
         <div data-testid="loader">
-          {/*<Loader type="Rings" color="#9965f4" />*/}
-
           <div className="lds-roller">
             <div></div>
             <div></div>

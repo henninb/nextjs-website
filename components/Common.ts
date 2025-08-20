@@ -95,14 +95,8 @@ export const convertUTCDateToLocalDate = (date: Date) => {
   return normalizeTransactionDate(date);
 };
 
-// export const formatDate = (date: Date | string): string => {
-//   console.warn("formatDate is deprecated, use formatDateForInput instead");
-//   return formatDateForInput(date);
-// };
-
-// export const fetchTimeZone = () => {
-//   return process.env.REACT_APP_TIMEZONE;
-// };
+/** Deprecated: use formatDateForInput instead */
+// Previously exported formatDate and fetchTimeZone helpers removed.
 
 export const currencyFormat = (inputData: number | string): string => {
   if (inputData === undefined || inputData === null) {
@@ -124,21 +118,7 @@ export const epochToDate = (epoch: number): Date => {
   return new Date(epoch); // The 0 there is the key, which sets the date to the epoch
 };
 
-// export const basicAuth = () => {
-//   const token = process.env.REACT_APP_API_KEY;
-//   return "Basic " + token;
-// };
-
-// export const endpointUrl = () => {
-//   let port = process.env.REACT_APP_ENDPOINT_PORT;
-//   let server = process.env.REACT_APP_ENDPOINT_SERVER;
-//   let httpEnabled = process.env.REACT_APP_ENDPOINT_SSL_ENABLED;
-//
-//   if (httpEnabled === "true") {
-//     return "https://" + server + ":" + port;
-//   }
-//   return "http://" + server + ":" + port;
-// };
+// Removed legacy auth/endpoint helpers; configuration handled via Next runtime.
 
 export const typeOf = (obj: any) => {
   return {}.toString.call(obj).split(" ")[1].slice(0, -1).toLowerCase();

@@ -53,14 +53,12 @@ const useProvideAuth = () => {
   const login = (user: User) => {
     setUser(user);
     setIsAuthenticated(true);
-    //localStorage.setItem("user", JSON.stringify(user));
   };
 
   const logout = async () => {
     await logoutNow();
     setUser(null);
     setIsAuthenticated(false);
-    //localStorage.removeItem("user");
     router.push("/login");
   };
 

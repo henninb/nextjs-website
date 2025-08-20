@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Totals from "../model/Totals";
-//import { basicAuth } from "../Common";
 
 const fetchTotals = async (): Promise<Totals> => {
   try {

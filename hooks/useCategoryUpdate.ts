@@ -1,4 +1,3 @@
-//import { basicAuth } from "../Common";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 
@@ -14,7 +13,6 @@ const updateCategory = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(newCategory),
     });

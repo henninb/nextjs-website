@@ -47,13 +47,14 @@ export default function Register() {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>({
-    hasUppercase: false,
-    hasLowercase: false,
-    hasDigit: false,
-    hasSpecialChar: false,
-    isValid: false,
-  });
+  const [passwordValidation, setPasswordValidation] =
+    useState<PasswordValidation>({
+      hasUppercase: false,
+      hasLowercase: false,
+      hasDigit: false,
+      hasSpecialChar: false,
+      isValid: false,
+    });
 
   const router = useRouter();
   const registerUserAccount = useUserAccountRegister();

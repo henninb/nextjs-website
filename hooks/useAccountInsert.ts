@@ -5,7 +5,6 @@ import {
   hookValidators,
   ValidationError,
 } from "../utils/validation";
-//import { basicAuth } from "../Common";
 
 const setupNewAccount = (payload: Account) => {
   return {
@@ -50,7 +49,6 @@ const insertAccount = async (payload: Account): Promise<Account | null> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(newPayload),
     });

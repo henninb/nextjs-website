@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Category from "../model/Category";
 import { useAuth } from "../components/AuthProvider";
-//import { basicAuth } from "../Common";
 
 const fetchCategoryData = async (): Promise<Category[]> => {
   try {
@@ -11,7 +10,6 @@ const fetchCategoryData = async (): Promise<Category[]> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

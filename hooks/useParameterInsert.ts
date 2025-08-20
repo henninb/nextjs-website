@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
-//import { basicAuth } from "../Common";
 
 const insertParameter = async (payload: Parameter): Promise<Parameter> => {
   try {

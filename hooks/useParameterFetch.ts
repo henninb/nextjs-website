@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
-//import { basicAuth } from "../Common";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
   try {
@@ -10,7 +9,6 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 
@@ -24,7 +22,7 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
 
     const data = await response.json();
     // Uncomment the line below for debugging
-    // console.debug(JSON.stringify(data));
+
     return data;
   } catch (error: any) {
     console.error("Error fetching parameter data:", error);

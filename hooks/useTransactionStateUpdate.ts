@@ -1,4 +1,3 @@
-//import { basicAuth } from "../Common";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TransactionState } from "../model/TransactionState";
 import Transaction from "../model/Transaction";
@@ -20,7 +19,6 @@ const changeTransactionState = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),
     });

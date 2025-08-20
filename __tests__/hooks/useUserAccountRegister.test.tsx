@@ -90,7 +90,7 @@ describe("useUserAccountRegister", () => {
     expect(mockValidateApiPayload).toHaveBeenCalledWith(
       validUser,
       DataValidator.validateUser,
-      "userAccountRegister"
+      "userAccountRegister",
     );
 
     // Restore original fetch
@@ -122,7 +122,7 @@ describe("useUserAccountRegister", () => {
 
     // Verify error contains validation messages
     expect(result.current.error?.message).toBe(
-      "User registration validation failed: Username is required, Password is too weak"
+      "User registration validation failed: Username is required, Password is too weak",
     );
 
     // Verify fetch was not called
@@ -149,7 +149,7 @@ describe("useUserAccountRegister", () => {
 
     // Verify default error message
     expect(result.current.error?.message).toBe(
-      "User registration validation failed: Validation failed"
+      "User registration validation failed: Validation failed",
     );
   });
 
@@ -159,10 +159,9 @@ describe("useUserAccountRegister", () => {
     // Mock the global fetch function to return 400 with error message
     const originalFetch = global.fetch;
     global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({ response: "Username already exists" }),
-        { status: 400 }
-      )
+      new Response(JSON.stringify({ response: "Username already exists" }), {
+        status: 400,
+      }),
     );
 
     const { result } = renderHook(() => useUserAccountRegister(), {
@@ -198,7 +197,9 @@ describe("useUserAccountRegister", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     // The hook implementation throws "No error message returned." first, then wraps it
-    expect(result.current.error?.message).toBe("Failed to parse error response: No error message returned.");
+    expect(result.current.error?.message).toBe(
+      "Failed to parse error response: No error message returned.",
+    );
 
     // Restore original fetch
     global.fetch = originalFetch;
@@ -223,7 +224,7 @@ describe("useUserAccountRegister", () => {
 
     // Verify error message for unparseable response
     expect(result.current.error?.message).toContain(
-      "Failed to parse error response"
+      "Failed to parse error response",
     );
 
     // Restore original fetch
@@ -260,10 +261,9 @@ describe("useUserAccountRegister", () => {
     // Mock the global fetch function to return 500 with error message
     const originalFetch = global.fetch;
     global.fetch = jest.fn().mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({ response: "Internal server error" }),
-        { status: 500 }
-      )
+      new Response(JSON.stringify({ response: "Internal server error" }), {
+        status: 500,
+      }),
     );
 
     const { result } = renderHook(() => useUserAccountRegister(), {
@@ -379,13 +379,13 @@ describe("useUserAccountRegister", () => {
     // Verify that username is logged but password is not
     expect(consoleSpy).toHaveBeenCalledWith(
       "User registration attempt for username:",
-      validUser.username
+      validUser.username,
     );
 
     // Verify password is not logged anywhere
     const allLogs = consoleSpy.mock.calls.flat();
-    const passwordInLogs = allLogs.some(log =>
-      typeof log === 'string' && log.includes(validUser.password)
+    const passwordInLogs = allLogs.some(
+      (log) => typeof log === "string" && log.includes(validUser.password),
     );
     expect(passwordInLogs).toBe(false);
 

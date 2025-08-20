@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
-//import { basicAuth } from "../Common";
 
 const deleteCategory = async (payload: Category): Promise<Category | null> => {
   try {
@@ -11,7 +10,6 @@ const deleteCategory = async (payload: Category): Promise<Category | null> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Description from "../model/Description";
 import { useAuth } from "../components/AuthProvider";
-//import { basicAuth } from "../Common";
 
 const fetchDescriptionData = async (): Promise<Description[]> => {
   try {
@@ -11,7 +10,6 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

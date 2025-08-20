@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 import { DataValidator, hookValidators } from "../utils/validation";
-//import { basicAuth } from "../Common";
 
 const insertDescription = async (
   descriptionName: string,
@@ -28,7 +27,6 @@ const insertDescription = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify(payload),
     });

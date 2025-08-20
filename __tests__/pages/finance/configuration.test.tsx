@@ -8,7 +8,7 @@ jest.mock("next/router", () => ({
 
 // Stub ResizeObserver used by some MUI internals
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -71,7 +71,7 @@ const mockLocalStorage = {
 };
 
 // Mock navigator.onLine
-Object.defineProperty(navigator, 'onLine', {
+Object.defineProperty(navigator, "onLine", {
   writable: true,
   value: true,
 });
@@ -83,7 +83,7 @@ describe("pages/finance/configuration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset localStorage mocks
-    Object.defineProperty(window, 'localStorage', {
+    Object.defineProperty(window, "localStorage", {
       value: mockLocalStorage,
       writable: true,
     });
@@ -91,7 +91,7 @@ describe("pages/finance/configuration", () => {
     mockLocalStorage.setItem.mockClear();
     mockLocalStorage.removeItem.mockClear();
     // Reset online status
-    Object.defineProperty(navigator, 'onLine', { writable: true, value: true });
+    Object.defineProperty(navigator, "onLine", { writable: true, value: true });
   });
 
   it("renders error display when parameters fail to load", () => {
@@ -224,7 +224,7 @@ describe("pages/finance/configuration", () => {
 
     render(<ConfigurationPage />);
     fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
-    
+
     // Test long name - should be accepted
     const longName = "a".repeat(101);
     fireEvent.change(screen.getByLabelText(/name/i), {
@@ -234,7 +234,7 @@ describe("pages/finance/configuration", () => {
       target: { value: "valid_value" },
     });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    
+
     expect(insertParameterMock).toHaveBeenCalled();
   });
 
@@ -251,7 +251,7 @@ describe("pages/finance/configuration", () => {
 
     render(<ConfigurationPage />);
     fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
-    
+
     // Test long value - should be accepted
     const longValue = "a".repeat(501);
     fireEvent.change(screen.getByLabelText(/name/i), {
@@ -261,7 +261,7 @@ describe("pages/finance/configuration", () => {
       target: { value: longValue },
     });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    
+
     expect(insertParameterMock).toHaveBeenCalled();
   });
 
@@ -299,10 +299,14 @@ describe("pages/finance/configuration", () => {
 
   it("loads offline parameters from localStorage on mount", () => {
     const offlineData = JSON.stringify([
-      { parameterId: "offline1", parameterName: "offline_param", parameterValue: "offline_value" }
+      {
+        parameterId: "offline1",
+        parameterName: "offline_param",
+        parameterValue: "offline_value",
+      },
     ]);
     mockLocalStorage.getItem.mockReturnValue(offlineData);
-    
+
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseParameterFetch.mockReturnValue({
       data: [],
@@ -319,9 +323,12 @@ describe("pages/finance/configuration", () => {
 
   it("handles offline parameter creation when navigator is offline", async () => {
     // Set navigator offline
-    Object.defineProperty(navigator, 'onLine', { writable: true, value: false });
+    Object.defineProperty(navigator, "onLine", {
+      writable: true,
+      value: false,
+    });
     insertParameterMock.mockRejectedValue(new Error("Failed to fetch"));
-    
+
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseParameterFetch.mockReturnValue({
       data: [],
@@ -341,9 +348,11 @@ describe("pages/finance/configuration", () => {
       target: { value: "offline_value" },
     });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    
+
     // Should show offline message - check for "Parameter saved offline"
-    expect(await screen.findByText(/Parameter saved offline/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Parameter saved offline/i),
+    ).toBeInTheDocument();
   });
 
   it("handles authentication redirect when not authenticated", () => {
@@ -358,7 +367,7 @@ describe("pages/finance/configuration", () => {
     });
 
     render(<ConfigurationPage />);
-    
+
     // Should show spinner while redirecting
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
     expect(screen.getByText(/Loading configuration/i)).toBeInTheDocument();

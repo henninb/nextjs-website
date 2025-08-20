@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
-//import { basicAuth } from "../Common";
 
 const updateTransfer = async (
   oldTransfer: Transfer,
@@ -14,7 +13,6 @@ const updateTransfer = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),
     });

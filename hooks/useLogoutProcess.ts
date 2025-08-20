@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-//import { useAuth } from "../components/AuthProvider";
 
 export default function useLogout() {
   const [loading, setLoading] = useState(false);

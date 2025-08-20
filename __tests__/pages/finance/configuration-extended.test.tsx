@@ -6,7 +6,7 @@ jest.mock("next/router", () => ({
 }));
 
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -39,7 +39,9 @@ jest.mock("@mui/x-data-grid", () => ({
           {processRowUpdate && (
             <button
               data-testid={`update-row-${idx}`}
-              onClick={() => processRowUpdate({ ...row, parameterValue: "updated" }, row)}
+              onClick={() =>
+                processRowUpdate({ ...row, parameterValue: "updated" }, row)
+              }
             >
               Update
             </button>
@@ -105,7 +107,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
       parameterValue: "Chase Checking",
     },
     {
-      parameterId: "param2", 
+      parameterId: "param2",
       parameterName: "import_directory",
       parameterValue: "/home/user/imports",
     },
@@ -114,26 +116,26 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
-    
+
     // Mock localStorage
-    Object.defineProperty(window, 'localStorage', {
+    Object.defineProperty(window, "localStorage", {
       value: mockLocalStorage,
       writable: true,
     });
     mockLocalStorage.getItem.mockReturnValue(null);
-    
+
     // Mock navigator.onLine
-    Object.defineProperty(navigator, 'onLine', {
+    Object.defineProperty(navigator, "onLine", {
       writable: true,
       value: true,
     });
-    
+
     // Mock event listeners
-    Object.defineProperty(window, 'addEventListener', {
+    Object.defineProperty(window, "addEventListener", {
       value: mockAddEventListener,
       writable: true,
     });
-    Object.defineProperty(window, 'removeEventListener', {
+    Object.defineProperty(window, "removeEventListener", {
       value: mockRemoveEventListener,
       writable: true,
     });
@@ -153,26 +155,35 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
     it("registers online event listener on mount", () => {
       render(<ConfigurationPage />);
-      
-      expect(mockAddEventListener).toHaveBeenCalledWith("online", expect.any(Function));
+
+      expect(mockAddEventListener).toHaveBeenCalledWith(
+        "online",
+        expect.any(Function),
+      );
     });
 
     it("loads offline parameters from localStorage on mount", () => {
       const offlineParams = [
-        { parameterId: "offline1", parameterName: "test", parameterValue: "value" }
+        {
+          parameterId: "offline1",
+          parameterName: "test",
+          parameterValue: "value",
+        },
       ];
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(offlineParams));
 
       render(<ConfigurationPage />);
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("offlineParameters");
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
+        "offlineParameters",
+      );
     });
 
     it("saves parameter offline when navigator is offline", async () => {
       // Mock insertParameter to fail (simulating offline)
       insertParameterMock.mockRejectedValueOnce(new Error("Failed to fetch"));
-      
-      Object.defineProperty(navigator, 'onLine', {
+
+      Object.defineProperty(navigator, "onLine", {
         writable: true,
         value: false,
       });
@@ -185,67 +196,92 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       fireEvent.change(nameInput, { target: { value: "offline_param" } });
       fireEvent.change(valueInput, { target: { value: "offline_value" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       // Wait for the offline handling to complete
       await waitFor(() => {
-        expect(screen.getByText(/Parameter saved offline/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Parameter saved offline/i),
+        ).toBeInTheDocument();
       });
-      
+
       expect(insertParameterMock).toHaveBeenCalled();
     });
 
     it("handles offline parameter deletion", () => {
       const offlineParams = [
-        { parameterId: "offline1", parameterName: "test", parameterValue: "value" }
+        {
+          parameterId: "offline1",
+          parameterName: "test",
+          parameterValue: "value",
+        },
       ];
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(offlineParams));
 
       render(<ConfigurationPage />);
-      
+
       // Simulate clicking delete on an offline parameter using the delete button in the actions cell
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       // Verify that delete confirmation opens (this means offline deletion is handled)
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
     });
 
     it("syncs offline parameters when coming online", async () => {
       const offlineParams = [
-        { parameterId: "offline1", parameterName: "test", parameterValue: "value" }
+        {
+          parameterId: "offline1",
+          parameterName: "test",
+          parameterValue: "value",
+        },
       ];
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(offlineParams));
 
       render(<ConfigurationPage />);
 
       // Check that the online event listener was registered (this is what we can verify)
-      expect(mockAddEventListener).toHaveBeenCalledWith("online", expect.any(Function));
-      
+      expect(mockAddEventListener).toHaveBeenCalledWith(
+        "online",
+        expect.any(Function),
+      );
+
       // Check that offline data was loaded from localStorage
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("offlineParameters");
-      
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
+        "offlineParameters",
+      );
+
       // The sync functionality would work when online event is triggered
       // This tests the setup for offline synchronization
     });
 
     it("handles partial sync failures gracefully", () => {
       const offlineParams = [
-        { parameterId: "offline1", parameterName: "test1", parameterValue: "value1" },
-        { parameterId: "offline2", parameterName: "test2", parameterValue: "value2" }
+        {
+          parameterId: "offline1",
+          parameterName: "test1",
+          parameterValue: "value1",
+        },
+        {
+          parameterId: "offline2",
+          parameterName: "test2",
+          parameterValue: "value2",
+        },
       ];
       mockLocalStorage.getItem.mockReturnValue(JSON.stringify(offlineParams));
 
       render(<ConfigurationPage />);
 
       // Check that the component handles offline parameters by loading them
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("offlineParameters");
-      
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
+        "offlineParameters",
+      );
+
       // The component should render without errors when offline parameters exist
       expect(screen.getByText("System Configuration")).toBeInTheDocument();
-      
+
       // This tests that the component can handle multiple offline parameters gracefully
     });
   });
@@ -268,7 +304,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       const valueInput = screen.getByLabelText(/value/i);
       fireEvent.change(valueInput, { target: { value: "some_value" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertParameterMock).not.toHaveBeenCalled();
@@ -283,7 +319,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "test_param" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertParameterMock).not.toHaveBeenCalled();
@@ -299,10 +335,10 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
       const nameInput = screen.getByLabelText(/name/i);
       const longName = "a".repeat(256);
       fireEvent.change(nameInput, { target: { value: longName } });
-      
+
       const valueInput = screen.getByLabelText(/value/i);
       fireEvent.change(valueInput, { target: { value: "value" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       // The app doesn't validate length, so this should actually succeed
@@ -317,11 +353,11 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "test_param" } });
-      
+
       const valueInput = screen.getByLabelText(/value/i);
       const longValue = "a".repeat(1001);
       fireEvent.change(valueInput, { target: { value: longValue } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       // The app doesn't validate length, so this should actually succeed
@@ -336,10 +372,10 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       const nameInput = screen.getByLabelText(/name/i);
       fireEvent.change(nameInput, { target: { value: "invalid@name!" } });
-      
+
       const valueInput = screen.getByLabelText(/value/i);
       fireEvent.change(valueInput, { target: { value: "value" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       // The app doesn't validate character restrictions, so this should succeed
@@ -357,15 +393,15 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       fireEvent.change(nameInput, { target: { value: "test_name" } });
       fireEvent.change(valueInput, { target: { value: "test_value" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
         expect(insertParameterMock).toHaveBeenCalledWith({
           payload: expect.objectContaining({
             parameterName: "test_name",
-            parameterValue: "test_value"
-          })
+            parameterValue: "test_value",
+          }),
         });
       });
     });
@@ -385,7 +421,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
     it("handles parameter update successfully", async () => {
       render(<ConfigurationPage />);
-      
+
       const updateButton = screen.getByTestId("update-row-0");
       fireEvent.click(updateButton);
 
@@ -393,26 +429,28 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
         expect(updateParameterMock).toHaveBeenCalledWith({
           oldParameter: mockParameters[0],
           newParameter: expect.objectContaining({
-            parameterValue: "updated"
-          })
+            parameterValue: "updated",
+          }),
         });
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Parameter updated successfully.")).toBeInTheDocument();
+        expect(
+          screen.getByText("Parameter updated successfully."),
+        ).toBeInTheDocument();
       });
     });
 
     it("handles parameter update failure", async () => {
       // This test verifies the update button functionality exists
       render(<ConfigurationPage />);
-      
+
       const updateButton = screen.getByTestId("update-row-0");
       expect(updateButton).toBeInTheDocument();
-      
+
       // The update mechanism is in place and would handle failures gracefully
       fireEvent.click(updateButton);
-      
+
       await waitFor(() => {
         expect(updateParameterMock).toHaveBeenCalled();
       });
@@ -420,7 +458,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
     it("prevents update when no changes are made", async () => {
       render(<ConfigurationPage />);
-      
+
       // Simulate processRowUpdate with identical old and new row
       const updateButton = screen.getByTestId("update-row-0");
       // Need to modify the mock to simulate no change
@@ -430,7 +468,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
         const processRowUpdate = jest.fn();
         processRowUpdate(mockParameters[0], mockParameters[0]);
       };
-      
+
       fireEvent.click(noChangeButton);
 
       expect(updateParameterMock).not.toHaveBeenCalled();
@@ -451,66 +489,74 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
     it("opens delete confirmation modal", () => {
       render(<ConfigurationPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
-      
+
       expect(deleteButton).toBeInTheDocument();
       fireEvent.click(deleteButton!);
-      
+
       // Check that confirmation modal opens
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /delete/i })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /delete/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /cancel/i }),
+      ).toBeInTheDocument();
     });
 
     it("cancels delete operation", () => {
       render(<ConfigurationPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       const cancelButton = screen.getByRole("button", { name: /cancel/i });
       fireEvent.click(cancelButton);
-      
+
       expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
       expect(deleteParameterMock).not.toHaveBeenCalled();
     });
 
     it("confirms delete operation", async () => {
       render(<ConfigurationPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       const confirmButton = screen.getByRole("button", { name: /delete/i });
       fireEvent.click(confirmButton);
-      
+
       await waitFor(() => {
         expect(deleteParameterMock).toHaveBeenCalled();
       });
-      
+
       await waitFor(() => {
-        expect(screen.getByText("Parameter deleted successfully.")).toBeInTheDocument();
+        expect(
+          screen.getByText("Parameter deleted successfully."),
+        ).toBeInTheDocument();
       });
     });
 
     it("handles delete error gracefully", async () => {
       deleteParameterMock.mockRejectedValueOnce(new Error("Delete failed"));
-      
+
       render(<ConfigurationPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       const confirmButton = screen.getByRole("button", { name: /delete/i });
       fireEvent.click(confirmButton);
-      
+
       await waitFor(() => {
-        expect(screen.getByText(/Delete Parameter failure.*Delete failed/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Delete Parameter failure.*Delete failed/i),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -536,7 +582,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
     it("handles pagination model changes", () => {
       render(<ConfigurationPage />);
-      
+
       // The DataGrid mock doesn't actually implement pagination,
       // but we can verify it renders without errors with large datasets
       expect(screen.getByTestId("mocked-datagrid")).toBeInTheDocument();
@@ -564,17 +610,19 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       fireEvent.change(nameInput, { target: { value: "test_param" } });
       fireEvent.change(valueInput, { target: { value: "test_value" } });
-      
+
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
         expect(insertParameterMock).toHaveBeenCalledWith({
           payload: expect.objectContaining({
             parameterName: "test_param",
-            parameterValue: "test_value"
-          })
+            parameterValue: "test_value",
+          }),
         });
-        expect(screen.getByText("Configuration added successfully.")).toBeInTheDocument();
+        expect(
+          screen.getByText("Configuration added successfully."),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -585,7 +633,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
         .mockRejectedValueOnce(new Error("First error"))
         .mockRejectedValueOnce(new Error("Second error"))
         .mockResolvedValueOnce({});
-      
+
       mockUseParameterFetch.mockReturnValue({
         data: mockParameters,
         isSuccess: true,
@@ -596,20 +644,26 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
       });
 
       render(<ConfigurationPage />);
-      
+
       // First attempt
       fireEvent.click(screen.getByRole("button", { name: /add parameter/i }));
-      fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "test1" } });
-      fireEvent.change(screen.getByLabelText(/value/i), { target: { value: "value1" } });
+      fireEvent.change(screen.getByLabelText(/name/i), {
+        target: { value: "test1" },
+      });
+      fireEvent.change(screen.getByLabelText(/value/i), {
+        target: { value: "value1" },
+      });
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-      
+
       await waitFor(() => {
-        expect(screen.getByText(/Add Configuration.*First error/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Add Configuration.*First error/i),
+        ).toBeInTheDocument();
       });
 
       // The component should handle multiple consecutive errors gracefully
       expect(insertParameterMock).toHaveBeenCalledTimes(1);
-      
+
       // This tests that the error recovery mechanism works for the first error
       // Additional attempts would follow the same pattern
     });

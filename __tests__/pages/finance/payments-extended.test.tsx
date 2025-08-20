@@ -7,7 +7,7 @@ jest.mock("next/router", () => ({
 }));
 
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -25,14 +25,18 @@ jest.mock("@mui/x-data-grid", () => ({
               return (
                 <div
                   key={cidx}
-                  data-testid={`cell-${idx}-${String(col.headerName || col.field).toLowerCase().replace(/\s+/g, '')}`}
+                  data-testid={`cell-${idx}-${String(
+                    col.headerName || col.field,
+                  )
+                    .toLowerCase()
+                    .replace(/\s+/g, "")}`}
                 >
-                  {col.renderCell({ 
-                    row, 
+                  {col.renderCell({
+                    row,
                     value: row[col.field],
                     api: {
-                      setEditCellValue: jest.fn()
-                    }
+                      setEditCellValue: jest.fn(),
+                    },
                   })}
                 </div>
               );
@@ -45,7 +49,7 @@ jest.mock("@mui/x-data-grid", () => ({
                     value: row[col.field],
                     api: { setEditCellValue: jest.fn() },
                     id: row.paymentId,
-                    field: col.field
+                    field: col.field,
                   })}
                 </div>
               );
@@ -81,8 +85,8 @@ jest.mock("@mui/material/Autocomplete", () => ({
   __esModule: true,
   default: ({ options, getOptionLabel, value, onChange, renderInput }: any) => {
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const selectedOption = options.find((opt: any) => 
-        getOptionLabel(opt) === e.target.value
+      const selectedOption = options.find(
+        (opt: any) => getOptionLabel(opt) === e.target.value,
       );
       onChange(e, selectedOption);
     };
@@ -91,7 +95,7 @@ jest.mock("@mui/material/Autocomplete", () => ({
       <div>
         {renderInput({
           label: "Autocomplete",
-          inputProps: { "data-testid": "autocomplete-input" }
+          inputProps: { "data-testid": "autocomplete-input" },
         })}
         <select onChange={handleChange} data-testid="autocomplete-select">
           <option value="">Select...</option>
@@ -103,7 +107,7 @@ jest.mock("@mui/material/Autocomplete", () => ({
         </select>
       </div>
     );
-  }
+  },
 }));
 
 jest.mock("../../../components/USDAmountInput", () => ({
@@ -126,12 +130,20 @@ jest.mock("../../../components/USDAmountInput", () => ({
 jest.mock("../../../components/ErrorDisplay", () => ({
   __esModule: true,
   default: ({ error, message }: any) => (
-    <div data-testid="error-display">{(error && (error.message || String(error))) || message || "Error"}</div>
+    <div data-testid="error-display">
+      {(error && (error.message || String(error))) || message || "Error"}
+    </div>
   ),
 }));
 jest.mock("../../../components/EmptyState", () => ({
   __esModule: true,
-  default: ({ title, message, onAction, onRefresh, actionLabel = "Add Payment" }: any) => (
+  default: ({
+    title,
+    message,
+    onAction,
+    onRefresh,
+    actionLabel = "Add Payment",
+  }: any) => (
     <div data-testid="empty-state">
       <div>{title}</div>
       <div>{message}</div>
@@ -212,7 +224,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       transactionDate: new Date("2024-01-15"),
       sourceAccount: "Chase Checking",
       destinationAccount: "Credit Card",
-      amount: 250.50,
+      amount: 250.5,
       activeStatus: true,
     },
   ];
@@ -239,7 +251,12 @@ describe("PaymentsPage - Extended Test Coverage", () => {
         refetch: jest.fn(),
       });
       mockUseParameterFetch.mockReturnValue({
-        data: [{ parameterName: "payment_account", parameterValue: "Chase Checking" }],
+        data: [
+          {
+            parameterName: "payment_account",
+            parameterValue: "Chase Checking",
+          },
+        ],
         isSuccess: true,
         isFetching: false,
         error: null,
@@ -253,7 +270,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       const amountInput = screen.getByTestId("usd-amount-input");
       fireEvent.change(amountInput, { target: { value: "0" } });
-      
+
       const saveButton = screen.getByRole("button", { name: /add payment/i });
       fireEvent.click(saveButton);
 
@@ -271,7 +288,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       const amountInput = screen.getByTestId("usd-amount-input");
       fireEvent.change(amountInput, { target: { value: "-50" } });
-      
+
       const saveButton = screen.getByRole("button", { name: /add payment/i });
       fireEvent.click(saveButton);
 
@@ -304,12 +321,14 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       // Select same account for source and destination
       const sourceSelect = screen.getAllByTestId("autocomplete-select")[0];
       const destSelect = screen.getAllByTestId("autocomplete-select")[1];
-      
+
       fireEvent.change(sourceSelect, { target: { value: "Chase Checking" } });
       fireEvent.change(destSelect, { target: { value: "Chase Checking" } });
-      
+
       // Button label changes to Pay $100.00 after amount is set
-      const payButton = screen.getByRole("button", { name: /pay \$?100(\.00)?/i });
+      const payButton = screen.getByRole("button", {
+        name: /pay \$?100(\.00)?/i,
+      });
       fireEvent.click(payButton);
 
       // Should not attempt to insert and modal should remain open
@@ -327,7 +346,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       const amountInput = screen.getByTestId("usd-amount-input");
       fireEvent.change(amountInput, { target: { value: "invalid" } });
-      
+
       const saveButton = screen.getByRole("button", { name: /add payment/i });
       fireEvent.click(saveButton);
 
@@ -352,7 +371,12 @@ describe("PaymentsPage - Extended Test Coverage", () => {
         refetch: jest.fn(),
       });
       mockUseParameterFetch.mockReturnValue({
-        data: [{ parameterName: "payment_account", parameterValue: "Chase Checking" }],
+        data: [
+          {
+            parameterName: "payment_account",
+            parameterValue: "Chase Checking",
+          },
+        ],
         isSuccess: true,
         isFetching: false,
         error: null,
@@ -365,9 +389,9 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
 
       const sourceSelect = screen.getAllByTestId("autocomplete-select")[0];
-      const options = Array.from(sourceSelect.querySelectorAll("option")).map(
-        option => option.textContent
-      ).filter(text => text !== "Select...");
+      const options = Array.from(sourceSelect.querySelectorAll("option"))
+        .map((option) => option.textContent)
+        .filter((text) => text !== "Select...");
 
       expect(options).toEqual(["Chase Checking", "Savings Account"]);
       expect(options).not.toContain("Credit Card");
@@ -378,9 +402,9 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
 
       const destSelect = screen.getAllByTestId("autocomplete-select")[1];
-      const options = Array.from(destSelect.querySelectorAll("option")).map(
-        option => option.textContent
-      ).filter(text => text !== "Select...");
+      const options = Array.from(destSelect.querySelectorAll("option"))
+        .map((option) => option.textContent)
+        .filter((text) => text !== "Select...");
 
       expect(options).toEqual(["Credit Card"]);
       expect(options).not.toContain("Chase Checking");
@@ -393,8 +417,10 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       // Check that the payment modal opens successfully
       // The parameter pre-selection would happen in the actual component via useEffect
-      expect(screen.getByRole("button", { name: /add payment/i })).toBeInTheDocument();
-      
+      expect(
+        screen.getByRole("button", { name: /add payment/i }),
+      ).toBeInTheDocument();
+
       // Check that autocomplete components are available
       const autocompleteSelects = screen.getAllByTestId("autocomplete-select");
       expect(autocompleteSelects.length).toBeGreaterThanOrEqual(2);
@@ -447,7 +473,9 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       fireEvent.change(amountInput, { target: { value: "100.50" } });
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /pay \$100\.50/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /pay \$100\.50/i }),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -486,7 +514,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
     it("handles network failure during payment insertion", async () => {
       insertPaymentMock.mockRejectedValueOnce(new Error("Network error"));
-      
+
       mockUsePaymentFetch.mockReturnValue({
         data: mockPayments,
         isSuccess: true,
@@ -520,12 +548,16 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       fireEvent.change(sourceSelect, { target: { value: "Chase Checking" } });
       fireEvent.change(destSelect, { target: { value: "Credit Card" } });
 
-      const payButton = screen.getByRole("button", { name: /pay \$?100(\.00)?/i });
+      const payButton = screen.getByRole("button", {
+        name: /pay \$?100(\.00)?/i,
+      });
       fireEvent.click(payButton);
 
       await waitFor(() => {
         // Based on actual error format: "Add Payment error: Error: Network error"
-        expect(screen.getByText(/Add Payment error.*Network error/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Add Payment error.*Network error/i),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -557,50 +589,58 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
     it("renders payment links correctly", () => {
       render(<PaymentsPage />);
-      
+
       const sourceLink = screen.getByText("Chase Checking").closest("a");
       const destLink = screen.getByText("Credit Card").closest("a");
-      
-      expect(sourceLink).toHaveAttribute("href", "/finance/transactions/Chase Checking");
-      expect(destLink).toHaveAttribute("href", "/finance/transactions/Credit Card");
+
+      expect(sourceLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/Chase Checking",
+      );
+      expect(destLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/Credit Card",
+      );
     });
 
     it("formats currency display correctly", () => {
       render(<PaymentsPage />);
-      
+
       // Check if the amount is displayed - could be "250.5" or formatted differently
       expect(screen.getByText("250.5")).toBeInTheDocument();
     });
 
     it("handles delete confirmation workflow", () => {
       render(<PaymentsPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
-      
+
       expect(deleteButton).toBeInTheDocument();
       fireEvent.click(deleteButton!);
-      
+
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-      
+
       const confirmButton = screen.getByRole("button", { name: /delete/i });
       fireEvent.click(confirmButton);
-      
-      expect(deletePaymentMock).toHaveBeenCalledWith({ oldRow: mockPayments[0] });
+
+      expect(deletePaymentMock).toHaveBeenCalledWith({
+        oldRow: mockPayments[0],
+      });
     });
 
     it("cancels delete modal when cancel button is clicked", () => {
       render(<PaymentsPage />);
-      
+
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
-      
+
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-      
+
       const cancelButton = screen.getByRole("button", { name: /cancel/i });
       fireEvent.click(cancelButton);
-      
+
       expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
       expect(deletePaymentMock).not.toHaveBeenCalled();
     });
@@ -632,8 +672,10 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       });
 
       render(<PaymentsPage />);
-      
-      expect(screen.getByText("Loading payments and accounts...")).toBeInTheDocument();
+
+      expect(
+        screen.getByText("Loading payments and accounts..."),
+      ).toBeInTheDocument();
     });
 
     it("shows loading when authentication is loading", () => {
@@ -661,8 +703,10 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       });
 
       render(<PaymentsPage />);
-      
-      expect(screen.getByText("Loading payments and accounts...")).toBeInTheDocument();
+
+      expect(
+        screen.getByText("Loading payments and accounts..."),
+      ).toBeInTheDocument();
     });
   });
 
@@ -692,7 +736,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       });
 
       render(<PaymentsPage />);
-      
+
       // Check that the page renders without errors and shows at least one Add Payment button
       expect(
         screen.getAllByRole("button", { name: /add payment/i }).length,

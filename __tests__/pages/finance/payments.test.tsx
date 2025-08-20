@@ -8,7 +8,7 @@ jest.mock("next/router", () => ({
 
 // Stub ResizeObserver
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}

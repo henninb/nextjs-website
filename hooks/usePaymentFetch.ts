@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Payment from "../model/Payment";
-//import { basicAuth } from "../Common";
 
 const fetchPaymentData = async (): Promise<Payment[]> => {
   try {
@@ -10,7 +9,6 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 
@@ -23,8 +21,7 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
     }
 
     const data = await response.json();
-    // Uncomment the line below for debugging
-    // console.debug(JSON.stringify(data));
+
     return data;
   } catch (error: any) {
     console.error("Error fetching payment data:", error);

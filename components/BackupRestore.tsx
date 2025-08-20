@@ -135,9 +135,8 @@ const BackupRestore: React.FC = () => {
 
         const backupData = JSON.parse(content);
 
-        // Clear existing data before restoring?
-        // For now, we'll just insert new data.
-        // Depending on the requirements, we might need to delete existing data first.
+        // NOTE: Current strategy inserts backup data without clearing existing records.
+        // If a full restore is desired, implement a pre-clear step per entity type.
 
         if (backupData.accounts) {
           for (const item of backupData.accounts) {

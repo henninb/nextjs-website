@@ -1,4 +1,3 @@
-//import { basicAuth } from "../Common";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 
@@ -14,7 +13,6 @@ const updateParameter = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
       body: JSON.stringify({}),
     });

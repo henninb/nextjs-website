@@ -15,10 +15,7 @@
 
   --clr-light: #fff;
   --clr-dark: #303030;
-  /* --clr-accent: #16e0bd; */
   --clr-accent: #add8e6;
-  /* --clr-accent: #FFFF00; */
-  /* --clr-accent: #FFC300; */
 
   --fs-h1: 3rem;
   --fs-h2: 2.25rem;
@@ -41,10 +38,7 @@
 
 /* General styles */
 
-/* endable this to add smooth scrolling */
-/* html {
-    scroll-behavior: smooth;
-} */
+/* enable this to add smooth scrolling: html { scroll-behavior: smooth; } */
 
 body {
   background: var(--clr-light);
@@ -145,14 +139,6 @@ h3 {
 
 /* header */
 
-/*
-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 1em;
-}
-*/
-
 .logo {
   max-width: 100px;
 }
@@ -161,7 +147,6 @@ header {
   position: fixed;
   background: var(--clr-dark);
   color: var(--clr-light);
-  /* TODO */
   height: 40vh;
   top: 0;
   bottom: 40%;
@@ -213,10 +198,6 @@ header {
 .navbar .navbar-nav .nav-link {
   text-transform: capitalize !important;
 }
-
-/* .nav-link { */
-/*   text-transform: capitalize !important; */
-/* } */
 
 .nav-link:hover {
   text-decoration: underline;
@@ -322,10 +303,7 @@ header {
 
 .my-services {
   background-color: var(--clr-dark);
-  /* background-image: url(../img/services-bg.webp); */
-  /* background-image: url(/img/services-bg-07.jpg); */
   background-size: cover;
-  /* background-blend-mode: multiply; */
   color: var(--clr-light);
   text-align: center;
 }
@@ -553,7 +531,6 @@ header {
 
 .navigation .userBx .username {
   white-space: nowrap;
-  /* color: #555; */
   color: var(--clr-dark);
   /* color: var(--clr-accent); */
   font-size: 1.1em;
@@ -646,7 +623,6 @@ header {
 }
 
 .menu li a:hover {
-  /* color: #4e65ff; */
   color: var(--clr-accent);
 }
 

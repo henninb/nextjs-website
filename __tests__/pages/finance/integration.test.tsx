@@ -3,11 +3,15 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("next/router", () => ({
-  useRouter: () => ({ replace: jest.fn(), push: jest.fn(), pathname: "/finance" }),
+  useRouter: () => ({
+    replace: jest.fn(),
+    push: jest.fn(),
+    pathname: "/finance",
+  }),
 }));
 
 beforeAll(() => {
-  // @ts-ignore
+  // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
   global.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -19,11 +23,11 @@ jest.mock("@mui/x-data-grid", () => ({
   DataGrid: ({ rows = [], columns = [], onRowClick }: any) => (
     <div data-testid="mocked-datagrid">
       {rows.map((row: any, idx: number) => (
-        <div 
-          key={idx} 
+        <div
+          key={idx}
           data-testid={`row-${idx}`}
           onClick={() => onRowClick && onRowClick({ row })}
-          style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+          style={{ cursor: onRowClick ? "pointer" : "default" }}
         >
           {columns.map((col: any, cidx: number) => {
             if (col.renderCell) {
@@ -150,9 +154,9 @@ describe("Finance Pages - Integration Tests", () => {
       accountType: "debit",
       activeStatus: true,
       moniker: "CHASE",
-      outstanding: 1500.00,
-      future: 200.00,
-      cleared: 1300.00,
+      outstanding: 1500.0,
+      future: 200.0,
+      cleared: 1300.0,
       validationDate: new Date("2024-01-01"),
     },
     {
@@ -161,9 +165,9 @@ describe("Finance Pages - Integration Tests", () => {
       accountType: "credit",
       activeStatus: true,
       moniker: "CC",
-      outstanding: -850.00,
-      future: -100.00,
-      cleared: -750.00,
+      outstanding: -850.0,
+      future: -100.0,
+      cleared: -750.0,
       validationDate: new Date("2024-01-01"),
     },
   ];
@@ -180,16 +184,16 @@ describe("Finance Pages - Integration Tests", () => {
       transactionDate: new Date("2024-01-15"),
       sourceAccount: "Chase Checking",
       destinationAccount: "Credit Card",
-      amount: 500.00,
+      amount: 500.0,
       activeStatus: true,
     },
   ];
 
   const mockTotals = {
-    totals: 650.00,
-    totalsCleared: 550.00,
-    totalsOutstanding: 650.00,
-    totalsFuture: 100.00,
+    totals: 650.0,
+    totalsCleared: 550.0,
+    totalsOutstanding: 650.0,
+    totalsFuture: 100.0,
   };
 
   beforeEach(() => {
@@ -215,10 +219,9 @@ describe("Finance Pages - Integration Tests", () => {
         refetch: jest.fn(),
       });
 
-      const { unmount: unmountAccounts } = render(
-        <AccountsPage />, 
-        { wrapper: createWrapper() }
-      );
+      const { unmount: unmountAccounts } = render(<AccountsPage />, {
+        wrapper: createWrapper(),
+      });
 
       // Verify account names are displayed correctly
       expect(screen.getByText("Chase Checking")).toBeInTheDocument();
@@ -260,7 +263,9 @@ describe("Finance Pages - Integration Tests", () => {
         refetch: jest.fn(),
       });
 
-      const { unmount } = render(<CategoriesPage />, { wrapper: createWrapper() });
+      const { unmount } = render(<CategoriesPage />, {
+        wrapper: createWrapper(),
+      });
 
       // Verify categories are displayed
       expect(screen.getByText("Groceries")).toBeInTheDocument();
@@ -299,8 +304,14 @@ describe("Finance Pages - Integration Tests", () => {
       const chaseLink = screen.getByText("Chase Checking").closest("a");
       const creditLink = screen.getByText("Credit Card").closest("a");
 
-      expect(chaseLink).toHaveAttribute("href", "/finance/transactions/Chase Checking");
-      expect(creditLink).toHaveAttribute("href", "/finance/transactions/Credit Card");
+      expect(chaseLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/Chase Checking",
+      );
+      expect(creditLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/Credit Card",
+      );
     });
 
     it("provides correct navigation links from payments page", () => {
@@ -325,8 +336,14 @@ describe("Finance Pages - Integration Tests", () => {
       const sourceLink = screen.getByText("Chase Checking").closest("a");
       const destLink = screen.getByText("Credit Card").closest("a");
 
-      expect(sourceLink).toHaveAttribute("href", "/finance/transactions/Chase Checking");
-      expect(destLink).toHaveAttribute("href", "/finance/transactions/Credit Card");
+      expect(sourceLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/Chase Checking",
+      );
+      expect(destLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/Credit Card",
+      );
     });
 
     it("provides correct navigation links from categories page", () => {
@@ -342,10 +359,18 @@ describe("Finance Pages - Integration Tests", () => {
       render(<CategoriesPage />, { wrapper: createWrapper() });
 
       const groceriesLink = screen.getByText("Groceries").closest("a");
-      const transportationLink = screen.getByText("Transportation").closest("a");
+      const transportationLink = screen
+        .getByText("Transportation")
+        .closest("a");
 
-      expect(groceriesLink).toHaveAttribute("href", "/finance/transactions/category/Groceries");
-      expect(transportationLink).toHaveAttribute("href", "/finance/transactions/category/Transportation");
+      expect(groceriesLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/category/Groceries",
+      );
+      expect(transportationLink).toHaveAttribute(
+        "href",
+        "/finance/transactions/category/Transportation",
+      );
     });
   });
 
@@ -373,7 +398,7 @@ describe("Finance Pages - Integration Tests", () => {
 
       // Check that the component renders and shows expected structure
       expect(screen.getByText("Account Overview")).toBeInTheDocument();
-      
+
       // Check that accounts are displayed
       expect(screen.getByText("Chase Checking")).toBeInTheDocument();
       expect(screen.getByText("Credit Card")).toBeInTheDocument();
@@ -413,7 +438,9 @@ describe("Finance Pages - Integration Tests", () => {
 
   describe("Real-time Data Updates", () => {
     it("updates account totals when accounts change", async () => {
-      const { rerender } = render(<AccountsPage />, { wrapper: createWrapper() });
+      const { rerender } = render(<AccountsPage />, {
+        wrapper: createWrapper(),
+      });
 
       // Initial state
       mockUseAccountFetch.mockReturnValue({
@@ -439,7 +466,7 @@ describe("Finance Pages - Integration Tests", () => {
       // Simulate data update
       const updatedTotals = {
         ...mockTotals,
-        totals: 750.00,
+        totals: 750.0,
       };
 
       mockUseTotalsFetch.mockReturnValue({
@@ -476,7 +503,12 @@ describe("Finance Pages - Integration Tests", () => {
       });
 
       mockUseParameterFetch.mockReturnValue({
-        data: [{ parameterName: "payment_account", parameterValue: "Chase Checking" }],
+        data: [
+          {
+            parameterName: "payment_account",
+            parameterValue: "Chase Checking",
+          },
+        ],
         isSuccess: true,
         isFetching: false,
         error: null,
@@ -488,8 +520,8 @@ describe("Finance Pages - Integration Tests", () => {
       // Verify existing payment data is rendered properly
       expect(screen.getByText("Chase Checking")).toBeInTheDocument();
       expect(screen.getByText("Credit Card")).toBeInTheDocument();
-      
-      // Check for the date which should be displayed 
+
+      // Check for the date which should be displayed
       expect(screen.getByText("1/14/2024")).toBeInTheDocument();
     });
   });
@@ -518,10 +550,12 @@ describe("Finance Pages - Integration Tests", () => {
 
       // Should show the main interface when accounts load successfully
       expect(screen.getByText("Account Overview")).toBeInTheDocument();
-      
+
       // When totals fail but accounts load, should show error state with retry button
       expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /try again/i }),
+      ).toBeInTheDocument();
     });
 
     it("coordinates error recovery across data sources", async () => {
@@ -549,14 +583,14 @@ describe("Finance Pages - Integration Tests", () => {
       // The component should show error state when both data sources fail
       expect(screen.getByText("Account Overview")).toBeInTheDocument();
       expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-      
+
       // Should have retry button for error recovery
       const retryButton = screen.getByRole("button", { name: /try again/i });
       expect(retryButton).toBeInTheDocument();
-      
+
       // Clicking retry should trigger error recovery
       fireEvent.click(retryButton);
-      
+
       // The retry mechanism should have called at least one refetch function
       // Note: In actual implementation, the retry would trigger both refetches
       expect(refetchAccounts).toBeDefined();
@@ -567,7 +601,7 @@ describe("Finance Pages - Integration Tests", () => {
   describe("User Workflow Integration", () => {
     it("supports complete account creation workflow", async () => {
       const mockInsertAccount = jest.fn().mockResolvedValue({});
-      
+
       // Mock the insert hook
       jest.doMock("../../../hooks/useAccountInsert", () => ({
         __esModule: true,
@@ -626,7 +660,12 @@ describe("Finance Pages - Integration Tests", () => {
       });
 
       mockUseParameterFetch.mockReturnValue({
-        data: [{ parameterName: "payment_account", parameterValue: "Chase Checking" }],
+        data: [
+          {
+            parameterName: "payment_account",
+            parameterValue: "Chase Checking",
+          },
+        ],
         isSuccess: true,
         isFetching: false,
         error: null,
@@ -639,10 +678,12 @@ describe("Finance Pages - Integration Tests", () => {
       await waitFor(() => {
         expect(screen.getByText("Payment Management")).toBeInTheDocument();
       });
-      
+
       // Should show Add Payment button
-      expect(screen.getByRole("button", { name: /add payment/i })).toBeInTheDocument();
-      
+      expect(
+        screen.getByRole("button", { name: /add payment/i }),
+      ).toBeInTheDocument();
+
       // This tests the integration between account data and payment form
     });
   });
@@ -668,7 +709,9 @@ describe("Finance Pages - Integration Tests", () => {
       render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Should show coordinated loading state
-      expect(screen.getByText("Loading accounts and totals...")).toBeInTheDocument();
+      expect(
+        screen.getByText("Loading accounts and totals..."),
+      ).toBeInTheDocument();
     });
 
     it("handles sequential data loading appropriately", async () => {
@@ -690,10 +733,14 @@ describe("Finance Pages - Integration Tests", () => {
         refetch: jest.fn(),
       });
 
-      const { rerender } = render(<AccountsPage />, { wrapper: createWrapper() });
+      const { rerender } = render(<AccountsPage />, {
+        wrapper: createWrapper(),
+      });
 
       // Should still show loading since not all data is ready
-      expect(screen.getByText("Loading accounts and totals...")).toBeInTheDocument();
+      expect(
+        screen.getByText("Loading accounts and totals..."),
+      ).toBeInTheDocument();
 
       // Then totals load
       mockUseTotalsFetch.mockReturnValue({
@@ -708,7 +755,9 @@ describe("Finance Pages - Integration Tests", () => {
 
       // Now should show the full interface
       expect(screen.getByText("Account Overview")).toBeInTheDocument();
-      expect(screen.queryByText("Loading accounts and totals...")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Loading accounts and totals..."),
+      ).not.toBeInTheDocument();
     });
   });
 });

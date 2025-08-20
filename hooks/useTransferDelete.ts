@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
-//import { basicAuth } from "../Common";
 
 const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
   try {
@@ -12,7 +11,6 @@ const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

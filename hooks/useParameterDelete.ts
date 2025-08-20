@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
-//import { basicAuth } from "../Common";
 
 const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
@@ -12,7 +11,6 @@ const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

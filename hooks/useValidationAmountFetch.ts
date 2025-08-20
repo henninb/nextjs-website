@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { TransactionState } from "../model/TransactionState";
 import ValidationAmount from "../model/ValidationAmount";
 import { useAuth } from "../components/AuthProvider";
-//import { basicAuth } from "../Common";
 
 export const fetchValidationAmount = async (
   accountNameOwner: string,
@@ -16,7 +15,6 @@ export const fetchValidationAmount = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

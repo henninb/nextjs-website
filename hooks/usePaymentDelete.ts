@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
-//import { basicAuth } from "../Common";
 
 const deletePayment = async (payload: Payment): Promise<Payment> => {
   try {
@@ -12,7 +11,6 @@ const deletePayment = async (payload: Payment): Promise<Payment> => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        //Authorization: basicAuth(),
       },
     });
 

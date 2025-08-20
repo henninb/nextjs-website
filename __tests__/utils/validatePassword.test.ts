@@ -87,7 +87,7 @@ describe("validatePassword", () => {
   it("should validate all allowed special characters", () => {
     const specialChars = ["@", "$", "!", "%", "*", "?", "&"];
 
-    specialChars.forEach(char => {
+    specialChars.forEach((char) => {
       const result = validatePassword(`Test123${char}`);
       expect(result.hasSpecialChar).toBe(true);
       expect(result.isValid).toBe(true);
@@ -97,7 +97,7 @@ describe("validatePassword", () => {
   it("should invalidate password with non-allowed special characters", () => {
     const invalidSpecialChars = ["#", "^", "(", ")", "-", "_", "=", "+"];
 
-    invalidSpecialChars.forEach(char => {
+    invalidSpecialChars.forEach((char) => {
       const result = validatePassword(`Test123${char}`);
       expect(result.hasSpecialChar).toBe(false);
       expect(result.isValid).toBe(false);
