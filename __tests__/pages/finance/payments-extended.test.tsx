@@ -59,7 +59,13 @@ jest.mock("@mui/x-data-grid", () => ({
           {processRowUpdate && (
             <button
               data-testid={`save-row-${idx}`}
-              onClick={() => processRowUpdate(row, row)}
+              onClick={async () => {
+                try {
+                  await processRowUpdate(row, row);
+                } catch (e) {
+                  // swallow to avoid unhandled promise rejection in tests
+                }
+              }}
             >
               Save
             </button>
@@ -112,6 +118,25 @@ jest.mock("../../../components/USDAmountInput", () => ({
         aria-label={label}
       />
       {error && <div data-testid="amount-error">{helperText}</div>}
+    </div>
+  ),
+}));
+
+// Mock components that render complex MUI icons to keep tests focused
+jest.mock("../../../components/ErrorDisplay", () => ({
+  __esModule: true,
+  default: ({ error, message }: any) => (
+    <div data-testid="error-display">{(error && (error.message || String(error))) || message || "Error"}</div>
+  ),
+}));
+jest.mock("../../../components/EmptyState", () => ({
+  __esModule: true,
+  default: ({ title, message, onAction, onRefresh, actionLabel = "Add Payment" }: any) => (
+    <div data-testid="empty-state">
+      <div>{title}</div>
+      <div>{message}</div>
+      {onAction && <button onClick={onAction}>{actionLabel}</button>}
+      {onRefresh && <button onClick={onRefresh}>Refresh</button>}
     </div>
   ),
 }));
@@ -234,7 +259,9 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       expect(insertPaymentMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByText("Amount must be greater than zero")).toBeInTheDocument();
+        expect(screen.getByTestId("amount-error")).toHaveTextContent(
+          "Amount must be greater than zero",
+        );
       });
     });
 
@@ -252,6 +279,22 @@ describe("PaymentsPage - Extended Test Coverage", () => {
     });
 
     it("validates source and destination accounts must be different", async () => {
+      // Provide a credit account with the same name as a debit account
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          ...mockAccounts,
+          {
+            accountId: 99,
+            accountNameOwner: "Chase Checking",
+            accountType: "credit",
+            activeStatus: true,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
       render(<PaymentsPage />);
       fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
 
@@ -265,11 +308,16 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       fireEvent.change(sourceSelect, { target: { value: "Chase Checking" } });
       fireEvent.change(destSelect, { target: { value: "Chase Checking" } });
       
-      const saveButton = screen.getByRole("button", { name: /add payment/i });
-      fireEvent.click(saveButton);
+      // Button label changes to Pay $100.00 after amount is set
+      const payButton = screen.getByRole("button", { name: /pay \$?100(\.00)?/i });
+      fireEvent.click(payButton);
 
+      // Should not attempt to insert and modal should remain open
+      expect(insertPaymentMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByText("Source and destination must be different")).toBeInTheDocument();
+        expect(
+          screen.getByRole("heading", { name: /add new payment/i }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -431,9 +479,9 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       render(<PaymentsPage />);
 
-      // Component should still render the main interface
+      // Component should render error UI with heading
       expect(screen.getByText("Payment Management")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /add payment/i })).toBeInTheDocument();
+      expect(screen.getByTestId("error-display")).toBeInTheDocument();
     });
 
     it("handles network failure during payment insertion", async () => {
@@ -472,8 +520,8 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       fireEvent.change(sourceSelect, { target: { value: "Chase Checking" } });
       fireEvent.change(destSelect, { target: { value: "Credit Card" } });
 
-      const saveButton = screen.getByRole("button", { name: /add payment/i });
-      fireEvent.click(saveButton);
+      const payButton = screen.getByRole("button", { name: /pay \$?100(\.00)?/i });
+      fireEvent.click(payButton);
 
       await waitFor(() => {
         // Based on actual error format: "Add Payment error: Error: Network error"
@@ -645,10 +693,12 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       render(<PaymentsPage />);
       
-      // Check that the page renders without errors and shows Add Payment button
-      expect(screen.getByRole("button", { name: /add payment/i })).toBeInTheDocument();
-      // When there's no data, the DataGrid shows empty
-      expect(screen.getByTestId("mocked-datagrid")).toBeInTheDocument();
+      // Check that the page renders without errors and shows at least one Add Payment button
+      expect(
+        screen.getAllByRole("button", { name: /add payment/i }).length,
+      ).toBeGreaterThanOrEqual(1);
+      // When there's no data, the EmptyState component is shown
+      expect(screen.getByTestId("empty-state")).toBeInTheDocument();
     });
   });
 });

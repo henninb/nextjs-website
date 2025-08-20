@@ -39,7 +39,16 @@ jest.mock("@mui/x-data-grid", () => ({
           {processRowUpdate && (
             <button
               data-testid={`update-row-${idx}`}
-              onClick={() => processRowUpdate({ ...row, categoryName: "Updated Category" }, row)}
+              onClick={async () => {
+                try {
+                  await processRowUpdate(
+                    { ...row, categoryName: "Updated Category" },
+                    row,
+                  );
+                } catch (e) {
+                  // Swallow rejection to mimic DataGrid behavior and allow UI to render error state
+                }
+              }}
             >
               Update
             </button>
