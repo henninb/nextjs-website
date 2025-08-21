@@ -265,6 +265,8 @@ export default function Accounts() {
       headerName: "Validation Date",
       width: 150,
       type: "date",
+      headerAlign: "left",
+      align: "left",
       valueGetter: (params) => new Date(params),
       renderCell: (params) => {
         return params?.value?.toLocaleDateString("en-US");

@@ -239,6 +239,8 @@ export default function Payments() {
       headerName: "Date",
       flex: 0.8,
       minWidth: 120,
+      headerAlign: "left",
+      align: "left",
       editable: true,
       renderCell: (params) => {
         return formatDateForDisplay(params.value);

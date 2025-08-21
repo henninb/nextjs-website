@@ -84,6 +84,8 @@ export default function TransactionsByDescription() {
       headerName: "Transaction Date",
       type: "date",
       width: 100,
+      headerAlign: "left",
+      align: "left",
       renderCell: (params) => {
         return params.value.toLocaleDateString("en-US");
       },

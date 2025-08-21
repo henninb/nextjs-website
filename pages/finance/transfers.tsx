@@ -281,6 +281,8 @@ export default function Transfers() {
       headerName: "Date",
       flex: 0.8,
       minWidth: 120,
+      headerAlign: "left",
+      align: "left",
       renderCell: (params) => {
         return formatDateForDisplay(params.value);
       },
