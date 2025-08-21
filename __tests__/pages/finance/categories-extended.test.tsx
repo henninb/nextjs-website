@@ -528,7 +528,10 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      const confirmButton = await screen.findByRole("button", { name: /^delete$/i, hidden: true });
+      const confirmButton = await screen.findByRole("button", {
+        name: /^delete$/i,
+        hidden: true,
+      });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
@@ -551,7 +554,10 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      const confirmButton = await screen.findByRole("button", { name: /^delete$/i, hidden: true });
+      const confirmButton = await screen.findByRole("button", {
+        name: /^delete$/i,
+        hidden: true,
+      });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {

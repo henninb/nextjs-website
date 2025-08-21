@@ -29,18 +29,28 @@ export default function FormDialog({
   disabled,
 }: FormDialogProps) {
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" aria-labelledby="form-dialog-title">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      aria-labelledby="form-dialog-title"
+    >
       <DialogTitle id="form-dialog-title">{title}</DialogTitle>
       <DialogContent dividers>{children}</DialogContent>
       <DialogActions>
         <Button variant="outlined" onClick={onClose} aria-label={cancelText}>
           {cancelText}
         </Button>
-        <Button variant="contained" onClick={onSubmit} disabled={disabled} aria-label={submitText}>
+        <Button
+          variant="contained"
+          onClick={onSubmit}
+          disabled={disabled}
+          aria-label={submitText}
+        >
           {submitText}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
-

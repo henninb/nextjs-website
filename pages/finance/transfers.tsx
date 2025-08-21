@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Tooltip, Link, TextField, Typography, Autocomplete } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Tooltip,
+  Link,
+  TextField,
+  Typography,
+  Autocomplete,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -483,99 +492,97 @@ export default function Transfers() {
           onSubmit={() => transferData && handleAddRow(transferData)}
           title={modalTitles.addNew("transfer")}
           submitText={
-            transferData?.amount &&
-            parseFloat(String(transferData.amount)) > 0
+            transferData?.amount && parseFloat(String(transferData.amount)) > 0
               ? `Transfer ${currencyFormat(transferData.amount)}`
               : "Add Transfer"
           }
         >
+          <TextField
+            label="Transaction Date"
+            fullWidth
+            margin="normal"
+            type="date"
+            value={formatDateForInput(
+              transferData?.transactionDate || new Date(),
+            )}
+            onChange={(e) => {
+              const normalizedDate = normalizeTransactionDate(e.target.value);
+              setTransferData((prev: any) => ({
+                ...prev,
+                transactionDate: normalizedDate,
+              }));
+            }}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
 
-            <TextField
-              label="Transaction Date"
-              fullWidth
-              margin="normal"
-              type="date"
-              value={formatDateForInput(
-                transferData?.transactionDate || new Date(),
-              )}
-              onChange={(e) => {
-                const normalizedDate = normalizeTransactionDate(e.target.value);
+          <Autocomplete
+            options={availableSourceAccounts}
+            getOptionLabel={(account: Account) =>
+              account.accountNameOwner || ""
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.accountNameOwner === value?.accountNameOwner
+            }
+            value={selectedSourceAccount}
+            onChange={handleSourceAccountChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Source Account"
+                fullWidth
+                margin="normal"
+                placeholder="Select a source account"
+              />
+            )}
+          />
+
+          <Autocomplete
+            options={availableDestinationAccounts}
+            getOptionLabel={(account: Account) =>
+              account.accountNameOwner || ""
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.accountNameOwner === value?.accountNameOwner
+            }
+            value={selectedDestinationAccount}
+            onChange={handleDestinationAccountChange}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Destination Account"
+                fullWidth
+                margin="normal"
+                placeholder="Select a destination account"
+              />
+            )}
+          />
+
+          <USDAmountInput
+            label="Amount"
+            value={transferData?.amount ? transferData.amount : ""}
+            onChange={(value) => {
+              setTransferData((prev: any) => ({
+                ...prev,
+                amount: value,
+              }));
+            }}
+            onBlur={() => {
+              // Ensure value is properly formatted when user leaves the field
+              const currentValue = parseFloat(
+                String(transferData?.amount || ""),
+              );
+              if (!isNaN(currentValue)) {
                 setTransferData((prev: any) => ({
                   ...prev,
-                  transactionDate: normalizedDate,
+                  amount: currentValue.toFixed(2),
                 }));
-              }}
-              slotProps={{
-                inputLabel: { shrink: true },
-              }}
-            />
-
-            <Autocomplete
-              options={availableSourceAccounts}
-              getOptionLabel={(account: Account) =>
-                account.accountNameOwner || ""
               }
-              isOptionEqualToValue={(option, value) =>
-                option.accountNameOwner === value?.accountNameOwner
-              }
-              value={selectedSourceAccount}
-              onChange={handleSourceAccountChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Source Account"
-                  fullWidth
-                  margin="normal"
-                  placeholder="Select a source account"
-                />
-              )}
-            />
-
-            <Autocomplete
-              options={availableDestinationAccounts}
-              getOptionLabel={(account: Account) =>
-                account.accountNameOwner || ""
-              }
-              isOptionEqualToValue={(option, value) =>
-                option.accountNameOwner === value?.accountNameOwner
-              }
-              value={selectedDestinationAccount}
-              onChange={handleDestinationAccountChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Destination Account"
-                  fullWidth
-                  margin="normal"
-                  placeholder="Select a destination account"
-                />
-              )}
-            />
-
-            <USDAmountInput
-              label="Amount"
-              value={transferData?.amount ? transferData.amount : ""}
-              onChange={(value) => {
-                setTransferData((prev: any) => ({
-                  ...prev,
-                  amount: value,
-                }));
-              }}
-              onBlur={() => {
-                // Ensure value is properly formatted when user leaves the field
-                const currentValue = parseFloat(
-                  String(transferData?.amount || ""),
-                );
-                if (!isNaN(currentValue)) {
-                  setTransferData((prev: any) => ({
-                    ...prev,
-                    amount: currentValue.toFixed(2),
-                  }));
-                }
-              }}
-              fullWidth
-              margin="normal"
-            />
+            }}
+            fullWidth
+            margin="normal"
+          />
         </FormDialog>
       </FinanceLayout>
     </div>

@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Tooltip, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Tooltip,
+  TextField,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -58,13 +65,13 @@ export default function Configuration() {
   const router = useRouter();
 
   useEffect(() => {
-  if (!loading && !isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-  if (isFetchingParameters || loading || (!loading && !isAuthenticated)) {
+    if (isFetchingParameters || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }
@@ -385,37 +392,37 @@ export default function Configuration() {
           title={modalTitles.addNew("parameter")}
           submitText="Add"
         >
-            <TextField
-              label="Name"
-              fullWidth
-              margin="normal"
-              value={parameterData?.parameterName || ""}
-              error={!!formErrors.parameterName}
-              helperText={formErrors.parameterName}
-              onChange={(e) =>
-                setParameterData(
-                  (prev) =>
-                    ({
-                      ...prev,
-                      parameterName: e.target.value,
-                    }) as Parameter,
-                )
-              }
-            />
-            <TextField
-              label="Value"
-              fullWidth
-              margin="normal"
-              value={parameterData?.parameterValue || ""}
-              error={!!formErrors.parameterValue}
-              helperText={formErrors.parameterValue}
-              onChange={(e) =>
-                setParameterData((prev) => ({
-                  ...prev,
-                  parameterValue: e.target.value,
-                }))
-              }
-            />
+          <TextField
+            label="Name"
+            fullWidth
+            margin="normal"
+            value={parameterData?.parameterName || ""}
+            error={!!formErrors.parameterName}
+            helperText={formErrors.parameterName}
+            onChange={(e) =>
+              setParameterData(
+                (prev) =>
+                  ({
+                    ...prev,
+                    parameterName: e.target.value,
+                  }) as Parameter,
+              )
+            }
+          />
+          <TextField
+            label="Value"
+            fullWidth
+            margin="normal"
+            value={parameterData?.parameterValue || ""}
+            error={!!formErrors.parameterValue}
+            helperText={formErrors.parameterValue}
+            onChange={(e) =>
+              setParameterData((prev) => ({
+                ...prev,
+                parameterValue: e.target.value,
+              }))
+            }
+          />
         </FormDialog>
       </FinanceLayout>
     </div>

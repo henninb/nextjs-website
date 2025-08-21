@@ -34,7 +34,6 @@ import DataGridBase from "../../components/DataGridBase";
 import SummaryBar from "../../components/SummaryBar";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
- 
 
 export default function Accounts() {
   const [message, setMessage] = useState("");
@@ -334,8 +333,12 @@ export default function Accounts() {
             <Box sx={{ maxWidth: 600, mx: "auto", mb: 2 }}>
               <SummaryBar
                 total={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                cleared={currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
-                outstanding={currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
+                cleared={currencyFormat(
+                  noNaN(fetchedTotals?.totalsCleared ?? 0),
+                )}
+                outstanding={currencyFormat(
+                  noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+                )}
                 future={currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
               />
             </Box>
@@ -345,7 +348,9 @@ export default function Accounts() {
                   <DataGridBase
                     rows={fetchedAccounts?.filter((row) => row != null) || []}
                     columns={columns}
-                    getRowId={(row: any) => row.accountId ?? row.accountNameOwner}
+                    getRowId={(row: any) =>
+                      row.accountId ?? row.accountNameOwner
+                    }
                     pageSizeOptions={[25, 50, 100]}
                     checkboxSelection={false}
                     rowSelection={false}

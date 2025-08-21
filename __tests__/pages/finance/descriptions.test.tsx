@@ -1,5 +1,10 @@
 import React from "react";
-import { render, screen, fireEvent, waitForElementToBeRemoved } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 
 jest.mock("next/router", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),

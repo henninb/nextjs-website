@@ -1,5 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 jest.mock("next/router", () => ({
@@ -641,7 +647,10 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
 
-      const cancelButton = await screen.findByRole("button", { name: /cancel/i, hidden: true });
+      const cancelButton = await screen.findByRole("button", {
+        name: /cancel/i,
+        hidden: true,
+      });
       fireEvent.click(cancelButton);
 
       await waitForElementToBeRemoved(() =>

@@ -7,7 +7,11 @@ type PageHeaderProps = {
   actions?: React.ReactNode;
 };
 
-export default function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  subtitle,
+  actions,
+}: PageHeaderProps) {
   return (
     <Box sx={{ mb: 3, textAlign: "center" }}>
       <Typography variant="h4" component="h1" sx={{ mb: 1, fontWeight: 600 }}>
@@ -18,8 +22,9 @@ export default function PageHeader({ title, subtitle, actions }: PageHeaderProps
           {subtitle}
         </Typography>
       )}
-      {actions && <Box sx={{ display: "flex", justifyContent: "center" }}>{actions}</Box>}
+      {actions && (
+        <Box sx={{ display: "flex", justifyContent: "center" }}>{actions}</Box>
+      )}
     </Box>
   );
 }
-

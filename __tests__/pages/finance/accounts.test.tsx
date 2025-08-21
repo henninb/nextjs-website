@@ -1,5 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 
 // Mock router
 jest.mock("next/router", () => ({
@@ -226,12 +232,9 @@ describe("pages/finance/index (Accounts)", () => {
     expect(screen.getByLabelText(/moniker/i)).toBeInTheDocument();
 
     // Fill form
-    fireEvent.change(
-      screen.getByRole("textbox", { name: /account$/i }),
-      {
-        target: { value: "New Account" },
-      },
-    );
+    fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
+      target: { value: "New Account" },
+    });
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "debit" },
     });
@@ -281,12 +284,9 @@ describe("pages/finance/index (Accounts)", () => {
 
     render(<AccountsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
-    fireEvent.change(
-      screen.getByRole("textbox", { name: /account$/i }),
-      {
-        target: { value: "A" },
-      },
-    );
+    fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
+      target: { value: "A" },
+    });
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "debit" },
     });
@@ -377,12 +377,9 @@ describe("pages/finance/index (Accounts)", () => {
 
     render(<AccountsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
-    fireEvent.change(
-      screen.getByRole("textbox", { name: /account$/i }),
-      {
-        target: { value: "X" },
-      },
-    );
+    fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
+      target: { value: "X" },
+    });
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "checking" },
     });
@@ -428,12 +425,9 @@ describe("pages/finance/index (Accounts)", () => {
 
     render(<AccountsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
-    fireEvent.change(
-      screen.getByRole("textbox", { name: /account$/i }),
-      {
-        target: { value: "New" },
-      },
-    );
+    fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
+      target: { value: "New" },
+    });
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "debit" },
     });

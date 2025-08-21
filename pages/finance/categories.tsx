@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Tooltip, Link, TextField, Typography, Alert, Switch, FormControlLabel } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Tooltip,
+  Link,
+  TextField,
+  Typography,
+  Alert,
+  Switch,
+  FormControlLabel,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -253,7 +264,8 @@ export default function Categories() {
                     rows={fetchedCategories || []}
                     columns={columns}
                     getRowId={(row: any) =>
-                      row.categoryId ?? `${row.categoryName}-${row.activeStatus}`
+                      row.categoryId ??
+                      `${row.categoryName}-${row.activeStatus}`
                     }
                     checkboxSelection={false}
                     rowSelection={false}
@@ -334,19 +346,19 @@ export default function Categories() {
           submitText="Add"
         >
           <TextField
-              label="Name"
-              fullWidth
-              margin="normal"
-              value={categoryData?.categoryName || ""}
-              error={!!formErrors.categoryName}
-              helperText={formErrors.categoryName}
-              onChange={(e) =>
-                setCategoryData((prev) => ({
-                  ...prev,
-                  categoryName: e.target.value,
-                }))
-              }
-            />
+            label="Name"
+            fullWidth
+            margin="normal"
+            value={categoryData?.categoryName || ""}
+            error={!!formErrors.categoryName}
+            helperText={formErrors.categoryName}
+            onChange={(e) =>
+              setCategoryData((prev) => ({
+                ...prev,
+                categoryName: e.target.value,
+              }))
+            }
+          />
           <Box mt={1}>
             <FormControlLabel
               control={

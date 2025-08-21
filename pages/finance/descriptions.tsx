@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
-import { Box, Link, Button, IconButton, Tooltip, TextField, Typography, Switch, FormControlLabel } from "@mui/material";
+import {
+  Box,
+  Link,
+  Button,
+  IconButton,
+  Tooltip,
+  TextField,
+  Typography,
+  Switch,
+  FormControlLabel,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -322,19 +332,19 @@ export default function Descriptions() {
           submitText="Add"
         >
           <TextField
-              label="Name"
-              fullWidth
-              margin="normal"
-              value={descriptionData?.descriptionName || ""}
-              error={!!formErrors.descriptionName}
-              helperText={formErrors.descriptionName}
-              onChange={(e) =>
-                setDescriptionData((prev) => ({
-                  ...prev,
-                  descriptionName: e.target.value,
-                }))
-              }
-            />
+            label="Name"
+            fullWidth
+            margin="normal"
+            value={descriptionData?.descriptionName || ""}
+            error={!!formErrors.descriptionName}
+            helperText={formErrors.descriptionName}
+            onChange={(e) =>
+              setDescriptionData((prev) => ({
+                ...prev,
+                descriptionName: e.target.value,
+              }))
+            }
+          />
           <Box mt={1}>
             <FormControlLabel
               control={

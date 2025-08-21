@@ -1,5 +1,13 @@
 import React from "react";
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventNoteIcon from "@mui/icons-material/EventNote";
@@ -13,26 +21,45 @@ type SummaryBarProps = {
   selectedLabel?: string;
 };
 
-export default function SummaryBar({ total, cleared, outstanding, future, selected, selectedLabel = "Selected" }: SummaryBarProps) {
+export default function SummaryBar({
+  total,
+  cleared,
+  outstanding,
+  future,
+  selected,
+  selectedLabel = "Selected",
+}: SummaryBarProps) {
   return (
     <TableContainer component={Paper}>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center">
+            <TableCell align="right">
               <strong>Total</strong>
             </TableCell>
-            <TableCell align="center">
-              <CheckCircleIcon fontSize="small" style={{ verticalAlign: "middle" }} /> <strong>Cleared</strong>
+            <TableCell align="right">
+              <CheckCircleIcon
+                fontSize="small"
+                style={{ verticalAlign: "middle" }}
+              />{" "}
+              <strong>Cleared</strong>
             </TableCell>
-            <TableCell align="center">
-              <AccessTimeIcon fontSize="small" style={{ verticalAlign: "middle" }} /> <strong>Outstanding</strong>
+            <TableCell align="right">
+              <AccessTimeIcon
+                fontSize="small"
+                style={{ verticalAlign: "middle" }}
+              />{" "}
+              <strong>Outstanding</strong>
             </TableCell>
-            <TableCell align="center">
-              <EventNoteIcon fontSize="small" style={{ verticalAlign: "middle" }} /> <strong>Future</strong>
+            <TableCell align="right">
+              <EventNoteIcon
+                fontSize="small"
+                style={{ verticalAlign: "middle" }}
+              />{" "}
+              <strong>Future</strong>
             </TableCell>
             {selected !== undefined && (
-              <TableCell align="center">
+              <TableCell align="right">
                 <strong>{selectedLabel}</strong>
               </TableCell>
             )}
@@ -40,12 +67,12 @@ export default function SummaryBar({ total, cleared, outstanding, future, select
         </TableHead>
         <TableBody>
           <TableRow>
-            <TableCell align="center">{total}</TableCell>
-            <TableCell align="center">{cleared}</TableCell>
-            <TableCell align="center">{outstanding}</TableCell>
-            <TableCell align="center">{future}</TableCell>
+            <TableCell align="right">{total}</TableCell>
+            <TableCell align="right">{cleared}</TableCell>
+            <TableCell align="right">{outstanding}</TableCell>
+            <TableCell align="right">{future}</TableCell>
             {selected !== undefined && (
-              <TableCell align="center">{selected}</TableCell>
+              <TableCell align="right">{selected}</TableCell>
             )}
           </TableRow>
         </TableBody>

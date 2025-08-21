@@ -1,5 +1,12 @@
 import React from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+} from "@mui/material";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -42,7 +49,12 @@ export default function ConfirmDialog({
         <Button variant="outlined" onClick={onClose} aria-label={cancelText}>
           {cancelText}
         </Button>
-        <Button color="error" variant="contained" onClick={onConfirm} aria-label={confirmText}>
+        <Button
+          color="error"
+          variant="contained"
+          onClick={onConfirm}
+          aria-label={confirmText}
+        >
           {confirmText}
         </Button>
       </DialogActions>

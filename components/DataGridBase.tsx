@@ -1,5 +1,9 @@
 import * as React from "react";
-import { DataGrid, GridPaginationModel, GridValidRowModel } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridPaginationModel,
+  GridValidRowModel,
+} from "@mui/x-data-grid";
 
 type DataGridBaseProps<R extends GridValidRowModel> = {
   rows: R[];
@@ -13,7 +17,10 @@ type DataGridBaseProps<R extends GridValidRowModel> = {
   rowSelection?: boolean;
   processRowUpdate?: (newRow: R, oldRow: R) => Promise<R> | R;
   disableColumnResize?: boolean;
+  disableRowSelectionOnClick?: boolean;
   sx?: any;
+  // Allow passing any additional MUI DataGrid props used by callers
+  [key: string]: any;
 };
 
 export default function DataGridBase<R extends GridValidRowModel>({
@@ -28,9 +35,14 @@ export default function DataGridBase<R extends GridValidRowModel>({
   rowSelection = false,
   processRowUpdate,
   disableColumnResize,
+  disableRowSelectionOnClick,
   sx,
+  ...rest
 }: DataGridBaseProps<R>) {
-  const defaultModel: GridPaginationModel = paginationModel ?? { page: 0, pageSize: 50 };
+  const defaultModel: GridPaginationModel = paginationModel ?? {
+    page: 0,
+    pageSize: 50,
+  };
   return (
     <DataGrid
       rows={rows}
@@ -44,9 +56,11 @@ export default function DataGridBase<R extends GridValidRowModel>({
       pageSizeOptions={pageSizeOptions}
       autoHeight={autoHeight}
       disableColumnResize={disableColumnResize}
+      disableRowSelectionOnClick={disableRowSelectionOnClick}
       density="compact"
       processRowUpdate={processRowUpdate as any}
       sx={sx}
+      {...rest}
     />
   );
 }

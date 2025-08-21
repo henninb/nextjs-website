@@ -7,7 +7,8 @@ type ActionBarProps = {
 
 export default function ActionBar({ children }: ActionBarProps) {
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>{children}</Box>
+    <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+      {children}
+    </Box>
   );
 }
-

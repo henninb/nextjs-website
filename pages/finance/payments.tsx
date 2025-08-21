@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Tooltip, Link, TextField, Typography, Autocomplete } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Tooltip,
+  Link,
+  TextField,
+  Typography,
+  Autocomplete,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -490,126 +499,126 @@ export default function Payments() {
               : "Add Payment"
           }
         >
-            <TextField
-              label="Transaction Date"
-              fullWidth
-              margin="normal"
-              type="date"
-              value={formatDateForInput(paymentData.transactionDate)}
-              onChange={(e) => {
-                const normalizedDate = normalizeTransactionDate(e.target.value);
-                setPaymentData((prev) => ({
-                  ...prev,
-                  transactionDate: normalizedDate,
-                }));
-              }}
-              slotProps={{
-                inputLabel: { shrink: true },
-              }}
-            />
-            <Autocomplete
-              options={
-                isSuccessAccounts
-                  ? fetchedAccounts.filter(
-                      (account) => account.accountType === "debit",
-                    )
-                  : []
-              }
-              getOptionLabel={(account: Account) =>
-                account.accountNameOwner || ""
-              }
-              isOptionEqualToValue={(option, value) =>
-                option.accountNameOwner === value?.accountNameOwner
-              }
-              value={
-                isSuccessAccounts
-                  ? fetchedAccounts.find(
-                      (account) =>
-                        account.accountNameOwner === paymentData.sourceAccount,
-                    ) || null
-                  : null
-              }
-              onChange={(event, newValue) =>
-                setPaymentData((prev) => ({
-                  ...prev,
-                  sourceAccount: newValue ? newValue.accountNameOwner : "",
-                }))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Source Account"
-                  fullWidth
-                  margin="normal"
-                  placeholder="Select or search an account"
-                />
-              )}
-            />
-            <Autocomplete
-              options={
-                isSuccessAccounts
-                  ? fetchedAccounts.filter(
-                      (account) => account.accountType === "credit",
-                    )
-                  : []
-              }
-              getOptionLabel={(account: Account) =>
-                account.accountNameOwner || ""
-              }
-              isOptionEqualToValue={(option, value) =>
-                option.accountNameOwner === value?.accountNameOwner
-              }
-              value={
-                paymentData.destinationAccount && isSuccessAccounts
-                  ? fetchedAccounts.find(
-                      (account) =>
-                        account.accountNameOwner ===
-                        paymentData.destinationAccount,
-                    ) || null
-                  : null
-              }
-              onChange={(event, newValue) =>
-                setPaymentData((prev) => ({
-                  ...prev,
-                  destinationAccount: newValue ? newValue.accountNameOwner : "",
-                }))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Destination Account"
-                  fullWidth
-                  margin="normal"
-                  placeholder="Select or search an account"
-                />
-              )}
-            />
-            <USDAmountInput
-              label="Amount"
-              value={paymentData?.amount ? paymentData.amount : ""}
-              onChange={(value) => {
+          <TextField
+            label="Transaction Date"
+            fullWidth
+            margin="normal"
+            type="date"
+            value={formatDateForInput(paymentData.transactionDate)}
+            onChange={(e) => {
+              const normalizedDate = normalizeTransactionDate(e.target.value);
+              setPaymentData((prev) => ({
+                ...prev,
+                transactionDate: normalizedDate,
+              }));
+            }}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
+          />
+          <Autocomplete
+            options={
+              isSuccessAccounts
+                ? fetchedAccounts.filter(
+                    (account) => account.accountType === "debit",
+                  )
+                : []
+            }
+            getOptionLabel={(account: Account) =>
+              account.accountNameOwner || ""
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.accountNameOwner === value?.accountNameOwner
+            }
+            value={
+              isSuccessAccounts
+                ? fetchedAccounts.find(
+                    (account) =>
+                      account.accountNameOwner === paymentData.sourceAccount,
+                  ) || null
+                : null
+            }
+            onChange={(event, newValue) =>
+              setPaymentData((prev) => ({
+                ...prev,
+                sourceAccount: newValue ? newValue.accountNameOwner : "",
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Source Account"
+                fullWidth
+                margin="normal"
+                placeholder="Select or search an account"
+              />
+            )}
+          />
+          <Autocomplete
+            options={
+              isSuccessAccounts
+                ? fetchedAccounts.filter(
+                    (account) => account.accountType === "credit",
+                  )
+                : []
+            }
+            getOptionLabel={(account: Account) =>
+              account.accountNameOwner || ""
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.accountNameOwner === value?.accountNameOwner
+            }
+            value={
+              paymentData.destinationAccount && isSuccessAccounts
+                ? fetchedAccounts.find(
+                    (account) =>
+                      account.accountNameOwner ===
+                      paymentData.destinationAccount,
+                  ) || null
+                : null
+            }
+            onChange={(event, newValue) =>
+              setPaymentData((prev) => ({
+                ...prev,
+                destinationAccount: newValue ? newValue.accountNameOwner : "",
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Destination Account"
+                fullWidth
+                margin="normal"
+                placeholder="Select or search an account"
+              />
+            )}
+          />
+          <USDAmountInput
+            label="Amount"
+            value={paymentData?.amount ? paymentData.amount : ""}
+            onChange={(value) => {
+              setPaymentData((prev: any) => ({
+                ...prev,
+                amount: value,
+              }));
+            }}
+            onBlur={() => {
+              // Format amount properly on blur
+              const currentValue = parseFloat(
+                String(paymentData?.amount || ""),
+              );
+              if (!isNaN(currentValue)) {
                 setPaymentData((prev: any) => ({
                   ...prev,
-                  amount: value,
+                  amount: currentValue.toFixed(2),
                 }));
-              }}
-              onBlur={() => {
-                // Format amount properly on blur
-                const currentValue = parseFloat(
-                  String(paymentData?.amount || ""),
-                );
-                if (!isNaN(currentValue)) {
-                  setPaymentData((prev: any) => ({
-                    ...prev,
-                    amount: currentValue.toFixed(2),
-                  }));
-                }
-              }}
-              fullWidth
-              margin="normal"
-              error={!!formErrors.amount}
-              helperText={formErrors.amount}
-            />
+              }
+            }}
+            fullWidth
+            margin="normal"
+            error={!!formErrors.amount}
+            helperText={formErrors.amount}
+          />
         </FormDialog>
       </FinanceLayout>
     </div>
