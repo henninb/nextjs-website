@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 jest.mock("next/router", () => ({
@@ -610,7 +610,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       expect(screen.getByText("250.5")).toBeInTheDocument();
     });
 
-    it("handles delete confirmation workflow", () => {
+    it("handles delete confirmation workflow", async () => {
       render(<PaymentsPage />);
 
       const actionsCell = screen.getByTestId("cell-0-actions");
@@ -621,7 +621,10 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
 
-      const confirmButton = screen.getByRole("button", { name: /delete/i });
+      const confirmButton = await screen.findByRole("button", {
+        name: /^delete$/i,
+        hidden: true,
+      });
       fireEvent.click(confirmButton);
 
       expect(deletePaymentMock).toHaveBeenCalledWith({
@@ -629,7 +632,7 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       });
     });
 
-    it("cancels delete modal when cancel button is clicked", () => {
+    it("cancels delete modal when cancel button is clicked", async () => {
       render(<PaymentsPage />);
 
       const actionsCell = screen.getByTestId("cell-0-actions");
@@ -638,10 +641,12 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
 
-      const cancelButton = screen.getByRole("button", { name: /cancel/i });
+      const cancelButton = await screen.findByRole("button", { name: /cancel/i, hidden: true });
       fireEvent.click(cancelButton);
 
-      expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
+      await waitForElementToBeRemoved(() =>
+        screen.queryByText(/Confirm Deletion/i),
+      );
       expect(deletePaymentMock).not.toHaveBeenCalled();
     });
   });

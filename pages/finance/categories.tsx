@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Paper,
-  Button,
-  IconButton,
-  Tooltip,
-  Modal,
-  Link,
-  TextField,
-  Typography,
-  Alert,
-  Switch,
-  FormControlLabel,
-} from "@mui/material";
+import { GridColDef } from "@mui/x-data-grid";
+import { Box, Button, IconButton, Tooltip, Link, TextField, Typography, Alert, Switch, FormControlLabel } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -28,6 +15,10 @@ import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 import useCategoryUpdate from "../../hooks/useCategoryUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import PageHeader from "../../components/PageHeader";
+import DataGridBase from "../../components/DataGridBase";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import FormDialog from "../../components/FormDialog";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -210,19 +201,20 @@ export default function Categories() {
   if (isErrorCategories) {
     return (
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Category Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Organize your transactions by creating and managing categories for
-            better financial tracking
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Category Management"
+          subtitle="Organize transactions by creating and managing categories for better tracking"
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Category
+            </Button>
+          }
+        />
         <ErrorDisplay
           error={errorCategories}
           variant="card"
@@ -236,47 +228,36 @@ export default function Categories() {
   return (
     <div>
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Category Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Organize your transactions by creating and managing categories for
-            better financial tracking
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Category Management"
+          subtitle="Organize your transactions by creating and managing categories for better financial tracking"
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Category
+            </Button>
+          }
+        />
         {showSpinner ? (
           <LoadingState variant="card" message="Loading categories..." />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center" mb={2}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Category
-              </Button>
-            </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "100%", maxWidth: "800px" }}>
                 {fetchedCategories && fetchedCategories.length > 0 ? (
-                  <DataGrid
+                  <DataGridBase
                     rows={fetchedCategories || []}
                     columns={columns}
-                    getRowId={(row) =>
-                      row.categoryId ??
-                      `${row.categoryName}-${row.activeStatus}`
+                    getRowId={(row: any) =>
+                      row.categoryId ?? `${row.categoryName}-${row.activeStatus}`
                     }
                     checkboxSelection={false}
                     rowSelection={false}
                     autoHeight
-                    disableColumnResize={false}
                     sx={{
                       "& .MuiDataGrid-cell": {
                         whiteSpace: "nowrap",
@@ -298,11 +279,10 @@ export default function Categories() {
                         });
                         setMessage("Category updated successfully.");
                         setShowSnackbar(true);
-
                         return { ...newRow };
                       } catch (error) {
                         handleError(error, "Update Category failure.", false);
-                        throw error;
+                        return oldRow;
                       }
                     }}
                   />
@@ -328,42 +308,32 @@ export default function Categories() {
           handleSnackbarClose={handleSnackbarClose}
         />
 
-        {/* Confirmation Delete Modal */}
-        <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
-            <Typography>
-              {modalBodies.confirmDeletion(
-                "category",
-                selectedCategory?.categoryName ?? "",
-              )}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
+        <ConfirmDialog
+          open={confirmDelete}
+          onClose={() => setConfirmDelete(false)}
+          onConfirm={handleDeleteRow}
+          title={modalTitles.confirmDeletion}
+          message={modalBodies.confirmDeletion(
+            "category",
+            selectedCategory?.categoryName ?? "",
+          )}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
 
-        {/* Modal Add Category */}
-        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper>
-            <Typography variant="h6">
-              {modalTitles.addNew("category")}
-            </Typography>
-            <TextField
+        <FormDialog
+          open={showModalAdd}
+          onClose={() => setShowModalAdd(false)}
+          onSubmit={() =>
+            handleAddRow(
+              (categoryData as Category) ||
+                ({ categoryName: "", activeStatus: true } as any),
+            )
+          }
+          title={modalTitles.addNew("category")}
+          submitText="Add"
+        >
+          <TextField
               label="Name"
               fullWidth
               margin="normal"
@@ -377,40 +347,28 @@ export default function Categories() {
                 }))
               }
             />
-            <Box mt={1}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={!!categoryData?.activeStatus}
-                    onChange={(e) =>
-                      setCategoryData((prev: any) => ({
-                        ...prev,
-                        activeStatus: e.target.checked,
-                      }))
-                    }
-                  />
-                }
-                label="Status"
-              />
-              {formErrors.activeStatus && (
-                <Typography color="error" variant="caption">
-                  {formErrors.activeStatus}
-                </Typography>
-              )}
-            </Box>
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleAddRow(
-                  (categoryData as Category) ||
-                    ({ categoryName: "", activeStatus: true } as any),
-                )
+          <Box mt={1}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={!!categoryData?.activeStatus}
+                  onChange={(e) =>
+                    setCategoryData((prev: any) => ({
+                      ...prev,
+                      activeStatus: e.target.checked,
+                    }))
+                  }
+                />
               }
-            >
-              Add
-            </Button>
-          </Paper>
-        </Modal>
+              label="Status"
+            />
+            {formErrors.activeStatus && (
+              <Typography color="error" variant="caption">
+                {formErrors.activeStatus}
+              </Typography>
+            )}
+          </Box>
+        </FormDialog>
       </FinanceLayout>
     </div>
   );

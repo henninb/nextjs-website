@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { CircularProgress, Box } from "@mui/material";
-import { DataGridProps } from "@mui/x-data-grid";
+// Use a broad prop typing to avoid tight coupling to specific DataGrid versions
+type AnyDataGridProps = Record<string, any>;
 
 // Dynamically import the DataGrid component
-const DataGridDynamic: React.FC<DataGridProps> = (props) => {
+const DataGridDynamic: React.FC<AnyDataGridProps> = (props) => {
   const [DataGridComponent, setDataGridComponent] =
-    useState<React.ComponentType<DataGridProps> | null>(null);
+    useState<React.ComponentType<AnyDataGridProps> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

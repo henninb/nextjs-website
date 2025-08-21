@@ -4,15 +4,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import type { GridRowSelectionModel } from "@mui/x-data-grid";
 import type { GridRowId } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
-import {
-  Box,
-  Paper,
-  Button,
-  Modal,
-  IconButton,
-  Typography,
-  Tooltip,
-} from "@mui/material";
+import { Box, Button, IconButton, Typography, Tooltip } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -52,18 +44,17 @@ import {
   formatDateForDisplay,
 } from "../../../components/Common";
 import FinanceLayout from "../../../layouts/FinanceLayout";
+import PageHeader from "../../../components/PageHeader";
+import DataGridBase from "../../../components/DataGridBase";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import FormDialog from "../../../components/FormDialog";
 import Totals from "../../../model/Totals";
+import SummaryBar from "../../../components/SummaryBar";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventNoteIcon from "@mui/icons-material/EventNote";
-import {
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
-} from "@mui/material";
+ 
+ 
 import { useAuth } from "../../../components/AuthProvider";
 import { useUI } from "../../../contexts/UIContext";
 import { useTheme } from "@mui/material/styles";
@@ -631,19 +622,10 @@ export default function TransactionsByAccount() {
   ) {
     return (
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            {validAccountNameOwner || "Account Transactions"}
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            View and manage all transactions for this account. Track balances,
-            edit transactions, and monitor account activity.
-          </Typography>
-        </Box>
+        <PageHeader
+          title={validAccountNameOwner || "Account Transactions"}
+          subtitle="View and manage all transactions for this account. Track balances, edit transactions, and monitor account activity."
+        />
         <ErrorDisplay
           error={
             errorTransactions ||
@@ -671,19 +653,20 @@ export default function TransactionsByAccount() {
   return (
     <div>
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            {validAccountNameOwner || "Account Transactions"}
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            View and manage all transactions for this account. Track balances,
-            edit transactions, and monitor account activity.
-          </Typography>
-        </Box>
+        <PageHeader
+          title={validAccountNameOwner || "Account Transactions"}
+          subtitle="View and manage all transactions for this account. Track balances, edit transactions, and monitor account activity."
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Transaction
+            </Button>
+          }
+        />
         {showSpinner ? (
           <LoadingState
             variant="card"
@@ -699,73 +682,13 @@ export default function TransactionsByAccount() {
                   marginBottom: "16px",
                 }}
               >
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell align="center">
-                          <strong>Total</strong>
-                        </TableCell>
-                        <TableCell align="center">
-                          <CheckCircleIcon
-                            fontSize="small"
-                            style={{ verticalAlign: "middle" }}
-                          />{" "}
-                          <strong>Cleared</strong>
-                        </TableCell>
-                        <TableCell align="center">
-                          <AccessTimeIcon
-                            fontSize="small"
-                            style={{ verticalAlign: "middle" }}
-                          />{" "}
-                          <strong>Outstanding</strong>
-                        </TableCell>
-                        <TableCell align="center">
-                          <EventNoteIcon
-                            fontSize="small"
-                            style={{ verticalAlign: "middle" }}
-                          />{" "}
-                          <strong>Future</strong>
-                        </TableCell>
-
-                        {selectedTotal !== null && (
-                          <TableCell align="center">
-                            <strong>Selected</strong>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    </TableHead>
-
-                    <TableBody>
-                      <TableRow>
-                        <TableCell align="center">
-                          {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                        </TableCell>
-                        <TableCell align="center">
-                          {currencyFormat(
-                            noNaN(fetchedTotals?.totalsCleared ?? 0),
-                          )}
-                        </TableCell>
-                        <TableCell align="center">
-                          {currencyFormat(
-                            noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-                          )}
-                        </TableCell>
-                        <TableCell align="center">
-                          {currencyFormat(
-                            noNaN(fetchedTotals?.totalsFuture ?? 0),
-                          )}
-                        </TableCell>
-
-                        {selectedTotal !== null && (
-                          <TableCell align="center">
-                            {currencyFormat(noNaN(selectedTotal))}
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                <SummaryBar
+                  total={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                  cleared={currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+                  outstanding={currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
+                  future={currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+                  selected={selectedTotal !== null ? currencyFormat(noNaN(selectedTotal)) : undefined}
+                />
               </div>
 
               <div>
@@ -796,36 +719,25 @@ export default function TransactionsByAccount() {
                     }
                   </Button>
                 </Box>
-                <Box display="flex" justifyContent="center" mt={2} mb={2}>
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => setShowModalAdd(true)}
-                    sx={{ backgroundColor: "primary.main" }}
-                  >
-                    Add Transaction
-                  </Button>
-                </Box>
+                {/* Add button moved to PageHeader actions; avoid duplicate here */}
               </div>
 
               <Box display="flex" justifyContent="center">
                 <Box sx={{ width: "100%", maxWidth: "1400px" }}>
                   {fetchedTransactions && fetchedTransactions.length > 0 ? (
-                    <DataGrid
+                    <DataGridBase
                       rows={
                         fetchedTransactions?.filter((row) => row != null) || []
                       }
                       columns={columns}
-                      getRowId={(row) => row.transactionId || 0}
+                      getRowId={(row: any) => row.transactionId || 0}
                       checkboxSelection={true}
-                      pagination
                       paginationModel={paginationModel}
                       hideFooter={fetchedTransactions?.length < 25}
                       onPaginationModelChange={(newModel) => {
                         setPaginationModel(newModel);
                       }}
                       pageSizeOptions={[25, 50, 100]}
-                      density="compact"
                       disableColumnFilter
                       disableColumnMenu
                       disableVirtualization={false}
@@ -863,7 +775,7 @@ export default function TransactionsByAccount() {
                             "Update Transaction failure.",
                             false,
                           );
-                          throw error;
+                          return oldRow;
                         }
                       }}
                       disableRowSelectionOnClick={true}
@@ -900,79 +812,50 @@ export default function TransactionsByAccount() {
           </div>
         )}
 
-        {/* Modal Clone Transaction */}
-        <Modal open={showModalClone} onClose={() => setShowModalClone(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmClone}</Typography>
-            <Typography>
-              {modalBodies.confirmClone(
-                "transaction",
-                selectedTransaction?.guid ?? "",
-              )}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleCloneRow}
-              >
-                Clone
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModalClone(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
+        <ConfirmDialog
+          open={showModalClone}
+          onClose={() => setShowModalClone(false)}
+          onConfirm={handleCloneRow}
+          title={modalTitles.confirmClone}
+          message={modalBodies.confirmClone(
+            "transaction",
+            selectedTransaction?.guid ?? "",
+          )}
+          confirmText="Clone"
+          cancelText="Cancel"
+        />
 
-        {/* Modal Delete Transaction */}
-        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
-            <Typography>
-              {modalBodies.confirmDeletion(
-                "transaction",
-                selectedTransaction?.guid ?? "",
-              )}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModalDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
+        <ConfirmDialog
+          open={showModalDelete}
+          onClose={() => setShowModalDelete(false)}
+          onConfirm={handleDeleteRow}
+          title={modalTitles.confirmDeletion}
+          message={modalBodies.confirmDeletion(
+            "transaction",
+            selectedTransaction?.guid ?? "",
+          )}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
 
-        {/* Modal Add Transaction */}
-        <Modal
+        <FormDialog
           open={showModalAdd}
           onClose={() => {
             setShowModalAdd(false);
             setTransactionData(initialTransactionData);
           }}
-          //onClose={() => setShowModalAdd(false)}
-          aria-labelledby="transaction-form-modal"
-          aria-describedby="transaction-form-modal-description"
+          onSubmit={async () => {
+            if (transactionData) {
+              const result = await handleAddRow(transactionData);
+              if (result) {
+                setShowModalAdd(false);
+                setTransactionData(initialTransactionData);
+              }
+            }
+          }}
+          title={modalTitles.addNew("transaction")}
+          submitText="Add"
         >
-          <Paper>
-            <Typography variant="h6">
-              {modalTitles.addNew("transaction")}
-            </Typography>
 
             <TextField
               label="Transaction Date"
@@ -1169,50 +1052,22 @@ export default function TransactionsByAccount() {
               rows={3}
             />
 
-            <div>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={async () => {
-                  if (transactionData) {
-                    const result = await handleAddRow(transactionData);
-                    if (result) {
-                      // Success - close modal and reset form
-                      setShowModalAdd(false);
-                      setTransactionData(initialTransactionData);
-                    }
-                    // If result is null, error was handled via snackbar, keep modal open
-                  }
-                }}
-                style={{ marginTop: 16 }}
-              >
-                Add
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => {
-                  setShowModalAdd(false);
-                  setTransactionData(initialTransactionData);
-                }}
-                style={{ marginTop: 16, marginLeft: 8 }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </Paper>
-        </Modal>
+        </FormDialog>
 
-        {/* Modal Move Transaction */}
-        <Modal open={showModalMove} onClose={() => setShowModalMove(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmMove}</Typography>
-            <Typography>
-              {modalBodies.confirmMove(
-                "transaction",
-                selectedTransaction?.guid ?? "",
-              )}
-            </Typography>
+        <FormDialog
+          open={showModalMove}
+          onClose={() => setShowModalMove(false)}
+          onSubmit={() =>
+            originalRow &&
+            selectedTransaction &&
+            handleMoveRow(originalRow, selectedTransaction)
+          }
+          title={modalTitles.confirmMove}
+          submitText="Save"
+        >
+          <Typography variant="body2" color="text.secondary">
+            {modalBodies.confirmMove("transaction", selectedTransaction?.guid ?? "")}
+          </Typography>
             <Autocomplete
               options={
                 isSuccessAccounts &&
@@ -1257,28 +1112,7 @@ export default function TransactionsByAccount() {
               )}
             />
 
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() =>
-                  originalRow &&
-                  selectedTransaction &&
-                  handleMoveRow(originalRow, selectedTransaction)
-                }
-              >
-                Save
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModalMove(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
+        </FormDialog>
       </FinanceLayout>
     </div>
   );

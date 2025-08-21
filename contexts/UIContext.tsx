@@ -29,7 +29,7 @@ interface UIProviderProps {
 }
 
 export const UIProvider: React.FC<UIProviderProps> = ({ children }) => {
-  const [uiMode, setUIMode] = useState<UIMode>("original");
+  const [uiMode, setUIMode] = useState<UIMode>("modern");
 
   useEffect(() => {
     const savedMode = localStorage.getItem("financeUIMode") as UIMode;

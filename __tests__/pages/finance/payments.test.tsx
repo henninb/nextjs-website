@@ -344,7 +344,11 @@ describe("pages/finance/payments", () => {
     if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /delete/i }));
+    const deleteButton = await screen.findByRole("button", {
+      name: /^delete$/i,
+      hidden: true,
+    });
+    fireEvent.click(deleteButton);
     expect(deletePaymentMock).toHaveBeenCalled();
     // Snackbar message should include amount, accounts, and date (flexible date format)
     expect(

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,
   IconButton,
-  Modal,
   Link,
-  Paper,
   TextField,
   Typography,
   Autocomplete,
@@ -28,19 +26,15 @@ import Account from "../../model/Account";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
 import FinanceLayout from "../../layouts/FinanceLayout";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import EventNoteIcon from "@mui/icons-material/EventNote";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import FormDialog from "../../components/FormDialog";
+import PageHeader from "../../components/PageHeader";
+import ActionBar from "../../components/ActionBar";
+import DataGridBase from "../../components/DataGridBase";
+import SummaryBar from "../../components/SummaryBar";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
-import {
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
-} from "@mui/material";
+ 
 
 export default function Accounts() {
   const [message, setMessage] = useState("");
@@ -296,19 +290,10 @@ export default function Accounts() {
   if (errorAccounts || errorTotals) {
     return (
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Account Overview
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            View all accounts with current balances and financial status at a
-            glance
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Account Overview"
+          subtitle="View all accounts with current balances and financial status at a glance"
+        />
         <ErrorDisplay
           error={errorAccounts || errorTotals}
           variant="card"
@@ -325,19 +310,20 @@ export default function Accounts() {
   return (
     <div>
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Account Overview
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            View all accounts with current balances and financial status at a
-            glance
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Account Overview"
+          subtitle="View all accounts with current balances and financial status at a glance"
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModelAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Account
+            </Button>
+          }
+        />
         {showSpinner ? (
           <LoadingState
             variant="card"
@@ -345,96 +331,24 @@ export default function Accounts() {
           />
         ) : (
           <div>
-            <div
-              style={{
-                maxWidth: "600px",
-                margin: "0 auto",
-                marginBottom: "16px",
-              }}
-            >
-              <TableContainer component={Paper}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell align="center">
-                        <strong>Total</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <CheckCircleIcon
-                          fontSize="small"
-                          style={{ verticalAlign: "middle" }}
-                        />{" "}
-                        <strong>Cleared</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <AccessTimeIcon
-                          fontSize="small"
-                          style={{ verticalAlign: "middle" }}
-                        />{" "}
-                        <strong>Outstanding</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <EventNoteIcon
-                          fontSize="small"
-                          style={{ verticalAlign: "middle" }}
-                        />{" "}
-                        <strong>Future</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="center">
-                        {currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                      </TableCell>
-                      <TableCell align="center">
-                        {currencyFormat(
-                          noNaN(fetchedTotals?.totalsCleared ?? 0),
-                        )}
-                      </TableCell>
-                      <TableCell align="center">
-                        {currencyFormat(
-                          noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-                        )}
-                      </TableCell>
-                      <TableCell align="center">
-                        {currencyFormat(
-                          noNaN(fetchedTotals?.totalsFuture ?? 0),
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </div>
-
-            <Box display="flex" justifyContent="center" mb={2}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModelAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Account
-              </Button>
+            <Box sx={{ maxWidth: 600, mx: "auto", mb: 2 }}>
+              <SummaryBar
+                total={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                cleared={currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+                outstanding={currencyFormat(noNaN(fetchedTotals?.totalsOutstanding ?? 0))}
+                future={currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+              />
             </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
                 {fetchedAccounts && fetchedAccounts.length > 0 ? (
-                  <DataGrid
+                  <DataGridBase
                     rows={fetchedAccounts?.filter((row) => row != null) || []}
                     columns={columns}
-                    getRowId={(row) => row.accountId ?? row.accountNameOwner}
-                    paginationModel={{
-                      pageSize: fetchedAccounts?.length,
-                      page: 0,
-                    }}
+                    getRowId={(row: any) => row.accountId ?? row.accountNameOwner}
                     pageSizeOptions={[25, 50, 100]}
-                    pagination
-                    disableRowSelectionOnClick
                     checkboxSelection={false}
                     rowSelection={false}
-                    autoHeight
                     processRowUpdate={async (
                       newRow: Account,
                       oldRow: Account,
@@ -446,15 +360,14 @@ export default function Accounts() {
                         await updateAccount({ newRow: newRow, oldRow: oldRow });
                         setMessage("Account updated successfully.");
                         setShowSnackbar(true);
-
                         return { ...newRow };
-                      } catch (error) {
+                      } catch (error: any) {
                         handleError(
                           error,
                           `Update Account ${error.message}`,
                           false,
                         );
-                        return error;
+                        return oldRow;
                       }
                     }}
                   />
@@ -483,120 +396,90 @@ export default function Accounts() {
             </div>
           </div>
         )}
+        <ConfirmDialog
+          open={showModelDelete}
+          onClose={() => setShowModelDelete(false)}
+          onConfirm={handleDeleteRow}
+          title={modalTitles.confirmDeletion}
+          message={modalBodies.confirmDeletion(
+            "account",
+            selectedAccount?.accountNameOwner ?? "",
+          )}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
 
-        {/* Confirmation Delete Modal */}
-        <Modal open={showModelDelete} onClose={() => setShowModelDelete(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
-            <Typography>
-              {modalBodies.confirmDeletion(
-                "account",
-                selectedAccount?.accountNameOwner ?? "",
-              )}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModelDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
-
-        {/* Modal Add Account */}
-        <Modal open={showModelAdd} onClose={() => setShowModelAdd(false)}>
-          <Paper>
-            <Typography variant="h6">
-              {modalTitles.addNew("account")}
-            </Typography>
-            <TextField
-              label="Account"
-              fullWidth
-              margin="normal"
-              value={accountData?.accountNameOwner || ""}
-              error={!!formErrors.accountNameOwner}
-              helperText={formErrors.accountNameOwner}
-              onChange={(e) =>
-                setAccountData((prev) => ({
-                  ...prev,
-                  accountNameOwner: e.target.value,
-                }))
-              }
-            />
-
-            <Autocomplete
-              freeSolo
-              options={accountTypeOptions}
-              value={accountData?.accountType || ""}
-              onChange={(event, newValue) =>
-                setAccountData((prev: any) => ({
-                  ...prev,
-                  accountType: newValue || "",
-                }))
-              }
-              onInputChange={(event, newInputValue) =>
-                setAccountData((prev: any) => ({
-                  ...prev,
-                  accountType: newInputValue || "",
-                }))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Account Type"
-                  fullWidth
-                  margin="normal"
-                  error={!!formErrors.accountType}
-                  helperText={formErrors.accountType}
-                  onKeyDown={handleAccountTypeKeyDown}
-                />
-              )}
-            />
-
-            <TextField
-              label="Moniker"
-              fullWidth
-              margin="normal"
-              value={accountData?.moniker || ""}
-              error={!!formErrors.moniker}
-              helperText={formErrors.moniker}
-              onChange={(e) =>
-                setAccountData((prev: any) => ({
-                  ...prev,
-                  moniker: e.target.value,
-                }))
-              }
-            />
-            <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
-              <Button variant="outlined" onClick={() => setShowModelAdd(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() =>
-                  handleAddRow({
-                    ...(accountData as Account),
-                    accountNameOwner: accountData?.accountNameOwner || "",
-                    accountType: (accountData?.accountType as any) || "",
-                    validationDate: new Date(0),
-                  } as Account)
-                }
-              >
-                Add
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
+        <FormDialog
+          open={showModelAdd}
+          onClose={() => setShowModelAdd(false)}
+          onSubmit={() =>
+            handleAddRow({
+              ...(accountData as Account),
+              accountNameOwner: accountData?.accountNameOwner || "",
+              accountType: (accountData?.accountType as any) || "",
+              validationDate: new Date(0),
+            } as Account)
+          }
+          title={modalTitles.addNew("account")}
+          submitText="Add"
+        >
+          <TextField
+            label="Account"
+            fullWidth
+            margin="normal"
+            value={accountData?.accountNameOwner || ""}
+            error={!!formErrors.accountNameOwner}
+            helperText={formErrors.accountNameOwner}
+            onChange={(e) =>
+              setAccountData((prev) => ({
+                ...prev,
+                accountNameOwner: e.target.value,
+              }))
+            }
+          />
+          <Autocomplete
+            freeSolo
+            options={accountTypeOptions}
+            value={accountData?.accountType || ""}
+            onChange={(event, newValue) =>
+              setAccountData((prev: any) => ({
+                ...prev,
+                accountType: newValue || "",
+              }))
+            }
+            onInputChange={(event, newInputValue) =>
+              setAccountData((prev: any) => ({
+                ...prev,
+                accountType: newInputValue || "",
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Account Type"
+                fullWidth
+                margin="normal"
+                error={!!formErrors.accountType}
+                helperText={formErrors.accountType}
+                onKeyDown={handleAccountTypeKeyDown}
+              />
+            )}
+          />
+          <TextField
+            label="Moniker"
+            fullWidth
+            margin="normal"
+            value={accountData?.moniker || ""}
+            error={!!formErrors.moniker}
+            helperText={formErrors.moniker}
+            onChange={(e) =>
+              setAccountData((prev: any) => ({
+                ...prev,
+                moniker: e.target.value,
+              }))
+            }
+          />
+        </FormDialog>
       </FinanceLayout>
     </div>
   );

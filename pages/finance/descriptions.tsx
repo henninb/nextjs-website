@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Paper,
-  Link,
-  Button,
-  IconButton,
-  Tooltip,
-  Modal,
-  TextField,
-  Typography,
-  Switch,
-  FormControlLabel,
-} from "@mui/material";
+import { GridColDef } from "@mui/x-data-grid";
+import { Box, Link, Button, IconButton, Tooltip, TextField, Typography, Switch, FormControlLabel } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -27,6 +15,10 @@ import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import PageHeader from "../../components/PageHeader";
+import DataGridBase from "../../components/DataGridBase";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import FormDialog from "../../components/FormDialog";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -201,19 +193,10 @@ export default function Descriptions() {
   if (isErrorDescriptions) {
     return (
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Description Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Create and manage transaction descriptions to standardize your
-            financial record keeping
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Description Management"
+          subtitle="Create and manage transaction descriptions to standardize your records"
+        />
         <ErrorDisplay
           error={errorDescriptions}
           variant="card"
@@ -227,48 +210,38 @@ export default function Descriptions() {
   return (
     <div>
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Description Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Create and manage transaction descriptions to standardize your
-            financial record keeping
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Description Management"
+          subtitle="Create and manage transaction descriptions to standardize your records"
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Description
+            </Button>
+          }
+        />
         {showSpinner ? (
           <LoadingState variant="card" message="Loading descriptions..." />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center" mb={2}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Description
-              </Button>
-            </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
                 {fetchedDescrptions && fetchedDescrptions.length > 0 ? (
-                  <DataGrid
+                  <DataGridBase
                     rows={
                       fetchedDescrptions?.filter((row) => row != null) || []
                     }
                     columns={columns}
-                    getRowId={(row) =>
+                    getRowId={(row: any) =>
                       row.descriptionId ??
                       `${row.descriptionName}-${row.activeStatus}`
                     }
                     checkboxSelection={false}
                     rowSelection={false}
-                    pagination
                     paginationModel={paginationModel}
                     onPaginationModelChange={(newModel) =>
                       setPaginationModel(newModel)
@@ -296,7 +269,7 @@ export default function Descriptions() {
                           `Update Description error: ${error.message}`,
                           false,
                         );
-                        throw error;
+                        return oldRow;
                       }
                     }}
                   />
@@ -323,43 +296,32 @@ export default function Descriptions() {
           </div>
         )}
 
-        {/* Delete Modal */}
-        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
-            <Typography>
-              {modalBodies.confirmDeletion(
-                "description",
-                selectedDescription?.descriptionName ?? "",
-              )}
-            </Typography>
+        <ConfirmDialog
+          open={showModalDelete}
+          onClose={() => setShowModalDelete(false)}
+          onConfirm={handleDeleteRow}
+          title={modalTitles.confirmDeletion}
+          message={modalBodies.confirmDeletion(
+            "description",
+            selectedDescription?.descriptionName ?? "",
+          )}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
 
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModalDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
-
-        {/* Modal Add Description */}
-        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper>
-            <Typography variant="h6">
-              {modalTitles.addNew("description")}
-            </Typography>
-            <TextField
+        <FormDialog
+          open={showModalAdd}
+          onClose={() => setShowModalAdd(false)}
+          onSubmit={() =>
+            handleAddRow(
+              (descriptionData as Description) ||
+                ({ descriptionName: "", activeStatus: true } as any),
+            )
+          }
+          title={modalTitles.addNew("description")}
+          submitText="Add"
+        >
+          <TextField
               label="Name"
               fullWidth
               margin="normal"
@@ -373,40 +335,28 @@ export default function Descriptions() {
                 }))
               }
             />
-            <Box mt={1}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={!!descriptionData?.activeStatus}
-                    onChange={(e) =>
-                      setDescriptionData((prev: any) => ({
-                        ...prev,
-                        activeStatus: e.target.checked,
-                      }))
-                    }
-                  />
-                }
-                label="Status"
-              />
-              {formErrors.activeStatus && (
-                <Typography color="error" variant="caption">
-                  {formErrors.activeStatus}
-                </Typography>
-              )}
-            </Box>
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleAddRow(
-                  (descriptionData as Description) ||
-                    ({ descriptionName: "", activeStatus: true } as any),
-                )
+          <Box mt={1}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={!!descriptionData?.activeStatus}
+                  onChange={(e) =>
+                    setDescriptionData((prev: any) => ({
+                      ...prev,
+                      activeStatus: e.target.checked,
+                    }))
+                  }
+                />
               }
-            >
-              Add
-            </Button>
-          </Paper>
-        </Modal>
+              label="Status"
+            />
+            {formErrors.activeStatus && (
+              <Typography color="error" variant="caption">
+                {formErrors.activeStatus}
+              </Typography>
+            )}
+          </Box>
+        </FormDialog>
       </FinanceLayout>
     </div>
   );

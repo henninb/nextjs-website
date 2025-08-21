@@ -1,0 +1,52 @@
+import * as React from "react";
+import { DataGrid, GridPaginationModel, GridValidRowModel } from "@mui/x-data-grid";
+
+type DataGridBaseProps<R extends GridValidRowModel> = {
+  rows: R[];
+  columns: any[];
+  getRowId?: (row: R) => string | number;
+  paginationModel?: GridPaginationModel;
+  onPaginationModelChange?: (model: GridPaginationModel) => void;
+  pageSizeOptions?: number[];
+  autoHeight?: boolean;
+  checkboxSelection?: boolean;
+  rowSelection?: boolean;
+  processRowUpdate?: (newRow: R, oldRow: R) => Promise<R> | R;
+  disableColumnResize?: boolean;
+  sx?: any;
+};
+
+export default function DataGridBase<R extends GridValidRowModel>({
+  rows,
+  columns,
+  getRowId,
+  paginationModel,
+  onPaginationModelChange,
+  pageSizeOptions = [25, 50, 100],
+  autoHeight = true,
+  checkboxSelection = false,
+  rowSelection = false,
+  processRowUpdate,
+  disableColumnResize,
+  sx,
+}: DataGridBaseProps<R>) {
+  const defaultModel: GridPaginationModel = paginationModel ?? { page: 0, pageSize: 50 };
+  return (
+    <DataGrid
+      rows={rows}
+      columns={columns}
+      getRowId={getRowId}
+      checkboxSelection={checkboxSelection}
+      rowSelection={rowSelection}
+      pagination
+      paginationModel={defaultModel}
+      onPaginationModelChange={onPaginationModelChange}
+      pageSizeOptions={pageSizeOptions}
+      autoHeight={autoHeight}
+      disableColumnResize={disableColumnResize}
+      density="compact"
+      processRowUpdate={processRowUpdate as any}
+      sx={sx}
+    />
+  );
+}

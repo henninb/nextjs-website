@@ -205,9 +205,11 @@ Object.defineProperty(window, "matchMedia", {
 // Suppress React 18 console errors/warnings
 const originalConsoleError = console.error;
 console.error = (...args) => {
+  const msg = args && args[0] ? String(args[0]) : "";
   if (
-    /Warning.*not wrapped in act/i.test(args[0]) ||
-    /Warning: ReactDOM.render is no longer supported/i.test(args[0])
+    /Warning.*not wrapped in act/i.test(msg) ||
+    /not wrapped in act/i.test(msg) ||
+    /Warning: ReactDOM.render is no longer supported/i.test(msg)
   ) {
     return;
   }

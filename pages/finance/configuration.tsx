@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Paper,
-  Button,
-  IconButton,
-  Tooltip,
-  Modal,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { GridColDef } from "@mui/x-data-grid";
+import { Box, Button, IconButton, Tooltip, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -24,6 +15,10 @@ import useParameterDelete from "../../hooks/useParameterDelete";
 import Parameter from "../../model/Parameter";
 import useParameterUpdate from "../../hooks/useParameterUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import PageHeader from "../../components/PageHeader";
+import DataGridBase from "../../components/DataGridBase";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import FormDialog from "../../components/FormDialog";
 import { useAuth } from "../../components/AuthProvider";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
@@ -63,13 +58,13 @@ export default function Configuration() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+  if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingParameters || loading || (!loading && !isAuthenticated)) {
+  if (isFetchingParameters || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }
@@ -258,19 +253,10 @@ export default function Configuration() {
   if (isErrorParameters) {
     return (
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            System Configuration
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage application settings and parameters that control system
-            behavior and defaults
-          </Typography>
-        </Box>
+        <PageHeader
+          title="System Configuration"
+          subtitle="Manage application settings and parameters that control system behavior and defaults"
+        />
         <ErrorDisplay
           error={errorParameters}
           variant="card"
@@ -284,19 +270,20 @@ export default function Configuration() {
   return (
     <div>
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            System Configuration
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage application settings and parameters that control system
-            behavior and defaults
-          </Typography>
-        </Box>
+        <PageHeader
+          title="System Configuration"
+          subtitle="Manage application settings and parameters that control system behavior and defaults"
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Parameter
+            </Button>
+          }
+        />
         {showSpinner ? (
           <LoadingState
             variant="card"
@@ -304,30 +291,19 @@ export default function Configuration() {
           />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center" mb={2}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Parameter
-              </Button>
-            </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
                 {(fetchedParameters && fetchedParameters.length > 0) ||
                 offlineRows.length > 0 ? (
-                  <DataGrid
+                  <DataGridBase
                     rows={[...(fetchedParameters || []), ...offlineRows]}
                     columns={columns}
-                    getRowId={(row) =>
+                    getRowId={(row: any) =>
                       row.parameterId ||
                       `fallback-${Date.now()}-${Math.random()}`
                     }
                     checkboxSelection={false}
                     rowSelection={false}
-                    pagination
                     paginationModel={paginationModel}
                     onPaginationModelChange={(newModel) =>
                       setPaginationModel(newModel)
@@ -358,7 +334,7 @@ export default function Configuration() {
                           `Parameter Update failure: ${error}`,
                           false,
                         );
-                        throw error;
+                        return oldRow;
                       }
                     }}
                   />
@@ -383,40 +359,32 @@ export default function Configuration() {
           </div>
         )}
 
-        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
-            <Typography>
-              {modalBodies.confirmDeletion(
-                "parameter",
-                selectedParameter?.parameterName ?? "",
-              )}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModalDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
+        <ConfirmDialog
+          open={showModalDelete}
+          onClose={() => setShowModalDelete(false)}
+          onConfirm={handleDeleteRow}
+          title={modalTitles.confirmDeletion}
+          message={modalBodies.confirmDeletion(
+            "parameter",
+            selectedParameter?.parameterName ?? "",
+          )}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
 
         {/* Modal Add Parameter */}
-        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper>
-            <Typography variant="h6">
-              {modalTitles.addNew("parameter")}
-            </Typography>
+        <FormDialog
+          open={showModalAdd}
+          onClose={() => setShowModalAdd(false)}
+          onSubmit={() =>
+            handleAddRow(
+              (parameterData as Parameter) ||
+                ({ parameterName: "", parameterValue: "" } as Parameter),
+            )
+          }
+          title={modalTitles.addNew("parameter")}
+          submitText="Add"
+        >
             <TextField
               label="Name"
               fullWidth
@@ -448,19 +416,7 @@ export default function Configuration() {
                 }))
               }
             />
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleAddRow(
-                  (parameterData as Parameter) ||
-                    ({ parameterName: "", parameterValue: "" } as Parameter),
-                )
-              }
-            >
-              Add
-            </Button>
-          </Paper>
-        </Modal>
+        </FormDialog>
       </FinanceLayout>
     </div>
   );

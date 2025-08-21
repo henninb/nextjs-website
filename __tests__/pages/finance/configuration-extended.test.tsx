@@ -487,7 +487,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
       });
     });
 
-    it("opens delete confirmation modal", () => {
+    it("opens delete confirmation modal", async () => {
       render(<ConfigurationPage />);
 
       const actionsCell = screen.getByTestId("cell-0-actions");
@@ -499,24 +499,26 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
       // Check that confirmation modal opens
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /delete/i }),
+        await screen.findByRole("button", { name: /^delete$/i, hidden: true }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /cancel/i }),
+        await screen.findByRole("button", { name: /cancel/i, hidden: true }),
       ).toBeInTheDocument();
     });
 
-    it("cancels delete operation", () => {
+    it("cancels delete operation", async () => {
       render(<ConfigurationPage />);
 
       const actionsCell = screen.getByTestId("cell-0-actions");
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      const cancelButton = screen.getByRole("button", { name: /cancel/i });
+      const cancelButton = await screen.findByRole("button", { name: /cancel/i, hidden: true });
       fireEvent.click(cancelButton);
 
-      expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
+      });
       expect(deleteParameterMock).not.toHaveBeenCalled();
     });
 
@@ -527,7 +529,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      const confirmButton = screen.getByRole("button", { name: /delete/i });
+      const confirmButton = await screen.findByRole("button", { name: /^delete$/i, hidden: true });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
@@ -550,7 +552,7 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      const confirmButton = screen.getByRole("button", { name: /delete/i });
+      const confirmButton = await screen.findByRole("button", { name: /^delete$/i, hidden: true });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {

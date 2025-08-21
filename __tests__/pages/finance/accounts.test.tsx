@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 
 // Mock router
 jest.mock("next/router", () => ({
@@ -221,14 +221,17 @@ describe("pages/finance/index (Accounts)", () => {
 
     // Check that modal opened and form fields are present
     expect(screen.getByText(/Add New Account/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/account$/i)).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/account$/i)[0]).toBeInTheDocument();
     expect(screen.getByLabelText(/account type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/moniker/i)).toBeInTheDocument();
 
     // Fill form
-    fireEvent.change(screen.getByLabelText(/account$/i), {
-      target: { value: "New Account" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /account$/i }),
+      {
+        target: { value: "New Account" },
+      },
+    );
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "debit" },
     });
@@ -278,9 +281,12 @@ describe("pages/finance/index (Accounts)", () => {
 
     render(<AccountsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
-    fireEvent.change(screen.getByLabelText(/account$/i), {
-      target: { value: "A" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /account$/i }),
+      {
+        target: { value: "A" },
+      },
+    );
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "debit" },
     });
@@ -371,9 +377,12 @@ describe("pages/finance/index (Accounts)", () => {
 
     render(<AccountsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
-    fireEvent.change(screen.getByLabelText(/account$/i), {
-      target: { value: "X" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /account$/i }),
+      {
+        target: { value: "X" },
+      },
+    );
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "checking" },
     });
@@ -419,9 +428,12 @@ describe("pages/finance/index (Accounts)", () => {
 
     render(<AccountsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
-    fireEvent.change(screen.getByLabelText(/account$/i), {
-      target: { value: "New" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /account$/i }),
+      {
+        target: { value: "New" },
+      },
+    );
     fireEvent.change(screen.getByLabelText(/account type/i), {
       target: { value: "debit" },
     });
@@ -435,7 +447,7 @@ describe("pages/finance/index (Accounts)", () => {
     ).toBeInTheDocument();
   });
 
-  it("opens delete confirmation from actions and confirms", () => {
+  it("opens delete confirmation from actions and confirms", async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseAccountFetch.mockReturnValue({
       data: [
@@ -476,7 +488,11 @@ describe("pages/finance/index (Accounts)", () => {
     fireEvent.click(delBtn);
 
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /delete/i }));
+    const deleteButton = await screen.findByRole("button", {
+      name: /^delete$/i,
+      hidden: true,
+    });
+    fireEvent.click(deleteButton);
     expect(deleteAccountMock).toHaveBeenCalled();
   });
 });

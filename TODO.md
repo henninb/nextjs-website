@@ -121,4 +121,5 @@
 
 ---
 
+within the finance app /pages/finance, I have several components like transfers, payments, transactions, accounts, configuration. These UI components have some slight UI differnences. I want you to act as a professional UI developer in nextjs and identify these differneces and make these pages have the same look and feel. a user friendly perspective is what I have in mind. focus on the modern UI, as the legacy UI will be going away. come up with a plan to work on and we can go from there.
 _Last updated: August 2025_

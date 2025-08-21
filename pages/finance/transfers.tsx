@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Paper,
-  Button,
-  IconButton,
-  Tooltip,
-  Modal,
-  Link,
-  TextField,
-  Typography,
-  Autocomplete,
-} from "@mui/material";
+import { GridColDef } from "@mui/x-data-grid";
+import { Box, Button, IconButton, Tooltip, Link, TextField, Typography, Autocomplete } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -29,6 +18,10 @@ import useAccountFetch from "../../hooks/useAccountFetch";
 import Account from "../../model/Account";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import PageHeader from "../../components/PageHeader";
+import DataGridBase from "../../components/DataGridBase";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import FormDialog from "../../components/FormDialog";
 import { dummyTransfers } from "../../data/dummyTransfers";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
 import {
@@ -345,19 +338,10 @@ export default function Transfers() {
   if (errorTransfers || errorAccounts) {
     return (
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Transfer Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Move funds between accounts with automated transaction creation and
-            tracking
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Transfer Management"
+          subtitle="Move funds between accounts with automated transaction creation and tracking"
+        />
         <ErrorDisplay
           error={errorTransfers || errorAccounts}
           variant="card"
@@ -374,19 +358,20 @@ export default function Transfers() {
   return (
     <div>
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Transfer Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Move funds between accounts with automated transaction creation and
-            tracking
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Transfer Management"
+          subtitle="Move funds between accounts with automated transaction creation and tracking"
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Transfer
+            </Button>
+          }
+        />
         {showSpinner ? (
           <LoadingState
             variant="card"
@@ -394,30 +379,19 @@ export default function Transfers() {
           />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center" mb={2}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Transfer
-              </Button>
-            </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {transfersToDisplay && transfersToDisplay.length > 0 ? (
-                  <DataGrid
+                  <DataGridBase
                     //rows={fetchedTransfers?.filter((row) => row != null) || []}
                     rows={transfersToDisplay}
                     columns={columns}
-                    getRowId={(row) =>
+                    getRowId={(row: any) =>
                       row.transferId ??
                       `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
                     }
                     checkboxSelection={false}
                     rowSelection={false}
-                    pagination
                     paginationModel={paginationModel}
                     onPaginationModelChange={(newModel) =>
                       setPaginationModel(newModel)
@@ -450,7 +424,7 @@ export default function Transfers() {
                           `Update Transfer error: ${error}`,
                           false,
                         );
-                        throw error;
+                        return oldRow;
                       }
                     }}
                     autoHeight
@@ -489,41 +463,32 @@ export default function Transfers() {
           </div>
         )}
 
-        {/* Confirmation Delete Modal */}
-        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
-            <Typography>
-              {modalBodies.confirmDeletion(
-                "transfer",
-                selectedTransfer?.transferId ?? "",
-              )}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModalDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
+        <ConfirmDialog
+          open={showModalDelete}
+          onClose={() => setShowModalDelete(false)}
+          onConfirm={handleDeleteRow}
+          title={modalTitles.confirmDeletion}
+          message={modalBodies.confirmDeletion(
+            "transfer",
+            selectedTransfer?.transferId ?? "",
+          )}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
 
         {/* Modal to add a transaction */}
-        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper>
-            <Typography variant="h6">
-              {modalTitles.addNew("transfer")}
-            </Typography>
+        <FormDialog
+          open={showModalAdd}
+          onClose={() => setShowModalAdd(false)}
+          onSubmit={() => transferData && handleAddRow(transferData)}
+          title={modalTitles.addNew("transfer")}
+          submitText={
+            transferData?.amount &&
+            parseFloat(String(transferData.amount)) > 0
+              ? `Transfer ${currencyFormat(transferData.amount)}`
+              : "Add Transfer"
+          }
+        >
 
             <TextField
               label="Transaction Date"
@@ -611,18 +576,7 @@ export default function Transfers() {
               fullWidth
               margin="normal"
             />
-
-            <Button
-              variant="contained"
-              onClick={() => transferData && handleAddRow(transferData)}
-            >
-              {transferData?.amount &&
-              parseFloat(String(transferData.amount)) > 0
-                ? `Transfer ${currencyFormat(transferData.amount)}`
-                : "Add Transfer"}
-            </Button>
-          </Paper>
-        </Modal>
+        </FormDialog>
       </FinanceLayout>
     </div>
   );

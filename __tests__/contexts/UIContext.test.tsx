@@ -56,14 +56,14 @@ describe("UIContext", () => {
   });
 
   describe("Initial State", () => {
-    it("starts with original mode by default", () => {
+    it("starts with modern mode by default", () => {
       render(
         <UIProvider>
           <TestComponent />
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
     });
 
     it("loads saved mode from localStorage", () => {
@@ -87,29 +87,29 @@ describe("UIContext", () => {
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
     });
   });
 
   describe("Toggle Functionality", () => {
-    it("toggles from original to modern", () => {
+    it("toggles from modern to original", () => {
       render(
         <UIProvider>
           <TestComponent />
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
 
       act(() => {
         screen.getByTestId("toggle-btn").click();
       });
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-      expect(localStorage.getItem("financeUIMode")).toBe("modern");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(localStorage.getItem("financeUIMode")).toBe("original");
     });
 
-    it("toggles from modern to original", () => {
+    it("toggles from original to modern when starting saved modern", () => {
       localStorage.setItem("financeUIMode", "modern");
 
       render(
@@ -135,23 +135,23 @@ describe("UIContext", () => {
         </UIProvider>,
       );
 
-      // Original -> Modern
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-
       // Modern -> Original
       act(() => {
         screen.getByTestId("toggle-btn").click();
       });
       expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
 
-      // Original -> Modern again
+      // Original -> Modern
       act(() => {
         screen.getByTestId("toggle-btn").click();
       });
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
+
+      // Modern -> Original again
+      act(() => {
+        screen.getByTestId("toggle-btn").click();
+      });
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
     });
   });
 
@@ -182,7 +182,7 @@ describe("UIContext", () => {
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
 
       act(() => {
         screen.getByTestId("set-modern-btn").click();
@@ -199,14 +199,14 @@ describe("UIContext", () => {
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
 
       act(() => {
-        screen.getByTestId("set-original-btn").click();
+        screen.getByTestId("set-modern-btn").click();
       });
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-      expect(localStorage.getItem("financeUIMode")).toBe("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
+      expect(localStorage.getItem("financeUIMode")).toBe("modern");
     });
   });
 
@@ -222,13 +222,13 @@ describe("UIContext", () => {
         screen.getByTestId("toggle-btn").click();
       });
 
-      expect(localStorage.getItem("financeUIMode")).toBe("modern");
+      expect(localStorage.getItem("financeUIMode")).toBe("original");
 
       act(() => {
-        screen.getByTestId("set-original-btn").click();
+        screen.getByTestId("set-modern-btn").click();
       });
 
-      expect(localStorage.getItem("financeUIMode")).toBe("original");
+      expect(localStorage.getItem("financeUIMode")).toBe("modern");
     });
 
     it("handles localStorage errors gracefully", () => {
@@ -256,7 +256,7 @@ describe("UIContext", () => {
         screen.getByTestId("toggle-btn").click();
       });
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         "Failed to save UI mode to localStorage:",
         expect.any(Error),
@@ -297,15 +297,15 @@ describe("UIContext", () => {
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-      expect(screen.getByTestId("second-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
+      expect(screen.getByTestId("second-mode")).toHaveTextContent("modern");
 
       act(() => {
         screen.getByTestId("toggle-btn").click();
       });
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-      expect(screen.getByTestId("second-mode")).toHaveTextContent("modern");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("second-mode")).toHaveTextContent("original");
     });
   });
 
@@ -319,12 +319,13 @@ describe("UIContext", () => {
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
     });
 
     it("handles null localStorage value gracefully", () => {
       // Simulate localStorage returning null
       const originalGetItem = localStorage.getItem;
+      // @ts-expect-error
       localStorage.getItem = jest.fn().mockReturnValue(null);
 
       render(
@@ -333,9 +334,10 @@ describe("UIContext", () => {
         </UIProvider>,
       );
 
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
+      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
 
       // Restore original localStorage
+      // @ts-expect-error
       localStorage.getItem = originalGetItem;
     });
   });

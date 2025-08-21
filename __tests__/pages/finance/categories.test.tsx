@@ -206,7 +206,7 @@ describe("pages/finance/categories", () => {
     expect((sw as HTMLInputElement).checked).toBe(!initialChecked);
   });
 
-  it("opens delete confirmation from actions and confirms", () => {
+  it("opens delete confirmation from actions and confirms", async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseCategoryFetch.mockReturnValue({
       data: [{ categoryId: 1, categoryName: "Groceries", activeStatus: true }],
@@ -223,7 +223,11 @@ describe("pages/finance/categories", () => {
     if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /delete/i }));
+    const deleteButton = await screen.findByRole("button", {
+      name: /^delete$/i,
+      hidden: true,
+    });
+    fireEvent.click(deleteButton);
     expect(deleteCategoryMock).toHaveBeenCalled();
   });
 });

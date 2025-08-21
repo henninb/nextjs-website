@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitForElementToBeRemoved } from "@testing-library/react";
 
 jest.mock("next/router", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
@@ -231,7 +231,7 @@ describe("pages/finance/descriptions", () => {
     expect((sw as HTMLInputElement).checked).toBe(!initialChecked);
   });
 
-  it("opens delete confirmation from actions and confirms", () => {
+  it("opens delete confirmation from actions and confirms", async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseDescriptionFetch.mockReturnValue({
       data: [
@@ -250,7 +250,11 @@ describe("pages/finance/descriptions", () => {
     if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /delete/i }));
+    const deleteButton = await screen.findByRole("button", {
+      name: /^delete$/i,
+      hidden: true,
+    });
+    fireEvent.click(deleteButton);
     expect(deleteDescriptionMock).toHaveBeenCalled();
   });
 
@@ -377,7 +381,7 @@ describe("pages/finance/descriptions", () => {
     );
   });
 
-  it("cancels delete modal when cancel button is clicked", () => {
+  it("cancels delete modal when cancel button is clicked", async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseDescriptionFetch.mockReturnValue({
       data: [
@@ -397,9 +401,15 @@ describe("pages/finance/descriptions", () => {
     fireEvent.click(delBtn);
 
     expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+    const cancelButton = await screen.findByRole("button", {
+      name: /cancel/i,
+      hidden: true,
+    });
+    fireEvent.click(cancelButton);
 
-    expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
+    await waitForElementToBeRemoved(() =>
+      screen.queryByText(/Confirm Deletion/i),
+    );
     expect(deleteDescriptionMock).not.toHaveBeenCalled();
   });
 

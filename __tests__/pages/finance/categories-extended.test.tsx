@@ -504,7 +504,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       });
     });
 
-    it("shows category name in delete confirmation", () => {
+    it("shows category name in delete confirmation", async () => {
       render(<CategoriesPage />);
 
       const actionsCell = screen.getByTestId("cell-0-actions");
@@ -514,10 +514,10 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
       // Check for delete and cancel buttons instead of specific category name
       expect(
-        screen.getByRole("button", { name: /delete/i }),
+        await screen.findByRole("button", { name: /^delete$/i, hidden: true }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /cancel/i }),
+        await screen.findByRole("button", { name: /cancel/i, hidden: true }),
       ).toBeInTheDocument();
     });
 
@@ -528,7 +528,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      const confirmButton = screen.getByRole("button", { name: /delete/i });
+      const confirmButton = await screen.findByRole("button", { name: /^delete$/i, hidden: true });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
@@ -551,7 +551,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      const confirmButton = screen.getByRole("button", { name: /delete/i });
+      const confirmButton = await screen.findByRole("button", { name: /^delete$/i, hidden: true });
       fireEvent.click(confirmButton);
 
       await waitFor(() => {

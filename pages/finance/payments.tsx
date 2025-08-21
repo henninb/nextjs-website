@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Paper,
-  Button,
-  IconButton,
-  Tooltip,
-  Modal,
-  Link,
-  TextField,
-  Typography,
-  Autocomplete,
-} from "@mui/material";
+import { GridColDef } from "@mui/x-data-grid";
+import { Box, Button, IconButton, Tooltip, Link, TextField, Typography, Autocomplete } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Spinner from "../../components/Spinner";
@@ -30,6 +19,10 @@ import useParameterFetch from "../../hooks/useParameterFetch";
 import Account from "../../model/Account";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import FinanceLayout from "../../layouts/FinanceLayout";
+import PageHeader from "../../components/PageHeader";
+import DataGridBase from "../../components/DataGridBase";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import FormDialog from "../../components/FormDialog";
 import {
   currencyFormat,
   normalizeTransactionDate,
@@ -348,19 +341,10 @@ export default function Payments() {
   if (errorPayments || errorAccounts || errorParameters) {
     return (
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Payment Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Track and manage payments between accounts with automated
-            transaction processing
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Payment Management"
+          subtitle="Track and manage payments between accounts with automated transaction processing"
+        />
         <ErrorDisplay
           error={errorPayments || errorAccounts || errorParameters}
           variant="card"
@@ -378,19 +362,20 @@ export default function Payments() {
   return (
     <div>
       <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Payment Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Track and manage payments between accounts with automated
-            transaction processing
-          </Typography>
-        </Box>
+        <PageHeader
+          title="Payment Management"
+          subtitle="Track and manage payments between accounts with automated transaction processing"
+          actions={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Payment
+            </Button>
+          }
+        />
         {showSpinner ? (
           <LoadingState
             variant="card"
@@ -398,29 +383,18 @@ export default function Payments() {
           />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center" mb={2}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Payment
-              </Button>
-            </Box>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {fetchedPayments && fetchedPayments.length > 0 ? (
-                  <DataGrid
+                  <DataGridBase
                     rows={fetchedPayments?.filter((row) => row != null) || []}
                     columns={columns}
-                    getRowId={(row) =>
+                    getRowId={(row: any) =>
                       row.paymentId ??
                       `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
                     }
                     checkboxSelection={false}
                     rowSelection={false}
-                    pagination
                     paginationModel={paginationModel}
                     onPaginationModelChange={(newModel) =>
                       setPaginationModel(newModel)
@@ -455,7 +429,7 @@ export default function Payments() {
                           `Update Payment error: ${error}`,
                           false,
                         );
-                        throw error;
+                        return oldRow;
                       }
                     }}
                     sx={{
@@ -492,42 +466,30 @@ export default function Payments() {
             </div>
           </div>
         )}
+        <ConfirmDialog
+          open={showModalDelete}
+          onClose={() => setShowModalDelete(false)}
+          onConfirm={handleDeleteRow}
+          title={modalTitles.confirmDeletion}
+          message={modalBodies.confirmDeletion(
+            "payment",
+            selectedPayment?.paymentId ?? "",
+          )}
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
 
-        {/* Confirmation Delete Modal */}
-        <Modal open={showModalDelete} onClose={() => setShowModalDelete(false)}>
-          <Paper>
-            <Typography variant="h6">{modalTitles.confirmDeletion}</Typography>
-            <Typography>
-              {modalBodies.confirmDeletion(
-                "payment",
-                selectedPayment?.paymentId ?? "",
-              )}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDeleteRow}
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setShowModalDelete(false)}
-              >
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Modal>
-
-        {/* Modal to Add or Edit */}
-        <Modal open={showModalAdd} onClose={() => setShowModalAdd(false)}>
-          <Paper>
-            <Typography variant="h6">
-              {modalTitles.addNew("payment")}
-            </Typography>
+        <FormDialog
+          open={showModalAdd}
+          onClose={() => setShowModalAdd(false)}
+          onSubmit={() => paymentData && handleAddRow(paymentData)}
+          title={modalTitles.addNew("payment")}
+          submitText={
+            paymentData?.amount && parseFloat(String(paymentData.amount)) > 0
+              ? `Pay ${currencyFormat(paymentData.amount)}`
+              : "Add Payment"
+          }
+        >
             <TextField
               label="Transaction Date"
               fullWidth
@@ -648,16 +610,7 @@ export default function Payments() {
               error={!!formErrors.amount}
               helperText={formErrors.amount}
             />
-            <Button
-              variant="contained"
-              onClick={() => paymentData && handleAddRow(paymentData)}
-            >
-              {paymentData?.amount && parseFloat(String(paymentData.amount)) > 0
-                ? `Pay ${currencyFormat(paymentData.amount)}`
-                : "Add Payment"}
-            </Button>
-          </Paper>
-        </Modal>
+        </FormDialog>
       </FinanceLayout>
     </div>
   );
