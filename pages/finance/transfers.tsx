@@ -319,6 +319,8 @@ export default function Transfers() {
       headerName: "Amount",
       flex: 0.6,
       minWidth: 120,
+      headerAlign: "right",
+      align: "right",
       editable: true,
       renderCell: (params) => currencyFormat(params.value),
     },
@@ -329,8 +331,9 @@ export default function Transfers() {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Tooltip title="delete this row">
+        <Tooltip title="Delete this row">
           <IconButton
+            aria-label="Delete this row"
             onClick={() => {
               setSelectedTransfer(params.row);
               setShowModalDelete(true);

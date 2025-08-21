@@ -300,6 +300,8 @@ export default function Payments() {
       flex: 0.6,
       minWidth: 120,
       type: "number",
+      headerAlign: "right",
+      align: "right",
       editable: true,
       renderEditCell: (params) => {
         const value = params.value || "";
@@ -332,8 +334,9 @@ export default function Payments() {
       sortable: false,
       filterable: false,
       renderCell: (params: any) => (
-        <Tooltip title="delete this row">
+        <Tooltip title="Delete this row">
           <IconButton
+            aria-label="Delete this row"
             onClick={() => {
               setSelectedPayment(params.row);
               setShowModalDelete(true);

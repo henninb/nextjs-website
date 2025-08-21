@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../../components/ErrorDisplay";
 import useTransactionByCategory from "../../../../hooks/useTransactionByCategoryFetch";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import Transaction from "../../../../model/Transaction";
-import { Link, Box } from "@mui/material";
+import { Link, Box, Stack, Chip, TextField } from "@mui/material";
 import FinanceLayout from "../../../../layouts/FinanceLayout";
 import { currencyFormat } from "../../../../components/Common";
 import { useAuth } from "../../../../components/AuthProvider";
+import PageHeader from "../../../../components/PageHeader";
+import DataGridBase from "../../../../components/DataGridBase";
 
 export default function TransactionsByCategory() {
   const [showSpinner, setShowSpinner] = useState(true);
@@ -20,6 +22,10 @@ export default function TransactionsByCategory() {
     pageSize: 50,
     page: 0,
   });
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [stateFilter, setStateFilter] = useState<{ cleared: boolean; outstanding: boolean; future: boolean}>(
+    { cleared: true, outstanding: true, future: true }
+  );
 
   const router = useRouter();
   const { categoryName }: any = router.query;
@@ -115,6 +121,8 @@ export default function TransactionsByCategory() {
       headerName: "Amount",
       type: "number",
       width: 90,
+      headerAlign: "right",
+      align: "right",
       renderCell: (params) => currencyFormat(params.value),
       editable: true,
     },
@@ -135,18 +143,71 @@ export default function TransactionsByCategory() {
     );
   }
 
+  // Apply client-side filters and search
+  const filteredTransactions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const allowedStates = new Set(
+      [stateFilter.cleared && "cleared", stateFilter.outstanding && "outstanding", stateFilter.future && "future"].filter(Boolean) as string[]
+    );
+    return (fetchedTransactions || []).filter((row) => {
+      if (!row) return false;
+      if (row.transactionState && !allowedStates.has(row.transactionState as string)) return false;
+      if (!q) return true;
+      const haystack = `${row.accountNameOwner || ""} ${row.description || ""} ${row.category || ""} ${row.notes || ""}`.toLowerCase();
+      if (haystack.includes(q)) return true;
+      const amtStr = (row.amount ?? "").toString();
+      return amtStr.includes(q);
+    });
+  }, [fetchedTransactions, searchQuery, stateFilter]);
+
   return (
     <div>
       <FinanceLayout>
-        <h2>{`${categoryName}`}</h2>
+        <PageHeader
+          title={`${categoryName}`}
+          actions={
+            <Stack spacing={1.5} direction={{ xs: "column", sm: "row" }} sx={{ alignItems: "center" }}>
+              <TextField
+                size="small"
+                label="Search"
+                placeholder="Find by account, description, notes"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Stack direction="row" spacing={1}>
+                <Chip
+                  label="Cleared"
+                  color={stateFilter.cleared ? "primary" : "default"}
+                  variant={stateFilter.cleared ? "filled" : "outlined"}
+                  onClick={() => setStateFilter((s) => ({ ...s, cleared: !s.cleared }))}
+                  size="small"
+                />
+                <Chip
+                  label="Outstanding"
+                  color={stateFilter.outstanding ? "primary" : "default"}
+                  variant={stateFilter.outstanding ? "filled" : "outlined"}
+                  onClick={() => setStateFilter((s) => ({ ...s, outstanding: !s.outstanding }))}
+                  size="small"
+                />
+                <Chip
+                  label="Future"
+                  color={stateFilter.future ? "primary" : "default"}
+                  variant={stateFilter.future ? "filled" : "outlined"}
+                  onClick={() => setStateFilter((s) => ({ ...s, future: !s.future }))}
+                  size="small"
+                />
+              </Stack>
+            </Stack>
+          }
+        />
         {showSpinner ? (
           <Spinner />
         ) : (
           <div>
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
-                <DataGrid
-                  rows={fetchedTransactions?.filter((row) => row != null) || []}
+                <DataGridBase
+                  rows={filteredTransactions}
                   columns={columns}
                   getRowId={(row) =>
                     row.transactionId ??
@@ -154,12 +215,10 @@ export default function TransactionsByCategory() {
                   }
                   checkboxSelection={false}
                   rowSelection={false}
-                  pagination
                   paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
+                  onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
                   pageSizeOptions={[25, 50, 100]}
+                  hideFooter={filteredTransactions?.length < 25}
                   processRowUpdate={async (
                     newRow: Transaction,
                     oldRow: Transaction,
@@ -177,7 +236,6 @@ export default function TransactionsByCategory() {
                       throw error;
                     }
                   }}
-                  autoHeight
                 />
               </Box>
             </Box>

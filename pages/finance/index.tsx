@@ -222,6 +222,8 @@ export default function Accounts() {
       field: "future",
       headerName: "Future",
       width: 150,
+      headerAlign: "right",
+      align: "right",
       renderCell: (params) =>
         params.value?.toLocaleString("en-US", {
           style: "currency",
@@ -232,6 +234,8 @@ export default function Accounts() {
       field: "outstanding",
       headerName: "Outstanding",
       width: 150,
+      headerAlign: "right",
+      align: "right",
       renderCell: (params) =>
         params.value?.toLocaleString("en-US", {
           style: "currency",
@@ -242,6 +246,8 @@ export default function Accounts() {
       field: "cleared",
       headerName: "Cleared",
       width: 150,
+      headerAlign: "right",
+      align: "right",
       renderCell: (params) =>
         params.value?.toLocaleString("en-US", {
           style: "currency",
@@ -270,8 +276,9 @@ export default function Accounts() {
       width: 100,
       renderCell: (params) => (
         <Box>
-          <Tooltip title="delete this row">
+          <Tooltip title="Delete this row">
             <IconButton
+              aria-label="Delete this row"
               onClick={() => {
                 setSelectedAccount(params.row);
                 setShowModelDelete(true);
