@@ -58,6 +58,7 @@ interface LayoutProps {
 const financeLinks = [
   { text: "Home", href: "/finance/", icon: <HomeIcon /> },
   { text: "Transfer", href: "/finance/transfers", icon: <SyncAltIcon /> },
+  { text: "Transfer NextGen", href: "/finance/transfers-next", icon: <SyncAltIcon /> },
   { text: "Payments", href: "/finance/payments", icon: <PaymentIcon /> },
   {
     text: "PaymentsRequired",
