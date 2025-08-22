@@ -42,7 +42,9 @@ export default function useAccountFetchGql() {
   return useQuery<Account[], Error>({
     queryKey: ["accountsGQL"],
     queryFn: async () => {
-      const data = await graphqlRequest<AccountsQueryResult>({ query: ACCOUNTS_QUERY });
+      const data = await graphqlRequest<AccountsQueryResult>({
+        query: ACCOUNTS_QUERY,
+      });
       const mapped: Account[] = (data.accounts || []).map((a) => ({
         accountId: a.accountId,
         accountNameOwner: a.accountNameOwner,
@@ -53,7 +55,9 @@ export default function useAccountFetchGql() {
         future: a.future,
         cleared: a.cleared,
         dateClosed: a.dateClosed ? new Date(a.dateClosed) : undefined,
-        validationDate: a.validationDate ? new Date(a.validationDate) : undefined,
+        validationDate: a.validationDate
+          ? new Date(a.validationDate)
+          : undefined,
         dateAdded: a.dateAdded ? new Date(a.dateAdded) : undefined,
         dateUpdated: a.dateUpdated ? new Date(a.dateUpdated) : undefined,
       }));
@@ -61,4 +65,3 @@ export default function useAccountFetchGql() {
     },
   });
 }
-

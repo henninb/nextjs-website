@@ -48,7 +48,10 @@ export default function TransfersNextGen() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({ pageSize: 50, page: 0 });
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 50,
+    page: 0,
+  });
 
   const [transferData, setTransferData] = useState<Transfer>({
     transferId: 0,
@@ -61,20 +64,40 @@ export default function TransfersNextGen() {
     activeStatus: true,
   });
 
-  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
-  const [availableSourceAccounts, setAvailableSourceAccounts] = useState<Account[]>([]);
-  const [availableDestinationAccounts, setAvailableDestinationAccounts] = useState<Account[]>([]);
-  const [selectedSourceAccount, setSelectedSourceAccount] = useState<Account | null>(null);
-  const [selectedDestinationAccount, setSelectedDestinationAccount] = useState<Account | null>(null);
+  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
+    null,
+  );
+  const [availableSourceAccounts, setAvailableSourceAccounts] = useState<
+    Account[]
+  >([]);
+  const [availableDestinationAccounts, setAvailableDestinationAccounts] =
+    useState<Account[]>([]);
+  const [selectedSourceAccount, setSelectedSourceAccount] =
+    useState<Account | null>(null);
+  const [selectedDestinationAccount, setSelectedDestinationAccount] =
+    useState<Account | null>(null);
 
-  const { data: fetchedAccounts, isSuccess: isSuccessAccounts, isFetching: isFetchingAccounts, error: errorAccounts, refetch: refetchAccounts } = useAccountFetchGql();
-  const { data: fetchedTransfers, isSuccess: isSuccessTransfers, isFetching: isFetchingTransfers, error: errorTransfers, refetch: refetchTransfers } = useTransferFetchGql();
+  const {
+    data: fetchedAccounts,
+    isSuccess: isSuccessAccounts,
+    isFetching: isFetchingAccounts,
+    error: errorAccounts,
+    refetch: refetchAccounts,
+  } = useAccountFetchGql();
+  const {
+    data: fetchedTransfers,
+    isSuccess: isSuccessTransfers,
+    isFetching: isFetchingTransfers,
+    error: errorTransfers,
+    refetch: refetchTransfers,
+  } = useTransferFetchGql();
 
   const { mutateAsync: insertTransfer } = useTransferInsertGql();
   const { mutateAsync: deleteTransfer } = useTransferDeleteGql();
   const { mutateAsync: updateTransfer } = useTransferUpdateGql();
 
-  const transfersToDisplay = fetchedTransfers?.filter((row) => row != null) || [];
+  const transfersToDisplay =
+    fetchedTransfers?.filter((row) => row != null) || [];
 
   useEffect(() => {
     if (loading) {
@@ -86,19 +109,37 @@ export default function TransfersNextGen() {
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (isFetchingAccounts || isFetchingTransfers || loading || (!loading && !isAuthenticated)) {
+    if (
+      isFetchingAccounts ||
+      isFetchingTransfers ||
+      loading ||
+      (!loading && !isAuthenticated)
+    ) {
       setShowSpinner(true);
       return;
     }
     if (isSuccessTransfers && isSuccessAccounts) {
       setShowSpinner(false);
     }
-  }, [isSuccessTransfers, isSuccessAccounts, errorTransfers, errorAccounts, isFetchingAccounts, isFetchingTransfers, loading, isAuthenticated]);
+  }, [
+    isSuccessTransfers,
+    isSuccessAccounts,
+    errorTransfers,
+    errorAccounts,
+    isFetchingAccounts,
+    isFetchingTransfers,
+    loading,
+    isAuthenticated,
+  ]);
 
   useEffect(() => {
     if (isSuccessAccounts) {
-      setAvailableSourceAccounts(fetchedAccounts.filter((a) => a.accountType === "debit"));
-      setAvailableDestinationAccounts(fetchedAccounts.filter((a) => a.accountType === "debit"));
+      setAvailableSourceAccounts(
+        fetchedAccounts.filter((a) => a.accountType === "debit"),
+      );
+      setAvailableDestinationAccounts(
+        fetchedAccounts.filter((a) => a.accountType === "debit"),
+      );
     }
   }, [isSuccessAccounts, fetchedAccounts]);
 
@@ -106,11 +147,15 @@ export default function TransfersNextGen() {
     if (selectedSourceAccount) {
       setAvailableDestinationAccounts(
         (fetchedAccounts || []).filter(
-          (a) => a.accountType === "debit" && a.accountNameOwner !== selectedSourceAccount.accountNameOwner,
+          (a) =>
+            a.accountType === "debit" &&
+            a.accountNameOwner !== selectedSourceAccount.accountNameOwner,
         ),
       );
     } else if (isSuccessAccounts) {
-      setAvailableDestinationAccounts((fetchedAccounts || []).filter((a) => a.accountType === "debit"));
+      setAvailableDestinationAccounts(
+        (fetchedAccounts || []).filter((a) => a.accountType === "debit"),
+      );
     }
   }, [selectedSourceAccount, isSuccessAccounts, fetchedAccounts]);
 
@@ -118,22 +163,35 @@ export default function TransfersNextGen() {
     if (selectedDestinationAccount) {
       setAvailableSourceAccounts(
         (fetchedAccounts || []).filter(
-          (a) => a.accountType === "debit" && a.accountNameOwner !== selectedDestinationAccount.accountNameOwner,
+          (a) =>
+            a.accountType === "debit" &&
+            a.accountNameOwner !== selectedDestinationAccount.accountNameOwner,
         ),
       );
     } else if (isSuccessAccounts) {
-      setAvailableSourceAccounts((fetchedAccounts || []).filter((a) => a.accountType === "debit"));
+      setAvailableSourceAccounts(
+        (fetchedAccounts || []).filter((a) => a.accountType === "debit"),
+      );
     }
   }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);
 
   const handleSourceAccountChange = (_e: any, newValue: Account | null) => {
     setSelectedSourceAccount(newValue);
-    setTransferData((prev) => ({ ...prev, sourceAccount: newValue ? newValue.accountNameOwner : "" }));
+    setTransferData((prev) => ({
+      ...prev,
+      sourceAccount: newValue ? newValue.accountNameOwner : "",
+    }));
   };
 
-  const handleDestinationAccountChange = (_e: any, newValue: Account | null) => {
+  const handleDestinationAccountChange = (
+    _e: any,
+    newValue: Account | null,
+  ) => {
     setSelectedDestinationAccount(newValue);
-    setTransferData((prev) => ({ ...prev, destinationAccount: newValue ? newValue.accountNameOwner : "" }));
+    setTransferData((prev) => ({
+      ...prev,
+      destinationAccount: newValue ? newValue.accountNameOwner : "",
+    }));
   };
 
   const handleDeleteRow = async () => {
@@ -142,7 +200,9 @@ export default function TransfersNextGen() {
         await deleteTransfer({ oldRow: selectedTransfer });
         const when = formatDateForDisplay(selectedTransfer.transactionDate);
         const amt = currencyFormat(selectedTransfer.amount);
-        setMessage(`Transfer deleted: ${amt} from ${selectedTransfer.sourceAccount} to ${selectedTransfer.destinationAccount} on ${when}.`);
+        setMessage(
+          `Transfer deleted: ${amt} from ${selectedTransfer.sourceAccount} to ${selectedTransfer.destinationAccount} on ${when}.`,
+        );
         setShowSnackbar(true);
       } catch (error: any) {
         handleError(error, `Delete Transfer error: ${error}`, false);
@@ -154,7 +214,9 @@ export default function TransfersNextGen() {
   };
 
   const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error?.message ? `${moduleName}: ${error.message}` : `${moduleName}: Failure`;
+    const errorMessage = error?.message
+      ? `${moduleName}: ${error.message}`
+      : `${moduleName}: Failure`;
     setMessage(errorMessage);
     setShowSnackbar(true);
     console.error(errorMessage);
@@ -165,7 +227,9 @@ export default function TransfersNextGen() {
     try {
       await insertTransfer({ payload: newData });
       const when = formatDateForDisplay(newData.transactionDate);
-      setMessage(`Transferred ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`);
+      setMessage(
+        `Transferred ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
+      );
       setShowSnackbar(true);
       setShowSpinner(false);
       setShowModalAdd(false);
@@ -201,7 +265,9 @@ export default function TransfersNextGen() {
       flex: 2,
       minWidth: 200,
       renderCell: (params) => (
-        <Link href={`/finance/transactions/${params.row.sourceAccount}`}>{params.value}</Link>
+        <Link href={`/finance/transactions/${params.row.sourceAccount}`}>
+          {params.value}
+        </Link>
       ),
     },
     {
@@ -210,7 +276,9 @@ export default function TransfersNextGen() {
       flex: 2,
       minWidth: 200,
       renderCell: (params) => (
-        <Link href={`/finance/transactions/${params.row.destinationAccount}`}>{params.value}</Link>
+        <Link href={`/finance/transactions/${params.row.destinationAccount}`}>
+          {params.value}
+        </Link>
       ),
     },
     {
@@ -248,7 +316,10 @@ export default function TransfersNextGen() {
   if (errorTransfers || errorAccounts) {
     return (
       <FinanceLayout>
-        <PageHeader title="Transfer Management (Next‑Gen)" subtitle="GraphQL-powered transfers between accounts" />
+        <PageHeader
+          title="Transfer Management (Next‑Gen)"
+          subtitle="GraphQL-powered transfers between accounts"
+        />
         <ErrorDisplay
           error={errorTransfers || errorAccounts}
           variant="card"
@@ -269,35 +340,58 @@ export default function TransfersNextGen() {
           title="Transfer Management (Next‑Gen)"
           subtitle="GraphQL-powered transfers between accounts"
           actions={
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowModalAdd(true)}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+            >
               Add Transfer
             </Button>
           }
         />
         {showSpinner ? (
-          <LoadingState variant="card" message="Loading transfers and accounts..." />
+          <LoadingState
+            variant="card"
+            message="Loading transfers and accounts..."
+          />
         ) : transfersToDisplay && transfersToDisplay.length > 0 ? (
           <Box display="flex" justifyContent="center">
             <Box sx={{ width: "100%", maxWidth: "1200px" }}>
               <DataGridBase
                 rows={transfersToDisplay}
                 columns={columns}
-                getRowId={(row: any) => row.transferId ?? `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`}
+                getRowId={(row: any) =>
+                  row.transferId ??
+                  `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
+                }
                 checkboxSelection={false}
                 rowSelection={false}
                 paginationModel={paginationModel}
                 onPaginationModelChange={(m) => setPaginationModel(m)}
                 pageSizeOptions={[25, 50, 100]}
-                processRowUpdate={async (newRow: Transfer, oldRow: Transfer): Promise<Transfer> => {
-                  if (JSON.stringify(newRow) === JSON.stringify(oldRow)) return oldRow;
+                processRowUpdate={async (
+                  newRow: Transfer,
+                  oldRow: Transfer,
+                ): Promise<Transfer> => {
+                  if (JSON.stringify(newRow) === JSON.stringify(oldRow))
+                    return oldRow;
                   try {
-                    await updateTransfer({ oldTransfer: oldRow, newTransfer: newRow });
+                    await updateTransfer({
+                      oldTransfer: oldRow,
+                      newTransfer: newRow,
+                    });
                     const when = formatDateForDisplay(newRow.transactionDate);
-                    setMessage(`Transfer updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`);
+                    setMessage(
+                      `Transfer updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
+                    );
                     setShowSnackbar(true);
                     return { ...newRow };
                   } catch (error: any) {
-                    handleError(error, `Update Transfer error: ${error}`, false);
+                    handleError(
+                      error,
+                      `Update Transfer error: ${error}`,
+                      false,
+                    );
                     return oldRow;
                   }
                 }}
@@ -345,18 +439,31 @@ export default function TransfersNextGen() {
           open={showModalAdd}
           onClose={() => setShowModalAdd(false)}
           onSubmit={() => handleAddRow(transferData)}
-          title={transferData?.amount && parseFloat(String(transferData.amount)) > 0 ? `Transfer ${currencyFormat(transferData.amount)}` : "Add Transfer"}
-          submitText={transferData?.amount && parseFloat(String(transferData.amount)) > 0 ? `Transfer ${currencyFormat(transferData.amount)}` : "Add Transfer"}
+          title={
+            transferData?.amount && parseFloat(String(transferData.amount)) > 0
+              ? `Transfer ${currencyFormat(transferData.amount)}`
+              : "Add Transfer"
+          }
+          submitText={
+            transferData?.amount && parseFloat(String(transferData.amount)) > 0
+              ? `Transfer ${currencyFormat(transferData.amount)}`
+              : "Add Transfer"
+          }
         >
           <TextField
             label="Transaction Date"
             fullWidth
             margin="normal"
             type="date"
-            value={formatDateForInput(transferData?.transactionDate || new Date())}
+            value={formatDateForInput(
+              transferData?.transactionDate || new Date(),
+            )}
             onChange={(e) => {
               const normalizedDate = normalizeTransactionDate(e.target.value);
-              setTransferData((prev: any) => ({ ...prev, transactionDate: normalizedDate }));
+              setTransferData((prev: any) => ({
+                ...prev,
+                transactionDate: normalizedDate,
+              }));
             }}
             slotProps={{ inputLabel: { shrink: true } }}
           />
@@ -364,33 +471,56 @@ export default function TransfersNextGen() {
           <Autocomplete
             options={availableSourceAccounts}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
-            isOptionEqualToValue={(o, v) => o.accountNameOwner === v?.accountNameOwner}
+            isOptionEqualToValue={(o, v) =>
+              o.accountNameOwner === v?.accountNameOwner
+            }
             value={selectedSourceAccount}
             onChange={handleSourceAccountChange}
             renderInput={(params) => (
-              <TextField {...params} label="Source Account" fullWidth margin="normal" placeholder="Select a source account" />
+              <TextField
+                {...params}
+                label="Source Account"
+                fullWidth
+                margin="normal"
+                placeholder="Select a source account"
+              />
             )}
           />
 
           <Autocomplete
             options={availableDestinationAccounts}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
-            isOptionEqualToValue={(o, v) => o.accountNameOwner === v?.accountNameOwner}
+            isOptionEqualToValue={(o, v) =>
+              o.accountNameOwner === v?.accountNameOwner
+            }
             value={selectedDestinationAccount}
             onChange={handleDestinationAccountChange}
             renderInput={(params) => (
-              <TextField {...params} label="Destination Account" fullWidth margin="normal" placeholder="Select a destination account" />
+              <TextField
+                {...params}
+                label="Destination Account"
+                fullWidth
+                margin="normal"
+                placeholder="Select a destination account"
+              />
             )}
           />
 
           <USDAmountInput
             label="Amount"
             value={transferData?.amount ? transferData.amount : ""}
-            onChange={(value) => setTransferData((prev: any) => ({ ...prev, amount: value }))}
+            onChange={(value) =>
+              setTransferData((prev: any) => ({ ...prev, amount: value }))
+            }
             onBlur={() => {
-              const currentValue = parseFloat(String(transferData?.amount || ""));
+              const currentValue = parseFloat(
+                String(transferData?.amount || ""),
+              );
               if (!isNaN(currentValue)) {
-                setTransferData((prev: any) => ({ ...prev, amount: Number(currentValue.toFixed(2)) }));
+                setTransferData((prev: any) => ({
+                  ...prev,
+                  amount: Number(currentValue.toFixed(2)),
+                }));
               }
             }}
             fullWidth

@@ -39,13 +39,20 @@ export default function useTransferUpdateGql() {
 
   return useMutation({
     mutationKey: ["transferUpdateGQL"],
-    mutationFn: async ({ oldTransfer, newTransfer }: { oldTransfer: Transfer; newTransfer: Transfer }) => {
+    mutationFn: async ({
+      oldTransfer,
+      newTransfer,
+    }: {
+      oldTransfer: Transfer;
+      newTransfer: Transfer;
+    }) => {
       const input = {
         sourceAccount: newTransfer.sourceAccount,
         destinationAccount: newTransfer.destinationAccount,
-        transactionDate: (newTransfer.transactionDate instanceof Date
-          ? newTransfer.transactionDate.toISOString()
-          : new Date(newTransfer.transactionDate).toISOString()),
+        transactionDate:
+          newTransfer.transactionDate instanceof Date
+            ? newTransfer.transactionDate.toISOString()
+            : new Date(newTransfer.transactionDate).toISOString(),
         amount: newTransfer.amount,
         activeStatus: newTransfer.activeStatus,
       };
@@ -74,10 +81,13 @@ export default function useTransferUpdateGql() {
       if (old) {
         queryClient.setQueryData(
           key,
-          old.map((t) => (t.transferId === updatedTransfer.transferId ? { ...t, ...updatedTransfer } : t)),
+          old.map((t) =>
+            t.transferId === updatedTransfer.transferId
+              ? { ...t, ...updatedTransfer }
+              : t,
+          ),
         );
       }
     },
   });
 }
-

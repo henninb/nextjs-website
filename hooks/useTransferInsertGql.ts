@@ -44,9 +44,10 @@ export default function useTransferInsertGql() {
       const input = {
         sourceAccount: p.sourceAccount,
         destinationAccount: p.destinationAccount,
-        transactionDate: (p.transactionDate instanceof Date
-          ? p.transactionDate.toISOString()
-          : new Date(p.transactionDate).toISOString()),
+        transactionDate:
+          p.transactionDate instanceof Date
+            ? p.transactionDate.toISOString()
+            : new Date(p.transactionDate).toISOString(),
         amount: p.amount,
         guidSource: p.guidSource ?? null,
         guidDestination: p.guidDestination ?? null,
@@ -79,4 +80,3 @@ export default function useTransferInsertGql() {
     },
   });
 }
-

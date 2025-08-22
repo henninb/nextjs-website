@@ -38,7 +38,9 @@ export default function useTransferFetchGql() {
   return useQuery<Transfer[], Error>({
     queryKey: ["transferGQL"],
     queryFn: async () => {
-      const data = await graphqlRequest<TransfersQueryResult>({ query: TRANSFERS_QUERY });
+      const data = await graphqlRequest<TransfersQueryResult>({
+        query: TRANSFERS_QUERY,
+      });
       const mapped: Transfer[] = (data.transfers || []).map((t) => ({
         transferId: t.transferId,
         sourceAccount: t.sourceAccount,
@@ -55,4 +57,3 @@ export default function useTransferFetchGql() {
     },
   });
 }
-

@@ -23,9 +23,11 @@ export default function TransactionsByCategory() {
     page: 0,
   });
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [stateFilter, setStateFilter] = useState<{ cleared: boolean; outstanding: boolean; future: boolean}>(
-    { cleared: true, outstanding: true, future: true }
-  );
+  const [stateFilter, setStateFilter] = useState<{
+    cleared: boolean;
+    outstanding: boolean;
+    future: boolean;
+  }>({ cleared: true, outstanding: true, future: true });
 
   const router = useRouter();
   const { categoryName }: any = router.query;
@@ -149,13 +151,22 @@ export default function TransactionsByCategory() {
   const filteredTransactions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const allowedStates = new Set(
-      [stateFilter.cleared && "cleared", stateFilter.outstanding && "outstanding", stateFilter.future && "future"].filter(Boolean) as string[]
+      [
+        stateFilter.cleared && "cleared",
+        stateFilter.outstanding && "outstanding",
+        stateFilter.future && "future",
+      ].filter(Boolean) as string[],
     );
     return (fetchedTransactions || []).filter((row) => {
       if (!row) return false;
-      if (row.transactionState && !allowedStates.has(row.transactionState as string)) return false;
+      if (
+        row.transactionState &&
+        !allowedStates.has(row.transactionState as string)
+      )
+        return false;
       if (!q) return true;
-      const haystack = `${row.accountNameOwner || ""} ${row.description || ""} ${row.category || ""} ${row.notes || ""}`.toLowerCase();
+      const haystack =
+        `${row.accountNameOwner || ""} ${row.description || ""} ${row.category || ""} ${row.notes || ""}`.toLowerCase();
       if (haystack.includes(q)) return true;
       const amtStr = (row.amount ?? "").toString();
       return amtStr.includes(q);
@@ -168,7 +179,11 @@ export default function TransactionsByCategory() {
         <PageHeader
           title={`${categoryName}`}
           actions={
-            <Stack spacing={1.5} direction={{ xs: "column", sm: "row" }} sx={{ alignItems: "center" }}>
+            <Stack
+              spacing={1.5}
+              direction={{ xs: "column", sm: "row" }}
+              sx={{ alignItems: "center" }}
+            >
               <TextField
                 size="small"
                 label="Search"
@@ -181,21 +196,30 @@ export default function TransactionsByCategory() {
                   label="Cleared"
                   color={stateFilter.cleared ? "primary" : "default"}
                   variant={stateFilter.cleared ? "filled" : "outlined"}
-                  onClick={() => setStateFilter((s) => ({ ...s, cleared: !s.cleared }))}
+                  onClick={() =>
+                    setStateFilter((s) => ({ ...s, cleared: !s.cleared }))
+                  }
                   size="small"
                 />
                 <Chip
                   label="Outstanding"
                   color={stateFilter.outstanding ? "primary" : "default"}
                   variant={stateFilter.outstanding ? "filled" : "outlined"}
-                  onClick={() => setStateFilter((s) => ({ ...s, outstanding: !s.outstanding }))}
+                  onClick={() =>
+                    setStateFilter((s) => ({
+                      ...s,
+                      outstanding: !s.outstanding,
+                    }))
+                  }
                   size="small"
                 />
                 <Chip
                   label="Future"
                   color={stateFilter.future ? "primary" : "default"}
                   variant={stateFilter.future ? "filled" : "outlined"}
-                  onClick={() => setStateFilter((s) => ({ ...s, future: !s.future }))}
+                  onClick={() =>
+                    setStateFilter((s) => ({ ...s, future: !s.future }))
+                  }
                   size="small"
                 />
               </Stack>
@@ -218,7 +242,9 @@ export default function TransactionsByCategory() {
                   checkboxSelection={false}
                   rowSelection={false}
                   paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
                   pageSizeOptions={[25, 50, 100]}
                   hideFooter={filteredTransactions?.length < 25}
                   processRowUpdate={async (

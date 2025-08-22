@@ -4,9 +4,15 @@ export type GraphQLRequestOptions = {
   signal?: AbortSignal;
 };
 
-export async function graphqlRequest<T>({ query, variables, signal }: GraphQLRequestOptions): Promise<T> {
-  const base = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/graphql`;
-  const endpoint = base.replace(/\/$/, '');
+export async function graphqlRequest<T>({
+  query,
+  variables,
+  signal,
+}: GraphQLRequestOptions): Promise<T> {
+  const base =
+    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/graphql`;
+  const endpoint = base.replace(/\/$/, "");
 
   const res = await fetch(endpoint, {
     method: "POST",
@@ -30,4 +36,3 @@ export async function graphqlRequest<T>({ query, variables, signal }: GraphQLReq
   }
   return json.data as T;
 }
-
