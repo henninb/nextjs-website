@@ -1,0 +1,13 @@
+# Ignore build artifacts and generated files
+.next/
+coverage/
+node_modules/
+dist/
+build/
+# Lockfiles and package manager files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+# Misc
+.DS_Store
+*.log

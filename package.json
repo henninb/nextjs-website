@@ -6,7 +6,8 @@
     "dev:turbo": "NODE_OPTIONS='--no-deprecation' next dev --turbo",
     "start": "next start",
     "test": "npx jest",
-    "prettier": "npx prettier --write .",
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
     "pages:build": "npx @cloudflare/next-on-pages",
     "analyze": "ANALYZE=true npm run build"
   },
@@ -64,3 +65,4 @@
     ]
   }
 }
+    "prettier": "3.3.3",
