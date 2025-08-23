@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 export const config = {
   matcher: [
-    "/api/:path*",
+    // More robust API route matching for production
+    "/api/(.*)",
     // Apply to non-static assets: exclude Next internals and favicon; handle
     // extension-based static assets in code below.
     "/((?!_next/static|_next/image|favicon.ico).*)",
@@ -13,7 +14,16 @@ export const config = {
 export async function middleware(request) {
   const isProduction = process.env.NODE_ENV === "production";
   const isDev = !isProduction;
-  if (isDev) {
+  
+  // Always log in production to debug API routing issues
+  if (isProduction && request.nextUrl.pathname.startsWith("/api/")) {
+    console.log(
+      "[MW PROD] intercepted:",
+      request.nextUrl.pathname,
+      "method=",
+      request.method,
+    );
+  } else if (isDev) {
     console.log(
       "[MW] path=",
       request.nextUrl.pathname,
@@ -44,9 +54,15 @@ export async function middleware(request) {
 
   const url = request.nextUrl.clone();
 
-  // Proxy /api/* requests in both development and production
+  // CRITICAL: Always proxy ALL /api/* requests to finance.bhenning.com
+  // This includes /api/me, /api/graphql, and all other API endpoints
+  // The middleware MUST intercept these requests and never let them fall through
   if (url.pathname.startsWith("/api/")) {
-    if (isDev) console.log("[MW] proxying API route");
+    if (isDev) {
+      console.log("[MW] proxying API route");
+    } else {
+      console.log("[MW PROD] entering proxy logic for:", url.pathname);
+    }
     try {
       // Determine upstream origin from env (supports local dev + prod)
       // Prefer explicit API_PROXY_TARGET; fallback to NEXT_PUBLIC_API_BASE_URL; default to prod host.
@@ -56,6 +72,11 @@ export async function middleware(request) {
           ? "https://finance.bhenning.com"
           : process.env.NEXT_PUBLIC_API_BASE_URL) ||
         "https://finance.bhenning.com";
+      
+      // Log upstream origin in production for debugging
+      if (isProduction) {
+        console.log("[MW PROD] upstream origin:", upstreamOrigin);
+      }
 
       // Special-case GraphQL: map /api/graphql -> <origin>/graphql
       const isGraphQL = url.pathname === "/api/graphql";
@@ -72,8 +93,8 @@ export async function middleware(request) {
           `[MW] target= ${targetUrl} graphql=${isGraphQL} tokenCookie=${hasToken}`,
         );
       } else {
-        // Log in production only for debugging API proxy issues
-        console.log(`[MW PROD] proxying ${url.pathname} -> ${upstreamOrigin}`);
+        // Log in production for debugging API proxy issues
+        console.log(`[MW PROD] target URL: ${targetUrl}`);
       }
 
       // Do not log cookies or headers
@@ -94,7 +115,11 @@ export async function middleware(request) {
             ? await request.blob()
             : undefined,
       });
-      if (isDev) console.log("[MW] upstream status=", response.status);
+      if (isDev) {
+        console.log("[MW] upstream status=", response.status);
+      } else {
+        console.log("[MW PROD] upstream response status=", response.status);
+      }
 
       // Create response with all headers
       const responseHeaders = new Headers();
@@ -151,13 +176,21 @@ export async function middleware(request) {
           "Content-Type, Authorization, X-Requested-With, Accept, Origin",
         );
       }
-      return new NextResponse(response.body, {
+      const finalResponse = new NextResponse(response.body, {
         status: response.status,
         statusText: response.statusText,
         headers: responseHeaders,
       });
+      
+      // Log successful proxy in production
+      if (isProduction) {
+        console.log("[MW PROD] successfully proxied:", url.pathname, "status:", response.status);
+      }
+      
+      return finalResponse;
     } catch (error) {
-      console.error("[MW] proxy error:", isDev ? error : error?.message);
+      const errorMsg = isDev ? error : error?.message;
+      console.error(`[MW${isProduction ? ' PROD' : ''}] proxy error:`, errorMsg);
       return new NextResponse(
         JSON.stringify({ error: "Proxy error", message: error.message }),
         {
@@ -166,6 +199,10 @@ export async function middleware(request) {
         },
       );
     }
+    
+    // This should never be reached for /api/* requests
+    console.error("[MW PROD] CRITICAL: API request fell through middleware!");
+    return new NextResponse("Internal Server Error", { status: 500 });
   } else {
     // Non-API routes: enforce no-store for dynamic/HTML content
     const pathname = url.pathname || "";
