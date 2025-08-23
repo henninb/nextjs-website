@@ -52,7 +52,9 @@ export async function middleware(request) {
       // Prefer explicit API_PROXY_TARGET; fallback to NEXT_PUBLIC_API_BASE_URL; default to prod host.
       const upstreamOrigin =
         process.env.API_PROXY_TARGET ||
-        (isProduction ? "https://finance.bhenning.com" : process.env.NEXT_PUBLIC_API_BASE_URL) ||
+        (isProduction
+          ? "https://finance.bhenning.com"
+          : process.env.NEXT_PUBLIC_API_BASE_URL) ||
         "https://finance.bhenning.com";
 
       // Special-case GraphQL: map /api/graphql -> <origin>/graphql
