@@ -316,7 +316,8 @@ describe("Register Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getAllByText("An account with this email already exists.").length,
+        screen.getAllByText("An account with this email already exists.")
+          .length,
       ).toBeGreaterThan(0);
     });
   });

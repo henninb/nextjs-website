@@ -48,9 +48,28 @@ export async function middleware(request) {
   if (url.pathname.startsWith("/api/")) {
     if (isDev) console.log("[MW] proxying API route");
     try {
-      // Build the target URL
-      const targetUrl = `https://finance.bhenning.com${url.pathname}${url.search}`;
-      if (isDev) console.log("[MW] target=", targetUrl);
+      // Determine upstream origin from env (supports local dev + prod)
+      // Prefer explicit API_PROXY_TARGET; fallback to NEXT_PUBLIC_API_BASE_URL; default to prod host.
+      const upstreamOrigin =
+        process.env.API_PROXY_TARGET ||
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://finance.bhenning.com";
+
+      // Special-case GraphQL: map /api/graphql -> <origin>/graphql
+      const isGraphQL = url.pathname === "/api/graphql";
+      const upstreamPath = isGraphQL
+        ? "/graphql" + url.search
+        : url.pathname + url.search;
+
+      const targetUrl = new URL(upstreamPath, upstreamOrigin).toString();
+      if (isDev) {
+        const hasToken = (request.headers.get("cookie") || "").includes(
+          "token=",
+        );
+        console.log(
+          `[MW] target= ${targetUrl} graphql=${isGraphQL} tokenCookie=${hasToken}`,
+        );
+      }
 
       // Do not log cookies or headers
 
@@ -59,8 +78,8 @@ export async function middleware(request) {
         method: request.method,
         headers: {
           ...Object.fromEntries(request.headers.entries()),
-          // Ensure proper host header
-          host: "finance.bhenning.com",
+          // Ensure proper host header based on upstream target
+          host: new URL(upstreamOrigin).host,
           // Forward the original host for CORS if needed
           "x-forwarded-host": request.headers.get("host"),
           "x-forwarded-proto": "https",

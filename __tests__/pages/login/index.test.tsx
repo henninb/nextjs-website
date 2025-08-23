@@ -163,7 +163,9 @@ describe("Login Page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Invalid email or password.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Invalid email or password."),
+      ).toBeInTheDocument();
       // Only /api/login attempted
       expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(pushMock).not.toHaveBeenCalled();
