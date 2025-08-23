@@ -52,7 +52,7 @@ export async function middleware(request) {
       // Prefer explicit API_PROXY_TARGET; fallback to NEXT_PUBLIC_API_BASE_URL; default to prod host.
       const upstreamOrigin =
         process.env.API_PROXY_TARGET ||
-        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        (isProduction ? "https://finance.bhenning.com" : process.env.NEXT_PUBLIC_API_BASE_URL) ||
         "https://finance.bhenning.com";
 
       // Special-case GraphQL: map /api/graphql -> <origin>/graphql
@@ -69,6 +69,9 @@ export async function middleware(request) {
         console.log(
           `[MW] target= ${targetUrl} graphql=${isGraphQL} tokenCookie=${hasToken}`,
         );
+      } else {
+        // Log in production only for debugging API proxy issues
+        console.log(`[MW PROD] proxying ${url.pathname} -> ${upstreamOrigin}`);
       }
 
       // Do not log cookies or headers
