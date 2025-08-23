@@ -49,12 +49,9 @@ class USDAmountValidator {
   }
 
   static formatOnBlur(displayValue: string): string | null {
-    if (
-      displayValue &&
-      !displayValue.includes(".") &&
-      displayValue !== "-" &&
-      displayValue !== ""
-    ) {
+    // Only format strict whole numbers (optional leading minus), no other chars
+    const wholeNumberRegex = /^-?\d+$/;
+    if (wholeNumberRegex.test(displayValue)) {
       const numericValue = parseFloat(displayValue);
       if (!isNaN(numericValue)) {
         return numericValue.toFixed(2);

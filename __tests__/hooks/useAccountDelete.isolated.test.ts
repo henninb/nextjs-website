@@ -49,18 +49,23 @@ const deleteAccount = async (payload: Account): Promise<Account | null> => {
 
     if (!response.ok) {
       let errorMessage = "";
+      let missingMessage = false;
 
       try {
         const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
+        if (errorBody && Object.prototype.hasOwnProperty.call(errorBody, "response")) {
+          errorMessage = `${errorBody.response ?? ""}`;
         } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
+          missingMessage = true;
         }
       } catch (error: any) {
         console.log(`Failed to parse error response: ${error.message}`);
         throw new Error(`Failed to parse error response: ${error.message}`);
+      }
+
+      if (missingMessage) {
+        console.log("No error message returned.");
+        throw new Error("No error message returned.");
       }
 
       console.log(errorMessage || "cannot throw a null value");

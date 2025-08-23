@@ -37,3 +37,4 @@ ngx_http_pxnginx_module.so
 ssl
 
 tsconfig.tsbuildinfo
+jest-results.json

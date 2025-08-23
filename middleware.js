@@ -78,11 +78,15 @@ export async function middleware(request) {
         console.log("[MW PROD] upstream origin:", upstreamOrigin);
       }
 
-      // Special-case GraphQL: map /api/graphql -> <origin>/graphql
-      const isGraphQL = url.pathname === "/api/graphql";
-      const upstreamPath = isGraphQL
-        ? "/graphql" + url.search
-        : url.pathname + url.search;
+      // Map specific API routes for production backend compatibility
+      let upstreamPath;
+      if (isProduction && url.pathname === "/api/graphql") {
+        // In production, /api/graphql maps to /graphql on backend
+        upstreamPath = "/graphql" + url.search;
+      } else {
+        // All other /api/* paths go to backend as-is
+        upstreamPath = url.pathname + url.search;
+      }
 
       const targetUrl = new URL(upstreamPath, upstreamOrigin).toString();
       if (isDev) {
@@ -90,7 +94,7 @@ export async function middleware(request) {
           "token=",
         );
         console.log(
-          `[MW] target= ${targetUrl} graphql=${isGraphQL} tokenCookie=${hasToken}`,
+          `[MW] target= ${targetUrl} tokenCookie=${hasToken}`,
         );
       } else {
         // Log in production for debugging API proxy issues
@@ -99,7 +103,10 @@ export async function middleware(request) {
 
       // Do not log cookies or headers
 
-      // Forward the request
+      // Forward the request with timeout for production reliability
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      
       const response = await fetch(targetUrl, {
         method: request.method,
         headers: {
@@ -114,7 +121,10 @@ export async function middleware(request) {
           request.method !== "GET" && request.method !== "HEAD"
             ? await request.blob()
             : undefined,
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       if (isDev) {
         console.log("[MW] upstream status=", response.status);
       } else {
@@ -191,10 +201,23 @@ export async function middleware(request) {
     } catch (error) {
       const errorMsg = isDev ? error : error?.message;
       console.error(`[MW${isProduction ? ' PROD' : ''}] proxy error:`, errorMsg);
+      
+      // Handle timeout and network errors gracefully in production
+      if (error.name === 'AbortError') {
+        console.error(`[MW${isProduction ? ' PROD' : ''}] request timeout for:`, url.pathname);
+        return new NextResponse(
+          JSON.stringify({ error: "Request timeout", message: "The upstream service did not respond in time" }),
+          {
+            status: 504,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      
       return new NextResponse(
         JSON.stringify({ error: "Proxy error", message: error.message }),
         {
-          status: 500,
+          status: 502,
           headers: { "Content-Type": "application/json" },
         },
       );

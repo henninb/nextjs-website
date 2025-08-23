@@ -18,8 +18,9 @@ const deleteCategory = async (payload: Category): Promise<Category | null> => {
 
       try {
         const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
+        if (errorBody && Object.prototype.hasOwnProperty.call(errorBody, "response")) {
+          errorMessage = `${errorBody.response ?? ""}`;
+          // if present but empty, allow fallback below
         } else {
           console.log("No error message returned.");
           throw new Error("No error message returned.");
