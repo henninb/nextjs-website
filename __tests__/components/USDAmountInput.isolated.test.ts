@@ -92,17 +92,17 @@ class USDAmountValidator {
 
   static getDisplayValue(value: string | number): string {
     const stringValue =
-      value === 0 ||
-      value === 0.0 ||
-      value === "0" ||
-      value === "0.0" ||
-      !value
+      value === 0 || value === 0.0 || value === "0" || value === "0.0" || !value
         ? ""
         : String(value);
     return stringValue;
   }
 
-  static parseNumericValue(displayValue: string): { isPositive: boolean; isNegative: boolean; numericValue: number } {
+  static parseNumericValue(displayValue: string): {
+    isPositive: boolean;
+    isNegative: boolean;
+    numericValue: number;
+  } {
     const numericValue = parseFloat(displayValue || "0");
     const isPositive = !isNaN(numericValue) && numericValue > 0;
     const isNegative = !isNaN(numericValue) && numericValue < 0;
@@ -155,21 +155,21 @@ describe("USDAmountValidator (Isolated)", () => {
 
     it("should detect multiple decimal points", () => {
       const result = USDAmountValidator.validateInput("123.45.67");
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain("Multiple decimal points not allowed");
     });
 
     it("should detect multiple negative signs", () => {
       const result = USDAmountValidator.validateInput("--123");
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain("Multiple negative signs not allowed");
     });
 
     it("should detect negative sign in wrong position", () => {
       const result = USDAmountValidator.validateInput("12-3");
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain("Negative sign must be at the beginning");
     });
@@ -178,15 +178,31 @@ describe("USDAmountValidator (Isolated)", () => {
   describe("Key Prevention", () => {
     it("should prevent invalid characters", () => {
       const invalidKeys = ["e", "E", "+"];
-      
+
       invalidKeys.forEach((key) => {
         expect(USDAmountValidator.shouldPreventKeyDown(key)).toBe(true);
       });
     });
 
     it("should allow valid characters", () => {
-      const validKeys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", "Backspace", "Delete", "Tab"];
-      
+      const validKeys = [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        ".",
+        "-",
+        "Backspace",
+        "Delete",
+        "Tab",
+      ];
+
       validKeys.forEach((key) => {
         expect(USDAmountValidator.shouldPreventKeyDown(key)).toBe(false);
       });
@@ -265,9 +281,15 @@ describe("USDAmountValidator (Isolated)", () => {
     });
 
     it("should not show decimal placeholder for decimals", () => {
-      expect(USDAmountValidator.shouldShowDecimalPlaceholder("123.45")).toBe(false);
-      expect(USDAmountValidator.shouldShowDecimalPlaceholder("123.")).toBe(false);
-      expect(USDAmountValidator.shouldShowDecimalPlaceholder("0.5")).toBe(false);
+      expect(USDAmountValidator.shouldShowDecimalPlaceholder("123.45")).toBe(
+        false,
+      );
+      expect(USDAmountValidator.shouldShowDecimalPlaceholder("123.")).toBe(
+        false,
+      );
+      expect(USDAmountValidator.shouldShowDecimalPlaceholder("0.5")).toBe(
+        false,
+      );
     });
 
     it("should not show decimal placeholder for empty or lone negative", () => {
@@ -301,7 +323,7 @@ describe("USDAmountValidator (Isolated)", () => {
   describe("Numeric Value Parsing", () => {
     it("should correctly identify positive values", () => {
       const result = USDAmountValidator.parseNumericValue("123.45");
-      
+
       expect(result.isPositive).toBe(true);
       expect(result.isNegative).toBe(false);
       expect(result.numericValue).toBe(123.45);
@@ -309,7 +331,7 @@ describe("USDAmountValidator (Isolated)", () => {
 
     it("should correctly identify negative values", () => {
       const result = USDAmountValidator.parseNumericValue("-123.45");
-      
+
       expect(result.isPositive).toBe(false);
       expect(result.isNegative).toBe(true);
       expect(result.numericValue).toBe(-123.45);
@@ -317,7 +339,7 @@ describe("USDAmountValidator (Isolated)", () => {
 
     it("should handle zero values", () => {
       const result = USDAmountValidator.parseNumericValue("0");
-      
+
       expect(result.isPositive).toBe(false);
       expect(result.isNegative).toBe(false);
       expect(result.numericValue).toBe(0);
@@ -325,7 +347,7 @@ describe("USDAmountValidator (Isolated)", () => {
 
     it("should handle empty values", () => {
       const result = USDAmountValidator.parseNumericValue("");
-      
+
       expect(result.isPositive).toBe(false);
       expect(result.isNegative).toBe(false);
       expect(result.numericValue).toBe(0);
@@ -333,7 +355,7 @@ describe("USDAmountValidator (Isolated)", () => {
 
     it("should handle invalid values", () => {
       const result = USDAmountValidator.parseNumericValue("abc");
-      
+
       expect(result.isPositive).toBe(false);
       expect(result.isNegative).toBe(false);
       expect(result.numericValue).toBeNaN();
@@ -345,7 +367,7 @@ describe("USDAmountValidator (Isolated)", () => {
       const largeNumber = "999999999.99";
       const validation = USDAmountValidator.validateInput(largeNumber);
       const parsing = USDAmountValidator.parseNumericValue(largeNumber);
-      
+
       expect(validation.isValid).toBe(true);
       expect(parsing.isPositive).toBe(true);
       expect(parsing.numericValue).toBe(999999999.99);
@@ -355,24 +377,28 @@ describe("USDAmountValidator (Isolated)", () => {
       const smallNumber = "0.01";
       const validation = USDAmountValidator.validateInput(smallNumber);
       const parsing = USDAmountValidator.parseNumericValue(smallNumber);
-      
+
       expect(validation.isValid).toBe(true);
       expect(parsing.isPositive).toBe(true);
       expect(parsing.numericValue).toBe(0.01);
     });
 
     it("should handle precision edge cases", () => {
-      expect(USDAmountValidator.validateInput("123.99")).toEqual({ isValid: true });
-      expect(USDAmountValidator.validateInput("123.999")).toEqual({ 
+      expect(USDAmountValidator.validateInput("123.99")).toEqual({
+        isValid: true,
+      });
+      expect(USDAmountValidator.validateInput("123.999")).toEqual({
         isValid: false,
-        errors: expect.arrayContaining(["Invalid format"]) 
+        errors: expect.arrayContaining(["Invalid format"]),
       });
     });
 
     it("should handle decimal-only input", () => {
       expect(USDAmountValidator.validateInput(".")).toEqual({ isValid: true });
       expect(USDAmountValidator.validateInput(".5")).toEqual({ isValid: true });
-      expect(USDAmountValidator.validateInput("-.5")).toEqual({ isValid: true });
+      expect(USDAmountValidator.validateInput("-.5")).toEqual({
+        isValid: true,
+      });
     });
   });
 });

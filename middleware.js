@@ -111,16 +111,14 @@ export async function middleware(request) {
 
             if (isAuthCookie && isDevelopment && isLocalhost) {
               // Secure rewriting: only remove problematic attributes for auth cookies
-              const modifiedCookie =
-                value
-                  // Remove domain for any bhenning.com domain
-                  .replace(/;\s*Domain=\.?bhenning\.com/gi, "")
-                  // Remove Secure flag only for localhost HTTP
-                  .replace(/;\s*Secure(?=;|$)/gi, "")
-                  // Adjust SameSite for localhost compatibility
-                  .replace(/;\s*SameSite=None/gi, "; SameSite=Lax") +
-                // Ensure HttpOnly is preserved for security
-                (!/HttpOnly/i.test(value) ? "; HttpOnly" : "");
+              const modifiedCookie = value
+                // Remove domain for any bhenning.com domain
+                .replace(/;\s*Domain=\.?[^;]*bhenning\.com[^;]*/gi, "")
+                // Remove Secure flag only for localhost HTTP
+                .replace(/;\s*Secure(?=;|$)/gi, "")
+                // Adjust SameSite for localhost compatibility
+                .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+
               responseHeaders.set(key, modifiedCookie);
             } else {
               // Non-auth cookies or production: pass through unchanged

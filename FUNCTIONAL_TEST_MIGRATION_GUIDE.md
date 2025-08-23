@@ -7,6 +7,7 @@ This guide explains how to convert complex, integration-style tests to isolated,
 ## Current Test Architecture Issues
 
 ### Complex Tests (To Be Replaced)
+
 - Heavy setup with React Query, MSW, and multiple mocks
 - Slow execution due to rendering and network simulation
 - Brittle due to many dependencies
@@ -14,6 +15,7 @@ This guide explains how to convert complex, integration-style tests to isolated,
 - Example: `useAccountDelete.test.tsx`, `useCategoryDelete.test.tsx`
 
 ### Isolated Tests (Target Architecture)
+
 - Pure function testing with minimal setup
 - Fast execution (no rendering or network calls)
 - Focused on business logic validation
@@ -27,6 +29,7 @@ This guide explains how to convert complex, integration-style tests to isolated,
 Extract the core business logic from hooks and components:
 
 **Before (Complex):**
+
 ```typescript
 // Testing the entire hook with React Query setup
 const { result } = renderHook(() => useAccountDelete(), {
@@ -37,6 +40,7 @@ await waitFor(() => expect(result.current.isSuccess).toBe(true));
 ```
 
 **After (Isolated):**
+
 ```typescript
 // Test the extracted deleteAccount function directly
 const result = await deleteAccount(mockAccount);
@@ -78,9 +82,9 @@ Test the core functionality, not React integration:
 describe("deleteAccount (Isolated)", () => {
   it("should validate account name before deletion", async () => {
     const invalidAccount = { ...mockAccount, accountNameOwner: "" };
-    
+
     await expect(deleteAccount(invalidAccount)).rejects.toThrow(
-      "Account name is required for deletion"
+      "Account name is required for deletion",
     );
   });
 });
@@ -89,13 +93,16 @@ describe("deleteAccount (Isolated)", () => {
 ## Converted Test Examples
 
 ### Hook Tests
+
 - ✅ `useAccountDelete.isolated.test.ts` - Tests API logic without React Query
 - ✅ `useCategoryDelete.isolated.test.ts` - Tests deletion logic in isolation
 
 ### Component Tests
+
 - ✅ `USDAmountInput.isolated.test.ts` - Tests validation logic as pure functions
 
 ### Utility Tests (Already Isolated)
+
 - ✅ `validatePassword.test.ts` - Pure function validation
 - ✅ `commonDates.test.ts` - Date utility functions
 
@@ -104,19 +111,19 @@ describe("deleteAccount (Isolated)", () => {
 Use `isolatedTestHelpers.ts` for common patterns:
 
 ```typescript
-import { 
-  createFetchMock, 
-  createErrorResponse, 
+import {
+  createFetchMock,
+  createErrorResponse,
   ConsoleSpy,
-  createTestAccount 
-} from '../utils/isolatedTestHelpers';
+  createTestAccount,
+} from "../utils/isolatedTestHelpers";
 
 // Easy mock creation
 global.fetch = createFetchMock({ message: "Success" });
 
 // Error response testing
 global.fetch = createFetchMock(
-  createErrorResponse("Cannot delete account", 400)
+  createErrorResponse("Cannot delete account", 400),
 );
 
 // Console monitoring
@@ -129,16 +136,19 @@ spy.stop();
 ## Benefits of Isolated Architecture
 
 ### Performance
+
 - **Fast execution**: No DOM rendering or network simulation
 - **Minimal setup**: Direct function calls instead of component mounting
 - **Parallel execution**: Independent tests can run concurrently
 
 ### Reliability
+
 - **Focused testing**: Each test validates one specific behavior
 - **Reduced flakiness**: No timing issues from async rendering
 - **Clear failures**: Easy to identify what specific logic failed
 
 ### Maintainability
+
 - **Simple debugging**: Step through pure functions easily
 - **Easy refactoring**: Tests focus on inputs/outputs, not implementation details
 - **Clear intent**: Test names directly describe business logic being validated
@@ -164,7 +174,7 @@ Keep both during migration to ensure no regression.
 ## What NOT to Test in Isolation
 
 - React rendering behavior
-- Component lifecycle methods  
+- Component lifecycle methods
 - DOM interactions
 - Integration between multiple systems
 - User interface workflows
@@ -203,6 +213,7 @@ Focus on converting the slowest, most brittle tests first for maximum impact.
 ## Examples of Successful Conversions
 
 ### Before: Complex Hook Test (171 lines)
+
 ```typescript
 // useAccountDelete.test.tsx - Heavy setup, MSW, React Query
 const server = setupServer();
@@ -214,6 +225,7 @@ const { result } = renderHook(() => useAccountDelete(), {
 ```
 
 ### After: Isolated Function Test (200+ lines, more comprehensive)
+
 ```typescript
 // useAccountDelete.isolated.test.ts - Direct function testing
 describe("deleteAccount (Isolated)", () => {
@@ -225,7 +237,8 @@ describe("deleteAccount (Isolated)", () => {
 });
 ```
 
-**Result**: 
+**Result**:
+
 - 90% faster test execution
 - 50% more test scenarios covered
 - Clearer test failure messages
@@ -240,10 +253,12 @@ This migration strategy focuses on testing business logic in isolation while mai
 ### ✅ Completed Conversions (2025-08-23)
 
 #### Hook Tests Converted
+
 - **`useAccountDelete.isolated.test.ts`** - Extracted `deleteAccount` function testing with security validation, error handling, and API integration
 - **`useCategoryDelete.isolated.test.ts`** - Pure function tests for category deletion API calls and error scenarios
 
-#### Component Tests Converted  
+#### Component Tests Converted
+
 - **`USDAmountInput.isolated.test.ts`** - Extracted `USDAmountValidator` class with comprehensive business logic testing:
   - Input validation (decimals, negative signs, format checking)
   - Sign toggle functionality
@@ -252,6 +267,7 @@ This migration strategy focuses on testing business logic in isolation while mai
   - Edge case handling
 
 #### Infrastructure Created
+
 - **`isolatedTestHelpers.ts`** - Comprehensive test utility library with:
   - Mock response creators (`MockResponse`, `createFetchMock`)
   - Console spy utilities (`ConsoleSpy`)
@@ -261,6 +277,7 @@ This migration strategy focuses on testing business logic in isolation while mai
 ### 📋 Next Steps / Remaining Conversions
 
 #### High Priority Hook Tests (Complex Setup)
+
 - [ ] `usePaymentDelete.test.tsx` - API deletion logic
 - [ ] `useTransactionDelete.test.tsx` - Transaction deletion with validation
 - [ ] `useTransferDelete.test.tsx` - Transfer deletion logic
@@ -269,6 +286,7 @@ This migration strategy focuses on testing business logic in isolation while mai
 - [ ] `useFinanceValidation.test.tsx` - Business validation rules
 
 #### Medium Priority Hook Tests
+
 - [ ] `useAccountInsert.test.tsx` - Account creation logic
 - [ ] `useAccountUpdate.test.tsx` - Account modification
 - [ ] `useCategoryInsert.test.tsx` - Category creation
@@ -277,12 +295,14 @@ This migration strategy focuses on testing business logic in isolation while mai
 - [ ] `useTransactionInsert.test.tsx` - Transaction creation
 
 #### Component Tests (Business Logic Focus)
+
 - [ ] `SelectNavigateAccounts.test.tsx` - Account selection logic
 - [ ] `DataGridDynamic.test.tsx` - Data manipulation functions
 - [ ] `AuthProvider.test.tsx` - Authentication state management
 - [ ] `ErrorBoundary.test.tsx` - Error handling logic
 
 #### Page Tests (Extract Business Logic)
+
 - [ ] Page validation functions from finance pages
 - [ ] Import/export logic from transaction pages
 - [ ] Form validation from login/register pages
@@ -290,6 +310,7 @@ This migration strategy focuses on testing business logic in isolation while mai
 ### 🔄 Current Testing Architecture
 
 **Hybrid Approach:**
+
 - **Isolated tests** (`.isolated.test.ts`) - Fast business logic validation
 - **Integration tests** (`.test.tsx`) - React/UI integration (kept for now)
 - **Utility tests** (`.test.ts`) - Already following isolated patterns

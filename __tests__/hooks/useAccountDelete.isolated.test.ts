@@ -91,7 +91,7 @@ describe("deleteAccount (Isolated)", () => {
     // Setup default mock returns
     mockInputSanitizer.sanitizeAccountName.mockReturnValue("test_account");
     mockSecurityLogger.logSanitizationAttempt.mockReturnValue(undefined);
-    
+
     // Reset console.log spy if it exists
     if (jest.isMockFunction(console.log)) {
       (console.log as jest.Mock).mockRestore();
@@ -107,22 +107,21 @@ describe("deleteAccount (Isolated)", () => {
 
     const result = await deleteAccount(mockAccount);
 
-    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith("test_account");
+    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith(
+      "test_account",
+    );
     expect(mockSecurityLogger.logSanitizationAttempt).toHaveBeenCalledWith(
       "accountNameOwner",
       "test_account",
-      "test_account"
+      "test_account",
     );
-    expect(fetch).toHaveBeenCalledWith(
-      "/api/account/delete/test_account",
-      {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    expect(fetch).toHaveBeenCalledWith("/api/account/delete/test_account", {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     expect(result).toBeNull();
   });
 
@@ -143,7 +142,7 @@ describe("deleteAccount (Isolated)", () => {
     const invalidAccount = { ...mockAccount, accountNameOwner: "" };
 
     await expect(deleteAccount(invalidAccount)).rejects.toThrow(
-      "Account name is required for deletion"
+      "Account name is required for deletion",
     );
 
     expect(mockInputSanitizer.sanitizeAccountName).not.toHaveBeenCalled();
@@ -154,10 +153,12 @@ describe("deleteAccount (Isolated)", () => {
     mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce("");
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Invalid account name provided"
+      "Invalid account name provided",
     );
 
-    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith("test_account");
+    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith(
+      "test_account",
+    );
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -172,11 +173,13 @@ describe("deleteAccount (Isolated)", () => {
     });
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Cannot delete this account"
+      "Cannot delete this account",
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("Cannot delete this account");
-    expect(consoleSpy).toHaveBeenCalledWith("An error occurred: Cannot delete this account");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "An error occurred: Cannot delete this account",
+    );
     consoleSpy.mockRestore();
   });
 
@@ -189,11 +192,13 @@ describe("deleteAccount (Isolated)", () => {
     });
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "No error message returned."
+      "No error message returned.",
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
-    expect(consoleSpy).toHaveBeenCalledWith("An error occurred: No error message returned.");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "An error occurred: No error message returned.",
+    );
     consoleSpy.mockRestore();
   });
 
@@ -206,11 +211,15 @@ describe("deleteAccount (Isolated)", () => {
     });
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Failed to parse error response: Invalid JSON"
+      "Failed to parse error response: Invalid JSON",
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith("Failed to parse error response: Invalid JSON");
-    expect(consoleSpy).toHaveBeenCalledWith("An error occurred: Failed to parse error response: Invalid JSON");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to parse error response: Invalid JSON",
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "An error occurred: Failed to parse error response: Invalid JSON",
+    );
     consoleSpy.mockRestore();
   });
 
@@ -229,7 +238,9 @@ describe("deleteAccount (Isolated)", () => {
       ...mockAccount,
       accountNameOwner: "test<script>alert('xss')</script>",
     };
-    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce("test_sanitized");
+    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(
+      "test_sanitized",
+    );
 
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
@@ -239,16 +250,20 @@ describe("deleteAccount (Isolated)", () => {
 
     await deleteAccount(accountWithSpecialChars);
 
-    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith("test<script>alert('xss')</script>");
+    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith(
+      "test<script>alert('xss')</script>",
+    );
     expect(mockSecurityLogger.logSanitizationAttempt).toHaveBeenCalledWith(
       "accountNameOwner",
       "test<script>alert('xss')</script>",
-      "test_sanitized"
+      "test_sanitized",
     );
   });
 
   it("should use sanitized account name in endpoint", async () => {
-    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce("sanitized_name");
+    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(
+      "sanitized_name",
+    );
 
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
@@ -260,7 +275,7 @@ describe("deleteAccount (Isolated)", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "/api/account/delete/sanitized_name",
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -268,7 +283,7 @@ describe("deleteAccount (Isolated)", () => {
     mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(null);
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Invalid account name provided"
+      "Invalid account name provided",
     );
   });
 
@@ -276,7 +291,7 @@ describe("deleteAccount (Isolated)", () => {
     mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(undefined);
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Invalid account name provided"
+      "Invalid account name provided",
     );
   });
 });

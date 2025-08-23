@@ -74,7 +74,7 @@ describe("deleteCategory (Isolated)", () => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
     expect(result).toBeNull();
   });
@@ -103,7 +103,7 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "Cannot delete this category"
+      "Cannot delete this category",
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("Cannot delete this category");
@@ -119,7 +119,7 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "No error message returned."
+      "No error message returned.",
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
@@ -135,11 +135,11 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "Failed to parse error response: Invalid JSON"
+      "Failed to parse error response: Invalid JSON",
     );
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to parse error response: Invalid JSON"
+      "Failed to parse error response: Invalid JSON",
     );
     consoleSpy.mockRestore();
   });
@@ -151,9 +151,13 @@ describe("deleteCategory (Isolated)", () => {
   });
 
   it("should handle fetch timeout errors", async () => {
-    global.fetch = jest.fn().mockRejectedValueOnce(new Error("Request timeout"));
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("Request timeout"));
 
-    await expect(deleteCategory(mockCategory)).rejects.toThrow("Request timeout");
+    await expect(deleteCategory(mockCategory)).rejects.toThrow(
+      "Request timeout",
+    );
   });
 
   it("should construct correct endpoint URL", async () => {
@@ -172,7 +176,7 @@ describe("deleteCategory (Isolated)", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       `/api/category/delete/electronics & gadgets`,
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -187,7 +191,7 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "cannot throw a null value"
+      "cannot throw a null value",
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("cannot throw a null value");
@@ -211,7 +215,7 @@ describe("deleteCategory (Isolated)", () => {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      }),
     );
   });
 });
