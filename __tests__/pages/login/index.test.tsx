@@ -145,10 +145,36 @@ describe("Login Page", () => {
     });
   });
 
-  it("shows error on login failure (HTTP)", async () => {
+  it("shows friendly message on invalid credentials (400/401/403)", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
-      status: 400,
+      status: 401,
       ok: false,
+      json: jest.fn().mockResolvedValue({ error: "Unauthorized" }),
+    });
+
+    render(<Login />);
+
+    fireEvent.change(document.getElementById("email") as HTMLInputElement, {
+      target: { value: "john@example.com" },
+    });
+    fireEvent.change(document.getElementById("password") as HTMLInputElement, {
+      target: { value: "bad" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Invalid email or password.")).toBeInTheDocument();
+      // Only /api/login attempted
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(pushMock).not.toHaveBeenCalled();
+    });
+  });
+
+  it("shows permission message on 403", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      status: 403,
+      ok: false,
+      json: jest.fn().mockResolvedValue({ error: "Forbidden" }),
     });
 
     render(<Login />);
@@ -163,15 +189,14 @@ describe("Login Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Login failed. Please try again."),
+        screen.getByText("You don't have access to this account."),
       ).toBeInTheDocument();
-      // Only /api/login attempted
       expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(pushMock).not.toHaveBeenCalled();
     });
   });
 
-  it("shows error on network failure", async () => {
+  it("shows friendly network error message on network failure", async () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce(
       new Error("Network error"),
     );
@@ -188,7 +213,9 @@ describe("Login Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Login failed. Please try again."),
+        screen.getByText(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        ),
       ).toBeInTheDocument();
       expect(pushMock).not.toHaveBeenCalled();
     });

@@ -205,7 +205,7 @@ describe("Register Page", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it("handles registration failure", async () => {
+  it("handles registration failure with friendly message (400)", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       status: 400,
       ok: false,
@@ -238,12 +238,14 @@ describe("Register Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Registration failed. Please try again."),
-      ).toBeInTheDocument();
+        screen.getAllByText(
+          "Some details look off. Please check and try again.",
+        ).length,
+      ).toBeGreaterThan(0);
     });
   });
 
-  it("handles network error during registration", async () => {
+  it("handles network error during registration with friendly message", async () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce(
       new Error("Network error"),
     );
@@ -275,8 +277,47 @@ describe("Register Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Registration failed. Please try again."),
-      ).toBeInTheDocument();
+        screen.getAllByText(
+          "Unable to connect to the server. Please check your internet connection and try again.",
+        ).length,
+      ).toBeGreaterThan(0);
+    });
+  });
+
+  it("handles duplicate email (409) with friendly message", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      status: 409,
+      ok: false,
+      json: jest.fn().mockResolvedValue({ error: "User exists" }),
+    });
+
+    render(<Register />, { wrapper: createWrapper() });
+
+    fireEvent.change(document.getElementById("firstName") as HTMLInputElement, {
+      target: { value: "John" },
+    });
+    fireEvent.change(document.getElementById("lastName") as HTMLInputElement, {
+      target: { value: "Doe" },
+    });
+    fireEvent.change(document.getElementById("email") as HTMLInputElement, {
+      target: { value: "john@example.com" },
+    });
+    fireEvent.change(document.getElementById("password") as HTMLInputElement, {
+      target: { value: "Test123@" },
+    });
+    fireEvent.change(
+      document.getElementById("confirmPassword") as HTMLInputElement,
+      {
+        target: { value: "Test123@" },
+      },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Register" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText("An account with this email already exists.").length,
+      ).toBeGreaterThan(0);
     });
   });
 

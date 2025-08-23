@@ -8,7 +8,6 @@ import {
   TextField,
   Typography,
   Button,
-  Alert,
   List,
   ListItem,
   ListItemIcon,
@@ -25,6 +24,8 @@ import {
   Lock as LockIcon,
 } from "@mui/icons-material";
 import useUserAccountRegister from "../../hooks/useUserAccountRegister";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import SnackbarBaseline from "../../components/SnackbarBaseline";
 
 interface PasswordValidation {
   hasUppercase: boolean;
@@ -62,6 +63,7 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
   const [passwordValidation, setPasswordValidation] =
     useState<PasswordValidation>({
       hasUppercase: false,
@@ -146,12 +148,57 @@ export default function Register() {
       if (response.status === 201) {
         router.push("/login");
       } else {
-        setErrorMessage("Registration failed. Please try again.");
+        let errorDetail = "";
+        try {
+          const body = await response.json();
+          errorDetail = body?.error || body?.message || "";
+        } catch (_) {
+          errorDetail = `status: ${response.status}`;
+        }
+        throw new Error(`HTTP_${response.status}:${errorDetail}`);
       }
-    } catch (error) {
-      setErrorMessage("Registration failed. Please try again.");
-      console.error("Registration error:", error);
+    } catch (error: any) {
+      const raw = (error?.message || "").toString();
+      const friendly = getFriendlyErrorMessage(raw);
+      setErrorMessage(friendly);
+      setShowSnackbar(true);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Registration error (dev details):", raw);
+      }
     }
+  };
+
+  // Map technical errors to friendly, registration-specific messages
+  const getFriendlyErrorMessage = (raw: string): string => {
+    try {
+      const match = raw.match(/HTTP_(\d{3})/);
+      const code = match ? parseInt(match[1], 10) : undefined;
+
+      if (code === 409) {
+        return "An account with this email already exists.";
+      }
+      if (code === 429) {
+        return "Too many attempts. Please wait and try again.";
+      }
+      if (code === 400 || code === 422) {
+        return "Some details look off. Please check and try again.";
+      }
+      if (code && code >= 500 && code <= 599) {
+        return "A server error occurred. Please try again in a few moments.";
+      }
+    } catch (_) {
+      // ignore and fall through
+    }
+    const lower = (raw || "").toLowerCase();
+    if (
+      lower.includes("network") ||
+      lower.includes("failed to fetch") ||
+      lower.includes("timeout") ||
+      lower.includes("offline")
+    ) {
+      return "Unable to connect to the server. Please check your internet connection and try again.";
+    }
+    return "Registration failed. Please try again.";
   };
 
   return (
@@ -371,14 +418,15 @@ export default function Register() {
               }}
             />
             {errorMessage && (
-              <Alert
-                severity="error"
-                variant="outlined"
-                sx={{ mt: 2 }}
-                data-testid="alert-error"
-              >
-                {errorMessage}
-              </Alert>
+              <Box sx={{ mt: 2 }}>
+                <ErrorDisplay
+                  variant="alert"
+                  severity="error"
+                  title="Registration failed"
+                  message={errorMessage}
+                  showRetry={false}
+                />
+              </Box>
             )}
             <Button
               id="submit"
@@ -392,6 +440,12 @@ export default function Register() {
             </Button>
           </Box>
         </Paper>
+        <SnackbarBaseline
+          message={errorMessage}
+          state={showSnackbar}
+          severity="error"
+          handleSnackbarClose={() => setShowSnackbar(false)}
+        />
       </Container>
     </>
   );

@@ -8,7 +8,6 @@ import {
   TextField,
   Typography,
   Button,
-  Alert,
   InputAdornment,
   IconButton,
 } from "@mui/material";
@@ -20,6 +19,8 @@ import {
 } from "@mui/icons-material";
 import User from "../../model/User";
 import { useAuth } from "../../components/AuthProvider";
+import ErrorDisplay from "../../components/ErrorDisplay";
+import SnackbarBaseline from "../../components/SnackbarBaseline";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -27,9 +28,44 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
 
   const { login } = useAuth();
   const router = useRouter();
+
+  // Map technical errors to friendly, login-specific messages
+  const getFriendlyErrorMessage = (raw: string): string => {
+    try {
+      const match = raw.match(/HTTP_(\d{3})/);
+      const code = match ? parseInt(match[1], 10) : undefined;
+
+      if (code === 403) {
+        return "You don't have access to this account.";
+      }
+      if (code === 400 || code === 401) {
+        return "Invalid email or password.";
+      }
+      if (code === 429) {
+        return "Too many attempts. Please wait and try again.";
+      }
+      if (code && code >= 500 && code <= 599) {
+        return "A server error occurred. Please try again in a few moments.";
+      }
+    } catch (_) {
+      // Ignore parse errors and fall through to heuristics
+    }
+
+    const lower = (raw || "").toLowerCase();
+    if (
+      lower.includes("network") ||
+      lower.includes("failed to fetch") ||
+      lower.includes("timeout") ||
+      lower.includes("offline")
+    ) {
+      return "Unable to connect to the server. Please check your internet connection and try again.";
+    }
+    return "Login failed. Please try again.";
+  };
 
   const userLogin = async (payload: {
     email: string;
@@ -64,7 +100,8 @@ export default function Login() {
       } catch (err) {
         errorDetail = `status: ${response.status}`;
       }
-      throw new Error(`Login failed: ${errorDetail}`);
+      // Throw a normalized error without leaking technical details
+      throw new Error(`HTTP_${response.status}:${errorDetail}`);
     }
   };
 
@@ -96,9 +133,15 @@ export default function Login() {
       }
       router.push("/finance");
     } catch (error: any) {
-      // Standardize error copy for user-facing message
-      setErrorMessage("Login failed. Please try again.");
-      console.error("Login error:", error);
+      // Normalize to a user-friendly message and avoid technical details
+      const raw = (error?.message || "").toString();
+      const friendly = getFriendlyErrorMessage(raw);
+      setErrorMessage(friendly);
+      setShowSnackbar(true);
+      if (process.env.NODE_ENV === "development") {
+        // Log details in dev only for diagnostics
+        console.error("Login error (dev details):", raw);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -179,11 +222,17 @@ export default function Login() {
                 ),
               }}
             />
-
             {errorMessage && (
-              <Alert severity="error" variant="outlined" sx={{ mt: 2 }}>
-                {errorMessage}
-              </Alert>
+              <Box sx={{ mt: 2 }}>
+                <ErrorDisplay
+                  variant="alert"
+                  severity="error"
+                  title="Sign-in failed"
+                  // Provide only the friendly message to avoid exposing details
+                  message={errorMessage}
+                  showRetry={false}
+                />
+              </Box>
             )}
 
             <Button
@@ -198,6 +247,13 @@ export default function Login() {
             </Button>
           </Box>
         </Paper>
+        {/* Snackbar feedback consistent with finance pages */}
+        <SnackbarBaseline
+          message={errorMessage}
+          state={showSnackbar}
+          severity="error"
+          handleSnackbarClose={() => setShowSnackbar(false)}
+        />
       </Container>
     </>
   );
