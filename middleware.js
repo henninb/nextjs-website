@@ -39,7 +39,8 @@ export async function middleware(request) {
   }
 
   // SECURITY: Additional safeguards
-  const host = request.headers.get("host");
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   const isLocalhost =
     host?.includes("localhost") || host?.includes("127.0.0.1");
 

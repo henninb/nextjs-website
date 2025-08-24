@@ -339,6 +339,43 @@ describe("Middleware", () => {
         }
       }
     });
+
+    it("should correctly proxy /api/graphql and /graphql for vercel.bhenning.com behind a proxy", async () => {
+      process.env.NODE_ENV = "production";
+      mockRequest.headers.set("host", "localhost:3000");
+      mockRequest.headers.set("x-forwarded-host", "vercel.bhenning.com");
+
+      const pathsToTest = ["/api/graphql", "/graphql"];
+
+      for (const path of pathsToTest) {
+        mockUrl.pathname = path;
+        mockUrl.search = "?query=test";
+
+        const mockResponse = {
+          status: 200,
+          statusText: "OK",
+          body: JSON.stringify({ data: { test: true } }),
+          headers: new Map([["content-type", "application/json"]]),
+        };
+        mockResponse.headers.forEach = jest.fn((callback) => {
+          callback("application/json", "content-type");
+        });
+
+        global.fetch.mockResolvedValue(mockResponse);
+
+        await middleware(mockRequest);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          "https://finance.bhenning.com/graphql?query=test",
+          expect.objectContaining({
+            method: "GET",
+            headers: expect.objectContaining({
+              host: "finance.bhenning.com",
+            }),
+          }),
+        );
+      }
+    });
   });
 
   describe("Environment Configuration", () => {
