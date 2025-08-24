@@ -4,6 +4,8 @@ export const config = {
   matcher: [
     // More robust API route matching for production
     "/api/(.*)",
+    // Handle direct GraphQL requests in production
+    "/graphql",
     // Apply to non-static assets: exclude Next internals and favicon; handle
     // extension-based static assets in code below.
     "/((?!_next/static|_next/image|favicon.ico).*)",
@@ -16,7 +18,7 @@ export async function middleware(request) {
   const isDev = !isProduction;
   
   // Always log in production to debug API routing issues
-  if (isProduction && request.nextUrl.pathname.startsWith("/api/")) {
+  if (isProduction && (request.nextUrl.pathname.startsWith("/api/") || request.nextUrl.pathname === "/graphql")) {
     console.log(
       "[MW PROD] intercepted:",
       request.nextUrl.pathname,
@@ -54,10 +56,10 @@ export async function middleware(request) {
 
   const url = request.nextUrl.clone();
 
-  // CRITICAL: Always proxy ALL /api/* requests to finance.bhenning.com
-  // This includes /api/me, /api/graphql, and all other API endpoints
+  // CRITICAL: Always proxy ALL /api/* requests and /graphql to finance.bhenning.com
+  // This includes /api/me, /api/graphql, /graphql, and all other API endpoints
   // The middleware MUST intercept these requests and never let them fall through
-  if (url.pathname.startsWith("/api/")) {
+  if (url.pathname.startsWith("/api/") || url.pathname === "/graphql") {
     if (isDev) {
       console.log("[MW] proxying API route");
     } else {
@@ -80,8 +82,8 @@ export async function middleware(request) {
 
       // Map specific API routes for production backend compatibility
       let upstreamPath;
-      if (isProduction && url.pathname === "/api/graphql") {
-        // In production, /api/graphql maps to /graphql on backend
+      if (isProduction && (url.pathname === "/api/graphql" || url.pathname === "/graphql")) {
+        // In production, both /api/graphql and /graphql map to /graphql on backend
         upstreamPath = "/graphql" + url.search;
       } else {
         // All other /api/* paths go to backend as-is
@@ -223,8 +225,8 @@ export async function middleware(request) {
       );
     }
     
-    // This should never be reached for /api/* requests
-    console.error("[MW PROD] CRITICAL: API request fell through middleware!");
+    // This should never be reached for /api/* or /graphql requests
+    console.error("[MW PROD] CRITICAL: API/GraphQL request fell through middleware!");
     return new NextResponse("Internal Server Error", { status: 500 });
   } else {
     // Non-API routes: enforce no-store for dynamic/HTML content

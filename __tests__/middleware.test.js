@@ -166,6 +166,35 @@ describe("Middleware", () => {
         expect.any(Object)
       );
     });
+
+    it("should handle direct /graphql requests in production by routing to /graphql", async () => {
+      mockUrl.pathname = "/graphql";
+      mockUrl.search = "?query=test";
+
+      const mockResponse = {
+        status: 200,
+        statusText: "OK",
+        body: JSON.stringify({ data: { test: true } }),
+        headers: new Map([["content-type", "application/json"]]),
+      };
+      mockResponse.headers.forEach = jest.fn((callback) => {
+        callback("application/json", "content-type");
+      });
+
+      global.fetch.mockResolvedValue(mockResponse);
+
+      await middleware(mockRequest);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://finance.bhenning.com/graphql?query=test",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            host: "finance.bhenning.com",
+          }),
+        })
+      );
+    });
   });
 
   describe("Cookie Rewriting", () => {
@@ -550,6 +579,7 @@ describe("Middleware", () => {
       expect(config).toEqual({
         matcher: [
           "/api/(.*)",
+          "/graphql",
           "/((?!_next/static|_next/image|favicon.ico).*)",
         ],
         runtime: "experimental-edge",
