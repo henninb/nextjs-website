@@ -376,6 +376,94 @@ describe("Middleware", () => {
         );
       }
     });
+
+    it("should reproduce proxy routing bug for vercel.bhenning.com", async () => {
+      // Test case that reproduces the exact scenario from nginx log:
+      // "POST /api/graphql HTTP/2.0" 404 100 "https://vercel.bhenning.com/finance/transfers-next"
+      process.env.NODE_ENV = "production";
+
+      // Simulate the request coming through nginx proxy
+      mockRequest.method = "POST";
+      mockRequest.headers = new Map([
+        ["host", "vercel.bhenning.com"], // This is what nginx sees as the host
+        ["x-forwarded-host", "vercel.bhenning.com"], // This is what the proxy sets
+        ["x-forwarded-proto", "https"],
+        ["content-type", "application/json"],
+        ["cookie", "token=abc123"],
+      ]);
+      mockUrl.pathname = "/api/graphql";
+      mockUrl.search = "";
+
+      const mockResponse = {
+        status: 200,
+        statusText: "OK",
+        body: JSON.stringify({ data: { test: true } }),
+        headers: new Map([["content-type", "application/json"]]),
+      };
+      mockResponse.headers.forEach = jest.fn((callback) => {
+        callback("application/json", "content-type");
+      });
+
+      global.fetch.mockResolvedValue(mockResponse);
+
+      await middleware(mockRequest);
+
+      // This should map /api/graphql to /graphql on the backend
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://finance.bhenning.com/graphql",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            host: "finance.bhenning.com",
+            "x-forwarded-host": "vercel.bhenning.com",
+            "x-forwarded-proto": "https",
+          }),
+        }),
+      );
+    });
+
+    it("should correctly map /api/graphql for vercel.bhenning.com even in development mode", async () => {
+      // This test verifies the fix: vercel.bhenning.com should be allowed even in development
+      process.env.NODE_ENV = "development";
+
+      mockRequest.method = "POST";
+      mockRequest.headers = new Map([
+        ["host", "vercel.bhenning.com"], // Should now be allowed as approved proxy host
+        ["x-forwarded-host", "vercel.bhenning.com"],
+        ["x-forwarded-proto", "https"],
+        ["content-type", "application/json"],
+        ["cookie", "token=abc123"],
+      ]);
+      mockUrl.pathname = "/api/graphql";
+      mockUrl.search = "";
+
+      const mockResponse = {
+        status: 200,
+        statusText: "OK",
+        body: JSON.stringify({ data: { test: true } }),
+        headers: new Map([["content-type", "application/json"]]),
+      };
+      mockResponse.headers.forEach = jest.fn((callback) => {
+        callback("application/json", "content-type");
+      });
+
+      global.fetch.mockResolvedValue(mockResponse);
+
+      await middleware(mockRequest);
+
+      // FIXED: Now correctly maps /api/graphql to /graphql for vercel.bhenning.com
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://finance.bhenning.com/graphql",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            host: "finance.bhenning.com",
+            "x-forwarded-host": "vercel.bhenning.com",
+            "x-forwarded-proto": "https",
+          }),
+        }),
+      );
+    });
   });
 
   describe("Environment Configuration", () => {

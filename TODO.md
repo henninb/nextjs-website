@@ -123,3 +123,7 @@
 
 within the finance app /pages/finance, I have several components like transfers, payments, transactions, accounts, configuration. These UI components have some slight UI differnences. I want you to act as a professional UI developer in nextjs and identify these differneces and make these pages have the same look and feel. a user friendly perspective is what I have in mind. focus on the modern UI, as the legacy UI will be going away. come up with a plan to work on and we can go from there.
 _Last updated: August 2025_
+
+Act as if you are a master nextjs developer. localhost:3000 (development) and www.bhenning.com (production) are working well with /api/\* and /graphql mapping in middleware. and vercel.bhenning.com production (behind a proxy is mapping incorrectly to /api/graphql instead of /graphql. use TDD to fix this bug. you can see the nginx log below.
+
+192.168.10.40 - - [24/Aug/2025:21:19:44 +0000] "POST /api/graphql HTTP/2.0" 404 100 "https://vercel.bhenning.com/finance/transfers-next" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"

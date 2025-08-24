@@ -43,18 +43,19 @@ export async function middleware(request) {
     request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   const isLocalhost =
     host?.includes("localhost") || host?.includes("127.0.0.1");
+  const isVercelProxy = host?.includes("vercel.bhenning.com");
 
   if (isDev) {
     console.log(
-      `[MW] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}`,
+      `[MW] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}, isVercelProxy: ${isVercelProxy}`,
     );
   }
 
   // CRITICAL: Prevent cookie rewriting in production
   // (no logging of headers/cookies)
 
-  // SECURITY: Only allow proxy for approved localhost/development hosts
-  if (!isProduction && !isLocalhost) {
+  // SECURITY: Only allow proxy for approved hosts
+  if (!isProduction && !isLocalhost && !isVercelProxy) {
     if (isDev) console.log(`[MW] blocked unauthorized host: ${host}`);
     return new NextResponse("Forbidden", { status: 403 });
   }
@@ -90,7 +91,7 @@ export async function middleware(request) {
       // Map specific API routes for production backend compatibility
       let upstreamPath;
       if (
-        (isProduction || isLocalhost) &&
+        (isProduction || isLocalhost || isVercelProxy) &&
         (url.pathname === "/api/graphql" || url.pathname === "/graphql")
       ) {
         // In production, both /api/graphql and /graphql map to /graphql on backend
