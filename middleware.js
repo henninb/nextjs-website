@@ -16,9 +16,13 @@ export const config = {
 export async function middleware(request) {
   const isProduction = process.env.NODE_ENV === "production";
   const isDev = !isProduction;
-  
+
   // Always log in production to debug API routing issues
-  if (isProduction && (request.nextUrl.pathname.startsWith("/api/") || request.nextUrl.pathname === "/graphql")) {
+  if (
+    isProduction &&
+    (request.nextUrl.pathname.startsWith("/api/") ||
+      request.nextUrl.pathname === "/graphql")
+  ) {
     console.log(
       "[MW PROD] intercepted:",
       request.nextUrl.pathname,
@@ -74,7 +78,7 @@ export async function middleware(request) {
           ? "https://finance.bhenning.com"
           : process.env.NEXT_PUBLIC_API_BASE_URL) ||
         "https://finance.bhenning.com";
-      
+
       // Log upstream origin in production for debugging
       if (isProduction) {
         console.log("[MW PROD] upstream origin:", upstreamOrigin);
@@ -82,7 +86,10 @@ export async function middleware(request) {
 
       // Map specific API routes for production backend compatibility
       let upstreamPath;
-      if (isProduction && (url.pathname === "/api/graphql" || url.pathname === "/graphql")) {
+      if (
+        (isProduction || host?.includes("localhost")) &&
+        (url.pathname === "/api/graphql" || url.pathname === "/graphql")
+      ) {
         // In production, both /api/graphql and /graphql map to /graphql on backend
         upstreamPath = "/graphql" + url.search;
       } else {
@@ -95,9 +102,7 @@ export async function middleware(request) {
         const hasToken = (request.headers.get("cookie") || "").includes(
           "token=",
         );
-        console.log(
-          `[MW] target= ${targetUrl} tokenCookie=${hasToken}`,
-        );
+        console.log(`[MW] target= ${targetUrl} tokenCookie=${hasToken}`);
       } else {
         // Log in production for debugging API proxy issues
         console.log(`[MW PROD] target URL: ${targetUrl}`);
@@ -108,7 +113,7 @@ export async function middleware(request) {
       // Forward the request with timeout for production reliability
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-      
+
       const response = await fetch(targetUrl, {
         method: request.method,
         headers: {
@@ -125,7 +130,7 @@ export async function middleware(request) {
             : undefined,
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
       if (isDev) {
         console.log("[MW] upstream status=", response.status);
@@ -151,7 +156,11 @@ export async function middleware(request) {
               .get("host")
               ?.includes("localhost");
 
-            if (isAuthCookie && isDevelopment && isLocalhost) {
+            const isVercel = request.headers
+              .get("host")
+              ?.includes("vercel.bhenning.com");
+
+            if (isAuthCookie && isDevelopment && isLocalhost && !isVercel) {
               // Secure rewriting: only remove problematic attributes for auth cookies
               const modifiedCookie = value
                 // Remove domain for any bhenning.com domain
@@ -193,29 +202,43 @@ export async function middleware(request) {
         statusText: response.statusText,
         headers: responseHeaders,
       });
-      
+
       // Log successful proxy in production
       if (isProduction) {
-        console.log("[MW PROD] successfully proxied:", url.pathname, "status:", response.status);
+        console.log(
+          "[MW PROD] successfully proxied:",
+          url.pathname,
+          "status:",
+          response.status,
+        );
       }
-      
+
       return finalResponse;
     } catch (error) {
       const errorMsg = isDev ? error : error?.message;
-      console.error(`[MW${isProduction ? ' PROD' : ''}] proxy error:`, errorMsg);
-      
+      console.error(
+        `[MW${isProduction ? " PROD" : ""}] proxy error:`,
+        errorMsg,
+      );
+
       // Handle timeout and network errors gracefully in production
-      if (error.name === 'AbortError') {
-        console.error(`[MW${isProduction ? ' PROD' : ''}] request timeout for:`, url.pathname);
+      if (error.name === "AbortError") {
+        console.error(
+          `[MW${isProduction ? " PROD" : ""}] request timeout for:`,
+          url.pathname,
+        );
         return new NextResponse(
-          JSON.stringify({ error: "Request timeout", message: "The upstream service did not respond in time" }),
+          JSON.stringify({
+            error: "Request timeout",
+            message: "The upstream service did not respond in time",
+          }),
           {
             status: 504,
             headers: { "Content-Type": "application/json" },
           },
         );
       }
-      
+
       return new NextResponse(
         JSON.stringify({ error: "Proxy error", message: error.message }),
         {
@@ -224,9 +247,11 @@ export async function middleware(request) {
         },
       );
     }
-    
+
     // This should never be reached for /api/* or /graphql requests
-    console.error("[MW PROD] CRITICAL: API/GraphQL request fell through middleware!");
+    console.error(
+      "[MW PROD] CRITICAL: API/GraphQL request fell through middleware!",
+    );
     return new NextResponse("Internal Server Error", { status: 500 });
   } else {
     // Non-API routes: enforce no-store for dynamic/HTML content

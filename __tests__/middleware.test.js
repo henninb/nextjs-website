@@ -9,13 +9,25 @@ import { middleware } from "../middleware.js";
 jest.mock("next/server", () => {
   const makeHeaders = (init = undefined) => {
     // Use the custom global Headers from jest.setup if available
-    const H = global.Headers || class HeadersPolyfill {
-      constructor() { this._map = new Map(); }
-      set(k, v) { this._map.set(String(k).toLowerCase(), v); }
-      get(k) { return this._map.get(String(k).toLowerCase()); }
-      forEach(cb) { this._map.forEach((v, k) => cb(v, k)); }
-      entries() { return this._map.entries(); }
-    };
+    const H =
+      global.Headers ||
+      class HeadersPolyfill {
+        constructor() {
+          this._map = new Map();
+        }
+        set(k, v) {
+          this._map.set(String(k).toLowerCase(), v);
+        }
+        get(k) {
+          return this._map.get(String(k).toLowerCase());
+        }
+        forEach(cb) {
+          this._map.forEach((v, k) => cb(v, k));
+        }
+        entries() {
+          return this._map.entries();
+        }
+      };
     return init instanceof H ? init : new H(init);
   };
 
@@ -56,7 +68,7 @@ describe("Middleware", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock URL object
     mockUrl = {
       pathname: "/api/test",
@@ -115,7 +127,7 @@ describe("Middleware", () => {
           headers: expect.objectContaining({
             host: "finance.bhenning.com",
           }),
-        })
+        }),
       );
     });
 
@@ -139,7 +151,7 @@ describe("Middleware", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/api/me",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -163,7 +175,7 @@ describe("Middleware", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/api/users?limit=10",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -192,7 +204,7 @@ describe("Middleware", () => {
           headers: expect.objectContaining({
             host: "finance.bhenning.com",
           }),
-        })
+        }),
       );
     });
   });
@@ -204,7 +216,10 @@ describe("Middleware", () => {
 
       const upstreamHeaders = new Map();
       upstreamHeaders.forEach = jest.fn((cb) => {
-        cb("token=abc123; Path=/; Domain=.bhenning.com; Secure; SameSite=None", "set-cookie");
+        cb(
+          "token=abc123; Path=/; Domain=.bhenning.com; Secure; SameSite=None",
+          "set-cookie",
+        );
       });
       const mockResponse = {
         status: 200,
@@ -216,7 +231,9 @@ describe("Middleware", () => {
 
       const res = await middleware(mockRequest);
       // Our NextResponse mock returns the options.headers as provided by middleware
-      const setCookie = res.headers.get ? res.headers.get("set-cookie") : undefined;
+      const setCookie = res.headers.get
+        ? res.headers.get("set-cookie")
+        : undefined;
       expect(setCookie).toBeDefined();
       expect(setCookie).toContain("token=abc123");
       // Domain removed
@@ -231,7 +248,8 @@ describe("Middleware", () => {
       process.env.NODE_ENV = "development";
       mockUrl.pathname = "/api/test";
 
-      const cookieValue = "theme=dark; Path=/; Domain=.bhenning.com; Secure; SameSite=None";
+      const cookieValue =
+        "theme=dark; Path=/; Domain=.bhenning.com; Secure; SameSite=None";
       const upstreamHeaders = new Map();
       upstreamHeaders.forEach = jest.fn((cb) => {
         cb(cookieValue, "set-cookie");
@@ -245,7 +263,9 @@ describe("Middleware", () => {
       global.fetch.mockResolvedValue(mockResponse);
 
       const res = await middleware(mockRequest);
-      const setCookie = res.headers.get ? res.headers.get("set-cookie") : undefined;
+      const setCookie = res.headers.get
+        ? res.headers.get("set-cookie")
+        : undefined;
       expect(setCookie).toBe(cookieValue);
     });
 
@@ -253,7 +273,8 @@ describe("Middleware", () => {
       process.env.NODE_ENV = "production";
       mockUrl.pathname = "/api/test";
 
-      const cookieValue = "token=abc123; Path=/; Domain=.bhenning.com; Secure; SameSite=None";
+      const cookieValue =
+        "token=abc123; Path=/; Domain=.bhenning.com; Secure; SameSite=None";
       const upstreamHeaders = new Map();
       upstreamHeaders.forEach = jest.fn((cb) => {
         cb(cookieValue, "set-cookie");
@@ -267,13 +288,17 @@ describe("Middleware", () => {
       global.fetch.mockResolvedValue(mockResponse);
 
       const res = await middleware(mockRequest);
-      const setCookie = res.headers.get ? res.headers.get("set-cookie") : undefined;
+      const setCookie = res.headers.get
+        ? res.headers.get("set-cookie")
+        : undefined;
       expect(setCookie).toBe(cookieValue);
     });
   });
 
   describe("Development Behavior", () => {
-    it("should keep /api/graphql path unchanged in development", async () => {
+    it("should map /api/graphql to /graphql on localhost", async () => {
+      process.env.NODE_ENV = "development";
+      mockRequest.headers.set("host", "localhost:3000");
       mockUrl.pathname = "/api/graphql";
       mockUrl.search = "?query=test";
 
@@ -292,8 +317,13 @@ describe("Middleware", () => {
       await middleware(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "https://finance.bhenning.com/api/graphql?query=test",
-        expect.any(Object)
+        "https://finance.bhenning.com/graphql?query=test",
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            host: "finance.bhenning.com",
+          }),
+        }),
       );
     });
   });
@@ -317,7 +347,7 @@ describe("Middleware", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://custom-backend.com/api/test",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -339,7 +369,7 @@ describe("Middleware", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/api/test",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -351,7 +381,7 @@ describe("Middleware", () => {
 
     it("should handle fetch timeout errors", async () => {
       mockUrl.pathname = "/api/test";
-      
+
       const timeoutError = new Error("Timeout");
       timeoutError.name = "AbortError";
       global.fetch.mockRejectedValue(timeoutError);
@@ -364,7 +394,7 @@ describe("Middleware", () => {
 
     it("should handle general fetch errors", async () => {
       mockUrl.pathname = "/api/test";
-      
+
       global.fetch.mockRejectedValue(new Error("Network error"));
 
       const result = await middleware(mockRequest);
@@ -375,7 +405,7 @@ describe("Middleware", () => {
 
     it("should set up abort controller and timeout", async () => {
       mockUrl.pathname = "/api/test";
-      
+
       const mockResponse = {
         status: 200,
         statusText: "OK",
@@ -389,7 +419,10 @@ describe("Middleware", () => {
       await middleware(mockRequest);
 
       expect(global.AbortController).toHaveBeenCalled();
-      expect(global.setTimeout).toHaveBeenCalledWith(expect.any(Function), 30000);
+      expect(global.setTimeout).toHaveBeenCalledWith(
+        expect.any(Function),
+        30000,
+      );
       expect(global.clearTimeout).toHaveBeenCalled();
     });
   });
@@ -422,9 +455,7 @@ describe("Middleware", () => {
     it("blocks non-localhost hosts in development with 403", async () => {
       process.env.NODE_ENV = "development";
       mockRequest.headers.set = undefined; // ensure Map
-      mockRequest.headers = new Map([
-        ["host", "evil.example.com"],
-      ]);
+      mockRequest.headers = new Map([["host", "evil.example.com"]]);
       mockUrl.pathname = "/api/test";
 
       const res = await middleware(mockRequest);
@@ -472,7 +503,7 @@ describe("Middleware", () => {
             "x-forwarded-host": "localhost:3000",
             "x-forwarded-proto": "https",
           }),
-        })
+        }),
       );
     });
   });
@@ -503,14 +534,14 @@ describe("Middleware", () => {
         expect.objectContaining({
           method: "GET",
           body: undefined,
-        })
+        }),
       );
     });
 
     it("should handle POST requests with body", async () => {
       mockRequest.method = "POST";
       mockUrl.pathname = "/api/graphql";
-      
+
       const mockBlob = new Blob(["test body"]);
       mockRequest.blob.mockResolvedValue(mockBlob);
 
@@ -531,7 +562,7 @@ describe("Middleware", () => {
         expect.objectContaining({
           method: "POST",
           body: mockBlob,
-        })
+        }),
       );
     });
   });
@@ -539,19 +570,22 @@ describe("Middleware", () => {
   describe("Non-API Routes", () => {
     it("should handle non-API routes with no-store cache control", async () => {
       mockUrl.pathname = "/dashboard";
-      
+
       const mockNext = jest.fn(() => ({ headers: { set: jest.fn() } }));
       NextResponse.next = mockNext;
 
       const result = await middleware(mockRequest);
 
       expect(mockNext).toHaveBeenCalled();
-      expect(result.headers.set).toHaveBeenCalledWith("Cache-Control", "no-store");
+      expect(result.headers.set).toHaveBeenCalledWith(
+        "Cache-Control",
+        "no-store",
+      );
     });
 
     it("should allow static assets to pass through", async () => {
       mockUrl.pathname = "/static/image.png";
-      
+
       const mockNext = jest.fn();
       NextResponse.next = mockNext;
 
@@ -562,7 +596,7 @@ describe("Middleware", () => {
 
     it("should allow _next routes to pass through", async () => {
       mockUrl.pathname = "/_next/static/chunks/main.js";
-      
+
       const mockNext = jest.fn();
       NextResponse.next = mockNext;
 
@@ -575,7 +609,7 @@ describe("Middleware", () => {
   describe("Middleware Config", () => {
     it("should export correct config", () => {
       const { config } = require("../middleware.js");
-      
+
       expect(config).toEqual({
         matcher: [
           "/api/(.*)",

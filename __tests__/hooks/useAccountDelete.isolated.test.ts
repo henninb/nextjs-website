@@ -53,7 +53,10 @@ const deleteAccount = async (payload: Account): Promise<Account | null> => {
 
       try {
         const errorBody = await response.json();
-        if (errorBody && Object.prototype.hasOwnProperty.call(errorBody, "response")) {
+        if (
+          errorBody &&
+          Object.prototype.hasOwnProperty.call(errorBody, "response")
+        ) {
           errorMessage = `${errorBody.response ?? ""}`;
         } else {
           missingMessage = true;
