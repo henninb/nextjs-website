@@ -295,36 +295,49 @@ describe("Middleware", () => {
     });
   });
 
-  describe("Development Behavior", () => {
-    it("should map /api/graphql to /graphql on localhost", async () => {
-      process.env.NODE_ENV = "development";
-      mockRequest.headers.set("host", "localhost:3000");
-      mockUrl.pathname = "/api/graphql";
-      mockUrl.search = "?query=test";
+  describe("Development and Production Behavior", () => {
+    it("should correctly proxy /api/graphql and /graphql for all environments", async () => {
+      const environments = [
+        { env: "development", host: "localhost:3000" },
+        { env: "production", host: "www.bhenning.com" },
+        { env: "production", host: "vercel.bhenning.com" },
+      ];
 
-      const mockResponse = {
-        status: 200,
-        statusText: "OK",
-        body: JSON.stringify({ data: { test: true } }),
-        headers: new Map([["content-type", "application/json"]]),
-      };
-      mockResponse.headers.forEach = jest.fn((callback) => {
-        callback("application/json", "content-type");
-      });
+      for (const { env, host } of environments) {
+        process.env.NODE_ENV = env;
+        mockRequest.headers.set("host", host);
 
-      global.fetch.mockResolvedValue(mockResponse);
+        const pathsToTest = ["/api/graphql", "/graphql"];
 
-      await middleware(mockRequest);
+        for (const path of pathsToTest) {
+          mockUrl.pathname = path;
+          mockUrl.search = "?query=test";
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        "https://finance.bhenning.com/graphql?query=test",
-        expect.objectContaining({
-          method: "GET",
-          headers: expect.objectContaining({
-            host: "finance.bhenning.com",
-          }),
-        }),
-      );
+          const mockResponse = {
+            status: 200,
+            statusText: "OK",
+            body: JSON.stringify({ data: { test: true } }),
+            headers: new Map([["content-type", "application/json"]]),
+          };
+          mockResponse.headers.forEach = jest.fn((callback) => {
+            callback("application/json", "content-type");
+          });
+
+          global.fetch.mockResolvedValue(mockResponse);
+
+          await middleware(mockRequest);
+
+          expect(global.fetch).toHaveBeenCalledWith(
+            "https://finance.bhenning.com/graphql?query=test",
+            expect.objectContaining({
+              method: "GET",
+              headers: expect.objectContaining({
+                host: "finance.bhenning.com",
+              }),
+            }),
+          );
+        }
+      }
     });
   });
 

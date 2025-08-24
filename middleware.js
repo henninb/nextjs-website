@@ -84,10 +84,12 @@ export async function middleware(request) {
         console.log("[MW PROD] upstream origin:", upstreamOrigin);
       }
 
+      const isVercel = host?.includes("vercel.bhenning.com");
+
       // Map specific API routes for production backend compatibility
       let upstreamPath;
       if (
-        (isProduction || host?.includes("localhost")) &&
+        (isProduction || isLocalhost) &&
         (url.pathname === "/api/graphql" || url.pathname === "/graphql")
       ) {
         // In production, both /api/graphql and /graphql map to /graphql on backend
