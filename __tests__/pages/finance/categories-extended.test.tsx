@@ -213,9 +213,10 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
       await waitFor(() => {
+        // Validation appears in both helper text and snackbar
         expect(
-          screen.getByText("Name contains invalid characters"),
-        ).toBeInTheDocument();
+          screen.getAllByText("Name contains invalid characters"),
+        ).toHaveLength(2);
       });
     });
 
@@ -229,9 +230,10 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
+      // Validation appears in both helper text and snackbar
       expect(
-        screen.getByText(/Name contains invalid characters/i),
-      ).toBeInTheDocument();
+        screen.getAllByText(/Name contains invalid characters/i),
+      ).toHaveLength(2);
     });
 
     it("allows valid category names with underscores and hyphens", async () => {
@@ -294,7 +296,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByText("Name too long")).toBeInTheDocument();
+        // Validation appears in both helper text and snackbar
+        expect(screen.getAllByText("Name too long")).toHaveLength(2);
       });
     });
 
@@ -309,7 +312,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByText("Name is required")).toBeInTheDocument();
+        // Validation appears in both helper text and snackbar
+        expect(screen.getAllByText("Name is required")).toHaveLength(2);
       });
     });
   });
@@ -386,7 +390,7 @@ describe("CategoriesPage - Extended Test Coverage", () => {
         });
         // Verify success message appears
         expect(
-          screen.getByText("Category inserted successfully."),
+          screen.getByText("Category added successfully."),
         ).toBeInTheDocument();
       });
     });
@@ -693,7 +697,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       // Modal should remain open to show error
       expect(screen.getByText(/Add New Category/i)).toBeInTheDocument();
-      expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+      // Validation appears in both snackbar and helper text
+      expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
     });
 
     it("resets form errors when modal closes", () => {
@@ -702,7 +707,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       // Cause a validation error
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-      expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+      // Validation appears in both snackbar and helper text
+      expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
 
       // Close modal (this would be done by clicking outside or escape)
       // For testing purposes, we'd need to simulate the modal close handler

@@ -207,8 +207,10 @@ describe("pages/finance/configuration", () => {
     // No input changes; clicking Add should not call insert and shows validation
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertParameterMock).not.toHaveBeenCalled();
-    expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/Value is required/i)).toBeInTheDocument();
+    // Validation shows first error (Name is required) in both snackbar and helper text
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
+    // Value error only appears in helper text since Name error was shown first in snackbar
+    expect(screen.getAllByText(/Value is required/i)).toHaveLength(1);
   });
 
   it("submits parameter with long name (no validation constraints)", () => {

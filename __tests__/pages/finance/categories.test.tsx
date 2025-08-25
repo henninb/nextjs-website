@@ -140,7 +140,7 @@ describe("pages/finance/categories", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertCategoryMock).toHaveBeenCalled();
     expect(
-      await screen.findByText(/Category inserted successfully/i),
+      await screen.findByText(/Category added successfully/i),
     ).toBeInTheDocument();
   });
 
@@ -184,7 +184,8 @@ describe("pages/finance/categories", () => {
     fireEvent.click(screen.getByRole("button", { name: /add category/i }));
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertCategoryMock).not.toHaveBeenCalled();
-    expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+    // Check for validation message in both snackbar and helper text
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("toggles status switch without errors", () => {

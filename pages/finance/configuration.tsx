@@ -33,6 +33,9 @@ import { modalTitles, modalBodies } from "../../utils/modalMessages";
 export default function Configuration() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "error" | "warning" | "info" | "success"
+  >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
@@ -142,13 +145,11 @@ export default function Configuration() {
         JSON.stringify(updatedOfflineRows),
       );
 
-      setMessage("Offline parameter deleted successfully.");
-      setShowSnackbar(true);
+      handleSuccess("Offline parameter deleted successfully.");
     } else {
       try {
         await deleteParameter(selectedParameter);
-        setMessage("Parameter deleted successfully.");
-        setShowSnackbar(true);
+        handleSuccess("Parameter deleted successfully.");
       } catch (error) {
         handleError(error, "Delete Parameter failure.", false);
       }
@@ -168,11 +169,18 @@ export default function Configuration() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
+    setSnackbarSeverity("error");
     setShowSnackbar(true);
 
     console.error(errorMessage);
 
     if (throwIt) throw error;
+  };
+
+  const handleSuccess = (successMessage: string) => {
+    setMessage(successMessage);
+    setSnackbarSeverity("success");
+    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Parameter) => {
@@ -188,6 +196,11 @@ export default function Configuration() {
     }
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
+      setMessage(
+        errs.parameterName || errs.parameterValue || "Validation failed",
+      );
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
       return;
     }
 
@@ -198,8 +211,8 @@ export default function Configuration() {
         prev?.parameterId ? prev : { ...newData, parameterId: secureId },
       );
       setShowModalAdd(false);
-      setMessage("Configuration added successfully.");
-      setShowSnackbar(true);
+      handleSuccess("Configuration added successfully.");
+      setFormErrors({});
     } catch (error) {
       handleError(error, "Add Configuration", false);
 
@@ -217,8 +230,7 @@ export default function Configuration() {
           JSON.stringify(updatedOfflineRows),
         );
 
-        setMessage("Parameter saved offline.");
-        setShowSnackbar(true);
+        handleSuccess("Parameter saved offline.");
         setParameterData({ ...newData, parameterId: Math.random() });
       }
     }
@@ -242,8 +254,9 @@ export default function Configuration() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
-        <Tooltip title="delete this row">
+        <Tooltip title="Delete this row">
           <IconButton
+            aria-label="Delete this row"
             onClick={() => {
               setSelectedParameter(params.row as Parameter);
               setShowModalDelete(true);
@@ -299,7 +312,7 @@ export default function Configuration() {
         ) : (
           <div>
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {(fetchedParameters && fetchedParameters.length > 0) ||
                 offlineRows.length > 0 ? (
                   <DataGridBase
@@ -331,8 +344,7 @@ export default function Configuration() {
                           newParameter: newRow,
                         });
                         setParameterData(newRow);
-                        setMessage("Parameter updated successfully.");
-                        setShowSnackbar(true);
+                        handleSuccess("Parameter updated successfully.");
 
                         return { ...newRow };
                       } catch (error) {
@@ -362,6 +374,7 @@ export default function Configuration() {
               message={message}
               state={showSnackbar}
               handleSnackbarClose={handleSnackbarClose}
+              severity={snackbarSeverity}
             />
           </div>
         )}
@@ -383,12 +396,16 @@ export default function Configuration() {
         <FormDialog
           open={showModalAdd}
           onClose={() => setShowModalAdd(false)}
-          onSubmit={() =>
-            handleAddRow(
-              (parameterData as Parameter) ||
-                ({ parameterName: "", parameterValue: "" } as Parameter),
-            )
-          }
+          onSubmit={() => {
+            if (parameterData) {
+              handleAddRow(parameterData);
+            } else {
+              handleAddRow({
+                parameterName: "",
+                parameterValue: "",
+              } as Parameter);
+            }
+          }}
           title={modalTitles.addNew("parameter")}
           submitText="Add"
         >

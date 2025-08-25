@@ -309,7 +309,8 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       expect(insertParameterMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByText("Name is required")).toBeInTheDocument();
+        // Validation appears in both snackbar and helper text
+        expect(screen.getAllByText("Name is required")).toHaveLength(2);
       });
     });
 
@@ -324,7 +325,8 @@ describe("ConfigurationPage - Extended Test Coverage", () => {
 
       expect(insertParameterMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByText("Value is required")).toBeInTheDocument();
+        // Validation appears in both snackbar and helper text
+        expect(screen.getAllByText("Value is required")).toHaveLength(2);
       });
     });
 

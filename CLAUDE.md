@@ -3,9 +3,11 @@
 ## Build and Development Commands
 
 - `npm run dev` - Start development server (with NODE_OPTIONS='--no-deprecation' for cleaner output)
+- `npm run dev:turbo` - Start development server with Turbo mode
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run prettier` - Format code with Prettier
+- `npm run prettier:check` - Check code formatting with Prettier
 - `npm test` - Run Jest tests
 - `npm test -- -t "test name"` - Run specific test
 - `npm test -- --testPathPattern=path/to/test` - Run tests in specific path
@@ -17,29 +19,43 @@
 Jest is configured with:
 
 - **Test Environment**: jsdom for React component testing
-- **SWC**: Fast transpilation instead of Babel
+- **SWC**: Fast transpilation for TypeScript/JSX (@swc/jest@0.2.39)
 - **Testing Library**: React Testing Library (@testing-library/react@16.3.0)
-- **MSW**: Mock Service Worker v2.10.4 configured with public worker directory
-- **TypeScript Support**: Full support for .ts, .tsx files
+- **MSW**: Mock Service Worker v2.10.5 configured with public worker directory
+- **TypeScript Support**: Full support for .ts, .tsx files with SWC transform
 - **Module Aliases**: Configured for @/components, @/pages, @/styles paths
+- **Coverage**: Comprehensive coverage collection excluding node_modules, .next, and config files
 
 ### Test Examples by Category:
 
-**Hook Tests:**
+**Hook Tests (48+ hooks):**
 
-- Finance hooks: useAccountFetch, usePaymentInsert, useTransactionDelete, etc.
-- User hooks: useUser, useLoginProcess
-- Category/Description hooks: useCategoryFetch, useDescriptionDelete
+- Finance data hooks: useAccountFetch, usePaymentInsert, useTransactionDelete, useTotalsFetch
+- User management: useUser, useLoginProcess, useUserAccountRegister
+- CRUD operations: useCategoryFetch, useDescriptionDelete, useParameterUpdate
+- GraphQL hooks: useAccountFetchGql, useTransferFetchGql, useTransferInsertGql
+- Validation: useValidationAmountFetch, useFinanceValidation
+- Sports data: useSportsData
+- Specialized: useAccountUsageTracking, usePendingTransaction\* hooks
 
 **Component Tests:**
 
-- USDAmountInput component test
-- Basic React component tests
+- Core components: Layout, AuthProvider, DataGridDynamic, ErrorBoundary
+- Finance-specific: USDAmountInput, BackupRestore, SelectNavigateAccounts
+- UI components: EmptyState, LoadingState, Spinner
 
 **Page Tests:**
 
-- Finance pages: categories, payments, transactions, transfers
-- Import functionality tests
+- Finance pages: categories, payments, transactions, transfers, backup
+- Authentication: login, register
+- Import functionality and integration tests
+- Accessibility tests
+
+**Integration Tests:**
+
+- Payment cascade operations
+- Transaction state updates
+- Account management workflows
 
 MSW is fully configured for API mocking with worker in public/ directory.
 
@@ -56,37 +72,55 @@ MSW is fully configured for API mocking with worker in public/ directory.
   - Files: camelCase for utilities, PascalCase for components
 - **Error Handling**: Use try/catch with specific error messages and logging
 - **State Management**:
-  - Server state: React Query (@tanstack/react-query@5.84.1)
+  - Server state: React Query (@tanstack/react-query@5.85.5)
   - Client state: React hooks
-  - Also uses SWR for some data fetching
+  - GraphQL: Custom GraphQL client integration
 - **Theming**: MUI theming system with draculaTheme and modernTheme
+- **Security**: Comprehensive validation, sanitization, and CORS middleware
 
 ## Project Structure
 
 ### Core Directories:
 
-- `/components`: Reusable UI components (Layout, DataGrid, Auth, etc.)
-- `/hooks`: Custom React hooks for data fetching/mutations (40+ hooks)
-- `/model`: TypeScript interfaces and types for data models
-- `/pages`: Next.js pages and API routes
-- `/contexts`: React contexts (UIContext)
+- `/components`: 20+ reusable UI components (Layout, DataGrid, Auth, etc.)
+- `/hooks`: 48+ custom React hooks for data fetching/mutations
+- `/model`: TypeScript interfaces and types for data models (20+ models)
+- `/pages`: Next.js pages and API routes with finance, blog, and utility pages
+- `/contexts`: React contexts (UIContext for theme and state management)
 - `/layouts`: Page layout components (FinanceLayout)
 - `/themes`: MUI theme configurations (draculaTheme, modernTheme)
+- `/utils`: Utility functions including security, validation, and global setup
 
 ### Testing:
 
-- `/__tests__`: Jest test files organized by type (hooks/, components/, pages/)
-- `/__mocks__`: Mock implementations for testing
-- `/data`: Test data and dummy data files
+- `/__tests__`: Comprehensive Jest test suite (100+ test files)
+  - `/hooks`: Hook testing with isolated and integration tests
+  - `/components`: Component testing with React Testing Library
+  - `/pages`: Page and API route testing
+  - `/contexts`: Context provider testing
+- `/__mocks__`: Mock implementations for MUI, jose, and other dependencies
+- `/data`: Test data and dummy data files for comprehensive testing scenarios
 
 ### Configuration:
 
 - **Node.js**: Supports versions 20.x, 22.x, 23.x, 24.x
 - **React**: Version 19.1.1
-- **Next.js**: Version 15.4.5
-- **TypeScript**: Configured with relaxed strict mode
+- **Next.js**: Version 15.5.0
+- **TypeScript**: Version 5.9.2 configured with relaxed strict mode
+- **Dependencies**: Modern stack with Emotion, MUI v7, Zod v4, date-fns v4
+
+### Additional Features:
+
+- **GraphQL Integration**: Custom GraphQL client with transfer operations
+- **Security**: Comprehensive security utilities including CORS, CSP reporting, secure UUID
+- **Blog System**: MDX-based blog with gray-matter processing
+- **Sports Data**: NFL, NBA, MLB, NHL data integration
+- **Validation**: Zod-based schema validation and sanitization
+- **File Management**: Image handling, receipt processing
+- **DevOps**: Docker, AWS, GCP deployment configurations
 
 ## Middleware Configuration
 
 - **Runtime**: Keep `experimental-edge` runtime in middleware.js - DO NOT change to standard `edge` runtime
 - The experimental-edge runtime is intentionally used for specific functionality requirements
+- Security middleware includes CORS handling and CSP reporting

@@ -35,6 +35,9 @@ import { modalTitles, modalBodies } from "../../utils/modalMessages";
 export default function Descriptions() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "error" | "warning" | "info" | "success"
+  >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
@@ -86,8 +89,7 @@ export default function Descriptions() {
     if (selectedDescription) {
       try {
         await deleteDescription(selectedDescription);
-        setMessage(`Description deleted successfully.`);
-        setShowSnackbar(true);
+        handleSuccess(`Description deleted successfully.`);
       } catch (error) {
         handleError(error, `Delete Description: ${error.message}`, false);
       } finally {
@@ -107,11 +109,18 @@ export default function Descriptions() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
+    setSnackbarSeverity("error");
     setShowSnackbar(true);
 
     console.error(errorMessage);
 
     if (throwIt) throw error;
+  };
+
+  const handleSuccess = (successMessage: string) => {
+    setMessage(successMessage);
+    setSnackbarSeverity("success");
+    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Description) => {
@@ -136,13 +145,16 @@ export default function Descriptions() {
     }
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
+      setMessage(errs.descriptionName || "Validation failed");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
       return;
     }
 
     try {
       await insertDescription(newData);
-      setMessage(`Description inserted successfully.`);
-      setShowSnackbar(true);
+      handleSuccess(`Description added successfully.`);
+      setFormErrors({});
     } catch (error) {
       handleError(error, `Add Description error: ${error.message}`, false);
       if (
@@ -185,8 +197,9 @@ export default function Descriptions() {
       headerName: "Actions",
       width: 100,
       renderCell: (params) => (
-        <Tooltip title="delete this row">
+        <Tooltip title="Delete this row">
           <IconButton
+            aria-label="Delete this row"
             onClick={() => {
               setSelectedDescription(params.row);
               setShowModalDelete(true);
@@ -239,7 +252,7 @@ export default function Descriptions() {
         ) : (
           <div>
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {fetchedDescrptions && fetchedDescrptions.length > 0 ? (
                   <DataGridBase
                     rows={
@@ -258,6 +271,7 @@ export default function Descriptions() {
                     }
                     pageSizeOptions={[25, 50, 100]}
                     autoHeight
+                    disableColumnResize={false}
                     processRowUpdate={async (
                       newRow: Description,
                       oldRow: Description,
@@ -270,8 +284,7 @@ export default function Descriptions() {
                           oldDescription: oldRow,
                           newDescription: newRow,
                         });
-                        setMessage("Description updated successfully.");
-                        setShowSnackbar(true);
+                        handleSuccess("Description updated successfully.");
                         return { ...newRow };
                       } catch (error) {
                         handleError(
@@ -301,6 +314,7 @@ export default function Descriptions() {
                 message={message}
                 state={showSnackbar}
                 handleSnackbarClose={handleSnackbarClose}
+                severity={snackbarSeverity}
               />
             </div>
           </div>
@@ -322,12 +336,16 @@ export default function Descriptions() {
         <FormDialog
           open={showModalAdd}
           onClose={() => setShowModalAdd(false)}
-          onSubmit={() =>
-            handleAddRow(
-              (descriptionData as Description) ||
-                ({ descriptionName: "", activeStatus: true } as any),
-            )
-          }
+          onSubmit={() => {
+            if (descriptionData) {
+              handleAddRow(descriptionData);
+            } else {
+              handleAddRow({
+                descriptionName: "",
+                activeStatus: true,
+              } as Description);
+            }
+          }}
           title={modalTitles.addNew("description")}
           submitText="Add"
         >

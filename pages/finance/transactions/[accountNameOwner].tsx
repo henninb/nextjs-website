@@ -827,7 +827,7 @@ export default function TransactionsByAccount() {
               </div>
 
               <Box display="flex" justifyContent="center">
-                <Box sx={{ width: "100%", maxWidth: "1400px" }}>
+                <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                   {filteredTransactions && filteredTransactions.length > 0 ? (
                     <DataGridBase
                       rows={filteredTransactions}

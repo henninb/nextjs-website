@@ -140,7 +140,9 @@ describe("Finance Pages - Accessibility Tests", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        const errorMessage = screen.getByText("Name is required");
+        // Validation appears in both snackbar and helper text
+        const errorMessages = screen.getAllByText("Name is required");
+        const errorMessage = errorMessages[0];
         expect(errorMessage).toBeInTheDocument();
 
         const nameInput = screen.getByLabelText(/name/i);
@@ -311,7 +313,7 @@ describe("Finance Pages - Accessibility Tests", () => {
 
       await waitFor(() => {
         const successMessage = screen.getByText(
-          /Category inserted successfully/i,
+          /Category added successfully/i,
         );
         expect(successMessage).toBeInTheDocument();
         // Success messages should be announced to screen readers
@@ -458,7 +460,7 @@ describe("Finance Pages - Accessibility Tests", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("Category inserted successfully."),
+          screen.getByText("Category added successfully."),
         ).toBeInTheDocument();
       });
     });
@@ -486,7 +488,8 @@ describe("Finance Pages - Accessibility Tests", () => {
       fireEvent.click(screen.getByRole("button", { name: /add category/i }));
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
-      expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+      // Validation appears in both snackbar and helper text
+      expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
     });
 
     it("maintains proper contrast ratios", () => {

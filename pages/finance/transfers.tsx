@@ -45,9 +45,16 @@ import { modalTitles, modalBodies } from "../../utils/modalMessages";
 export default function Transfers() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "error" | "warning" | "info" | "success"
+  >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
+  const [formErrors, setFormErrors] = useState<{
+    amount?: string;
+    accounts?: string;
+  }>({});
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 50,
     page: 0,
@@ -204,10 +211,9 @@ export default function Transfers() {
         await deleteTransfer({ oldRow: selectedTransfer });
         const when = formatDateForDisplay(selectedTransfer.transactionDate);
         const amt = currencyFormat(selectedTransfer.amount);
-        setMessage(
+        handleSuccess(
           `Transfer deleted: ${amt} from ${selectedTransfer.sourceAccount} to ${selectedTransfer.destinationAccount} on ${when}.`,
         );
-        setShowSnackbar(true);
       } catch (error) {
         handleError(error, `Delete Transfer error: ${error}`, false);
       } finally {
@@ -227,6 +233,7 @@ export default function Transfers() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
+    setSnackbarSeverity("error");
     setShowSnackbar(true);
 
     console.error(errorMessage);
@@ -234,7 +241,34 @@ export default function Transfers() {
     if (throwIt) throw error;
   };
 
+  const handleSuccess = (successMessage: string) => {
+    setMessage(successMessage);
+    setSnackbarSeverity("success");
+    setShowSnackbar(true);
+  };
+
   const handleAddRow = async (newData: Transfer) => {
+    // UI validations: amount > 0 and source != destination
+    const errs: { amount?: string; accounts?: string } = {};
+    const amt = parseFloat(String(newData?.amount ?? 0));
+    if (isNaN(amt) || amt <= 0) {
+      errs.amount = "Amount must be greater than zero";
+    }
+    if (
+      newData?.sourceAccount &&
+      newData?.destinationAccount &&
+      newData.sourceAccount === newData.destinationAccount
+    ) {
+      errs.accounts = "Source and destination must be different";
+    }
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
+      setMessage(errs.accounts || errs.amount || "Validation failed");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+      return;
+    }
+
     try {
       const [guidDestination, guidSource] = await Promise.all([
         generateSecureUUID(),
@@ -250,10 +284,9 @@ export default function Transfers() {
       await insertTransfer({ payload: insertThisValue });
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
-      setMessage(
+      handleSuccess(
         `Transferred ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
       );
-      setShowSnackbar(true);
       setShowSpinner(false);
       setTransferData({
         transferId: 0,
@@ -265,6 +298,7 @@ export default function Transfers() {
         guidDestination: "",
         activeStatus: true,
       });
+      setFormErrors({});
     } catch (error) {
       handleError(error, `Add Transfer error: ${error}`, false);
       if (
@@ -426,10 +460,9 @@ export default function Transfers() {
                         const when = formatDateForDisplay(
                           newRow.transactionDate,
                         );
-                        setMessage(
+                        handleSuccess(
                           `Transfer updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
                         );
-                        setShowSnackbar(true);
                         //return newRow;
                         return { ...newRow };
                       } catch (error) {
@@ -472,6 +505,7 @@ export default function Transfers() {
                 message={message}
                 state={showSnackbar}
                 handleSnackbarClose={handleSnackbarClose}
+                severity={snackbarSeverity}
               />
             </div>
           </div>
@@ -572,6 +606,10 @@ export default function Transfers() {
                 ...prev,
                 amount: value,
               }));
+              // Clear amount error when user starts typing
+              if (formErrors.amount) {
+                setFormErrors((prev) => ({ ...prev, amount: undefined }));
+              }
             }}
             onBlur={() => {
               // Ensure value is properly formatted when user leaves the field
@@ -587,7 +625,14 @@ export default function Transfers() {
             }}
             fullWidth
             margin="normal"
+            error={!!formErrors.amount}
+            helperText={formErrors.amount}
           />
+          {formErrors.accounts && (
+            <Typography color="error" variant="caption" sx={{ mt: 1 }}>
+              {formErrors.accounts}
+            </Typography>
+          )}
         </FormDialog>
       </FinanceLayout>
     </div>

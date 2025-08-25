@@ -53,6 +53,9 @@ const initialPaymentData: Payment = {
 export default function Payments() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "error" | "warning" | "info" | "success"
+  >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment>(initialPaymentData);
@@ -163,10 +166,9 @@ export default function Payments() {
         await deletePayment({ oldRow: selectedPayment });
         const when = formatDateForDisplay(selectedPayment.transactionDate);
         const amt = currencyFormat(selectedPayment.amount);
-        setMessage(
+        handleSuccess(
           `Payment deleted: ${amt} from ${selectedPayment.sourceAccount} to ${selectedPayment.destinationAccount} on ${when}.`,
         );
-        setShowSnackbar(true);
       } catch (error) {
         handleError(error, `Delete Payment error: ${error}`, false);
       } finally {
@@ -186,11 +188,18 @@ export default function Payments() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
+    setSnackbarSeverity("error");
     setShowSnackbar(true);
 
     console.error(errorMessage);
 
     if (throwIt) throw error;
+  };
+
+  const handleSuccess = (successMessage: string) => {
+    setMessage(successMessage);
+    setSnackbarSeverity("success");
+    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Payment) => {
@@ -210,6 +219,7 @@ export default function Payments() {
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       setMessage(errs.accounts || errs.amount || "Validation failed");
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
       return;
     }
@@ -218,10 +228,9 @@ export default function Payments() {
       await insertPayment({ payload: newData });
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
-      setMessage(
+      handleSuccess(
         `Payment added: ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
       );
-      setShowSnackbar(true);
     } catch (error) {
       handleError(error, `Add Payment error: ${error}`, false);
       if (
@@ -432,10 +441,9 @@ export default function Payments() {
                         const when = formatDateForDisplay(
                           newRow.transactionDate,
                         );
-                        setMessage(
+                        handleSuccess(
                           `Payment updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
                         );
-                        setShowSnackbar(true);
                         return { ...newRow };
                       } catch (error) {
                         handleError(
@@ -476,6 +484,7 @@ export default function Payments() {
                 message={message}
                 state={showSnackbar}
                 handleSnackbarClose={handleSnackbarClose}
+                severity={snackbarSeverity}
               />
             </div>
           </div>

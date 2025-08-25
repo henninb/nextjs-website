@@ -164,7 +164,7 @@ describe("pages/finance/descriptions", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertDescriptionMock).toHaveBeenCalled();
     expect(
-      await screen.findByText(/Description inserted successfully/i),
+      await screen.findByText(/Description added successfully/i),
     ).toBeInTheDocument();
   });
 
@@ -212,7 +212,8 @@ describe("pages/finance/descriptions", () => {
     fireEvent.click(screen.getByRole("button", { name: /add description/i }));
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertDescriptionMock).not.toHaveBeenCalled();
-    expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
+    // Validation appears in both snackbar and helper text
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("toggles status switch without errors", () => {
@@ -289,7 +290,8 @@ describe("pages/finance/descriptions", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
     expect(insertDescriptionMock).not.toHaveBeenCalled();
-    expect(screen.getByText(/Name too long/i)).toBeInTheDocument();
+    // Validation appears in both snackbar and helper text
+    expect(screen.getAllByText(/Name too long/i)).toHaveLength(2);
   });
 
   it("validates description name contains only valid characters", () => {
@@ -316,9 +318,10 @@ describe("pages/finance/descriptions", () => {
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
     expect(insertDescriptionMock).not.toHaveBeenCalled();
+    // Validation appears in both snackbar and helper text
     expect(
-      screen.getByText(/Name contains invalid characters/i),
-    ).toBeInTheDocument();
+      screen.getAllByText(/Name contains invalid characters/i),
+    ).toHaveLength(2);
   });
 
   it("shows empty state when no descriptions exist", () => {

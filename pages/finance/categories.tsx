@@ -36,15 +36,20 @@ import { modalTitles, modalBodies } from "../../utils/modalMessages";
 export default function Categories() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "error" | "warning" | "info" | "success"
+  >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 50,
+    page: 0,
+  });
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [fallbackData, setFallbackData] = useState<Category[]>([]);
   const [formErrors, setFormErrors] = useState<{
     categoryName?: string;
     activeStatus?: string;
@@ -90,12 +95,11 @@ export default function Categories() {
     if (selectedCategory) {
       try {
         await deleteCategory(selectedCategory);
-        setMessage("Category deleted successfully.");
-        setShowSnackbar(true);
+        handleSuccess("Category deleted successfully.");
       } catch (error) {
         handleError(error, "Delete Category failure.", false);
       } finally {
-        setConfirmDelete(false);
+        setShowModalDelete(false);
         setSelectedCategory(null);
       }
     }
@@ -111,11 +115,18 @@ export default function Categories() {
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
+    setSnackbarSeverity("error");
     setShowSnackbar(true);
 
     console.error(errorMessage);
 
     if (throwIt) throw error;
+  };
+
+  const handleSuccess = (successMessage: string) => {
+    setMessage(successMessage);
+    setSnackbarSeverity("success");
+    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Category) => {
@@ -141,6 +152,9 @@ export default function Categories() {
     }
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
+      setMessage(errs.categoryName || "Validation failed");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
       return;
     }
 
@@ -148,8 +162,7 @@ export default function Categories() {
       console.log("from handleAddRow: " + JSON.stringify(newData));
       await insertCategory({ category: newData });
 
-      setMessage("Category inserted successfully.");
-      setShowSnackbar(true);
+      handleSuccess("Category added successfully.");
     } catch (error) {
       handleError(error, `Add Category error: ${error.message}`, false);
       if (
@@ -194,11 +207,12 @@ export default function Categories() {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Tooltip title="delete this row">
+        <Tooltip title="Delete this row">
           <IconButton
+            aria-label="Delete this row"
             onClick={() => {
               setSelectedCategory(params.row);
-              setConfirmDelete(true);
+              setShowModalDelete(true);
             }}
           >
             <DeleteIcon />
@@ -258,7 +272,7 @@ export default function Categories() {
         ) : (
           <div>
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "100%", maxWidth: "800px" }}>
+              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {fetchedCategories && fetchedCategories.length > 0 ? (
                   <DataGridBase
                     rows={fetchedCategories || []}
@@ -269,7 +283,13 @@ export default function Categories() {
                     }
                     checkboxSelection={false}
                     rowSelection={false}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={(newModel) =>
+                      setPaginationModel(newModel)
+                    }
+                    pageSizeOptions={[25, 50, 100]}
                     autoHeight
+                    disableColumnResize={false}
                     sx={{
                       "& .MuiDataGrid-cell": {
                         whiteSpace: "nowrap",
@@ -289,8 +309,7 @@ export default function Categories() {
                           oldCategory: oldRow,
                           newCategory: newRow,
                         });
-                        setMessage("Category updated successfully.");
-                        setShowSnackbar(true);
+                        handleSuccess("Category updated successfully.");
                         return { ...newRow };
                       } catch (error) {
                         handleError(error, "Update Category failure.", false);
@@ -318,11 +337,12 @@ export default function Categories() {
           message={message}
           state={showSnackbar}
           handleSnackbarClose={handleSnackbarClose}
+          severity={snackbarSeverity}
         />
 
         <ConfirmDialog
-          open={confirmDelete}
-          onClose={() => setConfirmDelete(false)}
+          open={showModalDelete}
+          onClose={() => setShowModalDelete(false)}
           onConfirm={handleDeleteRow}
           title={modalTitles.confirmDeletion}
           message={modalBodies.confirmDeletion(
@@ -336,12 +356,16 @@ export default function Categories() {
         <FormDialog
           open={showModalAdd}
           onClose={() => setShowModalAdd(false)}
-          onSubmit={() =>
-            handleAddRow(
-              (categoryData as Category) ||
-                ({ categoryName: "", activeStatus: true } as any),
-            )
-          }
+          onSubmit={() => {
+            if (categoryData) {
+              handleAddRow(categoryData);
+            } else {
+              handleAddRow({
+                categoryName: "",
+                activeStatus: true,
+              } as Category);
+            }
+          }}
           title={modalTitles.addNew("category")}
           submitText="Add"
         >
