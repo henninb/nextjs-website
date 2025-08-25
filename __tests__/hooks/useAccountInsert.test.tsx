@@ -285,4 +285,134 @@ describe("useAccountInsert", () => {
 
     expect(result.current.data).toBeNull();
   });
+
+  // TDD Tests for activeStatus always being true
+  it("should force activeStatus to true even when payload contains activeStatus: false", async () => {
+    const queryClient = createTestQueryClient();
+
+    const inputAccount: Account = {
+      accountNameOwner: "test_account_inactive",
+      accountType: "debit",
+      activeStatus: false, // This should be overridden to true
+      moniker: "1234",
+      outstanding: 0,
+      future: 0,
+      cleared: 0,
+    };
+
+    const responseAccount: Account = {
+      accountId: 123,
+      accountNameOwner: "test_account_inactive",
+      accountType: "debit",
+      activeStatus: true, // This should always be true
+      moniker: "1234",
+      outstanding: 0,
+      future: 0,
+      cleared: 0,
+      dateAdded: new Date().toISOString(),
+      dateUpdated: new Date().toISOString(),
+    };
+
+    // Spy on fetch to capture what actually gets sent to the server
+    const fetchSpy = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseAccount), { status: 201 }),
+    );
+    global.fetch = fetchSpy;
+
+    const { result } = renderHook(() => useAccountInsert(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    result.current.mutate({ payload: inputAccount });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Verify the payload sent to the server has activeStatus: true
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const sentPayload = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(sentPayload.activeStatus).toBe(true);
+  });
+
+  it("should set activeStatus to true when not provided in payload", async () => {
+    const queryClient = createTestQueryClient();
+
+    const inputAccount: Omit<Account, 'activeStatus'> = {
+      accountNameOwner: "test_account_no_status",
+      accountType: "debit",
+      moniker: "1234",
+      outstanding: 0,
+      future: 0,
+      cleared: 0,
+    };
+
+    const responseAccount: Account = {
+      accountId: 123,
+      accountNameOwner: "test_account_no_status",
+      accountType: "debit",
+      activeStatus: true,
+      moniker: "1234",
+      outstanding: 0,
+      future: 0,
+      cleared: 0,
+      dateAdded: new Date().toISOString(),
+      dateUpdated: new Date().toISOString(),
+    };
+
+    const fetchSpy = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseAccount), { status: 201 }),
+    );
+    global.fetch = fetchSpy;
+
+    const { result } = renderHook(() => useAccountInsert(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    result.current.mutate({ payload: inputAccount as Account });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Verify the payload sent to the server has activeStatus: true
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const sentPayload = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(sentPayload.activeStatus).toBe(true);
+  });
+
+  it("should maintain activeStatus as true when explicitly set to true in payload", async () => {
+    const queryClient = createTestQueryClient();
+
+    const inputAccount: Account = {
+      accountNameOwner: "test_account_active",
+      accountType: "debit",
+      activeStatus: true,
+      moniker: "1234",
+      outstanding: 0,
+      future: 0,
+      cleared: 0,
+    };
+
+    const responseAccount: Account = {
+      accountId: 123,
+      ...inputAccount,
+      dateAdded: new Date().toISOString(),
+      dateUpdated: new Date().toISOString(),
+    };
+
+    const fetchSpy = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify(responseAccount), { status: 201 }),
+    );
+    global.fetch = fetchSpy;
+
+    const { result } = renderHook(() => useAccountInsert(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    result.current.mutate({ payload: inputAccount });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Verify the payload sent to the server has activeStatus: true
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const sentPayload = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(sentPayload.activeStatus).toBe(true);
+  });
 });

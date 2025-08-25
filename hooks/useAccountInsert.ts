@@ -14,9 +14,9 @@ const setupNewAccount = (payload: Account) => {
     dateClosed: new Date(0), // January 1, 1970 to indicate "not closed"
     dateAdded: new Date(),
     dateUpdated: new Date(),
-    activeStatus: true,
     validationDate: new Date(0),
     ...payload,
+    activeStatus: true, // Always force activeStatus to true for new accounts
   };
 };
 
