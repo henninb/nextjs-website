@@ -314,9 +314,11 @@ describe("useAccountInsert", () => {
     };
 
     // Spy on fetch to capture what actually gets sent to the server
-    const fetchSpy = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseAccount), { status: 201 }),
-    );
+    const fetchSpy = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseAccount), { status: 201 }),
+      );
     global.fetch = fetchSpy;
 
     const { result } = renderHook(() => useAccountInsert(), {
@@ -336,7 +338,7 @@ describe("useAccountInsert", () => {
   it("should set activeStatus to true when not provided in payload", async () => {
     const queryClient = createTestQueryClient();
 
-    const inputAccount: Omit<Account, 'activeStatus'> = {
+    const inputAccount: Omit<Account, "activeStatus"> = {
       accountNameOwner: "test_account_no_status",
       accountType: "debit",
       moniker: "1234",
@@ -358,9 +360,11 @@ describe("useAccountInsert", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    const fetchSpy = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseAccount), { status: 201 }),
-    );
+    const fetchSpy = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseAccount), { status: 201 }),
+      );
     global.fetch = fetchSpy;
 
     const { result } = renderHook(() => useAccountInsert(), {
@@ -397,9 +401,11 @@ describe("useAccountInsert", () => {
       dateUpdated: new Date().toISOString(),
     };
 
-    const fetchSpy = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(responseAccount), { status: 201 }),
-    );
+    const fetchSpy = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(responseAccount), { status: 201 }),
+      );
     global.fetch = fetchSpy;
 
     const { result } = renderHook(() => useAccountInsert(), {

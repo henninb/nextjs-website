@@ -45,6 +45,7 @@ import usePendingTransactionUpdate from "../../../../hooks/usePendingTransaction
 import useAccountFetch from "../../../../hooks/useAccountFetch";
 import { useAuth } from "../../../../components/AuthProvider";
 import { generateSecureUUID } from "../../../../utils/security/secureUUID";
+import { getCategoryFromDescription } from "../../../../utils/categoryMapping";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -116,7 +117,7 @@ export default function TransactionImporter() {
             reoccurringType: "onetime" as ReoccurringType,
             transactionState: "outstanding" as TransactionState,
             transactionType: undefined as TransactionType,
-            category: "imported",
+            category: getCategoryFromDescription(transaction.description || ""),
             accountType: "debit" as AccountType,
             activeStatus: true,
             notes: "imported",
@@ -264,6 +265,8 @@ export default function TransactionImporter() {
           return null;
         }
 
+        const category = getCategoryFromDescription(parts[2]);
+
         return {
           transactionDate: new Date(parts[1]),
           accountNameOwner: "testing_brian",
@@ -273,7 +276,7 @@ export default function TransactionImporter() {
           transactionType: undefined,
           guid: "pending-uuid", // Will be replaced with server-generated UUID during insertion
           description: parts[2],
-          category: "imported",
+          category: category,
           accountType: "debit",
           activeStatus: true,
           notes: "",

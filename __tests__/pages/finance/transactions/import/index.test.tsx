@@ -15,6 +15,7 @@ import * as usePendingTransactionDelete from "../../../../../hooks/usePendingTra
 import * as usePendingTransactionUpdate from "../../../../../hooks/usePendingTransactionUpdate";
 import * as useAccountFetch from "../../../../../hooks/useAccountFetch";
 import * as AuthProvider from "../../../../../components/AuthProvider";
+import { getCategoryFromDescription } from "../../../../../utils/categoryMapping";
 
 jest.mock("next/router", () => ({
   useRouter: () => ({
@@ -427,6 +428,57 @@ describe("TransactionImporter Component", () => {
       expect(
         screen.getByText("All pending transactions have been deleted."),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe("Dynamic Category Assignment Based on Description", () => {
+    it("should assign 'groceries' category for grocery store descriptions", async () => {
+      // Test the category mapping function directly since it's the core logic
+      expect(getCategoryFromDescription("Walmart Grocery Store")).toBe(
+        "groceries",
+      );
+      expect(getCategoryFromDescription("Kroger Supermarket")).toBe(
+        "groceries",
+      );
+    });
+
+    it("should assign 'gas' category for gas station descriptions", async () => {
+      // Test the category mapping function directly
+      expect(getCategoryFromDescription("Shell Gas Station")).toBe("gas");
+      expect(getCategoryFromDescription("BP Fuel Stop")).toBe("gas");
+    });
+
+    it("should assign 'restaurants' category for restaurant descriptions", async () => {
+      // Test the category mapping function directly
+      expect(getCategoryFromDescription("McDonald's")).toBe("restaurants");
+      expect(getCategoryFromDescription("Pizza Hut Restaurant")).toBe(
+        "restaurants",
+      );
+    });
+
+    it("should assign 'bills' category for utility and bill descriptions", async () => {
+      // Test the category mapping function directly
+      expect(getCategoryFromDescription("Electric Bill")).toBe("bills");
+      expect(getCategoryFromDescription("Water Utility")).toBe("bills");
+    });
+
+    it("should default to 'imported' category for unrecognized descriptions", async () => {
+      // Test the category mapping function directly
+      expect(getCategoryFromDescription("Random Unknown Business")).toBe(
+        "imported",
+      );
+      expect(getCategoryFromDescription("Unknown Business")).toBe("imported");
+    });
+
+    it("should handle mixed descriptions with different categories", async () => {
+      // Test the category mapping function directly with various descriptions
+      expect(getCategoryFromDescription("Walmart Grocery")).toBe("groceries");
+      expect(getCategoryFromDescription("Shell Gas Station")).toBe("gas");
+      expect(getCategoryFromDescription("McDonald's Restaurant")).toBe(
+        "restaurants",
+      );
+      expect(getCategoryFromDescription("Electric Bill")).toBe("bills");
+      expect(getCategoryFromDescription("Unknown Business")).toBe("imported");
     });
   });
 });

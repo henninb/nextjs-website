@@ -312,9 +312,7 @@ describe("Finance Pages - Accessibility Tests", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        const successMessage = screen.getByText(
-          /Category added successfully/i,
-        );
+        const successMessage = screen.getByText(/Category added successfully/i);
         expect(successMessage).toBeInTheDocument();
         // Success messages should be announced to screen readers
         expect(

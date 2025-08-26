@@ -39,7 +39,12 @@ jest.mock("next/router", () => ({
 
 // Mock form helpers for stable testing
 jest.mock("../../../components/USDAmountInput", () => {
-  return function MockUSDAmountInput({ value, onChange, label, ...props }: any) {
+  return function MockUSDAmountInput({
+    value,
+    onChange,
+    label,
+    ...props
+  }: any) {
     return (
       <input
         value={value}
@@ -59,10 +64,14 @@ jest.mock("../../../components/EmptyState", () => ({
       <div>{title}</div>
       <div>{message}</div>
       {onAction && (
-        <button onClick={onAction} data-testid="empty-action">Add Transfer</button>
+        <button onClick={onAction} data-testid="empty-action">
+          Add Transfer
+        </button>
       )}
       {onRefresh && (
-        <button onClick={onRefresh} data-testid="empty-refresh">Refresh</button>
+        <button onClick={onRefresh} data-testid="empty-refresh">
+          Refresh
+        </button>
       )}
     </div>
   ),
@@ -74,7 +83,9 @@ jest.mock("../../../components/ErrorDisplay", () => ({
     <div data-testid="error-display">
       <div>An unexpected error occurred. Please try again.</div>
       {onRetry && (
-        <button onClick={onRetry} data-testid="retry-button">Try Again</button>
+        <button onClick={onRetry} data-testid="retry-button">
+          Try Again
+        </button>
       )}
     </div>
   ),
