@@ -19,25 +19,29 @@ beforeAll(() => {
   };
 });
 
+let capturedColumns: any[] = [];
 jest.mock("@mui/x-data-grid", () => ({
-  DataGrid: ({ rows = [], columns = [] }: any) => (
-    <div data-testid="mocked-datagrid">
-      {rows.map((row: any, idx: number) => (
-        <div key={idx}>
-          {columns.map((col: any, cidx: number) =>
-            col.renderCell ? (
-              <div
-                key={cidx}
-                data-testid={`cell-${idx}-${String(col.headerName || col.field).toLowerCase()}`}
-              >
-                {col.renderCell({ row, value: row[col.field] })}
-              </div>
-            ) : null,
-          )}
-        </div>
-      ))}
-    </div>
-  ),
+  DataGrid: ({ rows = [], columns = [] }: any) => {
+    capturedColumns = columns;
+    return (
+      <div data-testid="mocked-datagrid">
+        {rows.map((row: any, idx: number) => (
+          <div key={idx}>
+            {columns.map((col: any, cidx: number) =>
+              col.renderCell ? (
+                <div
+                  key={cidx}
+                  data-testid={`cell-${idx}-${String(col.headerName || col.field).toLowerCase()}`}
+                >
+                  {col.renderCell({ row, value: row[col.field] })}
+                </div>
+              ) : null,
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  },
 }));
 
 // Mock EmptyState component
@@ -443,5 +447,27 @@ describe("pages/finance/descriptions", () => {
     // Find and click refresh button in empty state
     fireEvent.click(screen.getByText(/Refresh/i));
     expect(refetch).toHaveBeenCalled();
+  });
+
+  it("does not include Count column", () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseDescriptionFetch.mockReturnValue({
+      data: [
+        { descriptionId: 1, descriptionName: "Grocery", activeStatus: true },
+      ],
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<DescriptionsPage />);
+
+    // Ensure the columns passed to DataGrid do not include the Count column
+    const hasCount = capturedColumns.some(
+      (c) => c.field === "descriptionCount" || c.headerName === "Count",
+    );
+    expect(hasCount).toBe(false);
   });
 });

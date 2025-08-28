@@ -242,11 +242,6 @@ export default function Descriptions() {
       editable: true,
     },
     {
-      field: "descriptionCount",
-      headerName: "Count",
-      width: 75,
-    },
-    {
       field: "",
       headerName: "Actions",
       width: 100,
