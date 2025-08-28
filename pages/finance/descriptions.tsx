@@ -174,28 +174,31 @@ export default function Descriptions() {
     }
   };
 
-  const isRowSelected = (rowId: string | number) => rowSelection.includes(rowId);
-  
+  const isRowSelected = (rowId: string | number) =>
+    rowSelection.includes(rowId);
+
   const handleRowToggle = (rowId: string | number) => {
-    setRowSelection(prev => 
-      prev.includes(rowId) 
-        ? prev.filter(id => id !== rowId)
-        : [...prev, rowId]
+    setRowSelection((prev) =>
+      prev.includes(rowId)
+        ? prev.filter((id) => id !== rowId)
+        : [...prev, rowId],
     );
   };
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const allRowIds = fetchedDescrptions?.map(row => getRowId(row)) || [];
+      const allRowIds = fetchedDescrptions?.map((row) => getRowId(row)) || [];
       setRowSelection(allRowIds);
     } else {
       setRowSelection([]);
     }
   };
 
-  const isAllSelected = fetchedDescrptions?.length > 0 && 
+  const isAllSelected =
+    fetchedDescrptions?.length > 0 &&
     rowSelection.length === fetchedDescrptions?.length;
-  const isIndeterminate = rowSelection.length > 0 && 
+  const isIndeterminate =
+    rowSelection.length > 0 &&
     rowSelection.length < (fetchedDescrptions?.length || 0);
 
   const columns: GridColDef[] = [

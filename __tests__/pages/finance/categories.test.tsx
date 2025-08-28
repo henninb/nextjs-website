@@ -57,6 +57,11 @@ jest.mock("../../../hooks/useCategoryUpdate", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
+// Mock merge hook to avoid requiring QueryClient in these tests
+jest.mock("../../../hooks/useCategoryMerge", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+}));
 
 import CategoriesPage from "../../../pages/finance/categories";
 import useCategoryFetchMock from "../../../hooks/useCategoryFetch";

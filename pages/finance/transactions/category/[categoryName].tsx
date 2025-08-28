@@ -68,7 +68,7 @@ export default function TransactionsByCategory() {
   // Apply client-side filters and search - moved before early return to fix Rules of Hooks
   const filteredTransactions = useMemo(() => {
     if (!fetchedTransactions) return [];
-    
+
     const q = searchQuery.trim().toLowerCase();
     const allowedStates = new Set(
       [

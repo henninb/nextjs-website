@@ -155,15 +155,17 @@ describe("TransactionsByCategory page", () => {
     it("calls hooks consistently during loading state transitions", () => {
       // This test ensures hooks are called in the same order even when
       // loading state changes, preventing "Rendered more hooks than during the previous render" error
-      
+
       // First render: loading = true (should still call all hooks before early return)
       (AuthProvider.useAuth as jest.Mock).mockReturnValue({
         isAuthenticated: true,
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByCategory />, { wrapper: createWrapper() });
-      
+      const { rerender } = render(<TransactionsByCategory />, {
+        wrapper: createWrapper(),
+      });
+
       // Component should return null but not crash due to hook order violations
       expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
 
@@ -174,7 +176,7 @@ describe("TransactionsByCategory page", () => {
       });
 
       rerender(<TransactionsByCategory />);
-      
+
       // Should render successfully without Rules of Hooks error
       expect(screen.getByTestId("finance-layout")).toBeInTheDocument();
     });
@@ -186,8 +188,10 @@ describe("TransactionsByCategory page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByCategory />, { wrapper: createWrapper() });
-      
+      const { rerender } = render(<TransactionsByCategory />, {
+        wrapper: createWrapper(),
+      });
+
       // Should return null without hook violations
       expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
 
@@ -198,7 +202,7 @@ describe("TransactionsByCategory page", () => {
       });
 
       rerender(<TransactionsByCategory />);
-      
+
       // Should still return null and trigger redirect
       expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
       expect(replaceMock).toHaveBeenCalledWith("/login");
@@ -213,7 +217,9 @@ describe("TransactionsByCategory page", () => {
         error: null,
       });
 
-      const { rerender } = render(<TransactionsByCategory />, { wrapper: createWrapper() });
+      const { rerender } = render(<TransactionsByCategory />, {
+        wrapper: createWrapper(),
+      });
       expect(screen.getByTestId("spinner")).toBeInTheDocument();
 
       // Change to loaded data - useMemo should handle null -> data transition
@@ -225,7 +231,7 @@ describe("TransactionsByCategory page", () => {
       });
 
       rerender(<TransactionsByCategory />);
-      
+
       // Should render data grid without hook order errors
       expect(screen.getByTestId("data-grid")).toBeInTheDocument();
     });

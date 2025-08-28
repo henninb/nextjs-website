@@ -18,12 +18,9 @@ jest.mock("@mui/x-data-grid", () => ({
     const { rows = [], columns = [] } = props;
     const React = require("react");
 
-    // Find the select column (custom checkbox column)
     const selectColumn = columns.find((col: any) => col.field === "select");
+    const elements = [] as any[];
 
-    const elements = [];
-
-    // Render header checkbox
     if (selectColumn) {
       elements.push(
         React.createElement(
@@ -35,16 +32,15 @@ jest.mock("@mui/x-data-grid", () => ({
       );
     }
 
-    // Render row checkboxes
     rows.forEach((row: any, index: number) => {
       elements.push(
         React.createElement(
           "div",
-          { key: row.descriptionId || index },
+          { key: row.categoryId || index },
           React.createElement(
             "span",
             { key: `name-${index}` },
-            row.descriptionName,
+            row.categoryName,
           ),
           selectColumn &&
             selectColumn.renderCell &&
@@ -52,8 +48,6 @@ jest.mock("@mui/x-data-grid", () => ({
         ),
       );
     });
-
-    // Test helper buttons - not needed anymore since we use direct checkbox clicks
 
     return React.createElement(
       "div",
@@ -67,47 +61,48 @@ jest.mock("../../../components/AuthProvider", () => ({
   useAuth: jest.fn().mockReturnValue({ isAuthenticated: true, loading: false }),
 }));
 
-jest.mock("../../../hooks/useDescriptionFetch", () => ({
+jest.mock("../../../hooks/useCategoryFetch", () => ({
   __esModule: true,
   default: jest.fn(),
 }));
-// Mock other hooks used by the page to avoid QueryClient wiring
-jest.mock("../../../hooks/useDescriptionInsert", () => ({
+
+// Mock other hooks used by the page
+jest.mock("../../../hooks/useCategoryInsert", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
-jest.mock("../../../hooks/useDescriptionDelete", () => ({
+jest.mock("../../../hooks/useCategoryDelete", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
-jest.mock("../../../hooks/useDescriptionUpdate", () => ({
+jest.mock("../../../hooks/useCategoryUpdate", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
 
 const mergeMock = jest.fn().mockResolvedValue({ done: true });
-jest.mock("../../../hooks/useDescriptionMerge", () => ({
+jest.mock("../../../hooks/useCategoryMerge", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: mergeMock }),
 }));
 
-import useDescriptionFetchMock from "../../../hooks/useDescriptionFetch";
-import DescriptionsPage from "../../../pages/finance/descriptions";
+import useCategoryFetchMock from "../../../hooks/useCategoryFetch";
+import CategoriesPage from "../../../pages/finance/categories";
 
-describe("Descriptions merge UI", () => {
+describe("Categories merge UI", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   const rows = [
-    { descriptionId: 1, descriptionName: "Alpha", activeStatus: true },
-    { descriptionId: 2, descriptionName: "Beta", activeStatus: true },
-    { descriptionId: 3, descriptionName: "Gamma", activeStatus: true },
+    { categoryId: 1, categoryName: "Alpha", activeStatus: true },
+    { categoryId: 2, categoryName: "Beta", activeStatus: true },
+    { categoryId: 3, categoryName: "Gamma", activeStatus: true },
   ];
 
   it("shows Merge button only when selection exists and performs merge", async () => {
     const refetch = jest.fn();
-    (useDescriptionFetchMock as unknown as jest.Mock).mockReturnValue({
+    (useCategoryFetchMock as unknown as jest.Mock).mockReturnValue({
       data: rows,
       isSuccess: true,
       isLoading: false,
@@ -116,58 +111,44 @@ describe("Descriptions merge UI", () => {
       refetch,
     });
 
-    render(<DescriptionsPage />);
+    render(<CategoriesPage />);
 
-    // Initially no Merge button
     expect(
       screen.queryByRole("button", { name: /^merge$/i }),
     ).not.toBeInTheDocument();
 
-    // Find and click individual checkboxes to simulate selection
     const checkboxes = screen.getAllByRole("checkbox");
-    // Click first two row checkboxes (skip header checkbox at index 0)
-    fireEvent.click(checkboxes[1]); // First row
-    fireEvent.click(checkboxes[2]); // Second row
+    fireEvent.click(checkboxes[1]);
+    fireEvent.click(checkboxes[2]);
 
-    // Merge button appears
     const mergeBtn = await screen.findByRole("button", { name: /^merge$/i });
     fireEvent.click(mergeBtn);
 
-    // Modal opens
-    const dialog = screen.getByRole("dialog", { name: /Merge Descriptions/i });
-
-    // Submit disabled until valid
+    const dialog = screen.getByRole("dialog", { name: /Merge Categories/i });
     const modalSubmit = within(dialog).getByRole("button", {
       name: /^merge$/i,
     });
     expect(modalSubmit).toBeDisabled();
 
-    // Enter valid name
     fireEvent.change(screen.getByLabelText(/new name/i), {
       target: { value: "Merged Name" },
     });
     expect(modalSubmit).not.toBeDisabled();
 
-    // Confirm merge
     fireEvent.click(modalSubmit);
-
     expect(mergeMock).toHaveBeenCalledWith({
       sourceNames: ["Alpha", "Beta"],
       targetName: "Merged Name",
     });
 
-    // Success snackbar and refetch
     expect(
-      await screen.findByText(/Descriptions merged successfully/i),
+      await screen.findByText(/Categories merged successfully/i),
     ).toBeInTheDocument();
 
-    // Wait for modal to close before asserting header state
     await waitForElementToBeRemoved(() =>
-      screen.queryByRole("dialog", { name: /Merge Descriptions/i }),
+      screen.queryByRole("dialog", { name: /Merge Categories/i }),
     );
     expect(refetch).toHaveBeenCalled();
-
-    // Merge button disappears after selection cleared
     expect(
       screen.queryByRole("button", { name: /^merge$/i }),
     ).not.toBeInTheDocument();
@@ -175,7 +156,7 @@ describe("Descriptions merge UI", () => {
 
   it("validates new name and does not call merge on cancel", () => {
     const refetch = jest.fn();
-    (useDescriptionFetchMock as unknown as jest.Mock).mockReturnValue({
+    (useCategoryFetchMock as unknown as jest.Mock).mockReturnValue({
       data: rows,
       isSuccess: true,
       isLoading: false,
@@ -184,26 +165,22 @@ describe("Descriptions merge UI", () => {
       refetch,
     });
 
-    render(<DescriptionsPage />);
+    render(<CategoriesPage />);
 
-    // Select rows using checkboxes
     const checkboxes = screen.getAllByRole("checkbox");
-    fireEvent.click(checkboxes[1]); // First row
-    fireEvent.click(checkboxes[2]); // Second row
+    fireEvent.click(checkboxes[1]);
+    fireEvent.click(checkboxes[2]);
 
     fireEvent.click(screen.getByRole("button", { name: /^merge$/i }));
-    // Type invalid input (spaces only) to trigger validation helper
-    const dialog = screen.getByRole("dialog", { name: /Merge Descriptions/i });
+    const dialog = screen.getByRole("dialog", { name: /Merge Categories/i });
     const input = within(dialog).getByLabelText(/new name/i);
     fireEvent.change(input, { target: { value: "   " } });
     expect(screen.getByText(/Name is required/i)).toBeInTheDocument();
     expect(mergeMock).not.toHaveBeenCalled();
 
-    // Cancel and wait for dialog to close
     fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
     return waitForElementToBeRemoved(() =>
-      screen.queryByRole("dialog", { name: /Merge Descriptions/i }),
+      screen.queryByRole("dialog", { name: /Merge Categories/i }),
     );
-    expect(mergeMock).not.toHaveBeenCalled();
   });
 });

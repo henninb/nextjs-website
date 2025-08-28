@@ -12,6 +12,7 @@ import {
   Alert,
   Switch,
   FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -25,6 +26,7 @@ import useCategoryInsert from "../../hooks/useCategoryInsert";
 import useCategoryDelete from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 import useCategoryUpdate from "../../hooks/useCategoryUpdate";
+import useCategoryMerge from "../../hooks/useCategoryMerge";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import PageHeader from "../../components/PageHeader";
 import DataGridBase from "../../components/DataGridBase";
@@ -66,8 +68,13 @@ export default function Categories() {
   const { mutateAsync: insertCategory } = useCategoryInsert();
   const { mutateAsync: updateCategory } = useCategoryUpdate();
   const { mutateAsync: deleteCategory } = useCategoryDelete();
+  const { mutateAsync: mergeCategories } = useCategoryMerge();
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const [rowSelection, setRowSelection] = useState<Array<string | number>>([]);
+  const [showModalMerge, setShowModalMerge] = useState(false);
+  const [mergeName, setMergeName] = useState("");
+  const [mergeError, setMergeError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -175,12 +182,101 @@ export default function Categories() {
     }
   };
 
+  const getRowId = (row: any) =>
+    row.categoryId ?? `${row.categoryName}-${row.activeStatus}`;
+
+  const isRowSelected = (rowId: string | number) =>
+    rowSelection.includes(rowId);
+  const handleRowToggle = (rowId: string | number) => {
+    setRowSelection((prev) =>
+      prev.includes(rowId)
+        ? prev.filter((id) => id !== rowId)
+        : [...prev, rowId],
+    );
+  };
+  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const allRowIds = fetchedCategories?.map((row) => getRowId(row)) || [];
+      setRowSelection(allRowIds);
+    } else {
+      setRowSelection([]);
+    }
+  };
+  const isAllSelected =
+    (fetchedCategories?.length || 0) > 0 &&
+    rowSelection.length === (fetchedCategories?.length || 0);
+  const isIndeterminate =
+    rowSelection.length > 0 &&
+    rowSelection.length < (fetchedCategories?.length || 0);
+
+  const validateName = (name: string): string | undefined => {
+    const trimmed = (name || "").trim();
+    if (!trimmed) return "Name is required";
+    if (trimmed.length > 255) return "Name too long";
+    if (!/^[a-zA-Z0-9 _-]+$/.test(trimmed))
+      return "Name contains invalid characters";
+    return undefined;
+  };
+
+  const handleMerge = async () => {
+    const err = validateName(mergeName);
+    if (err) {
+      setMergeError(err);
+      setMessage(err);
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+      return;
+    }
+
+    const selectedNames: string[] = (fetchedCategories || [])
+      .filter((row) => rowSelection.includes(getRowId(row)))
+      .map((row) => row.categoryName);
+
+    try {
+      await mergeCategories({
+        sourceNames: selectedNames,
+        targetName: mergeName.trim(),
+      });
+      handleSuccess("Categories merged successfully.");
+      setShowModalMerge(false);
+      setMergeName("");
+      setMergeError(undefined);
+      setRowSelection([]);
+      refetch();
+    } catch (error: any) {
+      handleError(error, `Merge Categories error: ${error.message}`, false);
+    }
+  };
+
   const columns: GridColDef[] = [
+    {
+      field: "select",
+      headerName: "",
+      width: 50,
+      sortable: false,
+      disableColumnMenu: true,
+      renderHeader: () => (
+        <Checkbox
+          checked={isAllSelected}
+          indeterminate={isIndeterminate}
+          onChange={handleSelectAll}
+          inputProps={{ "aria-label": "Select all categories" }}
+        />
+      ),
+      renderCell: (params) => (
+        <Checkbox
+          checked={isRowSelected(getRowId(params.row))}
+          onChange={() => handleRowToggle(getRowId(params.row))}
+          inputProps={{
+            "aria-label": `Select category ${params.row?.categoryName ?? ""}`,
+          }}
+        />
+      ),
+    },
     {
       field: "categoryName",
       headerName: "Name",
-      flex: 2,
-      minWidth: 150,
+      width: 300,
       editable: true,
       renderCell: (params) => {
         return (
@@ -193,8 +289,7 @@ export default function Categories() {
     {
       field: "activeStatus",
       headerName: "Status",
-      flex: 1,
-      minWidth: 100,
+      width: 100,
       editable: true,
       renderCell: (params) => {
         return params.value ? "Active" : "Inactive";
@@ -257,14 +352,24 @@ export default function Categories() {
           title="Category Management"
           subtitle="Organize your transactions by creating and managing categories for better financial tracking"
           actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
-              sx={{ backgroundColor: "primary.main" }}
-            >
-              Add Category
-            </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Category
+              </Button>
+              {rowSelection.length > 0 && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowModalMerge(true)}
+                >
+                  Merge
+                </Button>
+              )}
+            </Box>
           }
         />
         {showSpinner ? (
@@ -275,14 +380,9 @@ export default function Categories() {
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {fetchedCategories && fetchedCategories.length > 0 ? (
                   <DataGridBase
-                    rows={fetchedCategories || []}
+                    rows={fetchedCategories?.filter((row) => row != null) || []}
                     columns={columns}
-                    getRowId={(row: any) =>
-                      row.categoryId ??
-                      `${row.categoryName}-${row.activeStatus}`
-                    }
-                    checkboxSelection={false}
-                    rowSelection={false}
+                    getRowId={getRowId}
                     paginationModel={paginationModel}
                     onPaginationModelChange={(newModel) =>
                       setPaginationModel(newModel)
@@ -295,6 +395,18 @@ export default function Categories() {
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                      },
+                      // Hide separators to the right of the select checkbox column
+                      "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-iconSeparator":
+                        {
+                          display: "none",
+                        },
+                      "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-columnSeparator":
+                        {
+                          display: "none",
+                        },
+                      "& .MuiDataGrid-cell[data-field='select']": {
+                        borderRight: "none",
                       },
                     }}
                     processRowUpdate={async (
@@ -352,6 +464,33 @@ export default function Categories() {
           confirmText="Delete"
           cancelText="Cancel"
         />
+
+        <FormDialog
+          open={showModalMerge}
+          onClose={() => {
+            setShowModalMerge(false);
+            setMergeError(undefined);
+            setMergeName("");
+          }}
+          onSubmit={handleMerge}
+          title="Merge Categories"
+          submitText="Merge"
+          disabled={!!validateName(mergeName)}
+        >
+          <TextField
+            label="New Name"
+            fullWidth
+            margin="normal"
+            value={mergeName}
+            error={!!mergeError}
+            helperText={mergeError}
+            onChange={(e) => {
+              const next = e.target.value;
+              setMergeName(next);
+              setMergeError(validateName(next));
+            }}
+          />
+        </FormDialog>
 
         <FormDialog
           open={showModalAdd}
