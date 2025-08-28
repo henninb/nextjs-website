@@ -65,6 +65,35 @@ export default function TransactionsByCategory() {
     }
   }, [isTransactionsLoaded, isFetchingTransactions, errorTransactions]);
 
+  // Apply client-side filters and search - moved before early return to fix Rules of Hooks
+  const filteredTransactions = useMemo(() => {
+    if (!fetchedTransactions) return [];
+    
+    const q = searchQuery.trim().toLowerCase();
+    const allowedStates = new Set(
+      [
+        stateFilter.cleared && "cleared",
+        stateFilter.outstanding && "outstanding",
+        stateFilter.future && "future",
+      ].filter(Boolean) as string[],
+    );
+    return fetchedTransactions.filter((row) => {
+      if (!row) return false;
+      if (
+        row.transactionState &&
+        !allowedStates.has(row.transactionState as string)
+      )
+        return false;
+      if (!q) return true;
+      const haystack =
+        `${row.accountNameOwner || ""} ${row.description || ""} ${row.category || ""} ${row.notes || ""}`.toLowerCase();
+      if (haystack.includes(q)) return true;
+      const amtStr = (row.amount ?? "").toString();
+      return amtStr.includes(q);
+    });
+  }, [fetchedTransactions, searchQuery, stateFilter]);
+
+  // Early return after all hooks
   if (loading || (!loading && !isAuthenticated)) {
     return null;
   }
@@ -146,32 +175,6 @@ export default function TransactionsByCategory() {
       </FinanceLayout>
     );
   }
-
-  // Apply client-side filters and search
-  const filteredTransactions = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    const allowedStates = new Set(
-      [
-        stateFilter.cleared && "cleared",
-        stateFilter.outstanding && "outstanding",
-        stateFilter.future && "future",
-      ].filter(Boolean) as string[],
-    );
-    return (fetchedTransactions || []).filter((row) => {
-      if (!row) return false;
-      if (
-        row.transactionState &&
-        !allowedStates.has(row.transactionState as string)
-      )
-        return false;
-      if (!q) return true;
-      const haystack =
-        `${row.accountNameOwner || ""} ${row.description || ""} ${row.category || ""} ${row.notes || ""}`.toLowerCase();
-      if (haystack.includes(q)) return true;
-      const amtStr = (row.amount ?? "").toString();
-      return amtStr.includes(q);
-    });
-  }, [fetchedTransactions, searchQuery, stateFilter]);
 
   return (
     <div>
