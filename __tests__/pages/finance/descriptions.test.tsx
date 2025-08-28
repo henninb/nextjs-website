@@ -75,6 +75,11 @@ jest.mock("../../../hooks/useDescriptionUpdate", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
+// New merge hook for descriptions page
+jest.mock("../../../hooks/useDescriptionMerge", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
+}));
 
 import DescriptionsPage from "../../../pages/finance/descriptions";
 import useDescriptionFetchMock from "../../../hooks/useDescriptionFetch";

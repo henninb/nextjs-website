@@ -24,6 +24,7 @@ import useDescriptionInsert from "../../hooks/useDescriptionInsert";
 import useDescriptionDelete from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import useDescriptionUpdate from "../../hooks/useDescriptionUpdate";
+import useDescriptionMerge from "../../hooks/useDescriptionMerge";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import PageHeader from "../../components/PageHeader";
 import DataGridBase from "../../components/DataGridBase";
@@ -66,8 +67,13 @@ export default function Descriptions() {
   const { mutateAsync: insertDescription } = useDescriptionInsert();
   const { mutateAsync: updateDescription } = useDescriptionUpdate();
   const { mutateAsync: deleteDescription } = useDescriptionDelete();
+  const { mutateAsync: mergeDescriptions } = useDescriptionMerge();
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const [rowSelection, setRowSelection] = useState<Array<string | number>>([]);
+  const [showModalMerge, setShowModalMerge] = useState(false);
+  const [mergeName, setMergeName] = useState("");
+  const [mergeError, setMergeError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -212,6 +218,49 @@ export default function Descriptions() {
     },
   ];
 
+  const getRowId = (row: any) =>
+    row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
+
+  const validateName = (name: string): string | undefined => {
+    const trimmed = (name || "").trim();
+    if (!trimmed) return "Name is required";
+    if (trimmed.length > 255) return "Name too long";
+    if (!/^[a-zA-Z0-9 _-]+$/.test(trimmed))
+      return "Name contains invalid characters";
+    return undefined;
+  };
+
+  const handleMerge = async () => {
+    const err = validateName(mergeName);
+    if (err) {
+      setMergeError(err);
+      setMessage(err);
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+      return;
+    }
+
+    // Map selected ids to description names
+    const selectedNames: string[] = (fetchedDescrptions || [])
+      .filter((row) => rowSelection.includes(getRowId(row)))
+      .map((row) => row.descriptionName);
+
+    try {
+      await mergeDescriptions({
+        sourceNames: selectedNames,
+        targetName: mergeName.trim(),
+      });
+      handleSuccess("Descriptions merged successfully.");
+      setShowModalMerge(false);
+      setMergeName("");
+      setMergeError(undefined);
+      setRowSelection([]);
+      refetchDescriptions();
+    } catch (error: any) {
+      handleError(error, `Merge Descriptions error: ${error.message}`, false);
+    }
+  };
+
   // Handle error states first
   if (isErrorDescriptions) {
     return (
@@ -237,14 +286,24 @@ export default function Descriptions() {
           title="Description Management"
           subtitle="Create and manage transaction descriptions to standardize your records"
           actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
-              sx={{ backgroundColor: "primary.main" }}
-            >
-              Add Description
-            </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Description
+              </Button>
+              {rowSelection.length > 0 && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowModalMerge(true)}
+                >
+                  Merge
+                </Button>
+              )}
+            </Box>
           }
         />
         {showSpinner ? (
@@ -259,12 +318,12 @@ export default function Descriptions() {
                       fetchedDescrptions?.filter((row) => row != null) || []
                     }
                     columns={columns}
-                    getRowId={(row: any) =>
-                      row.descriptionId ??
-                      `${row.descriptionName}-${row.activeStatus}`
+                    getRowId={getRowId}
+                    checkboxSelection
+                    rowSelectionModel={rowSelection}
+                    onRowSelectionModelChange={(model: any) =>
+                      setRowSelection(model as Array<string | number>)
                     }
-                    checkboxSelection={false}
-                    rowSelection={false}
                     paginationModel={paginationModel}
                     onPaginationModelChange={(newModel) =>
                       setPaginationModel(newModel)
@@ -384,6 +443,33 @@ export default function Descriptions() {
               </Typography>
             )}
           </Box>
+        </FormDialog>
+
+        <FormDialog
+          open={showModalMerge}
+          onClose={() => {
+            setShowModalMerge(false);
+            setMergeError(undefined);
+            setMergeName("");
+          }}
+          onSubmit={handleMerge}
+          title="Merge Descriptions"
+          submitText="Merge"
+          disabled={!!validateName(mergeName)}
+        >
+          <TextField
+            label="New Name"
+            fullWidth
+            margin="normal"
+            value={mergeName}
+            error={!!mergeError}
+            helperText={mergeError}
+            onChange={(e) => {
+              const next = e.target.value;
+              setMergeName(next);
+              setMergeError(validateName(next));
+            }}
+          />
         </FormDialog>
       </FinanceLayout>
     </div>
