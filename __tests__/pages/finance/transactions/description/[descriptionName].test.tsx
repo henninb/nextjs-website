@@ -151,4 +151,84 @@ describe("TransactionsByDescription page", () => {
     btn.click();
     expect(refetchMock).toHaveBeenCalled();
   });
+
+  describe("Rules of Hooks compliance", () => {
+    it("calls hooks consistently during loading state transitions", () => {
+      // This test ensures hooks are called in the same order even when
+      // loading state changes, preventing "Rendered more hooks than during the previous render" error
+      
+      // First render: loading = true (should still call all hooks before early return)
+      (AuthProvider.useAuth as jest.Mock).mockReturnValue({
+        isAuthenticated: true,
+        loading: true,
+      });
+
+      const { rerender } = render(<TransactionsByDescription />, { wrapper: createWrapper() });
+      
+      // Component should return null but not crash due to hook order violations
+      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+
+      // Second render: loading = false (should call same hooks in same order)
+      (AuthProvider.useAuth as jest.Mock).mockReturnValue({
+        isAuthenticated: true,
+        loading: false,
+      });
+
+      rerender(<TransactionsByDescription />);
+      
+      // Should render successfully without Rules of Hooks error
+      expect(screen.getByTestId("finance-layout")).toBeInTheDocument();
+    });
+
+    it("calls hooks consistently during authentication state transitions", () => {
+      // Test loading -> not authenticated transition
+      (AuthProvider.useAuth as jest.Mock).mockReturnValue({
+        isAuthenticated: false,
+        loading: true,
+      });
+
+      const { rerender } = render(<TransactionsByDescription />, { wrapper: createWrapper() });
+      
+      // Should return null without hook violations
+      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+
+      // Change to not authenticated, not loading
+      (AuthProvider.useAuth as jest.Mock).mockReturnValue({
+        isAuthenticated: false,
+        loading: false,
+      });
+
+      rerender(<TransactionsByDescription />);
+      
+      // Should still return null and trigger redirect
+      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+      expect(replaceMock).toHaveBeenCalledWith("/login");
+    });
+
+    it("maintains hook order when data changes from null to loaded", () => {
+      // Start with no data
+      (useTransactionByDescription.default as jest.Mock).mockReturnValue({
+        data: null,
+        isSuccess: false,
+        isFetching: true,
+        error: null,
+      });
+
+      const { rerender } = render(<TransactionsByDescription />, { wrapper: createWrapper() });
+      expect(screen.getByTestId("spinner")).toBeInTheDocument();
+
+      // Change to loaded data - useMemo should handle null -> data transition
+      (useTransactionByDescription.default as jest.Mock).mockReturnValue({
+        data: mockRows,
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+      });
+
+      rerender(<TransactionsByDescription />);
+      
+      // Should render data grid without hook order errors
+      expect(screen.getByTestId("data-grid")).toBeInTheDocument();
+    });
+  });
 });
