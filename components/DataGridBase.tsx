@@ -3,6 +3,8 @@ import {
   DataGrid,
   GridPaginationModel,
   GridValidRowModel,
+  GridRowSelectionModel as V8GridRowSelectionModel,
+  GridRowId,
 } from "@mui/x-data-grid";
 
 type DataGridBaseProps<R extends GridValidRowModel> = {
@@ -16,7 +18,10 @@ type DataGridBaseProps<R extends GridValidRowModel> = {
   checkboxSelection?: boolean;
   rowSelection?: boolean;
   rowSelectionModel?: Array<string | number>;
-  onRowSelectionModelChange?: (model: any, details?: any) => void;
+  onRowSelectionModelChange?: (
+    model: Array<string | number>,
+    details?: any,
+  ) => void;
   keepNonExistentRowsSelected?: boolean;
   processRowUpdate?: (newRow: R, oldRow: R) => Promise<R> | R;
   disableColumnResize?: boolean;
@@ -49,6 +54,26 @@ export default function DataGridBase<R extends GridValidRowModel>({
     page: 0,
     pageSize: 50,
   };
+
+  // Normalize legacy array-based selection model to the v8 object shape
+  const normalizedRowSelectionModel: V8GridRowSelectionModel | undefined =
+    rowSelectionModel && rowSelectionModel.length > 0
+      ? {
+          type: "include",
+          ids: new Set(rowSelectionModel as GridRowId[]),
+        }
+      : rowSelectionModel
+        ? { type: "include", ids: new Set<GridRowId>() }
+        : undefined;
+
+  // Wrap change handler to present legacy array to consumers while accepting v8 object from DataGrid
+  const handleRowSelectionModelChange = (
+    model: V8GridRowSelectionModel,
+    details?: any,
+  ) => {
+    const idsArray = Array.from(model.ids) as Array<string | number>;
+    onRowSelectionModelChange?.(idsArray, details);
+  };
   return (
     <DataGrid
       rows={rows}
@@ -56,8 +81,8 @@ export default function DataGridBase<R extends GridValidRowModel>({
       getRowId={getRowId}
       checkboxSelection={checkboxSelection}
       rowSelection={rowSelection}
-      rowSelectionModel={rowSelectionModel}
-      onRowSelectionModelChange={onRowSelectionModelChange}
+      rowSelectionModel={normalizedRowSelectionModel}
+      onRowSelectionModelChange={handleRowSelectionModelChange}
       keepNonExistentRowsSelected={keepNonExistentRowsSelected}
       pagination
       paginationModel={defaultModel}

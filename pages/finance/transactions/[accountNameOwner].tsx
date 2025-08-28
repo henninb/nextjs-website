@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import type { GridRowSelectionModel } from "@mui/x-data-grid";
-import type { GridRowId } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
 import {
   Box,
@@ -97,11 +95,9 @@ export default function TransactionsByAccount() {
     future: boolean;
   }>({ cleared: true, outstanding: true, future: true });
 
-  const [rowSelectionModel, setRowSelectionModel] =
-    useState<GridRowSelectionModel>({
-      type: "include", // “include” means these IDs are selected
-      ids: new Set(), // start with no selections
-    });
+  const [rowSelectionModel, setRowSelectionModel] = useState<
+    Array<string | number>
+  >([]);
 
   const router = useRouter();
   const { accountNameOwner }: any = router.query;
@@ -212,12 +208,11 @@ export default function TransactionsByAccount() {
   const theme = useTheme();
 
   useEffect(() => {
-    const { ids } = rowSelectionModel;
-    if (ids.size === 0) {
+    const selectedIds = rowSelectionModel || [];
+    if (!selectedIds || selectedIds.length === 0) {
       setSelectedTotal(null);
       return;
     }
-    const selectedIds = Array.from(ids);
     const selectedRows =
       fetchedTransactions?.filter(
         (r) => r?.transactionId && selectedIds.includes(r.transactionId),
