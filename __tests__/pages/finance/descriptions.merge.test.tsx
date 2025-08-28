@@ -12,25 +12,37 @@ jest.mock("next/router", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
-// Localized mock of DataGrid to simulate selection
+// Mock DataGrid to simulate custom checkbox selection
 jest.mock("@mui/x-data-grid", () => ({
   DataGrid: (props: any) => {
-    const { rows = [], onRowSelectionModelChange } = props;
-    return (
-      <div data-testid="mocked-datagrid-merge">
-        <button
-          onClick={() =>
-            onRowSelectionModelChange?.([
-              rows[0]?.descriptionId,
-              rows[1]?.descriptionId,
-            ])
-          }
-        >
-          Select Two
-        </button>
-        <button onClick={() => onRowSelectionModelChange?.([])}>Clear</button>
-      </div>
-    );
+    const { rows = [], columns = [] } = props;
+    const React = require('react');
+    
+    // Find the select column (custom checkbox column)
+    const selectColumn = columns.find((col: any) => col.field === "select");
+    
+    const elements = [];
+    
+    // Render header checkbox
+    if (selectColumn) {
+      elements.push(React.createElement('div', { key: 'header' }, 
+        React.createElement('span', { key: 'header-text' }, 'Select All'),
+        selectColumn.renderHeader && selectColumn.renderHeader()
+      ));
+    }
+    
+    // Render row checkboxes  
+    rows.forEach((row: any, index: number) => {
+      elements.push(React.createElement('div', { key: row.descriptionId || index }, 
+        React.createElement('span', { key: `name-${index}` }, row.descriptionName),
+        selectColumn && selectColumn.renderCell && 
+          selectColumn.renderCell({ row, value: null })
+      ));
+    });
+    
+    // Test helper buttons - not needed anymore since we use direct checkbox clicks
+    
+    return React.createElement('div', { 'data-testid': 'mocked-datagrid-merge' }, elements);
   },
 }));
 
@@ -94,8 +106,11 @@ describe("Descriptions merge UI", () => {
       screen.queryByRole("button", { name: /^merge$/i }),
     ).not.toBeInTheDocument();
 
-    // Trigger selection via mocked grid control
-    fireEvent.click(screen.getByText("Select Two"));
+    // Find and click individual checkboxes to simulate selection
+    const checkboxes = screen.getAllByRole("checkbox");
+    // Click first two row checkboxes (skip header checkbox at index 0)
+    fireEvent.click(checkboxes[1]); // First row
+    fireEvent.click(checkboxes[2]); // Second row
 
     // Merge button appears
     const mergeBtn = await screen.findByRole("button", { name: /^merge$/i });
@@ -153,7 +168,11 @@ describe("Descriptions merge UI", () => {
     });
 
     render(<DescriptionsPage />);
-    fireEvent.click(screen.getByText("Select Two"));
+    
+    // Select rows using checkboxes
+    const checkboxes = screen.getAllByRole("checkbox");
+    fireEvent.click(checkboxes[1]); // First row
+    fireEvent.click(checkboxes[2]); // Second row
 
     fireEvent.click(screen.getByRole("button", { name: /^merge$/i }));
     // Type invalid input (spaces only) to trigger validation helper

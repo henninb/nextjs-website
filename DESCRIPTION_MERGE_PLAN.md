@@ -96,3 +96,52 @@
 ## Rollout
 
 - Ship behind no flag; behavior is additive and discoverable. Validate on dev with realistic data. If issues arise, selection can be temporarily disabled by setting `checkboxSelection={false}`.
+
+## Implementation Notes & Debugging History
+
+### Issue: Checkboxes not responding to clicks (FIXED)
+**Problem**: Checkboxes were visible but not functional - clicking had no effect and no row selection occurred.
+**Root Cause**: Missing `rowSelection={true}` prop on DataGridBase component.
+**Solution**: Added `rowSelection` prop alongside existing `checkboxSelection` prop.
+
+### Issue: TypeError "Cannot read properties of undefined (reading 'size')" (FIXED)
+**Problem**: Runtime error after enabling checkbox functionality - "Cannot read properties of undefined (reading 'size')".
+**Root Cause**: Multiple issues - incorrect prop passing in DataGridBase component and wrong data type for rowSelectionModel.
+**Failed Attempts**:
+1. **Fixed callback signature**: Changed from `(model: any)` to `(model: any, details: any)` - didn't resolve the core issue.
+2. **Added defensive type handling**: Used `Array.isArray(model) ? model : Array.from(model || [])` - still got size error.
+3. **Added error handling**: Wrapped selection logic in try-catch - masked but didn't fix the problem.
+
+**Final Working Solution** (Custom Checkbox Approach):
+**Problem**: DataGrid's built-in selection (`checkboxSelection`, `rowSelectionModel`, `onRowSelectionModelChange`) consistently caused "Cannot read properties of undefined (reading 'size')" errors across multiple implementation attempts.
+
+**Solution**: Completely bypass DataGrid's built-in selection mechanism and implement manual checkboxes as a custom column:
+
+1. **Custom checkbox column**: Added a dedicated "select" column with manual Checkbox components in `renderCell` and `renderHeader`
+2. **Manual selection state**: Maintained `rowSelection` as simple `Array<string | number>` with custom toggle/select-all logic
+3. **No DataGrid selection props**: Removed all `checkboxSelection`, `rowSelection`, `rowSelectionModel`, `onRowSelectionModelChange` props
+4. **Standard checkbox features**: Implemented select-all, indeterminate state, and individual row selection manually
+
+**Implementation Details**:
+```typescript
+// Custom selection functions
+const handleRowToggle = (rowId) => setRowSelection(prev => 
+  prev.includes(rowId) ? prev.filter(id => id !== rowId) : [...prev, rowId]
+);
+const handleSelectAll = (checked) => setRowSelection(checked ? allRowIds : []);
+
+// Custom checkbox column
+{
+  field: "select",
+  renderHeader: () => <Checkbox checked={isAllSelected} onChange={handleSelectAll} />,
+  renderCell: (params) => <Checkbox checked={isSelected} onChange={handleRowToggle} />
+}
+```
+
+### Key Learnings (Final)
+- **When DataGrid built-in selection fails**: Don't keep fighting it - implement custom checkboxes as a column instead
+- **"Cannot read properties of undefined (reading 'size')" error**: This appears to be a persistent issue with MUI DataGrid v8.10.2's built-in selection mechanism, possibly related to internal state management
+- **Custom checkbox approach is more reliable**: Manual implementation gives full control and avoids DataGrid's internal selection bugs
+- **User experience is identical**: Custom checkboxes provide the same functionality (select-all, indeterminate state, individual selection) without the technical issues  
+- **Debugging lesson**: When the same error persists across multiple different implementation approaches, the problem is likely with the underlying mechanism itself, not the implementation
+- **Sometimes the simple manual approach beats the "built-in" feature**: Custom implementation can be more stable than framework-provided functionality

@@ -15,6 +15,9 @@ type DataGridBaseProps<R extends GridValidRowModel> = {
   autoHeight?: boolean;
   checkboxSelection?: boolean;
   rowSelection?: boolean;
+  rowSelectionModel?: Array<string | number>;
+  onRowSelectionModelChange?: (model: any, details?: any) => void;
+  keepNonExistentRowsSelected?: boolean;
   processRowUpdate?: (newRow: R, oldRow: R) => Promise<R> | R;
   disableColumnResize?: boolean;
   disableRowSelectionOnClick?: boolean;
@@ -33,6 +36,9 @@ export default function DataGridBase<R extends GridValidRowModel>({
   autoHeight = true,
   checkboxSelection = false,
   rowSelection = false,
+  rowSelectionModel,
+  onRowSelectionModelChange,
+  keepNonExistentRowsSelected = false,
   processRowUpdate,
   disableColumnResize,
   disableRowSelectionOnClick,
@@ -50,6 +56,9 @@ export default function DataGridBase<R extends GridValidRowModel>({
       getRowId={getRowId}
       checkboxSelection={checkboxSelection}
       rowSelection={rowSelection}
+      rowSelectionModel={rowSelectionModel}
+      onRowSelectionModelChange={onRowSelectionModelChange}
+      keepNonExistentRowsSelected={keepNonExistentRowsSelected}
       pagination
       paginationModel={defaultModel}
       onPaginationModelChange={onPaginationModelChange}

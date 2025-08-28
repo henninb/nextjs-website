@@ -11,6 +11,7 @@ import {
   Typography,
   Switch,
   FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -173,11 +174,55 @@ export default function Descriptions() {
     }
   };
 
+  const isRowSelected = (rowId: string | number) => rowSelection.includes(rowId);
+  
+  const handleRowToggle = (rowId: string | number) => {
+    setRowSelection(prev => 
+      prev.includes(rowId) 
+        ? prev.filter(id => id !== rowId)
+        : [...prev, rowId]
+    );
+  };
+
+  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const allRowIds = fetchedDescrptions?.map(row => getRowId(row)) || [];
+      setRowSelection(allRowIds);
+    } else {
+      setRowSelection([]);
+    }
+  };
+
+  const isAllSelected = fetchedDescrptions?.length > 0 && 
+    rowSelection.length === fetchedDescrptions?.length;
+  const isIndeterminate = rowSelection.length > 0 && 
+    rowSelection.length < (fetchedDescrptions?.length || 0);
+
   const columns: GridColDef[] = [
+    {
+      field: "select",
+      headerName: "",
+      width: 50,
+      sortable: false,
+      disableColumnMenu: true,
+      renderHeader: () => (
+        <Checkbox
+          checked={isAllSelected}
+          indeterminate={isIndeterminate}
+          onChange={handleSelectAll}
+        />
+      ),
+      renderCell: (params) => (
+        <Checkbox
+          checked={isRowSelected(getRowId(params.row))}
+          onChange={() => handleRowToggle(getRowId(params.row))}
+        />
+      ),
+    },
     {
       field: "descriptionName",
       headerName: "Name",
-      width: 350,
+      width: 300,
       editable: true,
       renderCell: (params) => {
         return (
@@ -319,11 +364,6 @@ export default function Descriptions() {
                     }
                     columns={columns}
                     getRowId={getRowId}
-                    checkboxSelection
-                    rowSelectionModel={rowSelection}
-                    onRowSelectionModelChange={(model: any) =>
-                      setRowSelection(model as Array<string | number>)
-                    }
                     paginationModel={paginationModel}
                     onPaginationModelChange={(newModel) =>
                       setPaginationModel(newModel)
