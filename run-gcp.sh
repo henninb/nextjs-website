@@ -265,6 +265,7 @@ log "Useful commands:"
 log "  Create firewall rule: gcloud compute firewall-rules create allow-react-app-rule --allow tcp:3001"
 log "  SSH to instance: gcloud compute ssh --zone 'us-central1-b' 'www-bhenning-com' --project 'sa-brian-henning'"
 log ""
+log "ssh gcp 'docker logs react-app -f'"
 log "Testing application accessibility..."
 if curl -f 'http://34.170.214.18:3001/' >/dev/null 2>&1; then
   log "Application is accessible at http://34.170.214.18:3001/"
