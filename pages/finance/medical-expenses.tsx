@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
-import { Box, Button, IconButton, Tooltip, Chip } from "@mui/material";
+import { Box, Button, IconButton, Tooltip, Chip, Dialog } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -12,13 +12,17 @@ import EmptyState from "../../components/EmptyState";
 import LoadingState from "../../components/LoadingState";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import FormDialog from "../../components/FormDialog";
 import PageHeader from "../../components/PageHeader";
 import DataGridBase from "../../components/DataGridBase";
 import SummaryBar from "../../components/SummaryBar";
+import MedicalExpenseForm from "../../components/MedicalExpenseForm";
 import { useAuth } from "../../components/AuthProvider";
 
 import useMedicalExpenseFetch from "../../hooks/useMedicalExpenseFetch";
 import useMedicalExpenseDelete from "../../hooks/useMedicalExpenseDelete";
+import useMedicalExpenseInsert from "../../hooks/useMedicalExpenseInsert";
+import useMedicalExpenseUpdate from "../../hooks/useMedicalExpenseUpdate";
 import { MedicalExpense, ClaimStatus } from "../../model/MedicalExpense";
 import { currencyFormat } from "../../components/Common";
 
@@ -27,9 +31,11 @@ export default function MedicalExpenses() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalDelete, setShowModalDelete] = useState(false);
+  const [showModalForm, setShowModalForm] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<MedicalExpense | null>(
     null,
   );
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const {
     data: medicalExpenses,
@@ -40,6 +46,8 @@ export default function MedicalExpenses() {
   } = useMedicalExpenseFetch();
 
   const { mutateAsync: deleteExpense } = useMedicalExpenseDelete();
+  const { mutateAsync: insertExpense } = useMedicalExpenseInsert();
+  const { mutateAsync: updateExpense } = useMedicalExpenseUpdate();
 
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
@@ -74,6 +82,49 @@ export default function MedicalExpenses() {
         setSelectedExpense(null);
       }
     }
+  };
+
+  const handleAddExpense = () => {
+    setSelectedExpense(null);
+    setIsEditMode(false);
+    setShowModalForm(true);
+  };
+
+  const handleEditExpense = (expense: MedicalExpense) => {
+    setSelectedExpense(expense);
+    setIsEditMode(true);
+    setShowModalForm(true);
+  };
+
+  const handleFormSubmit = async (formData: Partial<MedicalExpense>) => {
+    try {
+      if (isEditMode && selectedExpense) {
+        const updatedExpense = {
+          ...selectedExpense,
+          ...formData,
+        } as MedicalExpense;
+        await updateExpense({
+          newRow: updatedExpense,
+          oldRow: selectedExpense,
+        });
+        setMessage("Medical expense updated successfully.");
+      } else {
+        await insertExpense({ payload: formData as any });
+        setMessage("Medical expense created successfully.");
+      }
+      setShowSnackbar(true);
+      setShowModalForm(false);
+      setSelectedExpense(null);
+    } catch (error: any) {
+      setMessage(`${isEditMode ? "Update" : "Create"} error: ${error.message}`);
+      setShowSnackbar(true);
+    }
+  };
+
+  const handleFormCancel = () => {
+    setShowModalForm(false);
+    setSelectedExpense(null);
+    setIsEditMode(false);
   };
 
   const handleSnackbarClose = () => {
@@ -188,10 +239,7 @@ export default function MedicalExpenses() {
           <Tooltip title="Edit">
             <IconButton
               size="small"
-              onClick={() => {
-                // TODO: Implement edit functionality in Phase 3
-                console.log("Edit expense:", params.row.medicalExpenseId);
-              }}
+              onClick={() => handleEditExpense(params.row)}
             >
               <EditIcon />
             </IconButton>
@@ -257,10 +305,7 @@ export default function MedicalExpenses() {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => {
-              // TODO: Implement add functionality in Phase 3
-              console.log("Add medical expense clicked");
-            }}
+            onClick={handleAddExpense}
             sx={{ backgroundColor: "primary.main" }}
           >
             Add Medical Expense
@@ -301,10 +346,7 @@ export default function MedicalExpenses() {
                   dataType="generic"
                   variant="create"
                   actionLabel="Add Medical Expense"
-                  onAction={() => {
-                    // TODO: Implement add functionality in Phase 3
-                    console.log("Add medical expense from empty state");
-                  }}
+                  onAction={handleAddExpense}
                   onRefresh={() => refetch()}
                 />
               )}
@@ -323,6 +365,21 @@ export default function MedicalExpenses() {
         confirmText="Delete"
         cancelText="Cancel"
       />
+
+      {/* Add/Edit Medical Expense Form Dialog */}
+      <Dialog
+        open={showModalForm}
+        onClose={handleFormCancel}
+        maxWidth="md"
+        fullWidth
+      >
+        <MedicalExpenseForm
+          initialData={selectedExpense || undefined}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormCancel}
+          isEdit={isEditMode}
+        />
+      </Dialog>
 
       <SnackbarBaseline
         message={message}
