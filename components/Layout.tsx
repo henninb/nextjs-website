@@ -43,6 +43,7 @@ import ContactPageIcon from "@mui/icons-material/ContactPage";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArticleIcon from "@mui/icons-material/Article";
 import RestoreIcon from "@mui/icons-material/Restore";
+import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -68,6 +69,11 @@ const financeLinks = [
     text: "PaymentsRequired",
     href: "/finance/paymentrequired",
     icon: <ReceiptIcon />,
+  },
+  {
+    text: "Medical Expenses",
+    href: "/finance/medical-expenses",
+    icon: <MedicalServicesIcon />,
   },
   { text: "Categories", href: "/finance/categories", icon: <CategoryIcon /> },
   {
