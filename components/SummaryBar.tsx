@@ -19,6 +19,10 @@ type SummaryBarProps = {
   future: string | number;
   selected?: string | number;
   selectedLabel?: string;
+  totalLabel?: string;
+  clearedLabel?: string;
+  outstandingLabel?: string;
+  futureLabel?: string;
 };
 
 export default function SummaryBar({
@@ -28,6 +32,10 @@ export default function SummaryBar({
   future,
   selected,
   selectedLabel = "Selected",
+  totalLabel = "Total",
+  clearedLabel = "Cleared",
+  outstandingLabel = "Outstanding",
+  futureLabel = "Future",
 }: SummaryBarProps) {
   return (
     <TableContainer component={Paper}>
@@ -35,28 +43,28 @@ export default function SummaryBar({
         <TableHead>
           <TableRow>
             <TableCell align="right">
-              <strong>Total</strong>
+              <strong>{totalLabel}</strong>
             </TableCell>
             <TableCell align="right">
               <CheckCircleIcon
                 fontSize="small"
                 style={{ verticalAlign: "middle" }}
               />{" "}
-              <strong>Cleared</strong>
+              <strong>{clearedLabel}</strong>
             </TableCell>
             <TableCell align="right">
               <AccessTimeIcon
                 fontSize="small"
                 style={{ verticalAlign: "middle" }}
               />{" "}
-              <strong>Outstanding</strong>
+              <strong>{outstandingLabel}</strong>
             </TableCell>
             <TableCell align="right">
               <EventNoteIcon
                 fontSize="small"
                 style={{ verticalAlign: "middle" }}
               />{" "}
-              <strong>Future</strong>
+              <strong>{futureLabel}</strong>
             </TableCell>
             {selected !== undefined && (
               <TableCell align="right">

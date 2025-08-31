@@ -324,6 +324,10 @@ export default function MedicalExpenses() {
               cleared={currencyFormat(totalInsurancePaid)}
               outstanding={currencyFormat(totalOutstanding)}
               future={currencyFormat(totalPatientResponsibility)}
+              totalLabel="Billed Amount"
+              clearedLabel="Insurance Paid"
+              outstandingLabel="Outstanding"
+              futureLabel="Patient Responsibility"
             />
           </Box>
 
