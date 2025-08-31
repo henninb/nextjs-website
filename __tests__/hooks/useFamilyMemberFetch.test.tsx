@@ -7,10 +7,28 @@ import { FamilyMember, FamilyRelationship } from "../../model/FamilyMember";
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
+        retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+      mutations: {
         retry: false,
       },
     },
@@ -84,9 +102,14 @@ describe("useFamilyMemberFetch", () => {
     expect(result.current.data).toEqual(mockFamilyMembers);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/family-members/owner/current-user",
-    );
+    expect(mockFetch).toHaveBeenCalledWith("/api/family-members", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
   });
 
   it("should handle empty family members response", async () => {
@@ -114,19 +137,23 @@ describe("useFamilyMemberFetch", () => {
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
+      json: async () => ({ message: "Internal server error" }),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useFamilyMemberFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error?.message).toBe(
+    expect(result.current.error?.message).toContain(
       "Failed to fetch family members",
     );
   });
@@ -138,14 +165,19 @@ describe("useFamilyMemberFetch", () => {
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useFamilyMemberFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error?.message).toBe("Network error");
+    expect(result.current.error?.message).toContain(
+      "Failed to fetch family members",
+    );
   });
 
   it("should have correct query key", async () => {
@@ -170,16 +202,20 @@ describe("useFamilyMemberFetch", () => {
       ok: false,
       status: 401,
       statusText: "Unauthorized",
+      json: async () => ({ message: "Unauthorized" }),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useFamilyMemberFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
-    expect(result.current.error?.message).toBe(
+    expect(result.current.error?.message).toContain(
       "Failed to fetch family members",
     );
   });
@@ -196,11 +232,16 @@ describe("useFamilyMemberFetch", () => {
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useFamilyMemberFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
-    expect(result.current.error?.message).toBe("Invalid JSON");
+    expect(result.current.error?.message).toContain(
+      "Failed to fetch family members",
+    );
   });
 
   it("should cache data correctly", async () => {

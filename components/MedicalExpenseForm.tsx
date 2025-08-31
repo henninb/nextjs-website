@@ -235,10 +235,15 @@ export default function MedicalExpenseForm({
             fullWidth
             value={formData.transactionId || ""}
             onChange={(e) =>
-              handleFieldChange("transactionId", e.target.value ? parseInt(e.target.value) : undefined)
+              handleFieldChange(
+                "transactionId",
+                e.target.value ? parseInt(e.target.value) : undefined,
+              )
             }
             error={!!errors.transactionId}
-            helperText={errors.transactionId || "Optional: Link to existing transaction"}
+            helperText={
+              errors.transactionId || "Optional: Link to existing transaction"
+            }
             placeholder="Leave empty if no transaction yet"
             inputProps={{
               min: 1,
