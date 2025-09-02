@@ -5,7 +5,7 @@ import {
   ConsoleSpy,
   createTestCategory,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Extract the updateCategory function for isolated testing
 const updateCategory = async (

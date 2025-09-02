@@ -6,7 +6,7 @@ import {
   createTestAccount,
   createMockValidationUtils,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Mock validation utilities
 const mockValidationUtils = createMockValidationUtils();

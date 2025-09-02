@@ -8,7 +8,7 @@ import {
   expectValidationError,
   expectServerError,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Extract the deleteParameter function for isolated testing
 const deleteParameter = async (

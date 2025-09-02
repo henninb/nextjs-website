@@ -6,7 +6,7 @@ import {
   createTestPayment,
   simulateNetworkError,
   createMockValidationUtils,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Mock the validation utilities since we're testing in isolation
 const mockValidationUtils = createMockValidationUtils();

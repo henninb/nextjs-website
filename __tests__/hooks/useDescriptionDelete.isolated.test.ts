@@ -5,7 +5,7 @@ import {
   ConsoleSpy,
   createTestDescription,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Extract the deleteDescription function for isolated testing
 const deleteDescription = async (

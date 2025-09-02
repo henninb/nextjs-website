@@ -8,7 +8,7 @@ import {
   expectValidationError,
   expectServerError,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Extract the deleteTransfer function for isolated testing
 const deleteTransfer = async (payload: Transfer): Promise<Transfer | null> => {

@@ -6,7 +6,7 @@ import {
   createTestPayment,
   simulateNetworkError,
   simulateTimeoutError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 /**
  * Extracted updatePayment function for isolated testing

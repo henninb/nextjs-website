@@ -5,7 +5,7 @@ import {
   ConsoleSpy,
   createTestAccount,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Extract the updateAccount function for isolated testing
 const updateAccount = async (

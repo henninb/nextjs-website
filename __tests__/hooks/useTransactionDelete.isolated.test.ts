@@ -8,7 +8,7 @@ import {
   expectValidationError,
   expectServerError,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Extract the deleteTransaction function for isolated testing
 const deleteTransaction = async (

@@ -8,7 +8,7 @@ import {
   expectValidationError,
   expectServerError,
   simulateNetworkError,
-} from "../testHelpers";
+} from "../../testHelpers";
 
 // Extract the deletePayment function for isolated testing
 const deletePayment = async (payload: Payment): Promise<Payment | null> => {
