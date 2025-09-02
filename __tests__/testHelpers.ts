@@ -14,7 +14,7 @@ export interface MockResponse {
 
 export const createMockResponse = (
   data: any,
-  options: { status?: number; ok?: boolean } = {}
+  options: { status?: number; ok?: boolean } = {},
 ): MockResponse => ({
   ok: options.ok ?? true,
   status: options.status ?? 200,
@@ -25,7 +25,7 @@ export const createMockResponse = (
 
 export const createErrorResponse = (
   message: string,
-  status: number = 400
+  status: number = 400,
 ): MockResponse => ({
   ok: false,
   status,
@@ -36,15 +36,12 @@ export const createErrorResponse = (
 
 export const createFetchMock = (
   responseData: any,
-  options: { status?: number; ok?: boolean } = {}
+  options: { status?: number; ok?: boolean } = {},
 ) => {
   return jest.fn().mockResolvedValue(createMockResponse(responseData, options));
 };
 
-export const createErrorFetchMock = (
-  message: string,
-  status: number = 400
-) => {
+export const createErrorFetchMock = (message: string, status: number = 400) => {
   return jest.fn().mockResolvedValue(createErrorResponse(message, status));
 };
 
@@ -98,8 +95,8 @@ export const createTestAccount = (overrides = {}) => ({
   outstanding: 0.0,
   future: 0.0,
   cleared: 0.0,
-  totals: 1000.00,
-  totalsBalanced: 1000.00,
+  totals: 1000.0,
+  totalsBalanced: 1000.0,
   dateClosed: new Date(0),
   dateAdded: new Date(),
   dateUpdated: new Date(),
@@ -120,7 +117,7 @@ export const createTestPayment = (overrides = {}) => ({
   transactionDate: "2024-01-01",
   description: "Test payment",
   category: "electronics",
-  amount: 100.00,
+  amount: 100.0,
   cleared: 0,
   reoccurring: false,
   notes: "",
@@ -137,7 +134,7 @@ export const createTestTransaction = (overrides = {}) => ({
   transactionDate: new Date("2024-01-01"),
   description: "Test transaction",
   category: "electronics",
-  amount: 100.00,
+  amount: 100.0,
   transactionState: "outstanding",
   transactionType: "expense",
   activeStatus: true,
@@ -152,7 +149,7 @@ export const createTestTransfer = (overrides = {}) => ({
   sourceAccount: "fromAccount",
   destinationAccount: "toAccount",
   transactionDate: new Date("2024-01-01"),
-  amount: 100.00,
+  amount: 100.0,
   guidSource: "source-guid-123",
   guidDestination: "dest-guid-456",
   activeStatus: true,
@@ -229,7 +226,10 @@ export const simulateServerError = (message = "Internal server error") => {
 };
 
 // Validation helpers
-export const expectSuccessfulDeletion = async (deleteFunction: Function, payload: any) => {
+export const expectSuccessfulDeletion = async (
+  deleteFunction: Function,
+  payload: any,
+) => {
   global.fetch = createFetchMock(null, { status: 204 });
   const result = await deleteFunction(payload);
   expect(result).toBeNull();
@@ -238,14 +238,14 @@ export const expectSuccessfulDeletion = async (deleteFunction: Function, payload
     expect.objectContaining({
       method: "DELETE",
       credentials: "include",
-    })
+    }),
   );
 };
 
 export const expectValidationError = async (
   deleteFunction: Function,
   payload: any,
-  expectedError: string
+  expectedError: string,
 ) => {
   await expect(deleteFunction(payload)).rejects.toThrow(expectedError);
 };
@@ -253,7 +253,7 @@ export const expectValidationError = async (
 export const expectServerError = async (
   deleteFunction: Function,
   payload: any,
-  errorMessage = "Server error"
+  errorMessage = "Server error",
 ) => {
   global.fetch = createErrorResponse(errorMessage, 400);
   await expect(deleteFunction(payload)).rejects.toThrow(errorMessage);

@@ -120,7 +120,7 @@ describe("insertCategory (Isolated)", () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(mockCategory),
-        })
+        }),
       );
     });
 
@@ -137,7 +137,7 @@ describe("insertCategory (Isolated)", () => {
       await insertCategory(mockCategory);
 
       expect(mockConsole.log).toHaveBeenCalledWith(
-        `passed: ${JSON.stringify(mockCategory)}`
+        `passed: ${JSON.stringify(mockCategory)}`,
       );
     });
 
@@ -160,7 +160,7 @@ describe("insertCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(validatedCategory),
-        })
+        }),
       );
     });
 
@@ -193,7 +193,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Category validation failed: Category name is required"
+        "Category validation failed: Category name is required",
       );
 
       expect(global.fetch).not.toHaveBeenCalled();
@@ -211,7 +211,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Category validation failed: Category name is required, Active status must be boolean"
+        "Category validation failed: Category name is required, Active status must be boolean",
       );
     });
 
@@ -221,7 +221,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Category validation failed: Validation failed"
+        "Category validation failed: Validation failed",
       );
     });
 
@@ -235,10 +235,12 @@ describe("insertCategory (Isolated)", () => {
 
       await insertCategory(mockCategory);
 
-      expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalledWith(
+      expect(
+        mockValidationUtils.hookValidators.validateApiPayload,
+      ).toHaveBeenCalledWith(
         mockCategory,
         mockValidationUtils.DataValidator.validateCategory,
-        "insertCategory"
+        "insertCategory",
       );
     });
   });
@@ -267,9 +269,11 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle JSON parsing errors in error response", async () => {
@@ -280,10 +284,10 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
     });
 
@@ -295,15 +299,19 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(insertCategory(mockCategory)).rejects.toThrow("Network error");
+      await expect(insertCategory(mockCategory)).rejects.toThrow(
+        "Network error",
+      );
     });
 
     it("should handle various HTTP error statuses", async () => {
@@ -313,7 +321,9 @@ describe("insertCategory (Isolated)", () => {
         const errorMessage = `Error ${status}`;
         global.fetch = createErrorFetchMock(errorMessage, status);
 
-        await expect(insertCategory(mockCategory)).rejects.toThrow(errorMessage);
+        await expect(insertCategory(mockCategory)).rejects.toThrow(
+          errorMessage,
+        );
       }
     });
   });
@@ -335,7 +345,7 @@ describe("insertCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "POST",
-        })
+        }),
       );
     });
 
@@ -348,7 +358,7 @@ describe("insertCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -363,7 +373,7 @@ describe("insertCategory (Isolated)", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -374,7 +384,7 @@ describe("insertCategory (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/category/insert",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -552,7 +562,7 @@ describe("insertCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(categoryWithNulls),
-        })
+        }),
       );
     });
   });
@@ -571,7 +581,9 @@ describe("insertCategory (Isolated)", () => {
 
       await insertCategory(mockCategory);
 
-      expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalled();
+      expect(
+        mockValidationUtils.hookValidators.validateApiPayload,
+      ).toHaveBeenCalled();
       expect(global.fetch).toHaveBeenCalled();
     });
 
@@ -596,7 +608,7 @@ describe("insertCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(sanitizedCategory),
-        })
+        }),
       );
     });
 

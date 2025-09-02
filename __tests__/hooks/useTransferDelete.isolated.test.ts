@@ -57,7 +57,7 @@ describe("deleteTransfer (Isolated)", () => {
     sourceAccount: "checkingAccount",
     destinationAccount: "savingsAccount",
     transactionDate: new Date("2024-01-01"),
-    amount: 500.00,
+    amount: 500.0,
     guidSource: "src-guid-789",
     guidDestination: "dest-guid-101",
     activeStatus: true,
@@ -92,7 +92,7 @@ describe("deleteTransfer (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -113,7 +113,7 @@ describe("deleteTransfer (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transfer/delete/999",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -135,9 +135,11 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle malformed error response", async () => {
@@ -148,10 +150,10 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
     });
 
@@ -163,7 +165,7 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "cannot throw a null value"
+        "cannot throw a null value",
       );
       expect(mockConsole.log).toHaveBeenCalledWith("cannot throw a null value");
     });
@@ -171,18 +173,24 @@ describe("deleteTransfer (Isolated)", () => {
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow("Network error");
+      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
+        "Network error",
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 
     it("should handle fetch rejection", async () => {
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection failed"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error("Connection failed"));
 
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow("Connection failed");
+      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
+        "Connection failed",
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Connection failed"
+        "An error occurred: Connection failed",
       );
     });
   });
@@ -196,7 +204,7 @@ describe("deleteTransfer (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transfer/delete/0",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -208,7 +216,7 @@ describe("deleteTransfer (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transfer/delete/-1",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -220,7 +228,7 @@ describe("deleteTransfer (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transfer/delete/999999999",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -230,8 +238,11 @@ describe("deleteTransfer (Isolated)", () => {
       const jsonResponse = {
         message: "Transfer deleted successfully",
         transferId: mockTransfer.transferId,
-        affectedAccounts: [mockTransfer.sourceAccount, mockTransfer.destinationAccount],
-        timestamp: "2024-01-01T00:00:00Z"
+        affectedAccounts: [
+          mockTransfer.sourceAccount,
+          mockTransfer.destinationAccount,
+        ],
+        timestamp: "2024-01-01T00:00:00Z",
       };
       global.fetch = createFetchMock(jsonResponse, { status: 200 });
 
@@ -265,14 +276,14 @@ describe("deleteTransfer (Isolated)", () => {
     it("should handle complex JSON response with transfer details", async () => {
       const complexResponse = {
         transfer: mockTransfer,
-        sourceAccountBalance: 1500.00,
-        destinationAccountBalance: 2000.00,
+        sourceAccountBalance: 1500.0,
+        destinationAccountBalance: 2000.0,
         reconciliationStatus: "pending",
         metadata: {
           deletedAt: "2024-01-01T10:30:00Z",
           deletedBy: "user456",
-          reversalRequired: false
-        }
+          reversalRequired: false,
+        },
       };
       global.fetch = createFetchMock(complexResponse, { status: 200 });
 
@@ -295,7 +306,7 @@ describe("deleteTransfer (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -308,7 +319,7 @@ describe("deleteTransfer (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -321,7 +332,7 @@ describe("deleteTransfer (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "DELETE",
-        })
+        }),
       );
     });
   });
@@ -340,7 +351,7 @@ describe("deleteTransfer (Isolated)", () => {
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow();
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 
@@ -371,7 +382,9 @@ describe("deleteTransfer (Isolated)", () => {
 
         global.fetch = createErrorFetchMock(scenario.error, scenario.status);
 
-        await expect(deleteTransfer(mockTransfer)).rejects.toThrow(scenario.error);
+        await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
+          scenario.error,
+        );
         expect(mockConsole.log).toHaveBeenCalledWith(scenario.error);
       }
     });
@@ -399,7 +412,7 @@ describe("deleteTransfer (Isolated)", () => {
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transfer/delete/123",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -408,7 +421,7 @@ describe("deleteTransfer (Isolated)", () => {
         transferId: 456,
         sourceAccount: "basic",
         destinationAccount: "target",
-        amount: 50.00,
+        amount: 50.0,
       });
 
       global.fetch = createFetchMock(null, { status: 204 });
@@ -418,7 +431,7 @@ describe("deleteTransfer (Isolated)", () => {
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transfer/delete/456",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -427,7 +440,7 @@ describe("deleteTransfer (Isolated)", () => {
         transferId: 789,
         sourceAccount: "sharedAccount",
         destinationAccount: "sharedAccount",
-        amount: 100.00,
+        amount: 100.0,
       });
 
       global.fetch = createFetchMock(null, { status: 204 });

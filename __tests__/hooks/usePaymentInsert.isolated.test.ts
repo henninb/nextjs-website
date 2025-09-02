@@ -210,7 +210,7 @@ describe("Payment Insert Functions (Isolated)", () => {
               guidSource: mockPayment.guidSource,
               guidDestination: mockPayment.guidDestination,
             }),
-          })
+          }),
         );
       });
 
@@ -242,7 +242,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             body: JSON.stringify(expectedPayload),
-          })
+          }),
         );
       });
 
@@ -274,7 +274,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Payment validation failed: Amount must be positive"
+          "Payment validation failed: Amount must be positive",
         );
 
         expect(global.fetch).not.toHaveBeenCalled();
@@ -292,7 +292,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Payment validation failed: Amount must be positive, Source account is required"
+          "Payment validation failed: Amount must be positive, Source account is required",
         );
       });
 
@@ -302,7 +302,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Payment validation failed: Validation failed"
+          "Payment validation failed: Validation failed",
         );
       });
 
@@ -311,10 +311,12 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalledWith(
+        expect(
+          mockValidationUtils.hookValidators.validateApiPayload,
+        ).toHaveBeenCalledWith(
           mockPayment,
           mockValidationUtils.DataValidator.validatePayment,
-          "insertPayment"
+          "insertPayment",
         );
       });
     });
@@ -327,7 +329,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         await expect(insertPayment(mockPayment)).rejects.toThrow(errorMessage);
         expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
         expect(mockConsole.log).toHaveBeenCalledWith(
-          `An error occurred: ${errorMessage}`
+          `An error occurred: ${errorMessage}`,
         );
       });
 
@@ -339,9 +341,11 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "No error message returned."
+          "No error message returned.",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          "No error message returned.",
+        );
       });
 
       it("should handle JSON parsing errors in error response", async () => {
@@ -352,10 +356,10 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON"
+          "Failed to parse error response: Invalid JSON",
         );
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "Failed to parse error response: Invalid JSON"
+          "Failed to parse error response: Invalid JSON",
         );
       });
 
@@ -367,17 +371,21 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "No error message returned."
+          "No error message returned.",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          "No error message returned.",
+        );
       });
 
       it("should handle network errors", async () => {
         global.fetch = simulateNetworkError();
 
-        await expect(insertPayment(mockPayment)).rejects.toThrow("Network error");
+        await expect(insertPayment(mockPayment)).rejects.toThrow(
+          "Network error",
+        );
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Network error"
+          "An error occurred: Network error",
         );
       });
 
@@ -388,7 +396,9 @@ describe("Payment Insert Functions (Isolated)", () => {
           const errorMessage = `Error ${status}`;
           global.fetch = createErrorFetchMock(errorMessage, status);
 
-          await expect(insertPayment(mockPayment)).rejects.toThrow(errorMessage);
+          await expect(insertPayment(mockPayment)).rejects.toThrow(
+            errorMessage,
+          );
         }
       });
     });
@@ -403,7 +413,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             method: "POST",
-          })
+          }),
         );
       });
 
@@ -416,7 +426,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             credentials: "include",
-          })
+          }),
         );
       });
 
@@ -432,7 +442,7 @@ describe("Payment Insert Functions (Isolated)", () => {
               "Content-Type": "application/json",
               Accept: "application/json",
             },
-          })
+          }),
         );
       });
 
@@ -443,7 +453,7 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         expect(global.fetch).toHaveBeenCalledWith(
           "/api/payment/insert",
-          expect.any(Object)
+          expect.any(Object),
         );
       });
     });
@@ -516,7 +526,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             body: JSON.stringify(expectedPayload),
-          })
+          }),
         );
       });
 
@@ -579,7 +589,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             body: JSON.stringify(expectedPayload),
-          })
+          }),
         );
       });
     });
@@ -591,7 +601,9 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalled();
+        expect(
+          mockValidationUtils.hookValidators.validateApiPayload,
+        ).toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });
 
@@ -629,7 +641,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             body: JSON.stringify(expectedPayload),
-          })
+          }),
         );
       });
 

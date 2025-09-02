@@ -57,7 +57,7 @@ describe("deletePayment (Isolated)", () => {
     sourceAccount: "checking",
     destinationAccount: "savings",
     transactionDate: new Date("2024-01-01"),
-    amount: 500.00,
+    amount: 500.0,
     activeStatus: true,
   });
 
@@ -90,7 +90,7 @@ describe("deletePayment (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -111,7 +111,7 @@ describe("deletePayment (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/payment/delete/123",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -133,9 +133,11 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle malformed error response", async () => {
@@ -146,10 +148,10 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
     });
 
@@ -162,7 +164,7 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "cannot throw a null value"
+        "cannot throw a null value",
       );
       expect(mockConsole.log).toHaveBeenCalledWith("cannot throw a null value");
     });
@@ -172,16 +174,20 @@ describe("deletePayment (Isolated)", () => {
 
       await expect(deletePayment(mockPayment)).rejects.toThrow("Network error");
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 
     it("should handle fetch rejection", async () => {
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection failed"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error("Connection failed"));
 
-      await expect(deletePayment(mockPayment)).rejects.toThrow("Connection failed");
+      await expect(deletePayment(mockPayment)).rejects.toThrow(
+        "Connection failed",
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Connection failed"
+        "An error occurred: Connection failed",
       );
     });
   });
@@ -195,7 +201,7 @@ describe("deletePayment (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/payment/delete/0",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -207,7 +213,7 @@ describe("deletePayment (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/payment/delete/-1",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -219,14 +225,17 @@ describe("deletePayment (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/payment/delete/999999999",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
 
   describe("Response parsing", () => {
     it("should handle JSON response correctly", async () => {
-      const jsonResponse = { message: "Payment deleted", timestamp: "2024-01-01" };
+      const jsonResponse = {
+        message: "Payment deleted",
+        timestamp: "2024-01-01",
+      };
       global.fetch = createFetchMock(jsonResponse, { status: 200 });
 
       const result = await deletePayment(mockPayment);
@@ -272,7 +281,7 @@ describe("deletePayment (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -285,7 +294,7 @@ describe("deletePayment (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -298,7 +307,7 @@ describe("deletePayment (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "DELETE",
-        })
+        }),
       );
     });
   });
@@ -317,7 +326,7 @@ describe("deletePayment (Isolated)", () => {
 
       await expect(deletePayment(mockPayment)).rejects.toThrow();
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 

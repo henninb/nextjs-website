@@ -11,7 +11,9 @@ import {
 } from "../testHelpers";
 
 // Extract the deleteParameter function for isolated testing
-const deleteParameter = async (payload: Parameter): Promise<Parameter | null> => {
+const deleteParameter = async (
+  payload: Parameter,
+): Promise<Parameter | null> => {
   try {
     const endpoint = `/api/parameter/delete/${payload.parameterName}`;
 
@@ -90,7 +92,7 @@ describe("deleteParameter (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -105,7 +107,7 @@ describe("deleteParameter (Isolated)", () => {
 
     it("should construct correct endpoint URL with parameter name", async () => {
       const parameterWithDifferentName = createTestParameter({
-        parameterName: "CUSTOM_CONFIG"
+        parameterName: "CUSTOM_CONFIG",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -113,7 +115,7 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/CUSTOM_CONFIG",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -123,7 +125,9 @@ describe("deleteParameter (Isolated)", () => {
       const errorMessage = "Cannot delete system parameter";
       global.fetch = createErrorFetchMock(errorMessage, 400);
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow(errorMessage);
+      await expect(deleteParameter(mockParameter)).rejects.toThrow(
+        errorMessage,
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
     });
 
@@ -135,9 +139,11 @@ describe("deleteParameter (Isolated)", () => {
       });
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle malformed error response", async () => {
@@ -148,10 +154,10 @@ describe("deleteParameter (Isolated)", () => {
       });
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
     });
 
@@ -163,7 +169,7 @@ describe("deleteParameter (Isolated)", () => {
       });
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "cannot throw a null value"
+        "cannot throw a null value",
       );
       expect(mockConsole.log).toHaveBeenCalledWith("cannot throw a null value");
     });
@@ -171,18 +177,24 @@ describe("deleteParameter (Isolated)", () => {
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow("Network error");
+      await expect(deleteParameter(mockParameter)).rejects.toThrow(
+        "Network error",
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 
     it("should handle fetch rejection", async () => {
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection failed"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error("Connection failed"));
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow("Connection failed");
+      await expect(deleteParameter(mockParameter)).rejects.toThrow(
+        "Connection failed",
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Connection failed"
+        "An error occurred: Connection failed",
       );
     });
   });
@@ -190,7 +202,7 @@ describe("deleteParameter (Isolated)", () => {
   describe("Parameter name edge cases", () => {
     it("should handle parameter with uppercase name", async () => {
       const uppercaseParameter = createTestParameter({
-        parameterName: "UPPERCASE_PARAMETER"
+        parameterName: "UPPERCASE_PARAMETER",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -198,13 +210,13 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/UPPERCASE_PARAMETER",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("should handle parameter with lowercase name", async () => {
       const lowercaseParameter = createTestParameter({
-        parameterName: "lowercase_parameter"
+        parameterName: "lowercase_parameter",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -212,13 +224,13 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/lowercase_parameter",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("should handle parameter with mixed case name", async () => {
       const mixedCaseParameter = createTestParameter({
-        parameterName: "Mixed_Case_Parameter_123"
+        parameterName: "Mixed_Case_Parameter_123",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -226,13 +238,13 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/Mixed_Case_Parameter_123",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("should handle parameter with special characters in name", async () => {
       const specialCharParameter = createTestParameter({
-        parameterName: "param-with.special@chars_123"
+        parameterName: "param-with.special@chars_123",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -240,14 +252,14 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/param-with.special@chars_123",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("should handle parameter with very long name", async () => {
       const longName = "VERY_LONG_PARAMETER_NAME_" + "A".repeat(200);
       const longNameParameter = createTestParameter({
-        parameterName: longName
+        parameterName: longName,
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -255,13 +267,13 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/parameter/delete/${longName}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("should handle parameter with single character name", async () => {
       const singleCharParameter = createTestParameter({
-        parameterName: "A"
+        parameterName: "A",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -269,13 +281,13 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/A",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("should handle parameter with numeric name", async () => {
       const numericParameter = createTestParameter({
-        parameterName: "12345"
+        parameterName: "12345",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -283,7 +295,7 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/12345",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -294,7 +306,7 @@ describe("deleteParameter (Isolated)", () => {
         message: "Parameter deleted successfully",
         parameterName: mockParameter.parameterName,
         deletedAt: "2024-01-01T00:00:00Z",
-        affectedSystems: ["config", "cache"]
+        affectedSystems: ["config", "cache"],
       };
       global.fetch = createFetchMock(jsonResponse, { status: 200 });
 
@@ -335,8 +347,8 @@ describe("deleteParameter (Isolated)", () => {
           deletedAt: "2024-01-01T10:30:00Z",
           deletedBy: "admin",
           reason: "parameter cleanup",
-          version: "1.2.3"
-        }
+          version: "1.2.3",
+        },
       };
       global.fetch = createFetchMock(complexResponse, { status: 200 });
 
@@ -359,7 +371,7 @@ describe("deleteParameter (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -372,7 +384,7 @@ describe("deleteParameter (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -385,7 +397,7 @@ describe("deleteParameter (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "DELETE",
-        })
+        }),
       );
     });
   });
@@ -404,7 +416,7 @@ describe("deleteParameter (Isolated)", () => {
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow();
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 
@@ -436,7 +448,9 @@ describe("deleteParameter (Isolated)", () => {
 
         global.fetch = createErrorFetchMock(scenario.error, scenario.status);
 
-        await expect(deleteParameter(mockParameter)).rejects.toThrow(scenario.error);
+        await expect(deleteParameter(mockParameter)).rejects.toThrow(
+          scenario.error,
+        );
         expect(mockConsole.log).toHaveBeenCalledWith(scenario.error);
       }
     });
@@ -460,7 +474,7 @@ describe("deleteParameter (Isolated)", () => {
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/FULL_CONFIG_PARAM",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -479,7 +493,7 @@ describe("deleteParameter (Isolated)", () => {
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/parameter/delete/MIN_PARAM",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -550,7 +564,7 @@ describe("deleteParameter (Isolated)", () => {
         parameterValue: JSON.stringify({
           enabled: true,
           maxRetries: 3,
-          endpoints: ["api1", "api2"]
+          endpoints: ["api1", "api2"],
         }),
       });
 
@@ -564,7 +578,8 @@ describe("deleteParameter (Isolated)", () => {
     it("should handle parameter with URL value", async () => {
       const urlParameter = createTestParameter({
         parameterName: "EXTERNAL_API_URL",
-        parameterValue: "https://api.example.com/v2/data?format=json&key=abc123",
+        parameterValue:
+          "https://api.example.com/v2/data?format=json&key=abc123",
       });
 
       global.fetch = createFetchMock(null, { status: 204 });

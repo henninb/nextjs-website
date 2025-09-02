@@ -92,7 +92,7 @@ describe("updateCategory (Isolated)", () => {
             Accept: "application/json",
           },
           body: JSON.stringify(mockNewCategory),
-        })
+        }),
       );
     });
 
@@ -107,7 +107,7 @@ describe("updateCategory (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/category/update/specific_category",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -125,7 +125,7 @@ describe("updateCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(updatedCategoryData),
-        })
+        }),
       );
     });
 
@@ -140,7 +140,7 @@ describe("updateCategory (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/category/update/category & subcategory",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -165,12 +165,14 @@ describe("updateCategory (Isolated)", () => {
         ok: false,
         status: 404,
         statusText: "Not Found",
-        json: jest.fn().mockResolvedValueOnce({ message: "Category not found" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ message: "Category not found" }),
       });
 
-      await expect(updateCategory(mockOldCategory, mockNewCategory)).rejects.toThrow(
-        "Failed to update transaction state: Not Found"
-      );
+      await expect(
+        updateCategory(mockOldCategory, mockNewCategory),
+      ).rejects.toThrow("Failed to update transaction state: Not Found");
 
       expect(mockConsole.log).toHaveBeenCalledWith("Resource not found (404).");
     });
@@ -183,9 +185,9 @@ describe("updateCategory (Isolated)", () => {
         json: jest.fn().mockResolvedValueOnce({ message: "Invalid data" }),
       });
 
-      await expect(updateCategory(mockOldCategory, mockNewCategory)).rejects.toThrow(
-        "Failed to update transaction state: Bad Request"
-      );
+      await expect(
+        updateCategory(mockOldCategory, mockNewCategory),
+      ).rejects.toThrow("Failed to update transaction state: Bad Request");
     });
 
     it("should handle various HTTP error statuses", async () => {
@@ -206,13 +208,15 @@ describe("updateCategory (Isolated)", () => {
           json: jest.fn().mockResolvedValueOnce({}),
         });
 
-        await expect(updateCategory(mockOldCategory, mockNewCategory)).rejects.toThrow(
-          `Failed to update transaction state: ${statusText}`
-        );
+        await expect(
+          updateCategory(mockOldCategory, mockNewCategory),
+        ).rejects.toThrow(`Failed to update transaction state: ${statusText}`);
 
         // Check 404 specific logging
         if (status === 404) {
-          expect(mockConsole.log).toHaveBeenCalledWith("Resource not found (404).");
+          expect(mockConsole.log).toHaveBeenCalledWith(
+            "Resource not found (404).",
+          );
         }
       }
     });
@@ -220,9 +224,9 @@ describe("updateCategory (Isolated)", () => {
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(updateCategory(mockOldCategory, mockNewCategory)).rejects.toThrow(
-        "Network error"
-      );
+      await expect(
+        updateCategory(mockOldCategory, mockNewCategory),
+      ).rejects.toThrow("Network error");
     });
 
     it("should handle JSON parsing errors", async () => {
@@ -233,17 +237,19 @@ describe("updateCategory (Isolated)", () => {
         json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
       });
 
-      await expect(updateCategory(mockOldCategory, mockNewCategory)).rejects.toThrow(
-        "Invalid JSON"
-      );
+      await expect(
+        updateCategory(mockOldCategory, mockNewCategory),
+      ).rejects.toThrow("Invalid JSON");
     });
 
     it("should handle fetch rejection", async () => {
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection failed"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error("Connection failed"));
 
-      await expect(updateCategory(mockOldCategory, mockNewCategory)).rejects.toThrow(
-        "Connection failed"
-      );
+      await expect(
+        updateCategory(mockOldCategory, mockNewCategory),
+      ).rejects.toThrow("Connection failed");
     });
   });
 
@@ -257,7 +263,7 @@ describe("updateCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "PUT",
-        })
+        }),
       );
     });
 
@@ -270,7 +276,7 @@ describe("updateCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -286,7 +292,7 @@ describe("updateCategory (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -300,7 +306,7 @@ describe("updateCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: expectedBody,
-        })
+        }),
       );
     });
   });
@@ -317,7 +323,7 @@ describe("updateCategory (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/category/update/",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -341,14 +347,17 @@ describe("updateCategory (Isolated)", () => {
 
       global.fetch = createFetchMock(complexNewCategory);
 
-      const result = await updateCategory(complexOldCategory, complexNewCategory);
+      const result = await updateCategory(
+        complexOldCategory,
+        complexNewCategory,
+      );
 
       expect(result).toEqual(complexNewCategory);
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/category/update/complex_old",
         expect.objectContaining({
           body: JSON.stringify(complexNewCategory),
-        })
+        }),
       );
     });
 
@@ -366,7 +375,7 @@ describe("updateCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(categoryWithNulls),
-        })
+        }),
       );
     });
 
@@ -382,7 +391,7 @@ describe("updateCategory (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/category/update/${longCategoryName}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -397,14 +406,17 @@ describe("updateCategory (Isolated)", () => {
       });
       global.fetch = createFetchMock(fullyUpdatedCategory);
 
-      const result = await updateCategory(mockOldCategory, fullyUpdatedCategory);
+      const result = await updateCategory(
+        mockOldCategory,
+        fullyUpdatedCategory,
+      );
 
       expect(result).toEqual(fullyUpdatedCategory);
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/category/update/old_category", // Uses old category name in endpoint
         expect.objectContaining({
           body: JSON.stringify(fullyUpdatedCategory), // Sends new data
-        })
+        }),
       );
     });
   });
@@ -461,7 +473,7 @@ describe("updateCategory (Isolated)", () => {
       // Should still use old category name in endpoint
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/category/update/old_category",
-        expect.any(Object)
+        expect.any(Object),
       );
 
       // But send new data in body
@@ -469,7 +481,7 @@ describe("updateCategory (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(newCategoryWithDifferentName),
-        })
+        }),
       );
     });
 
@@ -512,7 +524,10 @@ describe("updateCategory (Isolated)", () => {
       });
       global.fetch = createFetchMock(updatedCountCategory);
 
-      const result = await updateCategory(categoryWithCount, updatedCountCategory);
+      const result = await updateCategory(
+        categoryWithCount,
+        updatedCountCategory,
+      );
 
       expect(result.categoryCount).toBe(15);
     });

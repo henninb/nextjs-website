@@ -11,7 +11,9 @@ import {
 } from "../testHelpers";
 
 // Extract the deleteTransaction function for isolated testing
-const deleteTransaction = async (payload: Transaction): Promise<Transaction | null> => {
+const deleteTransaction = async (
+  payload: Transaction,
+): Promise<Transaction | null> => {
   try {
     const endpoint = `/api/transaction/delete/${payload.guid}`;
 
@@ -59,7 +61,7 @@ describe("deleteTransaction (Isolated)", () => {
     transactionDate: new Date("2024-01-01"),
     description: "Test transaction",
     category: "groceries",
-    amount: 125.50,
+    amount: 125.5,
     transactionState: "outstanding",
     transactionType: "expense",
   });
@@ -93,7 +95,7 @@ describe("deleteTransaction (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -108,7 +110,7 @@ describe("deleteTransaction (Isolated)", () => {
 
     it("should construct correct endpoint URL with transaction GUID", async () => {
       const transactionWithDifferentGuid = createTestTransaction({
-        guid: "custom-guid-789"
+        guid: "custom-guid-789",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -116,7 +118,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/delete/custom-guid-789",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -126,7 +128,9 @@ describe("deleteTransaction (Isolated)", () => {
       const errorMessage = "Cannot delete transaction with pending transfers";
       global.fetch = createErrorFetchMock(errorMessage, 400);
 
-      await expect(deleteTransaction(mockTransaction)).rejects.toThrow(errorMessage);
+      await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
+        errorMessage,
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
     });
 
@@ -138,9 +142,11 @@ describe("deleteTransaction (Isolated)", () => {
       });
 
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle malformed error response", async () => {
@@ -151,10 +157,10 @@ describe("deleteTransaction (Isolated)", () => {
       });
 
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
     });
 
@@ -166,7 +172,7 @@ describe("deleteTransaction (Isolated)", () => {
       });
 
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
-        "cannot throw a null value"
+        "cannot throw a null value",
       );
       expect(mockConsole.log).toHaveBeenCalledWith("cannot throw a null value");
     });
@@ -174,18 +180,24 @@ describe("deleteTransaction (Isolated)", () => {
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(deleteTransaction(mockTransaction)).rejects.toThrow("Network error");
+      await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
+        "Network error",
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 
     it("should handle fetch rejection", async () => {
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection failed"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error("Connection failed"));
 
-      await expect(deleteTransaction(mockTransaction)).rejects.toThrow("Connection failed");
+      await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
+        "Connection failed",
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Connection failed"
+        "An error occurred: Connection failed",
       );
     });
   });
@@ -199,13 +211,13 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/delete/",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
     it("should handle transaction with special characters in GUID", async () => {
       const transactionWithSpecialGuid = createTestTransaction({
-        guid: "guid-with-special@#$%chars"
+        guid: "guid-with-special@#$%chars",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -213,7 +225,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/delete/guid-with-special@#$%chars",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -226,7 +238,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/delete/${longGuid}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -239,7 +251,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/delete/550e8400-e29b-41d4-a716-446655440000",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -249,7 +261,7 @@ describe("deleteTransaction (Isolated)", () => {
       const jsonResponse = {
         message: "Transaction deleted",
         transactionId: mockTransaction.transactionId,
-        timestamp: "2024-01-01T00:00:00Z"
+        timestamp: "2024-01-01T00:00:00Z",
       };
       global.fetch = createFetchMock(jsonResponse, { status: 200 });
 
@@ -284,8 +296,8 @@ describe("deleteTransaction (Isolated)", () => {
       const complexResponse = {
         transaction: mockTransaction,
         relatedTransactions: [],
-        affectedTotals: { checking: 1000.50 },
-        metadata: { deletedAt: "2024-01-01", deletedBy: "user123" }
+        affectedTotals: { checking: 1000.5 },
+        metadata: { deletedAt: "2024-01-01", deletedBy: "user123" },
       };
       global.fetch = createFetchMock(complexResponse, { status: 200 });
 
@@ -308,7 +320,7 @@ describe("deleteTransaction (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -321,7 +333,7 @@ describe("deleteTransaction (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -334,7 +346,7 @@ describe("deleteTransaction (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "DELETE",
-        })
+        }),
       );
     });
   });
@@ -353,7 +365,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow();
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error"
+        "An error occurred: Network error",
       );
     });
 
@@ -384,7 +396,9 @@ describe("deleteTransaction (Isolated)", () => {
 
         global.fetch = createErrorFetchMock(scenario.error, scenario.status);
 
-        await expect(deleteTransaction(mockTransaction)).rejects.toThrow(scenario.error);
+        await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
+          scenario.error,
+        );
         expect(mockConsole.log).toHaveBeenCalledWith(scenario.error);
       }
     });
@@ -417,7 +431,7 @@ describe("deleteTransaction (Isolated)", () => {
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/delete/full-transaction-guid",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -434,7 +448,7 @@ describe("deleteTransaction (Isolated)", () => {
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/delete/minimal-guid",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });

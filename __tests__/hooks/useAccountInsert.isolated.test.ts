@@ -139,7 +139,7 @@ describe("Account Insert Functions (Isolated)", () => {
           accountNameOwner: "testAccount",
           accountType: "checking",
           moniker: "Test",
-        })
+        }),
       );
       expect(result.dateClosed).toEqual(new Date(0));
       expect(result.dateAdded).toBeInstanceOf(Date);
@@ -192,10 +192,18 @@ describe("Account Insert Functions (Isolated)", () => {
 
       expect(result.dateClosed).toEqual(new Date(0));
       expect(result.validationDate).toEqual(new Date(0));
-      expect(result.dateAdded.getTime()).toBeGreaterThanOrEqual(beforeSetup.getTime());
-      expect(result.dateAdded.getTime()).toBeLessThanOrEqual(afterSetup.getTime());
-      expect(result.dateUpdated.getTime()).toBeGreaterThanOrEqual(beforeSetup.getTime());
-      expect(result.dateUpdated.getTime()).toBeLessThanOrEqual(afterSetup.getTime());
+      expect(result.dateAdded.getTime()).toBeGreaterThanOrEqual(
+        beforeSetup.getTime(),
+      );
+      expect(result.dateAdded.getTime()).toBeLessThanOrEqual(
+        afterSetup.getTime(),
+      );
+      expect(result.dateUpdated.getTime()).toBeGreaterThanOrEqual(
+        beforeSetup.getTime(),
+      );
+      expect(result.dateUpdated.getTime()).toBeLessThanOrEqual(
+        afterSetup.getTime(),
+      );
     });
   });
 
@@ -221,11 +229,11 @@ describe("Account Insert Functions (Isolated)", () => {
               "Content-Type": "application/json",
             },
             body: expect.stringContaining('"activeStatus":true'),
-          })
+          }),
         );
         expect(mockConsole.log).toHaveBeenCalledWith(
           "Inserting account for:",
-          mockAccount.accountNameOwner
+          mockAccount.accountNameOwner,
         );
       });
 
@@ -235,7 +243,10 @@ describe("Account Insert Functions (Isolated)", () => {
         const result = await insertAccount(mockAccount);
 
         expect(result).toBeNull();
-        expect(global.fetch).toHaveBeenCalledWith("/api/account/insert", expect.any(Object));
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/account/insert",
+          expect.any(Object),
+        );
       });
 
       it("should validate account before insertion", async () => {
@@ -243,15 +254,19 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(mockAccount);
 
-        expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalledWith(
+        expect(
+          mockValidationUtils.hookValidators.validateApiPayload,
+        ).toHaveBeenCalledWith(
           mockAccount,
           mockValidationUtils.DataValidator.validateAccount,
-          "insertAccount"
+          "insertAccount",
         );
       });
 
       it("should use validated data in payload", async () => {
-        const validatedAccount = createTestAccount({ accountNameOwner: "validated" });
+        const validatedAccount = createTestAccount({
+          accountNameOwner: "validated",
+        });
         mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: validatedAccount,
@@ -265,7 +280,7 @@ describe("Account Insert Functions (Isolated)", () => {
           "/api/account/insert",
           expect.objectContaining({
             body: expect.stringContaining('"accountNameOwner":"validated"'),
-          })
+          }),
         );
       });
     });
@@ -282,12 +297,12 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "Account validation failed: Account name is required, Invalid account type"
+          "Account validation failed: Account name is required, Invalid account type",
         );
 
         expect(global.fetch).not.toHaveBeenCalled();
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Account validation failed: Account name is required, Invalid account type"
+          "An error occurred: Account validation failed: Account name is required, Invalid account type",
         );
       });
 
@@ -299,7 +314,7 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "Account validation failed: Validation failed"
+          "Account validation failed: Validation failed",
         );
 
         expect(global.fetch).not.toHaveBeenCalled();
@@ -313,7 +328,7 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "Account validation failed: Validation failed"
+          "Account validation failed: Validation failed",
         );
       });
     });
@@ -323,13 +338,17 @@ describe("Account Insert Functions (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValueOnce({
           ok: false,
           status: 400,
-          json: jest.fn().mockResolvedValueOnce({ response: "Account already exists" }),
+          json: jest
+            .fn()
+            .mockResolvedValueOnce({ response: "Account already exists" }),
         });
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow("Account already exists");
+        await expect(insertAccount(mockAccount)).rejects.toThrow(
+          "Account already exists",
+        );
         expect(mockConsole.log).toHaveBeenCalledWith("Account already exists");
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Account already exists"
+          "An error occurred: Account already exists",
         );
       });
 
@@ -341,9 +360,11 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "No error message returned."
+          "No error message returned.",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          "No error message returned.",
+        );
       });
 
       it("should handle malformed error response", async () => {
@@ -354,10 +375,10 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON"
+          "Failed to parse error response: Invalid JSON",
         );
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "Failed to parse error response: Invalid JSON"
+          "Failed to parse error response: Invalid JSON",
         );
       });
 
@@ -369,10 +390,10 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "Failed to parse error response: Unexpected token"
+          "Failed to parse error response: Unexpected token",
         );
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "Failed to parse error response: Unexpected token"
+          "Failed to parse error response: Unexpected token",
         );
       });
     });
@@ -381,18 +402,24 @@ describe("Account Insert Functions (Isolated)", () => {
       it("should handle network errors", async () => {
         global.fetch = simulateNetworkError();
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow("Network error");
+        await expect(insertAccount(mockAccount)).rejects.toThrow(
+          "Network error",
+        );
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Network error"
+          "An error occurred: Network error",
         );
       });
 
       it("should handle fetch rejection", async () => {
-        global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection refused"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValueOnce(new Error("Connection refused"));
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow("Connection refused");
+        await expect(insertAccount(mockAccount)).rejects.toThrow(
+          "Connection refused",
+        );
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Connection refused"
+          "An error occurred: Connection refused",
         );
       });
     });
@@ -409,7 +436,7 @@ describe("Account Insert Functions (Isolated)", () => {
             headers: {
               "Content-Type": "application/json",
             },
-          })
+          }),
         );
       });
 
@@ -422,7 +449,7 @@ describe("Account Insert Functions (Isolated)", () => {
           "/api/account/insert",
           expect.objectContaining({
             credentials: "include",
-          })
+          }),
         );
       });
 
@@ -435,7 +462,7 @@ describe("Account Insert Functions (Isolated)", () => {
           "/api/account/insert",
           expect.objectContaining({
             method: "POST",
-          })
+          }),
         );
       });
 
@@ -444,7 +471,10 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(mockAccount);
 
-        expect(global.fetch).toHaveBeenCalledWith("/api/account/insert", expect.any(Object));
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/account/insert",
+          expect.any(Object),
+        );
       });
     });
 
@@ -472,7 +502,7 @@ describe("Account Insert Functions (Isolated)", () => {
           "/api/account/insert",
           expect.objectContaining({
             body: expect.stringContaining('"accountNameOwner":"fullAccount"'),
-          })
+          }),
         );
       });
 
@@ -494,7 +524,7 @@ describe("Account Insert Functions (Isolated)", () => {
           "/api/account/insert",
           expect.objectContaining({
             body: expect.stringContaining('"accountNameOwner":"minimal"'),
-          })
+          }),
         );
       });
 
@@ -513,7 +543,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         expect(mockConsole.log).toHaveBeenCalledWith(
           "Inserting account for:",
-          "account-with_special@chars.123"
+          "account-with_special@chars.123",
         );
       });
 
@@ -531,19 +561,30 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(longNameAccount);
 
-        expect(mockConsole.log).toHaveBeenCalledWith("Inserting account for:", longName);
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          "Inserting account for:",
+          longName,
+        );
       });
 
       it("should handle different account types", async () => {
-        const accountTypes = ["checking", "savings", "credit", "debit", "investment"];
+        const accountTypes = [
+          "checking",
+          "savings",
+          "credit",
+          "debit",
+          "investment",
+        ];
 
         for (const accountType of accountTypes) {
           const typedAccount = createTestAccount({ accountType });
-          mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
-            isValid: true,
-            validatedData: typedAccount,
-            errors: null,
-          });
+          mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue(
+            {
+              isValid: true,
+              validatedData: typedAccount,
+              errors: null,
+            },
+          );
           global.fetch = createFetchMock(typedAccount, { status: 201 });
 
           await insertAccount(typedAccount);
@@ -552,7 +593,7 @@ describe("Account Insert Functions (Isolated)", () => {
             "/api/account/insert",
             expect.objectContaining({
               body: expect.stringContaining(`"accountType":"${accountType}"`),
-            })
+            }),
           );
 
           jest.clearAllMocks();
@@ -572,23 +613,30 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(inactiveAccount);
 
-        const requestBody = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+        const requestBody = JSON.parse(
+          (global.fetch as jest.Mock).mock.calls[0][1].body,
+        );
         expect(requestBody.activeStatus).toBe(true);
       });
 
       it("should set default financial values when not provided", async () => {
         // Create account without financial fields, then setupNewAccount should add defaults
-        const { outstanding, future, cleared, ...accountWithoutFinancials } = createTestAccount();
+        const { outstanding, future, cleared, ...accountWithoutFinancials } =
+          createTestAccount();
         mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: accountWithoutFinancials,
           errors: null,
         });
-        global.fetch = createFetchMock(accountWithoutFinancials, { status: 201 });
+        global.fetch = createFetchMock(accountWithoutFinancials, {
+          status: 201,
+        });
 
         await insertAccount(accountWithoutFinancials as any);
 
-        const requestBody = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+        const requestBody = JSON.parse(
+          (global.fetch as jest.Mock).mock.calls[0][1].body,
+        );
         expect(requestBody.outstanding).toBe(0.0);
         expect(requestBody.future).toBe(0.0);
         expect(requestBody.cleared).toBe(0.0);
@@ -596,7 +644,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
       it("should preserve provided financial values", async () => {
         const accountWithFinancials = createTestAccount({
-          outstanding: 100.50,
+          outstanding: 100.5,
           future: 200.75,
           cleared: 50.25,
         });
@@ -609,8 +657,10 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(accountWithFinancials);
 
-        const requestBody = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-        expect(requestBody.outstanding).toBe(100.50);
+        const requestBody = JSON.parse(
+          (global.fetch as jest.Mock).mock.calls[0][1].body,
+        );
+        expect(requestBody.outstanding).toBe(100.5);
         expect(requestBody.future).toBe(200.75);
         expect(requestBody.cleared).toBe(50.25);
       });
@@ -620,7 +670,9 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(mockAccount);
 
-        const requestBody = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+        const requestBody = JSON.parse(
+          (global.fetch as jest.Mock).mock.calls[0][1].body,
+        );
         expect(requestBody.dateClosed).toBe("1970-01-01T00:00:00.000Z");
         expect(requestBody.validationDate).toBe("1970-01-01T00:00:00.000Z");
         expect(new Date(requestBody.dateAdded)).toBeInstanceOf(Date);
@@ -636,7 +688,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         expect(mockConsole.log).toHaveBeenCalledWith(
           "Inserting account for:",
-          mockAccount.accountNameOwner
+          mockAccount.accountNameOwner,
         );
       });
 
@@ -649,7 +701,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await expect(insertAccount(mockAccount)).rejects.toThrow();
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Account validation failed: Invalid account"
+          "An error occurred: Account validation failed: Invalid account",
         );
       });
 
@@ -665,7 +717,7 @@ describe("Account Insert Functions (Isolated)", () => {
         // Should not log "Inserting account for:" for validation failures
         expect(mockConsole.log).not.toHaveBeenCalledWith(
           "Inserting account for:",
-          expect.any(String)
+          expect.any(String),
         );
       });
     });
@@ -683,30 +735,42 @@ describe("Account Insert Functions (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValueOnce({
           ok: false,
           status: 409,
-          json: jest.fn().mockResolvedValueOnce({ response: "Account name already exists" }),
+          json: jest
+            .fn()
+            .mockResolvedValueOnce({ response: "Account name already exists" }),
         });
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow("Account name already exists");
+        await expect(insertAccount(mockAccount)).rejects.toThrow(
+          "Account name already exists",
+        );
       });
 
       it("should handle 422 Unprocessable Entity", async () => {
         global.fetch = jest.fn().mockResolvedValueOnce({
           ok: false,
           status: 422,
-          json: jest.fn().mockResolvedValueOnce({ response: "Invalid account data format" }),
+          json: jest
+            .fn()
+            .mockResolvedValueOnce({ response: "Invalid account data format" }),
         });
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow("Invalid account data format");
+        await expect(insertAccount(mockAccount)).rejects.toThrow(
+          "Invalid account data format",
+        );
       });
 
       it("should handle 500 Internal Server Error", async () => {
         global.fetch = jest.fn().mockResolvedValueOnce({
           ok: false,
           status: 500,
-          json: jest.fn().mockResolvedValueOnce({ response: "Database connection failed" }),
+          json: jest
+            .fn()
+            .mockResolvedValueOnce({ response: "Database connection failed" }),
         });
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow("Database connection failed");
+        await expect(insertAccount(mockAccount)).rejects.toThrow(
+          "Database connection failed",
+        );
       });
     });
   });

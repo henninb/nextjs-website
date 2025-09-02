@@ -194,7 +194,10 @@ describe("Transaction Insert Functions (Isolated)", () => {
           reoccurringType: "monthly",
         });
 
-        const result = await setupNewTransaction(inputTransaction, "setup_account");
+        const result = await setupNewTransaction(
+          inputTransaction,
+          "setup_account",
+        );
 
         expect(result).toEqual({
           guid: "secure-uuid-456",
@@ -224,7 +227,10 @@ describe("Transaction Insert Functions (Isolated)", () => {
           dueDate: undefined, // Override default
         });
 
-        const result = await setupNewTransaction(minimalTransaction, "minimal_account");
+        const result = await setupNewTransaction(
+          minimalTransaction,
+          "minimal_account",
+        );
 
         expect(result).toEqual({
           guid: "default-uuid-789",
@@ -244,11 +250,13 @@ describe("Transaction Insert Functions (Isolated)", () => {
       });
 
       it("should handle UUID generation errors", async () => {
-        mockGenerateSecureUUID.mockRejectedValue(new Error("UUID generation failed"));
-
-        await expect(setupNewTransaction(mockTransaction, "test_account")).rejects.toThrow(
-          "UUID generation failed"
+        mockGenerateSecureUUID.mockRejectedValue(
+          new Error("UUID generation failed"),
         );
+
+        await expect(
+          setupNewTransaction(mockTransaction, "test_account"),
+        ).rejects.toThrow("UUID generation failed");
       });
     });
   });
@@ -265,7 +273,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         global.fetch = createFetchMock(mockResponse);
 
-        const result = await insertTransaction("test_account", mockTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          mockTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(mockResponse);
         expect(global.fetch).toHaveBeenCalledWith(
@@ -292,7 +305,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
               reoccurringType: mockTransaction.reoccurringType,
               accountNameOwner: mockTransaction.accountNameOwner,
             }),
-          })
+          }),
         );
       });
 
@@ -316,19 +329,29 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         global.fetch = createFetchMock(mockResponse);
 
-        const result = await insertTransaction("test_account", futureTransaction, true, false);
+        const result = await insertTransaction(
+          "test_account",
+          futureTransaction,
+          true,
+          false,
+        );
 
         expect(result).toEqual(mockResponse);
         expect(global.fetch).toHaveBeenCalledWith(
           "/api/transaction/future/insert",
-          expect.any(Object)
+          expect.any(Object),
         );
       });
 
       it("should handle 204 no content response", async () => {
         global.fetch = createFetchMock(null, { status: 204 });
 
-        const result = await insertTransaction("test_account", mockTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          mockTransaction,
+          false,
+          false,
+        );
 
         expect(result).toBeNull();
       });
@@ -348,12 +371,15 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         await insertTransaction("test_account", mockTransaction, false, false);
 
-        const expectedPayload = await setupNewTransaction(validatedTransaction, "test_account");
+        const expectedPayload = await setupNewTransaction(
+          validatedTransaction,
+          "test_account",
+        );
         expect(global.fetch).toHaveBeenCalledWith(
           expect.any(String),
           expect.objectContaining({
             body: JSON.stringify(expectedPayload),
-          })
+          }),
         );
       });
     });
@@ -368,7 +394,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
         });
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
+          insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Transaction date is required");
 
         expect(global.fetch).not.toHaveBeenCalled();
@@ -386,8 +412,10 @@ describe("Transaction Insert Functions (Isolated)", () => {
         });
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
-        ).rejects.toThrow("Transaction date is required, Amount must be a number");
+          insertTransaction("test_account", mockTransaction, false, false),
+        ).rejects.toThrow(
+          "Transaction date is required, Amount must be a number",
+        );
       });
 
       it("should handle validation failures without error details", async () => {
@@ -396,7 +424,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
         });
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
+          insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Validation failed");
       });
 
@@ -405,10 +433,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         await insertTransaction("test_account", mockTransaction, false, false);
 
-        expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalledWith(
+        expect(
+          mockValidationUtils.hookValidators.validateApiPayload,
+        ).toHaveBeenCalledWith(
           mockTransaction,
           mockValidationUtils.DataValidator.validateTransaction,
-          "insertTransaction"
+          "insertTransaction",
         );
       });
     });
@@ -419,11 +449,11 @@ describe("Transaction Insert Functions (Isolated)", () => {
         global.fetch = createErrorFetchMock(errorMessage, 400);
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
+          insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow(errorMessage);
         expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
         expect(mockConsole.log).toHaveBeenCalledWith(
-          `An error occurred: ${errorMessage}`
+          `An error occurred: ${errorMessage}`,
         );
       });
 
@@ -435,9 +465,11 @@ describe("Transaction Insert Functions (Isolated)", () => {
         });
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
+          insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("No error message returned.");
-        expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          "No error message returned.",
+        );
       });
 
       it("should handle JSON parsing errors in error response", async () => {
@@ -448,10 +480,10 @@ describe("Transaction Insert Functions (Isolated)", () => {
         });
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
+          insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Failed to parse error response: Invalid JSON");
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "Failed to parse error response: Invalid JSON"
+          "Failed to parse error response: Invalid JSON",
         );
       });
 
@@ -459,10 +491,10 @@ describe("Transaction Insert Functions (Isolated)", () => {
         global.fetch = simulateNetworkError();
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
+          insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Network error");
         expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Network error"
+          "An error occurred: Network error",
         );
       });
 
@@ -474,16 +506,18 @@ describe("Transaction Insert Functions (Isolated)", () => {
           global.fetch = createErrorFetchMock(errorMessage, status);
 
           await expect(
-            insertTransaction("test_account", mockTransaction, false, false)
+            insertTransaction("test_account", mockTransaction, false, false),
           ).rejects.toThrow(errorMessage);
         }
       });
 
       it("should handle UUID generation errors", async () => {
-        mockGenerateSecureUUID.mockRejectedValue(new Error("UUID generation failed"));
+        mockGenerateSecureUUID.mockRejectedValue(
+          new Error("UUID generation failed"),
+        );
 
         await expect(
-          insertTransaction("test_account", mockTransaction, false, false)
+          insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("UUID generation failed");
       });
     });
@@ -498,7 +532,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             method: "POST",
-          })
+          }),
         );
       });
 
@@ -511,7 +545,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             credentials: "include",
-          })
+          }),
         );
       });
 
@@ -527,7 +561,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
               "Content-Type": "application/json",
               Accept: "application/json",
             },
-          })
+          }),
         );
       });
 
@@ -538,7 +572,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         expect(global.fetch).toHaveBeenCalledWith(
           "/api/transaction/insert",
-          expect.any(Object)
+          expect.any(Object),
         );
       });
 
@@ -549,7 +583,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         expect(global.fetch).toHaveBeenCalledWith(
           "/api/transaction/future/insert",
-          expect.any(Object)
+          expect.any(Object),
         );
       });
     });
@@ -563,7 +597,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         });
         global.fetch = createFetchMock(responseData);
 
-        const result = await insertTransaction("test_account", mockTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          mockTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(responseData);
       });
@@ -571,7 +610,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
       it("should handle empty response body", async () => {
         global.fetch = createFetchMock({});
 
-        const result = await insertTransaction("test_account", mockTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          mockTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual({});
       });
@@ -585,7 +629,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         });
         global.fetch = createFetchMock(complexResponse);
 
-        const result = await insertTransaction("test_account", mockTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          mockTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(complexResponse);
       });
@@ -607,7 +656,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         const mockResponse = createTestTransaction({ guid: "minimal-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
-        const result = await insertTransaction("test_account", minimalTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          minimalTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(mockResponse);
       });
@@ -634,7 +688,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         const mockResponse = createTestTransaction({ guid: "full-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
-        const result = await insertTransaction("test_account", fullTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          fullTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(mockResponse);
       });
@@ -653,7 +712,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         const mockResponse = createTestTransaction({ guid: "large-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
-        const result = await insertTransaction("test_account", largeTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          largeTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(mockResponse);
       });
@@ -672,7 +736,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         const mockResponse = createTestTransaction({ guid: "negative-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
-        const result = await insertTransaction("test_account", negativeTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          negativeTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(mockResponse);
       });
@@ -692,7 +761,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         const mockResponse = createTestTransaction({ guid: "special-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
-        const result = await insertTransaction("test_account", specialTransaction, false, false);
+        const result = await insertTransaction(
+          "test_account",
+          specialTransaction,
+          false,
+          false,
+        );
 
         expect(result).toEqual(mockResponse);
       });
@@ -705,7 +779,9 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         await insertTransaction("test_account", mockTransaction, false, false);
 
-        expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalled();
+        expect(
+          mockValidationUtils.hookValidators.validateApiPayload,
+        ).toHaveBeenCalled();
         expect(mockGenerateSecureUUID).toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });
@@ -727,7 +803,12 @@ describe("Transaction Insert Functions (Isolated)", () => {
         mockGenerateSecureUUID.mockResolvedValue("new-secure-uuid");
         global.fetch = createFetchMock(originalTransaction);
 
-        await insertTransaction("test_account", originalTransaction, false, false);
+        await insertTransaction(
+          "test_account",
+          originalTransaction,
+          false,
+          false,
+        );
 
         const expectedPayload = {
           guid: "new-secure-uuid", // Should use generated UUID
@@ -738,7 +819,8 @@ describe("Transaction Insert Functions (Isolated)", () => {
           amount: 75.0,
           dueDate: originalTransaction.dueDate, // Use actual value from createTestTransaction
           transactionType: originalTransaction.transactionType,
-          transactionState: originalTransaction.transactionState || "outstanding",
+          transactionState:
+            originalTransaction.transactionState || "outstanding",
           activeStatus: true, // Should be set to true
           accountType: originalTransaction.accountType,
           reoccurringType: originalTransaction.reoccurringType,
@@ -749,7 +831,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           expect.any(String),
           expect.objectContaining({
             body: JSON.stringify(expectedPayload),
-          })
+          }),
         );
       });
 
@@ -758,11 +840,17 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         // Regular transaction
         await insertTransaction("test_account", mockTransaction, false, false);
-        expect(global.fetch).toHaveBeenCalledWith("/api/transaction/insert", expect.any(Object));
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/transaction/insert",
+          expect.any(Object),
+        );
 
         // Future transaction
         await insertTransaction("test_account", mockTransaction, true, false);
-        expect(global.fetch).toHaveBeenCalledWith("/api/transaction/future/insert", expect.any(Object));
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/transaction/future/insert",
+          expect.any(Object),
+        );
       });
     });
   });

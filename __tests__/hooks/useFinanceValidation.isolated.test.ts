@@ -195,14 +195,14 @@ describe("Finance Validation Functions (Isolated)", () => {
 
       it("should validate positive decimal amounts", () => {
         expect(validateAmount(100.5)).toEqual({ isValid: true });
-        expect(validateAmount(100.50)).toEqual({ isValid: true });
+        expect(validateAmount(100.5)).toEqual({ isValid: true });
         expect(validateAmount(0.01)).toEqual({ isValid: true });
         expect(validateAmount(999999.99)).toEqual({ isValid: true });
       });
 
       it("should validate negative amounts", () => {
         expect(validateAmount(-100)).toEqual({ isValid: true });
-        expect(validateAmount(-100.50)).toEqual({ isValid: true });
+        expect(validateAmount(-100.5)).toEqual({ isValid: true });
         expect(validateAmount(-0.01)).toEqual({ isValid: true });
         expect(validateAmount(-999999.99)).toEqual({ isValid: true });
       });
@@ -210,7 +210,7 @@ describe("Finance Validation Functions (Isolated)", () => {
       it("should validate zero", () => {
         expect(validateAmount(0)).toEqual({ isValid: true });
         expect(validateAmount(0.0)).toEqual({ isValid: true });
-        expect(validateAmount(0.00)).toEqual({ isValid: true });
+        expect(validateAmount(0.0)).toEqual({ isValid: true });
       });
 
       it("should validate string amounts", () => {
@@ -296,7 +296,7 @@ describe("Finance Validation Functions (Isolated)", () => {
       it("should handle boundary values correctly", () => {
         expect(validateAmount(999999.99)).toEqual({ isValid: true });
         expect(validateAmount(-999999.99)).toEqual({ isValid: true });
-        expect(validateAmount(1000000.00)).toEqual({
+        expect(validateAmount(1000000.0)).toEqual({
           isValid: false,
           error: "Amount cannot exceed $999,999.99",
         });
@@ -386,25 +386,49 @@ describe("Finance Validation Functions (Isolated)", () => {
   describe("Description Validation", () => {
     describe("Valid descriptions", () => {
       it("should validate simple descriptions", () => {
-        expect(validateDescription("Grocery shopping")).toEqual({ isValid: true });
-        expect(validateDescription("ATM withdrawal at Bank")).toEqual({ isValid: true });
-        expect(validateDescription("Payment for services")).toEqual({ isValid: true });
+        expect(validateDescription("Grocery shopping")).toEqual({
+          isValid: true,
+        });
+        expect(validateDescription("ATM withdrawal at Bank")).toEqual({
+          isValid: true,
+        });
+        expect(validateDescription("Payment for services")).toEqual({
+          isValid: true,
+        });
       });
 
       it("should validate descriptions with special characters", () => {
-        expect(validateDescription("Payment for services @company")).toEqual({ isValid: true });
-        expect(validateDescription("Transaction #12345")).toEqual({ isValid: true });
-        expect(validateDescription("Amount: $100.50")).toEqual({ isValid: true });
-        expect(validateDescription("Email: user@domain.com")).toEqual({ isValid: true });
+        expect(validateDescription("Payment for services @company")).toEqual({
+          isValid: true,
+        });
+        expect(validateDescription("Transaction #12345")).toEqual({
+          isValid: true,
+        });
+        expect(validateDescription("Amount: $100.50")).toEqual({
+          isValid: true,
+        });
+        expect(validateDescription("Email: user@domain.com")).toEqual({
+          isValid: true,
+        });
         // Note: "/" is not in the allowed character pattern
-        expect(validateDescription("Rate 5 of 5 stars!")).toEqual({ isValid: true });
+        expect(validateDescription("Rate 5 of 5 stars!")).toEqual({
+          isValid: true,
+        });
       });
 
       it("should validate descriptions with punctuation", () => {
-        expect(validateDescription("Payment, cash back")).toEqual({ isValid: true });
-        expect(validateDescription("Withdrawal (emergency)")).toEqual({ isValid: true });
-        expect(validateDescription("Purchase: groceries and supplies")).toEqual({ isValid: true });
-        expect(validateDescription("Question? Answer!")).toEqual({ isValid: true });
+        expect(validateDescription("Payment, cash back")).toEqual({
+          isValid: true,
+        });
+        expect(validateDescription("Withdrawal (emergency)")).toEqual({
+          isValid: true,
+        });
+        expect(validateDescription("Purchase: groceries and supplies")).toEqual(
+          { isValid: true },
+        );
+        expect(validateDescription("Question? Answer!")).toEqual({
+          isValid: true,
+        });
       });
     });
 
@@ -448,7 +472,8 @@ describe("Finance Validation Functions (Isolated)", () => {
       });
 
       it("should handle complex valid descriptions", () => {
-        const complexDesc = "Purchase at Store #123: Items A, B & C (total: $45.67) - Receipt #456";
+        const complexDesc =
+          "Purchase at Store #123: Items A, B & C (total: $45.67) - Receipt #456";
         expect(validateDescription(complexDesc)).toEqual({ isValid: true });
       });
     });
@@ -457,16 +482,26 @@ describe("Finance Validation Functions (Isolated)", () => {
   describe("Account Name Validation", () => {
     describe("Valid account names", () => {
       it("should validate simple account names", () => {
-        expect(validateAccountName("Chase Checking")).toEqual({ isValid: true });
-        expect(validateAccountName("Savings Account")).toEqual({ isValid: true });
+        expect(validateAccountName("Chase Checking")).toEqual({
+          isValid: true,
+        });
+        expect(validateAccountName("Savings Account")).toEqual({
+          isValid: true,
+        });
         expect(validateAccountName("Credit Card")).toEqual({ isValid: true });
       });
 
       it("should validate account names with allowed characters", () => {
-        expect(validateAccountName("Savings-Account_1")).toEqual({ isValid: true });
-        expect(validateAccountName("Credit Card (Main)")).toEqual({ isValid: true });
+        expect(validateAccountName("Savings-Account_1")).toEqual({
+          isValid: true,
+        });
+        expect(validateAccountName("Credit Card (Main)")).toEqual({
+          isValid: true,
+        });
         expect(validateAccountName("Account_123")).toEqual({ isValid: true });
-        expect(validateAccountName("Business & Personal")).toEqual({ isValid: true });
+        expect(validateAccountName("Business & Personal")).toEqual({
+          isValid: true,
+        });
       });
     });
 
@@ -592,17 +627,31 @@ describe("Finance Validation Functions (Isolated)", () => {
         const now = new Date();
 
         // Test exactly 100 years ago (should be valid - on the boundary)
-        const hundredYearsAgo = new Date(now.getFullYear() - 100, now.getMonth(), now.getDate());
+        const hundredYearsAgo = new Date(
+          now.getFullYear() - 100,
+          now.getMonth(),
+          now.getDate(),
+        );
         const hundredYearsAgoStr = hundredYearsAgo.toISOString().split("T")[0];
 
         // The boundary logic uses < comparison, so exactly 100 years should be valid
         // But let's test 99 years ago to be safe
-        const ninetyNineYearsAgo = new Date(now.getFullYear() - 99, now.getMonth(), now.getDate());
-        const ninetyNineYearsAgoStr = ninetyNineYearsAgo.toISOString().split("T")[0];
+        const ninetyNineYearsAgo = new Date(
+          now.getFullYear() - 99,
+          now.getMonth(),
+          now.getDate(),
+        );
+        const ninetyNineYearsAgoStr = ninetyNineYearsAgo
+          .toISOString()
+          .split("T")[0];
         expect(validateDate(ninetyNineYearsAgoStr)).toEqual({ isValid: true });
 
         // Test exactly 1 year from now
-        const oneYearFromNow = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+        const oneYearFromNow = new Date(
+          now.getFullYear() + 1,
+          now.getMonth(),
+          now.getDate(),
+        );
         const oneYearFromNowStr = oneYearFromNow.toISOString().split("T")[0];
         expect(validateDate(oneYearFromNowStr)).toEqual({ isValid: true });
       });

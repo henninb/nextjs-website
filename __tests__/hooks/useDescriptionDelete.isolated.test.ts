@@ -85,7 +85,7 @@ describe("deleteDescription (Isolated)", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -109,7 +109,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/groceries",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -124,7 +124,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/food & dining",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -134,7 +134,9 @@ describe("deleteDescription (Isolated)", () => {
       const errorMessage = "Cannot delete this description";
       global.fetch = createErrorFetchMock(errorMessage, 400);
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow(errorMessage);
+      await expect(deleteDescription(mockDescription)).rejects.toThrow(
+        errorMessage,
+      );
       expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
     });
 
@@ -146,9 +148,11 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle JSON parsing errors in error response", async () => {
@@ -159,10 +163,10 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
       expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON"
+        "Failed to parse error response: Invalid JSON",
       );
     });
 
@@ -174,15 +178,19 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "No error message returned."
+        "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        "No error message returned.",
+      );
     });
 
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow("Network error");
+      await expect(deleteDescription(mockDescription)).rejects.toThrow(
+        "Network error",
+      );
     });
 
     it("should handle various HTTP error statuses", async () => {
@@ -192,14 +200,20 @@ describe("deleteDescription (Isolated)", () => {
         const errorMessage = `Error ${status}`;
         global.fetch = createErrorFetchMock(errorMessage, status);
 
-        await expect(deleteDescription(mockDescription)).rejects.toThrow(errorMessage);
+        await expect(deleteDescription(mockDescription)).rejects.toThrow(
+          errorMessage,
+        );
       }
     });
 
     it("should handle fetch rejection", async () => {
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection failed"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error("Connection failed"));
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow("Connection failed");
+      await expect(deleteDescription(mockDescription)).rejects.toThrow(
+        "Connection failed",
+      );
     });
   });
 
@@ -213,7 +227,7 @@ describe("deleteDescription (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "DELETE",
-        })
+        }),
       );
     });
 
@@ -226,7 +240,7 @@ describe("deleteDescription (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -241,7 +255,7 @@ describe("deleteDescription (Isolated)", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -254,7 +268,7 @@ describe("deleteDescription (Isolated)", () => {
         expect.any(String),
         expect.not.objectContaining({
           body: expect.anything(),
-        })
+        }),
       );
     });
   });
@@ -328,7 +342,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -344,7 +358,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/description/delete/${longDescriptionName}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -359,7 +373,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/12345",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -374,7 +388,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/café & résumé",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -390,7 +404,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/electronics",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -408,7 +422,7 @@ describe("deleteDescription (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/business_expense",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -425,7 +439,7 @@ describe("deleteDescription (Isolated)", () => {
       // Verify endpoint uses exact description name
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/description/delete/original_description",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -448,7 +462,7 @@ describe("deleteDescription (Isolated)", () => {
 
         expect(global.fetch).toHaveBeenCalledWith(
           `/api/description/delete/${name}`,
-          expect.any(Object)
+          expect.any(Object),
         );
       }
     });
@@ -459,7 +473,8 @@ describe("deleteDescription (Isolated)", () => {
       const successStatuses = [200, 202, 204];
 
       for (const status of successStatuses) {
-        const responseData = status === 204 ? null : { message: `Status ${status}` };
+        const responseData =
+          status === 204 ? null : { message: `Status ${status}` };
         global.fetch = createFetchMock(responseData, { status });
 
         const result = await deleteDescription(mockDescription);
@@ -485,7 +500,9 @@ describe("deleteDescription (Isolated)", () => {
       for (const { status, message } of errorStatuses) {
         global.fetch = createErrorFetchMock(message, status);
 
-        await expect(deleteDescription(mockDescription)).rejects.toThrow(message);
+        await expect(deleteDescription(mockDescription)).rejects.toThrow(
+          message,
+        );
       }
     });
   });

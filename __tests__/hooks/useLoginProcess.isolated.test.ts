@@ -73,7 +73,9 @@ describe("loginUser (Isolated)", () => {
       validatedData: mockUser,
       errors: null,
     });
-    mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(mockUser.username);
+    mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+      mockUser.username,
+    );
   });
 
   afterEach(() => {
@@ -93,11 +95,11 @@ describe("loginUser (Isolated)", () => {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(mockUser),
-        })
+        }),
       );
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
-        mockUser.username
+        mockUser.username,
       );
     });
 
@@ -106,28 +108,37 @@ describe("loginUser (Isolated)", () => {
 
       await loginUser(mockUser);
 
-      expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalledWith(
+      expect(
+        mockValidationUtils.hookValidators.validateApiPayload,
+      ).toHaveBeenCalledWith(
         mockUser,
         mockValidationUtils.DataValidator.validateUser,
-        "login"
+        "login",
       );
     });
 
     it("should sanitize username in log output", async () => {
       global.fetch = createFetchMock(null, { status: 204 });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue("sanitized_user");
+      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+        "sanitized_user",
+      );
 
       await loginUser(mockUser);
 
-      expect(mockValidationUtils.InputSanitizer.sanitizeUsername).toHaveBeenCalledWith(mockUser.username);
+      expect(
+        mockValidationUtils.InputSanitizer.sanitizeUsername,
+      ).toHaveBeenCalledWith(mockUser.username);
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
-        "sanitized_user"
+        "sanitized_user",
       );
     });
 
     it("should use validated data in request body", async () => {
-      const validatedData = { username: "validated", password: "validated_pass" };
+      const validatedData = {
+        username: "validated",
+        password: "validated_pass",
+      };
       mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
         isValid: true,
         validatedData,
@@ -141,7 +152,7 @@ describe("loginUser (Isolated)", () => {
         "/api/login",
         expect.objectContaining({
           body: JSON.stringify(validatedData),
-        })
+        }),
       );
     });
   });
@@ -158,7 +169,7 @@ describe("loginUser (Isolated)", () => {
       });
 
       await expect(loginUser(mockUser)).rejects.toThrow(
-        "Login validation failed: Username is required, Password too short"
+        "Login validation failed: Username is required, Password too short",
       );
 
       expect(global.fetch).not.toHaveBeenCalled();
@@ -172,7 +183,7 @@ describe("loginUser (Isolated)", () => {
       });
 
       await expect(loginUser(mockUser)).rejects.toThrow(
-        "Login validation failed: Validation failed"
+        "Login validation failed: Validation failed",
       );
 
       expect(global.fetch).not.toHaveBeenCalled();
@@ -186,7 +197,7 @@ describe("loginUser (Isolated)", () => {
       });
 
       await expect(loginUser(mockUser)).rejects.toThrow(
-        "Login validation failed: Validation failed"
+        "Login validation failed: Validation failed",
       );
     });
   });
@@ -195,10 +206,14 @@ describe("loginUser (Isolated)", () => {
     it("should handle 401 unauthorized with specific error message", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
         status: 401,
-        json: jest.fn().mockResolvedValueOnce({ error: "Invalid username or password" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ error: "Invalid username or password" }),
       });
 
-      await expect(loginUser(mockUser)).rejects.toThrow("Invalid username or password");
+      await expect(loginUser(mockUser)).rejects.toThrow(
+        "Invalid username or password",
+      );
     });
 
     it("should handle 401 unauthorized without specific error message", async () => {
@@ -222,19 +237,27 @@ describe("loginUser (Isolated)", () => {
     it("should handle 429 too many requests", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
         status: 429,
-        json: jest.fn().mockResolvedValueOnce({ error: "Too many login attempts" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ error: "Too many login attempts" }),
       });
 
-      await expect(loginUser(mockUser)).rejects.toThrow("Too many login attempts");
+      await expect(loginUser(mockUser)).rejects.toThrow(
+        "Too many login attempts",
+      );
     });
 
     it("should handle 500 server error", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
         status: 500,
-        json: jest.fn().mockResolvedValueOnce({ error: "Internal server error" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ error: "Internal server error" }),
       });
 
-      await expect(loginUser(mockUser)).rejects.toThrow("Internal server error");
+      await expect(loginUser(mockUser)).rejects.toThrow(
+        "Internal server error",
+      );
     });
   });
 
@@ -246,7 +269,9 @@ describe("loginUser (Isolated)", () => {
     });
 
     it("should handle fetch rejection", async () => {
-      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Connection refused"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error("Connection refused"));
 
       await expect(loginUser(mockUser)).rejects.toThrow("Connection refused");
     });
@@ -271,7 +296,7 @@ describe("loginUser (Isolated)", () => {
         "/api/login",
         expect.objectContaining({
           headers: { "Content-Type": "application/json" },
-        })
+        }),
       );
     });
 
@@ -284,7 +309,7 @@ describe("loginUser (Isolated)", () => {
         "/api/login",
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -297,7 +322,7 @@ describe("loginUser (Isolated)", () => {
         "/api/login",
         expect.objectContaining({
           method: "POST",
-        })
+        }),
       );
     });
 
@@ -306,7 +331,10 @@ describe("loginUser (Isolated)", () => {
 
       await loginUser(mockUser);
 
-      expect(global.fetch).toHaveBeenCalledWith("/api/login", expect.any(Object));
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/login",
+        expect.any(Object),
+      );
     });
   });
 
@@ -331,7 +359,7 @@ describe("loginUser (Isolated)", () => {
         "/api/login",
         expect.objectContaining({
           body: JSON.stringify(minimalUser),
-        })
+        }),
       );
     });
 
@@ -343,14 +371,16 @@ describe("loginUser (Isolated)", () => {
         firstName: "John",
         lastName: "Doe",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(fullUser.username);
+      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+        fullUser.username,
+      );
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(fullUser);
 
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
-        fullUser.username
+        fullUser.username,
       );
     });
 
@@ -359,15 +389,19 @@ describe("loginUser (Isolated)", () => {
         username: "user@domain.com",
         password: "Password123!",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue("user@domain.com");
+      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+        "user@domain.com",
+      );
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(specialUser);
 
-      expect(mockValidationUtils.InputSanitizer.sanitizeUsername).toHaveBeenCalledWith("user@domain.com");
+      expect(
+        mockValidationUtils.InputSanitizer.sanitizeUsername,
+      ).toHaveBeenCalledWith("user@domain.com");
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
-        "user@domain.com"
+        "user@domain.com",
       );
     });
 
@@ -377,21 +411,23 @@ describe("loginUser (Isolated)", () => {
         username: longUsername,
         password: "Password123!",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(longUsername);
+      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+        longUsername,
+      );
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(longUser);
 
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
-        longUsername
+        longUsername,
       );
     });
 
     it("should handle complex password", async () => {
       const complexUser = createTestUser({
         username: "testuser",
-        password: "Compl3x!P@ssw0rd#$%^&*()_+{}[]|\\:;\"'<>?,./"
+        password: "Compl3x!P@ssw0rd#$%^&*()_+{}[]|\\:;\"'<>?,./",
       });
       global.fetch = createFetchMock(null, { status: 204 });
 
@@ -419,15 +455,19 @@ describe("loginUser (Isolated)", () => {
         username: "<script>alert('xss')</script>",
         password: "Password123!",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue("safe_username");
+      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+        "safe_username",
+      );
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(unsafeUser);
 
-      expect(mockValidationUtils.InputSanitizer.sanitizeUsername).toHaveBeenCalledWith(unsafeUser.username);
+      expect(
+        mockValidationUtils.InputSanitizer.sanitizeUsername,
+      ).toHaveBeenCalledWith(unsafeUser.username);
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
-        "safe_username"
+        "safe_username",
       );
     });
 
@@ -438,7 +478,7 @@ describe("loginUser (Isolated)", () => {
 
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
-        mockUser.username
+        mockUser.username,
       );
     });
 
@@ -460,37 +500,53 @@ describe("loginUser (Isolated)", () => {
     it("should handle 200 OK as failure (expects 204)", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
         status: 200,
-        json: jest.fn().mockResolvedValueOnce({ error: "Unexpected success format" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ error: "Unexpected success format" }),
       });
 
-      await expect(loginUser(mockUser)).rejects.toThrow("Unexpected success format");
+      await expect(loginUser(mockUser)).rejects.toThrow(
+        "Unexpected success format",
+      );
     });
 
     it("should handle 201 Created as failure", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
         status: 201,
-        json: jest.fn().mockResolvedValueOnce({ error: "Account created instead" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ error: "Account created instead" }),
       });
 
-      await expect(loginUser(mockUser)).rejects.toThrow("Account created instead");
+      await expect(loginUser(mockUser)).rejects.toThrow(
+        "Account created instead",
+      );
     });
 
     it("should handle 400 Bad Request", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
         status: 400,
-        json: jest.fn().mockResolvedValueOnce({ error: "Invalid request format" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ error: "Invalid request format" }),
       });
 
-      await expect(loginUser(mockUser)).rejects.toThrow("Invalid request format");
+      await expect(loginUser(mockUser)).rejects.toThrow(
+        "Invalid request format",
+      );
     });
 
     it("should handle 404 Not Found", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
         status: 404,
-        json: jest.fn().mockResolvedValueOnce({ error: "Login endpoint not found" }),
+        json: jest
+          .fn()
+          .mockResolvedValueOnce({ error: "Login endpoint not found" }),
       });
 
-      await expect(loginUser(mockUser)).rejects.toThrow("Login endpoint not found");
+      await expect(loginUser(mockUser)).rejects.toThrow(
+        "Login endpoint not found",
+      );
     });
   });
 });

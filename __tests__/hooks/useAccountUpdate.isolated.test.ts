@@ -84,7 +84,7 @@ describe("updateAccount (Isolated)", () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(mockNewAccount),
-        })
+        }),
       );
     });
 
@@ -99,7 +99,7 @@ describe("updateAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/account/update/savings_account",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -117,7 +117,7 @@ describe("updateAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(updatedAccountData),
-        })
+        }),
       );
     });
 
@@ -132,7 +132,7 @@ describe("updateAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/account/update/test & account",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -142,9 +142,9 @@ describe("updateAccount (Isolated)", () => {
       const errorMessage = "Cannot update this account";
       global.fetch = createErrorFetchMock(errorMessage, 400);
 
-      await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
-        "HTTP error! status: 400"
-      );
+      await expect(
+        updateAccount(mockOldAccount, mockNewAccount),
+      ).rejects.toThrow("HTTP error! status: 400");
     });
 
     it("should handle 404 errors with special logging", async () => {
@@ -155,22 +155,22 @@ describe("updateAccount (Isolated)", () => {
         json: jest.fn().mockResolvedValueOnce(notFoundResponse),
       });
 
-      await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
-        "HTTP error! status: 404"
-      );
+      await expect(
+        updateAccount(mockOldAccount, mockNewAccount),
+      ).rejects.toThrow("HTTP error! status: 404");
 
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Resource not found (404).",
-        notFoundResponse
+        notFoundResponse,
       );
     });
 
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
-        "Network error"
-      );
+      await expect(
+        updateAccount(mockOldAccount, mockNewAccount),
+      ).rejects.toThrow("Network error");
     });
 
     it("should handle JSON parsing errors in response", async () => {
@@ -180,9 +180,9 @@ describe("updateAccount (Isolated)", () => {
         json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
       });
 
-      await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
-        "Invalid JSON"
-      );
+      await expect(
+        updateAccount(mockOldAccount, mockNewAccount),
+      ).rejects.toThrow("Invalid JSON");
     });
 
     it("should handle JSON parsing errors in 404 response", async () => {
@@ -192,9 +192,9 @@ describe("updateAccount (Isolated)", () => {
         json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
       });
 
-      await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
-        "Invalid JSON"
-      );
+      await expect(
+        updateAccount(mockOldAccount, mockNewAccount),
+      ).rejects.toThrow("Invalid JSON");
     });
 
     it("should handle various HTTP error statuses", async () => {
@@ -203,9 +203,9 @@ describe("updateAccount (Isolated)", () => {
       for (const status of errorStatuses) {
         global.fetch = createErrorFetchMock("Error occurred", status);
 
-        await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
-          `HTTP error! status: ${status}`
-        );
+        await expect(
+          updateAccount(mockOldAccount, mockNewAccount),
+        ).rejects.toThrow(`HTTP error! status: ${status}`);
       }
     });
   });
@@ -220,7 +220,7 @@ describe("updateAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "PUT",
-        })
+        }),
       );
     });
 
@@ -233,7 +233,7 @@ describe("updateAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -248,7 +248,7 @@ describe("updateAccount (Isolated)", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        })
+        }),
       );
     });
 
@@ -262,7 +262,7 @@ describe("updateAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: expectedBody,
-        })
+        }),
       );
     });
   });
@@ -315,7 +315,7 @@ describe("updateAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/account/update/",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -333,7 +333,7 @@ describe("updateAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           body: JSON.stringify(accountWithNulls),
-        })
+        }),
       );
     });
 
@@ -401,7 +401,7 @@ describe("updateAccount (Isolated)", () => {
         "/api/account/update/test_account", // Uses old account name in endpoint
         expect.objectContaining({
           body: JSON.stringify(fullyUpdatedAccount), // Sends new data
-        })
+        }),
       );
     });
 

@@ -294,6 +294,7 @@ This migration strategy focuses on testing business logic in isolation while mai
 #### Deleted Original Test Files
 
 Successfully removed 9 overlapping integration test files after isolated test conversion:
+
 - ~~`useAccountDelete.test.tsx`~~ → Replaced by `useAccountDelete.isolated.test.ts`
 - ~~`useCategoryDelete.test.tsx`~~ → Replaced by `useCategoryDelete.isolated.test.ts`
 - ~~`usePaymentDelete.test.tsx`~~ → Replaced by `usePaymentDelete.isolated.test.ts`
@@ -364,7 +365,7 @@ Successfully removed 9 overlapping integration test files after isolated test co
 ### 🛠 Tools & Patterns Established
 
 - **Isolated test naming convention:** `*.isolated.test.ts`
-- **Helper file location:** `testHelpers.ts` (outside __tests__ to prevent Jest execution)
+- **Helper file location:** `testHelpers.ts` (outside **tests** to prevent Jest execution)
 - **Mock utilities:** Comprehensive API testing without network calls
 - **Pure function extraction:** Established patterns for hook business logic extraction
 - **Business logic validation:** Focused testing strategies for core functionality
