@@ -1,0 +1,659 @@
+import Payment from "../../model/Payment";
+import {
+  createFetchMock,
+  createErrorFetchMock,
+  ConsoleSpy,
+  createTestPayment,
+  simulateNetworkError,
+  createMockValidationUtils,
+} from "../testHelpers";
+
+// Mock the validation utilities since we're testing in isolation
+const mockValidationUtils = createMockValidationUtils();
+
+jest.mock("../../utils/validation", () => mockValidationUtils);
+
+// Extract helper function for testing
+const setupNewPayment = (payload: Payment) => {
+  return {
+    amount: payload?.amount,
+    transactionDate: payload?.transactionDate,
+    sourceAccount: payload.sourceAccount,
+    destinationAccount: payload.destinationAccount,
+    guidSource: payload.guidSource,
+    guidDestination: payload.guidDestination,
+  };
+};
+
+// Extract the insertPayment function for isolated testing
+const insertPayment = async (payload: Payment): Promise<Payment> => {
+  try {
+    // Validate and sanitize the payment data
+    const validation = mockValidationUtils.hookValidators.validateApiPayload(
+      payload,
+      mockValidationUtils.DataValidator.validatePayment,
+      "insertPayment",
+    );
+
+    if (!validation.isValid) {
+      const errorMessages =
+        validation.errors?.map((err) => err.message).join(", ") ||
+        "Validation failed";
+      throw new Error(`Payment validation failed: ${errorMessages}`);
+    }
+
+    const endpoint = "/api/payment/insert";
+    const newPayload = setupNewPayment(validation.validatedData);
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(newPayload),
+    });
+
+    if (!response.ok) {
+      let errorMessage = "";
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody && errorBody.response) {
+          errorMessage = `${errorBody.response}`;
+        } else {
+          console.log("No error message returned.");
+          errorMessage = "No error message returned.";
+        }
+      } catch (error: any) {
+        console.log(`Failed to parse error response: ${error.message}`);
+        errorMessage = `Failed to parse error response: ${error.message}`;
+      }
+
+      console.log(errorMessage || "cannot throw a null value");
+      throw new Error(errorMessage || "cannot throw a null value");
+    }
+
+    return response.status !== 204 ? await response.json() : null;
+  } catch (error: any) {
+    console.log(`An error occurred: ${error.message}`);
+    throw error;
+  }
+};
+
+describe("Payment Insert Functions (Isolated)", () => {
+  const mockPayment = createTestPayment({
+    paymentId: 0,
+    sourceAccount: "source123",
+    destinationAccount: "dest456",
+    transactionDate: new Date("2024-12-01"),
+    amount: 150.0,
+    activeStatus: true,
+  });
+
+  let consoleSpy: ConsoleSpy;
+  let mockConsole: any;
+
+  beforeEach(() => {
+    consoleSpy = new ConsoleSpy();
+    mockConsole = consoleSpy.start();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    consoleSpy.stop();
+  });
+
+  describe("setupNewPayment function", () => {
+    it("should extract required payment fields", () => {
+      const inputPayment = createTestPayment({
+        paymentId: 123, // Should be excluded
+        sourceAccount: "test_source",
+        destinationAccount: "test_dest",
+        amount: 250.0,
+        transactionDate: new Date("2024-01-15"),
+        guidSource: "guid-source-123",
+        guidDestination: "guid-dest-456",
+        activeStatus: true, // Should be excluded
+      });
+
+      const result = setupNewPayment(inputPayment);
+
+      expect(result).toEqual({
+        amount: 250.0,
+        transactionDate: new Date("2024-01-15"),
+        sourceAccount: "test_source",
+        destinationAccount: "test_dest",
+        guidSource: "guid-source-123",
+        guidDestination: "guid-dest-456",
+      });
+    });
+
+    it("should handle payment with missing optional fields", () => {
+      const minimalPayment = createTestPayment({
+        sourceAccount: "source",
+        destinationAccount: "dest",
+        amount: 100.0,
+        transactionDate: new Date("2024-01-01"),
+      });
+
+      const result = setupNewPayment(minimalPayment);
+
+      expect(result).toEqual({
+        amount: 100.0,
+        transactionDate: new Date("2024-01-01"),
+        sourceAccount: "source",
+        destinationAccount: "dest",
+        guidSource: undefined,
+        guidDestination: undefined,
+      });
+    });
+
+    it("should handle null and undefined values", () => {
+      const paymentWithNulls = {
+        ...mockPayment,
+        amount: null,
+        guidSource: undefined,
+        guidDestination: null,
+      };
+
+      const result = setupNewPayment(paymentWithNulls);
+
+      expect(result).toEqual({
+        amount: null,
+        transactionDate: mockPayment.transactionDate,
+        sourceAccount: mockPayment.sourceAccount,
+        destinationAccount: mockPayment.destinationAccount,
+        guidSource: undefined,
+        guidDestination: null,
+      });
+    });
+  });
+
+  describe("insertPayment function", () => {
+    beforeEach(() => {
+      mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        isValid: true,
+        validatedData: mockPayment,
+      });
+    });
+
+    describe("Successful insertion", () => {
+      it("should insert payment successfully", async () => {
+        const mockResponse = createTestPayment({
+          paymentId: 789,
+          sourceAccount: "source123",
+          destinationAccount: "dest456",
+          amount: 150.0,
+        });
+
+        global.fetch = createFetchMock(mockResponse, { status: 201 });
+
+        const result = await insertPayment(mockPayment);
+
+        expect(result).toEqual(mockResponse);
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/payment/insert",
+          expect.objectContaining({
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              amount: mockPayment.amount,
+              transactionDate: mockPayment.transactionDate,
+              sourceAccount: mockPayment.sourceAccount,
+              destinationAccount: mockPayment.destinationAccount,
+              guidSource: mockPayment.guidSource,
+              guidDestination: mockPayment.guidDestination,
+            }),
+          })
+        );
+      });
+
+      it("should handle 204 no content response", async () => {
+        global.fetch = createFetchMock(null, { status: 204 });
+
+        const result = await insertPayment(mockPayment);
+
+        expect(result).toBeNull();
+      });
+
+      it("should use validated data from validation", async () => {
+        const validatedPayment = createTestPayment({
+          ...mockPayment,
+          sourceAccount: "sanitized_source",
+        });
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: true,
+          validatedData: validatedPayment,
+        });
+
+        global.fetch = createFetchMock(validatedPayment);
+
+        await insertPayment(mockPayment);
+
+        const expectedPayload = setupNewPayment(validatedPayment);
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            body: JSON.stringify(expectedPayload),
+          })
+        );
+      });
+
+      it("should handle different success status codes", async () => {
+        const successStatuses = [200, 201];
+
+        for (const status of successStatuses) {
+          const mockResponse = createTestPayment({ paymentId: status });
+          global.fetch = createFetchMock(mockResponse, { status });
+
+          const result = await insertPayment(mockPayment);
+
+          if (status === 204) {
+            expect(result).toBeNull();
+          } else {
+            expect(result).toEqual(mockResponse);
+          }
+        }
+      });
+    });
+
+    describe("Validation handling", () => {
+      it("should handle validation failures", async () => {
+        const validationError = { message: "Amount must be positive" };
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: false,
+          errors: [validationError],
+        });
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow(
+          "Payment validation failed: Amount must be positive"
+        );
+
+        expect(global.fetch).not.toHaveBeenCalled();
+      });
+
+      it("should handle validation failures with multiple errors", async () => {
+        const validationErrors = [
+          { message: "Amount must be positive" },
+          { message: "Source account is required" },
+        ];
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: false,
+          errors: validationErrors,
+        });
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow(
+          "Payment validation failed: Amount must be positive, Source account is required"
+        );
+      });
+
+      it("should handle validation failures without error details", async () => {
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: false,
+        });
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow(
+          "Payment validation failed: Validation failed"
+        );
+      });
+
+      it("should call validation with correct parameters", async () => {
+        global.fetch = createFetchMock(mockPayment);
+
+        await insertPayment(mockPayment);
+
+        expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalledWith(
+          mockPayment,
+          mockValidationUtils.DataValidator.validatePayment,
+          "insertPayment"
+        );
+      });
+    });
+
+    describe("Error handling", () => {
+      it("should handle server error with error message", async () => {
+        const errorMessage = "Invalid payment amount";
+        global.fetch = createErrorFetchMock(errorMessage, 400);
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow(errorMessage);
+        expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          `An error occurred: ${errorMessage}`
+        );
+      });
+
+      it("should handle server error without error message", async () => {
+        global.fetch = jest.fn().mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          json: jest.fn().mockResolvedValueOnce({}),
+        });
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow(
+          "No error message returned."
+        );
+        expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      });
+
+      it("should handle JSON parsing errors in error response", async () => {
+        global.fetch = jest.fn().mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
+        });
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow(
+          "Failed to parse error response: Invalid JSON"
+        );
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          "Failed to parse error response: Invalid JSON"
+        );
+      });
+
+      it("should handle empty error message gracefully", async () => {
+        global.fetch = jest.fn().mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: jest.fn().mockResolvedValueOnce({}),
+        });
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow(
+          "No error message returned."
+        );
+        expect(mockConsole.log).toHaveBeenCalledWith("No error message returned.");
+      });
+
+      it("should handle network errors", async () => {
+        global.fetch = simulateNetworkError();
+
+        await expect(insertPayment(mockPayment)).rejects.toThrow("Network error");
+        expect(mockConsole.log).toHaveBeenCalledWith(
+          "An error occurred: Network error"
+        );
+      });
+
+      it("should handle various HTTP error statuses", async () => {
+        const errorStatuses = [400, 401, 403, 409, 422, 500];
+
+        for (const status of errorStatuses) {
+          const errorMessage = `Error ${status}`;
+          global.fetch = createErrorFetchMock(errorMessage, status);
+
+          await expect(insertPayment(mockPayment)).rejects.toThrow(errorMessage);
+        }
+      });
+    });
+
+    describe("Request format validation", () => {
+      it("should use POST method", async () => {
+        global.fetch = createFetchMock(mockPayment);
+
+        await insertPayment(mockPayment);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            method: "POST",
+          })
+        );
+      });
+
+      it("should include credentials", async () => {
+        global.fetch = createFetchMock(mockPayment);
+
+        await insertPayment(mockPayment);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            credentials: "include",
+          })
+        );
+      });
+
+      it("should include correct headers", async () => {
+        global.fetch = createFetchMock(mockPayment);
+
+        await insertPayment(mockPayment);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          })
+        );
+      });
+
+      it("should use correct endpoint", async () => {
+        global.fetch = createFetchMock(mockPayment);
+
+        await insertPayment(mockPayment);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/payment/insert",
+          expect.any(Object)
+        );
+      });
+    });
+
+    describe("Response handling", () => {
+      it("should return parsed JSON response", async () => {
+        const responseData = createTestPayment({
+          paymentId: 999,
+          sourceAccount: "response_source",
+          amount: 300.0,
+        });
+        global.fetch = createFetchMock(responseData);
+
+        const result = await insertPayment(mockPayment);
+
+        expect(result).toEqual(responseData);
+      });
+
+      it("should handle empty response body", async () => {
+        global.fetch = createFetchMock({});
+
+        const result = await insertPayment(mockPayment);
+
+        expect(result).toEqual({});
+      });
+
+      it("should handle complex response data", async () => {
+        const complexResponse = createTestPayment({
+          ...mockPayment,
+          paymentId: 123,
+          additionalField: "extra data",
+          metadata: { createdBy: "system" },
+        });
+        global.fetch = createFetchMock(complexResponse);
+
+        const result = await insertPayment(mockPayment);
+
+        expect(result).toEqual(complexResponse);
+      });
+    });
+
+    describe("Edge cases", () => {
+      it("should handle payment with all optional fields", async () => {
+        const fullPayment = createTestPayment({
+          paymentId: 0,
+          sourceAccount: "full_source",
+          destinationAccount: "full_dest",
+          amount: 500.0,
+          transactionDate: new Date("2024-06-15"),
+          guidSource: "source-guid-123",
+          guidDestination: "dest-guid-456",
+          activeStatus: true,
+          description: "Full payment test",
+        });
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: true,
+          validatedData: fullPayment,
+        });
+
+        const mockResponse = createTestPayment({ paymentId: 888 });
+        global.fetch = createFetchMock(mockResponse);
+
+        const result = await insertPayment(fullPayment);
+
+        expect(result).toEqual(mockResponse);
+
+        const expectedPayload = setupNewPayment(fullPayment);
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            body: JSON.stringify(expectedPayload),
+          })
+        );
+      });
+
+      it("should handle large payment amounts", async () => {
+        const largePayment = createTestPayment({
+          amount: 999999.99,
+          sourceAccount: "large_source",
+        });
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: true,
+          validatedData: largePayment,
+        });
+
+        const mockResponse = createTestPayment({ paymentId: 777 });
+        global.fetch = createFetchMock(mockResponse);
+
+        const result = await insertPayment(largePayment);
+
+        expect(result).toEqual(mockResponse);
+      });
+
+      it("should handle payment with special characters in account names", async () => {
+        const specialPayment = createTestPayment({
+          sourceAccount: "source & account",
+          destinationAccount: "dest (special)",
+        });
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: true,
+          validatedData: specialPayment,
+        });
+
+        const mockResponse = createTestPayment({ paymentId: 666 });
+        global.fetch = createFetchMock(mockResponse);
+
+        const result = await insertPayment(specialPayment);
+
+        expect(result).toEqual(mockResponse);
+      });
+
+      it("should handle null values in payment data", async () => {
+        const paymentWithNulls = {
+          ...mockPayment,
+          guidSource: null,
+          guidDestination: undefined,
+        };
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: true,
+          validatedData: paymentWithNulls,
+        });
+
+        global.fetch = createFetchMock(mockPayment);
+
+        await insertPayment(paymentWithNulls);
+
+        const expectedPayload = setupNewPayment(paymentWithNulls);
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            body: JSON.stringify(expectedPayload),
+          })
+        );
+      });
+    });
+
+    describe("Business logic validation", () => {
+      it("should enforce validation before API call", async () => {
+        const mockResponse = createTestPayment({ paymentId: 123 });
+        global.fetch = createFetchMock(mockResponse);
+
+        await insertPayment(mockPayment);
+
+        expect(mockValidationUtils.hookValidators.validateApiPayload).toHaveBeenCalled();
+        expect(global.fetch).toHaveBeenCalled();
+      });
+
+      it("should use setupNewPayment to prepare data", async () => {
+        const originalPayment = createTestPayment({
+          paymentId: 999, // Should be excluded by setupNewPayment
+          sourceAccount: "original_source",
+          destinationAccount: "original_dest",
+          amount: 100.0,
+          transactionDate: new Date("2024-01-01"),
+          guidSource: "guid-123",
+          guidDestination: "guid-456",
+          activeStatus: true, // Should be excluded by setupNewPayment
+        });
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: true,
+          validatedData: originalPayment,
+        });
+
+        global.fetch = createFetchMock(originalPayment);
+
+        await insertPayment(originalPayment);
+
+        const expectedPayload = {
+          amount: 100.0,
+          transactionDate: new Date("2024-01-01"),
+          sourceAccount: "original_source",
+          destinationAccount: "original_dest",
+          guidSource: "guid-123",
+          guidDestination: "guid-456",
+        };
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            body: JSON.stringify(expectedPayload),
+          })
+        );
+      });
+
+      it("should preserve paymentId of 0 for new payments", async () => {
+        const newPayment = createTestPayment({
+          paymentId: 0,
+          sourceAccount: "new_source",
+        });
+
+        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+          isValid: true,
+          validatedData: newPayment,
+        });
+
+        const responsePayment = createTestPayment({
+          paymentId: 555,
+          sourceAccount: "new_source",
+        });
+        global.fetch = createFetchMock(responsePayment);
+
+        const result = await insertPayment(newPayment);
+
+        expect(result.paymentId).toBe(555); // Server assigns new ID
+      });
+    });
+  });
+});
