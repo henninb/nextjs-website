@@ -378,7 +378,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
       it("should stringify the new pending transaction data", async () => {
         const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 123 });
-        const newPendingTransaction = createTestPendingTransaction({ 
+        const newPendingTransaction = createTestPendingTransaction({
           pendingTransactionId: 123,
           description: "Updated transaction",
         });

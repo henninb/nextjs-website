@@ -626,7 +626,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should handle transfer validation to API error chain", async () => {
         const testTransfer = createTestTransfer();
-        
+
         // API returns validation error
         global.fetch = createErrorFetchMock("Insufficient funds in source account", 400);
         consoleSpy.start();
@@ -644,7 +644,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should handle duplicate transfer detection", async () => {
         const testTransfer = createTestTransfer();
-        
+
         // API returns duplicate error
         global.fetch = createErrorFetchMock("Transfer with same details already exists", 409);
         consoleSpy.start();

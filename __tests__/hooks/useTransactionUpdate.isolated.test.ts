@@ -37,7 +37,7 @@ export const sanitizeGuid = (guid: string): string => {
  */
 export const processReceiptImage = (transaction: Transaction): Transaction => {
   const processed = { ...transaction };
-  
+
   if (processed.receiptImage !== undefined) {
     processed.receiptImage = {
       ...processed.receiptImage,
@@ -47,7 +47,7 @@ export const processReceiptImage = (transaction: Transaction): Transaction => {
       ),
     };
   }
-  
+
   return processed;
 };
 
@@ -64,7 +64,7 @@ export const updateTransaction = async (
 
     // Process receipt image if present
     const processedData = processReceiptImage(newData);
-    
+
     console.log("newData:" + JSON.stringify(processedData));
 
     const response = await fetch(endpoint, {
@@ -145,14 +145,14 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
     it("should sanitize valid GUIDs", () => {
       const validGuid = "123e4567-e89b-12d3-a456-426614174000";
       const sanitized = sanitizeGuid(validGuid);
-      
+
       expect(sanitized).toBe(encodeURIComponent(validGuid));
     });
 
     it("should handle GUIDs with special characters", () => {
       const guidWithSpecialChars = "123e4567-e89b-12d3-a456-426614174000";
       const sanitized = sanitizeGuid(guidWithSpecialChars);
-      
+
       // Should be URL-encoded
       expect(sanitized).toBe(guidWithSpecialChars); // GUIDs don't have special chars that need encoding
     });
@@ -307,7 +307,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         const loggedData = calls.log[0][0];
-        
+
         // Should log the processed data (without base64 prefix)
         expect(loggedData).toContain("testdata123");
         expect(loggedData).not.toContain("data:image/jpeg;base64,");
@@ -785,13 +785,13 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         const result = await updateTransaction(newTransaction, oldTransaction);
 
         expect(result).toEqual(expectedResponse);
-        
+
         const calls = consoleSpy.getCalls();
         const loggedData = calls.log[0][0];
         expect(loggedData).toContain("Updated transaction");
         expect(loggedData).toContain("updatedImageData");
         expect(loggedData).not.toContain("data:image/jpeg;base64,");
-        
+
         expect(fetch).toHaveBeenCalledWith(
           "/api/transaction/update/123e4567-e89b-12d3-a456-426614174000",
           expect.objectContaining({

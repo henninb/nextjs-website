@@ -110,7 +110,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle 204 no content response", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createFetchMock(null, { status: 204 });
 
         const result = await insertValidationAmount(accountNameOwner, testPayload);
@@ -170,7 +170,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle 400 error with response message", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createErrorFetchMock("Invalid validation amount data", 400);
         consoleSpy.start();
 
@@ -188,7 +188,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle 409 conflict error", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createErrorFetchMock("Validation amount already exists", 409);
         consoleSpy.start();
 
@@ -206,7 +206,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle 500 server error", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createErrorFetchMock("Internal server error", 500);
         consoleSpy.start();
 
@@ -224,7 +224,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle error response without message", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 400,
@@ -247,7 +247,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle malformed error response", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 400,
@@ -269,7 +269,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle network errors", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
         consoleSpy.start();
 
@@ -284,7 +284,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle timeout errors", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
         consoleSpy.start();
 
@@ -299,7 +299,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle unknown error fallback", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 400,
@@ -324,7 +324,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should send correct headers", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createFetchMock({ validationId: 1 });
 
         await insertValidationAmount(accountNameOwner, testPayload);
@@ -343,7 +343,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should use correct endpoint pattern", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "mySpecialAccount";
-        
+
         global.fetch = createFetchMock({ validationId: 1 });
 
         await insertValidationAmount(accountNameOwner, testPayload);
@@ -357,7 +357,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should send POST method", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createFetchMock({ validationId: 1 });
 
         await insertValidationAmount(accountNameOwner, testPayload);
@@ -371,7 +371,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should include credentials", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createFetchMock({ validationId: 1 });
 
         await insertValidationAmount(accountNameOwner, testPayload);
@@ -385,7 +385,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should stringify the validation amount data", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createFetchMock({ validationId: 1 });
 
         await insertValidationAmount(accountNameOwner, testPayload);
@@ -455,7 +455,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle validation for different account types", async () => {
         const accountTypes = [
           "checking",
-          "savings", 
+          "savings",
           "credit",
           "investment",
           "business-checking",
@@ -636,7 +636,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should log API error messages", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = createErrorFetchMock("Validation failed", 400);
         consoleSpy.start();
 
@@ -656,7 +656,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should log parsing errors", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 400,
@@ -680,7 +680,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should log network errors", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockRejectedValue(new Error("Connection failed"));
         consoleSpy.start();
 
@@ -697,7 +697,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should log unknown error fallback", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
-        
+
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 500,
