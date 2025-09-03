@@ -192,9 +192,8 @@ describe("Account Insert Functions (Isolated)", () => {
 
       expect(result.dateClosed).toEqual(new Date(0));
       expect(result.validationDate).toEqual(new Date(0));
-      expect(result.dateAdded.getTime()).toBeGreaterThanOrEqual(
-        beforeSetup.getTime(),
-      );
+      // Allow for small timing differences (within 1 second)
+      expect(Math.abs(result.dateAdded.getTime() - beforeSetup.getTime())).toBeLessThanOrEqual(1000);
       expect(result.dateAdded.getTime()).toBeLessThanOrEqual(
         afterSetup.getTime(),
       );

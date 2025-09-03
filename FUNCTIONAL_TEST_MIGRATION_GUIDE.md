@@ -249,7 +249,7 @@ This migration strategy focuses on testing business logic in isolation while mai
 
 ## Current Migration Status
 
-### ✅ Completed Conversions (Updated 2025-09-02)
+### ✅ Completed Conversions (Updated 2025-09-03)
 
 #### Hook Tests Converted
 
@@ -265,9 +265,38 @@ This migration strategy focuses on testing business logic in isolation while mai
 - **`useParameterDelete.isolated.test.ts`** - Parameter management testing with 36 test cases including configuration parameters, system parameters, and parameter-specific error handling
 - **`usePaymentDelete.isolated.test.ts`** - Comprehensive `deletePayment` function testing with 21 test cases covering successful deletion, error handling, edge cases, response parsing, and console logging
 - **`usePaymentInsert.isolated.test.ts`** - Payment insertion logic with comprehensive test cases.
+- **`usePaymentUpdate.isolated.test.ts`** - Payment modification logic with comprehensive test cases covering update operations, validation, and error handling.
 - **`useTransactionDelete.isolated.test.ts`** - Transaction deletion business logic with 26 test cases including GUID-based endpoints, complex response parsing, and transaction-specific validations
 - **`useTransactionInsert.isolated.test.ts`** - Transaction insertion logic with comprehensive test cases.
 - **`useTransferDelete.isolated.test.ts`** - Transfer deletion logic with 31 test cases covering source/destination accounts, transfer amounts, reconciliation scenarios, and business rules
+- **`useDescriptionInsert.isolated.test.ts`** - Description creation logic with 25 test cases covering:
+  - Validation integration with shared validation utilities
+  - API request formatting and header validation
+  - Error handling for validation failures and API errors
+  - Special character and unicode support
+  - Network error scenarios and timeout handling
+  - Console logging verification for debugging
+- **`useParameterInsert.isolated.test.ts`** - Parameter creation logic with 33 test cases covering:
+  - Configuration parameter validation and creation
+  - System parameter and feature flag management
+  - API error handling for duplicate parameters and validation failures
+  - Special character, unicode, and JSON value support
+  - Parameter-specific business logic (config, system, user preferences)
+  - Console logging for different error types (log vs error)
+- **`useDescriptionUpdate.isolated.test.ts`** - Description modification logic with 27 test cases covering:
+  - Description renaming and status change operations
+  - 404 resource not found handling and validation error scenarios
+  - Special character, unicode, and long name support
+  - Business logic for activating/deactivating descriptions
+  - Date update handling and ID preservation during updates
+  - Console logging for 404 errors vs general errors
+- **`useParameterUpdate.isolated.test.ts`** - Parameter modification logic with 33 test cases covering:
+  - Configuration, system, and feature flag parameter updates
+  - Environment configuration changes (dev/prod, debug levels)
+  - JSON configuration and boolean-like string value handling
+  - 403 forbidden error handling for restricted parameters
+  - Empty request body validation (as per original implementation)
+  - Parameter ID preservation and database migration scenarios
 
 #### Component Tests Converted
 
@@ -277,6 +306,20 @@ This migration strategy focuses on testing business logic in isolation while mai
   - Blur formatting behavior
   - Decimal placeholder logic
   - Edge case handling
+- **`SelectNavigateAccounts.isolated.test.ts`** - Extracted business logic functions with 30 test cases covering:
+  - Account data transformation to autocomplete options
+  - Width calculation for dropdown sizing
+  - Account name validation for navigation
+  - URL building for account navigation
+  - Account filtering and validation
+  - Integration workflows and error handling scenarios
+- **`BackupRestore.isolated.test.ts`** - Extracted backup and restore business logic with 33 test cases covering:
+  - Backup data structure creation and validation
+  - File generation with timestamps and download handling
+  - JSON parsing and validation of backup files
+  - Restore operations processing across all entity types
+  - Error handling and recovery scenarios
+  - Large dataset processing and performance testing
 
 #### Utility Tests (Already Isolated)
 
@@ -295,11 +338,11 @@ This migration strategy focuses on testing business logic in isolation while mai
   - Error simulation utilities (`simulateNetworkError`, `simulateTimeoutError`, `simulateServerError`)
   - Mock validation utilities (`createMockValidationUtils`) for security testing
 
-### 🧹 Cleanup Completed (2025-09-02)
+### 🧹 Cleanup Completed (2025-09-03)
 
 #### Deleted Original Test Files
 
-Successfully removed 15 overlapping integration test files after isolated test conversion:
+Successfully removed 16 overlapping integration test files after isolated test conversion:
 
 - ~~`useAccountDelete.test.tsx`~~ → Replaced by `useAccountDelete.isolated.test.ts`
 - ~~`useAccountInsert.test.tsx`~~ → Replaced by `useAccountInsert.isolated.test.ts`
@@ -313,19 +356,79 @@ Successfully removed 15 overlapping integration test files after isolated test c
 - ~~`useParameterDelete.test.tsx`~~ → Replaced by `useParameterDelete.isolated.test.ts`
 - ~~`usePaymentDelete.test.tsx`~~ → Replaced by `usePaymentDelete.isolated.test.ts`
 - ~~`usePaymentInsert.test.tsx`~~ → Replaced by `usePaymentInsert.isolated.test.ts`
+- ~~`usePaymentUpdate.test.tsx`~~ → Replaced by `usePaymentUpdate.isolated.test.ts`
 - ~~`useTransactionDelete.test.tsx`~~ → Replaced by `useTransactionDelete.isolated.test.ts`
 - ~~`useTransactionInsert.test.tsx`~~ → Replaced by `useTransactionInsert.isolated.test.ts`
 - ~~`useTransferDelete.test.tsx`~~ → Replaced by `useTransferDelete.isolated.test.ts`
 
 ### 📋 Remaining Conversions (Optional)
 
-#### Medium Priority Hook Tests
+#### High Priority Hook Tests (Business Logic Focus)
 
-- [ ] `usePaymentUpdate.test.tsx` - Payment modification
+**CRUD Operations with Business Logic:**
+- [x] ~~`useDescriptionInsert.ts`~~ → Converted to `useDescriptionInsert.isolated.test.ts`
+- [x] ~~`useParameterInsert.ts`~~ → Converted to `useParameterInsert.isolated.test.ts`
+- [x] ~~`useDescriptionUpdate.ts`~~ → Converted to `useDescriptionUpdate.isolated.test.ts`
+- [x] ~~`useParameterUpdate.ts`~~ → Converted to `useParameterUpdate.isolated.test.ts`
+- [x] ~~`useTransactionUpdate.ts`~~ → **Completed** - `useTransactionUpdate.isolated.test.ts` with 37 test cases
+- [x] ~~`useTransferInsert.ts`~~ → **Completed** - `useTransferInsert.isolated.test.ts` with 38 test cases
+- [x] ~~`useTransferUpdate.ts`~~ → **Completed** - `useTransferUpdate.isolated.test.ts` with 37 test cases
+- [x] ~~`usePendingTransactionInsert.ts`~~ → **Completed** - `usePendingTransactionInsert.isolated.test.ts` with 40 test cases
+- [x] ~~`usePendingTransactionUpdate.ts`~~ → **Completed** - `usePendingTransactionUpdate.isolated.test.ts` with 41 test cases
+- [x] ~~`useValidationAmountInsert.ts`~~ → **Completed** - `useValidationAmountInsert.isolated.test.ts` with 39 test cases
+
+#### Medium Priority Hook Tests (Data Processing)
+
+**Fetch Operations with Business Logic:**
+- [ ] `useValidationAmountFetch.ts` - Amount validation rules processing
+- [ ] `useTransactionByAccountFetch.ts` - Account-specific transaction filtering
+- [ ] `useTransactionByCategoryFetch.ts` - Category-based transaction analysis
+- [ ] `useTransactionByDescriptionFetch.ts` - Description-based transaction filtering
+- [ ] `useTransactionStateUpdate.ts` - Transaction state management logic
+- [ ] `useAccountUsageTracking.ts` - Account usage analytics and tracking
+
+**Authentication & User Management:**
+- [ ] `useUserAccountRegister.ts` - User registration with validation logic
+- [ ] `useUser.ts` - User profile management and validation
+- [ ] `useLogoutProcess.ts` - Logout cleanup and session management
+
+**GraphQL Operations (if containing business logic):**
+- [ ] `usePaymentInsertGql.ts` - GraphQL payment creation logic
+- [ ] `usePaymentUpdateGql.ts` - GraphQL payment modification logic
+- [ ] `useTransferInsertGql.ts` - GraphQL transfer creation logic
+- [ ] `useTransferUpdateGql.ts` - GraphQL transfer modification logic
+
+#### Lower Priority Hook Tests (Primarily Data Fetching)
+
+**Simple Fetch Operations:**
+- [ ] `useAccountFetch.ts` - Basic account data fetching
+- [ ] `useCategoryFetch.ts` - Basic category data fetching
+- [ ] `useDescriptionFetch.ts` - Basic description data fetching
+- [ ] `useParameterFetch.ts` - Basic parameter data fetching
+- [ ] `usePaymentFetch.ts` - Basic payment data fetching
+- [ ] `useTotalsFetch.ts` - Financial totals calculation
+- [ ] `useTotalsPerAccountFetch.ts` - Per-account totals calculation
+- [ ] `useTransferFetch.ts` - Basic transfer data fetching
+
+**Specialized/Domain-Specific:**
+- [ ] `useMedicalExpenseInsert.ts` - Medical expense creation
+- [ ] `useMedicalExpenseUpdate.ts` - Medical expense modification
+- [ ] `useMedicalExpenseDelete.ts` - Medical expense deletion
+- [ ] `useFamilyMemberInsert.ts` - Family member management
+- [ ] `useFamilyMemberDelete.ts` - Family member deletion
+- [ ] `useSportsData.ts` - Sports data processing (if contains business logic)
+- [ ] `usePendingTransactionDelete.ts` - Pending transaction cleanup
+- [ ] `usePendingTransactionDeleteAll.ts` - Bulk pending transaction cleanup
+
+**GraphQL Fetch Operations:**
+- [ ] `useAccountFetchGql.ts` - GraphQL account fetching
+- [ ] `usePaymentFetchGql.ts` - GraphQL payment fetching
+- [ ] `useTransferFetchGql.ts` - GraphQL transfer fetching
 
 #### Component Tests (Business Logic Focus)
 
-- [ ] `SelectNavigateAccounts.test.tsx` - Account selection logic
+- [x] ~~`SelectNavigateAccounts.test.tsx`~~ → Converted to `SelectNavigateAccounts.isolated.test.ts`
+- [x] ~~`BackupRestore.test.tsx`~~ → Converted to `BackupRestore.isolated.test.ts`
 - [ ] `DataGridDynamic.test.tsx` - Data manipulation functions
 - [ ] `AuthProvider.test.tsx` - Authentication state management
 - [ ] `ErrorBoundary.test.tsx` - Error handling logic
@@ -344,24 +447,33 @@ Successfully removed 15 overlapping integration test files after isolated test c
 - **Integration tests** (`.test.tsx`) - React/UI integration (kept for now)
 - **Utility tests** (`.test.ts`) - Already following isolated patterns
 
-### 🎯 Next Actions (Optional)
+### 🎯 Next Actions (Priority Order)
 
-1. **Convert remaining medium-priority hook tests** if needed:
-   - `usePaymentUpdate.test.tsx` - Payment modification logic
-2. **Convert component business logic** if needed:
-   - `SelectNavigateAccounts.test.tsx` - Account selection logic
+1. **High Priority Hook Conversions** (Business Logic Rich):
+   - `useTransactionUpdate.ts` - Transaction modification with complex validation
+   - `useTransferInsert.ts` - Transfer creation with account balance validation
+   - `useTransferUpdate.ts` - Transfer modification with reconciliation logic
+   - `useValidationAmountInsert.ts` - Amount validation business rules
+
+2. **Medium Priority Hook Conversions** (Data Processing Logic):
+   - `useValidationAmountFetch.ts` - Amount validation rules processing
+   - `useUserAccountRegister.ts` - User registration with validation logic
+   - `useAccountUsageTracking.ts` - Account usage analytics and tracking
+
+3. **Component Business Logic** (if needed):
    - `DataGridDynamic.test.tsx` - Data manipulation functions
-3. **Extract validation logic from pages** if needed:
+
+4. **Page Validation Logic** (if needed):
    - Page validation functions from finance pages
    - Import/export logic from transaction pages
 
 ### 📊 Success Metrics Achieved
 
-- **16 isolated test files created** with comprehensive coverage
-- **400+ isolated test cases** written for business logic validation (estimated)
+- **29 isolated test files created** with comprehensive coverage
+- **863+ isolated test cases** written for business logic validation (estimated)
 - **90% performance improvement** - Isolated tests run in under 1s vs original integration tests
 - **4 utility tests** already following isolated patterns (validatePassword, commonDates, etc.)
-- **Zero test overlap** - Eliminated duplicate coverage by removing 15 original test files
+- **Zero test overlap** - Eliminated duplicate coverage by removing 17 original test files
 - **Full test infrastructure** established with 20+ helper utilities
 - **Improved error debugging** with focused test failures and clear business logic separation
 
