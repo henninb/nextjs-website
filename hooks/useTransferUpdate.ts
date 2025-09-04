@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
 
-const updateTransfer = async (
+export const updateTransfer = async (
   oldTransfer: Transfer,
   newTransfer: Transfer,
 ): Promise<Transfer> => {

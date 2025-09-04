@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
 
-const overRideTransferValues = (payload: Transfer) => {
+export const overRideTransferValues = (payload: Transfer) => {
   return {
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
@@ -9,7 +9,7 @@ const overRideTransferValues = (payload: Transfer) => {
   };
 };
 
-const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
+export const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
   try {
     const endpoint = "/api/transfer/insert";
     const newPayload = overRideTransferValues(payload);

@@ -10,37 +10,7 @@ import {
 } from "../../testHelpers";
 import Transfer from "../../model/Transfer";
 
-// Extract the business logic function from useTransferUpdate
-const updateTransfer = async (
-  oldTransfer: Transfer,
-  newTransfer: Transfer,
-): Promise<Transfer> => {
-  const endpoint = `/api/transfer/update/${oldTransfer.transferId}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({}),
-    });
-
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
-    if (!response.ok) {
-      throw new Error(`Failed to update transfer: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { updateTransfer } from "../../hooks/useTransferUpdate";
 
 // Helper function to create test transfer data
 const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({

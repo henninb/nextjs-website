@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
 
-const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
+export const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
   try {
     const endpoint = `/api/transfer/delete/${payload.transferId}`;
 

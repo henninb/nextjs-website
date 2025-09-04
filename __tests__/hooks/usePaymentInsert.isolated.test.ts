@@ -40,7 +40,7 @@ describe("Payment Insert Functions (Isolated)", () => {
     consoleSpy = new ConsoleSpy();
     mockConsole = consoleSpy.start();
     jest.clearAllMocks();
-    
+
     // Reset validation mocks to default success state
     mockValidateApiPayload.mockReturnValue({
       isValid: true,

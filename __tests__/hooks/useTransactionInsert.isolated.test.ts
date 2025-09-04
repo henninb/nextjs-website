@@ -9,123 +9,31 @@ import {
   createMockValidationUtils,
 } from "../../testHelpers";
 
-// Mock the validation utilities since we're testing in isolation
-const mockValidationUtils = createMockValidationUtils();
-
-jest.mock("../../utils/validation", () => mockValidationUtils);
-
-// Mock secure UUID generation
-const mockGenerateSecureUUID = jest.fn();
-jest.mock("../../utils/security/secureUUID", () => ({
-  generateSecureUUID: mockGenerateSecureUUID,
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateTransaction: jest.fn(),
+  },
+  hookValidators: {
+    validateApiPayload: jest.fn(),
+  },
+  ValidationError: jest.fn(),
 }));
 
-export type TransactionInsertType = {
-  accountNameOwner: string;
-  newRow: Transaction;
-  isFutureTransaction: boolean;
-  isImportTransaction: boolean;
-};
+// Mock secure UUID generation
+jest.mock("../../utils/security/secureUUID", () => ({
+  generateSecureUUID: jest.fn(),
+}));
 
-// Extract helper functions for testing
-const getAccountKey = (accountNameOwner: string) => [
-  "accounts",
-  accountNameOwner,
-];
-
-const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
-
-const setupNewTransaction = async (
-  payload: Transaction,
-  accountNameOwner: string,
-): Promise<Transaction> => {
-  // Generate secure UUID server-side
-  const secureGuid = await mockGenerateSecureUUID();
-
-  return {
-    guid: secureGuid, // Now using secure server-side generation
-    transactionDate: payload.transactionDate,
-    description: payload.description,
-    category: payload.category || "",
-    notes: payload.notes || "",
-    amount: payload.amount,
-    dueDate: payload.dueDate || undefined,
-    transactionType: payload.transactionType || "undefined",
-    transactionState: payload.transactionState || "outstanding",
-    activeStatus: true,
-    accountType: payload.accountType || "debit",
-    reoccurringType: payload.reoccurringType || "onetime",
-    accountNameOwner: payload.accountNameOwner || "",
-  };
-};
-
-const insertTransaction = async (
-  accountNameOwner: string,
-  payload: Transaction,
-  isFutureTransaction: boolean,
-  isImportTransaction: boolean,
-): Promise<Transaction> => {
-  // Validate and sanitize the transaction data
-  const validation = mockValidationUtils.hookValidators.validateApiPayload(
-    payload,
-    mockValidationUtils.DataValidator.validateTransaction,
-    "insertTransaction",
-  );
-
-  if (!validation.isValid) {
-    const errorMessages =
-      validation.errors?.map((err) => err.message).join(", ") ||
-      "Validation failed";
-    throw new Error(errorMessages);
-  }
-
-  let endpoint = "/api/transaction/insert";
-  if (isFutureTransaction) {
-    endpoint = "/api/transaction/future/insert";
-  }
-
-  const newPayload = await setupNewTransaction(
-    validation.validatedData,
-    accountNameOwner,
-  );
-
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPayload),
-    });
-
-    if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import {
+  getAccountKey,
+  getTotalsKey,
+  setupNewTransaction,
+  insertTransaction,
+  TransactionInsertType
+} from "../../hooks/useTransactionInsert";
+import { hookValidators, DataValidator } from "../../utils/validation";
+import { generateSecureUUID } from "../../utils/security/secureUUID";
 
 describe("Transaction Insert Functions (Isolated)", () => {
   const mockTransaction = createTestTransaction({
@@ -143,6 +51,8 @@ describe("Transaction Insert Functions (Isolated)", () => {
     notes: "Test notes",
   });
 
+  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
+  const mockGenerateSecureUUID = generateSecureUUID as jest.Mock;
   let consoleSpy: ConsoleSpy;
   let mockConsole: any;
 
@@ -153,7 +63,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
     // Setup default mocks
     mockGenerateSecureUUID.mockResolvedValue("test-uuid-123");
-    mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+    mockValidateApiPayload.mockReturnValue({
       isValid: true,
       validatedData: mockTransaction,
     });
@@ -317,7 +227,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           transactionState: "future",
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: futureTransaction,
         });
@@ -362,7 +272,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Sanitized Description",
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: validatedTransaction,
         });
@@ -388,7 +298,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
       it("should handle validation failures", async () => {
         const validationError = { message: "Transaction date is required" };
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
           errors: [validationError],
         });
@@ -406,7 +316,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           { message: "Amount must be a number" },
         ];
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
           errors: validationErrors,
         });
@@ -419,7 +329,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
       });
 
       it("should handle validation failures without error details", async () => {
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
         });
 
@@ -434,10 +344,10 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await insertTransaction("test_account", mockTransaction, false, false);
 
         expect(
-          mockValidationUtils.hookValidators.validateApiPayload,
+          mockValidateApiPayload,
         ).toHaveBeenCalledWith(
           mockTransaction,
-          mockValidationUtils.DataValidator.validateTransaction,
+          DataValidator.validateTransaction,
           "insertTransaction",
         );
       });
@@ -648,7 +558,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           amount: 25.0,
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: minimalTransaction,
         });
@@ -680,7 +590,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           reoccurringType: "monthly",
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: fullTransaction,
         });
@@ -704,7 +614,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Large Amount",
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: largeTransaction,
         });
@@ -728,7 +638,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Refund",
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: negativeTransaction,
         });
@@ -753,7 +663,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           notes: "Notes with 'quotes' and symbols @#$",
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: specialTransaction,
         });
@@ -780,7 +690,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await insertTransaction("test_account", mockTransaction, false, false);
 
         expect(
-          mockValidationUtils.hookValidators.validateApiPayload,
+          mockValidateApiPayload,
         ).toHaveBeenCalled();
         expect(mockGenerateSecureUUID).toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
@@ -795,7 +705,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           activeStatus: false, // Should be overridden to true
         });
 
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: originalTransaction,
         });

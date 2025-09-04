@@ -10,56 +10,7 @@ import {
 } from "../../testHelpers";
 import Transfer from "../../model/Transfer";
 
-// Extract the business logic functions from useTransferInsert
-const overRideTransferValues = (payload: Transfer) => {
-  return {
-    amount: payload?.amount,
-    transactionDate: payload?.transactionDate,
-    ...payload,
-  };
-};
-
-const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
-  try {
-    const endpoint = "/api/transfer/insert";
-    const newPayload = overRideTransferValues(payload);
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPayload),
-    });
-
-    if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { overRideTransferValues, insertTransfer } from "../../hooks/useTransferInsert";
 
 // Helper function to create test transfer data
 const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
