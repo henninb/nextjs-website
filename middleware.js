@@ -66,8 +66,24 @@ export async function middleware(request) {
   // This includes /api/me, /api/graphql, /graphql, and all other API endpoints
   // The middleware MUST intercept these requests and never let them fall through
   if (url.pathname.startsWith("/api/") || url.pathname === "/graphql") {
-    // Exception for local sports APIs
-    if (url.pathname === "/api/nhl" || url.pathname === "/api/nba") {
+    // Exception for local APIs
+    const localApis = [
+      "/api/nhl",
+      "/api/nba",
+      "/api/mlb",
+      "/api/nfl",
+      "/api/celsius",
+      "/api/fahrenheit",
+      "/api/lead",
+      "/api/player-ads",
+      "/api/player-analytics",
+      "/api/player-heartbeat",
+      "/api/player-metadata",
+      "/api/weather",
+      "/api/uuid",
+      "/api/uuid/generate",
+    ];
+    if (localApis.includes(url.pathname)) {
       if (isDev) {
         console.log(`[MW] bypassing proxy for local API: ${url.pathname}`);
       }
