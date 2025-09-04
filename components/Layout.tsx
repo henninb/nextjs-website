@@ -44,6 +44,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArticleIcon from "@mui/icons-material/Article";
 import RestoreIcon from "@mui/icons-material/Restore";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
+import WatchIcon from "@mui/icons-material/Watch";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -112,6 +113,7 @@ const generalLinks = [
   { text: "SpotifyAuth", href: "/spotifyauth", icon: <MusicNoteIcon /> },
   { text: "Finance", href: "/finance", icon: <MonetizationOnIcon /> },
   { text: "Blog", href: "/blog", icon: <ArticleIcon /> },
+  { text: "Watch", href: "/watch", icon: <WatchIcon /> },
 ];
 
 export default function Layout({ children }: LayoutProps) {
