@@ -37,9 +37,9 @@ const WatchPage: NextPage = () => {
   const [lastEventLog, setLastEventLog] = useState<string>("");
 
   // XHR call intervals
-  const heartbeatIntervalRef = useRef<NodeJS.Timeout>();
-  const analyticsIntervalRef = useRef<NodeJS.Timeout>();
-  const adTrackingIntervalRef = useRef<NodeJS.Timeout>();
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const analyticsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const adTrackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch video metadata on component mount
   useEffect(() => {
