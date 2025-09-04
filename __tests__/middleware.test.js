@@ -744,6 +744,245 @@ describe("Middleware", () => {
     });
   });
 
+  describe("Local Sports APIs", () => {
+    beforeEach(() => {
+      // Reset environment for each test
+      process.env.NODE_ENV = "development";
+    });
+
+    describe("/api/nhl endpoint", () => {
+      it("should bypass proxy and execute locally in development", async () => {
+        mockUrl.pathname = "/api/nhl";
+        mockUrl.search = "";
+
+        // Mock NextResponse.next to simulate local execution
+        const mockLocalResponse = { headers: { set: jest.fn() } };
+        NextResponse.next = jest.fn(() => mockLocalResponse);
+
+        const result = await middleware(mockRequest);
+
+        // Should NOT call fetch (no proxy)
+        expect(global.fetch).not.toHaveBeenCalled();
+        // Should return NextResponse.next() for local handling
+        expect(NextResponse.next).toHaveBeenCalled();
+      });
+
+      it("should bypass proxy and execute locally in production", async () => {
+        process.env.NODE_ENV = "production";
+        mockUrl.pathname = "/api/nhl";
+        mockUrl.search = "";
+
+        const mockLocalResponse = { headers: { set: jest.fn() } };
+        NextResponse.next = jest.fn(() => mockLocalResponse);
+
+        const result = await middleware(mockRequest);
+
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalled();
+      });
+
+      it("should handle query parameters correctly", async () => {
+        mockUrl.pathname = "/api/nhl";
+        mockUrl.search = "?season=2024";
+
+        const mockLocalResponse = { headers: { set: jest.fn() } };
+        NextResponse.next = jest.fn(() => mockLocalResponse);
+
+        const result = await middleware(mockRequest);
+
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalled();
+      });
+    });
+
+    describe("/api/nba endpoint", () => {
+      it("should bypass proxy and execute locally in development", async () => {
+        mockUrl.pathname = "/api/nba";
+        mockUrl.search = "";
+
+        const mockLocalResponse = { headers: { set: jest.fn() } };
+        NextResponse.next = jest.fn(() => mockLocalResponse);
+
+        const result = await middleware(mockRequest);
+
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalled();
+      });
+
+      it("should bypass proxy and execute locally in production", async () => {
+        process.env.NODE_ENV = "production";
+        mockUrl.pathname = "/api/nba";
+        mockUrl.search = "";
+
+        const mockLocalResponse = { headers: { set: jest.fn() } };
+        NextResponse.next = jest.fn(() => mockLocalResponse);
+
+        const result = await middleware(mockRequest);
+
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalled();
+      });
+
+      it("should handle different HTTP methods", async () => {
+        const methods = ["GET", "POST", "PUT", "DELETE"];
+
+        for (const method of methods) {
+          mockRequest.method = method;
+          mockUrl.pathname = "/api/nba";
+
+          const mockLocalResponse = { headers: { set: jest.fn() } };
+          NextResponse.next = jest.fn(() => mockLocalResponse);
+
+          await middleware(mockRequest);
+
+          expect(global.fetch).not.toHaveBeenCalled();
+          expect(NextResponse.next).toHaveBeenCalled();
+
+          // Clear mocks for next iteration
+          jest.clearAllMocks();
+        }
+      });
+    });
+
+    describe("Other API routes still proxy correctly", () => {
+      it("should still proxy /api/graphql to finance backend", async () => {
+        process.env.NODE_ENV = "production";
+        mockUrl.pathname = "/api/graphql";
+        mockUrl.search = "?query=test";
+
+        const mockResponse = {
+          status: 200,
+          statusText: "OK",
+          body: JSON.stringify({ data: { test: true } }),
+          headers: new Map([["content-type", "application/json"]]),
+        };
+        mockResponse.headers.forEach = jest.fn((callback) => {
+          callback("application/json", "content-type");
+        });
+
+        global.fetch.mockResolvedValue(mockResponse);
+
+        await middleware(mockRequest);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          "https://finance.bhenning.com/graphql?query=test",
+          expect.objectContaining({
+            method: "GET",
+            headers: expect.objectContaining({
+              host: "finance.bhenning.com",
+            }),
+          }),
+        );
+      });
+
+      it("should still proxy /api/me to finance backend", async () => {
+        process.env.NODE_ENV = "production";
+        mockUrl.pathname = "/api/me";
+        mockUrl.search = "";
+
+        const mockResponse = {
+          status: 200,
+          statusText: "OK",
+          body: JSON.stringify({ user: "test" }),
+          headers: new Map([["content-type", "application/json"]]),
+        };
+        mockResponse.headers.forEach = jest.fn((callback) => {
+          callback("application/json", "content-type");
+        });
+
+        global.fetch.mockResolvedValue(mockResponse);
+
+        await middleware(mockRequest);
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          "https://finance.bhenning.com/api/me",
+          expect.any(Object),
+        );
+      });
+
+      it("should still proxy other /api/* routes to finance backend", async () => {
+        const apiRoutes = [
+          "/api/users",
+          "/api/transactions",
+          "/api/accounts",
+          "/api/payments",
+          "/api/categories",
+        ];
+
+        for (const route of apiRoutes) {
+          mockUrl.pathname = route;
+          mockUrl.search = "";
+
+          const mockResponse = {
+            status: 200,
+            statusText: "OK",
+            body: JSON.stringify({}),
+            headers: new Map([["content-type", "application/json"]]),
+          };
+          mockResponse.headers.forEach = jest.fn((callback) => {
+            callback("application/json", "content-type");
+          });
+
+          global.fetch.mockResolvedValue(mockResponse);
+
+          await middleware(mockRequest);
+
+          expect(global.fetch).toHaveBeenCalledWith(
+            `https://finance.bhenning.com${route}`,
+            expect.any(Object),
+          );
+
+          // Clear mocks for next iteration
+          jest.clearAllMocks();
+        }
+      });
+    });
+
+    describe("Security verification for local APIs", () => {
+      it("should not bypass security checks for local APIs", async () => {
+        // Test with unauthorized host
+        mockRequest.headers.set("host", "malicious.com");
+        mockUrl.pathname = "/api/nhl";
+
+        const result = await middleware(mockRequest);
+
+        // Should still be blocked due to unauthorized host
+        expect(result.status).toBe(403);
+      });
+
+      it("should not allow malicious paths to bypass proxy", async () => {
+        const maliciousPaths = [
+          "/api/nhl/../admin",
+          "/api/nhl/../../secret",
+          "/api/nba/../config",
+        ];
+
+        for (const path of maliciousPaths) {
+          mockUrl.pathname = path;
+
+          // These should be treated as different paths and proxied, not bypassed
+          const mockResponse = {
+            status: 404,
+            statusText: "Not Found",
+            body: "Not Found",
+            headers: new Map(),
+          };
+          mockResponse.headers.forEach = jest.fn(() => {});
+
+          global.fetch.mockResolvedValue(mockResponse);
+
+          await middleware(mockRequest);
+
+          // Should be proxied (not bypassed)
+          expect(global.fetch).toHaveBeenCalled();
+
+          // Clear mocks for next iteration
+          jest.clearAllMocks();
+        }
+      });
+    });
+  });
+
   describe("Middleware Config", () => {
     it("should export correct config", () => {
       const { config } = require("../middleware.js");
