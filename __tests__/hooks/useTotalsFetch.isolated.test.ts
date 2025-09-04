@@ -20,7 +20,7 @@ describe("fetchTotals (Isolated)", () => {
 
   const createTestTotals = (overrides = {}): Totals => ({
     totals: 1500.75,
-    totalsFuture: 2000.50,
+    totalsFuture: 2000.5,
     totalsCleared: 1200.25,
     totalsOutstanding: 300.25,
     ...overrides,
@@ -107,7 +107,7 @@ describe("fetchTotals (Isolated)", () => {
 
     it("should handle large totals values", async () => {
       const largeTotals = createTestTotals({
-        totals: 1000000.50,
+        totals: 1000000.5,
         totalsFuture: 500000.75,
         totalsCleared: 750000.25,
         totalsOutstanding: 250000.25,
@@ -117,7 +117,7 @@ describe("fetchTotals (Isolated)", () => {
       const result = await fetchTotals();
 
       expect(result).toEqual(largeTotals);
-      expect(result.totals).toBe(1000000.50);
+      expect(result.totals).toBe(1000000.5);
       expect(result.totalsFuture).toBe(500000.75);
     });
   });
@@ -134,13 +134,13 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 404"
+        "Failed to fetch totals data: HTTP error! status: 404",
       );
 
       expect(mockLog).toHaveBeenCalledWith("Resource not found (404).");
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -154,12 +154,12 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 500"
+        "Failed to fetch totals data: HTTP error! status: 500",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -173,12 +173,12 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 401"
+        "Failed to fetch totals data: HTTP error! status: 401",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -192,12 +192,12 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 400"
+        "Failed to fetch totals data: HTTP error! status: 400",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -206,12 +206,12 @@ describe("fetchTotals (Isolated)", () => {
       global.fetch = simulateNetworkError();
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: Network error"
+        "Failed to fetch totals data: Network error",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -220,12 +220,12 @@ describe("fetchTotals (Isolated)", () => {
       global.fetch = simulateTimeoutError();
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: Request timeout"
+        "Failed to fetch totals data: Request timeout",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -234,12 +234,12 @@ describe("fetchTotals (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error());
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data:"
+        "Failed to fetch totals data:",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
   });
@@ -251,17 +251,14 @@ describe("fetchTotals (Isolated)", () => {
 
       await fetchTotals();
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/totals",
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      expect(global.fetch).toHaveBeenCalledWith("/api/account/totals", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
     });
 
     it("should include credentials for authentication", async () => {
@@ -274,7 +271,7 @@ describe("fetchTotals (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -288,7 +285,7 @@ describe("fetchTotals (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "GET",
-        })
+        }),
       );
     });
 
@@ -305,7 +302,7 @@ describe("fetchTotals (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           }),
-        })
+        }),
       );
     });
   });
@@ -361,106 +358,111 @@ describe("fetchTotals (Isolated)", () => {
   describe("Financial Totals Business Logic", () => {
     it("should handle balanced totals calculations", async () => {
       const balancedTotals = createTestTotals({
-        totals: 1500.00,
-        totalsFuture: 500.00,
-        totalsCleared: 1000.00,
-        totalsOutstanding: 0.00,
+        totals: 1500.0,
+        totalsFuture: 500.0,
+        totalsCleared: 1000.0,
+        totalsOutstanding: 0.0,
       });
       global.fetch = createFetchMock(balancedTotals);
 
       const result = await fetchTotals();
 
       // Verify the totals structure makes sense
-      expect(result.totals).toBe(1500.00);
-      expect(result.totalsFuture).toBe(500.00);
-      expect(result.totalsCleared).toBe(1000.00);
-      expect(result.totalsOutstanding).toBe(0.00);
+      expect(result.totals).toBe(1500.0);
+      expect(result.totalsFuture).toBe(500.0);
+      expect(result.totalsCleared).toBe(1000.0);
+      expect(result.totalsOutstanding).toBe(0.0);
 
       // Business logic: Future + Cleared + Outstanding should relate to totals
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBe(result.totals);
     });
 
     it("should handle imbalanced totals scenarios", async () => {
       const imbalancedTotals = createTestTotals({
-        totals: 1000.00,
-        totalsFuture: 300.00,
-        totalsCleared: 500.00,
-        totalsOutstanding: 250.00,
+        totals: 1000.0,
+        totalsFuture: 300.0,
+        totalsCleared: 500.0,
+        totalsOutstanding: 250.0,
       });
       global.fetch = createFetchMock(imbalancedTotals);
 
       const result = await fetchTotals();
 
-      expect(result.totals).toBe(1000.00);
+      expect(result.totals).toBe(1000.0);
 
       // Verify individual components
-      expect(result.totalsFuture).toBe(300.00);
-      expect(result.totalsCleared).toBe(500.00);
-      expect(result.totalsOutstanding).toBe(250.00);
+      expect(result.totalsFuture).toBe(300.0);
+      expect(result.totalsCleared).toBe(500.0);
+      expect(result.totalsOutstanding).toBe(250.0);
 
       // In this case, components add up to 1050 but totals is 1000
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
-      expect(calculatedTotal).toBe(1050.00);
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      expect(calculatedTotal).toBe(1050.0);
       expect(result.totals).not.toBe(calculatedTotal);
     });
 
     it("should handle scenarios with negative outstanding amounts", async () => {
       const negativeOutstanding = createTestTotals({
-        totals: 800.00,
-        totalsFuture: 500.00,
-        totalsCleared: 600.00,
-        totalsOutstanding: -300.00, // Negative outstanding (overpayment scenario)
+        totals: 800.0,
+        totalsFuture: 500.0,
+        totalsCleared: 600.0,
+        totalsOutstanding: -300.0, // Negative outstanding (overpayment scenario)
       });
       global.fetch = createFetchMock(negativeOutstanding);
 
       const result = await fetchTotals();
 
-      expect(result.totalsOutstanding).toBe(-300.00);
-      expect(result.totals).toBe(800.00);
+      expect(result.totalsOutstanding).toBe(-300.0);
+      expect(result.totals).toBe(800.0);
 
       // With negative outstanding, the math still works
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBe(result.totals);
     });
 
     it("should handle zero balance scenarios", async () => {
       const zeroBalance = createTestTotals({
-        totals: 0.00,
-        totalsFuture: 100.00,
-        totalsCleared: 50.00,
-        totalsOutstanding: -150.00, // Credits exceed debits
+        totals: 0.0,
+        totalsFuture: 100.0,
+        totalsCleared: 50.0,
+        totalsOutstanding: -150.0, // Credits exceed debits
       });
       global.fetch = createFetchMock(zeroBalance);
 
       const result = await fetchTotals();
 
-      expect(result.totals).toBe(0.00);
-      expect(result.totalsOutstanding).toBe(-150.00);
+      expect(result.totals).toBe(0.0);
+      expect(result.totalsOutstanding).toBe(-150.0);
 
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
-      expect(calculatedTotal).toBe(0.00);
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      expect(calculatedTotal).toBe(0.0);
       expect(result.totals).toBe(calculatedTotal);
     });
 
     it("should handle high-value financial totals", async () => {
       const highValueTotals = createTestTotals({
-        totals: 1000000.50,
+        totals: 1000000.5,
         totalsFuture: 250000.25,
-        totalsCleared: 500000.00,
+        totalsCleared: 500000.0,
         totalsOutstanding: 250000.25,
       });
       global.fetch = createFetchMock(highValueTotals);
 
       const result = await fetchTotals();
 
-      expect(result.totals).toBe(1000000.50);
+      expect(result.totals).toBe(1000000.5);
       expect(result.totalsFuture).toBe(250000.25);
-      expect(result.totalsCleared).toBe(500000.00);
+      expect(result.totalsCleared).toBe(500000.0);
       expect(result.totalsOutstanding).toBe(250000.25);
 
       // Verify precision is maintained for large numbers
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBe(result.totals);
     });
 
@@ -481,7 +483,8 @@ describe("fetchTotals (Isolated)", () => {
       expect(result.totalsOutstanding).toBe(0.01);
 
       // Verify precision is maintained for small numbers
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBeCloseTo(result.totals, 2);
     });
   });
@@ -495,7 +498,7 @@ describe("fetchTotals (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/account/totals",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 

@@ -62,21 +62,23 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        }
+        },
       );
     });
 
     it("should handle single transaction response", async () => {
-      const singleTransaction = [createTestTransaction({
-        transactionId: 123,
-        guid: "unique-guid-123",
-        accountNameOwner: "singleAccount",
-        description: "Single transaction",
-        category: "utilities",
-        amount: 75.25,
-        transactionState: "outstanding",
-        transactionType: "expense",
-      })];
+      const singleTransaction = [
+        createTestTransaction({
+          transactionId: 123,
+          guid: "unique-guid-123",
+          accountNameOwner: "singleAccount",
+          description: "Single transaction",
+          category: "utilities",
+          amount: 75.25,
+          transactionState: "outstanding",
+          transactionType: "expense",
+        }),
+      ];
       global.fetch = createFetchMock(singleTransaction);
 
       const result = await fetchTransactionsByAccount("singleAccount");
@@ -97,9 +99,9 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
     });
 
     it("should handle 204 No Content response", async () => {
-      global.fetch = jest.fn().mockResolvedValue(
-        createMockResponse(null, { status: 204 })
-      );
+      global.fetch = jest
+        .fn()
+        .mockResolvedValue(createMockResponse(null, { status: 204 }));
 
       const result = await fetchTransactionsByAccount("noContentAccount");
 
@@ -114,7 +116,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/select/my-business-account",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -130,7 +132,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       });
 
       await expect(fetchTransactionsByAccount("nonexistent")).rejects.toThrow(
-        "Failed to fetch transactionsByAccount data: Not Found"
+        "Failed to fetch transactionsByAccount data: Not Found",
       );
 
       expect(mockLog).toHaveBeenCalledWith("Resource not found (404).");
@@ -141,12 +143,12 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       global.fetch = createErrorFetchMock("Internal Server Error", 500);
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Failed to fetch transactionsByAccount data: Bad Request"
+        "Failed to fetch transaction by account data: Failed to fetch transactionsByAccount data: Bad Request",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching transaction by account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -155,12 +157,12 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       global.fetch = createErrorFetchMock("Invalid account name", 400);
 
       await expect(fetchTransactionsByAccount("")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Failed to fetch transactionsByAccount data: Bad Request"
+        "Failed to fetch transaction by account data: Failed to fetch transactionsByAccount data: Bad Request",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching transaction by account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -169,12 +171,12 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       global.fetch = simulateNetworkError();
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Network error"
+        "Failed to fetch transaction by account data: Network error",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching transaction by account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -183,12 +185,12 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       global.fetch = simulateTimeoutError();
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Request timeout"
+        "Failed to fetch transaction by account data: Request timeout",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching transaction by account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -197,12 +199,12 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error());
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data:"
+        "Failed to fetch transaction by account data:",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching transaction by account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
   });
@@ -288,7 +290,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       const result = await fetchTransactionsByAccount("testAccount");
 
-      const categories = result!.map(t => t.category);
+      const categories = result!.map((t) => t.category);
       expect(categories).toContain("groceries");
       expect(categories).toContain("utilities");
       expect(categories).toContain("entertainment");
@@ -303,17 +305,14 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       await fetchTransactionsByAccount("testAccount");
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      expect(global.fetch).toHaveBeenCalledWith(expect.any(String), {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
     });
 
     it("should include credentials for authentication", async () => {
@@ -326,7 +325,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
   });
@@ -366,8 +365,8 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
         createTestTransaction({
           transactionId: index + 1,
           guid: `guid-${index + 1}`,
-          amount: Math.round((Math.random() * 1000) * 100) / 100,
-        })
+          amount: Math.round(Math.random() * 1000 * 100) / 100,
+        }),
       );
       global.fetch = createFetchMock(largeDataset);
 
@@ -388,7 +387,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/select/",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -400,7 +399,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/select/account-with_special.chars@123",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -413,7 +412,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/select/${longAccountName}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -425,7 +424,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/select/12345",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -459,7 +458,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       const result = await fetchTransactionsByAccount("testAccount");
 
-      const types = result!.map(t => t.transactionType);
+      const types = result!.map((t) => t.transactionType);
       expect(types).toContain("expense");
       expect(types).toContain("income");
       expect(types).toContain("transfer");
@@ -476,7 +475,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       const result = await fetchTransactionsByAccount("testAccount");
 
-      const reoccurringTypes = result!.map(t => t.reoccurringType);
+      const reoccurringTypes = result!.map((t) => t.reoccurringType);
       expect(reoccurringTypes).toContain("onetime");
       expect(reoccurringTypes).toContain("monthly");
       expect(reoccurringTypes).toContain("weekly");

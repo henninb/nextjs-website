@@ -6,7 +6,9 @@ import {
   ValidationError,
 } from "../utils/validation";
 
-export const userAccountRegister = async (payload: User): Promise<User | null> => {
+export const userAccountRegister = async (
+  payload: User,
+): Promise<User | null> => {
   try {
     // Validate and sanitize the user registration data
     const validation = hookValidators.validateApiPayload(

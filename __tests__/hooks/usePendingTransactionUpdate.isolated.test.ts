@@ -13,12 +13,14 @@ import PendingTransaction from "../../model/PendingTransaction";
 import { updatePendingTransaction } from "../../hooks/usePendingTransactionUpdate";
 
 // Helper function to create test pending transaction data
-const createTestPendingTransaction = (overrides: Partial<PendingTransaction> = {}): PendingTransaction => ({
+const createTestPendingTransaction = (
+  overrides: Partial<PendingTransaction> = {},
+): PendingTransaction => ({
   pendingTransactionId: 1,
   accountNameOwner: "testUser",
   transactionDate: new Date("2024-01-01T00:00:00.000Z"),
   description: "Test pending transaction",
-  amount: 100.50,
+  amount: 100.5,
   reviewStatus: "pending",
   ...overrides,
 });
@@ -54,27 +56,40 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result).toEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/update/42", {
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
+        expect(fetch).toHaveBeenCalledWith(
+          "/api/pending/transaction/update/42",
+          {
+            method: "PUT",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(newPendingTransaction),
           },
-          body: JSON.stringify(newPendingTransaction),
-        });
+        );
       });
 
       it("should use correct endpoint with pending transaction ID", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 999 });
-        const newPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 999 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 999,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 999,
+        });
 
         global.fetch = createFetchMock({ pendingTransactionId: 999 });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(fetch).toHaveBeenCalledWith(
           "/api/pending/transaction/update/999",
@@ -101,22 +116,32 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           const expectedResponse = { ...newPendingTransaction };
           global.fetch = createFetchMock(expectedResponse);
 
-          const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+          const result = await updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          );
 
           expect(result.reviewStatus).toBe(statusChange.to);
         }
       });
 
       it("should handle amount changes", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ amount: 100.00 });
-        const newPendingTransaction = createTestPendingTransaction({ amount: 250.50 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          amount: 100.0,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          amount: 250.5,
+        });
 
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
-        expect(result.amount).toBe(250.50);
+        expect(result.amount).toBe(250.5);
       });
 
       it("should handle description changes", async () => {
@@ -130,9 +155,14 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
-        expect(result.description).toBe("Updated description with more details");
+        expect(result.description).toBe(
+          "Updated description with more details",
+        );
       });
 
       it("should handle date changes", async () => {
@@ -147,7 +177,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.transactionDate).toEqual(newDate);
       });
@@ -163,7 +196,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.accountNameOwner).toBe("newUser");
       });
@@ -171,8 +207,12 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
     describe("Error handling", () => {
       it("should handle 404 not found errors with specific logging", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 999 });
-        const newPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 999 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 999,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 999,
+        });
 
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
@@ -182,13 +222,19 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Failed to update pending transaction: Not Found");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow("Failed to update pending transaction: Not Found");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
           ["Resource not found (404)."],
-          ["An error occurred: Failed to update pending transaction: Not Found"],
+          [
+            "An error occurred: Failed to update pending transaction: Not Found",
+          ],
         ]);
       });
 
@@ -204,11 +250,17 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Failed to update pending transaction: Bad Request");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow("Failed to update pending transaction: Bad Request");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Failed to update pending transaction: Bad Request"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Failed to update pending transaction: Bad Request",
+        ]);
       });
 
       it("should handle 403 forbidden errors", async () => {
@@ -223,11 +275,17 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Failed to update pending transaction: Forbidden");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow("Failed to update pending transaction: Forbidden");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Failed to update pending transaction: Forbidden"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Failed to update pending transaction: Forbidden",
+        ]);
       });
 
       it("should handle 500 server errors", async () => {
@@ -242,11 +300,19 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Failed to update pending transaction: Internal Server Error");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow(
+          "Failed to update pending transaction: Internal Server Error",
+        );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Failed to update pending transaction: Internal Server Error"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Failed to update pending transaction: Internal Server Error",
+        ]);
       });
 
       it("should handle network errors", async () => {
@@ -256,8 +322,12 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Network error");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0]).toEqual(["An error occurred: Network error"]);
@@ -267,11 +337,17 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const oldPendingTransaction = createTestPendingTransaction();
         const newPendingTransaction = createTestPendingTransaction();
 
-        global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValue(new Error("Request timeout"));
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Request timeout");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow("Request timeout");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0]).toEqual(["An error occurred: Request timeout"]);
@@ -288,8 +364,12 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Invalid JSON");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow("Invalid JSON");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0]).toEqual(["An error occurred: Invalid JSON"]);
@@ -303,7 +383,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ pendingTransactionId: 1 });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
@@ -317,7 +400,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ pendingTransactionId: 1 });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
@@ -331,7 +417,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ pendingTransactionId: 1 });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(fetch).toHaveBeenCalledWith(
           expect.any(String),
@@ -345,7 +434,9 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
       });
 
       it("should stringify the new pending transaction data", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 123 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 123,
+        });
         const newPendingTransaction = createTestPendingTransaction({
           pendingTransactionId: 123,
           description: "Updated transaction",
@@ -353,7 +444,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ pendingTransactionId: 123 });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(fetch).toHaveBeenCalledWith(
           "/api/pending/transaction/update/123",
@@ -370,22 +464,25 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           pendingTransactionId: 100,
           reviewStatus: "pending",
           description: "Large expense awaiting approval",
-          amount: 5000.00,
+          amount: 5000.0,
         });
         const newPendingTransaction = createTestPendingTransaction({
           pendingTransactionId: 100,
           reviewStatus: "approved",
           description: "Large expense awaiting approval",
-          amount: 5000.00,
+          amount: 5000.0,
         });
 
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.reviewStatus).toBe("approved");
-        expect(result.amount).toBe(5000.00);
+        expect(result.amount).toBe(5000.0);
         expect(result.pendingTransactionId).toBe(100);
       });
 
@@ -402,7 +499,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.reviewStatus).toBe("rejected");
         expect(result.description).toBe("Questionable expense - denied");
@@ -410,20 +510,23 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
       it("should handle amount adjustments during review", async () => {
         const oldPendingTransaction = createTestPendingTransaction({
-          amount: 1000.00,
+          amount: 1000.0,
           reviewStatus: "pending",
         });
         const newPendingTransaction = createTestPendingTransaction({
-          amount: 750.00, // Adjusted down
+          amount: 750.0, // Adjusted down
           reviewStatus: "approved",
         });
 
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
-        expect(result.amount).toBe(750.00);
+        expect(result.amount).toBe(750.0);
         expect(result.reviewStatus).toBe("approved");
       });
 
@@ -440,7 +543,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.accountNameOwner).toBe("departmentB");
         expect(result.reviewStatus).toBe("approved");
@@ -463,18 +569,28 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
           global.fetch = createFetchMock({ ...newPendingTransaction });
 
-          const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+          const result = await updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          );
           expect(result.reviewStatus).toBe(transition.to);
         }
       });
 
       it("should handle zero pending transaction ID", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 0 });
-        const newPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 0 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 0,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 0,
+        });
 
         global.fetch = createFetchMock({ pendingTransactionId: 0 });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(fetch).toHaveBeenCalledWith(
           "/api/pending/transaction/update/0",
@@ -484,12 +600,19 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
       it("should handle large pending transaction IDs", async () => {
         const largeId = 999999999;
-        const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: largeId });
-        const newPendingTransaction = createTestPendingTransaction({ pendingTransactionId: largeId });
+        const oldPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: largeId,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: largeId,
+        });
 
         global.fetch = createFetchMock({ pendingTransactionId: largeId });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(fetch).toHaveBeenCalledWith(
           `/api/pending/transaction/update/${largeId}`,
@@ -508,9 +631,14 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
-        expect(result.description).toBe("Expense for Smith & Co: Invoice #123-ABC!@#");
+        expect(result.description).toBe(
+          "Expense for Smith & Co: Invoice #123-ABC!@#",
+        );
       });
 
       it("should handle unicode characters in descriptions", async () => {
@@ -522,7 +650,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.description).toBe("支付给供应商 Payment to Supplier 💰");
       });
@@ -537,7 +668,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.description).toBe(longDescription);
       });
@@ -552,7 +686,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.accountNameOwner).toBe(specialAccountName);
       });
@@ -567,44 +704,68 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.accountNameOwner).toBe(unicodeAccountName);
       });
 
       it("should handle decimal precision amounts", async () => {
         const preciseAmount = 123.456789;
-        const oldPendingTransaction = createTestPendingTransaction({ amount: 100.00 });
-        const newPendingTransaction = createTestPendingTransaction({ amount: preciseAmount });
+        const oldPendingTransaction = createTestPendingTransaction({
+          amount: 100.0,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          amount: preciseAmount,
+        });
 
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.amount).toBe(preciseAmount);
       });
 
       it("should handle zero amounts", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ amount: 100.00 });
-        const newPendingTransaction = createTestPendingTransaction({ amount: 0 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          amount: 100.0,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          amount: 0,
+        });
 
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.amount).toBe(0);
       });
 
       it("should handle negative amounts", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ amount: 100.00 });
-        const newPendingTransaction = createTestPendingTransaction({ amount: -500.25 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          amount: 100.0,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          amount: -500.25,
+        });
 
         const expectedResponse = { ...newPendingTransaction };
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.amount).toBe(-500.25);
       });
@@ -622,7 +783,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...newPendingTransactionFuture });
 
-        const resultFuture = await updatePendingTransaction(oldPendingTransaction, newPendingTransactionFuture);
+        const resultFuture = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransactionFuture,
+        );
         expect(resultFuture.transactionDate).toEqual(futureDate);
 
         // Test past date
@@ -633,7 +797,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...newPendingTransactionPast });
 
-        const resultPast = await updatePendingTransaction(oldPendingTransaction, newPendingTransactionPast);
+        const resultPast = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransactionPast,
+        );
         expect(resultPast.transactionDate).toEqual(pastDate);
       });
     });
@@ -652,7 +819,10 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         consoleSpy.start();
 
         try {
-          await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+          await updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          );
         } catch (error) {
           // Expected error
         }
@@ -665,11 +835,16 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const oldPendingTransaction = createTestPendingTransaction();
         const newPendingTransaction = createTestPendingTransaction();
 
-        global.fetch = jest.fn().mockRejectedValue(new Error("Connection failed"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValue(new Error("Connection failed"));
         consoleSpy.start();
 
         try {
-          await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+          await updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          );
         } catch (error) {
           // Expected error
         }
@@ -691,14 +866,19 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         consoleSpy.start();
 
         try {
-          await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+          await updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          );
         } catch (error) {
           // Expected error
         }
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).not.toContain([["Resource not found (404)."]]);
-        expect(calls.log[0]).toEqual(["An error occurred: Failed to update pending transaction: Internal Server Error"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Failed to update pending transaction: Internal Server Error",
+        ]);
       });
     });
 
@@ -709,7 +889,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           accountNameOwner: "corporateExpenses",
           transactionDate: new Date("2024-06-01T10:00:00.000Z"),
           description: "Quarterly software license - pending approval",
-          amount: 12000.00,
+          amount: 12000.0,
           reviewStatus: "pending",
         });
 
@@ -718,7 +898,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           accountNameOwner: "corporateExpenses",
           transactionDate: new Date("2024-06-01T10:00:00.000Z"),
           description: "Quarterly software license - approved by CFO",
-          amount: 10500.00, // Negotiated down
+          amount: 10500.0, // Negotiated down
           reviewStatus: "approved",
         });
 
@@ -728,17 +908,24 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result).toEqual(expectedResponse);
         expect(result.pendingTransactionId).toBe(777);
-        expect(result.amount).toBe(10500.00);
+        expect(result.amount).toBe(10500.0);
         expect(result.reviewStatus).toBe("approved");
-        expect(result.description).toBe("Quarterly software license - approved by CFO");
+        expect(result.description).toBe(
+          "Quarterly software license - approved by CFO",
+        );
       });
 
       it("should handle pending transaction update with validation failure", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 123 });
+        const oldPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 123,
+        });
         const newPendingTransaction = createTestPendingTransaction({
           pendingTransactionId: 123,
           reviewStatus: "invalid_status", // Invalid status
@@ -752,21 +939,36 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updatePendingTransaction(oldPendingTransaction, newPendingTransaction))
-          .rejects.toThrow("Failed to update pending transaction: Bad Request - Invalid review status");
+        await expect(
+          updatePendingTransaction(
+            oldPendingTransaction,
+            newPendingTransaction,
+          ),
+        ).rejects.toThrow(
+          "Failed to update pending transaction: Bad Request - Invalid review status",
+        );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Failed to update pending transaction: Bad Request - Invalid review status"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Failed to update pending transaction: Bad Request - Invalid review status",
+        ]);
       });
 
       it("should handle pending transaction ID mismatch scenarios", async () => {
-        const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 100 });
-        const newPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 200 }); // Different ID
+        const oldPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 100,
+        });
+        const newPendingTransaction = createTestPendingTransaction({
+          pendingTransactionId: 200,
+        }); // Different ID
 
         // The API endpoint should still use the old pending transaction ID
         global.fetch = createFetchMock({ pendingTransactionId: 200 });
 
-        await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         // Should use old pending transaction ID in endpoint, regardless of new ID
         expect(fetch).toHaveBeenCalledWith(
@@ -778,22 +980,28 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
       it("should handle escalation workflow scenarios", async () => {
         const oldPendingTransaction = createTestPendingTransaction({
           reviewStatus: "pending",
-          amount: 25000.00, // High-value transaction
+          amount: 25000.0, // High-value transaction
           description: "Equipment purchase request",
         });
 
         const newPendingTransaction = createTestPendingTransaction({
           reviewStatus: "escalated",
-          amount: 25000.00,
-          description: "Equipment purchase request - escalated to board approval",
+          amount: 25000.0,
+          description:
+            "Equipment purchase request - escalated to board approval",
         });
 
         global.fetch = createFetchMock({ ...newPendingTransaction });
 
-        const result = await updatePendingTransaction(oldPendingTransaction, newPendingTransaction);
+        const result = await updatePendingTransaction(
+          oldPendingTransaction,
+          newPendingTransaction,
+        );
 
         expect(result.reviewStatus).toBe("escalated");
-        expect(result.description).toBe("Equipment purchase request - escalated to board approval");
+        expect(result.description).toBe(
+          "Equipment purchase request - escalated to board approval",
+        );
       });
     });
   });

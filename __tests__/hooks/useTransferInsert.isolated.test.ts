@@ -10,7 +10,10 @@ import {
 } from "../../testHelpers";
 import Transfer from "../../model/Transfer";
 
-import { overRideTransferValues, insertTransfer } from "../../hooks/useTransferInsert";
+import {
+  overRideTransferValues,
+  insertTransfer,
+} from "../../hooks/useTransferInsert";
 
 // Helper function to create test transfer data
 const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
@@ -49,7 +52,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
       const result = overRideTransferValues(testTransfer);
 
       expect(result.amount).toBe(1000);
-      expect(result.transactionDate).toEqual(new Date("2024-02-15T00:00:00.000Z"));
+      expect(result.transactionDate).toEqual(
+        new Date("2024-02-15T00:00:00.000Z"),
+      );
       expect(result.sourceAccount).toBe(testTransfer.sourceAccount);
       expect(result.destinationAccount).toBe(testTransfer.destinationAccount);
     });
@@ -64,7 +69,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
     });
 
     it("should handle undefined transactionDate gracefully", () => {
-      const testTransfer = createTestTransfer({ transactionDate: undefined as any });
+      const testTransfer = createTestTransfer({
+        transactionDate: undefined as any,
+      });
 
       const result = overRideTransferValues(testTransfer);
 
@@ -232,7 +239,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         expect(calls.log).toEqual([
           ["No error message returned."],
           ["Failed to parse error response: No error message returned."],
-          ["An error occurred: Failed to parse error response: No error message returned."],
+          [
+            "An error occurred: Failed to parse error response: No error message returned.",
+          ],
         ]);
       });
 
@@ -271,7 +280,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should handle timeout errors", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValue(new Error("Request timeout"));
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
@@ -377,7 +388,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should handle future-dated transfers", async () => {
         const futureDate = new Date("2025-12-31T23:59:59.000Z");
-        const testTransfer = createTestTransfer({ transactionDate: futureDate });
+        const testTransfer = createTestTransfer({
+          transactionDate: futureDate,
+        });
 
         global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
 
@@ -508,7 +521,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should log network errors", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = jest.fn().mockRejectedValue(new Error("Connection failed"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValue(new Error("Connection failed"));
         consoleSpy.start();
 
         try {
@@ -539,7 +554,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
           ["Failed to parse error response: JSON parse error"],
-          ["An error occurred: Failed to parse error response: JSON parse error"],
+          [
+            "An error occurred: Failed to parse error response: JSON parse error",
+          ],
         ]);
       });
     });
@@ -579,7 +596,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         const testTransfer = createTestTransfer();
 
         // API returns validation error
-        global.fetch = createErrorFetchMock("Insufficient funds in source account", 400);
+        global.fetch = createErrorFetchMock(
+          "Insufficient funds in source account",
+          400,
+        );
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
@@ -597,7 +617,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         const testTransfer = createTestTransfer();
 
         // API returns duplicate error
-        global.fetch = createErrorFetchMock("Transfer with same details already exists", 409);
+        global.fetch = createErrorFetchMock(
+          "Transfer with same details already exists",
+          409,
+        );
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(

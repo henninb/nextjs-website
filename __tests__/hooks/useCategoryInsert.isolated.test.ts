@@ -196,9 +196,7 @@ describe("insertCategory (Isolated)", () => {
 
       await insertCategory(mockCategory);
 
-      expect(
-        mockValidateApiPayload,
-      ).toHaveBeenCalledWith(
+      expect(mockValidateApiPayload).toHaveBeenCalledWith(
         mockCategory,
         DataValidator.validateCategory,
         "insertCategory",
@@ -542,9 +540,7 @@ describe("insertCategory (Isolated)", () => {
 
       await insertCategory(mockCategory);
 
-      expect(
-        mockValidateApiPayload,
-      ).toHaveBeenCalled();
+      expect(mockValidateApiPayload).toHaveBeenCalled();
       expect(global.fetch).toHaveBeenCalled();
     });
 

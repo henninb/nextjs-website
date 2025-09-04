@@ -16,14 +16,14 @@ import Account from "../../model/Account";
 import Category from "../../model/Category";
 
 // Mock browser APIs
-Object.defineProperty(global, 'URL', {
+Object.defineProperty(global, "URL", {
   value: {
-    createObjectURL: jest.fn(() => 'mock-url'),
+    createObjectURL: jest.fn(() => "mock-url"),
     revokeObjectURL: jest.fn(),
   },
 });
 
-Object.defineProperty(global, 'Blob', {
+Object.defineProperty(global, "Blob", {
   value: class MockBlob {
     constructor(content: any[], options: any) {
       this.content = content;
@@ -34,7 +34,7 @@ Object.defineProperty(global, 'Blob', {
   },
 });
 
-Object.defineProperty(global, 'FileReader', {
+Object.defineProperty(global, "FileReader", {
   value: class MockFileReader {
     onload: ((event: any) => void) | null = null;
     readAsText(file: File) {
@@ -42,7 +42,8 @@ Object.defineProperty(global, 'FileReader', {
         if (this.onload) {
           this.onload({
             target: {
-              result: file instanceof MockFile ? file.content : JSON.stringify({}),
+              result:
+                file instanceof MockFile ? file.content : JSON.stringify({}),
             },
           });
         }
@@ -52,7 +53,11 @@ Object.defineProperty(global, 'FileReader', {
 });
 
 class MockFile {
-  constructor(public content: string, public name: string, public type: string) {}
+  constructor(
+    public content: string,
+    public name: string,
+    public type: string,
+  ) {}
 }
 
 // Mock document methods
@@ -62,17 +67,17 @@ const mockRemoveChild = jest.fn();
 const mockClick = jest.fn();
 
 // Mock document
-Object.defineProperty(document, 'createElement', {
+Object.defineProperty(document, "createElement", {
   value: mockCreateElement,
   writable: true,
 });
 
-Object.defineProperty(document.body, 'appendChild', {
+Object.defineProperty(document.body, "appendChild", {
   value: mockAppendChild,
   writable: true,
 });
 
-Object.defineProperty(document.body, 'removeChild', {
+Object.defineProperty(document.body, "removeChild", {
   value: mockRemoveChild,
   writable: true,
 });
@@ -81,8 +86,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockCreateElement.mockReturnValue({
     click: mockClick,
-    href: '',
-    download: '',
+    href: "",
+    download: "",
   });
 });
 
@@ -124,7 +129,9 @@ export const generateBackupFilename = (date?: Date) => {
 /**
  * Creates a downloadable backup file
  */
-export const createBackupFile = async (backupData: any): Promise<{ success: boolean; error?: string }> => {
+export const createBackupFile = async (
+  backupData: any,
+): Promise<{ success: boolean; error?: string }> => {
   try {
     const json = JSON.stringify(backupData, null, 2);
     const blob = new Blob([json], { type: "application/json" });
@@ -138,34 +145,45 @@ export const createBackupFile = async (backupData: any): Promise<{ success: bool
     URL.revokeObjectURL(url);
     return { success: true };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 };
 
 /**
  * Validates backup data structure
  */
-export const validateBackupData = (data: any): { isValid: boolean; errors: string[] } => {
+export const validateBackupData = (
+  data: any,
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
-  if (!data || typeof data !== 'object') {
-    errors.push('Backup data must be an object');
+  if (!data || typeof data !== "object") {
+    errors.push("Backup data must be an object");
     return { isValid: false, errors };
   }
 
   const expectedProperties = [
-    'accounts', 'categories', 'descriptions', 'parameters',
-    'payments', 'pendingTransactions', 'transactions', 'transfers'
+    "accounts",
+    "categories",
+    "descriptions",
+    "parameters",
+    "payments",
+    "pendingTransactions",
+    "transactions",
+    "transfers",
   ];
 
   // Check if at least one expected property exists
-  const hasAnyProperty = expectedProperties.some(prop => prop in data);
+  const hasAnyProperty = expectedProperties.some((prop) => prop in data);
   if (!hasAnyProperty) {
-    errors.push('Backup data must contain at least one entity type');
+    errors.push("Backup data must contain at least one entity type");
   }
 
   // Validate each property is an array if it exists
-  expectedProperties.forEach(prop => {
+  expectedProperties.forEach((prop) => {
     if (prop in data && !Array.isArray(data[prop])) {
       errors.push(`${prop} must be an array`);
     }
@@ -177,18 +195,20 @@ export const validateBackupData = (data: any): { isValid: boolean; errors: strin
 /**
  * Parses backup file content
  */
-export const parseBackupFile = (content: string): { success: boolean; data?: any; error?: string } => {
+export const parseBackupFile = (
+  content: string,
+): { success: boolean; data?: any; error?: string } => {
   try {
     const data = JSON.parse(content);
     const validation = validateBackupData(data);
 
     if (!validation.isValid) {
-      return { success: false, error: validation.errors.join(', ') };
+      return { success: false, error: validation.errors.join(", ") };
     }
 
     return { success: true, data };
   } catch (error) {
-    return { success: false, error: 'Invalid JSON format' };
+    return { success: false, error: "Invalid JSON format" };
   }
 };
 
@@ -206,7 +226,7 @@ export const processRestoreOperations = async (
     insertPendingTransaction?: (item: any) => Promise<void>;
     insertTransaction?: (item: any) => Promise<void>;
     insertTransfer?: (item: any) => Promise<void>;
-  }
+  },
 ): Promise<{ success: boolean; errors: string[] }> => {
   const errors: string[] = [];
 
@@ -217,7 +237,9 @@ export const processRestoreOperations = async (
         try {
           await operations.insertAccount(item);
         } catch (error) {
-          errors.push(`Failed to restore account: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore account: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -228,7 +250,9 @@ export const processRestoreOperations = async (
         try {
           await operations.insertCategory(item);
         } catch (error) {
-          errors.push(`Failed to restore category: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore category: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -239,7 +263,9 @@ export const processRestoreOperations = async (
         try {
           await operations.insertDescription(item);
         } catch (error) {
-          errors.push(`Failed to restore description: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore description: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -250,7 +276,9 @@ export const processRestoreOperations = async (
         try {
           await operations.insertParameter(item);
         } catch (error) {
-          errors.push(`Failed to restore parameter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore parameter: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -261,7 +289,9 @@ export const processRestoreOperations = async (
         try {
           await operations.insertPayment(item);
         } catch (error) {
-          errors.push(`Failed to restore payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore payment: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -272,7 +302,9 @@ export const processRestoreOperations = async (
         try {
           await operations.insertPendingTransaction(item);
         } catch (error) {
-          errors.push(`Failed to restore pending transaction: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore pending transaction: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -283,7 +315,9 @@ export const processRestoreOperations = async (
         try {
           await operations.insertTransaction(item);
         } catch (error) {
-          errors.push(`Failed to restore transaction: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore transaction: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -294,14 +328,18 @@ export const processRestoreOperations = async (
         try {
           await operations.insertTransfer(item);
         } catch (error) {
-          errors.push(`Failed to restore transfer: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore transfer: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
 
     return { success: errors.length === 0, errors };
   } catch (error) {
-    errors.push(`Restore operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    errors.push(
+      `Restore operation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
     return { success: false, errors };
   }
 };
@@ -310,13 +348,19 @@ export const processRestoreOperations = async (
  * Counts total entities in backup data
  */
 export const countBackupEntities = (backupData: any): number => {
-  if (!backupData || typeof backupData !== 'object') {
+  if (!backupData || typeof backupData !== "object") {
     return 0;
   }
 
   return [
-    'accounts', 'categories', 'descriptions', 'parameters',
-    'payments', 'pendingTransactions', 'transactions', 'transfers'
+    "accounts",
+    "categories",
+    "descriptions",
+    "parameters",
+    "payments",
+    "pendingTransactions",
+    "transactions",
+    "transfers",
   ].reduce((total, prop) => {
     const entities = backupData[prop];
     return total + (Array.isArray(entities) ? entities.length : 0);
@@ -326,8 +370,14 @@ export const countBackupEntities = (backupData: any): number => {
 describe("BackupRestore Business Logic (Isolated)", () => {
   describe("createBackupData", () => {
     it("should create backup data structure with all entities", () => {
-      const accounts = [createTestAccount(), createTestAccount({ accountNameOwner: "Savings" })];
-      const categories = [createTestCategory(), createTestCategory({ categoryName: "Food" })];
+      const accounts = [
+        createTestAccount(),
+        createTestAccount({ accountNameOwner: "Savings" }),
+      ];
+      const categories = [
+        createTestCategory(),
+        createTestCategory({ categoryName: "Food" }),
+      ];
       const payments = [createTestPayment()];
 
       const backupData = createBackupData({
@@ -385,7 +435,9 @@ describe("BackupRestore Business Logic (Isolated)", () => {
     it("should use current date when no date provided", () => {
       const filename = generateBackupFilename();
 
-      expect(filename).toMatch(/^finance-backup-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\.json$/);
+      expect(filename).toMatch(
+        /^finance-backup-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\.json$/,
+      );
     });
 
     it("should handle different date formats", () => {
@@ -426,7 +478,7 @@ describe("BackupRestore Business Logic (Isolated)", () => {
 
       await createBackupFile(backupData);
 
-      expect(URL.revokeObjectURL).toHaveBeenCalledWith('mock-url');
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith("mock-url");
     });
   });
 
@@ -455,7 +507,7 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result3 = validateBackupData(123);
 
       expect(result1.isValid).toBe(false);
-      expect(result1.errors).toContain('Backup data must be an object');
+      expect(result1.errors).toContain("Backup data must be an object");
       expect(result2.isValid).toBe(false);
       expect(result3.isValid).toBe(false);
     });
@@ -466,7 +518,9 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result = validateBackupData(invalidData);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Backup data must contain at least one entity type');
+      expect(result.errors).toContain(
+        "Backup data must contain at least one entity type",
+      );
     });
 
     it("should reject non-array entity types", () => {
@@ -478,7 +532,7 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result = validateBackupData(invalidData);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('accounts must be an array');
+      expect(result.errors).toContain("accounts must be an array");
     });
 
     it("should validate partial backup data", () => {
@@ -502,7 +556,7 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result = parseBackupFile(content);
 
       expect(result.success).toBe(true);
-      expect(result.data).toHaveProperty('accounts');
+      expect(result.data).toHaveProperty("accounts");
       expect(result.data.accounts).toHaveLength(1);
       expect(result.error).toBeUndefined();
     });
@@ -513,7 +567,7 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result = parseBackupFile(invalidJson);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Invalid JSON format');
+      expect(result.error).toBe("Invalid JSON format");
     });
 
     it("should handle valid JSON with invalid structure", () => {
@@ -523,14 +577,16 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result = parseBackupFile(content);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Backup data must contain at least one entity type');
+      expect(result.error).toContain(
+        "Backup data must contain at least one entity type",
+      );
     });
 
     it("should handle empty string", () => {
       const result = parseBackupFile("");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Invalid JSON format');
+      expect(result.error).toBe("Invalid JSON format");
     });
   });
 
@@ -541,7 +597,10 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const mockInsertPayment = jest.fn().mockResolvedValue(undefined);
 
       const backupData = {
-        accounts: [createTestAccount(), createTestAccount({ accountNameOwner: "Savings" })],
+        accounts: [
+          createTestAccount(),
+          createTestAccount({ accountNameOwner: "Savings" }),
+        ],
         categories: [createTestCategory()],
         payments: [createTestPayment()],
       };
@@ -575,13 +634,19 @@ describe("BackupRestore Business Logic (Isolated)", () => {
     });
 
     it("should collect errors from failed operations", async () => {
-      const mockInsertAccount = jest.fn()
+      const mockInsertAccount = jest
+        .fn()
         .mockRejectedValueOnce(new Error("Account error"))
         .mockResolvedValueOnce(undefined);
-      const mockInsertCategory = jest.fn().mockRejectedValue(new Error("Category error"));
+      const mockInsertCategory = jest
+        .fn()
+        .mockRejectedValue(new Error("Category error"));
 
       const backupData = {
-        accounts: [createTestAccount(), createTestAccount({ accountNameOwner: "Savings" })],
+        accounts: [
+          createTestAccount(),
+          createTestAccount({ accountNameOwner: "Savings" }),
+        ],
         categories: [createTestCategory()],
       };
 
@@ -592,8 +657,12 @@ describe("BackupRestore Business Logic (Isolated)", () => {
 
       expect(result.success).toBe(false);
       expect(result.errors).toHaveLength(2);
-      expect(result.errors[0]).toContain("Failed to restore account: Account error");
-      expect(result.errors[1]).toContain("Failed to restore category: Category error");
+      expect(result.errors[0]).toContain(
+        "Failed to restore account: Account error",
+      );
+      expect(result.errors[1]).toContain(
+        "Failed to restore category: Category error",
+      );
     });
 
     it("should handle empty backup data", async () => {
@@ -604,12 +673,16 @@ describe("BackupRestore Business Logic (Isolated)", () => {
     });
 
     it("should continue processing after individual failures", async () => {
-      const mockInsertAccount = jest.fn()
+      const mockInsertAccount = jest
+        .fn()
         .mockRejectedValueOnce(new Error("First account failed"))
         .mockResolvedValueOnce(undefined); // Second account should succeed
 
       const backupData = {
-        accounts: [createTestAccount(), createTestAccount({ accountNameOwner: "Savings" })],
+        accounts: [
+          createTestAccount(),
+          createTestAccount({ accountNameOwner: "Savings" }),
+        ],
       };
 
       const result = await processRestoreOperations(backupData, {
@@ -629,7 +702,11 @@ describe("BackupRestore Business Logic (Isolated)", () => {
         categories: [createTestCategory()],
         descriptions: [],
         parameters: [createTestParameter()],
-        payments: [createTestPayment(), createTestPayment(), createTestPayment()],
+        payments: [
+          createTestPayment(),
+          createTestPayment(),
+          createTestPayment(),
+        ],
         pendingTransactions: [],
         transactions: [createTestTransaction()],
         transfers: [createTestTransfer()],
@@ -709,9 +786,9 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const content = JSON.stringify(backupData);
       const parseResult = parseBackupFile(content);
       expect(parseResult.success).toBe(true);
-      expect(parseResult.data).toHaveProperty('accounts');
-      expect(parseResult.data).toHaveProperty('categories');
-      expect(parseResult.data).toHaveProperty('payments');
+      expect(parseResult.data).toHaveProperty("accounts");
+      expect(parseResult.data).toHaveProperty("categories");
+      expect(parseResult.data).toHaveProperty("payments");
 
       // Step 4: Process restore operations
       const mockOperations = {
@@ -720,7 +797,10 @@ describe("BackupRestore Business Logic (Isolated)", () => {
         insertPayment: jest.fn().mockResolvedValue(undefined),
       };
 
-      const restoreResult = await processRestoreOperations(parseResult.data, mockOperations);
+      const restoreResult = await processRestoreOperations(
+        parseResult.data,
+        mockOperations,
+      );
       expect(restoreResult.success).toBe(true);
       expect(mockOperations.insertAccount).toHaveBeenCalledTimes(1);
       expect(mockOperations.insertCategory).toHaveBeenCalledTimes(1);
@@ -729,9 +809,17 @@ describe("BackupRestore Business Logic (Isolated)", () => {
 
     it("should handle backup with large dataset", async () => {
       const largeData = {
-        accounts: Array(100).fill(null).map((_, i) => createTestAccount({ accountNameOwner: `Account ${i}` })),
-        categories: Array(50).fill(null).map((_, i) => createTestCategory({ categoryName: `Category ${i}` })),
-        payments: Array(200).fill(null).map(() => createTestPayment()),
+        accounts: Array(100)
+          .fill(null)
+          .map((_, i) =>
+            createTestAccount({ accountNameOwner: `Account ${i}` }),
+          ),
+        categories: Array(50)
+          .fill(null)
+          .map((_, i) => createTestCategory({ categoryName: `Category ${i}` })),
+        payments: Array(200)
+          .fill(null)
+          .map(() => createTestPayment()),
       };
 
       const backupData = createBackupData(largeData);
@@ -746,7 +834,10 @@ describe("BackupRestore Business Logic (Isolated)", () => {
         insertPayment: jest.fn().mockResolvedValue(undefined),
       };
 
-      const restoreResult = await processRestoreOperations(backupData, mockOperations);
+      const restoreResult = await processRestoreOperations(
+        backupData,
+        mockOperations,
+      );
       expect(restoreResult.success).toBe(true);
       expect(mockOperations.insertAccount).toHaveBeenCalledTimes(100);
       expect(mockOperations.insertCategory).toHaveBeenCalledTimes(50);
@@ -761,7 +852,7 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result = parseBackupFile(corruptedJson);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Invalid JSON format');
+      expect(result.error).toBe("Invalid JSON format");
     });
 
     it("should validate backup data with mixed valid/invalid properties", () => {
@@ -775,11 +866,12 @@ describe("BackupRestore Business Logic (Isolated)", () => {
       const result = validateBackupData(mixedData);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('categories must be an array');
+      expect(result.errors).toContain("categories must be an array");
     });
 
     it("should handle restore operations with partial failures", async () => {
-      const mockInsertAccount = jest.fn()
+      const mockInsertAccount = jest
+        .fn()
         .mockResolvedValueOnce(undefined)
         .mockRejectedValueOnce(new Error("Network error"))
         .mockResolvedValueOnce(undefined);

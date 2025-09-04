@@ -190,7 +190,9 @@ describe("updateDescription (Isolated)", () => {
 
       await expect(
         updateDescription(oldDescription, newDescription),
-      ).rejects.toThrow("Failed to update transaction state: Internal Server Error");
+      ).rejects.toThrow(
+        "Failed to update transaction state: Internal Server Error",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual([
@@ -515,7 +517,9 @@ describe("updateDescription (Isolated)", () => {
 
       await expect(
         updateDescription(oldDescription, newDescription),
-      ).rejects.toThrow("Failed to update transaction state: Unprocessable Entity");
+      ).rejects.toThrow(
+        "Failed to update transaction state: Unprocessable Entity",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual([

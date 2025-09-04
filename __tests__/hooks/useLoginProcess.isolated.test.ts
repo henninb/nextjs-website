@@ -23,7 +23,11 @@ jest.mock("../../utils/validation", () => ({
 }));
 
 import { processLogin } from "../../hooks/useLoginProcess";
-import { hookValidators, DataValidator, InputSanitizer } from "../../utils/validation";
+import {
+  hookValidators,
+  DataValidator,
+  InputSanitizer,
+} from "../../utils/validation";
 
 // Alias for consistency with existing test naming
 const loginUser = processLogin;
@@ -85,9 +89,7 @@ describe("loginUser (Isolated)", () => {
 
       await loginUser(mockUser);
 
-      expect(
-        mockValidateApiPayload,
-      ).toHaveBeenCalledWith(
+      expect(mockValidateApiPayload).toHaveBeenCalledWith(
         mockUser,
         DataValidator.validateUser,
         "login",
@@ -96,15 +98,11 @@ describe("loginUser (Isolated)", () => {
 
     it("should sanitize username in log output", async () => {
       global.fetch = createFetchMock(null, { status: 204 });
-      mockSanitizeUsername.mockReturnValue(
-        "sanitized_user",
-      );
+      mockSanitizeUsername.mockReturnValue("sanitized_user");
 
       await loginUser(mockUser);
 
-      expect(
-        mockSanitizeUsername,
-      ).toHaveBeenCalledWith(mockUser.username);
+      expect(mockSanitizeUsername).toHaveBeenCalledWith(mockUser.username);
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
         "sanitized_user",
@@ -348,9 +346,7 @@ describe("loginUser (Isolated)", () => {
         firstName: "John",
         lastName: "Doe",
       });
-      mockSanitizeUsername.mockReturnValue(
-        fullUser.username,
-      );
+      mockSanitizeUsername.mockReturnValue(fullUser.username);
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(fullUser);
@@ -366,16 +362,12 @@ describe("loginUser (Isolated)", () => {
         username: "user@domain.com",
         password: "Password123!",
       });
-      mockSanitizeUsername.mockReturnValue(
-        "user@domain.com",
-      );
+      mockSanitizeUsername.mockReturnValue("user@domain.com");
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(specialUser);
 
-      expect(
-        mockSanitizeUsername,
-      ).toHaveBeenCalledWith("user@domain.com");
+      expect(mockSanitizeUsername).toHaveBeenCalledWith("user@domain.com");
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
         "user@domain.com",
@@ -388,9 +380,7 @@ describe("loginUser (Isolated)", () => {
         username: longUsername,
         password: "Password123!",
       });
-      mockSanitizeUsername.mockReturnValue(
-        longUsername,
-      );
+      mockSanitizeUsername.mockReturnValue(longUsername);
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(longUser);
@@ -432,16 +422,12 @@ describe("loginUser (Isolated)", () => {
         username: "<script>alert('xss')</script>",
         password: "Password123!",
       });
-      mockSanitizeUsername.mockReturnValue(
-        "safe_username",
-      );
+      mockSanitizeUsername.mockReturnValue("safe_username");
       global.fetch = createFetchMock(null, { status: 204 });
 
       await loginUser(unsafeUser);
 
-      expect(
-        mockSanitizeUsername,
-      ).toHaveBeenCalledWith(unsafeUser.username);
+      expect(mockSanitizeUsername).toHaveBeenCalledWith(unsafeUser.username);
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
         "safe_username",

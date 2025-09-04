@@ -14,14 +14,16 @@ import Transaction from "../../model/Transaction";
 import {
   isValidGuid,
   sanitizeGuid,
-  updateTransaction
+  updateTransaction,
 } from "../../hooks/useTransactionUpdate";
 
 /**
  * Helper function to test receipt image processing
  * This matches the behavior in the actual hook
  */
-const processReceiptImageForTesting = (transaction: Transaction): Transaction => {
+const processReceiptImageForTesting = (
+  transaction: Transaction,
+): Transaction => {
   const processed = { ...transaction };
 
   if (processed.receiptImage !== undefined) {
@@ -58,7 +60,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
       ];
 
-      validGuids.forEach(guid => {
+      validGuids.forEach((guid) => {
         expect(isValidGuid(guid)).toBe(true);
       });
     });
@@ -74,7 +76,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         "123456789012345678901234567890123456", // Wrong format
       ];
 
-      invalidGuids.forEach(guid => {
+      invalidGuids.forEach((guid) => {
         expect(isValidGuid(guid)).toBe(false);
       });
     });
@@ -104,14 +106,9 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
     });
 
     it("should throw error for invalid GUIDs", () => {
-      const invalidGuids = [
-        "invalid-guid",
-        "",
-        "123",
-        "not-a-guid-at-all",
-      ];
+      const invalidGuids = ["invalid-guid", "", "123", "not-a-guid-at-all"];
 
-      invalidGuids.forEach(guid => {
+      invalidGuids.forEach((guid) => {
         expect(() => sanitizeGuid(guid)).toThrow("Invalid GUID provided");
       });
     });
@@ -128,15 +125,28 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
 
       const processed = processReceiptImageForTesting(transaction);
 
-      expect(processed.receiptImage.image).toBe("/9j/4AAQSkZJRgABAQEAYABgAAD...");
+      expect(processed.receiptImage.image).toBe(
+        "/9j/4AAQSkZJRgABAQEAYABgAAD...",
+      );
       expect(processed.receiptImage.filename).toBe("receipt.jpg");
     });
 
     it("should handle different image formats", () => {
       const formats = [
-        { input: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...", expected: "iVBORw0KGgoAAAANSUhEUgAAA..." },
-        { input: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", expected: "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" },
-        { input: "data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=", expected: "UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=" },
+        {
+          input: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...",
+          expected: "iVBORw0KGgoAAAANSUhEUgAAA...",
+        },
+        {
+          input:
+            "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+          expected: "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+        },
+        {
+          input:
+            "data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=",
+          expected: "UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=",
+        },
       ];
 
       formats.forEach(({ input, expected }) => {
@@ -305,8 +315,9 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         });
         const newTransaction = createTestTransaction();
 
-        await expect(updateTransaction(newTransaction, oldTransaction))
-          .rejects.toThrow("Invalid GUID provided");
+        await expect(
+          updateTransaction(newTransaction, oldTransaction),
+        ).rejects.toThrow("Invalid GUID provided");
       });
 
       it("should handle 404 not found errors", async () => {
@@ -322,14 +333,17 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updateTransaction(newTransaction, oldTransaction))
-          .rejects.toThrow("HTTP error! status: 404");
+        await expect(
+          updateTransaction(newTransaction, oldTransaction),
+        ).rejects.toThrow("HTTP error! status: 404");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toHaveLength(3);
         expect(calls.log[0][0]).toContain("newData:");
         expect(calls.log[1]).toEqual(["Resource not found (404)."]);
-        expect(calls.log[2]).toEqual(["An error occurred: HTTP error! status: 404"]);
+        expect(calls.log[2]).toEqual([
+          "An error occurred: HTTP error! status: 404",
+        ]);
       });
 
       it("should handle 400 bad request errors", async () => {
@@ -345,12 +359,15 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updateTransaction(newTransaction, oldTransaction))
-          .rejects.toThrow("HTTP error! status: 400");
+        await expect(
+          updateTransaction(newTransaction, oldTransaction),
+        ).rejects.toThrow("HTTP error! status: 400");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toContain("newData:");
-        expect(calls.log[1]).toEqual(["An error occurred: HTTP error! status: 400"]);
+        expect(calls.log[1]).toEqual([
+          "An error occurred: HTTP error! status: 400",
+        ]);
       });
 
       it("should handle 500 server errors", async () => {
@@ -366,8 +383,9 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(updateTransaction(newTransaction, oldTransaction))
-          .rejects.toThrow("HTTP error! status: 500");
+        await expect(
+          updateTransaction(newTransaction, oldTransaction),
+        ).rejects.toThrow("HTTP error! status: 500");
       });
 
       it("should handle network errors", async () => {
@@ -379,8 +397,9 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
         consoleSpy.start();
 
-        await expect(updateTransaction(newTransaction, oldTransaction))
-          .rejects.toThrow("Network error");
+        await expect(
+          updateTransaction(newTransaction, oldTransaction),
+        ).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toContain("newData:");
@@ -464,7 +483,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
       it("should handle amount changes", async () => {
         const oldTransaction = createTestTransaction({
           guid: "123e4567-e89b-12d3-a456-426614174000",
-          amount: 100.00,
+          amount: 100.0,
           description: "Original amount",
         });
 
@@ -704,7 +723,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         const oldTransaction = createTestTransaction({
           guid: "123e4567-e89b-12d3-a456-426614174000",
           description: "Original transaction",
-          amount: 100.00,
+          amount: 100.0,
           category: "Food",
           transactionState: "outstanding",
           notes: "Original notes",

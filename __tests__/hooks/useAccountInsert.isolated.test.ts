@@ -126,7 +126,9 @@ describe("Account Insert Functions (Isolated)", () => {
       expect(result.dateClosed).toEqual(new Date(0));
       expect(result.validationDate).toEqual(new Date(0));
       // Allow for small timing differences (within 1 second)
-      expect(Math.abs(result.dateAdded.getTime() - beforeSetup.getTime())).toBeLessThanOrEqual(1000);
+      expect(
+        Math.abs(result.dateAdded.getTime() - beforeSetup.getTime()),
+      ).toBeLessThanOrEqual(1000);
       expect(result.dateAdded.getTime()).toBeLessThanOrEqual(
         afterSetup.getTime(),
       );
@@ -186,9 +188,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(mockAccount);
 
-        expect(
-          mockValidateApiPayload,
-        ).toHaveBeenCalledWith(
+        expect(mockValidateApiPayload).toHaveBeenCalledWith(
           mockAccount,
           DataValidator.validateAccount,
           "insertAccount",
@@ -510,13 +510,11 @@ describe("Account Insert Functions (Isolated)", () => {
 
         for (const accountType of accountTypes) {
           const typedAccount = createTestAccount({ accountType });
-          mockValidateApiPayload.mockReturnValue(
-            {
-              isValid: true,
-              validatedData: typedAccount,
-              errors: null,
-            },
-          );
+          mockValidateApiPayload.mockReturnValue({
+            isValid: true,
+            validatedData: typedAccount,
+            errors: null,
+          });
           global.fetch = createFetchMock(typedAccount, { status: 201 });
 
           await insertAccount(typedAccount);

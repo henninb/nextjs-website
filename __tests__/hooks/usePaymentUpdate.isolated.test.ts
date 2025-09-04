@@ -13,7 +13,7 @@ import { updatePayment } from "../../hooks/usePaymentUpdate";
 // Mock window globally for isolated testing
 (global as any).window = {
   document: {
-    cookie: 'token=mock-token-value; path=/',
+    cookie: "token=mock-token-value; path=/",
   },
 };
 
@@ -181,7 +181,7 @@ describe("updatePayment (Isolated)", () => {
     it("should log token absence when no cookie exists", async () => {
       // Clear the cookie for this test
       const originalCookie = (global as any).window.document.cookie;
-      (global as any).window.document.cookie = '';
+      (global as any).window.document.cookie = "";
 
       const oldPayment = createTestPayment({ paymentId: 1 });
       const newPayment = createTestPayment({ ...oldPayment, amount: 100 });
@@ -288,7 +288,9 @@ describe("updatePayment (Isolated)", () => {
       }
 
       expect(mockLog).toHaveBeenCalledWith(
-        expect.stringContaining("Payment update failed - Status: 409, StatusText: Bad Request, Body: {\"response\":\"Conflict detected\"}"),
+        expect.stringContaining(
+          'Payment update failed - Status: 409, StatusText: Bad Request, Body: {"response":"Conflict detected"}',
+        ),
       );
     });
   });
@@ -361,9 +363,7 @@ describe("updatePayment (Isolated)", () => {
         "Network error",
       );
 
-      expect(mockLog).toHaveBeenCalledWith(
-        "An error occurred: Network error",
-      );
+      expect(mockLog).toHaveBeenCalledWith("An error occurred: Network error");
     });
 
     it("should handle timeout errors", async () => {
@@ -391,9 +391,7 @@ describe("updatePayment (Isolated)", () => {
         "Network error",
       );
 
-      expect(mockLog).toHaveBeenCalledWith(
-        "An error occurred: Network error",
-      );
+      expect(mockLog).toHaveBeenCalledWith("An error occurred: Network error");
     });
   });
 
@@ -536,7 +534,7 @@ describe("updatePayment (Isolated)", () => {
 
       const newPayment = createTestPayment({
         ...oldPayment,
-        amount: 1000000000.00,
+        amount: 1000000000.0,
       });
 
       global.fetch = createFetchMock(newPayment);

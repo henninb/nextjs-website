@@ -3,7 +3,10 @@ import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
 import { UpdateTransactionOptions } from "../model/UpdateTransactionOptions";
 
-export const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
+export const getTotalsKey = (accountNameOwner: string) => [
+  "totals",
+  accountNameOwner,
+];
 
 export const getAccountKey = (accountNameOwner: string) => [
   "accounts",

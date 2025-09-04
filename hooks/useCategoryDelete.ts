@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 
-export const deleteCategory = async (payload: Category): Promise<Category | null> => {
+export const deleteCategory = async (
+  payload: Category,
+): Promise<Category | null> => {
   try {
     const endpoint = `/api/category/delete/${payload.categoryName}`;
 

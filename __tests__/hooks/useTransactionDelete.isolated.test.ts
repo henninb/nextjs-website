@@ -10,7 +10,10 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
-import { deleteTransaction, getAccountKey } from "../../hooks/useTransactionDelete";
+import {
+  deleteTransaction,
+  getAccountKey,
+} from "../../hooks/useTransactionDelete";
 
 // Since getAccountKey might be used in tests, import it too
 

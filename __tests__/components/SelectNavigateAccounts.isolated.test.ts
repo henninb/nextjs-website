@@ -4,10 +4,7 @@
  */
 
 import Account from "../../model/Account";
-import {
-  createTestAccount,
-  ConsoleSpy,
-} from "../../testHelpers";
+import { createTestAccount, ConsoleSpy } from "../../testHelpers";
 
 // Extract business logic functions from SelectNavigateAccounts component
 
@@ -41,8 +38,7 @@ export const calculateMaxWidth = (options: Array<{ label: string }>) => {
   }
 
   const longestLabel = options.reduce(
-    (max, option) =>
-      option.label.length > max.length ? option.label : max,
+    (max, option) => (option.label.length > max.length ? option.label : max),
     "",
   );
 
@@ -52,7 +48,9 @@ export const calculateMaxWidth = (options: Array<{ label: string }>) => {
 /**
  * Validates if an account name is suitable for navigation
  */
-export const isValidAccountForNavigation = (accountNameOwner: string): boolean => {
+export const isValidAccountForNavigation = (
+  accountNameOwner: string,
+): boolean => {
   return typeof accountNameOwner === "string" && accountNameOwner.trim() !== "";
 };
 
@@ -155,11 +153,7 @@ describe("SelectNavigateAccounts Business Logic (Isolated)", () => {
     });
 
     it("should return minimum width of 200 for short labels", () => {
-      const options = [
-        { label: "A" },
-        { label: "AB" },
-        { label: "ABC" },
-      ];
+      const options = [{ label: "A" }, { label: "AB" }, { label: "ABC" }];
 
       const maxWidth = calculateMaxWidth(options);
       expect(maxWidth).toBe(200); // minimum width
@@ -180,7 +174,10 @@ describe("SelectNavigateAccounts Business Logic (Isolated)", () => {
 
     it("should calculate correctly for very long account names", () => {
       const options = [
-        { label: "This Is An Extremely Long Account Name That Should Calculate Properly" },
+        {
+          label:
+            "This Is An Extremely Long Account Name That Should Calculate Properly",
+        },
       ];
 
       const maxWidth = calculateMaxWidth(options);
@@ -220,27 +217,49 @@ describe("SelectNavigateAccounts Business Logic (Isolated)", () => {
 
   describe("buildAccountNavigationUrl", () => {
     it("should build correct navigation URLs", () => {
-      expect(buildAccountNavigationUrl("Checking")).toBe("/finance/transactions/Checking");
-      expect(buildAccountNavigationUrl("Savings Account")).toBe("/finance/transactions/Savings Account");
-      expect(buildAccountNavigationUrl("401k")).toBe("/finance/transactions/401k");
+      expect(buildAccountNavigationUrl("Checking")).toBe(
+        "/finance/transactions/Checking",
+      );
+      expect(buildAccountNavigationUrl("Savings Account")).toBe(
+        "/finance/transactions/Savings Account",
+      );
+      expect(buildAccountNavigationUrl("401k")).toBe(
+        "/finance/transactions/401k",
+      );
     });
 
     it("should handle account names with special characters", () => {
-      expect(buildAccountNavigationUrl("Account-1")).toBe("/finance/transactions/Account-1");
-      expect(buildAccountNavigationUrl("Account_Name")).toBe("/finance/transactions/Account_Name");
-      expect(buildAccountNavigationUrl("Account (Primary)")).toBe("/finance/transactions/Account (Primary)");
+      expect(buildAccountNavigationUrl("Account-1")).toBe(
+        "/finance/transactions/Account-1",
+      );
+      expect(buildAccountNavigationUrl("Account_Name")).toBe(
+        "/finance/transactions/Account_Name",
+      );
+      expect(buildAccountNavigationUrl("Account (Primary)")).toBe(
+        "/finance/transactions/Account (Primary)",
+      );
     });
 
     it("should throw error for invalid account names", () => {
-      expect(() => buildAccountNavigationUrl("")).toThrow("Invalid account name for navigation");
-      expect(() => buildAccountNavigationUrl("   ")).toThrow("Invalid account name for navigation");
-      expect(() => buildAccountNavigationUrl(null as any)).toThrow("Invalid account name for navigation");
-      expect(() => buildAccountNavigationUrl(undefined as any)).toThrow("Invalid account name for navigation");
+      expect(() => buildAccountNavigationUrl("")).toThrow(
+        "Invalid account name for navigation",
+      );
+      expect(() => buildAccountNavigationUrl("   ")).toThrow(
+        "Invalid account name for navigation",
+      );
+      expect(() => buildAccountNavigationUrl(null as any)).toThrow(
+        "Invalid account name for navigation",
+      );
+      expect(() => buildAccountNavigationUrl(undefined as any)).toThrow(
+        "Invalid account name for navigation",
+      );
     });
 
     it("should handle URL encoding requirements", () => {
       // Note: Actual URL encoding would be handled by the router
-      expect(buildAccountNavigationUrl("Account With Spaces")).toBe("/finance/transactions/Account With Spaces");
+      expect(buildAccountNavigationUrl("Account With Spaces")).toBe(
+        "/finance/transactions/Account With Spaces",
+      );
     });
   });
 
@@ -337,8 +356,8 @@ describe("SelectNavigateAccounts Business Logic (Isolated)", () => {
       expect(maxWidth).toBe(200); // "Investment Portfolio" = 19 chars * 10 = 190, so min 200
 
       // Step 4: Build navigation URLs for each option
-      const navigationUrls = options.map(option =>
-        buildAccountNavigationUrl(option.value)
+      const navigationUrls = options.map((option) =>
+        buildAccountNavigationUrl(option.value),
       );
 
       expect(navigationUrls).toEqual([
@@ -366,7 +385,8 @@ describe("SelectNavigateAccounts Business Logic (Isolated)", () => {
     });
 
     it("should handle single very long account name", () => {
-      const longAccountName = "This Is An Extremely Long Business Account Name That Should Test Width Calculation";
+      const longAccountName =
+        "This Is An Extremely Long Business Account Name That Should Test Width Calculation";
       const rawAccounts = [
         createTestAccount({ accountNameOwner: longAccountName }),
       ];
@@ -427,9 +447,11 @@ describe("SelectNavigateAccounts Business Logic (Isolated)", () => {
         "123 Numeric Account",
       ];
 
-      specialNames.forEach(name => {
+      specialNames.forEach((name) => {
         expect(isValidAccountForNavigation(name)).toBe(true);
-        expect(buildAccountNavigationUrl(name)).toBe(`/finance/transactions/${name}`);
+        expect(buildAccountNavigationUrl(name)).toBe(
+          `/finance/transactions/${name}`,
+        );
       });
     });
   });

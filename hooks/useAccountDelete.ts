@@ -2,7 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
 import { InputSanitizer, SecurityLogger } from "../utils/validation";
 
-export const deleteAccount = async (payload: Account): Promise<Account | null> => {
+export const deleteAccount = async (
+  payload: Account,
+): Promise<Account | null> => {
   try {
     // Validate and sanitize account identifier for deletion
     if (!payload.accountNameOwner) {

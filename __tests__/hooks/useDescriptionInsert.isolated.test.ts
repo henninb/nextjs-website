@@ -34,7 +34,10 @@ describe("insertDescription (Isolated)", () => {
     // Default mock for successful validation
     mockValidateApiPayload.mockReturnValue({
       isValid: true,
-      validatedData: { descriptionName: "test-description", activeStatus: true },
+      validatedData: {
+        descriptionName: "test-description",
+        activeStatus: true,
+      },
       errors: [],
     });
   });
@@ -70,7 +73,10 @@ describe("insertDescription (Isolated)", () => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ descriptionName: "test-description", activeStatus: true }),
+        body: JSON.stringify({
+          descriptionName: "test-description",
+          activeStatus: true,
+        }),
       });
     });
 
@@ -232,7 +238,9 @@ describe("insertDescription (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Failed to parse error response: Invalid JSON"]);
+      expect(calls.log[0]).toEqual([
+        "Failed to parse error response: Invalid JSON",
+      ]);
     });
 
     it("should handle network errors", async () => {
@@ -273,7 +281,10 @@ describe("insertDescription (Isolated)", () => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ descriptionName: "test-description", activeStatus: true }),
+        body: JSON.stringify({
+          descriptionName: "test-description",
+          activeStatus: true,
+        }),
       });
     });
 
@@ -316,11 +327,17 @@ describe("insertDescription (Isolated)", () => {
       const specialDescription = "Special & Characters: 123!@#";
       mockValidateApiPayload.mockReturnValue({
         isValid: true,
-        validatedData: { descriptionName: specialDescription, activeStatus: true },
+        validatedData: {
+          descriptionName: specialDescription,
+          activeStatus: true,
+        },
         errors: [],
       });
 
-      global.fetch = createFetchMock({ descriptionId: 1, descriptionName: specialDescription });
+      global.fetch = createFetchMock({
+        descriptionId: 1,
+        descriptionName: specialDescription,
+      });
 
       const result = await insertDescription(specialDescription);
 
@@ -328,7 +345,10 @@ describe("insertDescription (Isolated)", () => {
       expect(fetch).toHaveBeenCalledWith(
         "/api/description/insert",
         expect.objectContaining({
-          body: JSON.stringify({ descriptionName: specialDescription, activeStatus: true }),
+          body: JSON.stringify({
+            descriptionName: specialDescription,
+            activeStatus: true,
+          }),
         }),
       );
     });
@@ -337,11 +357,17 @@ describe("insertDescription (Isolated)", () => {
       const unicodeDescription = "测试 Description 🎉";
       mockValidateApiPayload.mockReturnValue({
         isValid: true,
-        validatedData: { descriptionName: unicodeDescription, activeStatus: true },
+        validatedData: {
+          descriptionName: unicodeDescription,
+          activeStatus: true,
+        },
         errors: [],
       });
 
-      global.fetch = createFetchMock({ descriptionId: 1, descriptionName: unicodeDescription });
+      global.fetch = createFetchMock({
+        descriptionId: 1,
+        descriptionName: unicodeDescription,
+      });
 
       const result = await insertDescription(unicodeDescription);
 
@@ -356,7 +382,10 @@ describe("insertDescription (Isolated)", () => {
         errors: [],
       });
 
-      global.fetch = createFetchMock({ descriptionId: 1, descriptionName: longDescription });
+      global.fetch = createFetchMock({
+        descriptionId: 1,
+        descriptionName: longDescription,
+      });
 
       const result = await insertDescription(longDescription);
 
@@ -381,7 +410,9 @@ describe("insertDescription (Isolated)", () => {
 
       // The error gets logged in the catch block
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0][0]).toContain("An error occurred: Description validation failed:");
+      expect(calls.log[0][0]).toContain(
+        "An error occurred: Description validation failed:",
+      );
     });
 
     it("should log API errors", async () => {
@@ -397,12 +428,14 @@ describe("insertDescription (Isolated)", () => {
       const calls = consoleSpy.getCalls();
       expect(calls.log).toEqual([
         ["Server error"],
-        ["An error occurred: Server error"]
+        ["An error occurred: Server error"],
       ]);
     });
 
     it("should log network errors", async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error("Connection failed"));
+      global.fetch = jest
+        .fn()
+        .mockRejectedValue(new Error("Connection failed"));
       consoleSpy.start();
 
       try {
@@ -449,12 +482,18 @@ describe("insertDescription (Isolated)", () => {
       // First, validation passes
       mockValidateApiPayload.mockReturnValue({
         isValid: true,
-        validatedData: { descriptionName: "test-description", activeStatus: true },
+        validatedData: {
+          descriptionName: "test-description",
+          activeStatus: true,
+        },
         errors: [],
       });
 
       // Then API returns error
-      global.fetch = createErrorFetchMock("Description already exists in database", 409);
+      global.fetch = createErrorFetchMock(
+        "Description already exists in database",
+        409,
+      );
       consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
@@ -464,7 +503,7 @@ describe("insertDescription (Isolated)", () => {
       const calls = consoleSpy.getCalls();
       expect(calls.log).toEqual([
         ["Description already exists in database"],
-        ["An error occurred: Description already exists in database"]
+        ["An error occurred: Description already exists in database"],
       ]);
     });
   });

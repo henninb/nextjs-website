@@ -259,9 +259,7 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        expect(
-          mockValidateApiPayload,
-        ).toHaveBeenCalledWith(
+        expect(mockValidateApiPayload).toHaveBeenCalledWith(
           mockPayment,
           DataValidator.validatePayment,
           "insertPayment",
@@ -549,9 +547,7 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        expect(
-          mockValidateApiPayload,
-        ).toHaveBeenCalled();
+        expect(mockValidateApiPayload).toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });
 

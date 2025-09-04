@@ -381,6 +381,7 @@ Successfully removed 26 overlapping integration test files after isolated test c
 #### High Priority Hook Tests (Business Logic Focus)
 
 **CRUD Operations with Business Logic:**
+
 - [x] ~~`useDescriptionInsert.ts`~~ → Converted to `useDescriptionInsert.isolated.test.ts`
 - [x] ~~`useParameterInsert.ts`~~ → Converted to `useParameterInsert.isolated.test.ts`
 - [x] ~~`useDescriptionUpdate.ts`~~ → Converted to `useDescriptionUpdate.isolated.test.ts`
@@ -395,6 +396,7 @@ Successfully removed 26 overlapping integration test files after isolated test c
 #### Medium Priority Hook Tests (Data Processing)
 
 **Fetch Operations with Business Logic:**
+
 - [x] ~~`useValidationAmountFetch.ts`~~ → **Completed** - `useValidationAmountFetch.isolated.test.ts` with 22 test cases covering endpoint construction, request configuration, response parsing, error handling, and validation amount business logic
 - [x] ~~`useTransactionByAccountFetch.ts`~~ → **Completed** - `useTransactionByAccountFetch.isolated.test.ts` with 28 test cases covering account-specific transaction filtering, response processing, error handling, and transaction business logic
 - [ ] `useTransactionByCategoryFetch.ts` - Category-based transaction analysis
@@ -403,11 +405,13 @@ Successfully removed 26 overlapping integration test files after isolated test c
 - [ ] `useAccountUsageTracking.ts` - Account usage analytics and tracking
 
 **Authentication & User Management:**
+
 - [x] ~~`useUserAccountRegister.ts`~~ → **Completed** - `useUserAccountRegister.isolated.test.ts` with 27 test cases covering user registration validation logic, security logging, error handling, and comprehensive user data scenarios
 - [ ] `useUser.ts` - User profile management and validation
 - [ ] `useLogoutProcess.ts` - Logout cleanup and session management
 
 **GraphQL Operations (if containing business logic):**
+
 - [ ] `usePaymentInsertGql.ts` - GraphQL payment creation logic
 - [ ] `usePaymentUpdateGql.ts` - GraphQL payment modification logic
 - [ ] `useTransferInsertGql.ts` - GraphQL transfer creation logic
@@ -416,6 +420,7 @@ Successfully removed 26 overlapping integration test files after isolated test c
 #### Lower Priority Hook Tests (Primarily Data Fetching)
 
 **Simple Fetch Operations:**
+
 - [ ] `useAccountFetch.ts` - Basic account data fetching
 - [ ] `useCategoryFetch.ts` - Basic category data fetching
 - [ ] `useDescriptionFetch.ts` - Basic description data fetching
@@ -426,6 +431,7 @@ Successfully removed 26 overlapping integration test files after isolated test c
 - [ ] `useTransferFetch.ts` - Basic transfer data fetching
 
 **Specialized/Domain-Specific:**
+
 - [ ] `useMedicalExpenseInsert.ts` - Medical expense creation
 - [ ] `useMedicalExpenseUpdate.ts` - Medical expense modification
 - [ ] `useMedicalExpenseDelete.ts` - Medical expense deletion
@@ -436,6 +442,7 @@ Successfully removed 26 overlapping integration test files after isolated test c
 - [ ] `usePendingTransactionDeleteAll.ts` - Bulk pending transaction cleanup
 
 **GraphQL Fetch Operations:**
+
 - [ ] `useAccountFetchGql.ts` - GraphQL account fetching
 - [ ] `usePaymentFetchGql.ts` - GraphQL payment fetching
 - [ ] `useTransferFetchGql.ts` - GraphQL transfer fetching
@@ -467,17 +474,22 @@ Successfully removed 26 overlapping integration test files after isolated test c
 **HIGHEST PRIORITY** - Normalize isolated test strategy to eliminate business logic duplication and architectural drift:
 
 #### 🔴 **Problem Identified:**
+
 - **5 hooks** follow consistent export pattern (recent conversions): `useTotalsFetch`, `useTotalsPerAccountFetch`, `useTransactionByAccountFetch`, `useUserAccountRegister`, `useValidationAmountFetch`
 - **~24 hooks** have **DUPLICATED business logic** in isolated tests (dangerous drift risk)
 - **Business logic exists in BOTH hook files AND test files** - major maintenance problem
 
 #### 🎯 **Required Action:**
+
 **Standardize ALL hooks to export business logic functions**
 
 **Pattern to implement:**
+
 ```typescript
 // Hook file (e.g., useAccountDelete.ts)
-export const deleteAccount = async (payload: Account): Promise<Account | null> => {
+export const deleteAccount = async (
+  payload: Account,
+): Promise<Account | null> => {
   // Business logic here (single source of truth)
 };
 
@@ -490,6 +502,7 @@ import { deleteAccount } from "../../hooks/useAccountDelete";
 ```
 
 #### 📋 **24 Hooks Requiring Standardization:**
+
 - `useAccountDelete.ts`, `useAccountInsert.ts`, `useAccountUpdate.ts`
 - `useCategoryDelete.ts`, `useCategoryInsert.ts`, `useCategoryUpdate.ts`
 - `useDescriptionDelete.ts`, `useDescriptionInsert.ts`, `useDescriptionUpdate.ts`
@@ -501,6 +514,7 @@ import { deleteAccount } from "../../hooks/useAccountDelete";
 - `useValidationAmountInsert.ts`
 
 #### 🎯 **Benefits:**
+
 - ✅ Eliminates dangerous business logic duplication
 - ✅ Single source of truth for all business functions
 - ✅ Tests validate actual production code (not duplicated logic)
@@ -508,6 +522,7 @@ import { deleteAccount } from "../../hooks/useAccountDelete";
 - ✅ Prevents drift between hook and test implementations
 
 #### 🚨 **Risk of Inaction:**
+
 - Business logic changes in hooks won't be reflected in tests
 - Tests may pass while production code is broken
 - Maintenance burden of updating logic in multiple places

@@ -57,11 +57,13 @@ const insertValidationAmount = async (
 };
 
 // Helper function to create test validation amount data
-const createTestValidationAmount = (overrides: Partial<ValidationAmount> = {}): ValidationAmount => ({
+const createTestValidationAmount = (
+  overrides: Partial<ValidationAmount> = {},
+): ValidationAmount => ({
   validationId: 1,
   validationDate: new Date("2024-01-01T00:00:00.000Z"),
   accountId: 100,
-  amount: 1000.00,
+  amount: 1000.0,
   transactionState: "cleared" as TransactionState,
   activeStatus: true,
   dateAdded: new Date("2024-01-01T10:00:00.000Z"),
@@ -93,18 +95,24 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result).toEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith("/api/validation/amount/insert/testAccount", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
+        expect(fetch).toHaveBeenCalledWith(
+          "/api/validation/amount/insert/testAccount",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(testPayload),
           },
-          body: JSON.stringify(testPayload),
-        });
+        );
       });
 
       it("should handle 204 no content response", async () => {
@@ -113,7 +121,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock(null, { status: 204 });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result).toBeNull();
       });
@@ -133,7 +144,11 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       });
 
       it("should handle different transaction states", async () => {
-        const transactionStates: TransactionState[] = ["cleared", "outstanding", "future"];
+        const transactionStates: TransactionState[] = [
+          "cleared",
+          "outstanding",
+          "future",
+        ];
 
         for (const transactionState of transactionStates) {
           const testPayload = createTestValidationAmount({ transactionState });
@@ -141,7 +156,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
           global.fetch = createFetchMock({ ...testPayload });
 
-          const result = await insertValidationAmount(accountNameOwner, testPayload);
+          const result = await insertValidationAmount(
+            accountNameOwner,
+            testPayload,
+          );
 
           expect(result!.transactionState).toBe(transactionState);
         }
@@ -160,7 +178,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result).toEqual(testPayload);
       });
@@ -171,12 +192,15 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
 
-        global.fetch = createErrorFetchMock("Invalid validation amount data", 400);
+        global.fetch = createErrorFetchMock(
+          "Invalid validation amount data",
+          400,
+        );
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
-          "Invalid validation amount data",
-        );
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow("Invalid validation amount data");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -189,12 +213,15 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
 
-        global.fetch = createErrorFetchMock("Validation amount already exists", 409);
+        global.fetch = createErrorFetchMock(
+          "Validation amount already exists",
+          409,
+        );
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
-          "Validation amount already exists",
-        );
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow("Validation amount already exists");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -210,9 +237,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         global.fetch = createErrorFetchMock("Internal server error", 500);
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
-          "Internal server error",
-        );
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow("Internal server error");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -232,7 +259,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow(
           "Failed to parse error response: No error message returned.",
         );
 
@@ -240,7 +269,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         expect(calls.log).toEqual([
           ["No error message returned."],
           ["Failed to parse error response: No error message returned."],
-          ["An error occurred: Error: Failed to parse error response: No error message returned."],
+          [
+            "An error occurred: Error: Failed to parse error response: No error message returned.",
+          ],
         ]);
       });
 
@@ -255,14 +286,16 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON",
-        );
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow("Failed to parse error response: Invalid JSON");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
           ["Failed to parse error response: Invalid JSON"],
-          ["An error occurred: Error: Failed to parse error response: Invalid JSON"],
+          [
+            "An error occurred: Error: Failed to parse error response: Invalid JSON",
+          ],
         ]);
       });
 
@@ -273,27 +306,33 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
-          "Network error",
-        );
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Error: Network error"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Error: Network error",
+        ]);
       });
 
       it("should handle timeout errors", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
 
-        global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValue(new Error("Request timeout"));
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
-          "Request timeout",
-        );
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow("Request timeout");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Error: Request timeout"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Error: Request timeout",
+        ]);
       });
 
       it("should handle unknown error fallback", async () => {
@@ -307,7 +346,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow(
           "Failed to parse error response: No error message returned.",
         );
 
@@ -315,7 +356,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         expect(calls.log).toEqual([
           ["No error message returned."],
           ["Failed to parse error response: No error message returned."],
-          ["An error occurred: Error: Failed to parse error response: No error message returned."],
+          [
+            "An error occurred: Error: Failed to parse error response: No error message returned.",
+          ],
         ]);
       });
     });
@@ -402,7 +445,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
     describe("Business logic scenarios", () => {
       it("should handle account balance validation scenarios", async () => {
         const testPayload = createTestValidationAmount({
-          amount: 5000.00,
+          amount: 5000.0,
           transactionState: "cleared" as TransactionState,
           validationDate: new Date("2024-01-31T23:59:59.000Z"),
         });
@@ -410,16 +453,21 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
-        expect(result!.amount).toBe(5000.00);
+        expect(result!.amount).toBe(5000.0);
         expect(result!.transactionState).toBe("cleared");
-        expect(result!.validationDate).toEqual(new Date("2024-01-31T23:59:59.000Z"));
+        expect(result!.validationDate).toEqual(
+          new Date("2024-01-31T23:59:59.000Z"),
+        );
       });
 
       it("should handle outstanding transaction validations", async () => {
         const testPayload = createTestValidationAmount({
-          amount: -250.50, // Negative amount for outstanding transactions
+          amount: -250.5, // Negative amount for outstanding transactions
           transactionState: "outstanding" as TransactionState,
           activeStatus: true,
         });
@@ -427,9 +475,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
-        expect(result!.amount).toBe(-250.50);
+        expect(result!.amount).toBe(-250.5);
         expect(result!.transactionState).toBe("outstanding");
         expect(result!.activeStatus).toBe(true);
       });
@@ -437,7 +488,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
       it("should handle future transaction validations", async () => {
         const futureDate = new Date("2025-12-31T00:00:00.000Z");
         const testPayload = createTestValidationAmount({
-          amount: 1000.00,
+          amount: 1000.0,
           transactionState: "future" as TransactionState,
           validationDate: futureDate,
         });
@@ -445,9 +496,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
-        expect(result!.amount).toBe(1000.00);
+        expect(result!.amount).toBe(1000.0);
         expect(result!.transactionState).toBe("future");
         expect(result!.validationDate).toEqual(futureDate);
       });
@@ -490,7 +544,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result!.amount).toBe(999999.99);
         expect(result!.transactionState).toBe("cleared");
@@ -505,7 +562,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result!.amount).toBe(0.01);
       });
@@ -515,7 +575,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           validationId: 12345,
           validationDate: new Date("2024-03-15T12:00:00.000Z"),
           accountId: 789,
-          amount: 2750.50,
+          amount: 2750.5,
           transactionState: "outstanding" as TransactionState,
           activeStatus: true,
         });
@@ -526,10 +586,13 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           validationId: 67890, // Server-assigned ID
         });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result!.validationId).toBe(67890);
-        expect(result!.amount).toBe(2750.50);
+        expect(result!.amount).toBe(2750.5);
         expect(result!.transactionState).toBe("outstanding");
       });
     });
@@ -541,7 +604,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result).toEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
@@ -556,7 +622,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result).toEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
@@ -571,7 +640,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(longAccountName, testPayload);
+        const result = await insertValidationAmount(
+          longAccountName,
+          testPayload,
+        );
 
         expect(result).toEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
@@ -586,19 +658,27 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result!.amount).toBe(0);
       });
 
       it("should handle decimal precision amounts", async () => {
         const preciseAmount = 123.456789;
-        const testPayload = createTestValidationAmount({ amount: preciseAmount });
+        const testPayload = createTestValidationAmount({
+          amount: preciseAmount,
+        });
         const accountNameOwner = "precisionAccount";
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result!.amount).toBe(preciseAmount);
       });
@@ -609,7 +689,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result!.activeStatus).toBe(false);
       });
@@ -624,7 +707,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock({ ...testPayload });
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result!.accountId).toBeUndefined();
         expect(result!.dateAdded).toBeUndefined();
@@ -673,7 +759,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
           ["Failed to parse error response: JSON parse error"],
-          ["An error occurred: Error: Failed to parse error response: JSON parse error"],
+          [
+            "An error occurred: Error: Failed to parse error response: JSON parse error",
+          ],
         ]);
       });
 
@@ -681,7 +769,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
 
-        global.fetch = jest.fn().mockRejectedValue(new Error("Connection failed"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValue(new Error("Connection failed"));
         consoleSpy.start();
 
         try {
@@ -691,7 +781,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Error: Connection failed"]);
+        expect(calls.log[0]).toEqual([
+          "An error occurred: Error: Connection failed",
+        ]);
       });
 
       it("should log unknown error fallback", async () => {
@@ -715,7 +807,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         expect(calls.log).toEqual([
           ["No error message returned."],
           ["Failed to parse error response: No error message returned."],
-          ["An error occurred: Error: Failed to parse error response: No error message returned."],
+          [
+            "An error occurred: Error: Failed to parse error response: No error message returned.",
+          ],
         ]);
       });
     });
@@ -744,7 +838,10 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock(expectedResponse);
 
-        const result = await insertValidationAmount(accountNameOwner, testPayload);
+        const result = await insertValidationAmount(
+          accountNameOwner,
+          testPayload,
+        );
 
         expect(result).toEqual(expectedResponse);
         expect(result!.validationId).toBe(555555);
@@ -757,12 +854,15 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         });
         const accountNameOwner = "errorChainAccount";
 
-        global.fetch = createErrorFetchMock("Amount exceeds allowed negative limit", 400);
+        global.fetch = createErrorFetchMock(
+          "Amount exceeds allowed negative limit",
+          400,
+        );
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
-          "Amount exceeds allowed negative limit",
-        );
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow("Amount exceeds allowed negative limit");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -775,17 +875,24 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "duplicateTestAccount";
 
-        global.fetch = createErrorFetchMock("Duplicate validation amount for this account and date", 409);
+        global.fetch = createErrorFetchMock(
+          "Duplicate validation amount for this account and date",
+          409,
+        );
         consoleSpy.start();
 
-        await expect(insertValidationAmount(accountNameOwner, testPayload)).rejects.toThrow(
+        await expect(
+          insertValidationAmount(accountNameOwner, testPayload),
+        ).rejects.toThrow(
           "Duplicate validation amount for this account and date",
         );
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
           ["Duplicate validation amount for this account and date"],
-          ["An error occurred: Error: Duplicate validation amount for this account and date"],
+          [
+            "An error occurred: Error: Duplicate validation amount for this account and date",
+          ],
         ]);
       });
     });

@@ -25,8 +25,10 @@ describe("deleteAccount (Isolated)", () => {
     cleared: 200,
   };
 
-  const mockSanitizeAccountName = InputSanitizer.sanitizeAccountName as jest.Mock;
-  const mockLogSanitizationAttempt = SecurityLogger.logSanitizationAttempt as jest.Mock;
+  const mockSanitizeAccountName =
+    InputSanitizer.sanitizeAccountName as jest.Mock;
+  const mockLogSanitizationAttempt =
+    SecurityLogger.logSanitizationAttempt as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -49,9 +51,7 @@ describe("deleteAccount (Isolated)", () => {
 
     const result = await deleteAccount(mockAccount);
 
-    expect(mockSanitizeAccountName).toHaveBeenCalledWith(
-      "test_account",
-    );
+    expect(mockSanitizeAccountName).toHaveBeenCalledWith("test_account");
     expect(mockLogSanitizationAttempt).toHaveBeenCalledWith(
       "accountNameOwner",
       "test_account",
@@ -98,9 +98,7 @@ describe("deleteAccount (Isolated)", () => {
       "Invalid account name provided",
     );
 
-    expect(mockSanitizeAccountName).toHaveBeenCalledWith(
-      "test_account",
-    );
+    expect(mockSanitizeAccountName).toHaveBeenCalledWith("test_account");
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -183,9 +181,7 @@ describe("deleteAccount (Isolated)", () => {
       ...mockAccount,
       accountNameOwner: "test<script>alert('xss')</script>",
     };
-    mockSanitizeAccountName.mockReturnValueOnce(
-      "test_sanitized",
-    );
+    mockSanitizeAccountName.mockReturnValueOnce("test_sanitized");
 
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
@@ -206,9 +202,7 @@ describe("deleteAccount (Isolated)", () => {
   });
 
   it("should use sanitized account name in endpoint", async () => {
-    mockSanitizeAccountName.mockReturnValueOnce(
-      "sanitized_name",
-    );
+    mockSanitizeAccountName.mockReturnValueOnce("sanitized_name");
 
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,

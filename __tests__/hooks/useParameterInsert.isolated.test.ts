@@ -96,7 +96,9 @@ describe("insertParameter (Isolated)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual(["Parameter name already exists"]);
-      expect(calls.error[0]).toEqual(["An error occurred: Parameter name already exists"]);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: Parameter name already exists",
+      ]);
     });
 
     it("should handle 500 server error", async () => {
@@ -110,7 +112,9 @@ describe("insertParameter (Isolated)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual(["Internal server error"]);
-      expect(calls.error[0]).toEqual(["An error occurred: Internal server error"]);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: Internal server error",
+      ]);
     });
 
     it("should handle 409 conflict error for duplicate parameters", async () => {
@@ -118,7 +122,10 @@ describe("insertParameter (Isolated)", () => {
         parameterName: "EXISTING_PARAM",
         parameterValue: "some-value",
       });
-      global.fetch = createErrorFetchMock("Parameter already exists with this name", 409);
+      global.fetch = createErrorFetchMock(
+        "Parameter already exists with this name",
+        409,
+      );
       consoleSpy.start();
 
       await expect(insertParameter(duplicateParameter)).rejects.toThrow(
@@ -144,7 +151,9 @@ describe("insertParameter (Isolated)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual(["No error message returned."]);
-      expect(calls.error[0]).toEqual(["An error occurred: Failed to parse error response: No error message returned."]);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: Failed to parse error response: No error message returned.",
+      ]);
     });
 
     it("should handle malformed error response", async () => {
@@ -161,8 +170,12 @@ describe("insertParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Failed to parse error response: Invalid JSON"]);
-      expect(calls.error[0]).toEqual(["An error occurred: Failed to parse error response: Invalid JSON"]);
+      expect(calls.log[0]).toEqual([
+        "Failed to parse error response: Invalid JSON",
+      ]);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: Failed to parse error response: Invalid JSON",
+      ]);
     });
 
     it("should handle network errors", async () => {
@@ -526,7 +539,9 @@ describe("insertParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Parameter name cannot be empty and must be unique"]);
+      expect(calls.log[0]).toEqual([
+        "Parameter name cannot be empty and must be unique",
+      ]);
       expect(calls.error[0]).toEqual([
         "An error occurred: Parameter name cannot be empty and must be unique",
       ]);
@@ -543,7 +558,9 @@ describe("insertParameter (Isolated)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual(["Database connection failed"]);
-      expect(calls.error[0]).toEqual(["An error occurred: Database connection failed"]);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: Database connection failed",
+      ]);
     });
   });
 

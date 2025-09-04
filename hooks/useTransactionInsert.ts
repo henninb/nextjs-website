@@ -21,7 +21,10 @@ export const getAccountKey = (accountNameOwner: string) => [
   accountNameOwner,
 ];
 
-export const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
+export const getTotalsKey = (accountNameOwner: string) => [
+  "totals",
+  accountNameOwner,
+];
 
 export const setupNewTransaction = async (
   payload: Transaction,

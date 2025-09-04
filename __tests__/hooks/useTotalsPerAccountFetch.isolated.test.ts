@@ -19,9 +19,9 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
   const originalFetch = global.fetch;
 
   const createTestTotals = (overrides = {}): Totals => ({
-    totals: 1000.50,
+    totals: 1000.5,
     totalsFuture: 300.25,
-    totalsCleared: 500.00,
+    totalsCleared: 500.0,
     totalsOutstanding: 200.25,
     ...overrides,
   });
@@ -52,7 +52,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        }
+        },
       );
     });
 
@@ -64,7 +64,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/my-business-account",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -76,7 +76,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/account-with_special.chars@123",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -88,7 +88,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/account with spaces",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -100,7 +100,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -108,42 +108,42 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
   describe("Per-Account Financial Calculations", () => {
     it("should handle checking account totals", async () => {
       const checkingTotals = createTestTotals({
-        totals: 2500.00,
-        totalsFuture: 500.00,
-        totalsCleared: 1800.00,
-        totalsOutstanding: 200.00,
+        totals: 2500.0,
+        totalsFuture: 500.0,
+        totalsCleared: 1800.0,
+        totalsOutstanding: 200.0,
       });
       global.fetch = createFetchMock(checkingTotals);
 
       const result = await fetchTotalsPerAccount("checking-main");
 
       expect(result).toEqual(checkingTotals);
-      expect(result.totals).toBe(2500.00);
-      expect(result.totalsCleared).toBe(1800.00);
+      expect(result.totals).toBe(2500.0);
+      expect(result.totalsCleared).toBe(1800.0);
     });
 
     it("should handle savings account totals", async () => {
       const savingsTotals = createTestTotals({
-        totals: 10000.00,
-        totalsFuture: 1000.00,
-        totalsCleared: 9000.00,
-        totalsOutstanding: 0.00,
+        totals: 10000.0,
+        totalsFuture: 1000.0,
+        totalsCleared: 9000.0,
+        totalsOutstanding: 0.0,
       });
       global.fetch = createFetchMock(savingsTotals);
 
       const result = await fetchTotalsPerAccount("savings-emergency");
 
       expect(result).toEqual(savingsTotals);
-      expect(result.totals).toBe(10000.00);
-      expect(result.totalsOutstanding).toBe(0.00);
+      expect(result.totals).toBe(10000.0);
+      expect(result.totalsOutstanding).toBe(0.0);
     });
 
     it("should handle credit card account with negative balances", async () => {
       const creditCardTotals = createTestTotals({
         totals: -1500.75,
         totalsFuture: -300.25,
-        totalsCleared: -1000.50,
-        totalsOutstanding: -200.00,
+        totalsCleared: -1000.5,
+        totalsOutstanding: -200.0,
       });
       global.fetch = createFetchMock(creditCardTotals);
 
@@ -175,7 +175,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       const businessTotals = createTestTotals({
         totals: 1000000.99,
         totalsFuture: 250000.25,
-        totalsCleared: 500000.50,
+        totalsCleared: 500000.5,
         totalsOutstanding: 250000.24,
       });
       global.fetch = createFetchMock(businessTotals);
@@ -188,69 +188,72 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
     it("should handle zero balance accounts", async () => {
       const zeroTotals = createTestTotals({
-        totals: 0.00,
-        totalsFuture: 0.00,
-        totalsCleared: 0.00,
-        totalsOutstanding: 0.00,
+        totals: 0.0,
+        totalsFuture: 0.0,
+        totalsCleared: 0.0,
+        totalsOutstanding: 0.0,
       });
       global.fetch = createFetchMock(zeroTotals);
 
       const result = await fetchTotalsPerAccount("closed-account");
 
-      expect(result.totals).toBe(0.00);
-      expect(result.totalsFuture).toBe(0.00);
-      expect(result.totalsCleared).toBe(0.00);
-      expect(result.totalsOutstanding).toBe(0.00);
+      expect(result.totals).toBe(0.0);
+      expect(result.totalsFuture).toBe(0.0);
+      expect(result.totalsCleared).toBe(0.0);
+      expect(result.totalsOutstanding).toBe(0.0);
     });
   });
 
   describe("Account-Specific Business Logic Validation", () => {
     it("should validate balanced totals for account", async () => {
       const balancedTotals = createTestTotals({
-        totals: 1500.00,
-        totalsFuture: 400.00,
-        totalsCleared: 800.00,
-        totalsOutstanding: 300.00,
+        totals: 1500.0,
+        totalsFuture: 400.0,
+        totalsCleared: 800.0,
+        totalsOutstanding: 300.0,
       });
       global.fetch = createFetchMock(balancedTotals);
 
       const result = await fetchTotalsPerAccount("balanced-account");
 
       // Business rule: Future + Cleared + Outstanding should relate to totals
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBe(result.totals);
     });
 
     it("should handle accounts with outstanding credits", async () => {
       const creditAccount = createTestTotals({
-        totals: 500.00,
-        totalsFuture: 200.00,
-        totalsCleared: 600.00,
-        totalsOutstanding: -300.00, // Credit balance
+        totals: 500.0,
+        totalsFuture: 200.0,
+        totalsCleared: 600.0,
+        totalsOutstanding: -300.0, // Credit balance
       });
       global.fetch = createFetchMock(creditAccount);
 
       const result = await fetchTotalsPerAccount("credit-account");
 
-      expect(result.totalsOutstanding).toBe(-300.00);
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      expect(result.totalsOutstanding).toBe(-300.0);
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBe(result.totals);
     });
 
     it("should handle accounts with future income exceeding current totals", async () => {
       const futureTotals = createTestTotals({
-        totals: 1000.00,
-        totalsFuture: 2000.00, // Large future amount
-        totalsCleared: 500.00,
-        totalsOutstanding: -1500.00, // Negative to balance
+        totals: 1000.0,
+        totalsFuture: 2000.0, // Large future amount
+        totalsCleared: 500.0,
+        totalsOutstanding: -1500.0, // Negative to balance
       });
       global.fetch = createFetchMock(futureTotals);
 
       const result = await fetchTotalsPerAccount("future-heavy-account");
 
-      expect(result.totalsFuture).toBe(2000.00);
-      expect(result.totalsOutstanding).toBe(-1500.00);
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      expect(result.totalsFuture).toBe(2000.0);
+      expect(result.totalsOutstanding).toBe(-1500.0);
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBe(result.totals);
     });
 
@@ -266,7 +269,8 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       const result = await fetchTotalsPerAccount("micro-account");
 
       expect(result.totals).toBe(0.06);
-      const calculatedTotal = result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
+      const calculatedTotal =
+        result.totalsFuture + result.totalsCleared + result.totalsOutstanding;
       expect(calculatedTotal).toBeCloseTo(result.totals, 2);
     });
   });
@@ -283,13 +287,13 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("nonexistent")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Not Found"
+        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Not Found",
       );
 
       expect(mockLog).toHaveBeenCalledWith("Resource not found (404).");
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals per account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -303,12 +307,12 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Internal Server Error"
+        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Internal Server Error",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals per account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -322,12 +326,12 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Unauthorized"
+        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Unauthorized",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals per account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -341,12 +345,12 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Bad Request"
+        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Bad Request",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals per account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -355,12 +359,12 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       global.fetch = simulateNetworkError();
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Network error"
+        "Failed to fetch totals per account data: Network error",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals per account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -369,12 +373,12 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       global.fetch = simulateTimeoutError();
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Request timeout"
+        "Failed to fetch totals per account data: Request timeout",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals per account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -383,12 +387,12 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error());
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data:"
+        "Failed to fetch totals per account data:",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching totals per account data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
   });
@@ -400,17 +404,14 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       await fetchTotalsPerAccount("testAccount");
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      expect(global.fetch).toHaveBeenCalledWith(expect.any(String), {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
     });
 
     it("should include credentials for authentication", async () => {
@@ -423,7 +424,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -437,7 +438,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           method: "GET",
-        })
+        }),
       );
     });
 
@@ -454,7 +455,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           }),
-        })
+        }),
       );
     });
   });
@@ -516,7 +517,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/specific-account",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -556,7 +557,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
         expect(result).toEqual(testTotals);
         expect(global.fetch).toHaveBeenCalledWith(
           `/api/transaction/account/totals/${accountName}`,
-          expect.any(Object)
+          expect.any(Object),
         );
       }
     });
@@ -573,7 +574,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       expect(result).toEqual(testTotals);
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/totals/${longAccountName}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -587,7 +588,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       expect(result).toEqual(testTotals);
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/12345",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -601,7 +602,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       expect(result).toEqual(testTotals);
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/totals/${unicodeAccount}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -615,7 +616,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       expect(result).toEqual(testTotals);
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/totals/${specialAccount}`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });

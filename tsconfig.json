@@ -17,5 +17,10 @@
     "types": ["jest", "@testing-library/jest-dom"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "utils/validation/**/*", "testHelpers.ts", "__tests__"]
+  "exclude": [
+    "node_modules",
+    "utils/validation/**/*",
+    "testHelpers.ts",
+    "__tests__"
+  ]
 }

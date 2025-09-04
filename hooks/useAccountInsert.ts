@@ -20,7 +20,9 @@ export const setupNewAccount = (payload: Account) => {
   };
 };
 
-export const insertAccount = async (payload: Account): Promise<Account | null> => {
+export const insertAccount = async (
+  payload: Account,
+): Promise<Account | null> => {
   try {
     // Validate and sanitize the account data
     const validation = hookValidators.validateApiPayload(

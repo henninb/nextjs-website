@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 
-export const insertParameter = async (payload: Parameter): Promise<Parameter> => {
+export const insertParameter = async (
+  payload: Parameter,
+): Promise<Parameter> => {
   try {
     const endpoint = "/api/parameter/insert";
 

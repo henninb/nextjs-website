@@ -13,12 +13,14 @@ import PendingTransaction from "../../model/PendingTransaction";
 import { insertPendingTransaction } from "../../hooks/usePendingTransactionInsert";
 
 // Helper function to create test pending transaction data
-const createTestPendingTransaction = (overrides: Partial<PendingTransaction> = {}): PendingTransaction => ({
+const createTestPendingTransaction = (
+  overrides: Partial<PendingTransaction> = {},
+): PendingTransaction => ({
   pendingTransactionId: 1,
   accountNameOwner: "testUser",
   transactionDate: new Date("2024-01-01T00:00:00.000Z"),
   description: "Test pending transaction",
-  amount: 100.50,
+  amount: 100.5,
   reviewStatus: "pending",
   ...overrides,
 });
@@ -62,7 +64,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toContain("Sending data:");
-        expect(calls.log[0][0]).toContain(JSON.stringify(testPendingTransaction));
+        expect(calls.log[0][0]).toContain(
+          JSON.stringify(testPendingTransaction),
+        );
       });
 
       it("should log the data being sent before API call", async () => {
@@ -77,11 +81,18 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await insertPendingTransaction(testPendingTransaction);
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([`Sending data: ${JSON.stringify(testPendingTransaction)}`]);
+        expect(calls.log[0]).toEqual([
+          `Sending data: ${JSON.stringify(testPendingTransaction)}`,
+        ]);
       });
 
       it("should handle different review statuses", async () => {
-        const reviewStatuses = ["pending", "approved", "rejected", "under_review"];
+        const reviewStatuses = [
+          "pending",
+          "approved",
+          "rejected",
+          "under_review",
+        ];
 
         for (const status of reviewStatuses) {
           const testPendingTransaction = createTestPendingTransaction({
@@ -129,12 +140,15 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
     describe("API error handling", () => {
       it("should handle 400 error with response message", async () => {
         const testPendingTransaction = createTestPendingTransaction();
-        global.fetch = createErrorFetchMock("Invalid pending transaction data", 400);
+        global.fetch = createErrorFetchMock(
+          "Invalid pending transaction data",
+          400,
+        );
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Invalid pending transaction data",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Invalid pending transaction data");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -145,12 +159,15 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
       it("should handle 409 conflict error", async () => {
         const testPendingTransaction = createTestPendingTransaction();
-        global.fetch = createErrorFetchMock("Pending transaction already exists", 409);
+        global.fetch = createErrorFetchMock(
+          "Pending transaction already exists",
+          409,
+        );
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Pending transaction already exists",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Pending transaction already exists");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -164,9 +181,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         global.fetch = createErrorFetchMock("Internal server error", 500);
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Internal server error",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Internal server error");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -184,13 +201,17 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow(
           "Failed to parse error response: No error message returned.",
         );
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toContain("Sending data:");
-        expect(calls.log[1]).toEqual(["Failed to parse error response: No error message returned."]);
+        expect(calls.log[1]).toEqual([
+          "Failed to parse error response: No error message returned.",
+        ]);
       });
 
       it("should handle malformed error response", async () => {
@@ -202,9 +223,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Failed to parse error response: Invalid JSON");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -218,9 +239,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Network error",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toContain("Sending data:");
@@ -228,12 +249,14 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
       it("should handle timeout errors", async () => {
         const testPendingTransaction = createTestPendingTransaction();
-        global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
+        global.fetch = jest
+          .fn()
+          .mockRejectedValue(new Error("Request timeout"));
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Request timeout",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Request timeout");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toContain("Sending data:");
@@ -248,7 +271,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         });
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow(
           "Failed to parse error response: No error message returned.",
         );
 
@@ -349,10 +374,12 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
       });
 
       it("should handle different amount types", async () => {
-        const amounts = [0.01, 100.50, 1000.00, 9999.99, 0];
+        const amounts = [0.01, 100.5, 1000.0, 9999.99, 0];
 
         for (const amount of amounts) {
-          const testPendingTransaction = createTestPendingTransaction({ amount });
+          const testPendingTransaction = createTestPendingTransaction({
+            amount,
+          });
 
           global.fetch = createFetchMock({ ...testPendingTransaction });
 
@@ -370,7 +397,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         ];
 
         for (const transactionDate of dates) {
-          const testPendingTransaction = createTestPendingTransaction({ transactionDate });
+          const testPendingTransaction = createTestPendingTransaction({
+            transactionDate,
+          });
 
           global.fetch = createFetchMock({ ...testPendingTransaction });
 
@@ -384,7 +413,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         const testPendingTransaction = createTestPendingTransaction({
           accountNameOwner: "businessAccount",
           description: "Quarterly tax payment - pending approval",
-          amount: 5000.00,
+          amount: 5000.0,
           reviewStatus: "under_review",
           transactionDate: new Date("2024-03-31T23:59:59.000Z"),
         });
@@ -398,14 +427,14 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         expect(result.pendingTransactionId).toBe(789);
         expect(result.accountNameOwner).toBe("businessAccount");
-        expect(result.amount).toBe(5000.00);
+        expect(result.amount).toBe(5000.0);
         expect(result.reviewStatus).toBe("under_review");
       });
 
       it("should handle pending transaction validation scenarios", async () => {
         const testPendingTransaction = createTestPendingTransaction({
           description: "High-value transaction requiring approval",
-          amount: 10000.00,
+          amount: 10000.0,
           reviewStatus: "pending",
         });
 
@@ -413,9 +442,11 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         const result = await insertPendingTransaction(testPendingTransaction);
 
-        expect(result.amount).toBe(10000.00);
+        expect(result.amount).toBe(10000.0);
         expect(result.reviewStatus).toBe("pending");
-        expect(result.description).toBe("High-value transaction requiring approval");
+        expect(result.description).toBe(
+          "High-value transaction requiring approval",
+        );
       });
 
       it("should handle recurring pending transaction patterns", async () => {
@@ -430,7 +461,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         const result = await insertPendingTransaction(testPendingTransaction);
 
-        expect(result.description).toBe("Monthly recurring payment - auto-generated");
+        expect(result.description).toBe(
+          "Monthly recurring payment - auto-generated",
+        );
         expect(result.reviewStatus).toBe("approved");
         expect(result.amount).toBe(299.99);
       });
@@ -438,7 +471,8 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
     describe("Edge cases", () => {
       it("should handle special characters in descriptions", async () => {
-        const specialDescription = "Payment for Smith & Co: Invoice #123-ABC!@#";
+        const specialDescription =
+          "Payment for Smith & Co: Invoice #123-ABC!@#";
         const testPendingTransaction = createTestPendingTransaction({
           description: specialDescription,
         });
@@ -574,7 +608,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toMatch(/^Sending data: /);
-        expect(calls.log[0][0]).toContain(JSON.stringify(testPendingTransaction));
+        expect(calls.log[0][0]).toContain(
+          JSON.stringify(testPendingTransaction),
+        );
       });
 
       it("should log API error messages", async () => {
@@ -646,7 +682,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           accountNameOwner: "corporateAccount",
           transactionDate: new Date("2024-06-30T18:00:00.000Z"),
           description: "End of quarter expense - requires CFO approval",
-          amount: 15000.00,
+          amount: 15000.0,
           reviewStatus: "under_review",
         });
 
@@ -655,7 +691,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           accountNameOwner: "corporateAccount",
           transactionDate: new Date("2024-06-30T18:00:00.000Z"),
           description: "End of quarter expense - requires CFO approval",
-          amount: 15000.00,
+          amount: 15000.0,
           reviewStatus: "under_review",
         };
 
@@ -666,11 +702,13 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         expect(result).toEqual(expectedResponse);
         expect(result.pendingTransactionId).toBe(555);
-        expect(result.amount).toBe(15000.00);
+        expect(result.amount).toBe(15000.0);
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toContain("Sending data:");
-        expect(calls.log[0][0]).toContain(JSON.stringify(testPendingTransaction));
+        expect(calls.log[0][0]).toContain(
+          JSON.stringify(testPendingTransaction),
+        );
       });
 
       it("should handle validation to API error chain", async () => {
@@ -678,12 +716,15 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           amount: -999999, // Invalid large negative amount
         });
 
-        global.fetch = createErrorFetchMock("Amount exceeds allowed negative limit", 400);
+        global.fetch = createErrorFetchMock(
+          "Amount exceeds allowed negative limit",
+          400,
+        );
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Amount exceeds allowed negative limit",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Amount exceeds allowed negative limit");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([
@@ -695,12 +736,15 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
       it("should handle duplicate pending transaction detection", async () => {
         const testPendingTransaction = createTestPendingTransaction();
 
-        global.fetch = createErrorFetchMock("Duplicate pending transaction detected", 409);
+        global.fetch = createErrorFetchMock(
+          "Duplicate pending transaction detected",
+          409,
+        );
         consoleSpy.start();
 
-        await expect(insertPendingTransaction(testPendingTransaction)).rejects.toThrow(
-          "Duplicate pending transaction detected",
-        );
+        await expect(
+          insertPendingTransaction(testPendingTransaction),
+        ).rejects.toThrow("Duplicate pending transaction detected");
 
         const calls = consoleSpy.getCalls();
         expect(calls.log).toEqual([

@@ -69,7 +69,7 @@ describe("userAccountRegister (Isolated)", () => {
       });
       expect(mockConsoleLog).toHaveBeenCalledWith(
         "User registration attempt for username:",
-        testUser.username
+        testUser.username,
       );
     });
 
@@ -105,7 +105,7 @@ describe("userAccountRegister (Isolated)", () => {
         "/api/user/register",
         expect.objectContaining({
           body: JSON.stringify(sanitizedUser),
-        })
+        }),
       );
     });
 
@@ -132,7 +132,7 @@ describe("userAccountRegister (Isolated)", () => {
         "/api/user/register",
         expect.objectContaining({
           body: JSON.stringify(completeUser),
-        })
+        }),
       );
     });
   });
@@ -155,11 +155,11 @@ describe("userAccountRegister (Isolated)", () => {
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "User registration validation failed: Username is required, Password is too weak, First name must be at least 2 characters"
+        "User registration validation failed: Username is required, Password is too weak, First name must be at least 2 characters",
       );
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        "An error occurred: User registration validation failed: Username is required, Password is too weak, First name must be at least 2 characters"
+        "An error occurred: User registration validation failed: Username is required, Password is too weak, First name must be at least 2 characters",
       );
       expect(global.fetch).not.toHaveBeenCalled();
     });
@@ -174,7 +174,7 @@ describe("userAccountRegister (Isolated)", () => {
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "User registration validation failed: Validation failed"
+        "User registration validation failed: Validation failed",
       );
 
       expect(global.fetch).not.toHaveBeenCalled();
@@ -190,7 +190,7 @@ describe("userAccountRegister (Isolated)", () => {
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "User registration validation failed: Validation failed"
+        "User registration validation failed: Validation failed",
       );
 
       expect(global.fetch).not.toHaveBeenCalled();
@@ -212,7 +212,7 @@ describe("userAccountRegister (Isolated)", () => {
       expect(mockValidateApiPayload).toHaveBeenCalledWith(
         testUser,
         DataValidator.validateUser,
-        "userAccountRegister"
+        "userAccountRegister",
       );
     });
   });
@@ -232,13 +232,17 @@ describe("userAccountRegister (Isolated)", () => {
         ok: false,
         status: 400,
         statusText: "Bad Request",
-        json: jest.fn().mockResolvedValue({ response: "Username already exists" }),
+        json: jest
+          .fn()
+          .mockResolvedValue({ response: "Username already exists" }),
       });
 
-      await expect(userAccountRegister(testUser)).rejects.toThrow("Username already exists");
+      await expect(userAccountRegister(testUser)).rejects.toThrow(
+        "Username already exists",
+      );
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        "An error occurred: Username already exists"
+        "An error occurred: Username already exists",
       );
     });
 
@@ -255,10 +259,14 @@ describe("userAccountRegister (Isolated)", () => {
         ok: false,
         status: 500,
         statusText: "Internal Server Error",
-        json: jest.fn().mockResolvedValue({ response: "Internal server error" }),
+        json: jest
+          .fn()
+          .mockResolvedValue({ response: "Internal server error" }),
       });
 
-      await expect(userAccountRegister(testUser)).rejects.toThrow("Internal server error");
+      await expect(userAccountRegister(testUser)).rejects.toThrow(
+        "Internal server error",
+      );
     });
 
     it("should handle error response without message", async () => {
@@ -279,12 +287,12 @@ describe("userAccountRegister (Isolated)", () => {
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Failed to parse error response: No error message returned."
+        "Failed to parse error response: No error message returned.",
       );
 
       expect(mockConsoleLog).toHaveBeenCalledWith("No error message returned.");
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        "Failed to parse error response: No error message returned."
+        "Failed to parse error response: No error message returned.",
       );
     });
 
@@ -306,11 +314,11 @@ describe("userAccountRegister (Isolated)", () => {
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Failed to parse error response: Unexpected token"
+        "Failed to parse error response: Unexpected token",
       );
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        "Failed to parse error response: Unexpected token"
+        "Failed to parse error response: Unexpected token",
       );
     });
 
@@ -325,9 +333,13 @@ describe("userAccountRegister (Isolated)", () => {
       });
       global.fetch = simulateNetworkError();
 
-      await expect(userAccountRegister(testUser)).rejects.toThrow("Network error");
+      await expect(userAccountRegister(testUser)).rejects.toThrow(
+        "Network error",
+      );
 
-      expect(mockConsoleLog).toHaveBeenCalledWith("An error occurred: Network error");
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        "An error occurred: Network error",
+      );
     });
 
     it("should handle timeout errors", async () => {
@@ -340,7 +352,9 @@ describe("userAccountRegister (Isolated)", () => {
       });
       global.fetch = simulateTimeoutError();
 
-      await expect(userAccountRegister(testUser)).rejects.toThrow("Request timeout");
+      await expect(userAccountRegister(testUser)).rejects.toThrow(
+        "Request timeout",
+      );
     });
   });
 
@@ -363,13 +377,13 @@ describe("userAccountRegister (Isolated)", () => {
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
         "User registration attempt for username:",
-        "security@example.com"
+        "security@example.com",
       );
 
       // Verify password is never logged
       const allLogs = mockConsoleLog.mock.calls.flat();
       const passwordInLogs = allLogs.some(
-        (log) => typeof log === "string" && log.includes("SecretPassword123!")
+        (log) => typeof log === "string" && log.includes("SecretPassword123!"),
       );
       expect(passwordInLogs).toBe(false);
     });
@@ -391,7 +405,8 @@ describe("userAccountRegister (Isolated)", () => {
       // Check that sensitive data is not in logs
       const allLogs = mockConsoleLog.mock.calls.flat();
       const passwordInLogs = allLogs.some(
-        (log) => typeof log === "string" && log.includes("SensitivePassword123!")
+        (log) =>
+          typeof log === "string" && log.includes("SensitivePassword123!"),
       );
       expect(passwordInLogs).toBe(false);
     });
@@ -409,9 +424,13 @@ describe("userAccountRegister (Isolated)", () => {
 
       global.fetch = jest.fn().mockRejectedValue(originalError);
 
-      await expect(userAccountRegister(testUser)).rejects.toThrow(originalError);
+      await expect(userAccountRegister(testUser)).rejects.toThrow(
+        originalError,
+      );
 
-      expect(mockConsoleLog).toHaveBeenCalledWith("An error occurred: Original error");
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        "An error occurred: Original error",
+      );
     });
   });
 
@@ -428,17 +447,14 @@ describe("userAccountRegister (Isolated)", () => {
 
       await userAccountRegister(testUser);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/user/register",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(testUser),
-        }
-      );
+      expect(global.fetch).toHaveBeenCalledWith("/api/user/register", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(testUser),
+      });
     });
 
     it("should include credentials for authentication", async () => {
@@ -457,7 +473,7 @@ describe("userAccountRegister (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
 
@@ -480,7 +496,7 @@ describe("userAccountRegister (Isolated)", () => {
             "Content-Type": "application/json",
           }),
           body: JSON.stringify(testUser),
-        })
+        }),
       );
     });
   });
@@ -488,9 +504,21 @@ describe("userAccountRegister (Isolated)", () => {
   describe("User Registration Business Logic", () => {
     it("should handle different user data formats", async () => {
       const users = [
-        createTestUser({ username: "user1@example.com", firstName: "John", lastName: "Doe" }),
-        createTestUser({ username: "user2@test.org", firstName: "Jane", lastName: "Smith" }),
-        createTestUser({ username: "admin@company.com", firstName: "Admin", lastName: "User" }),
+        createTestUser({
+          username: "user1@example.com",
+          firstName: "John",
+          lastName: "Doe",
+        }),
+        createTestUser({
+          username: "user2@test.org",
+          firstName: "Jane",
+          lastName: "Smith",
+        }),
+        createTestUser({
+          username: "admin@company.com",
+          firstName: "Admin",
+          lastName: "User",
+        }),
       ];
 
       for (const user of users) {
@@ -509,7 +537,10 @@ describe("userAccountRegister (Isolated)", () => {
     it("should handle edge cases with user names", async () => {
       const edgeUsers = [
         createTestUser({ firstName: "A", lastName: "B" }), // Short names
-        createTestUser({ firstName: "Very".repeat(20), lastName: "Long".repeat(20) }), // Long names
+        createTestUser({
+          firstName: "Very".repeat(20),
+          lastName: "Long".repeat(20),
+        }), // Long names
         createTestUser({ firstName: "José", lastName: "García" }), // Special characters
         createTestUser({ firstName: "John-Paul", lastName: "O'Connor" }), // Hyphens and apostrophes
       ];
@@ -572,7 +603,7 @@ describe("userAccountRegister (Isolated)", () => {
         "/api/user/register",
         expect.objectContaining({
           body: JSON.stringify(minimalUser),
-        })
+        }),
       );
     });
   });

@@ -2,7 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 import { DataValidator, hookValidators } from "../utils/validation";
 
-export const insertCategory = async (category: Category): Promise<Category | null> => {
+export const insertCategory = async (
+  category: Category,
+): Promise<Category | null> => {
   try {
     // Validate and sanitize using shared validator
     const validation = hookValidators.validateApiPayload(

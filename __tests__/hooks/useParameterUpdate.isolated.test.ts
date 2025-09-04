@@ -171,9 +171,9 @@ describe("updateParameter (Isolated)", () => {
       });
       consoleSpy.start();
 
-      await expect(
-        updateParameter(oldParameter, newParameter),
-      ).rejects.toThrow("Failed to update transaction state: Not Found");
+      await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
+        "Failed to update transaction state: Not Found",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual(["Resource not found (404)."]);
@@ -194,9 +194,9 @@ describe("updateParameter (Isolated)", () => {
       });
       consoleSpy.start();
 
-      await expect(
-        updateParameter(oldParameter, newParameter),
-      ).rejects.toThrow("Failed to update transaction state: Bad Request");
+      await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
+        "Failed to update transaction state: Bad Request",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual([
@@ -218,9 +218,9 @@ describe("updateParameter (Isolated)", () => {
       });
       consoleSpy.start();
 
-      await expect(
-        updateParameter(oldParameter, newParameter),
-      ).rejects.toThrow("Failed to update transaction state: Forbidden");
+      await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
+        "Failed to update transaction state: Forbidden",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual([
@@ -240,9 +240,9 @@ describe("updateParameter (Isolated)", () => {
       });
       consoleSpy.start();
 
-      await expect(
-        updateParameter(oldParameter, newParameter),
-      ).rejects.toThrow("Failed to update transaction state: Internal Server Error");
+      await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
+        "Failed to update transaction state: Internal Server Error",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual([
@@ -257,9 +257,9 @@ describe("updateParameter (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
       consoleSpy.start();
 
-      await expect(
-        updateParameter(oldParameter, newParameter),
-      ).rejects.toThrow("Network error");
+      await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
+        "Network error",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual(["An error occurred: Network error"]);
@@ -272,9 +272,9 @@ describe("updateParameter (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
       consoleSpy.start();
 
-      await expect(
-        updateParameter(oldParameter, newParameter),
-      ).rejects.toThrow("Request timeout");
+      await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
+        "Request timeout",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual(["An error occurred: Request timeout"]);
@@ -636,7 +636,9 @@ describe("updateParameter (Isolated)", () => {
 
       await expect(
         updateParameter(oldParameter, invalidParameter),
-      ).rejects.toThrow("Failed to update transaction state: Unprocessable Entity");
+      ).rejects.toThrow(
+        "Failed to update transaction state: Unprocessable Entity",
+      );
 
       const calls = consoleSpy.getCalls();
       expect(calls.log[0]).toEqual([

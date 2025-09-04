@@ -158,7 +158,9 @@ describe("deleteCategory (Isolated)", () => {
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
-    expect(consoleSpy).toHaveBeenCalledWith("Failed to parse error response: No error message returned.");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to parse error response: No error message returned.",
+    );
     consoleSpy.mockRestore();
   });
 

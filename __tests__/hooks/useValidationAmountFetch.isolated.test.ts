@@ -55,7 +55,7 @@ describe("fetchValidationAmount (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        }
+        },
       );
     });
 
@@ -90,7 +90,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/validation/amount/select/my-special-account/cleared",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -102,7 +102,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/validation/amount/select/account-with-dashes_and_underscores/cleared",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -115,11 +115,13 @@ describe("fetchValidationAmount (Isolated)", () => {
         status: 404,
         statusText: "Not Found",
         json: jest.fn().mockResolvedValue({ message: "Not Found" }),
-        text: jest.fn().mockResolvedValue(JSON.stringify({ message: "Not Found" })),
+        text: jest
+          .fn()
+          .mockResolvedValue(JSON.stringify({ message: "Not Found" })),
       });
 
       await expect(fetchValidationAmount("nonexistent")).rejects.toThrow(
-        "Failed to fetch validation amount data: Not Found"
+        "Failed to fetch validation amount data: Not Found",
       );
 
       expect(mockLog).toHaveBeenCalledWith("Resource not found (404)");
@@ -130,12 +132,12 @@ describe("fetchValidationAmount (Isolated)", () => {
       global.fetch = createErrorFetchMock("Internal Server Error", 500);
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data: Bad Request"
+        "Failed to fetch validation amount data: Bad Request",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching validation amount data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -144,12 +146,12 @@ describe("fetchValidationAmount (Isolated)", () => {
       global.fetch = createErrorFetchMock("Invalid account name", 400);
 
       await expect(fetchValidationAmount("")).rejects.toThrow(
-        "Failed to fetch validation amount data: Bad Request"
+        "Failed to fetch validation amount data: Bad Request",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching validation amount data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -158,12 +160,12 @@ describe("fetchValidationAmount (Isolated)", () => {
       global.fetch = simulateNetworkError();
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data: Network error"
+        "Failed to fetch validation amount data: Network error",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching validation amount data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -172,12 +174,12 @@ describe("fetchValidationAmount (Isolated)", () => {
       global.fetch = simulateTimeoutError();
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data: Request timeout"
+        "Failed to fetch validation amount data: Request timeout",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching validation amount data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
 
@@ -186,12 +188,12 @@ describe("fetchValidationAmount (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error());
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data:"
+        "Failed to fetch validation amount data:",
       );
 
       expect(mockError).toHaveBeenCalledWith(
         "Error fetching validation amount data:",
-        expect.any(Error)
+        expect.any(Error),
       );
     });
   });
@@ -203,17 +205,14 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       await fetchValidationAmount("testAccount");
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      expect(global.fetch).toHaveBeenCalledWith(expect.any(String), {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
     });
 
     it("should include credentials for authentication", async () => {
@@ -226,7 +225,7 @@ describe("fetchValidationAmount (Isolated)", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "include",
-        })
+        }),
       );
     });
   });
@@ -279,7 +278,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/validation/amount/select//cleared",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -291,7 +290,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/validation/amount/select/account with spaces/cleared",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -304,7 +303,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/validation/amount/select/${longAccountName}/cleared`,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -316,7 +315,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/validation/amount/select/12345/cleared",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });
@@ -326,7 +325,9 @@ describe("fetchValidationAmount (Isolated)", () => {
       const states = ["cleared", "outstanding", "future"];
 
       for (const state of states) {
-        const testData = createTestValidationAmount({ transactionState: state });
+        const testData = createTestValidationAmount({
+          transactionState: state,
+        });
         global.fetch = createFetchMock(testData);
 
         const result = await fetchValidationAmount("testAccount");
@@ -335,7 +336,7 @@ describe("fetchValidationAmount (Isolated)", () => {
     });
 
     it("should handle validation amounts with different precision", async () => {
-      const amounts = [0.01, 0.1, 1.0, 10.99, 100.00, 999.99, 1000.01];
+      const amounts = [0.01, 0.1, 1.0, 10.99, 100.0, 999.99, 1000.01];
 
       for (const amount of amounts) {
         const testData = createTestValidationAmount({ amount });

@@ -30,7 +30,7 @@ import {
   getTotalsKey,
   setupNewTransaction,
   insertTransaction,
-  TransactionInsertType
+  TransactionInsertType,
 } from "../../hooks/useTransactionInsert";
 import { hookValidators, DataValidator } from "../../utils/validation";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
@@ -343,9 +343,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         await insertTransaction("test_account", mockTransaction, false, false);
 
-        expect(
-          mockValidateApiPayload,
-        ).toHaveBeenCalledWith(
+        expect(mockValidateApiPayload).toHaveBeenCalledWith(
           mockTransaction,
           DataValidator.validateTransaction,
           "insertTransaction",
@@ -689,9 +687,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         await insertTransaction("test_account", mockTransaction, false, false);
 
-        expect(
-          mockValidateApiPayload,
-        ).toHaveBeenCalled();
+        expect(mockValidateApiPayload).toHaveBeenCalled();
         expect(mockGenerateSecureUUID).toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });
