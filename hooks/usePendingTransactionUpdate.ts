@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import PendingTransaction from "../model/PendingTransaction";
 
 // Async function to update a pending transaction
-const updatePendingTransaction = async (
+export const updatePendingTransaction = async (
   oldPendingTransaction: PendingTransaction,
   newPendingTransaction: PendingTransaction,
 ): Promise<PendingTransaction> => {

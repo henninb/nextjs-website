@@ -338,11 +338,11 @@ This migration strategy focuses on testing business logic in isolation while mai
   - Error simulation utilities (`simulateNetworkError`, `simulateTimeoutError`, `simulateServerError`)
   - Mock validation utilities (`createMockValidationUtils`) for security testing
 
-### 🧹 Cleanup Completed (2025-09-03)
+### 🧹 Cleanup Completed (2025-09-04)
 
 #### Deleted Original Test Files
 
-Successfully removed 16 overlapping integration test files after isolated test conversion:
+Successfully removed 26 overlapping integration test files after isolated test conversion:
 
 - ~~`useAccountDelete.test.tsx`~~ → Replaced by `useAccountDelete.isolated.test.ts`
 - ~~`useAccountInsert.test.tsx`~~ → Replaced by `useAccountInsert.isolated.test.ts`
@@ -360,6 +360,21 @@ Successfully removed 16 overlapping integration test files after isolated test c
 - ~~`useTransactionDelete.test.tsx`~~ → Replaced by `useTransactionDelete.isolated.test.ts`
 - ~~`useTransactionInsert.test.tsx`~~ → Replaced by `useTransactionInsert.isolated.test.ts`
 - ~~`useTransferDelete.test.tsx`~~ → Replaced by `useTransferDelete.isolated.test.ts`
+
+#### Latest Cleanup Phase (2025-09-04)
+
+**Additional 10 files removed to eliminate duplicate coverage:**
+
+- ~~`useTotalsFetch.test.tsx`~~ → Replaced by `useTotalsFetch.isolated.test.ts`
+- ~~`useTotalsPerAccountFetch.test.tsx`~~ → Replaced by `useTotalsPerAccountFetch.isolated.test.ts`
+- ~~`useTransactionByAccountFetch.test.tsx`~~ → Replaced by `useTransactionByAccountFetch.isolated.test.ts`
+- ~~`useValidationAmountFetch.test.tsx`~~ → Replaced by `useValidationAmountFetch.isolated.test.ts`
+- ~~`useUserAccountRegister.test.tsx`~~ → Replaced by `useUserAccountRegister.isolated.test.ts`
+- ~~`useTransferInsert.test.tsx`~~ → Replaced by `useTransferInsert.isolated.test.ts`
+- ~~`useDescriptionInsert.test.tsx`~~ → Replaced by `useDescriptionInsert.isolated.test.ts`
+- ~~`BackupRestore.test.tsx`~~ → Replaced by `BackupRestore.isolated.test.ts`
+- ~~`SelectNavigateAccounts.test.tsx`~~ → Replaced by `SelectNavigateAccounts.isolated.test.ts`
+- ~~`USDAmountInput.test.tsx`~~ → Replaced by `USDAmountInput.isolated.test.ts`
 
 ### 📋 Remaining Conversions (Optional)
 
@@ -380,15 +395,15 @@ Successfully removed 16 overlapping integration test files after isolated test c
 #### Medium Priority Hook Tests (Data Processing)
 
 **Fetch Operations with Business Logic:**
-- [ ] `useValidationAmountFetch.ts` - Amount validation rules processing
-- [ ] `useTransactionByAccountFetch.ts` - Account-specific transaction filtering
+- [x] ~~`useValidationAmountFetch.ts`~~ → **Completed** - `useValidationAmountFetch.isolated.test.ts` with 22 test cases covering endpoint construction, request configuration, response parsing, error handling, and validation amount business logic
+- [x] ~~`useTransactionByAccountFetch.ts`~~ → **Completed** - `useTransactionByAccountFetch.isolated.test.ts` with 28 test cases covering account-specific transaction filtering, response processing, error handling, and transaction business logic
 - [ ] `useTransactionByCategoryFetch.ts` - Category-based transaction analysis
 - [ ] `useTransactionByDescriptionFetch.ts` - Description-based transaction filtering
 - [ ] `useTransactionStateUpdate.ts` - Transaction state management logic
 - [ ] `useAccountUsageTracking.ts` - Account usage analytics and tracking
 
 **Authentication & User Management:**
-- [ ] `useUserAccountRegister.ts` - User registration with validation logic
+- [x] ~~`useUserAccountRegister.ts`~~ → **Completed** - `useUserAccountRegister.isolated.test.ts` with 27 test cases covering user registration validation logic, security logging, error handling, and comprehensive user data scenarios
 - [ ] `useUser.ts` - User profile management and validation
 - [ ] `useLogoutProcess.ts` - Logout cleanup and session management
 
@@ -406,8 +421,8 @@ Successfully removed 16 overlapping integration test files after isolated test c
 - [ ] `useDescriptionFetch.ts` - Basic description data fetching
 - [ ] `useParameterFetch.ts` - Basic parameter data fetching
 - [ ] `usePaymentFetch.ts` - Basic payment data fetching
-- [ ] `useTotalsFetch.ts` - Financial totals calculation
-- [ ] `useTotalsPerAccountFetch.ts` - Per-account totals calculation
+- [x] ~~`useTotalsFetch.ts`~~ → **Completed** - `useTotalsFetch.isolated.test.ts` with 27 test cases covering financial totals calculation, precision handling, negative values, business logic validation, and comprehensive error handling
+- [x] ~~`useTotalsPerAccountFetch.ts`~~ → **Completed** - `useTotalsPerAccountFetch.isolated.test.ts` with 36 test cases covering per-account financial calculations, account-specific business logic, precision handling, edge cases, and comprehensive error handling
 - [ ] `useTransferFetch.ts` - Basic transfer data fetching
 
 **Specialized/Domain-Specific:**
@@ -447,33 +462,78 @@ Successfully removed 16 overlapping integration test files after isolated test c
 - **Integration tests** (`.test.tsx`) - React/UI integration (kept for now)
 - **Utility tests** (`.test.ts`) - Already following isolated patterns
 
-### 🎯 Next Actions (Priority Order)
+### 🚨 **CRITICAL PRIORITY: Test Architecture Inconsistency Fix**
 
-1. **High Priority Hook Conversions** (Business Logic Rich):
-   - `useTransactionUpdate.ts` - Transaction modification with complex validation
-   - `useTransferInsert.ts` - Transfer creation with account balance validation
-   - `useTransferUpdate.ts` - Transfer modification with reconciliation logic
-   - `useValidationAmountInsert.ts` - Amount validation business rules
+**HIGHEST PRIORITY** - Normalize isolated test strategy to eliminate business logic duplication and architectural drift:
 
-2. **Medium Priority Hook Conversions** (Data Processing Logic):
-   - `useValidationAmountFetch.ts` - Amount validation rules processing
-   - `useUserAccountRegister.ts` - User registration with validation logic
+#### 🔴 **Problem Identified:**
+- **5 hooks** follow consistent export pattern (recent conversions): `useTotalsFetch`, `useTotalsPerAccountFetch`, `useTransactionByAccountFetch`, `useUserAccountRegister`, `useValidationAmountFetch`
+- **~24 hooks** have **DUPLICATED business logic** in isolated tests (dangerous drift risk)
+- **Business logic exists in BOTH hook files AND test files** - major maintenance problem
+
+#### 🎯 **Required Action:**
+**Standardize ALL hooks to export business logic functions**
+
+**Pattern to implement:**
+```typescript
+// Hook file (e.g., useAccountDelete.ts)
+export const deleteAccount = async (payload: Account): Promise<Account | null> => {
+  // Business logic here (single source of truth)
+};
+
+export default function useAccountDelete() {
+  // React Query wrapper
+}
+
+// Test file imports from hook (no duplication)
+import { deleteAccount } from "../../hooks/useAccountDelete";
+```
+
+#### 📋 **24 Hooks Requiring Standardization:**
+- `useAccountDelete.ts`, `useAccountInsert.ts`, `useAccountUpdate.ts`
+- `useCategoryDelete.ts`, `useCategoryInsert.ts`, `useCategoryUpdate.ts`
+- `useDescriptionDelete.ts`, `useDescriptionInsert.ts`, `useDescriptionUpdate.ts`
+- `useLoginProcess.ts`, `useParameterDelete.ts`, `useParameterInsert.ts`, `useParameterUpdate.ts`
+- `usePaymentDelete.ts`, `usePaymentInsert.ts`, `usePaymentUpdate.ts`
+- `usePendingTransactionInsert.ts`, `usePendingTransactionUpdate.ts`
+- `useTransactionDelete.ts`, `useTransactionInsert.ts`, `useTransactionUpdate.ts`
+- `useTransferDelete.ts`, `useTransferInsert.ts`, `useTransferUpdate.ts`
+- `useValidationAmountInsert.ts`
+
+#### 🎯 **Benefits:**
+- ✅ Eliminates dangerous business logic duplication
+- ✅ Single source of truth for all business functions
+- ✅ Tests validate actual production code (not duplicated logic)
+- ✅ Consistent architecture across all isolated tests
+- ✅ Prevents drift between hook and test implementations
+
+#### 🚨 **Risk of Inaction:**
+- Business logic changes in hooks won't be reflected in tests
+- Tests may pass while production code is broken
+- Maintenance burden of updating logic in multiple places
+- Architectural inconsistency across codebase
+
+---
+
+### 🎯 Next Actions (After Architecture Fix)
+
+1. **Medium Priority Hook Conversions** (Data Processing Logic):
    - `useAccountUsageTracking.ts` - Account usage analytics and tracking
 
-3. **Component Business Logic** (if needed):
+2. **Component Business Logic** (if needed):
    - `DataGridDynamic.test.tsx` - Data manipulation functions
 
-4. **Page Validation Logic** (if needed):
+3. **Page Validation Logic** (if needed):
    - Page validation functions from finance pages
    - Import/export logic from transaction pages
 
 ### 📊 Success Metrics Achieved
 
-- **29 isolated test files created** with comprehensive coverage
-- **863+ isolated test cases** written for business logic validation (estimated)
+- **34 isolated test files created** with comprehensive coverage
+- **1,003+ isolated test cases** written for business logic validation (estimated)
 - **90% performance improvement** - Isolated tests run in under 1s vs original integration tests
 - **4 utility tests** already following isolated patterns (validatePassword, commonDates, etc.)
-- **Zero test overlap** - Eliminated duplicate coverage by removing 17 original test files
+- **Zero test overlap** - Eliminated duplicate coverage by removing 26 original test files
 - **Full test infrastructure** established with 20+ helper utilities
 - **Improved error debugging** with focused test failures and clear business logic separation
 

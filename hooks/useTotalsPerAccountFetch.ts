@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Totals from "../model/Totals";
 import { useAuth } from "../components/AuthProvider";
 
-const fetchTotalsPerAccount = async (
+export const fetchTotalsPerAccount = async (
   accountNameOwner: string,
 ): Promise<Totals> => {
   try {

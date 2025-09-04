@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import Account from "../model/Account";
 
-const updateAccount = async (
+export const updateAccount = async (
   oldRow: Account,
   newRow: Account,
 ): Promise<Account> => {

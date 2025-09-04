@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import PendingTransaction from "../model/PendingTransaction";
 
-const insertPendingTransaction = async (
+export const insertPendingTransaction = async (
   pendingTransaction: PendingTransaction,
 ): Promise<PendingTransaction | null> => {
   try {

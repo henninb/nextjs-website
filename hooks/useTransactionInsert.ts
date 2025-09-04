@@ -16,14 +16,14 @@ export type TransactionInsertType = {
   isImportTransaction: boolean;
 };
 
-const getAccountKey = (accountNameOwner: string) => [
+export const getAccountKey = (accountNameOwner: string) => [
   "accounts",
   accountNameOwner,
 ];
 
-const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
+export const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
 
-const setupNewTransaction = async (
+export const setupNewTransaction = async (
   payload: Transaction,
   accountNameOwner: string,
 ): Promise<Transaction> => {
@@ -47,7 +47,7 @@ const setupNewTransaction = async (
   };
 };
 
-const insertTransaction = async (
+export const insertTransaction = async (
   accountNameOwner: string,
   payload: Transaction,
   isFutureTransaction: boolean,

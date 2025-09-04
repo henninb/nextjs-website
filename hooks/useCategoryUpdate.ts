@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 
-const updateCategory = async (
+export const updateCategory = async (
   oldCategory: Category,
   newCategory: Category,
 ): Promise<Category> => {

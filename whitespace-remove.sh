@@ -19,14 +19,6 @@ DRY_RUN=${DRY_RUN:-0}
 BACKUP=${BACKUP:-0}
 
 # ---- Helpers ----
-is_excluded_dir() {
-  bn=$1
-  for d in $EXCLUDE_DIRS; do
-    [ "$bn" = "$d" ] && return 0
-  done
-  return 1
-}
-
 has_wanted_ext() {
   f=$1
   case "$f" in
@@ -48,7 +40,7 @@ process_file() {
   f=$1
   # Work in a temp file (portable; avoid sed -i).
   tmp="${TMPDIR:-/tmp}/trimspace.$$.$RANDOM"
-  # Some shells don’t set RANDOM; ensure uniqueness with pid/time.
+  # Some shells don't set RANDOM; ensure uniqueness with pid/time.
   [ -z "$RANDOM" ] && tmp="${TMPDIR:-/tmp}/trimspace.$$.$(date +%s%N 2>/dev/null || date +%s)"
 
   # Strip trailing whitespace using POSIX BRE (\{1,\} instead of +)
@@ -70,9 +62,14 @@ process_file() {
       cp -- "$f" "$f.bak" 2>/dev/null || cp "$f" "$f.bak"
     fi
 
-    # Replace the original
-    mv -- "$tmp" "$f" 2>/dev/null || mv "$tmp" "$f"
-    echo "trimmed: $f"
+    # Preserve original file permissions by copying content back instead of moving
+    if cat "$tmp" > "$f" 2>/dev/null; then
+      rm -f "$tmp"
+      echo "trimmed: $f"
+    else
+      rm -f "$tmp"
+      echo "warn: could not update: $f" >&2
+    fi
   else
     rm -f "$tmp"
     echo "warn: could not process: $f" >&2
@@ -81,21 +78,21 @@ process_file() {
 
 walk() {
   dir=$1
-  # Portable directory traversal without -print0; handle spaces via set -- and quoting.
-  # We use 'ls -A' carefully; if you prefer, replace this block with 'find' below.
-  # Safer: use POSIX 'find' with an exec.
-  find "$dir" -mindepth 1 -maxdepth 1 -print | while IFS= read -r path; do
-    base=$(basename -- "$path" 2>/dev/null || basename "$path")
-    if [ -d "$path" ]; then
-      if is_excluded_dir "$base"; then
-        :
-      else
-        walk "$path"
-      fi
-    elif [ -f "$path" ]; then
-      if has_wanted_ext "$path"; then
-        process_file "$path"
-      fi
+  # Build find expression to prune excluded directories
+  prune_expr=""
+  for d in $EXCLUDE_DIRS; do
+    if [ -z "$prune_expr" ]; then
+      prune_expr="-name '$d' -prune"
+    else
+      prune_expr="$prune_expr -o -name '$d' -prune"
+    fi
+  done
+
+  # Use find with -prune to skip excluded directories entirely
+  # This is more efficient and reliable than checking after traversal
+  eval "find \"$dir\" $prune_expr -o -type f -print" | while IFS= read -r path; do
+    if has_wanted_ext "$path"; then
+      process_file "$path"
     fi
   done
 }

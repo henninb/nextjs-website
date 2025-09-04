@@ -4,90 +4,22 @@ import {
   createErrorFetchMock,
   ConsoleSpy,
   createTestAccount,
-  createMockValidationUtils,
   simulateNetworkError,
 } from "../../testHelpers";
 
 // Mock validation utilities
-const mockValidationUtils = createMockValidationUtils();
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateAccount: jest.fn(),
+  },
+  hookValidators: {
+    validateApiPayload: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
 
-jest.mock("../../utils/validation", () => mockValidationUtils);
-
-// Extract the setupNewAccount function for isolated testing
-const setupNewAccount = (payload: Account) => {
-  return {
-    cleared: 0.0,
-    future: 0.0,
-    outstanding: 0.0,
-    dateClosed: new Date(0), // January 1, 1970 to indicate "not closed"
-    dateAdded: new Date(),
-    dateUpdated: new Date(),
-    validationDate: new Date(0),
-    ...payload,
-    activeStatus: true, // Always force activeStatus to true for new accounts
-  };
-};
-
-// Extract the insertAccount function for isolated testing
-const insertAccount = async (payload: Account): Promise<Account | null> => {
-  try {
-    // Validate and sanitize the account data
-    const validation = mockValidationUtils.hookValidators.validateApiPayload(
-      payload,
-      mockValidationUtils.DataValidator.validateAccount,
-      "insertAccount",
-    );
-
-    if (!validation.isValid) {
-      const errorMessages =
-        validation.errors?.map((err) => err.message).join(", ") ||
-        "Validation failed";
-      throw new Error(`Account validation failed: ${errorMessages}`);
-    }
-
-    const endpoint = "/api/account/insert";
-    const newPayload = setupNewAccount(validation.validatedData);
-
-    console.log(
-      "Inserting account for:",
-      validation.validatedData.accountNameOwner,
-    );
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newPayload),
-    });
-
-    if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          errorMessage = "No error message returned.";
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        errorMessage = `Failed to parse error response: ${error.message}`;
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { setupNewAccount, insertAccount } from "../../hooks/useAccountInsert";
+import { hookValidators, DataValidator } from "../../utils/validation";
 
 describe("Account Insert Functions (Isolated)", () => {
   const mockAccount = createTestAccount({
@@ -100,6 +32,7 @@ describe("Account Insert Functions (Isolated)", () => {
     cleared: 50.0,
   });
 
+  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
   let consoleSpy: ConsoleSpy;
   let mockConsole: any;
 
@@ -109,7 +42,7 @@ describe("Account Insert Functions (Isolated)", () => {
     jest.clearAllMocks();
 
     // Reset validation mocks to default success state
-    mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+    mockValidateApiPayload.mockReturnValue({
       isValid: true,
       validatedData: mockAccount,
       errors: null,
@@ -254,10 +187,10 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(mockAccount);
 
         expect(
-          mockValidationUtils.hookValidators.validateApiPayload,
+          mockValidateApiPayload,
         ).toHaveBeenCalledWith(
           mockAccount,
-          mockValidationUtils.DataValidator.validateAccount,
+          DataValidator.validateAccount,
           "insertAccount",
         );
       });
@@ -266,7 +199,7 @@ describe("Account Insert Functions (Isolated)", () => {
         const validatedAccount = createTestAccount({
           accountNameOwner: "validated",
         });
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: validatedAccount,
           errors: null,
@@ -286,7 +219,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
     describe("Validation failures", () => {
       it("should reject with validation error when validation fails", async () => {
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
           validatedData: null,
           errors: [
@@ -306,7 +239,7 @@ describe("Account Insert Functions (Isolated)", () => {
       });
 
       it("should handle validation error without specific error messages", async () => {
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
           validatedData: null,
           errors: null,
@@ -320,7 +253,7 @@ describe("Account Insert Functions (Isolated)", () => {
       });
 
       it("should handle empty error array", async () => {
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
           validatedData: null,
           errors: [],
@@ -488,7 +421,7 @@ describe("Account Insert Functions (Isolated)", () => {
           future: 250.0,
           cleared: 75.0,
         });
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: fullAccount,
           errors: null,
@@ -510,7 +443,7 @@ describe("Account Insert Functions (Isolated)", () => {
           accountNameOwner: "minimal",
           accountType: "checking",
         });
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: minimalAccount,
           errors: null,
@@ -531,7 +464,7 @@ describe("Account Insert Functions (Isolated)", () => {
         const specialAccount = createTestAccount({
           accountNameOwner: "account-with_special@chars.123",
         });
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: specialAccount,
           errors: null,
@@ -551,7 +484,7 @@ describe("Account Insert Functions (Isolated)", () => {
         const longNameAccount = createTestAccount({
           accountNameOwner: longName,
         });
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: longNameAccount,
           errors: null,
@@ -577,7 +510,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         for (const accountType of accountTypes) {
           const typedAccount = createTestAccount({ accountType });
-          mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue(
+          mockValidateApiPayload.mockReturnValue(
             {
               isValid: true,
               validatedData: typedAccount,
@@ -603,7 +536,7 @@ describe("Account Insert Functions (Isolated)", () => {
     describe("Business logic validation", () => {
       it("should always set activeStatus to true regardless of input", async () => {
         const inactiveAccount = createTestAccount({ activeStatus: false });
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: inactiveAccount,
           errors: null,
@@ -622,7 +555,7 @@ describe("Account Insert Functions (Isolated)", () => {
         // Create account without financial fields, then setupNewAccount should add defaults
         const { outstanding, future, cleared, ...accountWithoutFinancials } =
           createTestAccount();
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: accountWithoutFinancials,
           errors: null,
@@ -647,7 +580,7 @@ describe("Account Insert Functions (Isolated)", () => {
           future: 200.75,
           cleared: 50.25,
         });
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: true,
           validatedData: accountWithFinancials,
           errors: null,
@@ -692,7 +625,7 @@ describe("Account Insert Functions (Isolated)", () => {
       });
 
       it("should log validation errors", async () => {
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
           validatedData: null,
           errors: [{ message: "Invalid account" }],
@@ -705,7 +638,7 @@ describe("Account Insert Functions (Isolated)", () => {
       });
 
       it("should not log for validation failures before fetch", async () => {
-        mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+        mockValidateApiPayload.mockReturnValue({
           isValid: false,
           validatedData: null,
           errors: [{ message: "Invalid" }],

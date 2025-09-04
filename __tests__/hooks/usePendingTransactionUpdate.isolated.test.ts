@@ -10,39 +10,7 @@ import {
 } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
-// Extract the business logic function from usePendingTransactionUpdate
-const updatePendingTransaction = async (
-  oldPendingTransaction: PendingTransaction,
-  newPendingTransaction: PendingTransaction,
-): Promise<PendingTransaction> => {
-  const endpoint = `/api/pending/transaction/update/${oldPendingTransaction.pendingTransactionId}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPendingTransaction),
-    });
-
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to update pending transaction: ${response.statusText}`,
-      );
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { updatePendingTransaction } from "../../hooks/usePendingTransactionUpdate";
 
 // Helper function to create test pending transaction data
 const createTestPendingTransaction = (overrides: Partial<PendingTransaction> = {}): PendingTransaction => ({

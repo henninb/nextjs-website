@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
 import Transaction from "../model/Transaction";
 
-const updatePayment = async (
+export const updatePayment = async (
   oldPayment: Payment,
   newPayment: Payment,
 ): Promise<Payment> => {

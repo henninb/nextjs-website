@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 
-const deleteDescription = async (
+export const deleteDescription = async (
   oldRow: Description,
 ): Promise<Description | null> => {
   try {

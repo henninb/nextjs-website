@@ -3,28 +3,28 @@ import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
 import { UpdateTransactionOptions } from "../model/UpdateTransactionOptions";
 
-const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
+export const getTotalsKey = (accountNameOwner: string) => ["totals", accountNameOwner];
 
-const getAccountKey = (accountNameOwner: string) => [
+export const getAccountKey = (accountNameOwner: string) => [
   "accounts",
   accountNameOwner,
 ];
 
-const isValidGuid = (guid) => {
+export const isValidGuid = (guid) => {
   // Validate against a UUID format (e.g., UUID v4)
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(guid);
 };
 
-const sanitizeGuid = (guid) => {
+export const sanitizeGuid = (guid) => {
   if (!isValidGuid(guid)) {
     throw new Error("Invalid GUID provided");
   }
   return encodeURIComponent(guid); // Escape the GUID for safe use in URLs
 };
 
-const updateTransaction = async (
+export const updateTransaction = async (
   newData: Transaction,
   oldData: Transaction,
   options?: UpdateTransactionOptions,

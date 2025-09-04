@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 
-const updateParameter = async (
+export const updateParameter = async (
   oldParameter: Parameter,
   newParameter: Parameter,
 ): Promise<Parameter> => {

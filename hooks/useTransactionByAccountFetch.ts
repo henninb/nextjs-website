@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 import { useAuth } from "../components/AuthProvider";
 
-const fetchTransactionsByAccount = async (
+export const fetchTransactionsByAccount = async (
   accountNameOwner: string,
 ): Promise<Transaction[] | null> => {
   try {

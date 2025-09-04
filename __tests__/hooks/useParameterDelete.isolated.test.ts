@@ -10,48 +10,7 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
-// Extract the deleteParameter function for isolated testing
-const deleteParameter = async (
-  payload: Parameter,
-): Promise<Parameter | null> => {
-  try {
-    const endpoint = `/api/parameter/delete/${payload.parameterName}`;
-
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { deleteParameter } from "../../hooks/useParameterDelete";
 
 describe("deleteParameter (Isolated)", () => {
   const mockParameter = createTestParameter({

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 import { DataValidator, hookValidators } from "../utils/validation";
 
-const insertDescription = async (
+export const insertDescription = async (
   descriptionName: string,
 ): Promise<Description> => {
   try {

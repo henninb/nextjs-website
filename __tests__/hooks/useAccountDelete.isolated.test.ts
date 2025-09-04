@@ -1,86 +1,17 @@
 import Account from "../../model/Account";
 
 // Mock the validation utilities since we're testing in isolation
-const mockInputSanitizer = {
-  sanitizeAccountName: jest.fn(),
-};
-
-const mockSecurityLogger = {
-  logSanitizationAttempt: jest.fn(),
-};
-
-// Mock the modules
 jest.mock("../../utils/validation", () => ({
-  InputSanitizer: mockInputSanitizer,
-  SecurityLogger: mockSecurityLogger,
+  InputSanitizer: {
+    sanitizeAccountName: jest.fn(),
+  },
+  SecurityLogger: {
+    logSanitizationAttempt: jest.fn(),
+  },
 }));
 
-// Extract the deleteAccount function for isolated testing
-const deleteAccount = async (payload: Account): Promise<Account | null> => {
-  try {
-    // Validate and sanitize account identifier for deletion
-    if (!payload.accountNameOwner) {
-      throw new Error("Account name is required for deletion");
-    }
-
-    const sanitizedAccountName = mockInputSanitizer.sanitizeAccountName(
-      payload.accountNameOwner,
-    );
-    if (!sanitizedAccountName) {
-      throw new Error("Invalid account name provided");
-    }
-
-    // Log security-sensitive deletion attempt
-    mockSecurityLogger.logSanitizationAttempt(
-      "accountNameOwner",
-      payload.accountNameOwner,
-      sanitizedAccountName,
-    );
-
-    const endpoint = `/api/account/delete/${sanitizedAccountName}`;
-
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      let errorMessage = "";
-      let missingMessage = false;
-
-      try {
-        const errorBody = await response.json();
-        if (
-          errorBody &&
-          Object.prototype.hasOwnProperty.call(errorBody, "response")
-        ) {
-          errorMessage = `${errorBody.response ?? ""}`;
-        } else {
-          missingMessage = true;
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      if (missingMessage) {
-        console.log("No error message returned.");
-        throw new Error("No error message returned.");
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { deleteAccount } from "../../hooks/useAccountDelete";
+import { InputSanitizer, SecurityLogger } from "../../utils/validation";
 
 describe("deleteAccount (Isolated)", () => {
   const mockAccount: Account = {
@@ -94,11 +25,14 @@ describe("deleteAccount (Isolated)", () => {
     cleared: 200,
   };
 
+  const mockSanitizeAccountName = InputSanitizer.sanitizeAccountName as jest.Mock;
+  const mockLogSanitizationAttempt = SecurityLogger.logSanitizationAttempt as jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup default mock returns
-    mockInputSanitizer.sanitizeAccountName.mockReturnValue("test_account");
-    mockSecurityLogger.logSanitizationAttempt.mockReturnValue(undefined);
+    mockSanitizeAccountName.mockReturnValue("test_account");
+    mockLogSanitizationAttempt.mockReturnValue(undefined);
 
     // Reset console.log spy if it exists
     if (jest.isMockFunction(console.log)) {
@@ -115,10 +49,10 @@ describe("deleteAccount (Isolated)", () => {
 
     const result = await deleteAccount(mockAccount);
 
-    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith(
+    expect(mockSanitizeAccountName).toHaveBeenCalledWith(
       "test_account",
     );
-    expect(mockSecurityLogger.logSanitizationAttempt).toHaveBeenCalledWith(
+    expect(mockLogSanitizationAttempt).toHaveBeenCalledWith(
       "accountNameOwner",
       "test_account",
       "test_account",
@@ -153,18 +87,18 @@ describe("deleteAccount (Isolated)", () => {
       "Account name is required for deletion",
     );
 
-    expect(mockInputSanitizer.sanitizeAccountName).not.toHaveBeenCalled();
+    expect(mockSanitizeAccountName).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
 
   it("should throw error when sanitized account name is invalid", async () => {
-    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce("");
+    mockSanitizeAccountName.mockReturnValueOnce("");
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
       "Invalid account name provided",
     );
 
-    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith(
+    expect(mockSanitizeAccountName).toHaveBeenCalledWith(
       "test_account",
     );
     expect(fetch).not.toHaveBeenCalled();
@@ -200,12 +134,15 @@ describe("deleteAccount (Isolated)", () => {
     });
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "No error message returned.",
+      "Failed to parse error response: No error message returned.",
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
     expect(consoleSpy).toHaveBeenCalledWith(
-      "An error occurred: No error message returned.",
+      "Failed to parse error response: No error message returned.",
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "An error occurred: Failed to parse error response: No error message returned.",
     );
     consoleSpy.mockRestore();
   });
@@ -246,7 +183,7 @@ describe("deleteAccount (Isolated)", () => {
       ...mockAccount,
       accountNameOwner: "test<script>alert('xss')</script>",
     };
-    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(
+    mockSanitizeAccountName.mockReturnValueOnce(
       "test_sanitized",
     );
 
@@ -258,10 +195,10 @@ describe("deleteAccount (Isolated)", () => {
 
     await deleteAccount(accountWithSpecialChars);
 
-    expect(mockInputSanitizer.sanitizeAccountName).toHaveBeenCalledWith(
+    expect(mockSanitizeAccountName).toHaveBeenCalledWith(
       "test<script>alert('xss')</script>",
     );
-    expect(mockSecurityLogger.logSanitizationAttempt).toHaveBeenCalledWith(
+    expect(mockLogSanitizationAttempt).toHaveBeenCalledWith(
       "accountNameOwner",
       "test<script>alert('xss')</script>",
       "test_sanitized",
@@ -269,7 +206,7 @@ describe("deleteAccount (Isolated)", () => {
   });
 
   it("should use sanitized account name in endpoint", async () => {
-    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(
+    mockSanitizeAccountName.mockReturnValueOnce(
       "sanitized_name",
     );
 
@@ -288,7 +225,7 @@ describe("deleteAccount (Isolated)", () => {
   });
 
   it("should handle null sanitized account name", async () => {
-    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(null);
+    mockSanitizeAccountName.mockReturnValueOnce(null);
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
       "Invalid account name provided",
@@ -296,7 +233,7 @@ describe("deleteAccount (Isolated)", () => {
   });
 
   it("should handle undefined sanitized account name", async () => {
-    mockInputSanitizer.sanitizeAccountName.mockReturnValueOnce(undefined);
+    mockSanitizeAccountName.mockReturnValueOnce(undefined);
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
       "Invalid account name provided",

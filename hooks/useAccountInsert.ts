@@ -6,7 +6,7 @@ import {
   ValidationError,
 } from "../utils/validation";
 
-const setupNewAccount = (payload: Account) => {
+export const setupNewAccount = (payload: Account) => {
   return {
     cleared: 0.0,
     future: 0.0,
@@ -20,7 +20,7 @@ const setupNewAccount = (payload: Account) => {
   };
 };
 
-const insertAccount = async (payload: Account): Promise<Account | null> => {
+export const insertAccount = async (payload: Account): Promise<Account | null> => {
   try {
     // Validate and sanitize the account data
     const validation = hookValidators.validateApiPayload(

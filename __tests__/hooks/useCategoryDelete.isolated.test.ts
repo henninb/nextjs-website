@@ -1,47 +1,6 @@
 import Category from "../../model/Category";
 
-// Extract the deleteCategory function for isolated testing
-const deleteCategory = async (payload: Category): Promise<Category | null> => {
-  try {
-    const endpoint = `/api/category/delete/${payload.categoryName}`;
-
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (
-          errorBody &&
-          Object.prototype.hasOwnProperty.call(errorBody, "response")
-        ) {
-          errorMessage = `${errorBody.response ?? ""}`;
-          // if present but empty, allow fallback below
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error) {
-    throw error;
-  }
-};
+import { deleteCategory } from "../../hooks/useCategoryDelete";
 
 describe("deleteCategory (Isolated)", () => {
   const mockCategory: Category = {
@@ -195,10 +154,11 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "cannot throw a null value",
+      "Failed to parse error response: No error message returned.",
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith("cannot throw a null value");
+    expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
+    expect(consoleSpy).toHaveBeenCalledWith("Failed to parse error response: No error message returned.");
     consoleSpy.mockRestore();
   });
 

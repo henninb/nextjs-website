@@ -7,35 +7,7 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
-// Extract the updateAccount function for isolated testing
-const updateAccount = async (
-  oldRow: Account,
-  newRow: Account,
-): Promise<Account> => {
-  try {
-    let endpoint = `/api/account/update/${oldRow.accountNameOwner}`;
-
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newRow),
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    throw error;
-  }
-};
+import { updateAccount } from "../../hooks/useAccountUpdate";
 
 describe("updateAccount (Isolated)", () => {
   const mockOldAccount = createTestAccount({

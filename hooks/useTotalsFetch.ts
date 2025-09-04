@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Totals from "../model/Totals";
 
-const fetchTotals = async (): Promise<Totals> => {
+export const fetchTotals = async (): Promise<Totals> => {
   try {
     const response = await fetch("/api/account/totals", {
       method: "GET",

@@ -11,39 +11,7 @@ import {
 } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
 
-// Extract the business logic function from useParameterUpdate
-const updateParameter = async (
-  oldParameter: Parameter,
-  newParameter: Parameter,
-): Promise<Parameter> => {
-  const endpoint = `/api/parameter/update/${oldParameter.parameterName}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({}), // Note: Original code sends empty object
-    });
-
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to update transaction state: ${response.statusText}`,
-      );
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { updateParameter } from "../../hooks/useParameterUpdate";
 
 describe("updateParameter (Isolated)", () => {
   let consoleSpy: ConsoleSpy;

@@ -7,38 +7,7 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
-// Extract the updateCategory function for isolated testing
-const updateCategory = async (
-  oldCategory: Category,
-  newCategory: Category,
-): Promise<Category> => {
-  const endpoint = `/api/category/update/${oldCategory.categoryName}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newCategory),
-    });
-
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to update transaction state: ${response.statusText}`,
-      );
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    throw error;
-  }
-};
+import { updateCategory } from "../../hooks/useCategoryUpdate";
 
 describe("updateCategory (Isolated)", () => {
   const mockOldCategory = createTestCategory({

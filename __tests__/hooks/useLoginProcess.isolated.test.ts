@@ -9,47 +9,24 @@ import {
 } from "../../testHelpers";
 
 // Mock validation utilities
-const mockValidationUtils = createMockValidationUtils();
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateUser: jest.fn(),
+  },
+  hookValidators: {
+    validateApiPayload: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+  InputSanitizer: {
+    sanitizeUsername: jest.fn(),
+  },
+}));
 
-jest.mock("../../utils/validation", () => mockValidationUtils);
+import { processLogin } from "../../hooks/useLoginProcess";
+import { hookValidators, DataValidator, InputSanitizer } from "../../utils/validation";
 
-// Extract the login function for isolated testing
-const loginUser = async (payload: User): Promise<void> => {
-  // Validate and sanitize login credentials
-  const validation = mockValidationUtils.hookValidators.validateApiPayload(
-    payload,
-    mockValidationUtils.DataValidator.validateUser,
-    "login",
-  );
-
-  if (!validation.isValid) {
-    const errorMessages =
-      validation.errors?.map((err) => err.message).join(", ") ||
-      "Validation failed";
-    throw new Error(`Login validation failed: ${errorMessages}`);
-  }
-
-  // Don't log credentials - security improvement
-  console.log(
-    "Login attempt for user:",
-    mockValidationUtils.InputSanitizer.sanitizeUsername(payload.username),
-  );
-
-  const response = await fetch("/api/login", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(validation.validatedData),
-  });
-
-  // Check for 204 (No Content) which indicates a successful login.
-  if (response.status === 204) {
-    return;
-  } else {
-    const errorBody = await response.json();
-    throw new Error(errorBody.error || "Login failed");
-  }
-};
+// Alias for consistency with existing test naming
+const loginUser = processLogin;
 
 describe("loginUser (Isolated)", () => {
   const mockUser = createTestUser({
@@ -59,6 +36,8 @@ describe("loginUser (Isolated)", () => {
     lastName: "User",
   });
 
+  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
+  const mockSanitizeUsername = InputSanitizer.sanitizeUsername as jest.Mock;
   let consoleSpy: ConsoleSpy;
   let mockConsole: any;
 
@@ -68,14 +47,12 @@ describe("loginUser (Isolated)", () => {
     jest.clearAllMocks();
 
     // Reset validation mocks to default success state
-    mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+    mockValidateApiPayload.mockReturnValue({
       isValid: true,
       validatedData: mockUser,
       errors: null,
     });
-    mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
-      mockUser.username,
-    );
+    mockSanitizeUsername.mockReturnValue(mockUser.username);
   });
 
   afterEach(() => {
@@ -109,24 +86,24 @@ describe("loginUser (Isolated)", () => {
       await loginUser(mockUser);
 
       expect(
-        mockValidationUtils.hookValidators.validateApiPayload,
+        mockValidateApiPayload,
       ).toHaveBeenCalledWith(
         mockUser,
-        mockValidationUtils.DataValidator.validateUser,
+        DataValidator.validateUser,
         "login",
       );
     });
 
     it("should sanitize username in log output", async () => {
       global.fetch = createFetchMock(null, { status: 204 });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+      mockSanitizeUsername.mockReturnValue(
         "sanitized_user",
       );
 
       await loginUser(mockUser);
 
       expect(
-        mockValidationUtils.InputSanitizer.sanitizeUsername,
+        mockSanitizeUsername,
       ).toHaveBeenCalledWith(mockUser.username);
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
@@ -139,7 +116,7 @@ describe("loginUser (Isolated)", () => {
         username: "validated",
         password: "validated_pass",
       };
-      mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+      mockValidateApiPayload.mockReturnValue({
         isValid: true,
         validatedData,
         errors: null,
@@ -159,7 +136,7 @@ describe("loginUser (Isolated)", () => {
 
   describe("Validation failures", () => {
     it("should reject with validation error when validation fails", async () => {
-      mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+      mockValidateApiPayload.mockReturnValue({
         isValid: false,
         validatedData: null,
         errors: [
@@ -176,7 +153,7 @@ describe("loginUser (Isolated)", () => {
     });
 
     it("should handle validation error without specific error messages", async () => {
-      mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+      mockValidateApiPayload.mockReturnValue({
         isValid: false,
         validatedData: null,
         errors: null,
@@ -190,7 +167,7 @@ describe("loginUser (Isolated)", () => {
     });
 
     it("should handle empty error array", async () => {
-      mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+      mockValidateApiPayload.mockReturnValue({
         isValid: false,
         validatedData: null,
         errors: [],
@@ -346,7 +323,7 @@ describe("loginUser (Isolated)", () => {
         firstName: undefined,
         lastName: undefined,
       });
-      mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+      mockValidateApiPayload.mockReturnValue({
         isValid: true,
         validatedData: minimalUser,
         errors: null,
@@ -371,7 +348,7 @@ describe("loginUser (Isolated)", () => {
         firstName: "John",
         lastName: "Doe",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+      mockSanitizeUsername.mockReturnValue(
         fullUser.username,
       );
       global.fetch = createFetchMock(null, { status: 204 });
@@ -389,7 +366,7 @@ describe("loginUser (Isolated)", () => {
         username: "user@domain.com",
         password: "Password123!",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+      mockSanitizeUsername.mockReturnValue(
         "user@domain.com",
       );
       global.fetch = createFetchMock(null, { status: 204 });
@@ -397,7 +374,7 @@ describe("loginUser (Isolated)", () => {
       await loginUser(specialUser);
 
       expect(
-        mockValidationUtils.InputSanitizer.sanitizeUsername,
+        mockSanitizeUsername,
       ).toHaveBeenCalledWith("user@domain.com");
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
@@ -411,7 +388,7 @@ describe("loginUser (Isolated)", () => {
         username: longUsername,
         password: "Password123!",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+      mockSanitizeUsername.mockReturnValue(
         longUsername,
       );
       global.fetch = createFetchMock(null, { status: 204 });
@@ -455,7 +432,7 @@ describe("loginUser (Isolated)", () => {
         username: "<script>alert('xss')</script>",
         password: "Password123!",
       });
-      mockValidationUtils.InputSanitizer.sanitizeUsername.mockReturnValue(
+      mockSanitizeUsername.mockReturnValue(
         "safe_username",
       );
       global.fetch = createFetchMock(null, { status: 204 });
@@ -463,7 +440,7 @@ describe("loginUser (Isolated)", () => {
       await loginUser(unsafeUser);
 
       expect(
-        mockValidationUtils.InputSanitizer.sanitizeUsername,
+        mockSanitizeUsername,
       ).toHaveBeenCalledWith(unsafeUser.username);
       expect(mockConsole.log).toHaveBeenCalledWith(
         "Login attempt for user:",
@@ -483,7 +460,7 @@ describe("loginUser (Isolated)", () => {
     });
 
     it("should log login attempt even for failed validation", async () => {
-      mockValidationUtils.hookValidators.validateApiPayload.mockReturnValue({
+      mockValidateApiPayload.mockReturnValue({
         isValid: false,
         validatedData: null,
         errors: [{ message: "Invalid data" }],

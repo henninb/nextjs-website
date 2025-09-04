@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
 
-const deletePayment = async (payload: Payment): Promise<Payment> => {
+export const deletePayment = async (payload: Payment): Promise<Payment> => {
   try {
     const endpoint = `/api/payment/delete/${payload.paymentId}`;
 

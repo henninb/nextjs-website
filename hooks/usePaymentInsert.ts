@@ -6,7 +6,7 @@ import {
   ValidationError,
 } from "../utils/validation";
 
-const setupNewPayment = (payload: Payment) => {
+export const setupNewPayment = (payload: Payment) => {
   return {
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
@@ -17,7 +17,7 @@ const setupNewPayment = (payload: Payment) => {
   };
 };
 
-const insertPayment = async (payload: Payment): Promise<Payment> => {
+export const insertPayment = async (payload: Payment): Promise<Payment> => {
   try {
     // Validate and sanitize the payment data
     const validation = hookValidators.validateApiPayload(

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 
-const updateDescription = async (
+export const updateDescription = async (
   oldDescription: Description,
   newDescription: Description,
 ): Promise<Description> => {

@@ -20,39 +20,7 @@ const createTestDescription = (overrides = {}): Description => ({
   ...overrides,
 });
 
-// Extract the business logic function from useDescriptionUpdate
-const updateDescription = async (
-  oldDescription: Description,
-  newDescription: Description,
-): Promise<Description> => {
-  const endpoint = `/api/description/update/${oldDescription.descriptionName}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newDescription),
-    });
-
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to update transaction state: ${response.statusText}`,
-      );
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { updateDescription } from "../../hooks/useDescriptionUpdate";
 
 describe("updateDescription (Isolated)", () => {
   let consoleSpy: ConsoleSpy;

@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 
-const getAccountKey = (accountNameOwner: string) => [
+export const getAccountKey = (accountNameOwner: string) => [
   "accounts",
   accountNameOwner,
 ];
 
-const deleteTransaction = async (
+export const deleteTransaction = async (
   payload: Transaction,
 ): Promise<Transaction> => {
   try {

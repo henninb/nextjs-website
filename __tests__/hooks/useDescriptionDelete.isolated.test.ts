@@ -7,46 +7,7 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
-// Extract the deleteDescription function for isolated testing
-const deleteDescription = async (
-  oldRow: Description,
-): Promise<Description | null> => {
-  try {
-    const endpoint = `/api/description/delete/${oldRow.descriptionName}`;
-
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    throw error;
-  }
-};
+import { deleteDescription } from "../../hooks/useDescriptionDelete";
 
 describe("deleteDescription (Isolated)", () => {
   const mockDescription = createTestDescription({

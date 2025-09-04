@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 
-const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
+export const deleteParameter = async (payload: Parameter): Promise<Parameter> => {
   try {
     const endpoint = `/api/parameter/delete/${payload.parameterName}`;
 
