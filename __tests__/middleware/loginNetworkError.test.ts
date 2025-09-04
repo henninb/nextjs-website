@@ -25,9 +25,12 @@ describe("Login Network Error - TDD", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Set up the mocks for each test
-    const { hookValidators, InputSanitizer } = require("../../utils/validation");
+    const {
+      hookValidators,
+      InputSanitizer,
+    } = require("../../utils/validation");
     hookValidators.validateApiPayload.mockReturnValue({
       isValid: true,
       validatedData: mockUser,
