@@ -135,6 +135,7 @@ const nextConfig = {
               process.env.NODE_ENV === "development"
                 ? "frame-src 'self' http: https:"
                 : "frame-src 'self' https://client.px-cloud.net https://tzm.px-cloud.net https://collector-pxjj0cytn9.px-cloud.net https://collector-pxjj0cytn9.px-cdn.net https://collector-pxjj0cytn9.pxchk.net https://b.px-cdn.net https://captcha-api.px-cloud.net https://captcha.px-cdn.net",
+              "worker-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",

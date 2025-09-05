@@ -37,6 +37,8 @@ const WatchPage: NextPage = () => {
   const [adTimeLeft, setAdTimeLeft] = useState(0);
   const [apiCallCount, setApiCallCount] = useState(0);
   const [lastEventLog, setLastEventLog] = useState<string>("");
+  const [pxRiskData, setPxRiskData] = useState<any[]>([]);
+  const [pxStatus, setPxStatus] = useState<string>("Waiting for PX events...");
 
   // Snackbar state for UX feedback
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -79,6 +81,47 @@ const WatchPage: NextPage = () => {
     };
 
     fetchVideoData();
+  }, []);
+
+  // PX Risk Event Listener Setup
+  useEffect(() => {
+    const setupPxListener = () => {
+      setPxStatus("Setting up PX event listener...");
+
+      // Set up the PX async init function
+      (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
+        setPxStatus("PX initialized - listening for risk events...");
+
+        px.Events.on('risk', function (risk: any, name: string) {
+          console.log('PX RISK DATA:', risk, name);
+
+          const riskEvent = {
+            timestamp: new Date().toISOString(),
+            name: name,
+            risk: risk,
+            id: Date.now() + Math.random()
+          };
+
+          setPxRiskData(prev => [riskEvent, ...prev.slice(0, 9)]); // Keep last 10 events
+          setPxStatus(`Risk event captured: ${name} - ${new Date().toLocaleTimeString()}`);
+          showToast(`PX Risk Event: ${name}`);
+        });
+      };
+
+      // Check if PX is already loaded
+      if ((window as any).px) {
+        (window as any).PXjJ0cYtn9_asyncInit((window as any).px);
+      }
+    };
+
+    setupPxListener();
+
+    return () => {
+      // Cleanup - remove the function
+      if ((window as any).PXjJ0cYtn9_asyncInit) {
+        delete (window as any).PXjJ0cYtn9_asyncInit;
+      }
+    };
   }, []);
 
   // Start consistent XHR calls when video starts playing
@@ -531,6 +574,114 @@ const WatchPage: NextPage = () => {
               <br />
               • Analytics every 15s (engagement tracking)
               <br />• Ad tracking every 20s (ad performance metrics)
+            </p>
+          </div>
+        </div>
+
+        {/* PX Risk Monitoring Panel */}
+        <div
+          style={{
+            marginTop: "30px",
+            padding: "15px",
+            backgroundColor: "#fff3cd",
+            borderRadius: "8px",
+            border: "1px solid #ffeaa7",
+          }}
+        >
+          <h3 style={{ margin: "0 0 10px 0", fontSize: "18px" }}>
+            PX Risk Event Monitor
+          </h3>
+
+          <div style={{ marginBottom: "15px" }}>
+            <strong>Status:</strong> <span style={{ color: "#2d3436" }}>{pxStatus}</span>
+          </div>
+
+          <div style={{ marginBottom: "15px" }}>
+            <strong>Total Events Captured:</strong> {pxRiskData.length}
+          </div>
+
+          {pxRiskData.length > 0 && (
+            <div>
+              <h4 style={{ margin: "15px 0 10px 0", fontSize: "16px" }}>
+                Recent Risk Events:
+              </h4>
+              <div
+                style={{
+                  maxHeight: "300px",
+                  overflowY: "auto",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                }}
+              >
+                {pxRiskData.map((event) => (
+                  <div
+                    key={event.id}
+                    style={{
+                      marginBottom: "10px",
+                      padding: "10px",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "4px",
+                      borderLeft: "4px solid #ff6b6b",
+                    }}
+                  >
+                    <div style={{ fontSize: "12px", color: "#666", marginBottom: "5px" }}>
+                      {event.timestamp}
+                    </div>
+                    <div style={{ fontWeight: "bold", marginBottom: "5px" }}>
+                      Cookie Name: {event.name}
+                    </div>
+                    <div style={{ marginBottom: "10px" }}>
+                      <div style={{ 
+                        fontSize: "24px", 
+                        fontWeight: "bold", 
+                        color: "#d63031",
+                        marginBottom: "5px"
+                      }}>
+                        RISK SCORE: {event.risk?.score || event.risk?.s || event.risk?.risk_score || 'N/A'}
+                      </div>
+                      {event.risk?.uuid && (
+                        <div style={{ fontSize: "14px", color: "#636e72" }}>
+                          UUID: {event.risk.uuid}
+                        </div>
+                      )}
+                      {event.risk?.vid && (
+                        <div style={{ fontSize: "14px", color: "#636e72" }}>
+                          VID: {event.risk.vid}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <strong>Full Risk Data:</strong>
+                      <pre
+                        style={{
+                          backgroundColor: "#2d3436",
+                          color: "#ddd",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          marginTop: "5px",
+                          overflow: "auto",
+                          maxHeight: "100px",
+                        }}
+                      >
+                        {JSON.stringify(event.risk, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop: "15px", fontSize: "14px", color: "#666" }}>
+            <p>
+              🔍 <strong>PerimeterX Risk Monitoring:</strong>
+              <br />
+              This panel captures and displays risk assessment data from PerimeterX.
+              <br />
+              Events are logged in real-time when the PX risk event fires.
             </p>
           </div>
         </div>
