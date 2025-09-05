@@ -37,7 +37,7 @@ const WatchPage: NextPage = () => {
   const [adTimeLeft, setAdTimeLeft] = useState(0);
   const [apiCallCount, setApiCallCount] = useState(0);
   const [lastEventLog, setLastEventLog] = useState<string>("");
-  const [pxRiskData, setPxRiskData] = useState<any[]>([]);
+  const [pxScoreData, setPxScoreData] = useState<any[]>([]);
   const [pxStatus, setPxStatus] = useState<string>("Waiting for PX events...");
 
   // Snackbar state for UX feedback
@@ -90,21 +90,21 @@ const WatchPage: NextPage = () => {
 
       // Set up the PX async init function
       (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
-        setPxStatus("PX initialized - listening for risk events...");
+        setPxStatus("PX initialized - listening for score events...");
 
-        px.Events.on('risk', function (risk: any, name: string) {
-          console.log('PX RISK DATA:', risk, name);
+        px.Events.on('score', function (score: any, kind: string) {
+          console.log('PX SCORE DATA:', score, kind);
 
-          const riskEvent = {
+          const scoreEvent = {
             timestamp: new Date().toISOString(),
-            name: name,
-            risk: risk,
+            kind: kind,
+            score: score,
             id: Date.now() + Math.random()
           };
 
-          setPxRiskData(prev => [riskEvent, ...prev.slice(0, 9)]); // Keep last 10 events
-          setPxStatus(`Risk event captured: ${name} - ${new Date().toLocaleTimeString()}`);
-          showToast(`PX Risk Event: ${name}`);
+          setPxScoreData(prev => [scoreEvent, ...prev.slice(0, 9)]); // Keep last 10 events
+          setPxStatus(`Score event captured: ${kind} - ${new Date().toLocaleTimeString()}`);
+          showToast(`PX Score Event: ${kind}`);
         });
       };
 
@@ -589,7 +589,7 @@ const WatchPage: NextPage = () => {
           }}
         >
           <h3 style={{ margin: "0 0 10px 0", fontSize: "18px" }}>
-            PX Risk Event Monitor
+            PX Binary Score Monitor
           </h3>
 
           <div style={{ marginBottom: "15px" }}>
@@ -597,13 +597,13 @@ const WatchPage: NextPage = () => {
           </div>
 
           <div style={{ marginBottom: "15px" }}>
-            <strong>Total Events Captured:</strong> {pxRiskData.length}
+            <strong>Total Score Events Captured:</strong> {pxScoreData.length}
           </div>
 
-          {pxRiskData.length > 0 && (
+          {pxScoreData.length > 0 && (
             <div>
               <h4 style={{ margin: "15px 0 10px 0", fontSize: "16px" }}>
-                Recent Risk Events:
+                Recent Score Events:
               </h4>
               <div
                 style={{
@@ -615,7 +615,7 @@ const WatchPage: NextPage = () => {
                   backgroundColor: "#fff",
                 }}
               >
-                {pxRiskData.map((event) => (
+                {pxScoreData.map((event) => (
                   <div
                     key={event.id}
                     style={{
@@ -630,30 +630,30 @@ const WatchPage: NextPage = () => {
                       {event.timestamp}
                     </div>
                     <div style={{ fontWeight: "bold", marginBottom: "5px" }}>
-                      Cookie Name: {event.name}
+                      Kind: {event.kind} {event.kind === "binary" ? "(Block Decision)" : event.kind === "hashed" ? "(Hashed Score)" : ""}
                     </div>
                     <div style={{ marginBottom: "10px" }}>
                       <div style={{ 
-                        fontSize: "24px", 
+                        fontSize: "28px", 
                         fontWeight: "bold", 
-                        color: "#d63031",
+                        color: event.kind === "binary" ? "#d63031" : "#0984e3",
                         marginBottom: "5px"
                       }}>
-                        RISK SCORE: {event.risk?.score || event.risk?.s || event.risk?.risk_score || 'N/A'}
+                        SCORE: {typeof event.score === 'object' ? JSON.stringify(event.score) : event.score}
                       </div>
-                      {event.risk?.uuid && (
-                        <div style={{ fontSize: "14px", color: "#636e72" }}>
-                          UUID: {event.risk.uuid}
+                      {event.kind === "binary" && (
+                        <div style={{ fontSize: "16px", color: "#636e72", fontWeight: "bold" }}>
+                          🚫 BLOCK DECISION
                         </div>
                       )}
-                      {event.risk?.vid && (
-                        <div style={{ fontSize: "14px", color: "#636e72" }}>
-                          VID: {event.risk.vid}
+                      {event.kind === "hashed" && (
+                        <div style={{ fontSize: "16px", color: "#636e72", fontWeight: "bold" }}>
+                          🔢 HASHED SCORE
                         </div>
                       )}
                     </div>
                     <div>
-                      <strong>Full Risk Data:</strong>
+                      <strong>Full Score Data:</strong>
                       <pre
                         style={{
                           backgroundColor: "#2d3436",
@@ -666,7 +666,7 @@ const WatchPage: NextPage = () => {
                           maxHeight: "100px",
                         }}
                       >
-                        {JSON.stringify(event.risk, null, 2)}
+                        {JSON.stringify(event.score, null, 2)}
                       </pre>
                     </div>
                   </div>
@@ -677,11 +677,13 @@ const WatchPage: NextPage = () => {
 
           <div style={{ marginTop: "15px", fontSize: "14px", color: "#666" }}>
             <p>
-              🔍 <strong>PerimeterX Risk Monitoring:</strong>
+              🔍 <strong>PerimeterX Score Monitoring:</strong>
               <br />
-              This panel captures and displays risk assessment data from PerimeterX.
+              This panel captures binary score and hashed score events from PerimeterX.
               <br />
-              Events are logged in real-time when the PX risk event fires.
+              • <strong>Binary:</strong> Block decision (red)
+              <br />
+              • <strong>Hashed:</strong> Risk assessment score (blue)
             </p>
           </div>
         </div>
