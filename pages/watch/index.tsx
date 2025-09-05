@@ -633,9 +633,9 @@ const WatchPage: NextPage = () => {
                       Kind: {event.kind} {event.kind === "binary" ? "(Block Decision)" : event.kind === "hashed" ? "(Hashed Score)" : ""}
                     </div>
                     <div style={{ marginBottom: "10px" }}>
-                      <div style={{ 
-                        fontSize: "28px", 
-                        fontWeight: "bold", 
+                      <div style={{
+                        fontSize: "28px",
+                        fontWeight: "bold",
                         color: event.kind === "binary" ? "#d63031" : "#0984e3",
                         marginBottom: "5px"
                       }}>
