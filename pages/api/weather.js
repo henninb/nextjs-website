@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
 
 // Simple in-memory rate limiting
 const rateLimitMap = new Map();

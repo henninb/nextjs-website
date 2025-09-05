@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
 
 function toFahrenheit(x) {
   return x * (9.0 / 5.0) + 32.0;

@@ -1,4 +1,3 @@
-export const runtime = "edge";
 
 export default async function handler(req) {
   if (req.method !== "GET") {

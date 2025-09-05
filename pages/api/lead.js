@@ -1,4 +1,3 @@
-export const runtime = "edge";
 
 import { z } from "zod";
 import { InputSanitizer } from "../../utils/validation/sanitization";

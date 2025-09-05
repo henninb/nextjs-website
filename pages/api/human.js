@@ -1,4 +1,3 @@
-export const runtime = "edge";
 
 export default function handler(req) {
   return new Response(JSON.stringify({ message: "Human API disabled" }), {

@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 
-export const runtime = "edge";
 
 // Rate limiting for UUID generation (basic implementation)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
