@@ -93,7 +93,7 @@ const WatchPage: NextPage = () => {
         console.log('🎯 PXjJ0cYtn9_asyncInit called with PX object:', px);
         console.log('🔍 PX object type:', typeof px);
         console.log('🔍 PX object keys:', px ? Object.keys(px) : 'null/undefined');
-        
+
         // Validate that the PX object has Events API
         if (!px || !px.Events || typeof px.Events.on !== 'function') {
           console.error('❌ PX object does not have Events API:', px);
@@ -102,11 +102,11 @@ const WatchPage: NextPage = () => {
           setPxStatus("PX object missing Events API - score monitoring unavailable");
           return;
         }
-        
+
         console.log('✅ PX object validation passed, Events API available');
         console.log('🔍 Events object:', px.Events);
         console.log('🔍 Events.on function:', px.Events.on);
-        
+
         setPxStatus("PX initialized - listening for score events...");
 
         try {
@@ -121,14 +121,14 @@ const WatchPage: NextPage = () => {
             // Only process binary scores since hashed scores are not available
             if (kind === 'binary') {
               console.log('✅ Processing binary score:', score);
-              
+
               const scoreEvent = {
                 timestamp: new Date().toISOString(),
                 kind: kind,
                 score: score,
                 id: Date.now() + Math.random()
               };
-              
+
               console.log('📦 Created score event object:', scoreEvent);
 
               console.log('🔄 Updating React state with score event...');
@@ -138,14 +138,14 @@ const WatchPage: NextPage = () => {
                 console.log('📊 New score data length:', newData.length);
                 return newData;
               });
-              
+
               const statusMessage = `Binary score captured: ${score} - ${new Date().toLocaleTimeString()}`;
               console.log('📱 Setting status:', statusMessage);
               setPxStatus(statusMessage);
-              
+
               console.log('🍞 Showing toast notification...');
               showToast(`PX Binary Score: ${score}`);
-              
+
               console.log('✅ Binary score processing complete');
             } else {
               console.log(`⏭️ Ignoring ${kind} score (binary-only mode):`, score);
@@ -160,14 +160,14 @@ const WatchPage: NextPage = () => {
 
       // Check if PX is already loaded (try different variations, but only use ones with Events API)
       console.log('🔍 Checking for existing PX objects...');
-      
+
       const pxCandidates = [
         { name: 'window.px', obj: (window as any).px },
         { name: 'window.PX', obj: (window as any).PX },
         { name: 'window.PXjJ0cYtn9', obj: (window as any).PXjJ0cYtn9 },
         { name: 'window._PXjJ0cYtn9', obj: (window as any)._PXjJ0cYtn9 }
       ];
-      
+
       console.log('🔍 PX candidates found:');
       pxCandidates.forEach(candidate => {
         console.log(`  ${candidate.name}:`, !!candidate.obj, candidate.obj ? typeof candidate.obj : 'undefined');
@@ -177,10 +177,10 @@ const WatchPage: NextPage = () => {
           console.log(`    Events.on type:`, candidate.obj.Events ? typeof candidate.obj.Events.on : 'N/A');
         }
       });
-      
+
       const validCandidates = pxCandidates.filter(c => c.obj).map(c => c.obj);
       const pxObject = validCandidates.find(px => px && px.Events && typeof px.Events.on === 'function');
-      
+
       if (pxObject) {
         console.log('✅ Found PX object with Events API, calling asyncInit with:', pxObject);
         console.log('🔍 Events methods:', Object.keys(pxObject.Events));
