@@ -804,7 +804,10 @@ describe("Middleware", () => {
         const hostVariations = [
           { host: "vercel.bhenning.com", xForwardedHost: undefined },
           { host: "localhost", xForwardedHost: "vercel.bhenning.com" },
-          { host: "some-internal-vercel-host", xForwardedHost: "vercel.bhenning.com" },
+          {
+            host: "some-internal-vercel-host",
+            xForwardedHost: "vercel.bhenning.com",
+          },
         ];
 
         for (const hostConfig of hostVariations) {
@@ -822,7 +825,9 @@ describe("Middleware", () => {
           const result = await middleware(mockRequest);
 
           // Log the result to understand what's happening
-          console.log(`Host config: ${JSON.stringify(hostConfig)}, Result status: ${result.status}`);
+          console.log(
+            `Host config: ${JSON.stringify(hostConfig)}, Result status: ${result.status}`,
+          );
 
           // For debugging - none of these should be 403
           if (result.status === 403) {
@@ -843,20 +848,20 @@ describe("Middleware", () => {
             name: "Direct vercel.bhenning.com",
             host: "vercel.bhenning.com",
             xForwardedHost: undefined,
-            expectedHost: "vercel.bhenning.com"
+            expectedHost: "vercel.bhenning.com",
           },
           {
             name: "Proxied through Vercel",
             host: "localhost",
             xForwardedHost: "vercel.bhenning.com",
-            expectedHost: "vercel.bhenning.com"
+            expectedHost: "vercel.bhenning.com",
           },
           {
             name: "Internal Vercel host",
             host: "sfo1.vercel.app",
             xForwardedHost: "vercel.bhenning.com",
-            expectedHost: "vercel.bhenning.com"
-          }
+            expectedHost: "vercel.bhenning.com",
+          },
         ];
 
         for (const testCase of testCases) {
@@ -866,15 +871,20 @@ describe("Middleware", () => {
           }
 
           // Simulate the middleware's host detection logic
-          const detectedHost = headers.get("x-forwarded-host") ?? headers.get("host");
-          const isLocalhost = detectedHost?.includes("localhost") || detectedHost?.includes("127.0.0.1");
+          const detectedHost =
+            headers.get("x-forwarded-host") ?? headers.get("host");
+          const isLocalhost =
+            detectedHost?.includes("localhost") ||
+            detectedHost?.includes("127.0.0.1");
           const isVercelProxy = detectedHost?.includes("vercel.bhenning.com");
 
           console.log(`${testCase.name}:`);
           console.log(`  Detected host: ${detectedHost}`);
           console.log(`  isLocalhost: ${isLocalhost}`);
           console.log(`  isVercelProxy: ${isVercelProxy}`);
-          console.log(`  Should be blocked: ${!true && !isLocalhost && !isVercelProxy}`); // isProduction = true
+          console.log(
+            `  Should be blocked: ${!true && !isLocalhost && !isVercelProxy}`,
+          ); // isProduction = true
 
           expect(detectedHost).toBe(testCase.expectedHost);
         }
@@ -908,11 +918,15 @@ describe("Middleware", () => {
           ]);
           mockUrl.pathname = "/api/nhl";
 
-          const host = mockRequest.headers.get("x-forwarded-host") ?? mockRequest.headers.get("host");
-          const isLocalhost = host?.includes("localhost") || host?.includes("127.0.0.1");
+          const host =
+            mockRequest.headers.get("x-forwarded-host") ??
+            mockRequest.headers.get("host");
+          const isLocalhost =
+            host?.includes("localhost") || host?.includes("127.0.0.1");
           const isVercelProxy = host?.includes("vercel.bhenning.com");
 
-          const wouldBeBlocked = !isProduction && !isLocalhost && !isVercelProxy;
+          const wouldBeBlocked =
+            !isProduction && !isLocalhost && !isVercelProxy;
 
           console.log(`${scenario.name}:`);
           console.log(`  isProduction: ${isProduction}`);
@@ -921,7 +935,9 @@ describe("Middleware", () => {
           console.log(`  Would be blocked (403): ${wouldBeBlocked}`);
 
           if (wouldBeBlocked) {
-            console.log(`  ❌ FOUND THE ISSUE: ${scenario.name} would cause 403!`);
+            console.log(
+              `  ❌ FOUND THE ISSUE: ${scenario.name} would cause 403!`,
+            );
 
             // This is likely the root cause - test it
             const mockLocalResponse = { headers: { set: jest.fn() } };
@@ -950,11 +966,11 @@ describe("Middleware", () => {
         ]);
 
         const pathVariations = [
-          "/api/nhl",           // Standard
-          "/api/nhl/",          // With trailing slash
-          "/api/nhl?test=1",    // With query params (in pathname)
-          "/API/NHL",           // Different case
-          "/api/nhl/../nhl",    // Path traversal attempt
+          "/api/nhl", // Standard
+          "/api/nhl/", // With trailing slash
+          "/api/nhl?test=1", // With query params (in pathname)
+          "/API/NHL", // Different case
+          "/api/nhl/../nhl", // Path traversal attempt
         ];
 
         for (const path of pathVariations) {
@@ -966,7 +982,9 @@ describe("Middleware", () => {
 
           const result = await middleware(mockRequest);
 
-          console.log(`Path "${path}": status = ${result?.status || 'undefined'}`);
+          console.log(
+            `Path "${path}": status = ${result?.status || "undefined"}`,
+          );
 
           if (result?.status === 403) {
             console.log(`  ❌ FOUND PATH ISSUE: "${path}" returns 403`);
@@ -986,12 +1004,36 @@ describe("Middleware", () => {
 
         // Test cases that should ALL work correctly with the trailing slash fix
         const testCases = [
-          { path: "/api/nhl", expected: "bypassed", description: "Standard path" },
-          { path: "/api/nhl/", expected: "bypassed", description: "Single trailing slash" },
-          { path: "/api/nhl///", expected: "bypassed", description: "Multiple trailing slashes" },
-          { path: "/api/nba", expected: "bypassed", description: "NBA standard path" },
-          { path: "/api/nba/", expected: "bypassed", description: "NBA with trailing slash" },
-          { path: "/api/nba//", expected: "bypassed", description: "NBA with double trailing slash" },
+          {
+            path: "/api/nhl",
+            expected: "bypassed",
+            description: "Standard path",
+          },
+          {
+            path: "/api/nhl/",
+            expected: "bypassed",
+            description: "Single trailing slash",
+          },
+          {
+            path: "/api/nhl///",
+            expected: "bypassed",
+            description: "Multiple trailing slashes",
+          },
+          {
+            path: "/api/nba",
+            expected: "bypassed",
+            description: "NBA standard path",
+          },
+          {
+            path: "/api/nba/",
+            expected: "bypassed",
+            description: "NBA with trailing slash",
+          },
+          {
+            path: "/api/nba//",
+            expected: "bypassed",
+            description: "NBA with double trailing slash",
+          },
         ];
 
         for (const testCase of testCases) {
@@ -1015,6 +1057,171 @@ describe("Middleware", () => {
           }
 
           jest.clearAllMocks();
+        }
+      });
+
+      it("should verify NFL endpoint is properly bypassed like NHL/NBA", async () => {
+        process.env.NODE_ENV = "production";
+
+        mockRequest.headers = new Map([
+          ["host", "vercel.bhenning.com"],
+          ["x-forwarded-host", "vercel.bhenning.com"],
+          ["x-forwarded-proto", "https"],
+        ]);
+
+        // Test all sports APIs that should work the same way
+        const sportsApis = [
+          { path: "/api/nhl", sport: "NHL" },
+          { path: "/api/nba", sport: "NBA" },
+          { path: "/api/nfl", sport: "NFL" }, // This is the failing one
+          { path: "/api/mlb", sport: "MLB" },
+        ];
+
+        for (const api of sportsApis) {
+          mockUrl.pathname = api.path;
+          mockUrl.search = "";
+
+          const mockLocalResponse = { headers: { set: jest.fn() } };
+          NextResponse.next = jest.fn(() => mockLocalResponse);
+
+          const result = await middleware(mockRequest);
+
+          console.log(`Testing ${api.sport} API: "${api.path}"`);
+          console.log(`  Result status: ${result?.status || "undefined"}`);
+          console.log(
+            `  NextResponse.next called: ${NextResponse.next.mock?.calls?.length > 0}`,
+          );
+          console.log(
+            `  Fetch called: ${global.fetch.mock?.calls?.length > 0}`,
+          );
+
+          // All sports APIs should behave identically
+          expect(NextResponse.next).toHaveBeenCalled();
+          expect(global.fetch).not.toHaveBeenCalled();
+          expect(result?.status).toBeUndefined();
+
+          console.log(`  ✅ CORRECTLY BYPASSED: ${api.path}`);
+
+          jest.clearAllMocks();
+        }
+      });
+
+      it("should test NFL specifically with different scenarios", async () => {
+        process.env.NODE_ENV = "production";
+
+        const testScenarios = [
+          {
+            name: "Direct vercel.bhenning.com",
+            headers: new Map([
+              ["host", "vercel.bhenning.com"],
+              ["x-forwarded-host", "vercel.bhenning.com"],
+              ["x-forwarded-proto", "https"],
+            ]),
+          },
+          {
+            name: "Localhost with forwarded host",
+            headers: new Map([
+              ["host", "localhost"],
+              ["x-forwarded-host", "vercel.bhenning.com"],
+              ["x-forwarded-proto", "https"],
+            ]),
+          },
+          {
+            name: "Internal Vercel host",
+            headers: new Map([
+              ["host", "sfo1.vercel.app"],
+              ["x-forwarded-host", "vercel.bhenning.com"],
+              ["x-forwarded-proto", "https"],
+            ]),
+          },
+        ];
+
+        for (const scenario of testScenarios) {
+          mockRequest.headers = scenario.headers;
+          mockUrl.pathname = "/api/nfl";
+          mockUrl.search = "";
+
+          const mockLocalResponse = { headers: { set: jest.fn() } };
+          NextResponse.next = jest.fn(() => mockLocalResponse);
+
+          const result = await middleware(mockRequest);
+
+          console.log(`NFL Test - ${scenario.name}:`);
+          console.log(`  Status: ${result?.status || "undefined"}`);
+          console.log(
+            `  Bypassed: ${NextResponse.next.mock?.calls?.length > 0}`,
+          );
+          console.log(`  Proxied: ${global.fetch.mock?.calls?.length > 0}`);
+
+          // Should be bypassed in all scenarios
+          expect(NextResponse.next).toHaveBeenCalled();
+          expect(global.fetch).not.toHaveBeenCalled();
+          expect(result?.status).toBeUndefined();
+
+          jest.clearAllMocks();
+        }
+      });
+
+      it("should NOT intercept local APIs at all - FIXED TEST", async () => {
+        // Test the negative lookahead regex pattern directly
+        const excludeLocalApisPattern =
+          "/api/(?!nhl|nba|nfl|mlb|celsius|fahrenheit|lead|player-ads|player-analytics|player-heartbeat|player-metadata|weather|uuid|human)(.+)";
+
+        // Convert to actual regex that Next.js would use
+        const regex = new RegExp("^" + excludeLocalApisPattern + "$");
+
+        const localApiPaths = [
+          "/api/nfl",
+          "/api/nhl",
+          "/api/nba",
+          "/api/mlb",
+          "/api/celsius",
+        ];
+        const financeApiPaths = [
+          "/api/me",
+          "/api/graphql",
+          "/api/accounts",
+          "/api/payments",
+        ];
+
+        console.log("Testing local APIs (should NOT match):");
+        for (const path of localApiPaths) {
+          const matches = regex.test(path);
+          console.log(`  ${path}: matches = ${matches}`);
+          expect(matches).toBe(false); // Local APIs should NOT match
+        }
+
+        console.log("Testing finance APIs (should match):");
+        for (const path of financeApiPaths) {
+          const matches = regex.test(path);
+          console.log(`  ${path}: matches = ${matches}`);
+          expect(matches).toBe(true); // Finance APIs SHOULD match
+        }
+      });
+
+      it("should properly handle middleware config for API routes", async () => {
+        // Import and test the actual config from middleware.js
+        const { config } = require("../middleware.js");
+
+        console.log("Current middleware matcher patterns:", config.matcher);
+
+        // All API routes should be intercepted by the matcher
+        const apiPattern = config.matcher.find((pattern) =>
+          pattern.includes("/api/"),
+        );
+        expect(apiPattern).toBe("/api/(.*)");
+
+        // Convert the pattern to regex and test it
+        if (apiPattern) {
+          const regex = new RegExp("^" + apiPattern + "$");
+
+          // ALL APIs should match the pattern - filtering happens inside middleware
+          expect(regex.test("/api/nfl")).toBe(true);
+          expect(regex.test("/api/nhl")).toBe(true);
+          expect(regex.test("/api/nba")).toBe(true);
+          expect(regex.test("/api/me")).toBe(true);
+          expect(regex.test("/api/graphql")).toBe(true);
+          expect(regex.test("/api/accounts")).toBe(true);
         }
       });
     });

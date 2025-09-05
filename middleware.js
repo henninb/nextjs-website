@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export const config = {
   matcher: [
-    // More robust API route matching for production
+    // Match ALL API routes - we'll filter locally inside the middleware
     "/api/(.*)",
     // Handle direct GraphQL requests in production
     "/graphql",
@@ -62,40 +62,51 @@ export async function middleware(request) {
 
   const url = request.nextUrl.clone();
 
-  // CRITICAL: Always proxy ALL /api/* requests and /graphql to finance.bhenning.com
-  // This includes /api/me, /api/graphql, /graphql, and all other API endpoints
-  // The middleware MUST intercept these requests and never let them fall through
-  if (url.pathname.startsWith("/api/") || url.pathname === "/graphql") {
-    // Exception for local APIs
-    const localApis = [
-      "/api/nhl",
-      "/api/nba",
-      "/api/mlb",
-      "/api/nfl",
-      "/api/celsius",
-      "/api/fahrenheit",
-      "/api/lead",
-      "/api/player-ads",
-      "/api/player-analytics",
-      "/api/player-heartbeat",
-      "/api/player-metadata",
-      "/api/weather",
-      "/api/uuid",
-      "/api/uuid/generate",
-    ];
+  // CRITICAL: Check for local APIs first and return early to bypass middleware
+  // Local APIs should execute directly without any proxy intervention
+  const localApis = [
+    "/api/nhl",
+    "/api/nba",
+    "/api/nfl",
+    "/api/mlb",
+    "/api/celsius",
+    "/api/fahrenheit",
+    "/api/lead",
+    "/api/player-ads",
+    "/api/player-analytics",
+    "/api/player-heartbeat",
+    "/api/player-metadata",
+    "/api/weather",
+    "/api/uuid",
+    "/api/human",
+  ];
 
-    // Normalize pathname by removing trailing slashes for consistent matching
-    const normalizedPathname = url.pathname.replace(/\/+$/, '') || '/';
+  // Normalize pathname by removing trailing slashes for consistent matching
+  const normalizedPathname = url.pathname.replace(/\/+$/, "") || "/";
 
-    if (localApis.includes(normalizedPathname)) {
-      if (isProduction) {
-        console.log(`[MW PROD] bypassing proxy for local API: ${url.pathname} (normalized: ${normalizedPathname})`);
-      } else if (isDev) {
-        console.log(`[MW] bypassing proxy for local API: ${url.pathname} (normalized: ${normalizedPathname})`);
-      }
-      return NextResponse.next();
+  if (localApis.includes(normalizedPathname)) {
+    // Local API - skip all middleware processing entirely
+    if (isProduction) {
+      console.log(`[MW PROD] local API bypass: ${url.pathname}`);
+    } else {
+      console.log(`[MW] local API bypass: ${url.pathname}`);
     }
+    return NextResponse.next();
+  }
 
+  // Handle /api/uuid/generate special case (has sub-path)
+  if (url.pathname.startsWith("/api/uuid/")) {
+    if (isProduction) {
+      console.log(`[MW PROD] local API bypass: ${url.pathname}`);
+    } else {
+      console.log(`[MW] local API bypass: ${url.pathname}`);
+    }
+    return NextResponse.next();
+  }
+
+  // CRITICAL: Proxy ALL finance /api/* requests and /graphql to finance.bhenning.com
+  // This includes /api/me, /api/graphql, /graphql, and all other finance API endpoints
+  if (url.pathname.startsWith("/api/") || url.pathname === "/graphql") {
     if (isDev) {
       console.log("[MW] proxying API route");
     } else {

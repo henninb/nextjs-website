@@ -74,7 +74,10 @@ describe("Middleware Local API Handling", () => {
 
     localApis.forEach((path) => {
       it(`should bypass proxy for ${path} in production`, async () => {
-        const req = createMockRequest(`https://vercel.bhenning.com${path}`, "vercel.bhenning.com");
+        const req = createMockRequest(
+          `https://vercel.bhenning.com${path}`,
+          "vercel.bhenning.com",
+        );
         await middleware(req);
         expect(NextResponse.next).toHaveBeenCalled();
         expect(global.fetch).not.toHaveBeenCalled();
@@ -83,7 +86,10 @@ describe("Middleware Local API Handling", () => {
 
     proxiedApis.forEach((path) => {
       it(`should proxy ${path} in production`, async () => {
-        const req = createMockRequest(`https://vercel.bhenning.com${path}`, "vercel.bhenning.com");
+        const req = createMockRequest(
+          `https://vercel.bhenning.com${path}`,
+          "vercel.bhenning.com",
+        );
         await middleware(req);
         expect(NextResponse.next).not.toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
@@ -98,7 +104,10 @@ describe("Middleware Local API Handling", () => {
 
     localApis.forEach((path) => {
       it(`should bypass proxy for ${path} in development`, async () => {
-        const req = createMockRequest(`http://localhost:3000${path}`, "localhost:3000");
+        const req = createMockRequest(
+          `http://localhost:3000${path}`,
+          "localhost:3000",
+        );
         await middleware(req);
         expect(NextResponse.next).toHaveBeenCalled();
         expect(global.fetch).not.toHaveBeenCalled();
@@ -107,7 +116,10 @@ describe("Middleware Local API Handling", () => {
 
     proxiedApis.forEach((path) => {
       it(`should proxy ${path} in development`, async () => {
-        const req = createMockRequest(`http://localhost:3000${path}`, "localhost:3000");
+        const req = createMockRequest(
+          `http://localhost:3000${path}`,
+          "localhost:3000",
+        );
         await middleware(req);
         expect(NextResponse.next).not.toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
