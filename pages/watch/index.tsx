@@ -58,7 +58,11 @@ const WatchPage: NextPage = () => {
   const adTrackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentTimeRef = useRef(0);
   const durationRef = useRef(0);
-  
+  // PX detection retry control
+  const pxRetryIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pxRetryAttemptsRef = useRef(0);
+  const pxErrorHandlerRef = useRef<((ev: ErrorEvent) => void) | null>(null);
+
   // Prevent multiple PX setups due to React strict mode
   const pxSetupRef = useRef(false);
 
@@ -97,12 +101,49 @@ const WatchPage: NextPage = () => {
       return;
     }
     pxSetupRef.current = true;
-    
+
     const setupPxListener = () => {
       console.log("🔧 Setting up PX event listener...");
       setPxStatus("Setting up PX event listener...");
 
+      // Page + script loading diagnostics
+      console.log("🕒 Document.readyState:", document.readyState);
+      const pxScript = document.getElementById("px-script") as HTMLScriptElement | null;
+      if (pxScript) {
+        console.log("🔎 Found px-script element:", {
+          src: pxScript.getAttribute("src"),
+          async: pxScript.async,
+          defer: pxScript.defer,
+          dataset_app_id: (pxScript as any).dataset?.appId,
+          hasLoadListener: true,
+        });
+        // Attach runtime listeners for load/error if not already attached
+        pxScript.addEventListener("load", () => {
+          console.log("[PX-DIAG] px-script onload observed from watch page");
+        });
+        pxScript.addEventListener("error", (e) => {
+          console.error("[PX-DIAG] px-script onerror observed from watch page", e);
+          setPxStatus("PX script failed to load");
+        });
+      } else {
+        console.warn("[PX-DIAG] px-script element not found in DOM");
+      }
+
+      // Global resource error trap (helps catch network/script failures)
+      const onResError = (ev: ErrorEvent) => {
+        const tgt = ev.target as any;
+        if (tgt && tgt.tagName === "SCRIPT" && typeof tgt.src === "string" && tgt.src.includes("px-cloud")) {
+          console.error("[PX-DIAG] Global script error for PX resource:", tgt.src, ev);
+          setPxStatus("PX network/script error");
+        }
+      };
+      window.addEventListener("error", onResError, true);
+      pxErrorHandlerRef.current = onResError;
+
       // Set up the PX async init function
+      if ((window as any).PXjJ0cYtn9_asyncInit) {
+        console.warn("[PX-DIAG] PXjJ0cYtn9_asyncInit already exists on window; will overwrite to ensure logging");
+      }
       (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
         console.log("🎯 PXjJ0cYtn9_asyncInit called with PX object:", px);
         console.log("🔍 PX object type:", typeof px);
@@ -131,35 +172,94 @@ const WatchPage: NextPage = () => {
 
         setPxStatus("PX initialized - listening for all events...");
 
+        // CRITICAL: First, let's see what events PX actually supports
+        console.log(
+          "🔍 DEBUGGING: Available PX Events methods:",
+          Object.keys(px.Events),
+        );
+        console.log("🔍 DEBUGGING: PX object inspection:", px);
+
+        // Try to trigger a test score manually to see if the event works
+        if (px.Events.trigger) {
+          console.log("🧪 TESTING: Manually triggering test score event");
+          try {
+            px.Events.trigger("score", "test-score", "binary");
+          } catch (e) {
+            console.log("🧪 Manual trigger failed:", e);
+          }
+        }
+
         // CRITICAL: Set up the exact score listener as per PX documentation
-        console.log("🎯 Setting up OFFICIAL PX score listener with (score, kind) signature...");
-        px.Events.on('score', function (score, kind) {
-            console.log(`🏆 OFFICIAL SCORE EVENT FIRED!!! - Score: ${score}, Kind: ${kind}`);
-            console.log(`🏆 Score type: ${typeof score}, Kind type: ${typeof kind}`);
-            console.log(`🏆 Arguments length: ${arguments.length}, All arguments:`, arguments);
-            
-            if (kind === "binary") {
-                console.log("🚫 BINARY BLOCK DECISION DETECTED:", score);
-                
-                const scoreEvent = {
-                  timestamp: new Date().toISOString(),
-                  kind: kind,
-                  score: score,
-                  id: Date.now() + Math.random(),
-                };
+        console.log(
+          "🎯 Setting up OFFICIAL PX score listener with (score, kind) signature...",
+        );
 
-                setPxScoreData((prev) => {
-                  const newData = [scoreEvent, ...prev.slice(0, 9)];
-                  return newData;
-                });
+        // Try multiple variations to catch any score event
+        const scoreHandler = function (score, kind) {
+          console.log(
+            `🏆 OFFICIAL SCORE EVENT FIRED!!! - Score: ${score}, Kind: ${kind}`,
+          );
+          console.log(
+            `🏆 Score type: ${typeof score}, Kind type: ${typeof kind}`,
+          );
+          console.log(
+            `🏆 Arguments length: ${arguments.length}, All arguments:`,
+            Array.from(arguments),
+          );
 
-                const statusMessage = `BINARY BLOCK DECISION: ${score} - ${new Date().toLocaleTimeString()}`;
-                setPxStatus(statusMessage);
-                showToast(`🚫 PX Block Decision: ${score}`);
-            } else {
-                console.log(`📊 Non-binary score event - Score: ${score}, Kind: ${kind}`);
+          if (kind === "binary") {
+            console.log("🚫 BINARY BLOCK DECISION DETECTED:", score);
+
+            const scoreEvent = {
+              timestamp: new Date().toISOString(),
+              kind: kind,
+              score: score,
+              id: Date.now() + Math.random(),
+            };
+
+            setPxScoreData((prev) => {
+              const newData = [scoreEvent, ...prev.slice(0, 9)];
+              return newData;
+            });
+
+            const statusMessage = `BINARY BLOCK DECISION: ${score} - ${new Date().toLocaleTimeString()}`;
+            setPxStatus(statusMessage);
+            showToast(`🚫 PX Block Decision: ${score}`);
+          } else {
+            console.log(
+              `📊 Non-binary score event - Score: ${score}, Kind: ${kind}`,
+            );
+          }
+        };
+
+        px.Events.on("score", scoreHandler);
+
+        // Also explicitly map 'risk' to a score-like handler if provided by SDK
+        try {
+          px.Events.on("risk", function (...args: any[]) {
+            console.log("🧭 RISK event observed; arguments:", args);
+            // Heuristic: some SDKs emit [token, cookieName, score, threshold]
+            const maybeScore = args?.[2];
+            const maybeThreshold = args?.[3];
+            if (maybeScore !== undefined) {
+              const scoreEvent = {
+                timestamp: new Date().toISOString(),
+                kind: "risk",
+                score: maybeScore,
+                threshold: maybeThreshold,
+                id: Date.now() + Math.random(),
+              } as any;
+              console.log("🧭 Mapped risk->score candidate:", scoreEvent);
+              setPxScoreData((prev) => [scoreEvent, ...prev.slice(0, 9)]);
+              setPxStatus(
+                `Risk score observed: ${maybeScore} (thr=${maybeThreshold ?? "?"}) - ${new Date().toLocaleTimeString()}`,
+              );
             }
-        });
+          });
+          console.log("✅ Explicit 'risk' to score mapping listener installed");
+        } catch (e) {
+          console.log("ℹ️ Could not attach explicit 'risk' listener:", e);
+        }
 
         // Helper function to log and store any PX event
         const logPxEvent = (eventType: string, ...args: any[]) => {
@@ -330,6 +430,35 @@ const WatchPage: NextPage = () => {
             );
           }
 
+          // Try to subscribe to channels if supported by this SDK variant
+          try {
+            const hasChannels = px.Events && typeof (px.Events as any).channels === "function";
+            const hasSubscribe = px.Events && typeof (px.Events as any).subscribe === "function";
+            console.log("🔎 Channels support:", { hasChannels, hasSubscribe });
+            if (hasChannels) {
+              let channelsInfo: any;
+              try {
+                channelsInfo = (px.Events as any).channels();
+              } catch (err) {
+                console.log("ℹ️ Calling Events.channels() failed:", err);
+              }
+              console.log("🔎 Events.channels() returned:", channelsInfo);
+            }
+            if (hasSubscribe) {
+              try {
+                (px.Events as any).subscribe("*", function (...args: any[]) {
+                  console.log("📡 CHANNEL subscribe('*') event:", args);
+                  logPxEvent("channel:*", ...args);
+                });
+                console.log("✅ Subscribed to channel wildcard via Events.subscribe('*')");
+              } catch (err) {
+                console.log("ℹ️ Channel wildcard subscription not supported:", err);
+              }
+            }
+          } catch (err) {
+            console.log("ℹ️ Channel diagnostics not available:", err);
+          }
+
           // Try to listen for all events using a wildcard or generic listener if available
           try {
             px.Events.on("*", function (eventType: string, ...args: any[]) {
@@ -401,6 +530,47 @@ const WatchPage: NextPage = () => {
         } else {
           console.log("📋 No PX objects found at all");
         }
+
+        // Start a bounded retry loop to detect PX after script loads
+        const maxAttempts = 120; // ~60s at 500ms
+        if (!pxRetryIntervalRef.current) {
+          console.log("[PX-DIAG] Starting PX detection retry loop");
+          pxRetryAttemptsRef.current = 0;
+          pxRetryIntervalRef.current = setInterval(() => {
+            pxRetryAttemptsRef.current += 1;
+            const candidates = [
+              (window as any).px,
+              (window as any).PX,
+              (window as any).PXjJ0cYtn9,
+              (window as any)._PXjJ0cYtn9,
+            ];
+            const found = candidates.find(
+              (p) => p && p.Events && typeof p.Events.on === "function",
+            );
+            if (found) {
+              console.log(
+                `[PX-DIAG] PX detected on attempt #${pxRetryAttemptsRef.current}; initializing...`,
+                found,
+              );
+              try {
+                (window as any).PXjJ0cYtn9_asyncInit(found);
+              } finally {
+                if (pxRetryIntervalRef.current) clearInterval(pxRetryIntervalRef.current);
+                pxRetryIntervalRef.current = null;
+              }
+            } else if (pxRetryAttemptsRef.current % 10 === 0) {
+              console.log(
+                `[PX-DIAG] Still waiting for PX (attempt ${pxRetryAttemptsRef.current}/${maxAttempts})`
+              );
+            }
+            if (pxRetryAttemptsRef.current >= maxAttempts) {
+              if (pxRetryIntervalRef.current) clearInterval(pxRetryIntervalRef.current);
+              pxRetryIntervalRef.current = null;
+              console.warn("[PX-DIAG] PX not detected after retry window");
+              setPxStatus("PX not detected after waiting");
+            }
+          }, 500);
+        }
       }
     };
 
@@ -414,6 +584,16 @@ const WatchPage: NextPage = () => {
       if ((window as any).PXjJ0cYtn9_asyncInit) {
         delete (window as any).PXjJ0cYtn9_asyncInit;
         console.log("✅ PX async init function cleaned up");
+      }
+      // Clear PX detection retries
+      if (pxRetryIntervalRef.current) {
+        clearInterval(pxRetryIntervalRef.current);
+        pxRetryIntervalRef.current = null;
+      }
+      // Remove global resource error trap
+      if (pxErrorHandlerRef.current) {
+        window.removeEventListener("error", pxErrorHandlerRef.current as any, true);
+        pxErrorHandlerRef.current = null;
       }
       // Reset setup ref for re-initialization
       pxSetupRef.current = false;
