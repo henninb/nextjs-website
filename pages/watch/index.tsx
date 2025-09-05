@@ -95,16 +95,21 @@ const WatchPage: NextPage = () => {
         px.Events.on('score', function (score: any, kind: string) {
           console.log('PX SCORE DATA:', score, kind);
 
-          const scoreEvent = {
-            timestamp: new Date().toISOString(),
-            kind: kind,
-            score: score,
-            id: Date.now() + Math.random()
-          };
+          // Only process binary scores since hashed scores are not available
+          if (kind === 'binary') {
+            const scoreEvent = {
+              timestamp: new Date().toISOString(),
+              kind: kind,
+              score: score,
+              id: Date.now() + Math.random()
+            };
 
-          setPxScoreData(prev => [scoreEvent, ...prev.slice(0, 9)]); // Keep last 10 events
-          setPxStatus(`Score event captured: ${kind} - ${new Date().toLocaleTimeString()}`);
-          showToast(`PX Score Event: ${kind}`);
+            setPxScoreData(prev => [scoreEvent, ...prev.slice(0, 9)]); // Keep last 10 events
+            setPxStatus(`Binary score captured: ${score} - ${new Date().toLocaleTimeString()}`);
+            showToast(`PX Binary Score: ${score}`);
+          } else {
+            console.log(`Ignoring ${kind} score (binary-only mode):`, score);
+          }
         });
       };
 
@@ -634,27 +639,20 @@ const WatchPage: NextPage = () => {
                       {event.timestamp}
                     </div>
                     <div style={{ fontWeight: "bold", marginBottom: "5px" }}>
-                      Kind: {event.kind} {event.kind === "binary" ? "(Block Decision)" : event.kind === "hashed" ? "(Hashed Score)" : ""}
+                      Kind: {event.kind} (Block Decision)
                     </div>
                     <div style={{ marginBottom: "10px" }}>
                       <div style={{
-                        fontSize: "28px",
+                        fontSize: "32px",
                         fontWeight: "bold",
-                        color: event.kind === "binary" ? "#d63031" : "#0984e3",
+                        color: "#d63031",
                         marginBottom: "5px"
                       }}>
-                        SCORE: {typeof event.score === 'object' ? JSON.stringify(event.score) : event.score}
+                        BINARY SCORE: {typeof event.score === 'object' ? JSON.stringify(event.score) : event.score}
                       </div>
-                      {event.kind === "binary" && (
-                        <div style={{ fontSize: "16px", color: "#636e72", fontWeight: "bold" }}>
-                          🚫 BLOCK DECISION
-                        </div>
-                      )}
-                      {event.kind === "hashed" && (
-                        <div style={{ fontSize: "16px", color: "#636e72", fontWeight: "bold" }}>
-                          🔢 HASHED SCORE
-                        </div>
-                      )}
+                      <div style={{ fontSize: "18px", color: "#636e72", fontWeight: "bold" }}>
+                        🚫 BLOCK DECISION
+                      </div>
                     </div>
                     <div>
                       <strong>Full Score Data:</strong>
@@ -681,13 +679,13 @@ const WatchPage: NextPage = () => {
 
           <div style={{ marginTop: "15px", fontSize: "14px", color: "#666" }}>
             <p>
-              🔍 <strong>PerimeterX Score Monitoring:</strong>
+              🔍 <strong>PerimeterX Binary Score Monitoring:</strong>
               <br />
-              This panel captures binary score and hashed score events from PerimeterX.
+              This panel captures binary score events from PerimeterX (block decisions only).
               <br />
-              • <strong>Binary:</strong> Block decision (red)
+              • <strong>Binary Score:</strong> Block decision values in red
               <br />
-              • <strong>Hashed:</strong> Risk assessment score (blue)
+              • Hashed scores are not available in this configuration
             </p>
           </div>
         </div>
