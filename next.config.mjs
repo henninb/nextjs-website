@@ -40,6 +40,18 @@ const nextConfig = {
   // Add transpilePackages to handle MUI X components
   transpilePackages: ["@mui/x-data-grid"],
 
+  // Configure styled-components for SSR and CSR consistency
+  compiler: {
+    styledComponents: {
+      displayName: true,
+      ssr: true,
+      fileName: true,
+      topLevelImportPaths: [],
+      meaninglessFileNames: ["index", "styles"],
+      cssProp: true,
+    },
+  },
+
   // Minimal webpack configuration - let Next.js handle everything
   webpack: (config, { dev, isServer, webpack }) => {
     if (dev && !isServer) {
