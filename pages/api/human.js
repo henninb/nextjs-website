@@ -1,5 +1,5 @@
 // import {NextResponse} from 'next/server';
-import { perimeterx } from "perimeterx-nextjs";
+//import { perimeterx } from "perimeterx-nextjs";
 
 export const runtime = "edge";
 
@@ -11,7 +11,7 @@ const pxConfig = {
   px_bypass_monitor_header: "x-px-block",
 };
 
-export default perimeterx(pxConfig);
+//export default perimeterx(pxConfig);
 
 // export default async function handler(req, res) {
 //   try {
