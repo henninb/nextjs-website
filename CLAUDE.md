@@ -124,3 +124,47 @@ MSW is fully configured for API mocking with worker in public/ directory.
 - **Runtime**: Keep `experimental-edge` runtime in middleware.js - DO NOT change to standard `edge` runtime
 - The experimental-edge runtime is intentionally used for specific functionality requirements
 - Security middleware includes CORS handling and CSP reporting
+
+## Nginx Reverse Proxy Configuration
+
+**IMPORTANT**: The domains `vercel.bhenning.com` and `www.bhenning.com` are behind an nginx reverse proxy at `~/projects/github.com/henninb/nginx-reverse-proxy/nginx.conf`. 
+
+### Local API Routing Issue
+
+**Problem**: Nginx was intercepting ALL `/api/*` requests and routing them to the local finance service instead of allowing Next.js local APIs to pass through to Vercel.
+
+**Solution Applied**: Added specific location blocks for local APIs that must come BEFORE the general `/api/` block in nginx.conf:
+
+```nginx
+# Local Next.js APIs - pass through to Vercel (must come before general /api/ block)
+location ~ ^/api/(nhl|nba|nfl|mlb|celsius|fahrenheit|lead|player-ads|player-analytics|player-heartbeat|player-metadata|weather|uuid|human)(/.*)?$ {
+    proxy_pass https://nextjs-website-alpha-weld.vercel.app$request_uri;
+    proxy_set_header Host nextjs-website-alpha-weld.vercel.app;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_ssl_server_name on;
+    proxy_ssl_name nextjs-website-alpha-weld.vercel.app;
+}
+```
+
+### Current API Routing Flow
+
+1. **Local Next.js APIs**: `/api/nhl`, `/api/nba`, `/api/nfl`, `/api/mlb`, `/api/celsius`, `/api/fahrenheit`, `/api/lead`, `/api/player-ads`, `/api/player-analytics`, `/api/player-heartbeat`, `/api/player-metadata`, `/api/weather`, `/api/uuid`, `/api/human` → Vercel platform
+2. **GraphQL**: `/api/graphql` → Local finance service `/graphql` 
+3. **Finance APIs**: All other `/api/*` → Local finance service
+
+### Key Points
+
+- **Nginx location precedence**: Most specific regex locations must come before general ones
+- **Middleware bypass**: The Next.js middleware correctly identifies and bypasses security for local APIs
+- **No breaking changes**: Finance API routing remains intact
+- **Testing**: Changes applied to both `vercel.bhenning.com` and `www.bhenning.com` server blocks
+
+### Adding New Local APIs
+
+When adding new Next.js API routes that should bypass the finance service:
+
+1. Add the route to the nginx regex pattern in both `vercel.bhenning.com` and `www.bhenning.com` server blocks
+2. Add the route to the `localApis` array in `middleware.js` 
+3. Test both development and production environments
