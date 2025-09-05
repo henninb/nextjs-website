@@ -38,32 +38,10 @@ export async function middleware(request) {
     );
   }
 
-  // SECURITY: Additional safeguards
-  const host =
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  const isLocalhost =
-    host?.includes("localhost") || host?.includes("127.0.0.1");
-  const isVercelProxy = host?.includes("vercel.bhenning.com");
-
-  if (isDev) {
-    console.log(
-      `[MW] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}, isVercelProxy: ${isVercelProxy}`,
-    );
-  }
-
-  // CRITICAL: Prevent cookie rewriting in production
-  // (no logging of headers/cookies)
-
-  // SECURITY: Only allow proxy for approved hosts
-  if (!isProduction && !isLocalhost && !isVercelProxy) {
-    if (isDev) console.log(`[MW] blocked unauthorized host: ${host}`);
-    return new NextResponse("Forbidden", { status: 403 });
-  }
-
   const url = request.nextUrl.clone();
 
-  // CRITICAL: Check for local APIs first and return early to bypass middleware
-  // Local APIs should execute directly without any proxy intervention
+  // CRITICAL: Check for local APIs FIRST and return early to bypass ALL security checks
+  // Local APIs should execute directly without any proxy intervention or host validation
   const localApis = [
     "/api/nhl",
     "/api/nba",
@@ -85,7 +63,7 @@ export async function middleware(request) {
   const normalizedPathname = url.pathname.replace(/\/+$/, "") || "/";
 
   if (localApis.includes(normalizedPathname)) {
-    // Local API - skip all middleware processing entirely
+    // Local API - skip all middleware processing entirely (including host validation)
     if (isProduction) {
       console.log(`[MW PROD] local API bypass: ${url.pathname}`);
     } else {
@@ -102,6 +80,31 @@ export async function middleware(request) {
       console.log(`[MW] local API bypass: ${url.pathname}`);
     }
     return NextResponse.next();
+  }
+
+  // SECURITY: Additional safeguards (only for non-local APIs)
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  const isLocalhost =
+    host?.includes("localhost") || host?.includes("127.0.0.1");
+  const isVercelProxy = host?.includes("vercel.bhenning.com");
+
+  // DEBUG: Always log host detection in production for vercel.bhenning.com
+  if (isProduction || isDev) {
+    console.log(
+      `[MW${isProduction ? " PROD" : ""}] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}, isVercelProxy: ${isVercelProxy}`,
+    );
+  }
+
+  // CRITICAL: Prevent cookie rewriting in production
+  // (no logging of headers/cookies)
+
+  // SECURITY: Only allow proxy for approved hosts (local APIs already bypassed above)
+  if (!isProduction && !isLocalhost && !isVercelProxy) {
+    console.log(
+      `[MW${isProduction ? " PROD" : ""}] blocked unauthorized host: ${host} (isProduction: ${isProduction}, isLocalhost: ${isLocalhost}, isVercelProxy: ${isVercelProxy})`,
+    );
+    return new NextResponse("Forbidden", { status: 403 });
   }
 
   // CRITICAL: Proxy ALL finance /api/* requests and /graphql to finance.bhenning.com
