@@ -47,7 +47,10 @@ const WatchPage: NextPage = () => {
       try {
         const response = await fetch("/api/player-metadata", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
           body: JSON.stringify({ videoId: "sample_video_001" }),
         });
         const result = await response.json();
@@ -82,7 +85,10 @@ const WatchPage: NextPage = () => {
       try {
         const response = await fetch("/api/player-heartbeat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
           body: JSON.stringify({
             videoId: videoData?.videoId,
             position: currentTime,
@@ -113,7 +119,10 @@ const WatchPage: NextPage = () => {
       try {
         const response = await fetch("/api/player-analytics", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
           body: JSON.stringify({
             event: randomEvent,
             videoId: videoData?.videoId,
