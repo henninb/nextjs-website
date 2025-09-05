@@ -30,7 +30,7 @@
     "zod": "^4.1.5"
   },
   "engines": {
-    "node": "20.x || 22.x || 23.x || 24.x"
+    "node": "20.19.x || >=22.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",

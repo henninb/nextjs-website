@@ -1,6 +1,7 @@
 // pages/watch/index.tsx
 import { NextPage } from "next";
 import { useEffect, useRef, useState } from "react";
+import { Snackbar, Alert } from "@mui/material";
 import Head from "next/head";
 
 interface VideoMetadata {
@@ -28,6 +29,7 @@ const WatchPage: NextPage = () => {
   const [videoData, setVideoData] = useState<VideoMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showAd, setShowAd] = useState(false);
@@ -36,10 +38,21 @@ const WatchPage: NextPage = () => {
   const [apiCallCount, setApiCallCount] = useState(0);
   const [lastEventLog, setLastEventLog] = useState<string>("");
 
+  // Snackbar state for UX feedback
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+
+  const showToast = (msg: string) => {
+    setSnackbarMessage(msg);
+    setSnackbarOpen(true);
+  };
+
   // XHR call intervals
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const analyticsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const adTrackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentTimeRef = useRef(0);
+  const durationRef = useRef(0);
 
   // Fetch video metadata on component mount
   useEffect(() => {
@@ -93,8 +106,8 @@ const WatchPage: NextPage = () => {
           },
           body: JSON.stringify({
             videoId: videoData?.videoId,
-            position: currentTime,
-            duration: duration,
+            position: currentTimeRef.current,
+            duration: durationRef.current,
             quality: "1080p",
           }),
         });
@@ -129,8 +142,8 @@ const WatchPage: NextPage = () => {
             event: randomEvent,
             videoId: videoData?.videoId,
             timestamp: Date.now(),
-            position: currentTime,
-            duration: duration,
+            position: currentTimeRef.current,
+            duration: durationRef.current,
           }),
         });
         const result = await response.json();
@@ -171,7 +184,7 @@ const WatchPage: NextPage = () => {
       if (adTrackingIntervalRef.current)
         clearInterval(adTrackingIntervalRef.current);
     };
-  }, [isPlaying, currentTime, duration, videoData?.videoId, showAd]);
+  }, [isPlaying, videoData?.videoId, showAd]);
 
   // Handle ad countdown
   useEffect(() => {
@@ -195,30 +208,73 @@ const WatchPage: NextPage = () => {
 
   // Video event handlers
   const handlePlay = () => {
-    if (videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
+    setIsPlaying(true);
+    try {
+      videoRef.current?.play()?.catch(() => {
+        // Ignore play() promise rejection (autoplay/gesture policies)
+      });
+    } catch {
+      // No-op: best effort
     }
+    showToast("Playing");
   };
 
   const handlePause = () => {
-    if (videoRef.current) {
-      videoRef.current.pause();
-      setIsPlaying(false);
+    setIsPlaying(false);
+    try {
+      videoRef.current?.pause();
+    } catch {
+      // No-op
     }
+    showToast("Paused");
   };
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime);
+      const t = videoRef.current.currentTime;
+      setCurrentTime(t);
+      currentTimeRef.current = t;
     }
   };
 
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
-      setDuration(videoRef.current.duration);
+      const d = videoRef.current.duration;
+      setDuration(d);
+      durationRef.current = d;
     }
   };
+
+  // Sync the video element's muted property
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  const handleToggleMute = () => {
+    setIsMuted((prev) => {
+      const next = !prev;
+      showToast(next ? "Muted" : "Unmuted");
+      return next;
+    });
+  };
+
+  // Keyboard shortcut: 'm' toggles mute
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        setIsMuted((prev) => {
+          const next = !prev;
+          showToast(next ? "Muted" : "Unmuted");
+          return next;
+        });
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const skipAd = () => {
     if (adTimeLeft <= 5) {
@@ -274,10 +330,12 @@ const WatchPage: NextPage = () => {
             width="100%"
             height="auto"
             style={{ display: showAd ? "none" : "block", maxHeight: "600px" }}
+            onClick={isPlaying ? handlePause : handlePlay}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
+            muted={isMuted}
             poster={videoData?.thumbnailUrl}
           >
             <source src={videoData?.videoUrl} type="video/mp4" />
@@ -387,6 +445,23 @@ const WatchPage: NextPage = () => {
               <span style={{ fontSize: "14px" }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
+
+              <button
+                onClick={handleToggleMute}
+                aria-pressed={isMuted}
+                aria-label={isMuted ? "Unmute" : "Mute"}
+                title={isMuted ? "Unmute" : "Mute"}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "white",
+                  cursor: "pointer",
+                  fontSize: "22px",
+                  marginLeft: "8px",
+                }}
+              >
+                {isMuted ? "🔇" : "🔊"}
+              </button>
             </div>
           </div>
         </div>
@@ -479,6 +554,26 @@ const WatchPage: NextPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Snackbar notifications for play/mute status */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={(_, reason) => {
+          if (reason === "clickaway") return;
+          setSnackbarOpen(false);
+        }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="info"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
