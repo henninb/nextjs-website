@@ -38,3 +38,4 @@ ssl
 
 tsconfig.tsbuildinfo
 jest-results.json
+.open-next/
