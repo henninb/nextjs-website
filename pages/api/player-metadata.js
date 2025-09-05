@@ -1,13 +1,22 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-export default async function handler(req, res) {
+export default async function handler(req) {
   if (req.method !== "GET" && req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return new Response(JSON.stringify({ message: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   let videoId;
   try {
-    videoId = req.method === "GET" ? req.query.videoId : req.body?.videoId;
+    if (req.method === "GET") {
+      const url = new URL(req.url);
+      videoId = url.searchParams.get("videoId");
+    } else {
+      const body = await req.json().catch(() => ({}));
+      videoId = body.videoId;
+    }
     const currentVideoId =
       videoId || `video_${Math.floor(Math.random() * 1000)}`;
 
@@ -46,28 +55,40 @@ export default async function handler(req, res) {
       ),
     };
 
-    res.setHeader(
-      "Cache-Control",
-      "public, s-maxage=300, stale-while-revalidate=600",
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: videoMetadata,
+        recommendations: Array.from({ length: 6 }, (_, i) => ({
+          videoId: `video_${Math.floor(Math.random() * 10000)}`,
+          title: `Related Video ${i + 1}`,
+          thumbnailUrl: `https://picsum.photos/320/180?random=${Math.floor(Math.random() * 1000)}`,
+          duration: Math.floor(Math.random() * 1800) + 300,
+          views: Math.floor(Math.random() * 100000),
+          author: `Creator ${Math.floor(Math.random() * 50)}`,
+        })),
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      },
     );
-    return res.status(200).json({
-      success: true,
-      data: videoMetadata,
-      recommendations: Array.from({ length: 6 }, (_, i) => ({
-        videoId: `video_${Math.floor(Math.random() * 10000)}`,
-        title: `Related Video ${i + 1}`,
-        thumbnailUrl: `https://picsum.photos/320/180?random=${Math.floor(Math.random() * 1000)}`,
-        duration: Math.floor(Math.random() * 1800) + 300,
-        views: Math.floor(Math.random() * 100000),
-        author: `Creator ${Math.floor(Math.random() * 50)}`,
-      })),
-    });
   } catch (error) {
     console.error("Video metadata error:", error.message || error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch video metadata",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Failed to fetch video metadata",
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }

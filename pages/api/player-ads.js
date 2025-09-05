@@ -1,12 +1,16 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-export default async function handler(req, res) {
+export default async function handler(req) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return new Response(JSON.stringify({ message: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
-    const { adId, event, videoId, adPosition } = req.body || {};
+    const body = await req.json().catch(() => ({}));
+    const { adId, event, videoId, adPosition } = body;
 
     // Simulate ad tracking events (impression, click, complete, etc.)
     const adEvents = [
@@ -35,19 +39,34 @@ export default async function handler(req, res) {
       advertiserId: `advertiser_${Math.floor(Math.random() * 50)}`,
     };
 
-    res.setHeader("Cache-Control", "no-cache");
-    return res.status(200).json({
-      success: true,
-      data: trackingData,
-      message: `Ad ${randomEvent} tracked successfully`,
-      nextAdIn: Math.floor(Math.random() * 300) + 60, // Next ad in 60-360 seconds
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: trackingData,
+        message: `Ad ${randomEvent} tracked successfully`,
+        nextAdIn: Math.floor(Math.random() * 300) + 60, // Next ad in 60-360 seconds
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+      },
+    );
   } catch (error) {
     console.error("Ad tracking error:", error.message || error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to track ad event",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Failed to track ad event",
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }

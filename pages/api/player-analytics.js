@@ -1,12 +1,16 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-export default async function handler(req, res) {
+export default async function handler(req) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return new Response(JSON.stringify({ message: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
-    const { event, videoId, timestamp, duration, position } = req.body || {};
+    const body = await req.json().catch(() => ({}));
+    const { event, videoId, timestamp, duration, position } = body;
 
     // Simulate video analytics tracking
     const analyticsData = {
@@ -24,18 +28,33 @@ export default async function handler(req, res) {
     // Simulate processing delay
     await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
 
-    res.setHeader("Cache-Control", "no-cache");
-    return res.status(200).json({
-      success: true,
-      data: analyticsData,
-      message: `${event} event tracked successfully`,
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: analyticsData,
+        message: `${event} event tracked successfully`,
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+      },
+    );
   } catch (error) {
     console.error("Video analytics error:", error.message || error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to track analytics",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Failed to track analytics",
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }

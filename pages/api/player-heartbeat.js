@@ -1,12 +1,16 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-export default async function handler(req, res) {
+export default async function handler(req) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return new Response(JSON.stringify({ message: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
-    const { videoId, position, duration, quality, buffering } = req.body || {};
+    const body = await req.json().catch(() => ({}));
+    const { videoId, position, duration, quality, buffering } = body;
 
     // Simulate video heartbeat/progress tracking
     const heartbeatData = {
@@ -26,31 +30,46 @@ export default async function handler(req, res) {
     // Simulate dynamic ad insertion decision
     const shouldShowAd = Math.random() < 0.15; // 15% chance of ad break
 
-    res.setHeader("Cache-Control", "no-cache");
-    return res.status(200).json({
-      success: true,
-      data: heartbeatData,
-      adBreak: shouldShowAd
-        ? {
-            adId: `ad_${Math.floor(Math.random() * 1000)}`,
-            duration: Math.floor(Math.random() * 30) + 15, // 15-45 second ads
-            type: ["preroll", "midroll", "overlay"][
-              Math.floor(Math.random() * 3)
-            ],
-          }
-        : null,
-      recommendations: Array.from({ length: 3 }, (_, i) => ({
-        videoId: `video_${Math.floor(Math.random() * 10000)}`,
-        title: `Recommended Video ${i + 1}`,
-        duration: Math.floor(Math.random() * 3600) + 300,
-      })),
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: heartbeatData,
+        adBreak: shouldShowAd
+          ? {
+              adId: `ad_${Math.floor(Math.random() * 1000)}`,
+              duration: Math.floor(Math.random() * 30) + 15, // 15-45 second ads
+              type: ["preroll", "midroll", "overlay"][
+                Math.floor(Math.random() * 3)
+              ],
+            }
+          : null,
+        recommendations: Array.from({ length: 3 }, (_, i) => ({
+          videoId: `video_${Math.floor(Math.random() * 10000)}`,
+          title: `Recommended Video ${i + 1}`,
+          duration: Math.floor(Math.random() * 3600) + 300,
+        })),
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+      },
+    );
   } catch (error) {
     console.error("Video heartbeat error:", error.message || error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to process heartbeat",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Failed to process heartbeat",
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }
