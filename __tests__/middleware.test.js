@@ -750,6 +750,275 @@ describe("Middleware", () => {
       process.env.NODE_ENV = "development";
     });
 
+    describe("403 Error Troubleshooting - vercel.bhenning.com", () => {
+      it("should NOT return 403 for /api/nhl from vercel.bhenning.com in production", async () => {
+        process.env.NODE_ENV = "production";
+
+        // Simulate exactly what happens when accessing vercel.bhenning.com/api/nhl
+        mockRequest.headers = new Map([
+          ["host", "vercel.bhenning.com"],
+          ["x-forwarded-host", "vercel.bhenning.com"],
+          ["x-forwarded-proto", "https"],
+        ]);
+        mockUrl.pathname = "/api/nhl";
+        mockUrl.search = "";
+
+        const mockLocalResponse = { headers: { set: jest.fn() } };
+        NextResponse.next = jest.fn(() => mockLocalResponse);
+
+        const result = await middleware(mockRequest);
+
+        // This should NOT be a 403 error
+        expect(result.status).not.toBe(403);
+        // Should bypass proxy and return NextResponse.next() for local handling
+        expect(NextResponse.next).toHaveBeenCalled();
+        expect(global.fetch).not.toHaveBeenCalled();
+      });
+
+      it("should NOT return 403 for /api/nba from vercel.bhenning.com in production", async () => {
+        process.env.NODE_ENV = "production";
+
+        mockRequest.headers = new Map([
+          ["host", "vercel.bhenning.com"],
+          ["x-forwarded-host", "vercel.bhenning.com"],
+          ["x-forwarded-proto", "https"],
+        ]);
+        mockUrl.pathname = "/api/nba";
+        mockUrl.search = "";
+
+        const mockLocalResponse = { headers: { set: jest.fn() } };
+        NextResponse.next = jest.fn(() => mockLocalResponse);
+
+        const result = await middleware(mockRequest);
+
+        expect(result.status).not.toBe(403);
+        expect(NextResponse.next).toHaveBeenCalled();
+        expect(global.fetch).not.toHaveBeenCalled();
+      });
+
+      it("should reproduce the 403 error condition", async () => {
+        // Test the exact scenario that might be causing 403
+        process.env.NODE_ENV = "production";
+
+        // Try different host header combinations to identify the issue
+        const hostVariations = [
+          { host: "vercel.bhenning.com", xForwardedHost: undefined },
+          { host: "localhost", xForwardedHost: "vercel.bhenning.com" },
+          { host: "some-internal-vercel-host", xForwardedHost: "vercel.bhenning.com" },
+        ];
+
+        for (const hostConfig of hostVariations) {
+          const headers = new Map([["host", hostConfig.host]]);
+          if (hostConfig.xForwardedHost) {
+            headers.set("x-forwarded-host", hostConfig.xForwardedHost);
+          }
+
+          mockRequest.headers = headers;
+          mockUrl.pathname = "/api/nhl";
+
+          const mockLocalResponse = { headers: { set: jest.fn() } };
+          NextResponse.next = jest.fn(() => mockLocalResponse);
+
+          const result = await middleware(mockRequest);
+
+          // Log the result to understand what's happening
+          console.log(`Host config: ${JSON.stringify(hostConfig)}, Result status: ${result.status}`);
+
+          // For debugging - none of these should be 403
+          if (result.status === 403) {
+            console.log(`403 ERROR REPRODUCED with host config:`, hostConfig);
+          }
+
+          // Clear mocks for next iteration
+          jest.clearAllMocks();
+        }
+      });
+
+      it("should debug host detection logic", async () => {
+        process.env.NODE_ENV = "production";
+
+        // Test the actual host detection logic from the middleware
+        const testCases = [
+          {
+            name: "Direct vercel.bhenning.com",
+            host: "vercel.bhenning.com",
+            xForwardedHost: undefined,
+            expectedHost: "vercel.bhenning.com"
+          },
+          {
+            name: "Proxied through Vercel",
+            host: "localhost",
+            xForwardedHost: "vercel.bhenning.com",
+            expectedHost: "vercel.bhenning.com"
+          },
+          {
+            name: "Internal Vercel host",
+            host: "sfo1.vercel.app",
+            xForwardedHost: "vercel.bhenning.com",
+            expectedHost: "vercel.bhenning.com"
+          }
+        ];
+
+        for (const testCase of testCases) {
+          const headers = new Map([["host", testCase.host]]);
+          if (testCase.xForwardedHost) {
+            headers.set("x-forwarded-host", testCase.xForwardedHost);
+          }
+
+          // Simulate the middleware's host detection logic
+          const detectedHost = headers.get("x-forwarded-host") ?? headers.get("host");
+          const isLocalhost = detectedHost?.includes("localhost") || detectedHost?.includes("127.0.0.1");
+          const isVercelProxy = detectedHost?.includes("vercel.bhenning.com");
+
+          console.log(`${testCase.name}:`);
+          console.log(`  Detected host: ${detectedHost}`);
+          console.log(`  isLocalhost: ${isLocalhost}`);
+          console.log(`  isVercelProxy: ${isVercelProxy}`);
+          console.log(`  Should be blocked: ${!true && !isLocalhost && !isVercelProxy}`); // isProduction = true
+
+          expect(detectedHost).toBe(testCase.expectedHost);
+        }
+      });
+
+      it("should test the EXACT CONDITIONS that cause 403 errors", async () => {
+        // Test different NODE_ENV values that might cause issues
+        const envScenarios = [
+          { env: undefined, name: "NODE_ENV undefined" },
+          { env: "", name: "NODE_ENV empty" },
+          { env: "development", name: "NODE_ENV development" },
+          { env: "production", name: "NODE_ENV production" },
+          { env: "preview", name: "NODE_ENV preview (Vercel preview)" },
+        ];
+
+        for (const scenario of envScenarios) {
+          const originalEnv = process.env.NODE_ENV;
+          if (scenario.env === undefined) {
+            delete process.env.NODE_ENV;
+          } else {
+            process.env.NODE_ENV = scenario.env;
+          }
+
+          const isProduction = process.env.NODE_ENV === "production";
+          const isDev = !isProduction;
+
+          // Test vercel.bhenning.com scenario
+          mockRequest.headers = new Map([
+            ["host", "vercel.bhenning.com"],
+            ["x-forwarded-host", "vercel.bhenning.com"],
+          ]);
+          mockUrl.pathname = "/api/nhl";
+
+          const host = mockRequest.headers.get("x-forwarded-host") ?? mockRequest.headers.get("host");
+          const isLocalhost = host?.includes("localhost") || host?.includes("127.0.0.1");
+          const isVercelProxy = host?.includes("vercel.bhenning.com");
+
+          const wouldBeBlocked = !isProduction && !isLocalhost && !isVercelProxy;
+
+          console.log(`${scenario.name}:`);
+          console.log(`  isProduction: ${isProduction}`);
+          console.log(`  isLocalhost: ${isLocalhost}`);
+          console.log(`  isVercelProxy: ${isVercelProxy}`);
+          console.log(`  Would be blocked (403): ${wouldBeBlocked}`);
+
+          if (wouldBeBlocked) {
+            console.log(`  ❌ FOUND THE ISSUE: ${scenario.name} would cause 403!`);
+
+            // This is likely the root cause - test it
+            const mockLocalResponse = { headers: { set: jest.fn() } };
+            NextResponse.next = jest.fn(() => mockLocalResponse);
+
+            const result = await middleware(mockRequest);
+
+            // This should be the failing case that reproduces the user's issue
+            if (result && result.status === 403) {
+              console.log(`  ✅ REPRODUCED 403 ERROR with ${scenario.name}`);
+            }
+          }
+
+          // Restore environment
+          process.env.NODE_ENV = originalEnv;
+          jest.clearAllMocks();
+        }
+      });
+
+      it("should test pathname edge cases that might affect local API detection", async () => {
+        process.env.NODE_ENV = "production";
+
+        mockRequest.headers = new Map([
+          ["host", "vercel.bhenning.com"],
+          ["x-forwarded-host", "vercel.bhenning.com"],
+        ]);
+
+        const pathVariations = [
+          "/api/nhl",           // Standard
+          "/api/nhl/",          // With trailing slash
+          "/api/nhl?test=1",    // With query params (in pathname)
+          "/API/NHL",           // Different case
+          "/api/nhl/../nhl",    // Path traversal attempt
+        ];
+
+        for (const path of pathVariations) {
+          mockUrl.pathname = path;
+          mockUrl.search = "";
+
+          const mockLocalResponse = { headers: { set: jest.fn() } };
+          NextResponse.next = jest.fn(() => mockLocalResponse);
+
+          const result = await middleware(mockRequest);
+
+          console.log(`Path "${path}": status = ${result?.status || 'undefined'}`);
+
+          if (result?.status === 403) {
+            console.log(`  ❌ FOUND PATH ISSUE: "${path}" returns 403`);
+          }
+
+          jest.clearAllMocks();
+        }
+      });
+
+      it("should handle trailing slashes correctly after the fix", async () => {
+        process.env.NODE_ENV = "production";
+
+        mockRequest.headers = new Map([
+          ["host", "vercel.bhenning.com"],
+          ["x-forwarded-host", "vercel.bhenning.com"],
+        ]);
+
+        // Test cases that should ALL work correctly with the trailing slash fix
+        const testCases = [
+          { path: "/api/nhl", expected: "bypassed", description: "Standard path" },
+          { path: "/api/nhl/", expected: "bypassed", description: "Single trailing slash" },
+          { path: "/api/nhl///", expected: "bypassed", description: "Multiple trailing slashes" },
+          { path: "/api/nba", expected: "bypassed", description: "NBA standard path" },
+          { path: "/api/nba/", expected: "bypassed", description: "NBA with trailing slash" },
+          { path: "/api/nba//", expected: "bypassed", description: "NBA with double trailing slash" },
+        ];
+
+        for (const testCase of testCases) {
+          mockUrl.pathname = testCase.path;
+          mockUrl.search = "";
+
+          const mockLocalResponse = { headers: { set: jest.fn() } };
+          NextResponse.next = jest.fn(() => mockLocalResponse);
+
+          const result = await middleware(mockRequest);
+
+          console.log(`Testing ${testCase.description}: "${testCase.path}"`);
+
+          if (testCase.expected === "bypassed") {
+            // Should call NextResponse.next() (local bypass)
+            expect(NextResponse.next).toHaveBeenCalled();
+            expect(global.fetch).not.toHaveBeenCalled();
+            // Should not return a status (undefined means NextResponse.next was called)
+            expect(result?.status).toBeUndefined();
+            console.log(`  ✅ CORRECTLY BYPASSED: ${testCase.path}`);
+          }
+
+          jest.clearAllMocks();
+        }
+      });
+    });
+
     describe("/api/nhl endpoint", () => {
       it("should bypass proxy and execute locally in development", async () => {
         mockUrl.pathname = "/api/nhl";

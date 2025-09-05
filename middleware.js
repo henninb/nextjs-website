@@ -83,11 +83,15 @@ export async function middleware(request) {
       "/api/uuid",
       "/api/uuid/generate",
     ];
-    if (localApis.includes(url.pathname)) {
+
+    // Normalize pathname by removing trailing slashes for consistent matching
+    const normalizedPathname = url.pathname.replace(/\/+$/, '') || '/';
+
+    if (localApis.includes(normalizedPathname)) {
       if (isProduction) {
-        console.log(`[MW PROD] bypassing proxy for local API: ${url.pathname}`);
+        console.log(`[MW PROD] bypassing proxy for local API: ${url.pathname} (normalized: ${normalizedPathname})`);
       } else if (isDev) {
-        console.log(`[MW] bypassing proxy for local API: ${url.pathname}`);
+        console.log(`[MW] bypassing proxy for local API: ${url.pathname} (normalized: ${normalizedPathname})`);
       }
       return NextResponse.next();
     }
