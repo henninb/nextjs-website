@@ -108,9 +108,13 @@ const WatchPage: NextPage = () => {
         });
       };
 
-      // Check if PX is already loaded
-      if ((window as any).px) {
-        (window as any).PXjJ0cYtn9_asyncInit((window as any).px);
+      // Check if PX is already loaded (try different variations)
+      const pxObject = (window as any).px || (window as any).PX || (window as any).PXjJ0cYtn9 || (window as any)._PXjJ0cYtn9;
+      if (pxObject) {
+        console.log('Found PX object, calling asyncInit with:', pxObject);
+        (window as any).PXjJ0cYtn9_asyncInit(pxObject);
+      } else {
+        console.log('No PX object found yet, waiting for async init callback');
       }
     };
 
