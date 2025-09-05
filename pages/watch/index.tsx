@@ -154,7 +154,6 @@ const WatchPage: NextPage = () => {
 
   // Start consistent XHR calls when video starts playing
   useEffect(() => {
-    console.log("isPlaying is tested");
     if (!isPlaying) {
       // Clear all intervals when paused
       if (heartbeatIntervalRef.current)
