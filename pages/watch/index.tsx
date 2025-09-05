@@ -58,6 +58,9 @@ const WatchPage: NextPage = () => {
   const adTrackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentTimeRef = useRef(0);
   const durationRef = useRef(0);
+  
+  // Prevent multiple PX setups due to React strict mode
+  const pxSetupRef = useRef(false);
 
   // Fetch video metadata on component mount
   useEffect(() => {
@@ -88,6 +91,13 @@ const WatchPage: NextPage = () => {
 
   // PX Risk Event Listener Setup
   useEffect(() => {
+    // Prevent multiple setups due to React strict mode/HMR
+    if (pxSetupRef.current) {
+      console.log("🚫 PX setup already done, skipping to prevent duplication");
+      return;
+    }
+    pxSetupRef.current = true;
+    
     const setupPxListener = () => {
       console.log("🔧 Setting up PX event listener...");
       setPxStatus("Setting up PX event listener...");
@@ -124,7 +134,9 @@ const WatchPage: NextPage = () => {
         // CRITICAL: Set up the exact score listener as per PX documentation
         console.log("🎯 Setting up OFFICIAL PX score listener with (score, kind) signature...");
         px.Events.on('score', function (score, kind) {
-            console.log(`🏆 OFFICIAL SCORE EVENT - Score: ${score}, Kind: ${kind}`);
+            console.log(`🏆 OFFICIAL SCORE EVENT FIRED!!! - Score: ${score}, Kind: ${kind}`);
+            console.log(`🏆 Score type: ${typeof score}, Kind type: ${typeof kind}`);
+            console.log(`🏆 Arguments length: ${arguments.length}, All arguments:`, arguments);
             
             if (kind === "binary") {
                 console.log("🚫 BINARY BLOCK DECISION DETECTED:", score);
@@ -240,10 +252,9 @@ const WatchPage: NextPage = () => {
           console.log("🔌 Setting up comprehensive PX event listeners...");
 
           // List of common PX event types to listen for (including case variations)
+          // EXCLUDE 'score' to prevent overriding our official score listener!
           const eventTypes = [
-            "score",
-            "Score",
-            "SCORE",
+            // "score", "Score", "SCORE", // REMOVED - using official listener above
             "risk",
             "Risk",
             "RISK",
@@ -404,6 +415,8 @@ const WatchPage: NextPage = () => {
         delete (window as any).PXjJ0cYtn9_asyncInit;
         console.log("✅ PX async init function cleaned up");
       }
+      // Reset setup ref for re-initialization
+      pxSetupRef.current = false;
     };
   }, []);
 
