@@ -535,15 +535,17 @@ import { deleteAccount } from "../../hooks/useAccountDelete";
 ### ✅ **Middleware & API Infrastructure Testing**
 
 **Middleware Local API Support:**
+
 - **Enhanced middleware.js** with local API bypass logic for NHL, NBA, and other local endpoints
 - **Comprehensive middleware testing** with 100+ test cases covering:
-  - Local API bypass functionality (NHL, NBA, MLB, NFL, weather, player-*, etc.)
+  - Local API bypass functionality (NHL, NBA, MLB, NFL, weather, player-\*, etc.)
   - Security validation for bypassed APIs
   - Proxy behavior preservation for finance APIs
   - Production vs development environment handling
   - Malicious path protection and security edge cases
 
 **Local API Endpoint Testing:**
+
 - **NHL API Testing** (`__tests__/pages/api/nhl.test.js`) - 15+ test cases covering:
   - Successful data retrieval from fixturedownload.com
   - HTTP method validation (GET only)
@@ -560,6 +562,7 @@ import { deleteAccount } from "../../hooks/useAccountDelete";
   - Network timeout and large dataset processing
 
 **Infrastructure Benefits:**
+
 - **Local API Performance** - NHL/NBA APIs now execute locally without proxy overhead
 - **Maintained Security** - All security checks preserved for bypassed APIs
 - **Zero Finance API Impact** - All existing finance APIs continue proxying correctly
@@ -590,6 +593,7 @@ import { deleteAccount } from "../../hooks/useAccountDelete";
 - **Improved error debugging** with focused test failures and clear business logic separation
 
 #### **Latest Infrastructure Testing Achievements (2025-09-05):**
+
 - **2 new API endpoint test suites** - NHL and NBA APIs with 33+ combined test cases
 - **Enhanced middleware testing** - 100+ additional test cases for local API support
 - **Zero regression risk** - All finance API proxy behavior preserved and tested
@@ -611,6 +615,7 @@ import { deleteAccount } from "../../hooks/useAccountDelete";
 - **Business rule testing:** Account setup rules, validation pipelines, data transformation logic
 
 #### **Latest Infrastructure Testing Patterns (2025-09-05):**
+
 - **Middleware testing architecture:** Comprehensive mock request/response patterns for edge runtime
 - **Local API endpoint testing:** Direct API handler testing with isolated fetch mocking
 - **Security-first testing:** Malicious path validation, host blocking verification, authorization preservation
