@@ -127,7 +127,7 @@ MSW is fully configured for API mocking with worker in public/ directory.
 
 ## Nginx Reverse Proxy Configuration
 
-**IMPORTANT**: The domains `vercel.bhenning.com` and `www.bhenning.com` are behind an nginx reverse proxy at `~/projects/github.com/henninb/nginx-reverse-proxy/nginx.conf`. 
+**IMPORTANT**: The domains `vercel.bhenning.com` and `www.bhenning.com` are behind an nginx reverse proxy at `~/projects/github.com/henninb/nginx-reverse-proxy/nginx.conf`.
 
 ### Local API Routing Issue
 
@@ -151,7 +151,7 @@ location ~ ^/api/(nhl|nba|nfl|mlb|celsius|fahrenheit|lead|player-ads|player-anal
 ### Current API Routing Flow
 
 1. **Local Next.js APIs**: `/api/nhl`, `/api/nba`, `/api/nfl`, `/api/mlb`, `/api/celsius`, `/api/fahrenheit`, `/api/lead`, `/api/player-ads`, `/api/player-analytics`, `/api/player-heartbeat`, `/api/player-metadata`, `/api/weather`, `/api/uuid`, `/api/human` → Vercel platform
-2. **GraphQL**: `/api/graphql` → Local finance service `/graphql` 
+2. **GraphQL**: `/api/graphql` → Local finance service `/graphql`
 3. **Finance APIs**: All other `/api/*` → Local finance service
 
 ### Key Points
@@ -166,5 +166,5 @@ location ~ ^/api/(nhl|nba|nfl|mlb|celsius|fahrenheit|lead|player-ads|player-anal
 When adding new Next.js API routes that should bypass the finance service:
 
 1. Add the route to the nginx regex pattern in both `vercel.bhenning.com` and `www.bhenning.com` server blocks
-2. Add the route to the `localApis` array in `middleware.js` 
+2. Add the route to the `localApis` array in `middleware.js`
 3. Test both development and production environments
