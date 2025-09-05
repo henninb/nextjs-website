@@ -84,7 +84,9 @@ export async function middleware(request) {
       "/api/uuid/generate",
     ];
     if (localApis.includes(url.pathname)) {
-      if (isDev) {
+      if (isProduction) {
+        console.log(`[MW PROD] bypassing proxy for local API: ${url.pathname}`);
+      } else if (isDev) {
         console.log(`[MW] bypassing proxy for local API: ${url.pathname}`);
       }
       return NextResponse.next();
