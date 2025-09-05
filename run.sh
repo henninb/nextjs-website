@@ -31,6 +31,7 @@ elif [ "$ENV" = "dev" ]; then # Add this elif block
   echo 'http://localhost:3000'
   echo npx npm-check-updates -u
   echo npx vercel build
+  echo wrangler dev
   rm -rf .next
   #npm install
   touch .env.local

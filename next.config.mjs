@@ -40,6 +40,16 @@ const nextConfig = {
   // Add transpilePackages to handle MUI X components
   transpilePackages: ["@mui/x-data-grid"],
 
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/critters',
+      'node_modules/@opentelemetry/api',
+      'node_modules/@emotion/styled',
+      'node_modules/@emotion/react',
+      'node_modules/@emotion/cache',
+    ],
+  },
+
   // Configure styled-components for SSR and CSR consistency
   compiler: {
     styledComponents: {

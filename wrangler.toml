@@ -1,7 +1,13 @@
 name = "nextjs-website"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+
+[site]
+bucket = ".open-next/assets"
+
+
 
 [env.production]
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
