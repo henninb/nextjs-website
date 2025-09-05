@@ -26,7 +26,7 @@ interface AdBreak {
 
 const WatchPage: NextPage = () => {
   console.log("🎬 WatchPage component is mounting/rendering...");
-  
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoData, setVideoData] = useState<VideoMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -121,6 +121,34 @@ const WatchPage: NextPage = () => {
 
         setPxStatus("PX initialized - listening for all events...");
 
+        // CRITICAL: Set up the exact score listener as per PX documentation
+        console.log("🎯 Setting up OFFICIAL PX score listener with (score, kind) signature...");
+        px.Events.on('score', function (score, kind) {
+            console.log(`🏆 OFFICIAL SCORE EVENT - Score: ${score}, Kind: ${kind}`);
+            
+            if (kind === "binary") {
+                console.log("🚫 BINARY BLOCK DECISION DETECTED:", score);
+                
+                const scoreEvent = {
+                  timestamp: new Date().toISOString(),
+                  kind: kind,
+                  score: score,
+                  id: Date.now() + Math.random(),
+                };
+
+                setPxScoreData((prev) => {
+                  const newData = [scoreEvent, ...prev.slice(0, 9)];
+                  return newData;
+                });
+
+                const statusMessage = `BINARY BLOCK DECISION: ${score} - ${new Date().toLocaleTimeString()}`;
+                setPxStatus(statusMessage);
+                showToast(`🚫 PX Block Decision: ${score}`);
+            } else {
+                console.log(`📊 Non-binary score event - Score: ${score}, Kind: ${kind}`);
+            }
+        });
+
         // Helper function to log and store any PX event
         const logPxEvent = (eventType: string, ...args: any[]) => {
           console.log(`🚨 PX EVENT FIRED: ${eventType}`);
@@ -143,14 +171,18 @@ const WatchPage: NextPage = () => {
 
           // Special handling for score events (case insensitive)
           const eventTypeLower = eventType.toLowerCase();
-          
+
           if (eventTypeLower === "score" && args.length >= 2) {
             const [score, kind] = args;
             console.log(`🎯 SCORE EVENT - Score: ${score}, Kind: ${kind}`);
 
             // Check for binary kind (case insensitive)
             const kindStr = String(kind).toLowerCase();
-            if (kindStr === "binary" || kindStr === "block" || kindStr === "blocked") {
+            if (
+              kindStr === "binary" ||
+              kindStr === "block" ||
+              kindStr === "blocked"
+            ) {
               console.log("✅ Processing binary score:", score);
 
               const scoreEvent = {
@@ -172,9 +204,16 @@ const WatchPage: NextPage = () => {
           }
 
           // Also check for direct binary/block events
-          if (eventTypeLower === "binary" || eventTypeLower === "block" || eventTypeLower === "blocked") {
-            console.log(`🚫 DIRECT BLOCK EVENT - Type: ${eventType}, Args:`, args);
-            
+          if (
+            eventTypeLower === "binary" ||
+            eventTypeLower === "block" ||
+            eventTypeLower === "blocked"
+          ) {
+            console.log(
+              `🚫 DIRECT BLOCK EVENT - Type: ${eventType}, Args:`,
+              args,
+            );
+
             const blockEvent = {
               timestamp: new Date().toISOString(),
               kind: eventType,
@@ -202,22 +241,54 @@ const WatchPage: NextPage = () => {
 
           // List of common PX event types to listen for (including case variations)
           const eventTypes = [
-            "score", "Score", "SCORE",
-            "risk", "Risk", "RISK",
-            "challenge", "Challenge", "CHALLENGE",
-            "block", "Block", "BLOCK",
-            "captcha", "Captcha", "CAPTCHA",
-            "detection", "Detection", "DETECTION",
-            "behavioral", "Behavioral", "BEHAVIORAL",
-            "fingerprint", "Fingerprint", "FINGERPRINT",
-            "telemetry", "Telemetry", "TELEMETRY",
-            "activity", "Activity", "ACTIVITY",
-            "violation", "Violation", "VIOLATION",
-            "anomaly", "Anomaly", "ANOMALY",
-            "threat", "Threat", "THREAT",
-            "security", "Security", "SECURITY",
-            "binary", "Binary", "BINARY",
-            "blocked", "Blocked", "BLOCKED",
+            "score",
+            "Score",
+            "SCORE",
+            "risk",
+            "Risk",
+            "RISK",
+            "challenge",
+            "Challenge",
+            "CHALLENGE",
+            "block",
+            "Block",
+            "BLOCK",
+            "captcha",
+            "Captcha",
+            "CAPTCHA",
+            "detection",
+            "Detection",
+            "DETECTION",
+            "behavioral",
+            "Behavioral",
+            "BEHAVIORAL",
+            "fingerprint",
+            "Fingerprint",
+            "FINGERPRINT",
+            "telemetry",
+            "Telemetry",
+            "TELEMETRY",
+            "activity",
+            "Activity",
+            "ACTIVITY",
+            "violation",
+            "Violation",
+            "VIOLATION",
+            "anomaly",
+            "Anomaly",
+            "ANOMALY",
+            "threat",
+            "Threat",
+            "THREAT",
+            "security",
+            "Security",
+            "SECURITY",
+            "binary",
+            "Binary",
+            "BINARY",
+            "blocked",
+            "Blocked",
+            "BLOCKED",
           ];
 
           // Set up listeners for all known event types
@@ -1013,7 +1084,8 @@ const WatchPage: NextPage = () => {
                       break;
                   }
                   step++;
-                  if (step >= 100) { // Increased from 40 to 100
+                  if (step >= 100) {
+                    // Increased from 40 to 100
                     clearInterval(roboticBehavior);
                     console.log(
                       "🧪 TEST: Automated behavior simulation complete",
@@ -1038,7 +1110,7 @@ const WatchPage: NextPage = () => {
               onClick={() => {
                 console.log("🧪 TEST: SUPER AGGRESSIVE behavior started");
                 // Combine multiple aggressive behaviors simultaneously
-                
+
                 // Rapid clicking
                 let clickCount = 0;
                 const rapidClicks = setInterval(() => {
@@ -1063,8 +1135,11 @@ const WatchPage: NextPage = () => {
                 let keyCount = 0;
                 const keySpam = setInterval(() => {
                   const keys = ["a", "b", "c", "d", "e", "f", "Tab", "Enter"];
-                  const randomKey = keys[Math.floor(Math.random() * keys.length)];
-                  const event = new KeyboardEvent("keydown", { key: randomKey });
+                  const randomKey =
+                    keys[Math.floor(Math.random() * keys.length)];
+                  const event = new KeyboardEvent("keydown", {
+                    key: randomKey,
+                  });
                   document.dispatchEvent(event);
                   keyCount++;
                   if (keyCount >= 150) clearInterval(keySpam);
