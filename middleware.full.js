@@ -17,15 +17,6 @@ export async function middleware(request) {
   const isProduction = process.env.NODE_ENV === "production";
   const isDev = !isProduction;
 
-  // Platform detection
-  const isCloudflarePages = typeof globalThis.caches !== 'undefined' &&
-                           typeof globalThis.EdgeRuntime !== 'undefined' &&
-                           !request.headers.get('x-vercel-id') &&
-                           !request.headers.get('x-netlify-id');
-
-  const isVercel = !!request.headers.get('x-vercel-id');
-  const isNetlify = !!request.headers.get('x-netlify-id');
-
   // Always log in production to debug API routing issues
   if (
     isProduction &&
@@ -71,10 +62,20 @@ export async function middleware(request) {
   // Normalize pathname by removing trailing slashes for consistent matching
   const normalizedPathname = url.pathname.replace(/\/+$/, "") || "/";
 
-  if (localApis.includes(normalizedPathname) || url.pathname.startsWith("/api/uuid/")) {
+  if (localApis.includes(normalizedPathname)) {
     // Local API - skip all middleware processing entirely (including host validation)
     if (isProduction) {
-      console.log(`[MW PROD] local API bypass: ${url.pathname} (platform: ${isCloudflarePages ? 'Cloudflare' : isVercel ? 'Vercel' : isNetlify ? 'Netlify' : 'Other'})`);
+      console.log(`[MW PROD] local API bypass: ${url.pathname}`);
+    } else {
+      console.log(`[MW] local API bypass: ${url.pathname}`);
+    }
+    return NextResponse.next();
+  }
+
+  // Handle /api/uuid/generate special case (has sub-path)
+  if (url.pathname.startsWith("/api/uuid/")) {
+    if (isProduction) {
+      console.log(`[MW PROD] local API bypass: ${url.pathname}`);
     } else {
       console.log(`[MW] local API bypass: ${url.pathname}`);
     }
@@ -106,23 +107,7 @@ export async function middleware(request) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  // CLOUDFLARE PAGES: Block non-local APIs (can't proxy due to async_hooks limitation)
-  if (isCloudflarePages && (url.pathname.startsWith("/api/") || url.pathname === "/graphql")) {
-    console.log(`[MW PROD] Cloudflare Pages - blocking finance API: ${url.pathname}`);
-    return new NextResponse(
-      JSON.stringify({
-        error: "API not available on Cloudflare Pages",
-        message: "This API endpoint is only available on the main domain",
-        availableAPIs: localApis
-      }),
-      {
-        status: 503,
-        headers: { "Content-Type": "application/json" }
-      }
-    );
-  }
-
-  // VERCEL/NETLIFY/OTHER: Full proxy functionality for finance /api/* requests and /graphql
+  // CRITICAL: Proxy ALL finance /api/* requests and /graphql to finance.bhenning.com
   // This includes /api/me, /api/graphql, /graphql, and all other finance API endpoints
   if (url.pathname.startsWith("/api/") || url.pathname === "/graphql") {
     if (isDev) {

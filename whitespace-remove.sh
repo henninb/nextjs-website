@@ -4,7 +4,7 @@
 
 # ---- Configuration (override via env vars) ----
 # Space-separated list of directory names to skip entirely.
-EXCLUDE_DIRS=${EXCLUDE_DIRS:-".next .git .hg .svn node_modules dist build .cache .venv .direnv target out vendor"}
+EXCLUDE_DIRS=${EXCLUDE_DIRS:-".vercel .next .git .hg .svn node_modules dist build .cache .venv .direnv target out vendor"}
 # Space-separated list of filename extensions (without dots) to process.
 # Keep this conservative to avoid binary files.
 EXTENSIONS=${EXTENSIONS:-"sh bash zsh fish txt md markdown rst conf ini cfg env sample
