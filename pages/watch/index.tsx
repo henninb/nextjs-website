@@ -58,7 +58,6 @@ const WatchPage: NextPage = () => {
 
   // Fetch video metadata on component mount
   useEffect(() => {
-    console.log("are you being called");
     const fetchVideoData = async () => {
       try {
         const response = await fetch("/api/player-metadata", {
@@ -90,6 +89,15 @@ const WatchPage: NextPage = () => {
 
       // Set up the PX async init function
       (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
+        console.log('PXjJ0cYtn9_asyncInit called with PX object:', px);
+        
+        // Validate that the PX object has Events API
+        if (!px || !px.Events || typeof px.Events.on !== 'function') {
+          console.error('PX object does not have Events API:', px);
+          setPxStatus("PX object missing Events API - score monitoring unavailable");
+          return;
+        }
+        
         setPxStatus("PX initialized - listening for score events...");
 
         px.Events.on('score', function (score: any, kind: string) {
@@ -113,13 +121,24 @@ const WatchPage: NextPage = () => {
         });
       };
 
-      // Check if PX is already loaded (try different variations)
-      const pxObject = (window as any).px || (window as any).PX || (window as any).PXjJ0cYtn9 || (window as any)._PXjJ0cYtn9;
+      // Check if PX is already loaded (try different variations, but only use ones with Events API)
+      const pxCandidates = [
+        (window as any).px,
+        (window as any).PX, 
+        (window as any).PXjJ0cYtn9,
+        (window as any)._PXjJ0cYtn9
+      ].filter(Boolean);
+      
+      const pxObject = pxCandidates.find(px => px && px.Events && typeof px.Events.on === 'function');
+      
       if (pxObject) {
-        console.log('Found PX object, calling asyncInit with:', pxObject);
+        console.log('Found PX object with Events API, calling asyncInit with:', pxObject);
         (window as any).PXjJ0cYtn9_asyncInit(pxObject);
       } else {
-        console.log('No PX object found yet, waiting for async init callback');
+        console.log('No PX object with Events API found yet, waiting for async init callback');
+        if (pxCandidates.length > 0) {
+          console.log('Found PX objects but without Events API:', pxCandidates);
+        }
       }
     };
 
