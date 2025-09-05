@@ -11,16 +11,29 @@ export async function middleware(request) {
 
   // Local APIs that work on Cloudflare Pages
   const localApis = [
-    "/api/nhl", "/api/nba", "/api/nfl", "/api/mlb", "/api/celsius",
-    "/api/fahrenheit", "/api/lead", "/api/player-ads", "/api/player-analytics",
-    "/api/player-heartbeat", "/api/player-metadata", "/api/weather",
-    "/api/uuid", "/api/human"
+    "/api/nhl",
+    "/api/nba",
+    "/api/nfl",
+    "/api/mlb",
+    "/api/celsius",
+    "/api/fahrenheit",
+    "/api/lead",
+    "/api/player-ads",
+    "/api/player-analytics",
+    "/api/player-heartbeat",
+    "/api/player-metadata",
+    "/api/weather",
+    "/api/uuid",
+    "/api/human",
   ];
 
   const normalizedPathname = url.pathname.replace(/\/+$/, "") || "/";
 
   // Allow local APIs through
-  if (localApis.includes(normalizedPathname) || url.pathname.startsWith("/api/uuid/")) {
+  if (
+    localApis.includes(normalizedPathname) ||
+    url.pathname.startsWith("/api/uuid/")
+  ) {
     return NextResponse.next();
   }
 

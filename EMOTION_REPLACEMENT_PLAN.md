@@ -22,9 +22,9 @@ This is because Emotion's edge-light modules don't exist in the expected locatio
 
 ### Option 1: Switch MUI to styled-components Engine ⭐ (Recommended)
 
-**Effort**: Low-Medium  
-**Timeline**: 1-2 days  
-**Risk**: Low  
+**Effort**: Low-Medium
+**Timeline**: 1-2 days
+**Risk**: Low
 
 MUI supports multiple styling engines. Switch from Emotion to styled-components:
 
@@ -37,17 +37,20 @@ npm install --save-dev @types/styled-components
 ```
 
 **Implementation Steps**:
+
 1. Install styled-components
 2. Configure `_app.tsx` to use styled-components theme provider
 3. Update `next.config.js` to use styled-components engine
 4. Test all existing components (should work without changes)
 
-**Pros**: 
+**Pros**:
+
 - Minimal code changes required
 - MUI components continue working
 - styled-components has better edge runtime support
 
 **Cons**:
+
 - Still using CSS-in-JS (potential runtime overhead)
 - styled-components might have similar bundling issues
 
@@ -55,9 +58,9 @@ npm install --save-dev @types/styled-components
 
 ### Option 2: Migrate to Vanilla-Extract ⭐⭐
 
-**Effort**: Medium  
-**Timeline**: 3-5 days  
-**Risk**: Medium  
+**Effort**: Medium
+**Timeline**: 3-5 days
+**Risk**: Medium
 
 Use vanilla-extract for zero-runtime CSS-in-JS with TypeScript support:
 
@@ -66,6 +69,7 @@ npm install @vanilla-extract/css @vanilla-extract/next-plugin
 ```
 
 **Implementation Steps**:
+
 1. Install vanilla-extract packages
 2. Configure Next.js plugin
 3. Create `.css.ts` files for styling
@@ -73,12 +77,14 @@ npm install @vanilla-extract/css @vanilla-extract/next-plugin
 5. Keep MUI for complex components, use vanilla-extract for custom styles
 
 **Pros**:
+
 - Zero runtime overhead (compiles to static CSS)
 - Full TypeScript support
 - Excellent Cloudflare compatibility
 - Modern approach
 
 **Cons**:
+
 - Requires learning new syntax
 - Some components need refactoring
 
@@ -86,9 +92,9 @@ npm install @vanilla-extract/css @vanilla-extract/next-plugin
 
 ### Option 3: Hybrid Approach - Tailwind CSS + Headless UI
 
-**Effort**: High  
-**Timeline**: 1-2 weeks  
-**Risk**: Medium  
+**Effort**: High
+**Timeline**: 1-2 weeks
+**Risk**: Medium
 
 Replace MUI with Tailwind CSS + Headless UI components:
 
@@ -98,6 +104,7 @@ npm install --save-dev @tailwindcss/forms @tailwindcss/typography
 ```
 
 **Implementation Steps**:
+
 1. Set up Tailwind CSS
 2. Identify all MUI components in use
 3. Replace with Headless UI + Tailwind styling
@@ -105,12 +112,14 @@ npm install --save-dev @tailwindcss/forms @tailwindcss/typography
 5. Update all pages/components
 
 **Pros**:
+
 - Best performance (no runtime CSS-in-JS)
 - Perfect Cloudflare compatibility
 - Modern utility-first approach
 - Smaller bundle size
 
 **Cons**:
+
 - Significant refactoring required
 - Need to recreate custom components
 - Breaking changes across the app
@@ -119,24 +128,27 @@ npm install --save-dev @tailwindcss/forms @tailwindcss/typography
 
 ### Option 4: CSS Modules + CSS Variables
 
-**Effort**: High  
-**Timeline**: 2-3 weeks  
-**Risk**: Low  
+**Effort**: High
+**Timeline**: 2-3 weeks
+**Risk**: Low
 
 Replace all CSS-in-JS with CSS Modules:
 
 **Implementation Steps**:
+
 1. Create `.module.css` files for each component
 2. Define CSS variables for theming
 3. Replace all styled components with className-based styling
 4. Update theme system to use CSS variables
 
 **Pros**:
+
 - Maximum compatibility
 - No runtime overhead
 - Standard CSS approach
 
 **Cons**:
+
 - Most work required
 - Lose dynamic theming capabilities
 - More verbose syntax
@@ -145,22 +157,25 @@ Replace all CSS-in-JS with CSS Modules:
 
 ### Option 5: Configure OpenNext to External Emotion Dependencies
 
-**Effort**: Low  
-**Timeline**: 1 day  
-**Risk**: High  
+**Effort**: Low
+**Timeline**: 1 day
+**Risk**: High
 
 Try to configure OpenNext to treat Emotion as external dependencies:
 
 **Implementation Steps**:
+
 1. Update `open-next.config.ts` to externalize Emotion packages
 2. Configure webpack externals in Next.js config
 3. Test bundling process
 
 **Pros**:
+
 - Minimal code changes
 - Quick solution
 
 **Cons**:
+
 - May not work with Cloudflare Workers runtime
 - Potential runtime issues
 - Not a long-term solution
@@ -170,18 +185,21 @@ Try to configure OpenNext to treat Emotion as external dependencies:
 ## Recommended Implementation Plan
 
 ### Phase 1: Quick Fix (Option 1) - 2 days
+
 1. Install styled-components
 2. Configure MUI to use styled-components engine
 3. Test existing functionality
 4. Deploy to test environment
 
 ### Phase 2: Long-term Solution (Option 2) - 1 week
+
 1. Install vanilla-extract
 2. Start migrating custom components to vanilla-extract
 3. Keep MUI for complex components (DataGrid, etc.)
 4. Gradually reduce Emotion dependency
 
 ### Phase 3: Optimization (Optional) - Future
+
 1. Consider full migration to Tailwind if needed
 2. Evaluate performance improvements
 3. Optimize bundle size
@@ -231,7 +249,7 @@ Try to configure OpenNext to treat Emotion as external dependencies:
 ## Configuration Changes Required
 
 1. **next.config.js**: Update styled-components config
-2. **_app.tsx**: Add styled-components theme provider
+2. **\_app.tsx**: Add styled-components theme provider
 3. **package.json**: Update build scripts if needed
 4. **open-next.config.ts**: Remove externalization of Emotion
 

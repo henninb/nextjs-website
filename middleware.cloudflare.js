@@ -33,7 +33,10 @@ export async function middleware(request) {
   const normalizedPathname = url.pathname.replace(/\/+$/, "") || "/";
 
   // Allow local APIs to pass through
-  if (localApis.includes(normalizedPathname) || url.pathname.startsWith("/api/uuid/")) {
+  if (
+    localApis.includes(normalizedPathname) ||
+    url.pathname.startsWith("/api/uuid/")
+  ) {
     return NextResponse.next();
   }
 
@@ -42,11 +45,11 @@ export async function middleware(request) {
   return new NextResponse(
     JSON.stringify({
       error: "API not available on Cloudflare Pages",
-      message: "This API endpoint is only available on the main domain"
+      message: "This API endpoint is only available on the main domain",
     }),
     {
       status: 503,
-      headers: { "Content-Type": "application/json" }
-    }
+      headers: { "Content-Type": "application/json" },
+    },
   );
 }

@@ -8,10 +8,20 @@ export const config = {
 export function middleware(request) {
   // Ultra-minimal middleware - just routing
   const localApis = [
-    "/api/nhl", "/api/nba", "/api/nfl", "/api/mlb", "/api/celsius",
-    "/api/fahrenheit", "/api/lead", "/api/player-ads", "/api/player-analytics",
-    "/api/player-heartbeat", "/api/player-metadata", "/api/weather",
-    "/api/uuid", "/api/human"
+    "/api/nhl",
+    "/api/nba",
+    "/api/nfl",
+    "/api/mlb",
+    "/api/celsius",
+    "/api/fahrenheit",
+    "/api/lead",
+    "/api/player-ads",
+    "/api/player-analytics",
+    "/api/player-heartbeat",
+    "/api/player-metadata",
+    "/api/weather",
+    "/api/uuid",
+    "/api/human",
   ];
 
   const pathname = request.nextUrl.pathname.replace(/\/+$/, "") || "/";

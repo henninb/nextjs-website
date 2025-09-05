@@ -43,13 +43,14 @@ const WatchPage: NextPage = () => {
 
   // Fetch video metadata on component mount
   useEffect(() => {
+    console.log("are you being called");
     const fetchVideoData = async () => {
       try {
         const response = await fetch("/api/player-metadata", {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json",
           },
           body: JSON.stringify({ videoId: "sample_video_001" }),
         });
@@ -69,6 +70,7 @@ const WatchPage: NextPage = () => {
 
   // Start consistent XHR calls when video starts playing
   useEffect(() => {
+    console.log("isPlaying is tested");
     if (!isPlaying) {
       // Clear all intervals when paused
       if (heartbeatIntervalRef.current)
@@ -85,9 +87,9 @@ const WatchPage: NextPage = () => {
       try {
         const response = await fetch("/api/player-heartbeat", {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json",
           },
           body: JSON.stringify({
             videoId: videoData?.videoId,
@@ -119,9 +121,9 @@ const WatchPage: NextPage = () => {
       try {
         const response = await fetch("/api/player-analytics", {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json",
           },
           body: JSON.stringify({
             event: randomEvent,
@@ -144,7 +146,10 @@ const WatchPage: NextPage = () => {
       try {
         const response = await fetch("/api/player-ads", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({
             videoId: videoData?.videoId,
             adPosition: "midroll",

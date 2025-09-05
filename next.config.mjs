@@ -41,12 +41,12 @@ const nextConfig = {
   transpilePackages: ["@mui/x-data-grid"],
 
   outputFileTracingExcludes: {
-    '*': [
-      'node_modules/critters',
-      'node_modules/@opentelemetry/api',
-      'node_modules/@emotion/styled',
-      'node_modules/@emotion/react',
-      'node_modules/@emotion/cache',
+    "*": [
+      "node_modules/critters",
+      "node_modules/@opentelemetry/api",
+      "node_modules/@emotion/styled",
+      "node_modules/@emotion/react",
+      "node_modules/@emotion/cache",
     ],
   },
 
@@ -121,13 +121,16 @@ const nextConfig = {
               "default-src 'self'",
               process.env.NODE_ENV === "development"
                 ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://dev.finance.bhenning.com:3000 http: https:"
-                : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://finance.bhenning.com https://vercel.bhenning.com https://statsapi.mlb.com https://api.weather.com https://fixturedownload.com https://f5x3msep1f.execute-api.us-east-1.amazonaws.com https://client.px-cloud.net https://henninb.github.io",
+                : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://finance.bhenning.com https://vercel.bhenning.com https://statsapi.mlb.com https://api.weather.com https://fixturedownload.com https://f5x3msep1f.execute-api.us-east-1.amazonaws.com https://client.px-cloud.net https://captcha.px-cdn.net https://henninb.github.io",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
               "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "img-src 'self' data: https:",
               process.env.NODE_ENV === "development"
                 ? "connect-src 'self' http://dev.finance.bhenning.com:3000 http: https: ws:"
                 : "connect-src 'self' https://finance.bhenning.com https://vercel.bhenning.com https://statsapi.mlb.com https://api.weather.com https://fixturedownload.com https://f5x3msep1f.execute-api.us-east-1.amazonaws.com https://client.px-cloud.net https://tzm.px-cloud.net https://collector-pxjj0cytn9.px-cloud.net https://collector-pxjj0cytn9.px-cdn.net https://collector-pxjj0cytn9.pxchk.net https://b.px-cdn.net",
+              process.env.NODE_ENV === "development"
+                ? "frame-src 'self' http: https:"
+                : "frame-src 'self' https://client.px-cloud.net https://tzm.px-cloud.net https://collector-pxjj0cytn9.px-cloud.net https://collector-pxjj0cytn9.px-cdn.net https://collector-pxjj0cytn9.pxchk.net https://b.px-cdn.net https://captcha-api.px-cloud.net https://captcha.px-cdn.net",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
