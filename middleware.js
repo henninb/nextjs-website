@@ -10,7 +10,7 @@ export const config = {
     // extension-based static assets in code below.
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
-  runtime: "experimental-edge",
+  runtime: "edge",
 };
 
 export async function middleware(request) {
