@@ -270,3 +270,6 @@ For detailed development guidelines and project conventions, see [CLAUDE.md](./C
 This project is private and proprietary.
 
 curl -v -X POST 'https://finance.bhenning.com/graphql' -H 'Content-Type: application/json' -H 'Accept: application/json' -H "Cookie: token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imhlbm5pbmIrZ3B0QGdtYWlsLmNvbSIsIm5iZiI6MTc1NTg3NDU1MCwiZXhwIjoxNzU1ODc4MTUwfQ.X2o7UVRAqm_EMbPQbnXLdaPjZzK_ikUDUY0V43WhLNE" --data '{"query":"query Transfers { transfers { transferId sourceAccount destination Account transactionDate amount activeStatus } }"}'
+
+
+wrangler pages deployment tail --project-name=nextjs-website --environment=production
