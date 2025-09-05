@@ -85,72 +85,143 @@ const WatchPage: NextPage = () => {
   // PX Risk Event Listener Setup
   useEffect(() => {
     const setupPxListener = () => {
+      console.log('🔧 Setting up PX event listener...');
       setPxStatus("Setting up PX event listener...");
 
       // Set up the PX async init function
       (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
-        console.log('PXjJ0cYtn9_asyncInit called with PX object:', px);
+        console.log('🎯 PXjJ0cYtn9_asyncInit called with PX object:', px);
+        console.log('🔍 PX object type:', typeof px);
+        console.log('🔍 PX object keys:', px ? Object.keys(px) : 'null/undefined');
         
         // Validate that the PX object has Events API
         if (!px || !px.Events || typeof px.Events.on !== 'function') {
-          console.error('PX object does not have Events API:', px);
+          console.error('❌ PX object does not have Events API:', px);
+          console.log('❌ px.Events:', px ? px.Events : 'px is null/undefined');
+          console.log('❌ px.Events.on type:', px && px.Events ? typeof px.Events.on : 'N/A');
           setPxStatus("PX object missing Events API - score monitoring unavailable");
           return;
         }
         
+        console.log('✅ PX object validation passed, Events API available');
+        console.log('🔍 Events object:', px.Events);
+        console.log('🔍 Events.on function:', px.Events.on);
+        
         setPxStatus("PX initialized - listening for score events...");
 
-        px.Events.on('score', function (score: any, kind: string) {
-          console.log('PX SCORE DATA:', score, kind);
+        try {
+          console.log('🔌 Setting up score event listener...');
+          px.Events.on('score', function (score: any, kind: string) {
+            console.log('🚨 PX SCORE EVENT FIRED!');
+            console.log('🚨 Score:', score);
+            console.log('🚨 Kind:', kind);
+            console.log('🚨 Score type:', typeof score);
+            console.log('🚨 Kind type:', typeof kind);
 
-          // Only process binary scores since hashed scores are not available
-          if (kind === 'binary') {
-            const scoreEvent = {
-              timestamp: new Date().toISOString(),
-              kind: kind,
-              score: score,
-              id: Date.now() + Math.random()
-            };
+            // Only process binary scores since hashed scores are not available
+            if (kind === 'binary') {
+              console.log('✅ Processing binary score:', score);
+              
+              const scoreEvent = {
+                timestamp: new Date().toISOString(),
+                kind: kind,
+                score: score,
+                id: Date.now() + Math.random()
+              };
+              
+              console.log('📦 Created score event object:', scoreEvent);
 
-            setPxScoreData(prev => [scoreEvent, ...prev.slice(0, 9)]); // Keep last 10 events
-            setPxStatus(`Binary score captured: ${score} - ${new Date().toLocaleTimeString()}`);
-            showToast(`PX Binary Score: ${score}`);
-          } else {
-            console.log(`Ignoring ${kind} score (binary-only mode):`, score);
-          }
-        });
+              console.log('🔄 Updating React state with score event...');
+              setPxScoreData(prev => {
+                console.log('📊 Previous score data length:', prev.length);
+                const newData = [scoreEvent, ...prev.slice(0, 9)];
+                console.log('📊 New score data length:', newData.length);
+                return newData;
+              });
+              
+              const statusMessage = `Binary score captured: ${score} - ${new Date().toLocaleTimeString()}`;
+              console.log('📱 Setting status:', statusMessage);
+              setPxStatus(statusMessage);
+              
+              console.log('🍞 Showing toast notification...');
+              showToast(`PX Binary Score: ${score}`);
+              
+              console.log('✅ Binary score processing complete');
+            } else {
+              console.log(`⏭️ Ignoring ${kind} score (binary-only mode):`, score);
+            }
+          });
+          console.log('✅ Score event listener setup complete');
+        } catch (error) {
+          console.error('❌ Error setting up score event listener:', error);
+          setPxStatus("Error setting up score event listener");
+        }
       };
 
       // Check if PX is already loaded (try different variations, but only use ones with Events API)
-      const pxCandidates = [
-        (window as any).px,
-        (window as any).PX, 
-        (window as any).PXjJ0cYtn9,
-        (window as any)._PXjJ0cYtn9
-      ].filter(Boolean);
+      console.log('🔍 Checking for existing PX objects...');
       
-      const pxObject = pxCandidates.find(px => px && px.Events && typeof px.Events.on === 'function');
+      const pxCandidates = [
+        { name: 'window.px', obj: (window as any).px },
+        { name: 'window.PX', obj: (window as any).PX },
+        { name: 'window.PXjJ0cYtn9', obj: (window as any).PXjJ0cYtn9 },
+        { name: 'window._PXjJ0cYtn9', obj: (window as any)._PXjJ0cYtn9 }
+      ];
+      
+      console.log('🔍 PX candidates found:');
+      pxCandidates.forEach(candidate => {
+        console.log(`  ${candidate.name}:`, !!candidate.obj, candidate.obj ? typeof candidate.obj : 'undefined');
+        if (candidate.obj) {
+          console.log(`    Keys:`, Object.keys(candidate.obj));
+          console.log(`    Has Events:`, !!candidate.obj.Events);
+          console.log(`    Events.on type:`, candidate.obj.Events ? typeof candidate.obj.Events.on : 'N/A');
+        }
+      });
+      
+      const validCandidates = pxCandidates.filter(c => c.obj).map(c => c.obj);
+      const pxObject = validCandidates.find(px => px && px.Events && typeof px.Events.on === 'function');
       
       if (pxObject) {
-        console.log('Found PX object with Events API, calling asyncInit with:', pxObject);
+        console.log('✅ Found PX object with Events API, calling asyncInit with:', pxObject);
+        console.log('🔍 Events methods:', Object.keys(pxObject.Events));
         (window as any).PXjJ0cYtn9_asyncInit(pxObject);
       } else {
-        console.log('No PX object with Events API found yet, waiting for async init callback');
-        if (pxCandidates.length > 0) {
-          console.log('Found PX objects but without Events API:', pxCandidates);
+        console.log('⏳ No PX object with Events API found yet, waiting for async init callback');
+        if (validCandidates.length > 0) {
+          console.log('📋 Found PX objects but without Events API:', validCandidates);
+        } else {
+          console.log('📋 No PX objects found at all');
         }
       }
     };
 
+    console.log('🚀 Starting PX listener setup...');
     setupPxListener();
+    console.log('✅ PX listener setup initiated');
 
     return () => {
+      console.log('🧹 Cleaning up PX async init function...');
       // Cleanup - remove the function
       if ((window as any).PXjJ0cYtn9_asyncInit) {
         delete (window as any).PXjJ0cYtn9_asyncInit;
+        console.log('✅ PX async init function cleaned up');
       }
     };
   }, []);
+
+  // Debug: Log whenever pxScoreData changes
+  useEffect(() => {
+    console.log('📊 pxScoreData state changed:', pxScoreData);
+    console.log('📊 pxScoreData length:', pxScoreData.length);
+    if (pxScoreData.length > 0) {
+      console.log('📊 Latest score event:', pxScoreData[0]);
+    }
+  }, [pxScoreData]);
+
+  // Debug: Log whenever pxStatus changes
+  useEffect(() => {
+    console.log('📱 pxStatus changed:', pxStatus);
+  }, [pxStatus]);
 
   // Start consistent XHR calls when video starts playing
   useEffect(() => {
@@ -625,6 +696,10 @@ const WatchPage: NextPage = () => {
 
           <div style={{ marginBottom: "15px" }}>
             <strong>Total Score Events Captured:</strong> {pxScoreData.length}
+            {/* Debug info */}
+            <div style={{ fontSize: "12px", color: "#888", marginTop: "5px" }}>
+              Debug: pxScoreData array length = {pxScoreData.length}
+            </div>
           </div>
 
           {pxScoreData.length > 0 && (
