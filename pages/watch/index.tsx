@@ -170,6 +170,99 @@ const WatchPage: NextPage = () => {
         console.log("🔍 Events object:", px.Events);
         console.log("🔍 Events.on function:", px.Events.on);
 
+        // Verify we are in a browser DOM context and mark it
+        try {
+          console.log("[PX-DIAG] Runtime env:", {
+            hasWindow: typeof window === "object",
+            hasDocument: typeof document === "object",
+            isBrowser:
+              typeof window !== "undefined" && !!(document as any)?.createElement,
+            location: (window as any)?.location?.href,
+          });
+          const markerId = "px-diag-marker";
+          let marker = document.getElementById(markerId);
+          if (!marker) {
+            marker = document.createElement("div");
+            marker.id = markerId;
+            marker.setAttribute("data-px-diag", "created");
+            marker.setAttribute("data-client-uuid", String(px.ClientUuid || ""));
+            (marker as any).style = "display:none";
+            document.body.appendChild(marker);
+            console.log("[PX-DIAG] Inserted hidden DOM marker", marker);
+          } else {
+            console.log("[PX-DIAG] DOM marker already present", marker);
+          }
+        } catch (e) {
+          console.log("[PX-DIAG] Browser env instrumentation failed:", e);
+        }
+
+        // Confirm async init function is present on window
+        try {
+          const desc = Object.getOwnPropertyDescriptor(
+            window as any,
+            "PXjJ0cYtn9_asyncInit",
+          );
+          console.log("[PX-DIAG] asyncInit on window:", {
+            exists: !!(window as any).PXjJ0cYtn9_asyncInit,
+            type: typeof (window as any).PXjJ0cYtn9_asyncInit,
+            configurable: desc?.configurable,
+            writable: desc?.writable,
+            enumerable: desc?.enumerable,
+          });
+        } catch (e) {
+          console.log("[PX-DIAG] Could not inspect asyncInit descriptor:", e);
+        }
+
+        // Instrument Events.on/off to log listener registrations
+        try {
+          if (!(px.Events as any).__pxInstrumented) {
+            const registry: Record<string, number> = {};
+            const originalOn = px.Events.on.bind(px.Events);
+            const originalOff = px.Events.off
+              ? px.Events.off.bind(px.Events)
+              : undefined;
+            (px.Events as any).__pxListenerRegistry = registry;
+            (px.Events as any).__pxOriginalOn = originalOn;
+            (px.Events as any).__pxOriginalOff = originalOff;
+            px.Events.on = function (type: string, handler: any) {
+              console.log("[PX-DIAG] Events.on called", {
+                type,
+                handlerType: typeof handler,
+              });
+              registry[type] = (registry[type] || 0) + 1;
+              try {
+                return originalOn(type, handler);
+              } finally {
+                console.log("[PX-DIAG] Listener registered", {
+                  type,
+                  count: registry[type],
+                });
+              }
+            } as any;
+            if (originalOff) {
+              px.Events.off = function (type: string, handler?: any) {
+                console.log("[PX-DIAG] Events.off called", {
+                  type,
+                  handlerType: typeof handler,
+                });
+                const res = (originalOff as any)(type, handler);
+                if (registry[type]) registry[type] = Math.max(0, registry[type] - 1);
+                console.log("[PX-DIAG] Listener removed", {
+                  type,
+                  count: registry[type] || 0,
+                });
+                return res;
+              } as any;
+            }
+            (px.Events as any).__pxInstrumented = true;
+            console.log("[PX-DIAG] Instrumented Events.on/off for diagnostics");
+          } else {
+            console.log("[PX-DIAG] Events already instrumented");
+          }
+        } catch (e) {
+          console.log("[PX-DIAG] Could not instrument Events.on/off:", e);
+        }
+
         setPxStatus("PX initialized - listening for all events...");
 
         // CRITICAL: First, let's see what events PX actually supports
@@ -233,6 +326,14 @@ const WatchPage: NextPage = () => {
         };
 
         px.Events.on("score", scoreHandler);
+        try {
+          const reg = (px.Events as any).__pxListenerRegistry || {};
+          console.log("[PX-DIAG] Post-registration listener counts:", reg);
+          console.log(
+            "[PX-DIAG] Score listener present?",
+            (reg["score"] || 0) > 0,
+          );
+        } catch {}
 
         // Also explicitly map 'risk' to a score-like handler if provided by SDK
         try {
