@@ -50,12 +50,13 @@ export default async function handler(req) {
     // Plymouth, MN (55303) coordinates
     const latitude = 45.0105;
     const longitude = -93.4556;
-    
+
     const url = new URL("https://api.open-meteo.com/v1/forecast");
     const params = {
       latitude,
       longitude,
-      current: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,pressure_msl",
+      current:
+        "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,pressure_msl",
       temperature_unit: "fahrenheit",
       wind_speed_unit: "mph",
       precipitation_unit: "inch",
@@ -82,23 +83,25 @@ export default async function handler(req) {
     }
 
     const data = await apiResponse.json();
-    
+
     // Transform Open-Meteo data to match expected format
     const transformedData = {
-      observations: [{
-        obsTimeLocal: data.current.time,
-        imperial: {
-          temp: Math.round(data.current.temperature_2m),
-          windChill: Math.round(data.current.apparent_temperature),
-          pressure: (data.current.pressure_msl * 0.02953).toFixed(2), // Convert hPa to inHg
+      observations: [
+        {
+          obsTimeLocal: data.current.time,
+          imperial: {
+            temp: Math.round(data.current.temperature_2m),
+            windChill: Math.round(data.current.apparent_temperature),
+            pressure: (data.current.pressure_msl * 0.02953).toFixed(2), // Convert hPa to inHg
+          },
+          humidity: data.current.relative_humidity_2m,
+          windSpeed: Math.round(data.current.wind_speed_10m),
+          precipitation: data.current.precipitation,
+          weatherCode: data.current.weather_code,
         },
-        humidity: data.current.relative_humidity_2m,
-        windSpeed: Math.round(data.current.wind_speed_10m),
-        precipitation: data.current.precipitation,
-        weatherCode: data.current.weather_code,
-      }]
+      ],
     };
-    
+
     const res = NextResponse.json(transformedData);
     res.headers.set("Cache-Control", "no-store");
     return res;

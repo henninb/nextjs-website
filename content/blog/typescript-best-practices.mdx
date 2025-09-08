@@ -1,0 +1,419 @@
+---
+title: "TypeScript Best Practices for Modern Development"
+date: "2025-01-15"
+excerpt: "Discover essential TypeScript patterns and practices that will make your code more maintainable, type-safe, and developer-friendly."
+author: "Brian Henning"
+tags: ["typescript", "webdev", "best-practices"]
+---
+
+# TypeScript Best Practices for Modern Development
+
+TypeScript has revolutionized the way we write JavaScript by adding static type checking and modern language features. After years of TypeScript development across various projects, here are the essential best practices that every TypeScript developer should master.
+
+## 1. Strict Mode Configuration: Your First Line of Defense
+
+Always enable strict mode in your `tsconfig.json`. This isn't just a recommendation—it's essential for catching bugs before they reach production:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
+```
+
+**Why this matters**: Strict mode catches approximately 80% more potential runtime errors during compilation. Projects that adopt strict mode from the beginning report 40% fewer production bugs.
+
+### Additional Compiler Options for Robustness
+
+```json
+{
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}
+```
+
+## 2. Type Assertions: Use Sparingly, Validate Always
+
+Type assertions should be your last resort, not your first choice. Instead, build robust type guards:
+
+```typescript
+// ❌ Dangerous - no runtime validation
+const user = data as User;
+
+// ✅ Better - runtime validation with type guards
+function isUser(obj: unknown): obj is User {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'name' in obj &&
+    'email' in obj &&
+    typeof (obj as any).name === 'string' &&
+    typeof (obj as any).email === 'string' &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((obj as any).email)
+  );
+}
+
+// ✅ Best - use a validation library like Zod
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  age: z.number().positive().optional(),
+});
+
+type User = z.infer<typeof UserSchema>;
+
+function validateUser(data: unknown): User {
+  return UserSchema.parse(data); // Throws if invalid
+}
+```
+
+### When Type Assertions Are Acceptable
+
+```typescript
+// DOM elements - you know more than TypeScript
+const button = document.getElementById('submit') as HTMLButtonElement;
+
+// Const assertions for immutable data
+const config = {
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+} as const; // Type becomes readonly
+```
+
+## 3. Master Union Types and Discriminated Unions
+
+Union types are one of TypeScript's most powerful features for modeling real-world data:
+
+```typescript
+// Simple union types
+type Theme = 'light' | 'dark' | 'auto';
+type Status = 'idle' | 'loading' | 'success' | 'error';
+
+// Discriminated unions for complex state management
+type ApiState =
+  | { status: 'idle' }
+  | { status: 'loading'; startTime: number }
+  | { status: 'success'; data: any; loadTime: number }
+  | { status: 'error'; error: Error; retryCount: number };
+
+// TypeScript provides exhaustive checking
+function handleApiState(state: ApiState) {
+  switch (state.status) {
+    case 'idle':
+      return 'Ready to fetch';
+    case 'loading':
+      const elapsed = Date.now() - state.startTime;
+      return `Loading for ${elapsed}ms`;
+    case 'success':
+      return `Loaded in ${state.loadTime}ms`;
+    case 'error':
+      return `Error after ${state.retryCount} retries: ${state.error.message}`;
+    default:
+      // TypeScript ensures this is never reached
+      const _exhaustive: never = state;
+      throw new Error(`Unhandled state: ${_exhaustive}`);
+  }
+}
+```
+
+### Advanced Union Patterns
+
+```typescript
+// Template literal types for dynamic unions
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type ApiEndpoint = `/api/${string}`;
+type ApiCall = `${HttpMethod} ${ApiEndpoint}`;
+
+// Conditional types with unions
+type NonNullable<T> = T extends null | undefined ? never : T;
+type ApiResponse<T> = T extends string 
+  ? { message: T } 
+  : { data: T };
+```
+
+## 4. Interfaces vs Types: When to Use Each
+
+While interfaces and types often overlap, each has specific use cases:
+
+```typescript
+// ✅ Use interfaces for object shapes that might be extended
+interface BaseUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface AdminUser extends BaseUser {
+  permissions: string[];
+  lastLogin?: Date;
+}
+
+interface SuperAdminUser extends AdminUser {
+  systemAccess: boolean;
+}
+
+// ✅ Use types for unions, primitives, and computed types
+type UserRole = 'user' | 'admin' | 'super_admin';
+type UserWithRole = BaseUser & { role: UserRole };
+
+// ✅ Use types for utility types
+type PartialUser = Partial<BaseUser>;
+type UserEmail = Pick<BaseUser, 'email'>;
+type UserWithoutId = Omit<BaseUser, 'id'>;
+```
+
+### Interface Declaration Merging
+
+```typescript
+// Interfaces support declaration merging - useful for extending libraries
+interface Window {
+  customProperty: string;
+}
+
+// Later in another file
+interface Window {
+  anotherCustomProperty: number;
+}
+
+// Window now has both properties
+```
+
+## 5. Generic Constraints: Making Generics Safer
+
+Unconstrained generics can be too flexible. Add constraints to make them more predictable:
+
+```typescript
+// ❌ Too permissive
+function clone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj)); // What if T isn't serializable?
+}
+
+// ✅ Better with constraints
+interface Serializable {
+  toJSON(): any;
+}
+
+function cloneSerializable<T extends Serializable>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+// ✅ Best - multiple constraints and conditional logic
+interface Identifiable {
+  id: string;
+}
+
+interface Timestamped {
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+function updateEntity<T extends Identifiable & Timestamped>(
+  entity: T,
+  updates: Partial<Omit<T, 'id' | 'createdAt'>>
+): T {
+  return {
+    ...entity,
+    ...updates,
+    updatedAt: new Date(),
+  };
+}
+
+// Advanced: Generic constraints with keyof
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+// Usage provides perfect type safety
+const user = { name: 'John', age: 30 };
+const name = getProperty(user, 'name'); // Type is string
+const age = getProperty(user, 'age');   // Type is number
+```
+
+## 6. Advanced Type Patterns
+
+### Mapped Types for Transformation
+
+```typescript
+// Make all properties optional and nullable
+type PartialNullable<T> = {
+  [K in keyof T]?: T[K] | null;
+};
+
+// Create getter types
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+
+type UserGetters = Getters<User>;
+// Result: { getName(): string; getEmail(): string; }
+
+// Conditional property types
+type NonFunctionPropertyNames<T> = {
+  [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
+
+type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+```
+
+### Template Literal Types for APIs
+
+```typescript
+// Type-safe API route definitions
+type ApiRoutes = 
+  | 'GET /api/users'
+  | 'POST /api/users'
+  | 'PUT /api/users/:id'
+  | 'DELETE /api/users/:id'
+  | 'GET /api/posts'
+  | 'POST /api/posts';
+
+type ExtractParams<T> = T extends `${string}:${infer Param}/${infer Rest}`
+  ? { [K in Param | keyof ExtractParams<`/${Rest}`>]: string }
+  : T extends `${string}:${infer Param}`
+  ? { [K in Param]: string }
+  : {};
+
+type UserParams = ExtractParams<'PUT /api/users/:id'>; // { id: string }
+```
+
+## 7. Error Handling Patterns
+
+### Result Types for Better Error Handling
+
+```typescript
+type Result<T, E = Error> = 
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+async function fetchUser(id: string): Promise<Result<User, 'not_found' | 'network_error'>> {
+  try {
+    const response = await fetch(`/api/users/${id}`);
+    
+    if (response.status === 404) {
+      return { success: false, error: 'not_found' };
+    }
+    
+    if (!response.ok) {
+      return { success: false, error: 'network_error' };
+    }
+    
+    const user = await response.json();
+    return { success: true, data: user };
+  } catch {
+    return { success: false, error: 'network_error' };
+  }
+}
+
+// Usage with exhaustive checking
+const result = await fetchUser('123');
+if (result.success) {
+  console.log(result.data.name); // TypeScript knows this is User
+} else {
+  // Handle specific error types
+  switch (result.error) {
+    case 'not_found':
+      console.log('User not found');
+      break;
+    case 'network_error':
+      console.log('Network error occurred');
+      break;
+  }
+}
+```
+
+## 8. Performance and Bundle Size Considerations
+
+### Import Types Only When Needed
+
+```typescript
+// ❌ Imports the entire module
+import { SomeClass } from './large-module';
+function processData(data: SomeClass) { /* */ }
+
+// ✅ Import only the type
+import type { SomeClass } from './large-module';
+function processData(data: SomeClass) { /* */ }
+
+// ✅ For mixed imports
+import { someFunction, type SomeType } from './module';
+```
+
+### Use const assertions for performance
+
+```typescript
+// ❌ Creates a new array each time
+const colors = ['red', 'green', 'blue'];
+
+// ✅ Readonly tuple, better for performance and type inference
+const colors = ['red', 'green', 'blue'] as const;
+type Color = typeof colors[number]; // 'red' | 'green' | 'blue'
+```
+
+## 9. Testing with TypeScript
+
+### Type Testing Utilities
+
+```typescript
+// Utility types for testing type correctness
+type Expect<T extends true> = T;
+type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+  ? true
+  : false;
+
+// Example type tests
+type TestCases = [
+  Expect<Equal<UserWithRole, BaseUser & { role: UserRole }>>,
+  Expect<Equal<keyof BaseUser, 'id' | 'name' | 'email'>>,
+];
+```
+
+## 10. Migration Strategies
+
+### Gradual TypeScript Adoption
+
+```typescript
+// Use @ts-check in JavaScript files first
+// @ts-check
+/** @type {import('./types').User} */
+const user = { name: 'John', email: 'john@example.com' };
+
+// Use .d.ts files for gradual typing
+// types.d.ts
+declare global {
+  interface Window {
+    myGlobalFunction: (arg: string) => void;
+  }
+}
+```
+
+## Conclusion
+
+TypeScript's power lies not just in catching errors, but in enabling confident refactoring, better IDE support, and self-documenting code. These best practices will help you:
+
+1. **Catch more bugs at compile time** rather than runtime
+2. **Enable fearless refactoring** with confidence in your changes
+3. **Improve code documentation** through expressive type signatures
+4. **Enhance developer experience** with better autocomplete and IntelliSense
+5. **Scale your codebase** as your project grows in complexity
+
+Remember: TypeScript is not about fighting the type system—it's about leveraging it to write better, more maintainable code. Start with strict mode, embrace the type system, and gradually adopt more advanced patterns as your team's TypeScript expertise grows.
+
+The investment in learning these patterns pays dividends in reduced debugging time, increased development velocity, and higher code quality across your entire codebase.
+
+export default ({ children }) => <div className="blog-post">{children}</div>;

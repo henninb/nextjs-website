@@ -344,8 +344,13 @@ export default function Temperature() {
                     <Typography variant="h4" fontWeight={700} color="primary">
                       {weatherData.imperial.temp}°F
                     </Typography>
-                    <Typography variant="h6" fontWeight={500} color="secondary" sx={{ mt: 0.5 }}>
-                      {Math.round((weatherData.imperial.temp - 32) * 5/9)}°C
+                    <Typography
+                      variant="h6"
+                      fontWeight={500}
+                      color="secondary"
+                      sx={{ mt: 0.5 }}
+                    >
+                      {Math.round(((weatherData.imperial.temp - 32) * 5) / 9)}°C
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Temperature
@@ -372,8 +377,16 @@ export default function Temperature() {
                     <Typography variant="h4" fontWeight={700} color="primary">
                       {weatherData.imperial.windChill}°F
                     </Typography>
-                    <Typography variant="h6" fontWeight={500} color="secondary" sx={{ mt: 0.5 }}>
-                      {Math.round((weatherData.imperial.windChill - 32) * 5/9)}°C
+                    <Typography
+                      variant="h6"
+                      fontWeight={500}
+                      color="secondary"
+                      sx={{ mt: 0.5 }}
+                    >
+                      {Math.round(
+                        ((weatherData.imperial.windChill - 32) * 5) / 9,
+                      )}
+                      °C
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Wind Chill
