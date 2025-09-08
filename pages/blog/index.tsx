@@ -42,6 +42,8 @@ const TOPICS = [
   { label: "Next.js", value: "nextjs" },
   { label: "TypeScript", value: "typescript" },
   { label: "Web Dev", value: "webdev" },
+  { label: "Docker", value: "docker" },
+  { label: "AI", value: "ai" },
 ];
 
 export default function BlogIndex({ posts }: BlogIndexProps) {

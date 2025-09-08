@@ -57,18 +57,18 @@ const user = data as User;
 // ✅ Better - runtime validation with type guards
 function isUser(obj: unknown): obj is User {
   return (
-    typeof obj === 'object' &&
+    typeof obj === "object" &&
     obj !== null &&
-    'name' in obj &&
-    'email' in obj &&
-    typeof (obj as any).name === 'string' &&
-    typeof (obj as any).email === 'string' &&
+    "name" in obj &&
+    "email" in obj &&
+    typeof (obj as any).name === "string" &&
+    typeof (obj as any).email === "string" &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((obj as any).email)
   );
 }
 
 // ✅ Best - use a validation library like Zod
-import { z } from 'zod';
+import { z } from "zod";
 
 const UserSchema = z.object({
   name: z.string().min(1),
@@ -87,11 +87,11 @@ function validateUser(data: unknown): User {
 
 ```typescript
 // DOM elements - you know more than TypeScript
-const button = document.getElementById('submit') as HTMLButtonElement;
+const button = document.getElementById("submit") as HTMLButtonElement;
 
 // Const assertions for immutable data
 const config = {
-  apiUrl: 'https://api.example.com',
+  apiUrl: "https://api.example.com",
   timeout: 5000,
 } as const; // Type becomes readonly
 ```
@@ -102,27 +102,27 @@ Union types are one of TypeScript's most powerful features for modeling real-wor
 
 ```typescript
 // Simple union types
-type Theme = 'light' | 'dark' | 'auto';
-type Status = 'idle' | 'loading' | 'success' | 'error';
+type Theme = "light" | "dark" | "auto";
+type Status = "idle" | "loading" | "success" | "error";
 
 // Discriminated unions for complex state management
 type ApiState =
-  | { status: 'idle' }
-  | { status: 'loading'; startTime: number }
-  | { status: 'success'; data: any; loadTime: number }
-  | { status: 'error'; error: Error; retryCount: number };
+  | { status: "idle" }
+  | { status: "loading"; startTime: number }
+  | { status: "success"; data: any; loadTime: number }
+  | { status: "error"; error: Error; retryCount: number };
 
 // TypeScript provides exhaustive checking
 function handleApiState(state: ApiState) {
   switch (state.status) {
-    case 'idle':
-      return 'Ready to fetch';
-    case 'loading':
+    case "idle":
+      return "Ready to fetch";
+    case "loading":
       const elapsed = Date.now() - state.startTime;
       return `Loading for ${elapsed}ms`;
-    case 'success':
+    case "success":
       return `Loaded in ${state.loadTime}ms`;
-    case 'error':
+    case "error":
       return `Error after ${state.retryCount} retries: ${state.error.message}`;
     default:
       // TypeScript ensures this is never reached
@@ -136,15 +136,13 @@ function handleApiState(state: ApiState) {
 
 ```typescript
 // Template literal types for dynamic unions
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 type ApiEndpoint = `/api/${string}`;
 type ApiCall = `${HttpMethod} ${ApiEndpoint}`;
 
 // Conditional types with unions
 type NonNullable<T> = T extends null | undefined ? never : T;
-type ApiResponse<T> = T extends string 
-  ? { message: T } 
-  : { data: T };
+type ApiResponse<T> = T extends string ? { message: T } : { data: T };
 ```
 
 ## 4. Interfaces vs Types: When to Use Each
@@ -169,13 +167,13 @@ interface SuperAdminUser extends AdminUser {
 }
 
 // ✅ Use types for unions, primitives, and computed types
-type UserRole = 'user' | 'admin' | 'super_admin';
+type UserRole = "user" | "admin" | "super_admin";
 type UserWithRole = BaseUser & { role: UserRole };
 
 // ✅ Use types for utility types
 type PartialUser = Partial<BaseUser>;
-type UserEmail = Pick<BaseUser, 'email'>;
-type UserWithoutId = Omit<BaseUser, 'id'>;
+type UserEmail = Pick<BaseUser, "email">;
+type UserWithoutId = Omit<BaseUser, "id">;
 ```
 
 ### Interface Declaration Merging
@@ -225,7 +223,7 @@ interface Timestamped {
 
 function updateEntity<T extends Identifiable & Timestamped>(
   entity: T,
-  updates: Partial<Omit<T, 'id' | 'createdAt'>>
+  updates: Partial<Omit<T, "id" | "createdAt">>,
 ): T {
   return {
     ...entity,
@@ -240,9 +238,9 @@ function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
 }
 
 // Usage provides perfect type safety
-const user = { name: 'John', age: 30 };
-const name = getProperty(user, 'name'); // Type is string
-const age = getProperty(user, 'age');   // Type is number
+const user = { name: "John", age: 30 };
+const name = getProperty(user, "name"); // Type is string
+const age = getProperty(user, "age"); // Type is number
 ```
 
 ## 6. Advanced Type Patterns
@@ -275,21 +273,21 @@ type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
 
 ```typescript
 // Type-safe API route definitions
-type ApiRoutes = 
-  | 'GET /api/users'
-  | 'POST /api/users'
-  | 'PUT /api/users/:id'
-  | 'DELETE /api/users/:id'
-  | 'GET /api/posts'
-  | 'POST /api/posts';
+type ApiRoutes =
+  | "GET /api/users"
+  | "POST /api/users"
+  | "PUT /api/users/:id"
+  | "DELETE /api/users/:id"
+  | "GET /api/posts"
+  | "POST /api/posts";
 
 type ExtractParams<T> = T extends `${string}:${infer Param}/${infer Rest}`
   ? { [K in Param | keyof ExtractParams<`/${Rest}`>]: string }
   : T extends `${string}:${infer Param}`
-  ? { [K in Param]: string }
-  : {};
+    ? { [K in Param]: string }
+    : {};
 
-type UserParams = ExtractParams<'PUT /api/users/:id'>; // { id: string }
+type UserParams = ExtractParams<"PUT /api/users/:id">; // { id: string }
 ```
 
 ## 7. Error Handling Patterns
@@ -297,41 +295,43 @@ type UserParams = ExtractParams<'PUT /api/users/:id'>; // { id: string }
 ### Result Types for Better Error Handling
 
 ```typescript
-type Result<T, E = Error> = 
+type Result<T, E = Error> =
   | { success: true; data: T }
   | { success: false; error: E };
 
-async function fetchUser(id: string): Promise<Result<User, 'not_found' | 'network_error'>> {
+async function fetchUser(
+  id: string,
+): Promise<Result<User, "not_found" | "network_error">> {
   try {
     const response = await fetch(`/api/users/${id}`);
-    
+
     if (response.status === 404) {
-      return { success: false, error: 'not_found' };
+      return { success: false, error: "not_found" };
     }
-    
+
     if (!response.ok) {
-      return { success: false, error: 'network_error' };
+      return { success: false, error: "network_error" };
     }
-    
+
     const user = await response.json();
     return { success: true, data: user };
   } catch {
-    return { success: false, error: 'network_error' };
+    return { success: false, error: "network_error" };
   }
 }
 
 // Usage with exhaustive checking
-const result = await fetchUser('123');
+const result = await fetchUser("123");
 if (result.success) {
   console.log(result.data.name); // TypeScript knows this is User
 } else {
   // Handle specific error types
   switch (result.error) {
-    case 'not_found':
-      console.log('User not found');
+    case "not_found":
+      console.log("User not found");
       break;
-    case 'network_error':
-      console.log('Network error occurred');
+    case "network_error":
+      console.log("Network error occurred");
       break;
   }
 }
@@ -343,26 +343,30 @@ if (result.success) {
 
 ```typescript
 // ❌ Imports the entire module
-import { SomeClass } from './large-module';
-function processData(data: SomeClass) { /* */ }
+import { SomeClass } from "./large-module";
+function processData(data: SomeClass) {
+  /* */
+}
 
 // ✅ Import only the type
-import type { SomeClass } from './large-module';
-function processData(data: SomeClass) { /* */ }
+import type { SomeClass } from "./large-module";
+function processData(data: SomeClass) {
+  /* */
+}
 
 // ✅ For mixed imports
-import { someFunction, type SomeType } from './module';
+import { someFunction, type SomeType } from "./module";
 ```
 
 ### Use const assertions for performance
 
 ```typescript
 // ❌ Creates a new array each time
-const colors = ['red', 'green', 'blue'];
+const colors = ["red", "green", "blue"];
 
 // ✅ Readonly tuple, better for performance and type inference
-const colors = ['red', 'green', 'blue'] as const;
-type Color = typeof colors[number]; // 'red' | 'green' | 'blue'
+const colors = ["red", "green", "blue"] as const;
+type Color = (typeof colors)[number]; // 'red' | 'green' | 'blue'
 ```
 
 ## 9. Testing with TypeScript
@@ -372,14 +376,15 @@ type Color = typeof colors[number]; // 'red' | 'green' | 'blue'
 ```typescript
 // Utility types for testing type correctness
 type Expect<T extends true> = T;
-type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
-  ? true
-  : false;
+type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+    ? true
+    : false;
 
 // Example type tests
 type TestCases = [
   Expect<Equal<UserWithRole, BaseUser & { role: UserRole }>>,
-  Expect<Equal<keyof BaseUser, 'id' | 'name' | 'email'>>,
+  Expect<Equal<keyof BaseUser, "id" | "name" | "email">>,
 ];
 ```
 
@@ -391,7 +396,7 @@ type TestCases = [
 // Use @ts-check in JavaScript files first
 // @ts-check
 /** @type {import('./types').User} */
-const user = { name: 'John', email: 'john@example.com' };
+const user = { name: "John", email: "john@example.com" };
 
 // Use .d.ts files for gradual typing
 // types.d.ts
@@ -417,3 +422,5 @@ Remember: TypeScript is not about fighting the type system—it's about leveragi
 The investment in learning these patterns pays dividends in reduced debugging time, increased development velocity, and higher code quality across your entire codebase.
 
 export default ({ children }) => <div className="blog-post">{children}</div>;
+
+;

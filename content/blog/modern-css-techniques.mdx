@@ -29,11 +29,21 @@ CSS Grid has transformed how we create complex, responsive layouts. Unlike Flexb
   min-height: 100vh;
 }
 
-.header { grid-area: header; }
-.sidebar { grid-area: sidebar; }
-.main { grid-area: main; }
-.aside { grid-area: aside; }
-.footer { grid-area: footer; }
+.header {
+  grid-area: header;
+}
+.sidebar {
+  grid-area: sidebar;
+}
+.main {
+  grid-area: main;
+}
+.aside {
+  grid-area: aside;
+}
+.footer {
+  grid-area: footer;
+}
 ```
 
 ### Advanced Grid Patterns
@@ -91,11 +101,11 @@ CSS Grid has transformed how we create complex, responsive layouts. Unlike Flexb
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  
+
   /* Align items within their grid areas */
   align-items: center; /* vertical alignment */
   justify-items: start; /* horizontal alignment */
-  
+
   /* Align the entire grid within its container */
   justify-content: center; /* horizontal */
   align-content: center; /* vertical */
@@ -125,11 +135,11 @@ Container queries allow you to style elements based on their container's size, n
     flex-direction: row;
     gap: 1rem;
   }
-  
+
   .card-image {
     flex: 0 0 150px;
   }
-  
+
   .card-content {
     flex: 1;
   }
@@ -139,7 +149,7 @@ Container queries allow you to style elements based on their container's size, n
   .card {
     display: block;
   }
-  
+
   .card-image {
     width: 100%;
     aspect-ratio: 16/9;
@@ -201,10 +211,12 @@ Custom properties (CSS variables) enable dynamic, maintainable design systems wi
   --color-primary-h: 220;
   --color-primary-s: 100%;
   --color-primary-l: 50%;
-  --color-primary: hsl(var(--color-primary-h) var(--color-primary-s) var(--color-primary-l));
+  --color-primary: hsl(
+    var(--color-primary-h) var(--color-primary-s) var(--color-primary-l)
+  );
   --color-primary-light: hsl(var(--color-primary-h) var(--color-primary-s) 75%);
   --color-primary-dark: hsl(var(--color-primary-h) var(--color-primary-s) 25%);
-  
+
   /* Spacing scale */
   --space-unit: 1rem;
   --space-xs: calc(var(--space-unit) * 0.25);
@@ -212,14 +224,14 @@ Custom properties (CSS variables) enable dynamic, maintainable design systems wi
   --space-md: var(--space-unit);
   --space-lg: calc(var(--space-unit) * 2);
   --space-xl: calc(var(--space-unit) * 4);
-  
+
   /* Typography scale */
   --font-scale: 1.25;
   --font-size-sm: calc(1rem / var(--font-scale));
   --font-size-base: 1rem;
   --font-size-lg: calc(1rem * var(--font-scale));
   --font-size-xl: calc(1rem * var(--font-scale) * var(--font-scale));
-  
+
   /* Border radius system */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -271,7 +283,7 @@ Custom properties (CSS variables) enable dynamic, maintainable design systems wi
   --progress: 0;
   --rotation: calc(var(--progress) * 360deg);
   --scale: calc(1 + var(--progress) * 0.5);
-  
+
   transform: rotate(var(--rotation)) scale(var(--scale));
   transition: transform 0.3s ease;
 }
@@ -279,9 +291,9 @@ Custom properties (CSS variables) enable dynamic, maintainable design systems wi
 
 ```javascript
 // Update CSS variables dynamically
-const element = document.querySelector('.animated-element');
+const element = document.querySelector(".animated-element");
 const progress = 0.75; // 75% complete
-element.style.setProperty('--progress', progress);
+element.style.setProperty("--progress", progress);
 ```
 
 ## 4. Advanced Flexbox Patterns
@@ -437,9 +449,15 @@ Create engaging scroll-based effects without JavaScript using the new scroll-tim
 }
 
 @keyframes color-shift {
-  0% { background: hsl(220 100% 50%); }
-  50% { background: hsl(280 100% 50%); }
-  100% { background: hsl(340 100% 50%); }
+  0% {
+    background: hsl(220 100% 50%);
+  }
+  50% {
+    background: hsl(280 100% 50%);
+  }
+  100% {
+    background: hsl(340 100% 50%);
+  }
 }
 ```
 
@@ -460,7 +478,7 @@ CSS Cascade Layers provide explicit control over specificity and the cascade.
     margin: 0;
     padding: 0;
   }
-  
+
   img {
     max-width: 100%;
     height: auto;
@@ -473,14 +491,19 @@ CSS Cascade Layers provide explicit control over specificity and the cascade.
     --color-primary: #3b82f6;
     --font-family: system-ui, sans-serif;
   }
-  
+
   body {
     font-family: var(--font-family);
     line-height: 1.6;
     color: #1f2937;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     line-height: 1.2;
     margin-bottom: 0.5em;
   }
@@ -499,12 +522,12 @@ CSS Cascade Layers provide explicit control over specificity and the cascade.
     cursor: pointer;
     transition: all 0.2s;
   }
-  
+
   .btn--primary {
     background: var(--color-primary);
     color: white;
   }
-  
+
   .btn--primary:hover {
     background: color-mix(in srgb, var(--color-primary) 80%, black);
   }
@@ -512,15 +535,29 @@ CSS Cascade Layers provide explicit control over specificity and the cascade.
 
 /* Utility styles */
 @layer utilities {
-  .text-center { text-align: center; }
-  .text-left { text-align: left; }
-  .text-right { text-align: right; }
-  
-  .mt-0 { margin-top: 0; }
-  .mt-1 { margin-top: 0.25rem; }
-  .mt-2 { margin-top: 0.5rem; }
-  
-  .hidden { display: none; }
+  .text-center {
+    text-align: center;
+  }
+  .text-left {
+    text-align: left;
+  }
+  .text-right {
+    text-align: right;
+  }
+
+  .mt-0 {
+    margin-top: 0;
+  }
+  .mt-1 {
+    margin-top: 0.25rem;
+  }
+  .mt-2 {
+    margin-top: 0.5rem;
+  }
+
+  .hidden {
+    display: none;
+  }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -558,16 +595,16 @@ Logical properties make your CSS work seamlessly with different writing modes an
 
 /* Use logical properties */
 .new-way {
-  margin-block-start: 1rem;  /* top in LTR, bottom in RTL */
-  margin-block-end: 2rem;    /* bottom in LTR, top in RTL */
-  margin-inline: 1rem;       /* left & right in LTR, right & left in RTL */
+  margin-block-start: 1rem; /* top in LTR, bottom in RTL */
+  margin-block-end: 2rem; /* bottom in LTR, top in RTL */
+  margin-inline: 1rem; /* left & right in LTR, right & left in RTL */
   border-inline-start: 3px solid blue; /* left in LTR, right in RTL */
-  text-align: start;         /* left in LTR, right in RTL */
+  text-align: start; /* left in LTR, right in RTL */
 }
 
 /* Shorthand logical properties */
 .card {
-  padding-block: 2rem;    /* top and bottom */
+  padding-block: 2rem; /* top and bottom */
   padding-inline: 1.5rem; /* left and right */
   margin-block: 1rem 2rem; /* top: 1rem, bottom: 2rem */
   border-block: 1px solid #e5e7eb; /* top and bottom borders */
@@ -580,8 +617,8 @@ Logical properties make your CSS work seamlessly with different writing modes an
 
 .vertical-text .card {
   /* These logical properties automatically adapt */
-  padding-block: 1rem;    /* Now affects left/right in vertical mode */
-  padding-inline: 2rem;   /* Now affects top/bottom in vertical mode */
+  padding-block: 1rem; /* Now affects left/right in vertical mode */
+  padding-inline: 2rem; /* Now affects top/bottom in vertical mode */
 }
 ```
 
@@ -608,8 +645,10 @@ CSS now offers powerful color manipulation functions for dynamic color schemes.
   --primary-hue: from var(--primary) h;
   --primary-sat: from var(--primary) s;
   --primary-light: from var(--primary) l;
-  
-  background: hsl(var(--primary-hue) var(--primary-sat) calc(var(--primary-light) + 20%));
+
+  background: hsl(
+    var(--primary-hue) var(--primary-sat) calc(var(--primary-light) + 20%)
+  );
 }
 
 /* Color contrast functions */
@@ -728,8 +767,8 @@ Write CSS that performs well and loads efficiently.
 
 /* Optimize font loading */
 @font-face {
-  font-family: 'CustomFont';
-  src: url('font.woff2') format('woff2');
+  font-family: "CustomFont";
+  src: url("font.woff2") format("woff2");
   font-display: swap; /* Show fallback font immediately */
 }
 
@@ -740,7 +779,7 @@ Write CSS that performs well and loads efficiently.
 
 /* Non-critical styles in separate file */
 @media screen {
-  @import url('non-critical.css');
+  @import url("non-critical.css");
 }
 ```
 
@@ -820,3 +859,5 @@ The future of CSS is bright, with new features constantly being added that make 
 Remember: the best CSS is CSS that works for everyone, performs well, and can be easily maintained as your project grows. These modern techniques provide the foundation for exactly that kind of robust, scalable styling system.
 
 export default ({ children }) => <div className="blog-post">{children}</div>;
+
+;

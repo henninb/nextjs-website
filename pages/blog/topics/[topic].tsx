@@ -31,6 +31,8 @@ import {
   Code,
   RocketLaunch,
   Web,
+  Docker,
+  Psychology,
 } from "@mui/icons-material";
 
 interface TopicPageProps {
@@ -41,31 +43,50 @@ interface TopicPageProps {
 const TOPIC_CONFIG = {
   nextjs: {
     title: "Next.js",
-    description: "Build production-ready React applications with Next.js. Learn about SSR, SSG, API routes, and performance optimization.",
+    description:
+      "Build production-ready React applications with Next.js. Learn about SSR, SSG, API routes, and performance optimization.",
     icon: RocketLaunch,
     color: "#000000",
     gradient: "linear-gradient(135deg, #000000 0%, #1f1f1f 50%, #333333 100%)",
   },
   typescript: {
     title: "TypeScript",
-    description: "Master TypeScript for better code quality, enhanced developer experience, and robust application architecture.",
+    description:
+      "Master TypeScript for better code quality, enhanced developer experience, and robust application architecture.",
     icon: Code,
     color: "#3178c6",
     gradient: "linear-gradient(135deg, #3178c6 0%, #235a97 100%)",
   },
   webdev: {
     title: "Web Development",
-    description: "Explore modern web development practices, tools, and techniques to build outstanding web experiences.",
+    description:
+      "Explore modern web development practices, tools, and techniques to build outstanding web experiences.",
     icon: Web,
     color: "#61dafb",
     gradient: "linear-gradient(135deg, #61dafb 0%, #21759b 100%)",
+  },
+  docker: {
+    title: "Docker",
+    description:
+      "Learn containerization with Docker. From basic concepts to advanced orchestration, deployment strategies, and production best practices.",
+    icon: Docker,
+    color: "#2496ed",
+    gradient: "linear-gradient(135deg, #2496ed 0%, #0db7ed 100%)",
+  },
+  ai: {
+    title: "AI & Machine Learning",
+    description:
+      "Discover artificial intelligence, machine learning, and modern AI tools. Build intelligent applications and understand AI infrastructure.",
+    icon: Psychology,
+    color: "#ff6b6b",
+    gradient: "linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)",
   },
 };
 
 export default function TopicPage({ posts, topic }: TopicPageProps) {
   const theme = useTheme();
   const config = TOPIC_CONFIG[topic as keyof typeof TOPIC_CONFIG];
-  
+
   if (!config) {
     return (
       <Container maxWidth="lg" sx={{ py: 8, textAlign: "center" }}>
@@ -93,11 +114,14 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
     <ThemeProvider theme={blogTheme}>
       <Head>
         <title>{`${config.title} Articles | Professional Development Blog`}</title>
-        <meta 
-          name="description" 
+        <meta
+          name="description"
           content={`${config.description} Browse our collection of ${config.title.toLowerCase()} articles and tutorials.`}
         />
-        <meta name="keywords" content={`${topic}, ${config.title.toLowerCase()}, web development, programming, tutorials`} />
+        <meta
+          name="keywords"
+          content={`${topic}, ${config.title.toLowerCase()}, web development, programming, tutorials`}
+        />
       </Head>
 
       {/* Hero Section */}
@@ -129,7 +153,10 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
               },
             }}
           >
-            <Link href="/blog" style={{ textDecoration: "none", color: "inherit" }}>
+            <Link
+              href="/blog"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               <Typography
                 color="text.secondary"
                 sx={{
@@ -146,7 +173,7 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
               {config.title}
             </Typography>
           </Breadcrumbs>
-          
+
           <Box display="flex" alignItems="center" mb={4}>
             <Box
               sx={{
@@ -161,7 +188,7 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
             >
               <Icon sx={{ fontSize: 40, color: "white" }} />
             </Box>
-            
+
             <Box>
               <Typography
                 variant="h2"
@@ -182,11 +209,12 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
                 color="text.secondary"
                 sx={{ fontWeight: 400 }}
               >
-                {posts.length} {posts.length === 1 ? "article" : "articles"} available
+                {posts.length} {posts.length === 1 ? "article" : "articles"}{" "}
+                available
               </Typography>
             </Box>
           </Box>
-          
+
           <Typography
             variant="body1"
             sx={{
@@ -209,7 +237,8 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
               No {config.title} articles yet
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              Stay tuned! We're working on some great {config.title.toLowerCase()} content.
+              Stay tuned! We're working on some great{" "}
+              {config.title.toLowerCase()} content.
             </Typography>
             <Button
               component={Link}
@@ -261,24 +290,47 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
                           }}
                         />
                       )}
-                      
+
                       <CardContent sx={{ flexGrow: 1, p: 3 }}>
                         <Box display="flex" alignItems="center" mb={2}>
-                          <CalendarToday sx={{ mr: 1, fontSize: "0.875rem", color: "text.secondary" }} />
+                          <CalendarToday
+                            sx={{
+                              mr: 1,
+                              fontSize: "0.875rem",
+                              color: "text.secondary",
+                            }}
+                          />
                           <Typography variant="caption" color="text.secondary">
                             {format(new Date(post.date), "MMM dd, yyyy")}
                           </Typography>
                           {post.author && (
                             <>
-                              <Box sx={{ mx: 1.5, width: 3, height: 3, backgroundColor: "text.secondary", borderRadius: "50%" }} />
-                              <Person sx={{ mr: 0.5, fontSize: "0.75rem", color: "text.secondary" }} />
-                              <Typography variant="caption" color="text.secondary">
+                              <Box
+                                sx={{
+                                  mx: 1.5,
+                                  width: 3,
+                                  height: 3,
+                                  backgroundColor: "text.secondary",
+                                  borderRadius: "50%",
+                                }}
+                              />
+                              <Person
+                                sx={{
+                                  mr: 0.5,
+                                  fontSize: "0.75rem",
+                                  color: "text.secondary",
+                                }}
+                              />
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
                                 {post.author}
                               </Typography>
                             </>
                           )}
                         </Box>
-                        
+
                         <Typography
                           gutterBottom
                           variant="h5"
@@ -292,7 +344,7 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
                         >
                           {post.title}
                         </Typography>
-                        
+
                         <Typography
                           variant="body2"
                           color="text.secondary"
@@ -307,9 +359,16 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
                         >
                           {post.excerpt}
                         </Typography>
-                        
+
                         {post.tags && post.tags.length > 0 && (
-                          <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: "auto" }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 0.5,
+                              flexWrap: "wrap",
+                              mt: "auto",
+                            }}
+                          >
                             {post.tags.slice(0, 3).map((tag) => (
                               <Chip
                                 key={tag}
@@ -344,7 +403,7 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
             ))}
           </Grid>
         )}
-        
+
         {/* Back to Blog Button */}
         <Box textAlign="center" mt={8}>
           <Button
@@ -370,8 +429,8 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const topics = ["nextjs", "typescript", "webdev"];
-  
+  const topics = ["nextjs", "typescript", "webdev", "docker", "ai"];
+
   return {
     paths: topics.map((topic) => ({
       params: { topic },
@@ -380,14 +439,14 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps<TopicPageProps> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<TopicPageProps> = async ({
+  params,
+}) => {
   const topic = params?.topic as string;
   const allPosts = getAllPosts();
-  
+
   // Filter posts by topic
-  const posts = allPosts.filter((post) => 
-    post.tags?.includes(topic)
-  );
+  const posts = allPosts.filter((post) => post.tags?.includes(topic));
 
   return {
     props: {

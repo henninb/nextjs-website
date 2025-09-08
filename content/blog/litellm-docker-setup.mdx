@@ -1,0 +1,735 @@
+---
+title: "Setting Up LiteLLM in Your Local Network with Docker"
+date: "2025-09-08"
+excerpt: "Complete guide to deploying LiteLLM proxy server using Docker for seamless AI model integration across your local network infrastructure."
+author: "Brian Henning"
+tags: ["docker", "litellm", "ai", "local-network", "proxy"]
+---
+
+# Setting Up LiteLLM in Your Local Network with Docker
+
+LiteLLM has emerged as one of the most powerful tools for managing and proxying AI language model APIs. By setting up LiteLLM in your local network using Docker, you can create a unified interface for multiple AI providers, implement rate limiting, add authentication, and gain better control over your AI infrastructure.
+
+## What is LiteLLM?
+
+LiteLLM is an open-source proxy server that provides a unified API interface for over 100+ language model providers including OpenAI, Anthropic, Google, Azure, AWS Bedrock, and many others. It translates requests between different provider formats, allowing you to switch between models seamlessly.
+
+### Key Benefits
+
+- **Unified API Interface**: Single endpoint for multiple AI providers
+- **Cost Management**: Built-in spend tracking and budgets
+- **Rate Limiting**: Prevent API abuse and manage quotas
+- **Load Balancing**: Distribute requests across multiple models
+- **Authentication**: Secure access with API keys and user management
+- **Observability**: Comprehensive logging and metrics
+- **Fallbacks**: Automatic failover between providers
+
+## Prerequisites
+
+Before we begin, ensure you have:
+
+- Docker and Docker Compose installed
+- Basic familiarity with Docker networking
+- API keys for your desired AI providers
+- A Linux/macOS environment (Windows with WSL2 works too)
+
+### System Requirements
+
+```bash
+# Minimum requirements
+CPU: 1 core
+RAM: 512MB
+Storage: 1GB
+Network: Local network access
+```
+
+## Basic Docker Setup
+
+Let's start with a simple LiteLLM deployment using Docker.
+
+### 1. Create Project Directory
+
+```bash
+mkdir litellm-setup
+cd litellm-setup
+```
+
+### 2. Simple Docker Run Command
+
+```bash
+docker run \
+  --detach \
+  --name litellm \
+  --publish 4000:4000 \
+  --env OPENAI_API_KEY=your_openai_key_here \
+  --env ANTHROPIC_API_KEY=your_anthropic_key_here \
+  ghcr.io/berriai/litellm:main-latest \
+  --config /app/config.yaml
+```
+
+### 3. Basic Configuration File
+
+Create a `config.yaml` file:
+
+```yaml
+model_list:
+  - model_name: gpt-4
+    litellm_params:
+      model: openai/gpt-4
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: claude-3-sonnet
+    litellm_params:
+      model: anthropic/claude-3-sonnet-20240229
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: gemini-pro
+    litellm_params:
+      model: google/gemini-pro
+      api_key: os.environ/GOOGLE_API_KEY
+
+general_settings:
+  master_key: your-secret-master-key
+  database_url: sqlite:///litellm.db
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+  json_logs: true
+```
+
+## Advanced Docker Compose Setup
+
+For production use, Docker Compose provides better management and persistence.
+
+### 1. Create Docker Compose File
+
+Create `docker-compose.yml`:
+
+```yaml
+version: "3.8"
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-proxy
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      # API Keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - AZURE_API_KEY=${AZURE_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+      # Database
+      - DATABASE_URL=postgresql://litellm:${DB_PASSWORD}@postgres:5432/litellm
+
+      # Redis for caching
+      - REDIS_URL=redis://redis:6379
+
+    command:
+      [
+        "--config",
+        "/app/config/config.yaml",
+        "--port",
+        "4000",
+        "--num_workers",
+        "1",
+      ]
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - litellm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: litellm-postgres
+    environment:
+      - POSTGRES_DB=litellm
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - litellm-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: litellm-redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - litellm-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  nginx:
+    image: nginx:alpine
+    container_name: litellm-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - litellm
+    networks:
+      - litellm-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  litellm-network:
+    driver: bridge
+```
+
+### 2. Environment Configuration
+
+Create `.env` file:
+
+```bash
+# API Keys
+OPENAI_API_KEY=sk-your-openai-key
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+GOOGLE_API_KEY=your-google-api-key
+AZURE_API_KEY=your-azure-key
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+
+# Database
+DB_PASSWORD=your-secure-db-password
+
+# LiteLLM Settings
+MASTER_KEY=your-very-secure-master-key
+ENVIRONMENT=production
+LOG_LEVEL=INFO
+```
+
+### 3. Advanced Configuration
+
+Create `config/config.yaml`:
+
+```yaml
+model_list:
+  # OpenAI Models
+  - model_name: gpt-4
+    litellm_params:
+      model: openai/gpt-4
+      api_key: os.environ/OPENAI_API_KEY
+      max_tokens: 4096
+      temperature: 0.7
+    model_info:
+      mode: chat
+      input_cost_per_token: 0.00003
+      output_cost_per_token: 0.00006
+      max_input_tokens: 8192
+      max_output_tokens: 4096
+
+  - model_name: gpt-3.5-turbo
+    litellm_params:
+      model: openai/gpt-3.5-turbo
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      mode: chat
+      input_cost_per_token: 0.000001
+      output_cost_per_token: 0.000002
+
+  # Anthropic Models
+  - model_name: claude-3-sonnet
+    litellm_params:
+      model: anthropic/claude-3-sonnet-20240229
+      api_key: os.environ/ANTHROPIC_API_KEY
+      max_tokens: 4096
+    model_info:
+      mode: chat
+      input_cost_per_token: 0.000003
+      output_cost_per_token: 0.000015
+
+  - model_name: claude-3-haiku
+    litellm_params:
+      model: anthropic/claude-3-haiku-20240307
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      input_cost_per_token: 0.00000025
+      output_cost_per_token: 0.00000125
+
+  # Google Models
+  - model_name: gemini-pro
+    litellm_params:
+      model: google/gemini-pro
+      api_key: os.environ/GOOGLE_API_KEY
+
+  # Azure OpenAI
+  - model_name: azure-gpt-4
+    litellm_params:
+      model: azure/gpt-4
+      api_key: os.environ/AZURE_API_KEY
+      api_base: https://your-resource.openai.azure.com/
+      api_version: "2024-02-15-preview"
+
+# Router settings
+router_settings:
+  routing_strategy: simple-shuffle
+  model_group_alias:
+    gpt-4-group:
+      - gpt-4
+      - azure-gpt-4
+    claude-group:
+      - claude-3-sonnet
+      - claude-3-haiku
+
+  fallbacks:
+    - gpt-4: [gpt-3.5-turbo]
+    - claude-3-sonnet: [claude-3-haiku]
+
+# General settings
+general_settings:
+  master_key: os.environ/MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  store_model_in_db: true
+
+  # Authentication
+  ui_username: admin
+  ui_password: your-ui-password
+
+  # Rate limiting
+  max_parallel_requests: 1000
+  global_max_parallel_requests: 1000
+
+  # Cost management
+  max_budget: 100.0
+  budget_duration: 30d
+
+# LiteLLM specific settings
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+  json_logs: true
+  log_raw_request_response: false
+
+  # Caching
+  cache: true
+  cache_type: redis
+  redis_host: redis
+  redis_port: 6379
+
+  # Retry settings
+  num_retries: 3
+  request_timeout: 600
+
+  # Content filtering
+  guardrails:
+    - prompt_injection_detection
+    - output_moderation
+
+# Environment-specific settings
+environment_settings:
+  production:
+    set_verbose: false
+    json_logs: true
+  development:
+    set_verbose: true
+    json_logs: false
+```
+
+## Network Configuration
+
+### 1. Nginx Reverse Proxy
+
+Create `nginx/nginx.conf`:
+
+```nginx
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream litellm {
+        server litellm:4000;
+    }
+
+    # Rate limiting
+    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+
+    server {
+        listen 80;
+        server_name your-domain.local;
+
+        # Redirect HTTP to HTTPS
+        return 301 https://$server_name$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        server_name your-domain.local;
+
+        # SSL Configuration
+        ssl_certificate /etc/nginx/ssl/cert.pem;
+        ssl_certificate_key /etc/nginx/ssl/key.pem;
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:SSL:50m;
+        ssl_session_tickets off;
+
+        # Modern configuration
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+        ssl_prefer_server_ciphers off;
+
+        # Security headers
+        add_header Strict-Transport-Security "max-age=63072000" always;
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header Referrer-Policy no-referrer-when-downgrade;
+
+        location / {
+            limit_req zone=api burst=20 nodelay;
+
+            proxy_pass http://litellm;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # WebSocket support
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+
+            # Timeouts
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+        }
+
+        # Health check endpoint
+        location /health {
+            access_log off;
+            proxy_pass http://litellm/health;
+        }
+    }
+}
+```
+
+### 2. SSL Certificate Generation
+
+```bash
+# Create SSL directory
+mkdir -p nginx/ssl
+
+# Generate self-signed certificate for local use
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout nginx/ssl/key.pem \
+  -out nginx/ssl/cert.pem \
+  -subj "/C=US/ST=State/L=City/O=Organization/CN=your-domain.local"
+```
+
+### 3. Local DNS Setup
+
+Add to `/etc/hosts`:
+
+```bash
+127.0.0.1 your-domain.local
+```
+
+## Deployment and Management
+
+### 1. Start the Stack
+
+```bash
+# Create directories
+mkdir -p config data logs nginx/ssl
+
+# Start services
+docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# View logs
+docker-compose logs -f litellm
+```
+
+### 2. Health Checks
+
+```bash
+# Test basic connectivity
+curl http://localhost:4000/health
+
+# Test with authentication
+curl -H "Authorization: Bearer your-master-key" \
+     http://localhost:4000/v1/models
+
+# Test chat completion
+curl -X POST http://localhost:4000/v1/chat/completions \
+  -H "Authorization: Bearer your-master-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4",
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ],
+    "max_tokens": 50
+  }'
+```
+
+## Security Considerations
+
+### 1. API Key Management
+
+```yaml
+# Use Docker secrets for production
+services:
+  litellm:
+    secrets:
+      - openai_key
+      - anthropic_key
+    environment:
+      - OPENAI_API_KEY_FILE=/run/secrets/openai_key
+
+secrets:
+  openai_key:
+    file: ./secrets/openai_key.txt
+```
+
+### 2. Network Isolation
+
+```yaml
+# Internal network for services
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  external:
+    driver: bridge
+
+services:
+  litellm:
+    networks:
+      - internal
+      - external
+  postgres:
+    networks:
+      - internal # Database only accessible internally
+```
+
+### 3. User Authentication
+
+```yaml
+general_settings:
+  # Enable user management
+  store_model_in_db: true
+
+  # Team-based access control
+  default_team_settings:
+    - team_id: "team-1"
+      models: ["gpt-4", "claude-3-sonnet"]
+      spend_budget: 50.0
+      max_parallel_requests: 10
+```
+
+## Monitoring and Observability
+
+### 1. Prometheus Metrics
+
+```yaml
+# Add to docker-compose.yml
+prometheus:
+  image: prom/prometheus
+  ports:
+    - "9090:9090"
+  volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  networks:
+    - litellm-network
+
+grafana:
+  image: grafana/grafana
+  ports:
+    - "3001:3000"
+  environment:
+    - GF_SECURITY_ADMIN_PASSWORD=admin
+  volumes:
+    - grafana_data:/var/lib/grafana
+  networks:
+    - litellm-network
+```
+
+### 2. Log Management
+
+```yaml
+litellm_settings:
+  json_logs: true
+  log_raw_request_response: true
+
+logging:
+  version: 1
+  formatters:
+    default:
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    file:
+      class: logging.FileHandler
+      filename: /app/logs/litellm.log
+      formatter: default
+  root:
+    level: INFO
+    handlers: [file]
+```
+
+## Troubleshooting Common Issues
+
+### 1. Container Won't Start
+
+```bash
+# Check logs
+docker-compose logs litellm
+
+# Common issues:
+# - Invalid API keys
+# - Port conflicts
+# - Configuration syntax errors
+# - Missing volumes
+```
+
+### 2. Database Connection Issues
+
+```bash
+# Test database connectivity
+docker-compose exec postgres psql -U litellm -d litellm -c "\dt"
+
+# Reset database
+docker-compose down -v
+docker-compose up -d
+```
+
+### 3. Network Connectivity
+
+```bash
+# Test internal networking
+docker-compose exec litellm ping postgres
+docker-compose exec litellm ping redis
+
+# Check port bindings
+docker-compose ps
+netstat -tlnp | grep :4000
+```
+
+### 4. Memory Issues
+
+```yaml
+# Add resource limits
+services:
+  litellm:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "1.0"
+        reservations:
+          memory: 512M
+          cpus: "0.5"
+```
+
+## Integration Examples
+
+### 1. Python Client
+
+```python
+import openai
+
+# Configure client to use LiteLLM
+client = openai.OpenAI(
+    api_key="your-master-key",
+    base_url="http://your-domain.local/v1"
+)
+
+# Use any supported model
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(response.choices[0].message.content)
+```
+
+### 2. JavaScript/Node.js
+
+```javascript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "your-master-key",
+  baseURL: "http://your-domain.local/v1",
+});
+
+async function chatCompletion() {
+  const response = await client.chat.completions.create({
+    model: "claude-3-sonnet",
+    messages: [{ role: "user", content: "Hello from LiteLLM!" }],
+    max_tokens: 100,
+  });
+
+  console.log(response.choices[0].message.content);
+}
+
+chatCompletion();
+```
+
+### 3. curl Examples
+
+```bash
+# List available models
+curl -H "Authorization: Bearer your-master-key" \
+     http://your-domain.local/v1/models
+
+# Chat completion with fallback
+curl -X POST http://your-domain.local/v1/chat/completions \
+  -H "Authorization: Bearer your-master-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4-group",
+    "messages": [{"role": "user", "content": "Explain Docker networking"}],
+    "max_tokens": 500,
+    "temperature": 0.7
+  }'
+```
+
+## Conclusion
+
+Setting up LiteLLM in your local network with Docker provides a powerful, scalable solution for managing AI model access across your infrastructure. The combination of Docker's containerization, proper networking, and LiteLLM's unified API creates a robust foundation for AI-powered applications.
+
+Key benefits of this setup include:
+
+- **Centralized Management**: Single point of control for all AI provider access
+- **Cost Control**: Built-in spend tracking and budget management
+- **Security**: Network isolation and authentication layers
+- **Scalability**: Easy horizontal scaling with load balancing
+- **Reliability**: Automatic failover and retry mechanisms
+- **Observability**: Comprehensive logging and monitoring capabilities
+
+This configuration serves as a production-ready foundation that can be adapted to your specific requirements, whether you're running a small team environment or a large-scale enterprise deployment.
+
+export default ({ children }) => <div className="blog-post">{children}</div>;
+
+;

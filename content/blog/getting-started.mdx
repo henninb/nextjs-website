@@ -17,18 +17,21 @@ NextJS and TypeScript create a powerful combination for building modern web appl
 NextJS has become the de facto standard for production React applications, and for good reason:
 
 **🚀 Performance Out of the Box**
+
 - **Automatic Code Splitting**: Only load JavaScript needed for each page
 - **Server-Side Rendering (SSR)**: Improve SEO and initial load times
 - **Static Site Generation (SSG)**: Pre-render pages at build time for maximum speed
 - **Image Optimization**: Automatic image resizing, lazy loading, and modern formats
 
 **📁 File-Based Routing**
+
 - No complex routing configuration required
 - Intuitive folder structure maps directly to URL structure
 - Dynamic routes with bracket notation (`[id].tsx`)
 - API routes alongside your pages
 
 **🔧 Built-in Optimizations**
+
 - Automatic bundle optimization and tree shaking
 - CSS and Sass support out of the box
 - Built-in ESLint configuration
@@ -39,17 +42,20 @@ NextJS has become the de facto standard for production React applications, and f
 TypeScript transforms JavaScript development by adding static type checking:
 
 **✅ Catch Errors Early**
+
 - Find bugs at compile time, not runtime
 - Prevent common mistakes like undefined variables
 - Ensure API contracts are maintained
 
 **🧠 Enhanced Developer Experience**
+
 - Intelligent autocomplete and IntelliSense
 - Refactoring with confidence
 - Self-documenting code through type annotations
 - Better IDE support across all editors
 
 **📈 Scalability**
+
 - Manage complexity in large codebases
 - Clear interfaces between components and modules
 - Easier onboarding for new team members
@@ -92,6 +98,7 @@ npm run dev
 ```
 
 The flags explained:
+
 - `--typescript`: Set up TypeScript configuration
 - `--tailwind`: Include Tailwind CSS for styling
 - `--eslint`: Configure ESLint for code quality
@@ -159,6 +166,7 @@ The TypeScript configuration file controls how TypeScript compiles your code:
 ```
 
 **Key configurations explained:**
+
 - `strict: true`: Enables all strict type checking options
 - `noEmit: true`: NextJS handles compilation, so TypeScript just checks types
 - `paths`: Allows absolute imports with `@/` prefix
@@ -225,15 +233,15 @@ interface PostCardProps {
   className?: string;
 }
 
-export function PostCard({ 
-  post, 
-  featured = false, 
-  className = '' 
+export function PostCard({
+  post,
+  featured = false,
+  className = ''
 }: PostCardProps) {
   return (
-    <article 
+    <article
       className={`
-        bg-white rounded-lg shadow-md hover:shadow-lg 
+        bg-white rounded-lg shadow-md hover:shadow-lg
         transition-shadow duration-300 overflow-hidden
         ${featured ? 'md:flex md:flex-row' : ''}
         ${className}
@@ -247,7 +255,7 @@ export function PostCard({
           </div>
         </div>
       )}
-      
+
       <div className="p-6 md:flex md:flex-col md:justify-between">
         <div>
           <div className="flex items-center text-sm text-gray-600 mb-2">
@@ -261,25 +269,25 @@ export function PostCard({
             <span className="mx-2">•</span>
             <span>{post.author.name}</span>
           </div>
-          
+
           <h3 className="text-xl font-bold text-gray-900 mb-3">
-            <Link 
+            <Link
               href={`/posts/${post.slug}`}
               className="hover:text-blue-600 transition-colors"
             >
               {post.title}
             </Link>
           </h3>
-          
+
           <p className="text-gray-600 text-base leading-relaxed mb-4">
             {post.excerpt}
           </p>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex flex-wrap gap-2">
             {post.tags.slice(0, 3).map((tag) => (
-              <span 
+              <span
                 key={tag}
                 className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
               >
@@ -292,8 +300,8 @@ export function PostCard({
               </span>
             )}
           </div>
-          
-          <Link 
+
+          <Link
             href={`/posts/${post.slug}`}
             className="text-blue-600 hover:text-blue-800 font-medium text-sm"
           >
@@ -312,26 +320,26 @@ NextJS API routes can be strongly typed for better development experience:
 
 ```typescript
 // app/api/posts/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { Post, ApiResponse } from '@/types';
+import { NextRequest, NextResponse } from "next/server";
+import { Post, ApiResponse } from "@/types";
 
 // Mock data - in a real app, this would come from a database
 const mockPosts: Post[] = [
   {
-    id: '1',
-    title: 'Getting Started with NextJS and TypeScript',
-    slug: 'getting-started-nextjs-typescript',
-    content: 'Full content here...',
-    excerpt: 'Learn how to build modern web applications...',
+    id: "1",
+    title: "Getting Started with NextJS and TypeScript",
+    slug: "getting-started-nextjs-typescript",
+    content: "Full content here...",
+    excerpt: "Learn how to build modern web applications...",
     author: {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
+      id: "1",
+      name: "John Doe",
+      email: "john@example.com",
       createdAt: new Date(),
       updatedAt: new Date(),
     },
     publishedAt: new Date(),
-    tags: ['nextjs', 'typescript', 'react'],
+    tags: ["nextjs", "typescript", "react"],
     featured: true,
   },
   // ... more posts
@@ -341,15 +349,15 @@ export async function GET(request: NextRequest) {
   try {
     // Extract query parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const tag = searchParams.get('tag');
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const tag = searchParams.get("tag");
 
     // Filter posts if tag is provided
     let filteredPosts = mockPosts;
     if (tag) {
-      filteredPosts = mockPosts.filter(post => 
-        post.tags.includes(tag.toLowerCase())
+      filteredPosts = mockPosts.filter((post) =>
+        post.tags.includes(tag.toLowerCase()),
       );
     }
 
@@ -376,19 +384,19 @@ export async function GET(request: NextRequest) {
           totalPages: Math.ceil(filteredPosts.length / limit),
         },
       },
-      message: 'Posts retrieved successfully',
+      message: "Posts retrieved successfully",
       success: true,
     };
 
     return NextResponse.json(response);
   } catch (error) {
     return NextResponse.json(
-      { 
-        data: null, 
-        message: 'Failed to retrieve posts', 
-        success: false 
+      {
+        data: null,
+        message: "Failed to retrieve posts",
+        success: false,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -396,9 +404,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate the request body
-    const newPost: Omit<Post, 'id' | 'publishedAt'> = {
+    const newPost: Omit<Post, "id" | "publishedAt"> = {
       title: body.title,
       slug: body.slug,
       content: body.content,
@@ -417,19 +425,19 @@ export async function POST(request: NextRequest) {
 
     const response: ApiResponse<Post> = {
       data: savedPost,
-      message: 'Post created successfully',
+      message: "Post created successfully",
       success: true,
     };
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { 
-        data: null, 
-        message: 'Failed to create post', 
-        success: false 
+      {
+        data: null,
+        message: "Failed to create post",
+        success: false,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -441,8 +449,8 @@ Create a custom hook for fetching data with full type safety:
 
 ```typescript
 // lib/hooks/usePosts.ts
-import { useState, useEffect } from 'react';
-import { Post, ApiResponse } from '@/types';
+import { useState, useEffect } from "react";
+import { Post, ApiResponse } from "@/types";
 
 interface UsePostsOptions {
   page?: number;
@@ -475,14 +483,14 @@ export function usePosts(options: UsePostsOptions = {}): UsePostsReturn {
         setError(null);
 
         const params = new URLSearchParams();
-        if (options.page) params.append('page', options.page.toString());
-        if (options.limit) params.append('limit', options.limit.toString());
-        if (options.tag) params.append('tag', options.tag);
+        if (options.page) params.append("page", options.page.toString());
+        if (options.limit) params.append("limit", options.limit.toString());
+        if (options.tag) params.append("tag", options.tag);
 
         const response = await fetch(`/api/posts?${params}`);
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch posts');
+          throw new Error("Failed to fetch posts");
         }
 
         const data: ApiResponse<{
@@ -497,7 +505,7 @@ export function usePosts(options: UsePostsOptions = {}): UsePostsReturn {
           setError(data.message);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -538,10 +546,10 @@ interface Config {
 
 function createConfig(): Config {
   const requiredEnvVars = [
-    'DATABASE_URL',
-    'NEXTAUTH_SECRET',
-    'GOOGLE_CLIENT_ID',
-    'GOOGLE_CLIENT_SECRET',
+    "DATABASE_URL",
+    "NEXTAUTH_SECRET",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
   ];
 
   // Check for required environment variables
@@ -552,9 +560,9 @@ function createConfig(): Config {
   });
 
   return {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
-    isDevelopment: process.env.NODE_ENV === 'development',
-    isProduction: process.env.NODE_ENV === 'production',
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api",
+    isDevelopment: process.env.NODE_ENV === "development",
+    isProduction: process.env.NODE_ENV === "production",
     database: {
       url: process.env.DATABASE_URL!,
     },
@@ -584,9 +592,9 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-export function LoadingSpinner({ 
-  size = 'md', 
-  className = '' 
+export function LoadingSpinner({
+  size = 'md',
+  className = ''
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -596,7 +604,7 @@ export function LoadingSpinner({
 
   return (
     <div className={`flex justify-center items-center ${className}`}>
-      <div 
+      <div
         className={`
           animate-spin rounded-full border-b-2 border-blue-600
           ${sizeClasses[size]}
@@ -617,15 +625,15 @@ export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
       <div className="flex items-center">
         <div className="flex-shrink-0">
-          <svg 
-            className="h-5 w-5 text-red-400" 
-            viewBox="0 0 20 20" 
+          <svg
+            className="h-5 w-5 text-red-400"
+            viewBox="0 0 20 20"
             fill="currentColor"
           >
-            <path 
-              fillRule="evenodd" 
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
-              clipRule="evenodd" 
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
             />
           </svg>
         </div>
@@ -665,31 +673,38 @@ Configure your Next.js app for production:
 const nextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
-  
+
   // Optimize images
   images: {
-    domains: ['example.com', 'cdn.example.com'],
-    formats: ['image/webp', 'image/avif'],
+    domains: ["example.com", "cdn.example.com"],
+    formats: ["image/webp", "image/avif"],
   },
-  
+
   // Compress output
   compress: true,
-  
+
   // Generate source maps in production
   productionBrowserSourceMaps: true,
-  
+
   // Configure headers
   async headers() {
     return [
       {
-        source: '/api/:path*',
+        source: "/api/:path*",
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
-          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
-        ]
-      }
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET,OPTIONS,PATCH,DELETE,POST,PUT",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value:
+              "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
+          },
+        ],
+      },
     ];
   },
 
@@ -697,8 +712,8 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/old-blog/:path*',
-        destination: '/blog/:path*',
+        source: "/old-blog/:path*",
+        destination: "/blog/:path*",
         permanent: true,
       },
     ];
@@ -730,6 +745,7 @@ Add type checking to your build process:
 Congratulations! You now have a solid foundation for building modern web applications with NextJS and TypeScript. Here are some recommended next steps:
 
 ### Essential Additions
+
 1. **Authentication**: Add NextAuth.js for user authentication
 2. **Database**: Integrate Prisma or another ORM for data management
 3. **Styling**: Explore advanced Tailwind CSS patterns or styled-components
@@ -737,6 +753,7 @@ Congratulations! You now have a solid foundation for building modern web applica
 5. **State Management**: Consider Zustand or Redux Toolkit for complex state
 
 ### Advanced Topics
+
 - **Server Components**: Leverage React Server Components in Next.js 13+
 - **Middleware**: Implement custom middleware for authentication and routing
 - **Internationalization**: Add multi-language support with next-i18next
@@ -744,6 +761,7 @@ Congratulations! You now have a solid foundation for building modern web applica
 - **CI/CD**: Set up automated testing and deployment pipelines
 
 ### Recommended Resources
+
 - [Next.js Documentation](https://nextjs.org/docs)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [React TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)
@@ -754,3 +772,5 @@ The combination of NextJS and TypeScript provides an excellent foundation for bu
 Start small, iterate quickly, and gradually adopt more advanced patterns as your application grows. The TypeScript compiler will be your guide, catching errors early and helping you refactor with confidence as your codebase evolves.
 
 export default ({ children }) => <div className="blog-post">{children}</div>;
+
+;
