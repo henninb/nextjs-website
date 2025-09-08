@@ -40,8 +40,8 @@ const WatchPage: NextPage = () => {
   const [apiCallCount, setApiCallCount] = useState(0);
   const [lastEventLog, setLastEventLog] = useState<string>("");
   const [pxScoreData, setPxScoreData] = useState<any[]>([]);
-  const [pxAllEvents, setPxAllEvents] = useState<any[]>([]);
   const [pxStatus, setPxStatus] = useState<string>("Waiting for PX events...");
+  const [videoDisabled, setVideoDisabled] = useState<boolean>(false);
 
   // Snackbar state for UX feedback
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -103,51 +103,23 @@ const WatchPage: NextPage = () => {
     pxSetupRef.current = true;
 
     const setupPxListener = () => {
-      console.log("🔧 Setting up PX event listener...");
-      setPxStatus("Setting up PX event listener...");
+      console.log("🔧 Setting up PX binary score listener...");
+      setPxStatus("Setting up PX binary score listener...");
 
-      // Page + script loading diagnostics
-      console.log("🕒 Document.readyState:", document.readyState);
-      const pxScript = document.getElementById(
-        "px-script",
-      ) as HTMLScriptElement | null;
+      // Check for PX script
+      const pxScript = document.getElementById("px-script") as HTMLScriptElement | null;
       if (pxScript) {
-        console.log("🔎 Found px-script element:", {
-          src: pxScript.getAttribute("src"),
-          async: pxScript.async,
-          defer: pxScript.defer,
-          dataset_app_id: (pxScript as any).dataset?.appId,
-          hasLoadListener: true,
-        });
-        // Attach runtime listeners for load/error if not already attached
-        pxScript.addEventListener("load", () => {
-          console.log("[PX-DIAG] px-script onload observed from watch page");
-        });
         pxScript.addEventListener("error", (e) => {
-          console.error(
-            "[PX-DIAG] px-script onerror observed from watch page",
-            e,
-          );
+          console.error("PX script failed to load", e);
           setPxStatus("PX script failed to load");
         });
-      } else {
-        console.warn("[PX-DIAG] px-script element not found in DOM");
       }
 
-      // Global resource error trap (helps catch network/script failures)
+      // Global resource error handler for PX
       const onResError = (ev: ErrorEvent) => {
         const tgt = ev.target as any;
-        if (
-          tgt &&
-          tgt.tagName === "SCRIPT" &&
-          typeof tgt.src === "string" &&
-          tgt.src.includes("px-cloud")
-        ) {
-          console.error(
-            "[PX-DIAG] Global script error for PX resource:",
-            tgt.src,
-            ev,
-          );
+        if (tgt?.tagName === "SCRIPT" && tgt.src?.includes("px-cloud")) {
+          console.error("PX script error:", tgt.src);
           setPxStatus("PX network/script error");
         }
       };
@@ -155,174 +127,42 @@ const WatchPage: NextPage = () => {
       pxErrorHandlerRef.current = onResError;
 
       // Set up the PX async init function
-      if ((window as any).PXjJ0cYtn9_asyncInit) {
-        console.warn(
-          "[PX-DIAG] PXjJ0cYtn9_asyncInit already exists on window; will overwrite to ensure logging",
-        );
-      }
       (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
-        console.log("🎯 PXjJ0cYtn9_asyncInit called with PX object:", px);
-        console.log("🔍 PX object type:", typeof px);
-        console.log(
-          "🔍 PX object keys:",
-          px ? Object.keys(px) : "null/undefined",
-        );
+        console.log("🎯 PX initialized for binary score monitoring");
 
         // Validate that the PX object has Events API
         if (!px || !px.Events || typeof px.Events.on !== "function") {
-          console.error("❌ PX object does not have Events API:", px);
-          console.log("❌ px.Events:", px ? px.Events : "px is null/undefined");
-          console.log(
-            "❌ px.Events.on type:",
-            px && px.Events ? typeof px.Events.on : "N/A",
-          );
-          setPxStatus(
-            "PX object missing Events API - score monitoring unavailable",
-          );
+          console.error("❌ PX Events API not available");
+          setPxStatus("PX Events API not available");
           return;
         }
 
-        console.log("✅ PX object validation passed, Events API available");
-        console.log("🔍 Events object:", px.Events);
-        console.log("🔍 Events.on function:", px.Events.on);
+        console.log("✅ PX Events API available");
 
-        // Verify we are in a browser DOM context and mark it
-        try {
-          console.log("[PX-DIAG] Runtime env:", {
-            hasWindow: typeof window === "object",
-            hasDocument: typeof document === "object",
-            isBrowser:
-              typeof window !== "undefined" &&
-              !!(document as any)?.createElement,
-            location: (window as any)?.location?.href,
-          });
-          const markerId = "px-diag-marker";
-          let marker = document.getElementById(markerId);
-          if (!marker) {
-            marker = document.createElement("div");
-            marker.id = markerId;
-            marker.setAttribute("data-px-diag", "created");
-            marker.setAttribute(
-              "data-client-uuid",
-              String(px.ClientUuid || ""),
-            );
-            (marker as any).style = "display:none";
-            document.body.appendChild(marker);
-            console.log("[PX-DIAG] Inserted hidden DOM marker", marker);
-          } else {
-            console.log("[PX-DIAG] DOM marker already present", marker);
-          }
-        } catch (e) {
-          console.log("[PX-DIAG] Browser env instrumentation failed:", e);
-        }
 
-        // Confirm async init function is present on window
-        try {
-          const desc = Object.getOwnPropertyDescriptor(
-            window as any,
-            "PXjJ0cYtn9_asyncInit",
-          );
-          console.log("[PX-DIAG] asyncInit on window:", {
-            exists: !!(window as any).PXjJ0cYtn9_asyncInit,
-            type: typeof (window as any).PXjJ0cYtn9_asyncInit,
-            configurable: desc?.configurable,
-            writable: desc?.writable,
-            enumerable: desc?.enumerable,
-          });
-        } catch (e) {
-          console.log("[PX-DIAG] Could not inspect asyncInit descriptor:", e);
-        }
+        setPxStatus("PX initialized - monitoring binary score events...");
 
-        // Instrument Events.on/off to log listener registrations
-        try {
-          if (!(px.Events as any).__pxInstrumented) {
-            const registry: Record<string, number> = {};
-            const originalOn = px.Events.on.bind(px.Events);
-            const originalOff = px.Events.off
-              ? px.Events.off.bind(px.Events)
-              : undefined;
-            (px.Events as any).__pxListenerRegistry = registry;
-            (px.Events as any).__pxOriginalOn = originalOn;
-            (px.Events as any).__pxOriginalOff = originalOff;
-            px.Events.on = function (type: string, handler: any) {
-              console.log("[PX-DIAG] Events.on called", {
-                type,
-                handlerType: typeof handler,
-              });
-              registry[type] = (registry[type] || 0) + 1;
-              try {
-                return originalOn(type, handler);
-              } finally {
-                console.log("[PX-DIAG] Listener registered", {
-                  type,
-                  count: registry[type],
-                });
-              }
-            } as any;
-            if (originalOff) {
-              px.Events.off = function (type: string, handler?: any) {
-                console.log("[PX-DIAG] Events.off called", {
-                  type,
-                  handlerType: typeof handler,
-                });
-                const res = (originalOff as any)(type, handler);
-                if (registry[type])
-                  registry[type] = Math.max(0, registry[type] - 1);
-                console.log("[PX-DIAG] Listener removed", {
-                  type,
-                  count: registry[type] || 0,
-                });
-                return res;
-              } as any;
-            }
-            (px.Events as any).__pxInstrumented = true;
-            console.log("[PX-DIAG] Instrumented Events.on/off for diagnostics");
-          } else {
-            console.log("[PX-DIAG] Events already instrumented");
-          }
-        } catch (e) {
-          console.log("[PX-DIAG] Could not instrument Events.on/off:", e);
-        }
+        console.log("🎯 Setting up binary score listener...");
 
-        setPxStatus("PX initialized - listening for all events...");
-
-        // CRITICAL: First, let's see what events PX actually supports
-        console.log(
-          "🔍 DEBUGGING: Available PX Events methods:",
-          Object.keys(px.Events),
-        );
-        console.log("🔍 DEBUGGING: PX object inspection:", px);
-
-        // Try to trigger a test score manually to see if the event works
-        if (px.Events.trigger) {
-          console.log("🧪 TESTING: Manually triggering test score event");
-          try {
-            px.Events.trigger("score", "test-score", "binary");
-          } catch (e) {
-            console.log("🧪 Manual trigger failed:", e);
-          }
-        }
-
-        // CRITICAL: Set up the exact score listener as per PX documentation
-        console.log(
-          "🎯 Setting up OFFICIAL PX score listener with (score, kind) signature...",
-        );
-
-        // Try multiple variations to catch any score event
+        // Binary score event handler
         const scoreHandler = function (score, kind) {
-          console.log(
-            `🏆 OFFICIAL SCORE EVENT FIRED!!! - Score: ${score}, Kind: ${kind}`,
-          );
-          console.log(
-            `🏆 Score type: ${typeof score}, Kind type: ${typeof kind}`,
-          );
-          console.log(
-            `🏆 Arguments length: ${arguments.length}, All arguments:`,
-            Array.from(arguments),
-          );
+          console.log(`🎯 PX Score Event - Score: ${score}, Kind: ${kind}`);
 
           if (kind === "binary") {
-            console.log("🚫 BINARY BLOCK DECISION DETECTED:", score);
+            console.log("🚫 Binary block decision:", score);
+
+            // Check if score is 1 (handle both string and number)
+            if (score == 1) {
+              console.log("🚫 Disabling video due to binary score of 1");
+              console.log("🚫 Setting videoDisabled to true");
+              setVideoDisabled(true);
+              setIsPlaying(false); // Also stop playback
+              
+              // Also pause the video element directly to be sure
+              if (videoRef.current) {
+                videoRef.current.pause();
+              }
+            }
 
             const scoreEvent = {
               timestamp: new Date().toISOString(),
@@ -339,375 +179,64 @@ const WatchPage: NextPage = () => {
             const statusMessage = `BINARY BLOCK DECISION: ${score} - ${new Date().toLocaleTimeString()}`;
             setPxStatus(statusMessage);
             showToast(`🚫 PX Block Decision: ${score}`);
-          } else {
-            console.log(
-              `📊 Non-binary score event - Score: ${score}, Kind: ${kind}`,
-            );
           }
         };
 
         px.Events.on("score", scoreHandler);
-        try {
-          const reg = (px.Events as any).__pxListenerRegistry || {};
-          console.log("[PX-DIAG] Post-registration listener counts:", reg);
-          console.log(
-            "[PX-DIAG] Score listener present?",
-            (reg["score"] || 0) > 0,
-          );
-        } catch {}
 
-        // Also explicitly map 'risk' to a score-like handler if provided by SDK
-        try {
-          px.Events.on("risk", function (...args: any[]) {
-            console.log("🧭 RISK event observed; arguments:", args);
-            // Heuristic: some SDKs emit [token, cookieName, score, threshold]
-            const maybeScore = args?.[2];
-            const maybeThreshold = args?.[3];
-            if (maybeScore !== undefined) {
-              const scoreEvent = {
-                timestamp: new Date().toISOString(),
-                kind: "risk",
-                score: maybeScore,
-                threshold: maybeThreshold,
-                id: Date.now() + Math.random(),
-              } as any;
-              console.log("🧭 Mapped risk->score candidate:", scoreEvent);
-              setPxScoreData((prev) => [scoreEvent, ...prev.slice(0, 9)]);
-              setPxStatus(
-                `Risk score observed: ${maybeScore} (thr=${maybeThreshold ?? "?"}) - ${new Date().toLocaleTimeString()}`,
-              );
-            }
-          });
-          console.log("✅ Explicit 'risk' to score mapping listener installed");
-        } catch (e) {
-          console.log("ℹ️ Could not attach explicit 'risk' listener:", e);
-        }
-
-        // Helper function to log and store any PX event
-        const logPxEvent = (eventType: string, ...args: any[]) => {
-          console.log(`🚨 PX EVENT FIRED: ${eventType}`);
-          console.log(`🚨 Arguments (${args.length}):`, args);
-
-          const eventData = {
-            timestamp: new Date().toISOString(),
-            type: eventType,
-            args: args,
-            id: Date.now() + Math.random(),
-          };
-
-          console.log("📦 Created event object:", eventData);
-
-          // Store all events for debugging
-          setPxAllEvents((prev) => {
-            const newData = [eventData, ...prev.slice(0, 19)]; // Keep last 20 events
-            return newData;
-          });
-
-          // Special handling for score events (case insensitive)
-          const eventTypeLower = eventType.toLowerCase();
-
-          if (eventTypeLower === "score" && args.length >= 2) {
-            const [score, kind] = args;
-            console.log(`🎯 SCORE EVENT - Score: ${score}, Kind: ${kind}`);
-
-            // Check for binary kind (case insensitive)
-            const kindStr = String(kind).toLowerCase();
-            if (
-              kindStr === "binary" ||
-              kindStr === "block" ||
-              kindStr === "blocked"
-            ) {
-              console.log("✅ Processing binary score:", score);
-
-              const scoreEvent = {
-                timestamp: new Date().toISOString(),
-                kind: kind,
-                score: score,
-                id: Date.now() + Math.random(),
-              };
-
-              setPxScoreData((prev) => {
-                const newData = [scoreEvent, ...prev.slice(0, 9)];
-                return newData;
-              });
-
-              const statusMessage = `Binary score captured: ${score} - ${new Date().toLocaleTimeString()}`;
-              setPxStatus(statusMessage);
-              showToast(`PX Binary Score: ${score}`);
-            }
-          }
-
-          // Also check for direct binary/block events
-          if (
-            eventTypeLower === "binary" ||
-            eventTypeLower === "block" ||
-            eventTypeLower === "blocked"
-          ) {
-            console.log(
-              `🚫 DIRECT BLOCK EVENT - Type: ${eventType}, Args:`,
-              args,
-            );
-
-            const blockEvent = {
-              timestamp: new Date().toISOString(),
-              kind: eventType,
-              score: args[0] || "BLOCKED",
-              id: Date.now() + Math.random(),
-            };
-
-            setPxScoreData((prev) => {
-              const newData = [blockEvent, ...prev.slice(0, 9)];
-              return newData;
-            });
-
-            const statusMessage = `Block event captured: ${eventType} - ${new Date().toLocaleTimeString()}`;
-            setPxStatus(statusMessage);
-            showToast(`PX Block Event: ${eventType}`);
-          }
-
-          // Update status with latest event
-          const statusMessage = `Last event: ${eventType} - ${new Date().toLocaleTimeString()}`;
-          setPxStatus(statusMessage);
-        };
-
-        try {
-          console.log("🔌 Setting up comprehensive PX event listeners...");
-
-          // List of common PX event types to listen for (including case variations)
-          // EXCLUDE 'score' to prevent overriding our official score listener!
-          const eventTypes = [
-            // "score", "Score", "SCORE", // REMOVED - using official listener above
-            "risk",
-            "Risk",
-            "RISK",
-            "challenge",
-            "Challenge",
-            "CHALLENGE",
-            "block",
-            "Block",
-            "BLOCK",
-            "captcha",
-            "Captcha",
-            "CAPTCHA",
-            "detection",
-            "Detection",
-            "DETECTION",
-            "behavioral",
-            "Behavioral",
-            "BEHAVIORAL",
-            "fingerprint",
-            "Fingerprint",
-            "FINGERPRINT",
-            "telemetry",
-            "Telemetry",
-            "TELEMETRY",
-            "activity",
-            "Activity",
-            "ACTIVITY",
-            "violation",
-            "Violation",
-            "VIOLATION",
-            "anomaly",
-            "Anomaly",
-            "ANOMALY",
-            "threat",
-            "Threat",
-            "THREAT",
-            "security",
-            "Security",
-            "SECURITY",
-            "binary",
-            "Binary",
-            "BINARY",
-            "blocked",
-            "Blocked",
-            "BLOCKED",
-          ];
-
-          // Set up listeners for all known event types
-          eventTypes.forEach((eventType) => {
-            try {
-              console.log(`🎯 Setting up listener for: ${eventType}`);
-              px.Events.on(eventType, function (...args: any[]) {
-                logPxEvent(eventType, ...args);
-              });
-            } catch (err) {
-              console.log(
-                `⚠️ Could not set up listener for ${eventType}:`,
-                err,
-              );
-            }
-          });
-
-          // Also try to intercept any other events by monkey-patching the trigger method
-          if (px.Events.trigger) {
-            const originalTrigger = px.Events.trigger;
-            px.Events.trigger = function (eventType: string, ...args: any[]) {
-              console.log(`🔥 PX TRIGGER INTERCEPTED: ${eventType}`, args);
-              logPxEvent(`trigger:${eventType}`, ...args);
-              return originalTrigger.apply(this, arguments);
-            };
-            console.log(
-              "✅ Monkey-patched Events.trigger for complete event capture",
-            );
-          }
-
-          // Try to subscribe to channels if supported by this SDK variant
-          try {
-            const hasChannels =
-              px.Events && typeof (px.Events as any).channels === "function";
-            const hasSubscribe =
-              px.Events && typeof (px.Events as any).subscribe === "function";
-            console.log("🔎 Channels support:", { hasChannels, hasSubscribe });
-            if (hasChannels) {
-              let channelsInfo: any;
-              try {
-                channelsInfo = (px.Events as any).channels();
-              } catch (err) {
-                console.log("ℹ️ Calling Events.channels() failed:", err);
-              }
-              console.log("🔎 Events.channels() returned:", channelsInfo);
-            }
-            if (hasSubscribe) {
-              try {
-                (px.Events as any).subscribe("*", function (...args: any[]) {
-                  console.log("📡 CHANNEL subscribe('*') event:", args);
-                  logPxEvent("channel:*", ...args);
-                });
-                console.log(
-                  "✅ Subscribed to channel wildcard via Events.subscribe('*')",
-                );
-              } catch (err) {
-                console.log(
-                  "ℹ️ Channel wildcard subscription not supported:",
-                  err,
-                );
-              }
-            }
-          } catch (err) {
-            console.log("ℹ️ Channel diagnostics not available:", err);
-          }
-
-          // Try to listen for all events using a wildcard or generic listener if available
-          try {
-            px.Events.on("*", function (eventType: string, ...args: any[]) {
-              logPxEvent(`wildcard:${eventType}`, ...args);
-            });
-            console.log("✅ Wildcard event listener set up");
-          } catch (err) {
-            console.log("ℹ️ Wildcard listener not supported:", err);
-          }
-
-          console.log("✅ Comprehensive PX event listener setup complete");
-          console.log("🔍 Now monitoring for all PX events...");
-        } catch (error) {
-          console.error("❌ Error setting up PX event listeners:", error);
-          setPxStatus("Error setting up PX event listeners");
-        }
+        console.log("✅ PX binary score monitoring setup complete");
       };
 
-      // Check if PX is already loaded (try different variations, but only use ones with Events API)
-      console.log("🔍 Checking for existing PX objects...");
-
+      // Check if PX is already loaded
       const pxCandidates = [
-        { name: "window.px", obj: (window as any).px },
-        { name: "window.PX", obj: (window as any).PX },
-        { name: "window.PXjJ0cYtn9", obj: (window as any).PXjJ0cYtn9 },
-        { name: "window._PXjJ0cYtn9", obj: (window as any)._PXjJ0cYtn9 },
+        (window as any).px,
+        (window as any).PX, 
+        (window as any).PXjJ0cYtn9,
+        (window as any)._PXjJ0cYtn9,
       ];
 
-      console.log("🔍 PX candidates found:");
-      pxCandidates.forEach((candidate) => {
-        console.log(
-          `  ${candidate.name}:`,
-          !!candidate.obj,
-          candidate.obj ? typeof candidate.obj : "undefined",
-        );
-        if (candidate.obj) {
-          console.log(`    Keys:`, Object.keys(candidate.obj));
-          console.log(`    Has Events:`, !!candidate.obj.Events);
-          console.log(
-            `    Events.on type:`,
-            candidate.obj.Events ? typeof candidate.obj.Events.on : "N/A",
-          );
-        }
-      });
-
-      const validCandidates = pxCandidates
-        .filter((c) => c.obj)
-        .map((c) => c.obj);
+      const validCandidates = pxCandidates.filter((c) => c);
       const pxObject = validCandidates.find(
         (px) => px && px.Events && typeof px.Events.on === "function",
       );
 
       if (pxObject) {
-        console.log(
-          "✅ Found PX object with Events API, calling asyncInit with:",
-          pxObject,
-        );
-        console.log("🔍 Events methods:", Object.keys(pxObject.Events));
+        console.log("✅ Found PX object with Events API");
         (window as any).PXjJ0cYtn9_asyncInit(pxObject);
       } else {
-        console.log(
-          "⏳ No PX object with Events API found yet, waiting for async init callback",
-        );
-        if (validCandidates.length > 0) {
-          console.log(
-            "📋 Found PX objects but without Events API:",
-            validCandidates,
-          );
-        } else {
-          console.log("📋 No PX objects found at all");
-        }
+        console.log("⏳ Waiting for PX to load...");
 
-        // Start a bounded retry loop to detect PX after script loads
-        const maxAttempts = 120; // ~60s at 500ms
+        // Retry detection for PX after script loads
+        const maxAttempts = 120; 
         if (!pxRetryIntervalRef.current) {
-          console.log("[PX-DIAG] Starting PX detection retry loop");
           pxRetryAttemptsRef.current = 0;
           pxRetryIntervalRef.current = setInterval(() => {
             pxRetryAttemptsRef.current += 1;
-            const candidates = [
-              (window as any).px,
-              (window as any).PX,
-              (window as any).PXjJ0cYtn9,
-              (window as any)._PXjJ0cYtn9,
-            ];
-            const found = candidates.find(
+            const found = pxCandidates.find(
               (p) => p && p.Events && typeof p.Events.on === "function",
             );
             if (found) {
-              console.log(
-                `[PX-DIAG] PX detected on attempt #${pxRetryAttemptsRef.current}; initializing...`,
-                found,
-              );
-              try {
-                (window as any).PXjJ0cYtn9_asyncInit(found);
-              } finally {
-                if (pxRetryIntervalRef.current)
-                  clearInterval(pxRetryIntervalRef.current);
+              console.log("✅ PX detected, initializing...");
+              (window as any).PXjJ0cYtn9_asyncInit(found);
+              if (pxRetryIntervalRef.current) {
+                clearInterval(pxRetryIntervalRef.current);
                 pxRetryIntervalRef.current = null;
               }
-            } else if (pxRetryAttemptsRef.current % 10 === 0) {
-              console.log(
-                `[PX-DIAG] Still waiting for PX (attempt ${pxRetryAttemptsRef.current}/${maxAttempts})`,
-              );
-            }
-            if (pxRetryAttemptsRef.current >= maxAttempts) {
-              if (pxRetryIntervalRef.current)
+            } else if (pxRetryAttemptsRef.current >= maxAttempts) {
+              if (pxRetryIntervalRef.current) {
                 clearInterval(pxRetryIntervalRef.current);
-              pxRetryIntervalRef.current = null;
-              console.warn("[PX-DIAG] PX not detected after retry window");
-              setPxStatus("PX not detected after waiting");
+                pxRetryIntervalRef.current = null;
+              }
+              console.warn("PX not detected after waiting");
+              setPxStatus("PX not detected");
             }
           }, 500);
         }
       }
     };
 
-    console.log("🚀 Starting PX listener setup...");
+    console.log("🚀 Starting PX binary score monitoring...");
     setupPxListener();
-    console.log("✅ PX listener setup initiated");
 
     return () => {
       console.log("🧹 Cleaning up PX async init function...");
@@ -744,14 +273,6 @@ const WatchPage: NextPage = () => {
     }
   }, [pxScoreData]);
 
-  // Debug: Log whenever pxAllEvents changes
-  useEffect(() => {
-    console.log("🎯 pxAllEvents state changed:", pxAllEvents);
-    console.log("🎯 pxAllEvents length:", pxAllEvents.length);
-    if (pxAllEvents.length > 0) {
-      console.log("🎯 Latest PX event:", pxAllEvents[0]);
-    }
-  }, [pxAllEvents]);
 
   // Debug: Log whenever pxStatus changes
   useEffect(() => {
@@ -999,13 +520,15 @@ const WatchPage: NextPage = () => {
             backgroundColor: "#000",
             borderRadius: "8px",
             overflow: "hidden",
+            minHeight: videoDisabled ? "400px" : "auto",
+            height: videoDisabled ? "400px" : "auto",
           }}
         >
           <video
             ref={videoRef}
             width="100%"
             height="auto"
-            style={{ display: showAd ? "none" : "block", maxHeight: "600px" }}
+            style={{ display: showAd || videoDisabled ? "none" : "block", maxHeight: "600px" }}
             onClick={isPlaying ? handlePause : handlePlay}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
@@ -1072,6 +595,44 @@ const WatchPage: NextPage = () => {
             </div>
           )}
 
+          {/* Technical Issue Overlay */}
+          {videoDisabled && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                backgroundColor: "#1a1a1a",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "white",
+                minHeight: "400px",
+                zIndex: 1000,
+              }}
+            >
+              <div style={{ fontSize: "48px", marginBottom: "30px" }}>
+                ⚠️
+              </div>
+              <div style={{ fontSize: "24px", marginBottom: "20px", fontWeight: "bold" }}>
+                Technical Issue Detected
+              </div>
+              <div style={{ fontSize: "16px", textAlign: "center", maxWidth: "400px", lineHeight: "1.5" }}>
+                We're experiencing technical difficulties with video playback. 
+                Our team has been notified and is working to resolve this issue.
+              </div>
+              <div style={{ fontSize: "14px", marginTop: "20px", color: "#999" }}>
+                Please try refreshing the page or check back later.
+              </div>
+              <div style={{ fontSize: "12px", marginTop: "10px", color: "#666" }}>
+                [DEBUG: Video disabled due to binary score = 1]
+              </div>
+            </div>
+          )}
+
           {/* Video Controls */}
           <div
             style={{
@@ -1086,13 +647,15 @@ const WatchPage: NextPage = () => {
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button
-                onClick={isPlaying ? handlePause : handlePlay}
+                onClick={videoDisabled ? undefined : (isPlaying ? handlePause : handlePlay)}
+                disabled={videoDisabled}
                 style={{
                   background: "none",
                   border: "none",
-                  color: "white",
-                  cursor: "pointer",
+                  color: videoDisabled ? "#666" : "white",
+                  cursor: videoDisabled ? "not-allowed" : "pointer",
                   fontSize: "24px",
+                  opacity: videoDisabled ? 0.5 : 1,
                 }}
               >
                 {isPlaying ? "⏸️" : "▶️"}
@@ -1123,17 +686,19 @@ const WatchPage: NextPage = () => {
               </span>
 
               <button
-                onClick={handleToggleMute}
+                onClick={videoDisabled ? undefined : handleToggleMute}
+                disabled={videoDisabled}
                 aria-pressed={isMuted}
                 aria-label={isMuted ? "Unmute" : "Mute"}
                 title={isMuted ? "Unmute" : "Mute"}
                 style={{
                   background: "none",
                   border: "none",
-                  color: "white",
-                  cursor: "pointer",
+                  color: videoDisabled ? "#666" : "white",
+                  cursor: videoDisabled ? "not-allowed" : "pointer",
                   fontSize: "22px",
                   marginLeft: "8px",
+                  opacity: videoDisabled ? 0.5 : 1,
                 }}
               >
                 {isMuted ? "🔇" : "🔊"}
@@ -1510,137 +1075,6 @@ const WatchPage: NextPage = () => {
           </div>
         </div>
 
-        {/* All PX Events Monitor */}
-        <div
-          style={{
-            marginTop: "30px",
-            padding: "15px",
-            backgroundColor: "#d1ecf1",
-            borderRadius: "8px",
-            border: "1px solid #bee5eb",
-          }}
-        >
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "18px" }}>
-            All PX Events Monitor (Debug)
-          </h3>
-
-          <div style={{ marginBottom: "15px" }}>
-            <strong>Status:</strong>{" "}
-            <span style={{ color: "#0c5460" }}>{pxStatus}</span>
-          </div>
-
-          <div style={{ marginBottom: "15px" }}>
-            <strong>Total Events Captured:</strong> {pxAllEvents.length}
-            <div
-              style={{ fontSize: "12px", color: "#0c5460", marginTop: "5px" }}
-            >
-              This includes ALL PX events, not just binary scores
-            </div>
-          </div>
-
-          {pxAllEvents.length > 0 ? (
-            <div>
-              <h4 style={{ margin: "15px 0 10px 0", fontSize: "16px" }}>
-                Recent Events (All Types):
-              </h4>
-              <div
-                style={{
-                  maxHeight: "300px",
-                  overflowY: "auto",
-                  border: "1px solid #b8daff",
-                  borderRadius: "4px",
-                  padding: "10px",
-                  backgroundColor: "#fff",
-                }}
-              >
-                {pxAllEvents.slice(0, 10).map((event) => (
-                  <div
-                    key={event.id}
-                    style={{
-                      marginBottom: "10px",
-                      padding: "10px",
-                      backgroundColor: "#f8f9fa",
-                      borderRadius: "4px",
-                      borderLeft: `4px solid ${event.type === "score" ? "#ff6b6b" : "#74c0fc"}`,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#666",
-                        marginBottom: "5px",
-                      }}
-                    >
-                      {event.timestamp}
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        marginBottom: "5px",
-                        color: "#0c5460",
-                      }}
-                    >
-                      Event Type: {event.type}
-                    </div>
-                    <div>
-                      <strong>Arguments ({event.args.length}):</strong>
-                      <pre
-                        style={{
-                          backgroundColor: "#2d3436",
-                          color: "#ddd",
-                          padding: "8px",
-                          borderRadius: "4px",
-                          fontSize: "11px",
-                          marginTop: "5px",
-                          overflow: "auto",
-                          maxHeight: "150px",
-                        }}
-                      >
-                        {JSON.stringify(event.args, null, 2)}
-                      </pre>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                padding: "20px",
-                textAlign: "center",
-                backgroundColor: "#f8f9fa",
-                borderRadius: "4px",
-                color: "#6c757d",
-              }}
-            >
-              <div style={{ fontSize: "16px", marginBottom: "10px" }}>
-                ⏳ No PX events detected yet
-              </div>
-              <div style={{ fontSize: "14px" }}>
-                This could mean:
-                <br />• PX is not firing events for normal browsing behavior
-                <br />• Try using the test buttons above to trigger suspicious
-                behavior
-                <br />• PX might be configured differently than expected
-              </div>
-            </div>
-          )}
-
-          <div
-            style={{ marginTop: "15px", fontSize: "14px", color: "#0c5460" }}
-          >
-            <p>
-              🔍 <strong>All PX Event Monitoring:</strong>
-              <br />
-              This panel shows ALL events fired by PX, including score, risk,
-              challenge, and other event types.
-              <br />
-              • Events are captured in real-time using comprehensive listeners
-              <br />• Binary score events (if any) will appear here AND in the
-              dedicated panel below
-            </p>
-          </div>
-        </div>
 
         {/* PX Binary Score Monitor */}
         <div
@@ -1666,11 +1100,9 @@ const WatchPage: NextPage = () => {
             <div
               style={{ fontSize: "12px", color: "#856404", marginTop: "5px" }}
             >
-              {pxScoreData.length === 0 && pxAllEvents.length === 0
-                ? "No events detected - PX may not be firing events yet"
-                : pxScoreData.length === 0 && pxAllEvents.length > 0
-                  ? `No binary events, but ${pxAllEvents.length} other PX events detected`
-                  : `${pxScoreData.length} binary score events captured`}
+              {pxScoreData.length === 0
+                ? "No binary score events detected yet"
+                : `${pxScoreData.length} binary score events captured`}
             </div>
           </div>
 
@@ -1768,32 +1200,13 @@ const WatchPage: NextPage = () => {
               }}
             >
               <div style={{ fontSize: "16px", marginBottom: "10px" }}>
-                {pxAllEvents.length === 0
-                  ? "🔍 No PX events detected"
-                  : "⏳ No binary score events detected"}
+                🔍 No binary score events detected
               </div>
               <div style={{ fontSize: "14px" }}>
-                {pxAllEvents.length === 0 ? (
-                  <>
-                    PX may not be firing events yet. Try:
-                    <br />• Using the test buttons above to trigger suspicious
-                    behavior
-                    <br />• Refreshing the page and trying again
-                    <br />• PX might be configured to only fire events under
-                    specific conditions
-                  </>
-                ) : (
-                  <>
-                    PX is working ({pxAllEvents.length} events detected) but no
-                    binary scores yet.
-                    <br />• Binary events only fire when PX determines blocking
-                    action is needed
-                    <br />• Try the test buttons above to trigger more
-                    suspicious behavior
-                    <br />• Normal browsing typically doesn't generate binary
-                    events
-                  </>
-                )}
+                Binary events only fire when PX determines blocking action is needed.
+                <br />• Try the test buttons above to trigger suspicious behavior
+                <br />• Normal browsing typically doesn't generate binary events
+                <br />• PX may be configured to only fire events under specific conditions
               </div>
             </div>
           )}
