@@ -107,7 +107,9 @@ const WatchPage: NextPage = () => {
       setPxStatus("Setting up PX binary score listener...");
 
       // Check for PX script
-      const pxScript = document.getElementById("px-script") as HTMLScriptElement | null;
+      const pxScript = document.getElementById(
+        "px-script",
+      ) as HTMLScriptElement | null;
       if (pxScript) {
         pxScript.addEventListener("error", (e) => {
           console.error("PX script failed to load", e);
@@ -139,7 +141,6 @@ const WatchPage: NextPage = () => {
 
         console.log("✅ PX Events API available");
 
-
         setPxStatus("PX initialized - monitoring binary score events...");
 
         console.log("🎯 Setting up binary score listener...");
@@ -157,7 +158,7 @@ const WatchPage: NextPage = () => {
               console.log("🚫 Setting videoDisabled to true");
               setVideoDisabled(true);
               setIsPlaying(false); // Also stop playback
-              
+
               // Also pause the video element directly to be sure
               if (videoRef.current) {
                 videoRef.current.pause();
@@ -190,7 +191,7 @@ const WatchPage: NextPage = () => {
       // Check if PX is already loaded
       const pxCandidates = [
         (window as any).px,
-        (window as any).PX, 
+        (window as any).PX,
         (window as any).PXjJ0cYtn9,
         (window as any)._PXjJ0cYtn9,
       ];
@@ -207,7 +208,7 @@ const WatchPage: NextPage = () => {
         console.log("⏳ Waiting for PX to load...");
 
         // Retry detection for PX after script loads
-        const maxAttempts = 120; 
+        const maxAttempts = 120;
         if (!pxRetryIntervalRef.current) {
           pxRetryAttemptsRef.current = 0;
           pxRetryIntervalRef.current = setInterval(() => {
@@ -272,7 +273,6 @@ const WatchPage: NextPage = () => {
       console.log("📊 Latest score event:", pxScoreData[0]);
     }
   }, [pxScoreData]);
-
 
   // Debug: Log whenever pxStatus changes
   useEffect(() => {
@@ -528,7 +528,10 @@ const WatchPage: NextPage = () => {
             ref={videoRef}
             width="100%"
             height="auto"
-            style={{ display: showAd || videoDisabled ? "none" : "block", maxHeight: "600px" }}
+            style={{
+              display: showAd || videoDisabled ? "none" : "block",
+              maxHeight: "600px",
+            }}
             onClick={isPlaying ? handlePause : handlePlay}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
@@ -614,20 +617,35 @@ const WatchPage: NextPage = () => {
                 zIndex: 1000,
               }}
             >
-              <div style={{ fontSize: "48px", marginBottom: "30px" }}>
-                ⚠️
-              </div>
-              <div style={{ fontSize: "24px", marginBottom: "20px", fontWeight: "bold" }}>
+              <div style={{ fontSize: "48px", marginBottom: "30px" }}>⚠️</div>
+              <div
+                style={{
+                  fontSize: "24px",
+                  marginBottom: "20px",
+                  fontWeight: "bold",
+                }}
+              >
                 Technical Issue Detected
               </div>
-              <div style={{ fontSize: "16px", textAlign: "center", maxWidth: "400px", lineHeight: "1.5" }}>
-                We're experiencing technical difficulties with video playback. 
+              <div
+                style={{
+                  fontSize: "16px",
+                  textAlign: "center",
+                  maxWidth: "400px",
+                  lineHeight: "1.5",
+                }}
+              >
+                We're experiencing technical difficulties with video playback.
                 Our team has been notified and is working to resolve this issue.
               </div>
-              <div style={{ fontSize: "14px", marginTop: "20px", color: "#999" }}>
+              <div
+                style={{ fontSize: "14px", marginTop: "20px", color: "#999" }}
+              >
                 Please try refreshing the page or check back later.
               </div>
-              <div style={{ fontSize: "12px", marginTop: "10px", color: "#666" }}>
+              <div
+                style={{ fontSize: "12px", marginTop: "10px", color: "#666" }}
+              >
                 [DEBUG: Video disabled due to binary score = 1]
               </div>
             </div>
@@ -647,7 +665,13 @@ const WatchPage: NextPage = () => {
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button
-                onClick={videoDisabled ? undefined : (isPlaying ? handlePause : handlePlay)}
+                onClick={
+                  videoDisabled
+                    ? undefined
+                    : isPlaying
+                      ? handlePause
+                      : handlePlay
+                }
                 disabled={videoDisabled}
                 style={{
                   background: "none",
@@ -1075,7 +1099,6 @@ const WatchPage: NextPage = () => {
           </div>
         </div>
 
-
         {/* PX Binary Score Monitor */}
         <div
           style={{
@@ -1203,10 +1226,13 @@ const WatchPage: NextPage = () => {
                 🔍 No binary score events detected
               </div>
               <div style={{ fontSize: "14px" }}>
-                Binary events only fire when PX determines blocking action is needed.
-                <br />• Try the test buttons above to trigger suspicious behavior
+                Binary events only fire when PX determines blocking action is
+                needed.
+                <br />• Try the test buttons above to trigger suspicious
+                behavior
                 <br />• Normal browsing typically doesn't generate binary events
-                <br />• PX may be configured to only fire events under specific conditions
+                <br />• PX may be configured to only fire events under specific
+                conditions
               </div>
             </div>
           )}

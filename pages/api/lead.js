@@ -13,6 +13,7 @@ const LeadSchema = z.object({
   color: z.string().trim().min(1).max(30),
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email(),
+  phone: z.string().trim().max(20).optional(),
 });
 
 function sanitizeLead(input) {
@@ -21,6 +22,9 @@ function sanitizeLead(input) {
     color: InputSanitizer.sanitizeText(String(input.color || "")),
     name: InputSanitizer.sanitizeText(String(input.name || "")),
     email: InputSanitizer.sanitizeEmail(String(input.email || "")),
+    phone: input.phone
+      ? InputSanitizer.sanitizeText(String(input.phone))
+      : null,
   };
 }
 
@@ -54,13 +58,14 @@ export default async function POST(request) {
     );
   }
 
-  const { vin, color, name, email } = sanitizeLead(parse.data);
+  const { vin, color, name, email, phone } = sanitizeLead(parse.data);
 
   const data = {
     vin,
     color,
     name,
     email,
+    phone,
   };
 
   // Do not log cookies or header values

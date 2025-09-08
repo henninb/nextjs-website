@@ -35,17 +35,6 @@ export default async function handler(req) {
     });
   }
 
-  const apiKey = process.env.WEATHER_API_KEY;
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: "Weather service misconfigured" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-  }
-
   const key = rateLimitKey(req);
   if (!checkRateLimit(key)) {
     return new Response(
@@ -58,12 +47,19 @@ export default async function handler(req) {
   }
 
   try {
-    const url = new URL("https://api.weather.com/v2/pws/observations/current");
+    // Plymouth, MN (55303) coordinates
+    const latitude = 45.0105;
+    const longitude = -93.4556;
+    
+    const url = new URL("https://api.open-meteo.com/v1/forecast");
     const params = {
-      apiKey,
-      units: "e",
-      stationId: "KMNCOONR65",
-      format: "json",
+      latitude,
+      longitude,
+      current: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,pressure_msl",
+      temperature_unit: "fahrenheit",
+      wind_speed_unit: "mph",
+      precipitation_unit: "inch",
+      timezone: "America/Chicago",
     };
     url.search = new URLSearchParams(params).toString();
 
@@ -86,7 +82,24 @@ export default async function handler(req) {
     }
 
     const data = await apiResponse.json();
-    const res = NextResponse.json(data);
+    
+    // Transform Open-Meteo data to match expected format
+    const transformedData = {
+      observations: [{
+        obsTimeLocal: data.current.time,
+        imperial: {
+          temp: Math.round(data.current.temperature_2m),
+          windChill: Math.round(data.current.apparent_temperature),
+          pressure: (data.current.pressure_msl * 0.02953).toFixed(2), // Convert hPa to inHg
+        },
+        humidity: data.current.relative_humidity_2m,
+        windSpeed: Math.round(data.current.wind_speed_10m),
+        precipitation: data.current.precipitation,
+        weatherCode: data.current.weather_code,
+      }]
+    };
+    
+    const res = NextResponse.json(transformedData);
     res.headers.set("Cache-Control", "no-store");
     return res;
   } catch (err) {

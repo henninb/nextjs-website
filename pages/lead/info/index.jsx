@@ -1,119 +1,333 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Breadcrumbs,
+  Link,
+  Grid,
+  Card,
+  CardContent,
+  CircularProgress,
+  InputAdornment,
+} from "@mui/material";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import PersonIcon from "@mui/icons-material/Person";
+import EmailIcon from "@mui/icons-material/Email";
+import PhoneIcon from "@mui/icons-material/Phone";
+import LeadLayout from "../components/LeadLayout";
 
 export default function Info() {
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john.doe@example.com");
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { vin, color } = router.query;
 
-  const handleClick = async () => {
-    window.open(
-      "https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD",
-      "_blank",
-    );
+  useEffect(() => {
+    if (!vin || !color) {
+      router.push("/lead");
+    }
+  }, [vin, color, router]);
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    if (
+      formData.phone &&
+      !phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ""))
+    ) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (field) => (e) => {
+    setFormData({ ...formData, [field]: e.target.value });
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: "" });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
 
     const data = {
       vin,
       color,
-      name,
-      email,
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim() || null,
     };
 
     try {
-      const response = await fetch(
-        "https://g9dugr14pk.execute-api.us-east-1.amazonaws.com/prod/api-lead",
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
+      const response = await fetch("/api/lead", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(data),
+      });
+
       const result = await response.json();
 
       if (response.ok) {
-        console.log("Lead generated successfully:" + JSON.stringify(result));
-        router.push("/lead/success"); // Redirect to a success page
+        console.log("Lead generated successfully:", result);
+        // Pass form data to success page for display
+        const successParams = new URLSearchParams({
+          leadId: result.leadId || Date.now().toString(),
+          vin,
+          color,
+          name: formData.name,
+          email: formData.email,
+        });
+        router.push(`/lead/success?${successParams.toString()}`);
       } else {
-        console.error("Failed to generate lead:" + JSON.stringify(result));
-        setError(`Failed to generate lead: ${JSON.stringify(result)}`);
+        console.error("Failed to generate lead:", result);
+        let errorMessage = "Failed to generate lead";
+
+        if (result.error === "Validation failed" && result.details) {
+          errorMessage = `Validation error: ${result.details.map((d) => d.message).join(", ")}`;
+        } else if (result.error) {
+          errorMessage = result.error;
+        } else if (result.message) {
+          errorMessage = result.message;
+        }
+
+        setErrors({ submit: errorMessage });
       }
     } catch (error) {
-      console.error("Failed to generate lead:" + error);
-      setError("An error occurred while generating the lead.");
+      console.error("Failed to generate lead:", error);
+
+      let errorMessage =
+        "An error occurred while generating the lead. Please try again.";
+
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        errorMessage =
+          "Network connection error. Please check your internet connection and try again.";
+      } else if (error.name === "AbortError") {
+        errorMessage = "Request timed out. Please try again.";
+      }
+
+      setErrors({ submit: errorMessage });
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  if (!vin || !color) {
+    return null; // Will redirect
+  }
+
   return (
-    <div>
-      <Head></Head>
-      <h3>Enter Your Information</h3>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name: </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter Name"
-            required
-          />
-        </div>
-        <br />
-        <div>
-          <label>Email: </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter Email"
-            required
-          />
-        </div>
+    <LeadLayout
+      activeStep={2}
+      title="Contact Information"
+      subtitle="Tell us how to reach you"
+    >
+      <Head>
+        <title>Contact Information - Vehicle Lead</title>
+      </Head>
 
-        <button type="submit">Submit</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <div style={{ marginTop: "20px" }}>
-        <h3>Donate</h3>
-        <iframe
-          src="https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD"
-          style={{
-            border: "none",
-            width: "300px",
-            height: "400px",
-          }}
-          title="Donate with PayPal"
-        ></iframe>
-
-        <button
-          onClick={handleClick}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#0070ba",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
+      <Box sx={{ maxWidth: 600, mx: "auto" }}>
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" />}
+          sx={{ mb: 4 }}
         >
-          Donate with PayPal
-        </button>
+          <Link color="inherit" href="/lead" sx={{ textDecoration: "none" }}>
+            VIN Entry
+          </Link>
+          <Link
+            color="inherit"
+            href={`/lead/color?vin=${vin}`}
+            sx={{ textDecoration: "none" }}
+          >
+            Vehicle Details
+          </Link>
+          <Typography color="primary.main" fontWeight={600}>
+            Contact Information
+          </Typography>
+        </Breadcrumbs>
 
-        <h3>Payment</h3>
-      </div>
-    </div>
+        <Box sx={{ mb: 4, textAlign: "center" }}>
+          <PersonIcon
+            sx={{
+              fontSize: 64,
+              color: "primary.main",
+              mb: 2,
+            }}
+          />
+          <Typography variant="h4" gutterBottom>
+            Your Contact Details
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            We'll use this information to contact you about your vehicle
+          </Typography>
+        </Box>
+
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Vehicle Summary
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  VIN
+                </Typography>
+                <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
+                  {vin}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Color
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ textTransform: "capitalize" }}
+                >
+                  {color}
+                </Typography>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+
+        <form onSubmit={handleSubmit}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                value={formData.name}
+                onChange={handleChange("name")}
+                error={!!errors.name}
+                helperText={errors.name}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Email Address"
+                type="email"
+                value={formData.email}
+                onChange={handleChange("email")}
+                error={!!errors.email}
+                helperText={errors.email}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Phone Number (Optional)"
+                value={formData.phone}
+                onChange={handleChange("phone")}
+                error={!!errors.phone}
+                helperText={
+                  errors.phone || "We may call you to discuss your vehicle"
+                }
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PhoneIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          {errors.submit && (
+            <Alert severity="error" sx={{ mt: 3 }}>
+              {errors.submit}
+            </Alert>
+          )}
+
+          <Box
+            sx={{
+              mt: 4,
+              display: "flex",
+              gap: 2,
+              justifyContent: "space-between",
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={() => router.back()}
+              disabled={isLoading}
+              sx={{ px: 4 }}
+            >
+              Back
+            </Button>
+
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isLoading}
+              sx={{ px: 4 }}
+            >
+              {isLoading ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  Submitting Lead...
+                </>
+              ) : (
+                "Submit Lead"
+              )}
+            </Button>
+          </Box>
+        </form>
+      </Box>
+    </LeadLayout>
   );
 }
