@@ -108,7 +108,9 @@ const WatchPage: NextPage = () => {
 
       // Page + script loading diagnostics
       console.log("🕒 Document.readyState:", document.readyState);
-      const pxScript = document.getElementById("px-script") as HTMLScriptElement | null;
+      const pxScript = document.getElementById(
+        "px-script",
+      ) as HTMLScriptElement | null;
       if (pxScript) {
         console.log("🔎 Found px-script element:", {
           src: pxScript.getAttribute("src"),
@@ -122,7 +124,10 @@ const WatchPage: NextPage = () => {
           console.log("[PX-DIAG] px-script onload observed from watch page");
         });
         pxScript.addEventListener("error", (e) => {
-          console.error("[PX-DIAG] px-script onerror observed from watch page", e);
+          console.error(
+            "[PX-DIAG] px-script onerror observed from watch page",
+            e,
+          );
           setPxStatus("PX script failed to load");
         });
       } else {
@@ -132,8 +137,17 @@ const WatchPage: NextPage = () => {
       // Global resource error trap (helps catch network/script failures)
       const onResError = (ev: ErrorEvent) => {
         const tgt = ev.target as any;
-        if (tgt && tgt.tagName === "SCRIPT" && typeof tgt.src === "string" && tgt.src.includes("px-cloud")) {
-          console.error("[PX-DIAG] Global script error for PX resource:", tgt.src, ev);
+        if (
+          tgt &&
+          tgt.tagName === "SCRIPT" &&
+          typeof tgt.src === "string" &&
+          tgt.src.includes("px-cloud")
+        ) {
+          console.error(
+            "[PX-DIAG] Global script error for PX resource:",
+            tgt.src,
+            ev,
+          );
           setPxStatus("PX network/script error");
         }
       };
@@ -142,7 +156,9 @@ const WatchPage: NextPage = () => {
 
       // Set up the PX async init function
       if ((window as any).PXjJ0cYtn9_asyncInit) {
-        console.warn("[PX-DIAG] PXjJ0cYtn9_asyncInit already exists on window; will overwrite to ensure logging");
+        console.warn(
+          "[PX-DIAG] PXjJ0cYtn9_asyncInit already exists on window; will overwrite to ensure logging",
+        );
       }
       (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
         console.log("🎯 PXjJ0cYtn9_asyncInit called with PX object:", px);
@@ -176,7 +192,8 @@ const WatchPage: NextPage = () => {
             hasWindow: typeof window === "object",
             hasDocument: typeof document === "object",
             isBrowser:
-              typeof window !== "undefined" && !!(document as any)?.createElement,
+              typeof window !== "undefined" &&
+              !!(document as any)?.createElement,
             location: (window as any)?.location?.href,
           });
           const markerId = "px-diag-marker";
@@ -185,7 +202,10 @@ const WatchPage: NextPage = () => {
             marker = document.createElement("div");
             marker.id = markerId;
             marker.setAttribute("data-px-diag", "created");
-            marker.setAttribute("data-client-uuid", String(px.ClientUuid || ""));
+            marker.setAttribute(
+              "data-client-uuid",
+              String(px.ClientUuid || ""),
+            );
             (marker as any).style = "display:none";
             document.body.appendChild(marker);
             console.log("[PX-DIAG] Inserted hidden DOM marker", marker);
@@ -246,7 +266,8 @@ const WatchPage: NextPage = () => {
                   handlerType: typeof handler,
                 });
                 const res = (originalOff as any)(type, handler);
-                if (registry[type]) registry[type] = Math.max(0, registry[type] - 1);
+                if (registry[type])
+                  registry[type] = Math.max(0, registry[type] - 1);
                 console.log("[PX-DIAG] Listener removed", {
                   type,
                   count: registry[type] || 0,
@@ -533,8 +554,10 @@ const WatchPage: NextPage = () => {
 
           // Try to subscribe to channels if supported by this SDK variant
           try {
-            const hasChannels = px.Events && typeof (px.Events as any).channels === "function";
-            const hasSubscribe = px.Events && typeof (px.Events as any).subscribe === "function";
+            const hasChannels =
+              px.Events && typeof (px.Events as any).channels === "function";
+            const hasSubscribe =
+              px.Events && typeof (px.Events as any).subscribe === "function";
             console.log("🔎 Channels support:", { hasChannels, hasSubscribe });
             if (hasChannels) {
               let channelsInfo: any;
@@ -551,9 +574,14 @@ const WatchPage: NextPage = () => {
                   console.log("📡 CHANNEL subscribe('*') event:", args);
                   logPxEvent("channel:*", ...args);
                 });
-                console.log("✅ Subscribed to channel wildcard via Events.subscribe('*')");
+                console.log(
+                  "✅ Subscribed to channel wildcard via Events.subscribe('*')",
+                );
               } catch (err) {
-                console.log("ℹ️ Channel wildcard subscription not supported:", err);
+                console.log(
+                  "ℹ️ Channel wildcard subscription not supported:",
+                  err,
+                );
               }
             }
           } catch (err) {
@@ -656,16 +684,18 @@ const WatchPage: NextPage = () => {
               try {
                 (window as any).PXjJ0cYtn9_asyncInit(found);
               } finally {
-                if (pxRetryIntervalRef.current) clearInterval(pxRetryIntervalRef.current);
+                if (pxRetryIntervalRef.current)
+                  clearInterval(pxRetryIntervalRef.current);
                 pxRetryIntervalRef.current = null;
               }
             } else if (pxRetryAttemptsRef.current % 10 === 0) {
               console.log(
-                `[PX-DIAG] Still waiting for PX (attempt ${pxRetryAttemptsRef.current}/${maxAttempts})`
+                `[PX-DIAG] Still waiting for PX (attempt ${pxRetryAttemptsRef.current}/${maxAttempts})`,
               );
             }
             if (pxRetryAttemptsRef.current >= maxAttempts) {
-              if (pxRetryIntervalRef.current) clearInterval(pxRetryIntervalRef.current);
+              if (pxRetryIntervalRef.current)
+                clearInterval(pxRetryIntervalRef.current);
               pxRetryIntervalRef.current = null;
               console.warn("[PX-DIAG] PX not detected after retry window");
               setPxStatus("PX not detected after waiting");
@@ -693,7 +723,11 @@ const WatchPage: NextPage = () => {
       }
       // Remove global resource error trap
       if (pxErrorHandlerRef.current) {
-        window.removeEventListener("error", pxErrorHandlerRef.current as any, true);
+        window.removeEventListener(
+          "error",
+          pxErrorHandlerRef.current as any,
+          true,
+        );
         pxErrorHandlerRef.current = null;
       }
       // Reset setup ref for re-initialization
