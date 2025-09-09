@@ -2,6 +2,38 @@ options:
   # logging: "NONE"
   logging: CLOUD_LOGGING_ONLY # Use CLOUD_LOGGING_ONLY for Cloud Logging or CLOUD_LOGGING_AND_STORAGE to store logs in GCS
 steps:
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -euo pipefail
+        echo "Project: $PROJECT_ID"
+        echo "Location: $_LOCATION"
+        echo "Repository: $_REPOSITORY"
+        echo "Ensuring Artifact Registry repo '$_REPOSITORY' exists in '$_LOCATION'..."
+        if ! gcloud artifacts repositories describe "$_REPOSITORY" \
+          --location "$_LOCATION" \
+          --project "$PROJECT_ID" >/dev/null 2>&1; then
+          echo "Repository not found. Creating..."
+          gcloud artifacts repositories create "$_REPOSITORY" \
+            --repository-format=docker \
+            --location "$_LOCATION" \
+            --description "Docker images for nextjs-website" \
+            --project "$PROJECT_ID" || {
+              echo "WARN: Failed to create repo (likely missing permissions). Continuing..."
+            }
+        else
+          echo "Repository exists. Continuing..."
+        fi
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -euo pipefail
+        echo "Configuring Docker to use gcloud as a credential helper for $_LOCATION-docker.pkg.dev"
+        gcloud auth configure-docker "$_LOCATION-docker.pkg.dev" --quiet
   - name: "node:alpine"
     entrypoint: "sh"
     args:

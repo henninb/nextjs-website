@@ -38,7 +38,7 @@ Jest is configured with:
 - Sports data: useSportsData
 - Medical expenses: useMedicalExpenseInsert, useMedicalExpenseUpdate, useMedicalExpenseDelete
 - Family member management: useFamilyMemberInsert, useFamilyMemberFetch, useFamilyMemberDelete
-- Specialized: useAccountUsageTracking, usePendingTransaction* hooks
+- Specialized: useAccountUsageTracking, usePendingTransaction\* hooks
 
 **Component Tests (25 components):**
 
