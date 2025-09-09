@@ -21,28 +21,31 @@ Jest is configured with:
 - **Test Environment**: jsdom for React component testing
 - **SWC**: Fast transpilation for TypeScript/JSX (@swc/jest@0.2.39)
 - **Testing Library**: React Testing Library (@testing-library/react@16.3.0)
-- **MSW**: Mock Service Worker v2.10.5 configured with public worker directory
+- **MSW**: Mock Service Worker v2.11.1 configured with public worker directory
 - **TypeScript Support**: Full support for .ts, .tsx files with SWC transform
 - **Module Aliases**: Configured for @/components, @/pages, @/styles paths
 - **Coverage**: Comprehensive coverage collection excluding node_modules, .next, and config files
 
 ### Test Examples by Category:
 
-**Hook Tests (48+ hooks):**
+**Hook Tests (65 hooks):**
 
 - Finance data hooks: useAccountFetch, usePaymentInsert, useTransactionDelete, useTotalsFetch
 - User management: useUser, useLoginProcess, useUserAccountRegister
 - CRUD operations: useCategoryFetch, useDescriptionDelete, useParameterUpdate
 - GraphQL hooks: useAccountFetchGql, useTransferFetchGql, useTransferInsertGql
-- Validation: useValidationAmountFetch, useFinanceValidation
+- Validation: useValidationAmountFetch, useValidationAmountInsert
 - Sports data: useSportsData
-- Specialized: useAccountUsageTracking, usePendingTransaction\* hooks
+- Medical expenses: useMedicalExpenseInsert, useMedicalExpenseUpdate, useMedicalExpenseDelete
+- Family member management: useFamilyMemberInsert, useFamilyMemberFetch, useFamilyMemberDelete
+- Specialized: useAccountUsageTracking, usePendingTransaction* hooks
 
-**Component Tests:**
+**Component Tests (25 components):**
 
 - Core components: Layout, AuthProvider, DataGridDynamic, ErrorBoundary
-- Finance-specific: USDAmountInput, BackupRestore, SelectNavigateAccounts
-- UI components: EmptyState, LoadingState, Spinner
+- Finance-specific: USDAmountInput, BackupRestore, SelectNavigateAccounts, MedicalExpenseForm
+- UI components: EmptyState, LoadingState, Spinner, SportsDataGrid
+- Utility components: ConfirmDialog, FormDialog, PageHeader, UIToggle
 
 **Page Tests:**
 
@@ -51,11 +54,13 @@ Jest is configured with:
 - Import functionality and integration tests
 - Accessibility tests
 
-**Integration Tests:**
+**Integration Tests (97+ test files):**
 
 - Payment cascade operations
 - Transaction state updates
 - Account management workflows
+- Medical expense tracking
+- Sports data integration
 
 MSW is fully configured for API mocking with worker in public/ directory.
 
@@ -72,7 +77,7 @@ MSW is fully configured for API mocking with worker in public/ directory.
   - Files: camelCase for utilities, PascalCase for components
 - **Error Handling**: Use try/catch with specific error messages and logging
 - **State Management**:
-  - Server state: React Query (@tanstack/react-query@5.85.5)
+  - Server state: React Query (@tanstack/react-query@5.87.1)
   - Client state: React hooks
   - GraphQL: Custom GraphQL client integration
 - **Theming**: MUI theming system with draculaTheme and modernTheme
@@ -82,9 +87,9 @@ MSW is fully configured for API mocking with worker in public/ directory.
 
 ### Core Directories:
 
-- `/components`: 20+ reusable UI components (Layout, DataGrid, Auth, etc.)
-- `/hooks`: 48+ custom React hooks for data fetching/mutations
-- `/model`: TypeScript interfaces and types for data models (20+ models)
+- `/components`: 25 reusable UI components (Layout, DataGrid, Auth, MedicalExpenseForm, etc.)
+- `/hooks`: 65 custom React hooks for data fetching/mutations
+- `/model`: TypeScript interfaces and types for data models (22 models)
 - `/pages`: Next.js pages and API routes with finance, blog, and utility pages
 - `/contexts`: React contexts (UIContext for theme and state management)
 - `/layouts`: Page layout components (FinanceLayout)
@@ -93,31 +98,35 @@ MSW is fully configured for API mocking with worker in public/ directory.
 
 ### Testing:
 
-- `/__tests__`: Comprehensive Jest test suite (100+ test files)
+- `/__tests__`: Comprehensive Jest test suite (97+ test files)
   - `/hooks`: Hook testing with isolated and integration tests
   - `/components`: Component testing with React Testing Library
   - `/pages`: Page and API route testing
   - `/contexts`: Context provider testing
+  - `/integration`: Integration tests for complex workflows
+  - `/middleware`: Middleware testing
+  - `/utils`: Utility function tests
 - `/__mocks__`: Mock implementations for MUI, jose, and other dependencies
 - `/data`: Test data and dummy data files for comprehensive testing scenarios
 
 ### Configuration:
 
-- **Node.js**: Supports versions 20.x, 22.x, 23.x, 24.x
+- **Node.js**: Supports versions 20.19.x and >=22.12.0
 - **React**: Version 19.1.1
-- **Next.js**: Version 15.5.0
+- **Next.js**: Version 15.5.2
 - **TypeScript**: Version 5.9.2 configured with relaxed strict mode
-- **Dependencies**: Modern stack with Emotion, MUI v7, Zod v4, date-fns v4
+- **Dependencies**: Modern stack with Emotion v11.14+, MUI v7.3+, Zod v4.1+, date-fns v4.1+
 
 ### Additional Features:
 
 - **GraphQL Integration**: Custom GraphQL client with transfer operations
-- **Security**: Comprehensive security utilities including CORS, CSP reporting, secure UUID
-- **Blog System**: MDX-based blog with gray-matter processing
+- **Security**: Comprehensive security utilities including CORS, CSP reporting, secure UUID, PerimeterX integration
+- **Blog System**: MDX-based blog with gray-matter processing and next-mdx-remote
 - **Sports Data**: NFL, NBA, MLB, NHL data integration
 - **Validation**: Zod-based schema validation and sanitization
 - **File Management**: Image handling, receipt processing
-- **DevOps**: Docker, AWS, GCP deployment configurations
+- **Medical Expenses**: Full CRUD operations for medical expense tracking with family member support
+- **DevOps**: Docker, AWS, GCP deployment configurations, Cloudflare Pages support
 
 ## Middleware Configuration
 
