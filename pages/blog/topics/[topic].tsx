@@ -31,7 +31,7 @@ import {
   Code,
   RocketLaunch,
   Web,
-  Docker,
+  Storage,
   Psychology,
 } from "@mui/icons-material";
 
@@ -69,7 +69,7 @@ const TOPIC_CONFIG = {
     title: "Docker",
     description:
       "Learn containerization with Docker. From basic concepts to advanced orchestration, deployment strategies, and production best practices.",
-    icon: Docker,
+    icon: Storage,
     color: "#2496ed",
     gradient: "linear-gradient(135deg, #2496ed 0%, #0db7ed 100%)",
   },
