@@ -56,6 +56,23 @@ steps:
         "$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA",
       ]
 
+  # Print the image tag, digest, and a Console URL for convenience
+  - name: "gcr.io/cloud-builders/docker"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -euo pipefail
+        IMAGE="$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA"
+        echo "Pushed image tag: ${IMAGE}"
+        if docker inspect "${IMAGE}" >/dev/null 2>&1; then
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMAGE}" || true)
+          if [[ -n "${DIGEST:-}" ]]; then
+            echo "Pushed image digest: ${DIGEST}"
+          fi
+        fi
+        echo "Artifact Registry URL: https://console.cloud.google.com/artifacts/docker/$PROJECT_ID/$_LOCATION/$_REPOSITORY/nextjs-website?project=$PROJECT_ID"
+
 images:
   - "$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA"
 
