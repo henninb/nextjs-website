@@ -1,6 +1,4 @@
 #!/bin/sh
-# trim-trailing-space.sh
-# POSIX-compatible: remove trailing whitespace in files under the current dir.
 
 # ---- Configuration (override via env vars) ----
 # Space-separated list of directory names to skip entirely.

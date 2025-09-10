@@ -159,14 +159,14 @@ check_repo_iam() {
 check_cloud_run_service() {
   local SERVICE_NAME="nextjs-website"
   local CLOUD_RUN_REGION="us-central1"
-  
+
   if gcloud run services describe "$SERVICE_NAME" \
       --region "$CLOUD_RUN_REGION" --project "$PROJECT_ID" >/dev/null 2>&1; then
     local service_url
     service_url=$(gcloud run services describe "$SERVICE_NAME" \
       --region "$CLOUD_RUN_REGION" --project "$PROJECT_ID" \
       --format='value(status.url)' 2>/dev/null)
-    
+
     if [[ -n "$service_url" ]]; then
       log "Cloud Run service deployed: $service_url"
       log "Health check: $service_url/api/health"

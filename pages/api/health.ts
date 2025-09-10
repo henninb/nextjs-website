@@ -21,7 +21,7 @@ export default function handler(
     const memoryUsage = process.memoryUsage();
     const memoryUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
     const memoryTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
-    
+
     // Memory check: warn if over 80% usage, error if over 95%
     const memoryPercentage = (memoryUsedMB / memoryTotalMB) * 100;
     let memoryStatus: 'ok' | 'warning' | 'error' = 'ok';

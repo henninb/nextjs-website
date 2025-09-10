@@ -82,7 +82,7 @@ check_health() {
   if [[ -z "$url" ]]; then
     return 1
   fi
-  
+
   # Try health endpoint with timeout
   if curl -f -s --max-time 10 "${url}/api/health" > /dev/null 2>&1; then
     return 0
@@ -93,20 +93,20 @@ check_health() {
 
 restart_service() {
   log "Restarting Cloud Run service: $SERVICE_NAME"
-  
+
   # Get current image
   local current_image
   current_image=$(gcloud run services describe "$SERVICE_NAME" \
     --region "$REGION" --project "$PROJECT_ID" \
     --format='value(spec.template.spec.template.spec.containers[0].image)' 2>/dev/null)
-  
+
   if [[ -z "$current_image" ]]; then
     err "Could not determine current image for service"
     return 1
   fi
-  
+
   log "Redeploying with current image: $current_image"
-  
+
   # Redeploy with same image to restart
   gcloud run deploy "$SERVICE_NAME" \
     --image "$current_image" \
@@ -114,7 +114,7 @@ restart_service() {
     --project "$PROJECT_ID" \
     --platform managed \
     --quiet
-  
+
   # Wait for deployment
   sleep 5
 }
@@ -122,7 +122,7 @@ restart_service() {
 main() {
   require_cmd gcloud
   require_cmd curl
-  
+
   if [[ -z "$PROJECT_ID" ]]; then
     err "--project is required"; usage; exit 1
   fi
@@ -130,7 +130,7 @@ main() {
   log "Checking Cloud Run service: $SERVICE_NAME"
   log "Project: $PROJECT_ID"
   log "Region: $REGION"
-  
+
   # Check if service exists
   if ! check_service_exists; then
     err "Cloud Run service '$SERVICE_NAME' not found in region '$REGION'"
@@ -138,22 +138,22 @@ main() {
     gcloud run services list --region "$REGION" --project "$PROJECT_ID" 2>/dev/null || true
     exit 1
   fi
-  
+
   # Restart service if requested
   if [[ "$RESTART_SERVICE" == true ]]; then
     restart_service
   fi
-  
+
   # Get service details
   local service_url status_type status_value
   service_url=$(get_service_url)
   read -r status_type status_value <<< "$(get_service_status)"
-  
+
   log "Service Status: $status_type = $status_value"
-  
+
   if [[ -n "$service_url" ]]; then
     success "Service URL: $service_url"
-    
+
     # Check health
     log "Testing health endpoint..."
     if check_health "$service_url"; then
@@ -162,7 +162,7 @@ main() {
     else
       warn "Health check failed - service may be starting or having issues"
     fi
-    
+
     # Provide useful links
     echo ""
     log "Useful links:"

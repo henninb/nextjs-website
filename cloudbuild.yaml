@@ -88,12 +88,12 @@ steps:
         set -euo pipefail
         echo "Waiting for Cloud Run service to be ready..."
         sleep 10
-        
+
         # Get the service URL
         SERVICE_URL=$$(gcloud run services describe nextjs-website \
           --region $_CLOUD_RUN_REGION \
           --format='value(status.url)')
-        
+
         echo "==================================="
         echo "🚀 DEPLOYMENT SUCCESSFUL!"
         echo "==================================="
@@ -101,7 +101,7 @@ steps:
         echo "Health Check: $$SERVICE_URL/api/health"
         echo "Console: https://console.cloud.google.com/run/detail/$_CLOUD_RUN_REGION/nextjs-website/metrics?project=$PROJECT_ID"
         echo "==================================="
-        
+
         # Test the health endpoint
         echo "Testing health endpoint..."
         if curl -f -s "$$SERVICE_URL/api/health" > /dev/null; then
