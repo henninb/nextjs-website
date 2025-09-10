@@ -38,11 +38,7 @@ jest.mock("../../contexts/UIContext", () => ({
 }));
 
 jest.mock("../../components/SelectNavigateAccounts", () => {
-  return function MockSelectNavigateAccounts({
-    onNavigate,
-    isModern,
-    theme,
-  }: any) {
+  return function MockSelectNavigateAccounts({ onNavigate, theme }: any) {
     return (
       <div data-testid="select-navigate-accounts">
         <button onClick={onNavigate}>Mock Account Selector</button>
@@ -60,10 +56,6 @@ jest.mock("../../layouts/FinanceLayout", () => {
     return <div data-testid="finance-layout">{children}</div>;
   };
 });
-
-jest.mock("../../components/UIToggle", () => ({
-  UIToggleInline: () => <div data-testid="ui-toggle">UI Toggle</div>,
-}));
 
 const theme = createTheme();
 
@@ -226,16 +218,6 @@ describe("Layout Component", () => {
   });
 
   describe("UI Mode Support", () => {
-    it("renders UI toggle for finance pages", () => {
-      renderWithTheme(
-        <Layout>
-          <div>Content</div>
-        </Layout>,
-      );
-
-      expect(screen.getByTestId("ui-toggle")).toBeInTheDocument();
-    });
-
     it("applies modern theme styling in modern mode", () => {
       renderWithTheme(
         <Layout>
@@ -402,16 +384,6 @@ describe("Layout Component - Non-Finance Pages", () => {
     );
 
     expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
-  });
-
-  it("does not show UI toggle for non-finance pages", () => {
-    renderWithTheme(
-      <Layout>
-        <div>General Content</div>
-      </Layout>,
-    );
-
-    expect(screen.queryByTestId("ui-toggle")).not.toBeInTheDocument();
   });
 });
 

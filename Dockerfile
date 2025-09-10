@@ -3,14 +3,28 @@ FROM node:alpine
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy only the necessary files
+# Copy package files first for better Docker layer caching
 COPY package*.json ./
-COPY .next ./.next
-COPY public ./public
-COPY next.config.mjs ./
 
-# Install only production dependencies
-RUN npm install --only=production
+# Install dependencies (including devDependencies for build)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the Next.js application
+RUN npm run build
+
+# Remove devDependencies to reduce image size
+RUN npm prune --production
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Change ownership of the app directory to the nextjs user
+RUN chown -R nextjs:nodejs /app
+USER nextjs
 
 # Expose the port your app runs on
 EXPOSE 3000

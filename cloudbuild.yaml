@@ -34,13 +34,8 @@ steps:
         set -euo pipefail
         echo "Configuring Docker to use gcloud as a credential helper for $_LOCATION-docker.pkg.dev"
         gcloud auth configure-docker "$_LOCATION-docker.pkg.dev" --quiet
-  - name: "node:alpine"
-    entrypoint: "sh"
-    args:
-      - "-c"
-      - |
-        npm install
-        npm run build
+  # The build step is now handled in the Dockerfile
+  # This ensures API routes are properly available
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
@@ -56,7 +51,66 @@ steps:
         "$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA",
       ]
 
-  # Print the image tag, digest, and a Console URL for convenience
+  # Deploy to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "nextjs-website"
+      - "--image"
+      - "$_LOCATION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/nextjs-website:$COMMIT_SHA"
+      - "--region"
+      - "$_CLOUD_RUN_REGION"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--port"
+      - "3000"
+      - "--memory"
+      - "1Gi"
+      - "--cpu"
+      - "1"
+      - "--min-instances"
+      - "0"
+      - "--max-instances"
+      - "10"
+      - "--set-env-vars"
+      - "NODE_ENV=production"
+      - "--timeout"
+      - "300"
+
+  # Wait for deployment and get service URL
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -euo pipefail
+        echo "Waiting for Cloud Run service to be ready..."
+        sleep 10
+        
+        # Get the service URL
+        SERVICE_URL=$(gcloud run services describe nextjs-website \
+          --region $_CLOUD_RUN_REGION \
+          --format='value(status.url)')
+        
+        echo "==================================="
+        echo "🚀 DEPLOYMENT SUCCESSFUL!"
+        echo "==================================="
+        echo "Service URL: $SERVICE_URL"
+        echo "Health Check: $SERVICE_URL/api/health"
+        echo "Console: https://console.cloud.google.com/run/detail/$_CLOUD_RUN_REGION/nextjs-website/metrics?project=$PROJECT_ID"
+        echo "==================================="
+        
+        # Test the health endpoint
+        echo "Testing health endpoint..."
+        if curl -f -s "$SERVICE_URL/api/health" > /dev/null; then
+          echo "✅ Health check passed"
+        else
+          echo "⚠️  Health check failed (service may still be starting)"
+        fi
+
+  # Print the image tag, digest, and URLs for convenience
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
     args:
@@ -79,3 +133,4 @@ images:
 substitutions:
   _LOCATION: "us"
   _REPOSITORY: "containers"
+  _CLOUD_RUN_REGION: "us-central1"

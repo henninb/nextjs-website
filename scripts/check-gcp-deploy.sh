@@ -89,7 +89,10 @@ main() {
   # 3) Check IAM for Cloud Build SA
   check_repo_iam "roles/artifactregistry.writer"
 
-  # 4) Optional: show docker helper tip
+  # 4) Check Cloud Run service if it exists
+  check_cloud_run_service
+
+  # 5) Optional: show docker helper tip
   log "Tip: Configure Docker auth locally if needed:"
   log "  gcloud auth configure-docker ${LOCATION}-docker.pkg.dev --quiet"
 
@@ -150,6 +153,29 @@ check_repo_iam() {
     else
       err "Missing IAM on repo: $ROLE for $CB_SA. Run with --apply to grant."
     fi
+  fi
+}
+
+check_cloud_run_service() {
+  local SERVICE_NAME="nextjs-website"
+  local CLOUD_RUN_REGION="us-central1"
+  
+  if gcloud run services describe "$SERVICE_NAME" \
+      --region "$CLOUD_RUN_REGION" --project "$PROJECT_ID" >/dev/null 2>&1; then
+    local service_url
+    service_url=$(gcloud run services describe "$SERVICE_NAME" \
+      --region "$CLOUD_RUN_REGION" --project "$PROJECT_ID" \
+      --format='value(status.url)' 2>/dev/null)
+    
+    if [[ -n "$service_url" ]]; then
+      log "Cloud Run service deployed: $service_url"
+      log "Health check: $service_url/api/health"
+      log "Use: scripts/check-cloud-run.sh --project $PROJECT_ID"
+    else
+      log "Cloud Run service exists but URL not available"
+    fi
+  else
+    log "Cloud Run service not deployed yet (will be created on next build)"
   fi
 }
 

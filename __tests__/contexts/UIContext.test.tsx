@@ -25,23 +25,11 @@ Object.defineProperty(window, "localStorage", {
 
 // Test component to access UI context
 const TestComponent = () => {
-  const { uiMode, toggleUIMode, setUIMode } = useUI();
+  const { uiMode } = useUI();
 
   return (
     <div>
       <div data-testid="current-mode">{uiMode}</div>
-      <button data-testid="toggle-btn" onClick={toggleUIMode}>
-        Toggle Mode
-      </button>
-      <button
-        data-testid="set-original-btn"
-        onClick={() => setUIMode("original")}
-      >
-        Set Original
-      </button>
-      <button data-testid="set-modern-btn" onClick={() => setUIMode("modern")}>
-        Set Modern
-      </button>
     </div>
   );
 };
@@ -66,8 +54,8 @@ describe("UIContext", () => {
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
     });
 
-    it("loads saved mode from localStorage", () => {
-      localStorage.setItem("financeUIMode", "modern");
+    it("always uses modern mode regardless of localStorage", () => {
+      localStorage.setItem("financeUIMode", "original");
 
       render(
         <UIProvider>
@@ -91,8 +79,8 @@ describe("UIContext", () => {
     });
   });
 
-  describe("Toggle Functionality", () => {
-    it("toggles from modern to original", () => {
+  describe("Modern Theme Only", () => {
+    it("always returns modern theme", () => {
       render(
         <UIProvider>
           <TestComponent />
@@ -100,19 +88,10 @@ describe("UIContext", () => {
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-      expect(localStorage.getItem("financeUIMode")).toBe("original");
     });
 
-    it("toggles from original to modern when starting saved modern", () => {
-      localStorage.setItem("financeUIMode", "modern");
-
-      render(
+    it("maintains modern theme across re-renders", () => {
+      const { rerender } = render(
         <UIProvider>
           <TestComponent />
         </UIProvider>,
@@ -120,152 +99,13 @@ describe("UIContext", () => {
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
 
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-      expect(localStorage.getItem("financeUIMode")).toBe("original");
-    });
-
-    it("can toggle multiple times", () => {
-      render(
-        <UIProvider>
-          <TestComponent />
-        </UIProvider>,
-      );
-
-      // Modern -> Original
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-
-      // Original -> Modern
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-
-      // Modern -> Original again
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-    });
-  });
-
-  describe("Set Mode Functionality", () => {
-    it("can set mode to original explicitly", () => {
-      localStorage.setItem("financeUIMode", "modern");
-
-      render(
+      rerender(
         <UIProvider>
           <TestComponent />
         </UIProvider>,
       );
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-
-      act(() => {
-        screen.getByTestId("set-original-btn").click();
-      });
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-      expect(localStorage.getItem("financeUIMode")).toBe("original");
-    });
-
-    it("can set mode to modern explicitly", () => {
-      render(
-        <UIProvider>
-          <TestComponent />
-        </UIProvider>,
-      );
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-
-      act(() => {
-        screen.getByTestId("set-modern-btn").click();
-      });
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-      expect(localStorage.getItem("financeUIMode")).toBe("modern");
-    });
-
-    it("setting same mode doesn't cause issues", () => {
-      render(
-        <UIProvider>
-          <TestComponent />
-        </UIProvider>,
-      );
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-
-      act(() => {
-        screen.getByTestId("set-modern-btn").click();
-      });
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
-      expect(localStorage.getItem("financeUIMode")).toBe("modern");
-    });
-  });
-
-  describe("LocalStorage Persistence", () => {
-    it("persists mode changes to localStorage", () => {
-      render(
-        <UIProvider>
-          <TestComponent />
-        </UIProvider>,
-      );
-
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-
-      expect(localStorage.getItem("financeUIMode")).toBe("original");
-
-      act(() => {
-        screen.getByTestId("set-modern-btn").click();
-      });
-
-      expect(localStorage.getItem("financeUIMode")).toBe("modern");
-    });
-
-    it("handles localStorage errors gracefully", () => {
-      // Mock localStorage to throw error
-      const originalSetItem = localStorage.setItem;
-      const consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-      const consoleWarnSpy = jest
-        .spyOn(console, "warn")
-        .mockImplementation(() => {});
-
-      localStorage.setItem = jest.fn().mockImplementation(() => {
-        throw new Error("Storage quota exceeded");
-      });
-
-      render(
-        <UIProvider>
-          <TestComponent />
-        </UIProvider>,
-      );
-
-      // Should not crash when localStorage throws
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        "Failed to save UI mode to localStorage:",
-        expect.any(Error),
-      );
-
-      // Restore original localStorage and console
-      localStorage.setItem = originalSetItem;
-      consoleErrorSpy.mockRestore();
-      consoleWarnSpy.mockRestore();
     });
   });
 
@@ -299,13 +139,6 @@ describe("UIContext", () => {
 
       expect(screen.getByTestId("current-mode")).toHaveTextContent("modern");
       expect(screen.getByTestId("second-mode")).toHaveTextContent("modern");
-
-      act(() => {
-        screen.getByTestId("toggle-btn").click();
-      });
-
-      expect(screen.getByTestId("current-mode")).toHaveTextContent("original");
-      expect(screen.getByTestId("second-mode")).toHaveTextContent("original");
     });
   });
 

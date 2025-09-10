@@ -49,9 +49,7 @@ import WatchIcon from "@mui/icons-material/Watch";
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
 import { useUI } from "../contexts/UIContext";
-import { UIToggleInline } from "./UIToggle";
 import { modernTheme } from "../themes/modernTheme";
-import { draculaTheme } from "../themes/draculaTheme";
 
 interface LayoutProps {
   children: ReactNode;
@@ -124,7 +122,6 @@ export default function Layout({ children }: LayoutProps) {
   const { uiMode } = useUI();
 
   const { isAuthenticated, user, logout } = useAuth();
-  const isModern = uiMode === "modern";
 
   const isFinancePage = pathname.startsWith("/finance");
 
@@ -167,13 +164,8 @@ export default function Layout({ children }: LayoutProps) {
     }
   };
 
-  // Use the appropriate theme based on page and mode
-  const theme =
-    isFinancePage && isModern
-      ? modernTheme
-      : isFinancePage
-        ? draculaTheme
-        : globalTheme;
+  // Use the appropriate theme based on page
+  const theme = isFinancePage ? modernTheme : globalTheme;
   const menuLinks = isFinancePage ? financeLinks : generalLinks;
 
   const toggleDrawer = (open: boolean) => () => {
@@ -184,100 +176,79 @@ export default function Layout({ children }: LayoutProps) {
     <Box
       sx={{
         backgroundColor: isFinancePage
-          ? isModern
-            ? theme.palette.background.default
-            : "rgba(30, 31, 41, 1)"
+          ? theme.palette.background.default
           : "#fff",
-        color: isFinancePage
-          ? isModern
-            ? theme.palette.text.primary
-            : "rgba(248, 248, 242, 1)"
-          : "#000",
+        color: isFinancePage ? theme.palette.text.primary : "#000",
         minHeight: "100vh",
       }}
     >
       <AppBar
         position="static"
-        elevation={isModern ? 0 : 4}
+        elevation={0}
         sx={{
-          backgroundColor: isModern
-            ? alpha(theme.palette.background.paper, 0.9)
-            : undefined,
-          backdropFilter: isModern ? "blur(10px)" : undefined,
-          borderBottom: isModern
-            ? `1px solid ${theme.palette.divider}`
-            : undefined,
+          backgroundColor: alpha(theme.palette.background.paper, 0.9),
+          backdropFilter: "blur(10px)",
+          borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Toolbar sx={{ px: isModern ? 3 : undefined }}>
+        <Toolbar sx={{ px: 3 }}>
           <IconButton
             edge="start"
             color="inherit"
             aria-label="menu"
             onClick={toggleDrawer(true)}
             sx={{
-              mr: isModern ? 2 : 0,
-              borderRadius: isModern ? 2 : undefined,
-              p: isModern ? 1.5 : undefined,
+              mr: 2,
+              borderRadius: 2,
+              p: 1.5,
               transition: "all 0.2s ease-in-out",
-              "&:hover": isModern
-                ? {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    transform: "scale(1.05)",
-                  }
-                : undefined,
+              "&:hover": {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                transform: "scale(1.05)",
+              },
             }}
           >
             <MenuIcon
               sx={{
-                color: isModern ? "#3b82f6" : "inherit",
+                color: "#3b82f6",
               }}
             />
           </IconButton>
 
-          {isFinancePage && <UIToggleInline />}
-
           <Box sx={{ flexGrow: 1 }} />
           {isAuthenticated ? (
             // Modern authenticated UI
-            isModern ? (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Chip
-                  avatar={
-                    <Avatar sx={{ width: 24, height: 24 }}>
-                      {getUserDisplayName().charAt(0).toUpperCase()}
-                    </Avatar>
-                  }
-                  label={getUserDisplayName()}
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    borderColor: theme.palette.primary.main,
-                    color: theme.palette.primary.main,
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ExitToAppIcon />}
-                  onClick={logout}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: "none",
-                    fontWeight: 500,
-                  }}
-                >
-                  Logout
-                </Button>
-              </Box>
-            ) : (
-              // Original authenticated UI
-              <IconButton color="inherit" onClick={logout}>
-                <ExitToAppIcon />
-              </IconButton>
-            )
-          ) : // Authentication options for non-authenticated users
-          isModern ? (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Chip
+                avatar={
+                  <Avatar sx={{ width: 24, height: 24 }}>
+                    {getUserDisplayName().charAt(0).toUpperCase()}
+                  </Avatar>
+                }
+                label={getUserDisplayName()}
+                variant="outlined"
+                size="small"
+                sx={{
+                  borderColor: theme.palette.primary.main,
+                  color: theme.palette.primary.main,
+                }}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<ExitToAppIcon />}
+                onClick={logout}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 500,
+                }}
+              >
+                Logout
+              </Button>
+            </Box>
+          ) : (
+            // Authentication options for non-authenticated users
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Button
                 variant="outlined"
@@ -307,16 +278,6 @@ export default function Layout({ children }: LayoutProps) {
                 Register
               </Button>
             </Box>
-          ) : (
-            // Original non-authenticated UI
-            <>
-              <IconButton color="inherit" href="/login">
-                <AccountCircleIcon />
-              </IconButton>
-              <IconButton color="inherit" href="/register">
-                <HowToRegIcon />
-              </IconButton>
-            </>
           )}
         </Toolbar>
       </AppBar>
@@ -330,28 +291,23 @@ export default function Layout({ children }: LayoutProps) {
             height: "100vh",
             maxHeight: "100vh",
             overflow: "hidden",
-            backgroundColor: isModern
-              ? theme.palette.background.paper
-              : undefined,
-            borderRight: isModern
-              ? `1px solid ${theme.palette.divider}`
-              : undefined,
-            boxShadow: isModern
-              ? "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)"
-              : undefined,
+            backgroundColor: theme.palette.background.paper,
+            borderRight: `1px solid ${theme.palette.divider}`,
+            boxShadow:
+              "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
           },
         }}
       >
         <Box
           sx={{
-            p: isModern ? 2 : 0,
-            height: isModern ? "100vh" : "auto",
-            overflow: isModern ? "auto" : "visible",
+            p: 2,
+            height: "100vh",
+            overflow: "auto",
             display: "flex",
             flexDirection: "column",
           }}
         >
-          {isModern && isFinancePage && (
+          {isFinancePage && (
             <Box sx={{ mb: 3, textAlign: "center", flexShrink: 0 }}>
               <Chip
                 label="Finance Dashboard"
@@ -365,41 +321,28 @@ export default function Layout({ children }: LayoutProps) {
               />
             </Box>
           )}
-          <List sx={{ px: isModern ? 1 : 0, flex: 1 }}>
+          <List sx={{ px: 1, flex: 1 }}>
             {menuLinks.map(({ text, href, icon }) => (
-              <ListItem
-                key={href}
-                disablePadding
-                sx={{ mb: isModern ? 0.5 : 0 }}
-              >
+              <ListItem key={href} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
                   component="a"
                   href={href}
                   onClick={toggleDrawer(false)}
                   sx={{
-                    borderRadius: isModern ? 2 : 0,
-                    px: isModern ? 2 : 2,
-                    py: isModern ? 1.5 : 1,
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1.5,
                     transition: "all 0.2s ease-in-out",
-                    "&:hover": isModern
-                      ? {
-                          backgroundColor: alpha(
-                            theme.palette.primary.main,
-                            0.1,
-                          ),
-                          transform: "translateX(4px)",
-                        }
-                      : {
-                          backgroundColor: "rgba(73, 74, 87, 1)",
-                        },
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      transform: "translateX(4px)",
+                    },
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: isModern ? 40 : 56,
-                      color: isModern
-                        ? theme.palette.primary.main
-                        : "rgba(139, 233, 253, 1)",
+                      minWidth: 40,
+                      color: theme.palette.primary.main,
                     }}
                   >
                     {icon}
@@ -407,42 +350,37 @@ export default function Layout({ children }: LayoutProps) {
                   <ListItemText
                     primary={text}
                     primaryTypographyProps={{
-                      fontWeight: isModern ? 500 : "normal",
-                      fontSize: isModern ? "0.875rem" : undefined,
+                      fontWeight: 500,
+                      fontSize: "0.875rem",
                     }}
                   />
                 </ListItemButton>
               </ListItem>
             ))}
             {isFinancePage && (
-              <ListItem disablePadding sx={{ mt: isModern ? 2 : 0 }}>
+              <ListItem disablePadding sx={{ mt: 2 }}>
                 <ListItemButton
                   component="div"
                   sx={{
-                    borderRadius: isModern ? 2 : 0,
-                    px: isModern ? 2 : 2,
-                    py: isModern ? 1.5 : 1,
-                    backgroundColor: isModern
-                      ? alpha(theme.palette.primary.main, 0.1)
-                      : alpha("#10b981", 0.1),
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1.5,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
                     "&:hover": {
-                      backgroundColor: isModern
-                        ? alpha(theme.palette.primary.main, 0.15)
-                        : alpha("#10b981", 0.15),
+                      backgroundColor: alpha(theme.palette.primary.main, 0.15),
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      minWidth: isModern ? 40 : 56,
-                      color: isModern ? theme.palette.primary.main : "#10b981",
+                      minWidth: 40,
+                      color: theme.palette.primary.main,
                     }}
                   >
                     <ListAltIcon />
                   </ListItemIcon>
                   <SelectNavigateAccounts
                     onNavigate={() => setIsOpen(false)}
-                    isModern={isModern}
                     theme={theme}
                   />
                 </ListItemButton>

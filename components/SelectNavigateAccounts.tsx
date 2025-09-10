@@ -24,13 +24,11 @@ interface Option {
 
 interface SelectNavigateAccountsProps {
   onNavigate: () => void; // Accept function to close menu
-  isModern?: boolean;
   theme?: any;
 }
 
 export default function SelectNavigateAccounts({
   onNavigate,
-  isModern = false,
   theme,
 }: SelectNavigateAccountsProps) {
   const [options, setOptions] = useState<Option[]>([]);
@@ -154,29 +152,29 @@ export default function SelectNavigateAccounts({
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "transparent",
                     "& fieldset": {
-                      borderColor: isModern
+                      borderColor: true
                         ? theme?.palette?.divider || "rgba(255, 255, 255, 0.23)"
                         : "rgba(139, 233, 253, 0.5)",
                     },
                     "&:hover fieldset": {
-                      borderColor: isModern
+                      borderColor: true
                         ? theme?.palette?.primary?.main || "#3b82f6"
                         : "rgba(139, 233, 253, 0.8)",
                     },
                     "&.Mui-focused fieldset": {
-                      borderColor: isModern
+                      borderColor: true
                         ? theme?.palette?.primary?.main || "#3b82f6"
                         : "rgba(139, 233, 253, 1)",
                     },
                   },
                   "& .MuiInputLabel-root": {
-                    color: isModern
+                    color: true
                       ? theme?.palette?.text?.secondary ||
                         "rgba(255, 255, 255, 0.7)"
                       : "rgba(248, 248, 242, 0.7)",
                   },
                   "& .MuiInputBase-input": {
-                    color: isModern
+                    color: true
                       ? theme?.palette?.text?.primary || "#fff"
                       : "rgba(248, 248, 242, 1)",
                   },
@@ -193,7 +191,7 @@ export default function SelectNavigateAccounts({
               sx={{
                 display: "block",
                 mb: 1,
-                color: isModern
+                color: true
                   ? theme?.palette?.text?.secondary ||
                     "rgba(255, 255, 255, 0.7)"
                   : "rgba(248, 248, 242, 0.7)",
@@ -207,8 +205,8 @@ export default function SelectNavigateAccounts({
                 display: "flex",
                 flexDirection: "column",
                 gap: 0.5,
-                maxHeight: isModern ? "120px" : "none",
-                overflowY: isModern ? "auto" : "visible",
+                maxHeight: true ? "120px" : "none",
+                overflowY: true ? "auto" : "visible",
               }}
             >
               {mostUsedAccounts.map((account) => (
@@ -230,10 +228,10 @@ export default function SelectNavigateAccounts({
                       justifyContent: "flex-start",
                       flex: 1,
                       backgroundColor: "transparent",
-                      borderColor: isModern
+                      borderColor: true
                         ? theme?.palette?.divider || "rgba(255, 255, 255, 0.23)"
                         : "rgba(139, 233, 253, 0.5)",
-                      color: isModern
+                      color: true
                         ? theme?.palette?.text?.primary || "#fff"
                         : "rgba(248, 248, 242, 1)",
                       "& .MuiChip-label": {
@@ -241,11 +239,11 @@ export default function SelectNavigateAccounts({
                         paddingRight: "8px",
                       },
                       "&:hover": {
-                        backgroundColor: isModern
+                        backgroundColor: true
                           ? theme?.palette?.action?.hover ||
                             "rgba(255, 255, 255, 0.08)"
                           : "rgba(139, 233, 253, 0.1)",
-                        borderColor: isModern
+                        borderColor: true
                           ? theme?.palette?.primary?.main || "#3b82f6"
                           : "rgba(139, 233, 253, 0.8)",
                       },
@@ -260,7 +258,7 @@ export default function SelectNavigateAccounts({
                       width: "20px",
                       height: "20px",
                       padding: "2px",
-                      color: isModern
+                      color: true
                         ? theme?.palette?.text?.secondary ||
                           "rgba(255, 255, 255, 0.7)"
                         : "rgba(248, 248, 242, 0.7)",
