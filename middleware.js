@@ -57,6 +57,7 @@ export async function middleware(request) {
     "/api/weather",
     "/api/uuid",
     "/api/human",
+    "/api/health",
   ];
 
   // Normalize pathname by removing trailing slashes for consistent matching
