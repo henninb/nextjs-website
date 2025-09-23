@@ -21,6 +21,17 @@ export const fetchValidationAmount = async (
     if (!response.ok) {
       if (response.status === 404) {
         console.log("Resource not found (404)");
+        // Gracefully handle 404 by returning zero values so UI can render
+        const zeroValidation: ValidationAmount = {
+          validationId: 0,
+          // Intentionally leave date unset so UI can show "No Date"
+          // @ts-expect-error allow undefined for graceful UI handling
+          validationDate: undefined,
+          amount: 0,
+          transactionState: "cleared",
+          activeStatus: true,
+        } as unknown as ValidationAmount;
+        return zeroValidation;
       }
       throw new Error(
         `Failed to fetch validation amount data: ${response.statusText}`,

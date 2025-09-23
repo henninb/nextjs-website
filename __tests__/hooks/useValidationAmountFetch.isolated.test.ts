@@ -108,7 +108,7 @@ describe("fetchValidationAmount (Isolated)", () => {
   });
 
   describe("Error Handling", () => {
-    it("should handle 404 resource not found", async () => {
+    it("should handle 404 resource not found by returning zero values", async () => {
       const mockLog = consoleSpy.start().log;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
@@ -120,10 +120,17 @@ describe("fetchValidationAmount (Isolated)", () => {
           .mockResolvedValue(JSON.stringify({ message: "Not Found" })),
       });
 
-      await expect(fetchValidationAmount("nonexistent")).rejects.toThrow(
-        "Failed to fetch validation amount data: Not Found",
-      );
+      const result = await fetchValidationAmount("nonexistent");
 
+      expect(result).toEqual(
+        expect.objectContaining({
+          validationId: 0,
+          amount: 0,
+          transactionState: "cleared",
+          activeStatus: true,
+        }),
+      );
+      expect(result.validationDate).toBeUndefined();
       expect(mockLog).toHaveBeenCalledWith("Resource not found (404)");
     });
 
