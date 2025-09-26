@@ -45,6 +45,7 @@ import ArticleIcon from "@mui/icons-material/Article";
 import RestoreIcon from "@mui/icons-material/Restore";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import WatchIcon from "@mui/icons-material/Watch";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -57,6 +58,7 @@ interface LayoutProps {
 
 const financeLinks = [
   { text: "Home", href: "/finance/", icon: <HomeIcon /> },
+  { text: "Trends", href: "/finance/trends", icon: <TrendingUpIcon /> },
   { text: "Transfer", href: "/finance/transfers", icon: <SyncAltIcon /> },
   {
     text: "Transfer NextGen",

@@ -210,3 +210,12 @@ pre {
 .form-button:hover {
   background-color: #1d4ed8; /* Darker blue on hover */
 }
+
+/* Monthly Spending Trends Styles */
+.positive-change {
+  color: #4caf50 !important; /* Green for positive changes */
+}
+
+.negative-change {
+  color: #f44336 !important; /* Red for negative changes */
+}
