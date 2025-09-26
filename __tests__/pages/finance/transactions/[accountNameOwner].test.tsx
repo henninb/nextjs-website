@@ -403,4 +403,37 @@ describe("AccountTransactions Component", () => {
       screen.getByRole("heading", { name: "Test Account" }),
     ).toBeInTheDocument();
   });
+
+  it("should render page without error state when validation amount returns 404", () => {
+    // Mock validation amount fetch to return successful query with default values (404 handled gracefully)
+    (useValidationAmountFetch.default as jest.Mock).mockReturnValue({
+      data: {
+        validationId: 0,
+        amount: 0,
+        validationDate: new Date("1970-01-01"),
+        transactionState: "cleared",
+        activeStatus: true,
+      },
+      isSuccess: true,
+      isLoading: false,
+      isError: false,
+      error: null,
+    });
+
+    render(<AccountTransactions />, { wrapper: createWrapper() });
+
+    // Main test goal: Page should render normally without entering error state
+    expect(
+      screen.getByRole("heading", { name: "Test Account" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("data-grid")).toBeInTheDocument();
+
+    // The validation amount button should render with default values (not "No Date")
+    // Based on the test output we can see it shows: "$0.00 - 12/31/1969, 6:00:00 PM"
+    expect(screen.queryByText("No Date")).not.toBeInTheDocument();
+
+    // Most importantly: Should NOT show error display (the main issue the user reported)
+    expect(screen.queryByText("Try again")).not.toBeInTheDocument();
+    expect(screen.queryByText("Error")).not.toBeInTheDocument();
+  });
 });

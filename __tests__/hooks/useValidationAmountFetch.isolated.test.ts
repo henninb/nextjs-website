@@ -130,7 +130,7 @@ describe("fetchValidationAmount (Isolated)", () => {
           activeStatus: true,
         }),
       );
-      expect(result.validationDate).toBeUndefined();
+      expect(result.validationDate).toEqual(new Date("1970-01-01"));
       expect(mockLog).toHaveBeenCalledWith("Resource not found (404)");
     });
 
