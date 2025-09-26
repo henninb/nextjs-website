@@ -49,9 +49,9 @@ check_header() {
     header_name="$1"
     header_description="$2"
     pci_relevance="$3"
-    
+
     header_value=$(echo "$HEADERS" | grep -i "^$header_name:" | cut -d' ' -f2- | tr -d '\r\n')
-    
+
     printf "%-30s: " "$header_name"
     if [ -n "$header_value" ]; then
         echo "PRESENT - $header_value"
