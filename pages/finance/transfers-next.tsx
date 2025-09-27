@@ -40,6 +40,7 @@ import useTransferUpdateGql from "../../hooks/useTransferUpdateGql";
 import useAccountFetchGql from "../../hooks/useAccountFetchGql";
 
 export default function TransfersNextGen() {
+  console.log("🔧 TRANSFERS NEXT-GEN COMPONENT LOADED - DEBUG VERSION");
   const router = useRouter();
   const { isAuthenticated, loading } = useAuth();
 
@@ -133,28 +134,61 @@ export default function TransfersNextGen() {
   ]);
 
   useEffect(() => {
-    if (isSuccessAccounts) {
-      setAvailableSourceAccounts(
-        fetchedAccounts.filter((a) => a.accountType === "debit"),
-      );
-      setAvailableDestinationAccounts(
-        fetchedAccounts.filter((a) => a.accountType === "debit"),
-      );
+    console.log("[TransfersNextGen] Account fetch effect triggered:", {
+      isSuccessAccounts,
+      isFetchingAccounts,
+      errorAccounts: errorAccounts?.message,
+      fetchedAccountsLength: fetchedAccounts?.length,
+      fetchedAccounts,
+    });
+
+    if (isSuccessAccounts && fetchedAccounts) {
+      const allAccountTypes = fetchedAccounts.map((a) => ({
+        name: a.accountNameOwner,
+        type: a.accountType,
+      }));
+      const uniqueAccountTypes = [
+        ...new Set(fetchedAccounts.map((a) => a.accountType)),
+      ];
+
+      console.log("[TransfersNextGen] Account type analysis:", {
+        totalAccounts: fetchedAccounts.length,
+        uniqueAccountTypes,
+        sampleAccountTypes: allAccountTypes.slice(0, 10),
+        firstFewAccounts: fetchedAccounts.slice(0, 3),
+      });
+
+      // Filter for debit accounts only (trying capital D)
+      const debitAccounts = fetchedAccounts.filter((a) => a.accountType === "Debit");
+      console.log("[TransfersNextGen] Account filtering results:", {
+        totalAccounts: fetchedAccounts.length,
+        debitAccountsLength: debitAccounts.length,
+        uniqueAccountTypes,
+        sampleAccountTypes: allAccountTypes.slice(0, 5),
+      });
+      setAvailableSourceAccounts(debitAccounts);
+      setAvailableDestinationAccounts(debitAccounts);
+    } else if (errorAccounts) {
+      console.error("[TransfersNextGen] Account fetch error:", {
+        error: errorAccounts,
+        message: errorAccounts.message,
+        stack: errorAccounts.stack,
+      });
     }
-  }, [isSuccessAccounts, fetchedAccounts]);
+  }, [isSuccessAccounts, fetchedAccounts, errorAccounts, isFetchingAccounts]);
 
   useEffect(() => {
     if (selectedSourceAccount) {
       setAvailableDestinationAccounts(
         (fetchedAccounts || []).filter(
           (a) =>
-            a.accountType === "debit" &&
+            a.accountType === "Debit" &&
             a.accountNameOwner !== selectedSourceAccount.accountNameOwner,
         ),
       );
     } else if (isSuccessAccounts) {
       setAvailableDestinationAccounts(
-        (fetchedAccounts || []).filter((a) => a.accountType === "debit"),
+        (fetchedAccounts || []).filter((a) => a.accountType === "Debit"),
       );
     }
   }, [selectedSourceAccount, isSuccessAccounts, fetchedAccounts]);
@@ -164,16 +198,24 @@ export default function TransfersNextGen() {
       setAvailableSourceAccounts(
         (fetchedAccounts || []).filter(
           (a) =>
-            a.accountType === "debit" &&
+            a.accountType === "Debit" &&
             a.accountNameOwner !== selectedDestinationAccount.accountNameOwner,
         ),
       );
     } else if (isSuccessAccounts) {
       setAvailableSourceAccounts(
-        (fetchedAccounts || []).filter((a) => a.accountType === "debit"),
+        (fetchedAccounts || []).filter((a) => a.accountType === "Debit"),
       );
     }
   }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);
+
+  // Reset selected accounts when modal is closed
+  useEffect(() => {
+    if (!showModalAdd) {
+      setSelectedSourceAccount(null);
+      setSelectedDestinationAccount(null);
+    }
+  }, [showModalAdd]);
 
   const handleSourceAccountChange = (_e: any, newValue: Account | null) => {
     setSelectedSourceAccount(newValue);
@@ -476,15 +518,22 @@ export default function TransfersNextGen() {
             }
             value={selectedSourceAccount}
             onChange={handleSourceAccountChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Source Account"
-                fullWidth
-                margin="normal"
-                placeholder="Select a source account"
-              />
-            )}
+            renderInput={(params) => {
+              console.log("[TransfersNextGen] Source Autocomplete render:", {
+                availableSourceAccountsLength: availableSourceAccounts.length,
+                availableSourceAccounts,
+                selectedSourceAccount,
+              });
+              return (
+                <TextField
+                  {...params}
+                  label="Source Account"
+                  fullWidth
+                  margin="normal"
+                  placeholder="Select a source account"
+                />
+              );
+            }}
           />
 
           <Autocomplete

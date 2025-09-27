@@ -27,7 +27,7 @@ jest.mock("@mui/x-data-grid", () => ({
 // Module paths
 import * as AuthProvider from "../../../components/AuthProvider";
 import TransfersNextGen from "../../../pages/finance/transfers-next";
-import * as useAccountFetchGql from "../../../hooks/useAccountFetchGql";
+import * as useAccountFetch from "../../../hooks/useAccountFetch";
 import * as useTransferFetchGql from "../../../hooks/useTransferFetchGql";
 import * as useTransferInsertGql from "../../../hooks/useTransferInsertGql";
 import * as useTransferDeleteGql from "../../../hooks/useTransferDeleteGql";
@@ -52,6 +52,46 @@ jest.mock("../../../components/USDAmountInput", () => {
         aria-label={label || "Amount"}
         {...props}
       />
+    );
+  };
+});
+
+// Mock MUI Autocomplete to better test account selection
+jest.mock("@mui/material/Autocomplete", () => {
+  return function MockAutocomplete({
+    options,
+    getOptionLabel,
+    value,
+    onChange,
+    renderInput,
+    ...props
+  }: any) {
+    const handleOptionClick = (option: any) => {
+      onChange({}, option);
+    };
+
+    // Get label from renderInput to identify which autocomplete this is
+    const inputElement = renderInput({
+      InputProps: { "aria-label": props["aria-label"] || "autocomplete" },
+    });
+    const isSourceAccount = inputElement.props.label?.includes("Source");
+    const fieldType = isSourceAccount ? "source" : "destination";
+
+    return (
+      <div data-testid={`autocomplete-${fieldType}`}>
+        {inputElement}
+        <div data-testid="autocomplete-options">
+          {options.map((option: any, index: number) => (
+            <div
+              key={index}
+              onClick={() => handleOptionClick(option)}
+              data-testid={`option-${fieldType}-${getOptionLabel ? getOptionLabel(option) : option}`}
+            >
+              {getOptionLabel ? getOptionLabel(option) : option}
+            </div>
+          ))}
+        </div>
+      </div>
     );
   };
 });
@@ -91,7 +131,7 @@ jest.mock("../../../components/ErrorDisplay", () => ({
   ),
 }));
 
-jest.mock("../../../hooks/useAccountFetchGql");
+jest.mock("../../../hooks/useAccountFetch");
 jest.mock("../../../hooks/useTransferFetchGql");
 jest.mock("../../../hooks/useTransferInsertGql");
 jest.mock("../../../hooks/useTransferDeleteGql");
@@ -158,7 +198,7 @@ describe("TransfersNextGen page", () => {
       refetch: jest.fn(),
     });
 
-    (useAccountFetchGql.default as jest.Mock).mockReturnValue({
+    (useAccountFetch.default as jest.Mock).mockReturnValue({
       data: mockAccounts,
       isSuccess: true,
       isFetching: false,
@@ -249,7 +289,7 @@ describe("TransfersNextGen page", () => {
       error: new Error("boom transfers"),
       refetch: refetchTransfers,
     });
-    (useAccountFetchGql.default as jest.Mock).mockReturnValue({
+    (useAccountFetch.default as jest.Mock).mockReturnValue({
       data: null,
       isSuccess: false,
       isFetching: false,
@@ -289,5 +329,153 @@ describe("TransfersNextGen page", () => {
     fireEvent.click(submit);
 
     expect(mockInsert).toHaveBeenCalled();
+  });
+
+  describe("Account Dropdown Population", () => {
+    it("populates source and destination account dropdowns when dialog opens", async () => {
+      render(<TransfersNextGen />, { wrapper: createWrapper() });
+
+      // Click Add Transfer button to open dialog
+      const addButton = screen.getByText("Add Transfer");
+      fireEvent.click(addButton);
+
+      // Verify Source Account autocomplete is populated
+      const sourceAccountField = screen.getByLabelText(/Source Account/i);
+      expect(sourceAccountField).toBeInTheDocument();
+
+      // Check if account options are available in both dropdowns
+      expect(
+        screen.getByTestId("option-source-Checking Account"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("option-source-Savings Account"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("option-destination-Checking Account"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("option-destination-Savings Account"),
+      ).toBeInTheDocument();
+    });
+
+    it("filters destination accounts when source account is selected", async () => {
+      const { waitFor } = require("@testing-library/react");
+
+      render(<TransfersNextGen />, { wrapper: createWrapper() });
+
+      // Open dialog
+      fireEvent.click(screen.getByText("Add Transfer"));
+
+      // Initially both accounts should be available in destination
+      expect(
+        screen.getByTestId("option-destination-Checking Account"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("option-destination-Savings Account"),
+      ).toBeInTheDocument();
+
+      // Select source account by clicking the option from source dropdown
+      fireEvent.click(screen.getByTestId("option-source-Checking Account"));
+
+      // Wait for the component to re-render and filter the destination options
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId("option-destination-Checking Account"),
+        ).not.toBeInTheDocument();
+      });
+
+      // Destination dropdown should only have Savings Account
+      expect(
+        screen.getByTestId("option-destination-Savings Account"),
+      ).toBeInTheDocument();
+    });
+
+    it("resets account options when no source account is selected", async () => {
+      render(<TransfersNextGen />, { wrapper: createWrapper() });
+
+      // Open dialog
+      fireEvent.click(screen.getByText("Add Transfer"));
+
+      // Initially both accounts should be available for both dropdowns
+      expect(
+        screen.getByTestId("option-source-Checking Account"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("option-source-Savings Account"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("option-destination-Checking Account"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("option-destination-Savings Account"),
+      ).toBeInTheDocument();
+    });
+
+    it("handles empty account list gracefully", async () => {
+      // Mock empty accounts list
+      (useAccountFetch.default as jest.Mock).mockReturnValue({
+        data: [],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<TransfersNextGen />, { wrapper: createWrapper() });
+
+      // Open dialog
+      fireEvent.click(screen.getByText("Add Transfer"));
+
+      // Verify dropdowns are present but no options
+      expect(
+        screen.queryByTestId("option-source-Checking Account"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("option-source-Savings Account"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("option-destination-Checking Account"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("option-destination-Savings Account"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("updates transfer data when accounts are selected", async () => {
+      const mockInsert = jest.fn().mockResolvedValue({});
+      (useTransferInsertGql.default as jest.Mock).mockReturnValue({
+        mutateAsync: mockInsert,
+      });
+
+      render(<TransfersNextGen />, { wrapper: createWrapper() });
+
+      // Open dialog
+      fireEvent.click(screen.getByText("Add Transfer"));
+
+      // Select source account
+      fireEvent.click(screen.getByTestId("option-source-Checking Account"));
+
+      // Select destination account
+      fireEvent.click(screen.getByTestId("option-destination-Savings Account"));
+
+      // Set amount and submit to verify transfer data is populated
+      const amountInput = screen.getByLabelText(/Amount/i);
+      fireEvent.change(amountInput, { target: { value: "100" } });
+
+      // Submit
+      const submitButton = screen.getByRole("button", {
+        name: /Transfer \$|Add Transfer/i,
+      });
+      fireEvent.click(submitButton);
+
+      // Verify the mutation was called with correct data
+      expect(mockInsert).toHaveBeenCalledWith({
+        payload: expect.objectContaining({
+          sourceAccount: "Checking Account",
+          destinationAccount: "Savings Account",
+          amount: "100", // Amount comes through as string from input
+        }),
+      });
+    });
   });
 });
