@@ -28,6 +28,7 @@ jest.mock("@mui/x-data-grid", () => ({
 import * as AuthProvider from "../../../components/AuthProvider";
 import TransfersNextGen from "../../../pages/finance/transfers-next";
 import * as useAccountFetch from "../../../hooks/useAccountFetch";
+import * as useAccountFetchGql from "../../../hooks/useAccountFetchGql";
 import * as useTransferFetchGql from "../../../hooks/useTransferFetchGql";
 import * as useTransferInsertGql from "../../../hooks/useTransferInsertGql";
 import * as useTransferDeleteGql from "../../../hooks/useTransferDeleteGql";
@@ -132,6 +133,7 @@ jest.mock("../../../components/ErrorDisplay", () => ({
 }));
 
 jest.mock("../../../hooks/useAccountFetch");
+jest.mock("../../../hooks/useAccountFetchGql");
 jest.mock("../../../hooks/useTransferFetchGql");
 jest.mock("../../../hooks/useTransferInsertGql");
 jest.mock("../../../hooks/useTransferDeleteGql");
@@ -199,6 +201,14 @@ describe("TransfersNextGen page", () => {
     });
 
     (useAccountFetch.default as jest.Mock).mockReturnValue({
+      data: mockAccounts,
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    (useAccountFetchGql.default as jest.Mock).mockReturnValue({
       data: mockAccounts,
       isSuccess: true,
       isFetching: false,
@@ -290,6 +300,13 @@ describe("TransfersNextGen page", () => {
       refetch: refetchTransfers,
     });
     (useAccountFetch.default as jest.Mock).mockReturnValue({
+      data: null,
+      isSuccess: false,
+      isFetching: false,
+      error: new Error("boom accounts"),
+      refetch: refetchAccounts,
+    });
+    (useAccountFetchGql.default as jest.Mock).mockReturnValue({
       data: null,
       isSuccess: false,
       isFetching: false,
@@ -414,6 +431,13 @@ describe("TransfersNextGen page", () => {
     it("handles empty account list gracefully", async () => {
       // Mock empty accounts list
       (useAccountFetch.default as jest.Mock).mockReturnValue({
+        data: [],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      (useAccountFetchGql.default as jest.Mock).mockReturnValue({
         data: [],
         isSuccess: true,
         isFetching: false,

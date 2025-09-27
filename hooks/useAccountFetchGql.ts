@@ -123,18 +123,5 @@ export default function useAccountFetchGql() {
       return failureCount < 1;
     },
     enabled: !loading && isAuthenticated,
-    onError: (error) => {
-      console.error("[useAccountFetchGql] useQuery onError:", {
-        error,
-        message: error.message,
-        stack: error.stack,
-      });
-    },
-    onSuccess: (data) => {
-      console.log("[useAccountFetchGql] useQuery onSuccess:", {
-        dataLength: data?.length,
-        data,
-      });
-    },
   });
 }
