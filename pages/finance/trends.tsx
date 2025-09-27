@@ -175,9 +175,7 @@ const TrendsPage = () => {
           title="No Spending Data Found"
           message="Start by adding some transactions to see your spending trends."
           dataType="generic"
-          variant="create"
-          actionLabel="Add Transactions"
-          onAction={() => router.push("/finance")}
+          variant="informational"
         />
       </FinanceLayout>
     );

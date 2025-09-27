@@ -81,7 +81,9 @@ jest.mock("../../../components/LoadingState", () => ({
   __esModule: true,
   default: ({ message }: { message?: string }) => (
     <div data-testid="loading-state">
-      <div role="progressbar" aria-label="Loading">Loading...</div>
+      <div role="progressbar" aria-label="Loading">
+        Loading...
+      </div>
       {message && <div>{message}</div>}
     </div>
   ),
@@ -254,7 +256,9 @@ describe("TrendsPage", () => {
       render(<TrendsPage />, { wrapper: createWrapper() });
 
       // Check for FinanceLayout characteristics - main page heading
-      expect(screen.getByRole("heading", { name: /monthly spending trends/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /monthly spending trends/i }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -559,7 +563,7 @@ describe("TrendsPage", () => {
       ).toBeInTheDocument();
     });
 
-    it("should provide navigation to add transactions in empty state", () => {
+    it("should NOT provide navigation to add transactions in empty state", () => {
       (useSpendingTrends.default as jest.Mock).mockReturnValue({
         data: {
           monthlySpending: [],
@@ -576,7 +580,8 @@ describe("TrendsPage", () => {
 
       render(<TrendsPage />, { wrapper: createWrapper() });
 
-      expect(screen.getByText("Add Transactions")).toBeInTheDocument();
+      expect(screen.queryByText("Add Transactions")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("empty-action")).not.toBeInTheDocument();
     });
   });
 

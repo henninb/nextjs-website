@@ -168,53 +168,66 @@ if (!global.fetch) {
   // Simple fetch implementation with GraphQL support
   global.fetch = jest.fn((url, options) => {
     // Check if this is a GraphQL request
-    if (url && (url.includes('/graphql') || (typeof url === 'string' && url.endsWith('/graphql')))) {
+    if (
+      url &&
+      (url.includes("/graphql") ||
+        (typeof url === "string" && url.endsWith("/graphql")))
+    ) {
       try {
         const body = options?.body ? JSON.parse(options.body) : {};
-        const query = body.query || '';
+        const query = body.query || "";
 
         // Mock GraphQL accounts query
-        if (query.includes('query Accounts')) {
-          return Promise.resolve(new Response(JSON.stringify({
-            data: {
-              accounts: [
-                {
-                  accountId: 1,
-                  accountNameOwner: "Checking Account",
-                  accountType: "Debit",
-                  activeStatus: true,
-                  moniker: "CHK",
-                  outstanding: 0,
-                  future: 0,
-                  cleared: 0,
-                  dateClosed: null,
-                  validationDate: null,
-                  dateAdded: null,
-                  dateUpdated: null
+        if (query.includes("query Accounts")) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                data: {
+                  accounts: [
+                    {
+                      accountId: 1,
+                      accountNameOwner: "Checking Account",
+                      accountType: "Debit",
+                      activeStatus: true,
+                      moniker: "CHK",
+                      outstanding: 0,
+                      future: 0,
+                      cleared: 0,
+                      dateClosed: null,
+                      validationDate: null,
+                      dateAdded: null,
+                      dateUpdated: null,
+                    },
+                    {
+                      accountId: 2,
+                      accountNameOwner: "Savings Account",
+                      accountType: "Debit",
+                      activeStatus: true,
+                      moniker: "SAV",
+                      outstanding: 0,
+                      future: 0,
+                      cleared: 0,
+                      dateClosed: null,
+                      validationDate: null,
+                      dateAdded: null,
+                      dateUpdated: null,
+                    },
+                  ],
                 },
-                {
-                  accountId: 2,
-                  accountNameOwner: "Savings Account",
-                  accountType: "Debit",
-                  activeStatus: true,
-                  moniker: "SAV",
-                  outstanding: 0,
-                  future: 0,
-                  cleared: 0,
-                  dateClosed: null,
-                  validationDate: null,
-                  dateAdded: null,
-                  dateUpdated: null
-                }
-              ]
-            }
-          }), { status: 200 }));
+              }),
+              { status: 200 },
+            ),
+          );
         }
 
         // Mock other GraphQL queries with empty data
-        return Promise.resolve(new Response(JSON.stringify({ data: {} }), { status: 200 }));
+        return Promise.resolve(
+          new Response(JSON.stringify({ data: {} }), { status: 200 }),
+        );
       } catch (e) {
-        return Promise.resolve(new Response(JSON.stringify({ data: {} }), { status: 200 }));
+        return Promise.resolve(
+          new Response(JSON.stringify({ data: {} }), { status: 200 }),
+        );
       }
     }
 

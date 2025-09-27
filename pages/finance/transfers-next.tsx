@@ -159,7 +159,9 @@ export default function TransfersNextGen() {
       });
 
       // Filter for debit accounts only (case-insensitive for GraphQL/REST API compatibility)
-      const debitAccounts = fetchedAccounts.filter((a) => a.accountType.toLowerCase() === "debit");
+      const debitAccounts = fetchedAccounts.filter(
+        (a) => a.accountType.toLowerCase() === "debit",
+      );
       console.log("[TransfersNextGen] Account filtering results:", {
         totalAccounts: fetchedAccounts.length,
         debitAccountsLength: debitAccounts.length,
@@ -188,7 +190,9 @@ export default function TransfersNextGen() {
       );
     } else if (isSuccessAccounts) {
       setAvailableDestinationAccounts(
-        (fetchedAccounts || []).filter((a) => a.accountType.toLowerCase() === "debit"),
+        (fetchedAccounts || []).filter(
+          (a) => a.accountType.toLowerCase() === "debit",
+        ),
       );
     }
   }, [selectedSourceAccount, isSuccessAccounts, fetchedAccounts]);
@@ -204,7 +208,9 @@ export default function TransfersNextGen() {
       );
     } else if (isSuccessAccounts) {
       setAvailableSourceAccounts(
-        (fetchedAccounts || []).filter((a) => a.accountType.toLowerCase() === "debit"),
+        (fetchedAccounts || []).filter(
+          (a) => a.accountType.toLowerCase() === "debit",
+        ),
       );
     }
   }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);

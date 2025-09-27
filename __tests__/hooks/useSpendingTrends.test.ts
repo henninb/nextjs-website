@@ -65,12 +65,16 @@ describe("useSpendingTrends", () => {
           createMockTransaction({ amount: -100.0 }),
           createMockTransaction({ amount: -50.0 }),
         ];
-        global.fetch = createFetchMock(mockTransactions);
+        const mockPageResponse = {
+          content: mockTransactions,
+          last: true,
+        };
+        global.fetch = createFetchMock(mockPageResponse);
 
         await fetchAllTransactionsForTrends({ dateRange: { months: 12 } });
 
         expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining("/api/transaction/select/all"),
+          expect.stringContaining("/api/transaction/date-range"),
           expect.objectContaining({
             method: "GET",
             credentials: "include",
@@ -89,7 +93,8 @@ describe("useSpendingTrends", () => {
 
       it("should default to 12 months when no date range specified", async () => {
         const mockTransactions = [createMockTransaction()];
-        global.fetch = createFetchMock(mockTransactions);
+        const mockPageResponse = { content: mockTransactions, last: true };
+        global.fetch = createFetchMock(mockPageResponse);
 
         await fetchAllTransactionsForTrends();
 
@@ -99,7 +104,8 @@ describe("useSpendingTrends", () => {
 
       it("should use custom month range when specified", async () => {
         const mockTransactions = [createMockTransaction()];
-        global.fetch = createFetchMock(mockTransactions);
+        const mockPageResponse = { content: mockTransactions, last: true };
+        global.fetch = createFetchMock(mockPageResponse);
 
         await fetchAllTransactionsForTrends({ dateRange: { months: 6 } });
 
@@ -112,7 +118,17 @@ describe("useSpendingTrends", () => {
           createMockTransaction({ transactionId: 1, amount: -100.0 }),
           createMockTransaction({ transactionId: 2, amount: -75.0 }),
         ];
-        global.fetch = createFetchMock(mockTransactions);
+        // Mock Spring Boot paginated response format
+        const mockPageResponse = {
+          content: mockTransactions,
+          last: true,
+          totalPages: 1,
+          totalElements: 2,
+          first: true,
+          numberOfElements: 2,
+          size: 100,
+        };
+        global.fetch = createFetchMock(mockPageResponse);
 
         const result = await fetchAllTransactionsForTrends();
 

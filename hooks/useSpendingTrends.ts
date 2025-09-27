@@ -42,9 +42,8 @@ export interface TrendsFilters extends SpendingFilters {
 }
 
 /**
- * Fetch all transactions for trends analysis
- * Note: This assumes we can call a general transaction endpoint
- * In a real implementation, this might need to be adjusted based on the actual API
+ * Fetch transactions for trends analysis using the date-range endpoint
+ * Uses the paginated date-range endpoint from raspi-finance-endpoint
  */
 export const fetchAllTransactionsForTrends = async (
   filters: TrendsFilters = {},
@@ -58,34 +57,63 @@ export const fetchAllTransactionsForTrends = async (
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - monthsBack);
 
-    // This endpoint might need to be created or adjusted based on the actual API structure
-    // For now, I'm assuming a general transaction endpoint with date filtering
-    const params = new URLSearchParams({
-      startDate: startDate.toISOString().split("T")[0],
-      endDate: endDate.toISOString().split("T")[0],
-    });
+    // Use the new date-range endpoint with pagination to get all transactions
+    const allTransactions: Transaction[] = [];
+    let page = 0;
+    const size = 100; // Larger page size for efficiency
+    let hasMoreData = true;
 
-    const response = await fetch(`/api/transaction/select/all?${params}`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    while (hasMoreData) {
+      const params = new URLSearchParams({
+        startDate: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
+        page: page.toString(),
+        size: size.toString(),
+      });
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No transactions found for trends analysis");
-        return [];
+      const response = await fetch(`/api/transaction/date-range?${params}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log("No transactions found for trends analysis");
+          return [];
+        }
+        throw new Error(
+          `Failed to fetch transactions for trends: ${response.statusText}`,
+        );
       }
-      throw new Error(
-        `Failed to fetch transactions for trends: ${response.statusText}`,
-      );
+
+      const pageData = await response.json();
+
+      // Handle null or empty response
+      if (!pageData) {
+        hasMoreData = false;
+        continue;
+      }
+
+      // Spring Boot Page format: { content: [], pageable: {}, totalPages: N, ... }
+      if (pageData.content && Array.isArray(pageData.content)) {
+        allTransactions.push(...pageData.content);
+
+        // Check if we have more pages
+        hasMoreData = !pageData.last && pageData.content.length > 0;
+        page++;
+      } else {
+        // Fallback for non-paginated response
+        const transactions = Array.isArray(pageData) ? pageData : [];
+        allTransactions.push(...transactions);
+        hasMoreData = false;
+      }
     }
 
-    const transactions = await response.json();
-    return Array.isArray(transactions) ? transactions : [];
+    return allTransactions;
   } catch (error: any) {
     console.error("Error fetching transactions for trends:", error);
     throw new Error(`Failed to fetch trends data: ${error.message}`);
