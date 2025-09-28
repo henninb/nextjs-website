@@ -67,6 +67,11 @@ const financeLinks = [
   },
   { text: "Payments", href: "/finance/payments", icon: <PaymentIcon /> },
   {
+    text: "Payment NextGen",
+    href: "/finance/payments-next",
+    icon: <PaymentIcon />,
+  },
+  {
     text: "PaymentsRequired",
     href: "/finance/paymentrequired",
     icon: <ReceiptIcon />,

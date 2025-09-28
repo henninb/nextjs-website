@@ -389,7 +389,7 @@ export default function PaymentsNextGen() {
 
           <Autocomplete
             options={(fetchedAccounts || []).filter(
-              (a) => a.accountType === "debit",
+              (a) => a.accountType.toLowerCase() === "debit",
             )}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
             isOptionEqualToValue={(o, v) =>
@@ -421,7 +421,7 @@ export default function PaymentsNextGen() {
 
           <Autocomplete
             options={(fetchedAccounts || []).filter(
-              (a) => a.accountType === "credit",
+              (a) => a.accountType.toLowerCase() === "credit",
             )}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
             isOptionEqualToValue={(o, v) =>

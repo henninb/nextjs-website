@@ -281,17 +281,17 @@ describe("trendAnalysis utilities", () => {
           createMockTransaction({
             accountType: "credit",
             amount: -100.0,
-            accountNameOwner: "credit-card"
+            accountNameOwner: "credit-card",
           }),
           createMockTransaction({
             accountType: "debit",
             amount: -75.0,
-            accountNameOwner: "checking"
+            accountNameOwner: "checking",
           }),
           createMockTransaction({
             accountType: "credit",
             amount: -50.0,
-            accountNameOwner: "credit-card-2"
+            accountNameOwner: "credit-card-2",
           }),
         ];
 
@@ -307,23 +307,23 @@ describe("trendAnalysis utilities", () => {
         const transactions = [
           createMockTransaction({
             description: "grocery store",
-            amount: -100.0
+            amount: -100.0,
           }),
           createMockTransaction({
             description: "credit card payment",
-            amount: -200.0
+            amount: -200.0,
           }),
           createMockTransaction({
             description: "autopay payment",
-            amount: -150.0
+            amount: -150.0,
           }),
           createMockTransaction({
             category: "payment",
-            amount: -75.0
+            amount: -75.0,
           }),
           createMockTransaction({
             description: "restaurant",
-            amount: -50.0
+            amount: -50.0,
           }),
         ];
 
@@ -339,11 +339,11 @@ describe("trendAnalysis utilities", () => {
         const transactions = [
           createMockTransaction({
             description: "grocery store",
-            amount: -100.0
+            amount: -100.0,
           }),
           createMockTransaction({
             description: "credit card payment",
-            amount: -200.0
+            amount: -200.0,
           }),
         ];
 
