@@ -25,14 +25,14 @@ describe("useSpendingTrends", () => {
   ): Transaction => ({
     transactionId: Math.floor(Math.random() * 1000),
     transactionDate: new Date("2024-01-15"),
-    accountNameOwner: "test-account",
+    accountNameOwner: "test-credit-account",
     description: "Test Transaction",
     category: "Food",
     amount: -100.0,
     transactionState: "cleared",
     transactionType: "expense",
     reoccurringType: "onetime",
-    accountType: "debit",
+    accountType: "credit", // Changed from "debit" to "credit" for trend analysis
     activeStatus: true,
     notes: "",
     guid: "test-guid",

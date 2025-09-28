@@ -27,7 +27,7 @@ describe("trendAnalysis utilities", () => {
     transactionState: "cleared",
     transactionType: "expense",
     reoccurringType: "onetime",
-    accountType: "debit",
+    accountType: "credit", // Default to credit for consistency with trend analysis
     activeStatus: true,
     notes: "",
     guid: "test-guid",
@@ -274,6 +274,85 @@ describe("trendAnalysis utilities", () => {
           Food: 100.0,
           Entertainment: 50.0,
         });
+      });
+
+      it("should filter by account type when accountTypeFilter is provided", () => {
+        const transactions = [
+          createMockTransaction({
+            accountType: "credit",
+            amount: -100.0,
+            accountNameOwner: "credit-card"
+          }),
+          createMockTransaction({
+            accountType: "debit",
+            amount: -75.0,
+            accountNameOwner: "checking"
+          }),
+          createMockTransaction({
+            accountType: "credit",
+            amount: -50.0,
+            accountNameOwner: "credit-card-2"
+          }),
+        ];
+
+        const result = aggregateMonthlySpend(transactions, {
+          accountTypeFilter: ["credit"],
+        });
+
+        expect(result[0].totalSpend).toBe(150.0);
+        expect(result[0].transactionCount).toBe(2);
+      });
+
+      it("should exclude payment transactions when excludePayments is true", () => {
+        const transactions = [
+          createMockTransaction({
+            description: "grocery store",
+            amount: -100.0
+          }),
+          createMockTransaction({
+            description: "credit card payment",
+            amount: -200.0
+          }),
+          createMockTransaction({
+            description: "autopay payment",
+            amount: -150.0
+          }),
+          createMockTransaction({
+            category: "payment",
+            amount: -75.0
+          }),
+          createMockTransaction({
+            description: "restaurant",
+            amount: -50.0
+          }),
+        ];
+
+        const result = aggregateMonthlySpend(transactions, {
+          excludePayments: true,
+        });
+
+        expect(result[0].totalSpend).toBe(150.0);
+        expect(result[0].transactionCount).toBe(2);
+      });
+
+      it("should include payment transactions when excludePayments is false", () => {
+        const transactions = [
+          createMockTransaction({
+            description: "grocery store",
+            amount: -100.0
+          }),
+          createMockTransaction({
+            description: "credit card payment",
+            amount: -200.0
+          }),
+        ];
+
+        const result = aggregateMonthlySpend(transactions, {
+          excludePayments: false,
+        });
+
+        expect(result[0].totalSpend).toBe(300.0);
+        expect(result[0].transactionCount).toBe(2);
       });
     });
 

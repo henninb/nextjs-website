@@ -21,6 +21,8 @@ export interface SpendingFilters {
   accountFilter?: string[];
   categoryFilter?: string[];
   excludeCategories?: string[];
+  accountTypeFilter?: string[]; // Filter by account types (e.g., ["credit"])
+  excludePayments?: boolean; // Exclude payment-related transactions
 }
 
 export interface MonthOverMonthComparison {
@@ -44,6 +46,8 @@ export const aggregateMonthlySpend = (
     accountFilter = [],
     categoryFilter = [],
     excludeCategories = [],
+    accountTypeFilter = [],
+    excludePayments = true,
   } = filters;
 
   if (!Array.isArray(transactions)) {
@@ -86,6 +90,34 @@ export const aggregateMonthlySpend = (
       excludeCategories.includes(transaction.category || "")
     ) {
       continue;
+    }
+
+    // Filter by account type (e.g., only credit accounts)
+    if (
+      accountTypeFilter.length > 0 &&
+      !accountTypeFilter.includes(transaction.accountType || "")
+    ) {
+      continue;
+    }
+
+    // Exclude payment transactions
+    if (excludePayments) {
+      const description = (transaction.description || "").toLowerCase();
+      const category = (transaction.category || "").toLowerCase();
+
+      // Common payment patterns
+      const isPayment =
+        description.includes("payment") ||
+        description.includes("autopay") ||
+        description.includes("credit card payment") ||
+        description.includes("cc payment") ||
+        category.includes("payment") ||
+        category === "credit_card_payment" ||
+        category === "autopay";
+
+      if (isPayment) {
+        continue;
+      }
     }
 
     // Get normalized date and extract year-month

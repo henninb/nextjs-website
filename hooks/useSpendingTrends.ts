@@ -1,6 +1,12 @@
 /**
  * React Query hook for fetching and analyzing spending trends
  * Combines transaction data with trend analysis utilities
+ *
+ * Default behavior:
+ * - Only includes credit account transactions
+ * - Excludes payment-related transactions
+ * - Excludes transfers
+ * - Includes refunds
  */
 
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
@@ -127,8 +133,17 @@ export const transformToTrendsData = (
   transactions: Transaction[],
   filters: TrendsFilters = {},
 ): SpendingTrendsData => {
+  // Apply default filters for spending trends: credit accounts only, exclude payments
+  const defaultFilters: SpendingFilters = {
+    accountTypeFilter: ["credit"],
+    excludePayments: true,
+    includeTransfers: false, // Maintain existing default
+    includeRefunds: true, // Maintain existing default
+    ...filters, // Allow user filters to override defaults
+  };
+
   // Apply aggregation with filters
-  const monthlySpending = aggregateMonthlySpend(transactions, filters);
+  const monthlySpending = aggregateMonthlySpend(transactions, defaultFilters);
 
   // Get current and previous month data
   const currentMonth = monthlySpending[0] || null;
