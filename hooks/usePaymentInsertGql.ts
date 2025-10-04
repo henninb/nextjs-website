@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Payment from "../model/Payment";
 
-type InsertPaymentResult = {
-  insertPayment: {
+type CreatePaymentResult = {
+  createPayment: {
     paymentId: number;
     sourceAccount: string;
     destinationAccount: string;
@@ -17,9 +17,9 @@ type InsertPaymentResult = {
   };
 };
 
-const INSERT_PAYMENT_MUTATION = /* GraphQL */ `
-  mutation InsertPayment($input: PaymentInput!) {
-    insertPayment(input: $input) {
+const CREATE_PAYMENT_MUTATION = /* GraphQL */ `
+  mutation CreatePayment($payment: PaymentInput!) {
+    createPayment(payment: $payment) {
       paymentId
       sourceAccount
       destinationAccount
@@ -41,7 +41,7 @@ export default function usePaymentInsertGql() {
     mutationKey: ["insertPaymentGQL"],
     mutationFn: async (variables: { payload: Payment }) => {
       const p = variables.payload;
-      const input = {
+      const payment = {
         sourceAccount: p.sourceAccount,
         destinationAccount: p.destinationAccount,
         transactionDate:
@@ -49,15 +49,13 @@ export default function usePaymentInsertGql() {
             ? p.transactionDate.toISOString()
             : new Date(p.transactionDate).toISOString(),
         amount: p.amount,
-        guidSource: p.guidSource ?? null,
-        guidDestination: p.guidDestination ?? null,
         activeStatus: p.activeStatus,
       };
-      const data = await graphqlRequest<InsertPaymentResult>({
-        query: INSERT_PAYMENT_MUTATION,
-        variables: { input },
+      const data = await graphqlRequest<CreatePaymentResult>({
+        query: CREATE_PAYMENT_MUTATION,
+        variables: { payment },
       });
-      const t = data.insertPayment;
+      const t = data.createPayment;
       const mapped: Payment = {
         paymentId: t.paymentId,
         sourceAccount: t.sourceAccount,

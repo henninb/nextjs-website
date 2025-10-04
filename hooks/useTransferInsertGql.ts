@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Transfer from "../model/Transfer";
-import { generateSecureUUID, isValidUUID } from "../utils/security/secureUUID";
 
-type InsertTransferResult = {
-  insertTransfer: {
+type CreateTransferResult = {
+  createTransfer: {
     transferId: number;
     sourceAccount: string;
     destinationAccount: string;
@@ -18,9 +17,9 @@ type InsertTransferResult = {
   };
 };
 
-const INSERT_TRANSFER_MUTATION = /* GraphQL */ `
-  mutation InsertTransfer($input: TransferInput!) {
-    insertTransfer(input: $input) {
+const CREATE_TRANSFER_MUTATION = /* GraphQL */ `
+  mutation CreateTransfer($transfer: TransferInput!) {
+    createTransfer(transfer: $transfer) {
       transferId
       sourceAccount
       destinationAccount
@@ -42,28 +41,7 @@ export default function useTransferInsertGql() {
     mutationKey: ["insertTransferGQL"],
     mutationFn: async (variables: { payload: Transfer }) => {
       const p = variables.payload;
-
-      // Ensure guidSource and guidDestination are valid UUIDs
-      let guidSource: string | null = null;
-      let guidDestination: string | null = null;
-
-      if (p.guidSource && isValidUUID(p.guidSource)) {
-        guidSource = p.guidSource;
-      } else if (p.guidSource) {
-        guidSource = await generateSecureUUID();
-      } else {
-        guidSource = await generateSecureUUID();
-      }
-
-      if (p.guidDestination && isValidUUID(p.guidDestination)) {
-        guidDestination = p.guidDestination;
-      } else if (p.guidDestination) {
-        guidDestination = await generateSecureUUID();
-      } else {
-        guidDestination = await generateSecureUUID();
-      }
-
-      const input = {
+      const transfer = {
         sourceAccount: p.sourceAccount,
         destinationAccount: p.destinationAccount,
         transactionDate:
@@ -71,15 +49,13 @@ export default function useTransferInsertGql() {
             ? p.transactionDate.toISOString()
             : new Date(p.transactionDate).toISOString(),
         amount: p.amount,
-        guidSource,
-        guidDestination,
         activeStatus: p.activeStatus,
       };
-      const data = await graphqlRequest<InsertTransferResult>({
-        query: INSERT_TRANSFER_MUTATION,
-        variables: { input },
+      const data = await graphqlRequest<CreateTransferResult>({
+        query: CREATE_TRANSFER_MUTATION,
+        variables: { transfer },
       });
-      const t = data.insertTransfer;
+      const t = data.createTransfer;
       const mapped: Transfer = {
         transferId: t.transferId,
         sourceAccount: t.sourceAccount,
