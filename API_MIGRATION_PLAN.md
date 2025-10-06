@@ -97,13 +97,22 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Parameter Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List Active** | `GET /api/parameter/select/active` | `GET /api/parameter/active` | `useParameterFetch.ts` |
-| **Get Single** | `GET /api/parameter/select/{parameterId}` | `GET /api/parameter/{parameterId}` | ❌ Not used |
-| **Create** | `POST /api/parameter/insert` | `POST /api/parameter` | `useParameterInsert.ts` |
-| **Update** | `PUT /api/parameter/update/{parameterId}` | `PUT /api/parameter/{parameterId}` | `useParameterUpdate.ts` |
-| **Delete** | `DELETE /api/parameter/delete/{parameterId}` | `DELETE /api/parameter/{parameterId}` | `useParameterDelete.ts` |
+| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook | Migration Status |
+|-----------|----------------|-----------------|---------------|------------------|
+| **List Active** | `GET /api/parameter/select/active` | `GET /api/parameter/active` | `useParameterFetch.ts` | ✅ **MIGRATED** |
+| **Get Single** | `GET /api/parameter/select/{parameterId}` | `GET /api/parameter/{parameterId}` | ❌ Not used | ✅ **MIGRATED** |
+| **Create** | `POST /api/parameter/insert` | `POST /api/parameter` | `useParameterInsert.ts` | ✅ **MIGRATED** |
+| **Update** | `PUT /api/parameter/update/{parameterName}` | `PUT /api/parameter/{parameterId}` | `useParameterUpdate.ts` | ✅ **MIGRATED** |
+| **Delete** | `DELETE /api/parameter/delete/{parameterName}` | `DELETE /api/parameter/{parameterId}` | `useParameterDelete.ts` | ✅ **MIGRATED** |
+
+**Migration Completed:** 2025-01-15 ✅
+
+**Key Changes:**
+- ✅ Update/Delete now use `parameterId` instead of `parameterName` in URL path
+- ✅ Update sends `newParameter` object in request body (not empty object)
+- ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
+- ✅ Empty lists return `[]` instead of throwing 404
+- ✅ All errors logged to `console.error` (not `console.log`)
 
 ### Payment Endpoints
 
@@ -691,7 +700,258 @@ These hooks:
 
 **Recommendation:** Keep GraphQL endpoints for complex queries involving multiple resources. Use modern REST for simple CRUD operations.
 
-## Appendix E: Contact & Support
+## Appendix E: Test Infrastructure for Migration
+
+### Overview
+
+To support the gradual migration from legacy to modern endpoints, we've created **separate test helper utilities** that allow both patterns to coexist without breaking existing tests.
+
+### Test Helper Files
+
+#### **1. Legacy Test Helpers (`testHelpers.ts`)**
+
+**Purpose:** Support existing hooks that use legacy error response format
+
+**Error Format:** `{ response: "error message" }`
+
+**Key Functions:**
+- `createFetchMock(data, options)` - Mock successful API responses
+- `createErrorFetchMock(message, status)` - Mock error responses with legacy format
+- `createErrorResponse(message, status)` - Create legacy error response object
+
+**Usage:**
+```typescript
+import { createFetchMock, createErrorFetchMock } from "../../testHelpers";
+
+// Success response
+global.fetch = createFetchMock({ data: "test" });
+
+// Error response (legacy format: { response: "message" })
+global.fetch = createErrorFetchMock("Account not found", 404);
+```
+
+**Used By:** All non-migrated hooks (Account, Transaction, Category, Description, Payment, Transfer, ValidationAmount, etc.)
+
+#### **2. Modern Test Helpers (`testHelpers.modern.ts`)**
+
+**Purpose:** Support migrated hooks using modern ServiceResult pattern
+
+**Error Format:** `{ error: "error message" }` or `{ errors: ["error1", "error2"] }`
+
+**Key Functions:**
+- `createModernFetchMock(data, options)` - Mock successful API responses
+- `createModernErrorFetchMock(message, status)` - Mock single error responses
+- `createModernValidationErrorFetchMock(errors, status)` - Mock validation errors
+- `modernEndpoints` - Helper object with modern endpoint patterns
+
+**Usage:**
+```typescript
+import { createModernFetchMock, createModernErrorFetchMock } from "../../testHelpers.modern";
+
+// Success response
+global.fetch = createModernFetchMock({ data: "test" });
+
+// Error response (modern format: { error: "message" })
+global.fetch = createModernErrorFetchMock("Parameter not found", 404);
+
+// Validation errors (modern format: { errors: [...] })
+global.fetch = createModernValidationErrorFetchMock([
+  "parameterName is required",
+  "parameterValue must be non-empty"
+], 400);
+```
+
+**Used By:** Migrated parameter hooks and future migrations
+
+#### **3. Shared Utilities**
+
+Both test helper files share common utilities through re-exports:
+
+- `ConsoleSpy` - Mock and capture console.log/error/warn calls
+- `createTest*` functions - Generate test data (Parameter, Account, Category, etc.)
+- Simulation utilities - `simulateNetworkError()`, `simulateTimeoutError()`
+
+### Migration Test Pattern
+
+When migrating an endpoint to modern format, follow this testing approach:
+
+#### **Step 1: Create Modern Test Files**
+
+Create TDD tests using modern helpers:
+
+```typescript
+// __tests__/hooks/useParameterFetch.modern.test.ts
+import { createModernFetchMock } from "../../testHelpers.modern";
+
+describe("useParameterFetch Modern Endpoint (TDD)", () => {
+  it("should use modern endpoint /api/parameter/active", async () => {
+    global.fetch = createModernFetchMock([]);
+
+    await fetchParameterData();
+
+    expect(fetch).toHaveBeenCalledWith("/api/parameter/active", expect.any(Object));
+  });
+
+  it("should return empty array when no parameters exist", async () => {
+    // Modern endpoints return [] instead of throwing 404
+    global.fetch = createModernFetchMock([]);
+
+    const result = await fetchParameterData();
+
+    expect(result).toEqual([]);
+  });
+});
+```
+
+#### **Step 2: Update Isolated Test Files**
+
+Update existing isolated tests to use modern helpers:
+
+```typescript
+// __tests__/hooks/useParameterFetch.isolated.test.ts
+import { ConsoleSpy } from "../../testHelpers";
+import { createModernFetchMock } from "../../testHelpers.modern"; // Changed from testHelpers
+
+// Update all createFetchMock → createModernFetchMock
+global.fetch = createModernFetchMock(testData);
+
+// Update error expectations
+await expect(fetchFunction()).rejects.toThrow("Failed to fetch parameter data: Internal server error");
+```
+
+#### **Step 3: Implement Hook with Modern Endpoints**
+
+Update the actual hook implementation:
+
+```typescript
+// hooks/useParameterFetch.ts
+const fetchParameterData = async (): Promise<Parameter[]> => {
+  const response = await fetch("/api/parameter/active", { // Modern endpoint
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    // Modern error handling with ServiceResult pattern
+    const errorBody = await response.json().catch(() => ({
+      error: `HTTP error! Status: ${response.status}`
+    }));
+    throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+  }
+
+  return await response.json(); // Returns [] for empty, never 404
+};
+```
+
+#### **Step 4: Run Tests**
+
+```bash
+# Run all parameter tests
+npm test -- useParameter
+
+# Verify no regressions in other tests
+npm test
+```
+
+### Test Coverage Requirements
+
+For each migrated endpoint, ensure:
+
+1. **Modern Test File** (e.g., `useParameterFetch.modern.test.ts`)
+   - Tests modern endpoint URL
+   - Tests modern error format `{ error: "message" }`
+   - Tests empty array response (not 404)
+   - Tests all HTTP status codes (200, 201, 204, 400, 401, 403, 404, 409, 500)
+   - Tests network errors and timeouts
+
+2. **Isolated Test File** (e.g., `useParameterFetch.isolated.test.ts`)
+   - Updated to use `createModernFetchMock`
+   - Updated error expectations to match modern format
+   - Tests business logic without React Query overhead
+
+3. **Integration Tests** (component tests)
+   - Ensure components work with migrated hooks
+   - No code changes needed (hooks are transparent)
+
+### Parameter Migration Test Results
+
+**Migration Date:** 2025-01-15
+
+**Test Files Created/Updated:** 8 files
+- ✅ `useParameterFetch.modern.test.ts` (26 tests)
+- ✅ `useParameterInsert.modern.test.ts` (30 tests)
+- ✅ `useParameterUpdate.modern.test.ts` (32 tests)
+- ✅ `useParameterDelete.modern.test.ts` (29 tests)
+- ✅ `useParameterFetch.isolated.test.ts` (34 tests)
+- ✅ `useParameterInsert.isolated.test.ts` (33 tests)
+- ✅ `useParameterUpdate.isolated.test.ts` (37 tests)
+- ✅ `useParameterDelete.isolated.test.ts` (32 tests)
+
+**Test Coverage:**
+- **253 parameter-specific tests** - All passing ✅
+- **34 configuration page tests** - All passing ✅
+- **2,289 total tests across all suites** - All passing ✅
+
+**Key Testing Patterns Validated:**
+- Modern endpoint URLs (no action prefixes)
+- ServiceResult error pattern `{ error: "message" }`
+- Empty array responses (no 404 on empty)
+- Validation errors `{ errors: [...] }`
+- Network and timeout error handling
+- Console logging (`console.error` for all errors)
+- Request body format (Update sends `newParameter`, not `{}`)
+- URL parameters (`parameterId` instead of `parameterName`)
+
+### Benefits of Separate Test Helpers
+
+1. **No Breaking Changes**
+   - Legacy hooks continue using `testHelpers.ts` without modification
+   - Modern hooks use `testHelpers.modern.ts`
+   - Zero test failures during migration
+
+2. **Clear Separation**
+   - Easy to identify which hooks use which pattern
+   - Import statements make migration status obvious
+   - Future migrations can follow same pattern
+
+3. **Gradual Migration**
+   - Can migrate one endpoint at a time
+   - No "big bang" refactoring required
+   - Lower risk, easier rollback
+
+4. **Reusability**
+   - Modern helpers can be used for all future migrations
+   - Consistent patterns across all modern endpoints
+   - Shared utilities reduce code duplication
+
+5. **Type Safety**
+   - Modern helpers enforce ServiceResult pattern
+   - TypeScript catches incorrect error formats
+   - Better IDE autocomplete and error detection
+
+### Next Endpoints to Migrate
+
+Based on the parameter migration experience, recommended order:
+
+1. **Account Endpoints** (5 hooks) - High traffic, well-defined patterns
+2. **Transaction Endpoints** (5 CRUD hooks) - Core functionality
+3. **Category Endpoints** (5 hooks) - Similar to parameters
+4. **Description Endpoints** (5 hooks) - Similar to parameters
+5. **Payment/Transfer Endpoints** (10 hooks) - Related functionality
+6. **Specialized Endpoints** (ValidationAmount, MedicalExpense, etc.)
+
+Each migration should:
+1. Create modern test files using `testHelpers.modern.ts`
+2. Update isolated tests to use modern helpers
+3. Implement modern endpoints in hooks
+4. Verify all tests pass (no regressions)
+5. Update this document with migration status
+
+## Appendix F: Contact & Support
 
 **Backend Team:** raspi-finance-endpoint maintainers
 **Frontend Team:** nextjs-website maintainers

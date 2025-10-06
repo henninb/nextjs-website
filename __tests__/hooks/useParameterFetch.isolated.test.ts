@@ -3,13 +3,14 @@
  * Tests fetchParameterData function without React Query overhead
  */
 
-import { createFetchMock, ConsoleSpy } from "../../testHelpers";
+import { ConsoleSpy } from "../../testHelpers";
+import { createModernFetchMock } from "../../testHelpers.modern";
 import Parameter from "../../model/Parameter";
 
 // Copy the function to test
 const fetchParameterData = async (): Promise<Parameter[]> => {
   try {
-    const response = await fetch("/api/parameter/select/active", {
+    const response = await fetch("/api/parameter/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -19,15 +20,11 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No parameters found (404).");
-        return [];
-      }
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
-
     return data;
   } catch (error: any) {
     console.error("Error fetching parameter data:", error);
@@ -66,12 +63,12 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           createTestParameter({ parameterId: 2 }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
         expect(result).toEqual(testParameters);
-        expect(fetch).toHaveBeenCalledWith("/api/parameter/select/active", {
+        expect(fetch).toHaveBeenCalledWith("/api/parameter/active", {
           method: "GET",
           credentials: "include",
           headers: {
@@ -81,19 +78,12 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
         });
       });
 
-      it("should return empty array when no parameters exist (404)", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
-
-        consoleSpy.start();
+      it("should return empty array when no parameters exist", async () => {
+        global.fetch = createModernFetchMock([]);
 
         const result = await fetchParameterData();
 
         expect(result).toEqual([]);
-        const calls = consoleSpy.getCalls();
-        expect(calls.log.some((call) => call[0].includes("404"))).toBe(true);
       });
 
       it("should fetch parameters with different names and values", async () => {
@@ -112,7 +102,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -123,7 +113,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
       });
 
       it("should handle empty array response", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         const result = await fetchParameterData();
 
@@ -137,7 +127,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           createTestParameter({ activeStatus: true }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -145,7 +135,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
       });
 
       it("should use correct HTTP method", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchParameterData();
 
@@ -154,7 +144,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
       });
 
       it("should include credentials", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchParameterData();
 
@@ -163,7 +153,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
       });
 
       it("should include correct headers", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchParameterData();
 
@@ -190,7 +180,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -207,7 +197,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           createTestParameter({ parameterId: 2, parameterName: "second" }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -222,12 +212,13 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 500,
+          json: async () => ({ error: "Internal server error" }),
         });
 
         consoleSpy.start();
 
         await expect(fetchParameterData()).rejects.toThrow(
-          "Failed to fetch parameter data: HTTP error! Status: 500",
+          "Failed to fetch parameter data: Internal server error",
         );
 
         const calls = consoleSpy.getCalls();
@@ -242,12 +233,13 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 401,
+          json: async () => ({ error: "Unauthorized" }),
         });
 
         consoleSpy.start();
 
         await expect(fetchParameterData()).rejects.toThrow(
-          "Failed to fetch parameter data: HTTP error! Status: 401",
+          "Failed to fetch parameter data: Unauthorized",
         );
       });
 
@@ -255,12 +247,13 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 403,
+          json: async () => ({ error: "Forbidden" }),
         });
 
         consoleSpy.start();
 
         await expect(fetchParameterData()).rejects.toThrow(
-          "Failed to fetch parameter data: HTTP error! Status: 403",
+          "Failed to fetch parameter data: Forbidden",
         );
       });
 
@@ -318,18 +311,18 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
         );
       });
 
-      it("should log 404 status when no parameters found", async () => {
+      it("should handle 404 error with modern format", async () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 404,
+          json: async () => ({ error: "Not found" }),
         });
 
         consoleSpy.start();
 
-        await fetchParameterData();
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toBe("No parameters found (404).");
+        await expect(fetchParameterData()).rejects.toThrow(
+          "Failed to fetch parameter data: Not found",
+        );
       });
     });
 
@@ -339,7 +332,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           createTestParameter({ parameterValue: "" }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -352,7 +345,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           createTestParameter({ parameterValue: longValue }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -368,7 +361,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -385,7 +378,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -400,7 +393,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -413,7 +406,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           createTestParameter({ parameterId: 67890 }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -429,7 +422,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         );
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -445,7 +438,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -467,18 +460,18 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
 
     describe("API endpoint", () => {
       it("should call correct API endpoint for active parameters", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchParameterData();
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/parameter/select/active",
+          "/api/parameter/active",
           expect.any(Object),
         );
       });
 
       it("should only call API once per fetch", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchParameterData();
 
@@ -497,7 +490,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -514,7 +507,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
         ];
         const originalParameters = JSON.parse(JSON.stringify(testParameters));
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -531,7 +524,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -551,7 +544,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 
@@ -578,7 +571,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testParameters);
+        global.fetch = createModernFetchMock(testParameters);
 
         const result = await fetchParameterData();
 

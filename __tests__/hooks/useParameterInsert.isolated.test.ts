@@ -4,11 +4,13 @@
  */
 
 import {
-  createFetchMock,
-  createErrorFetchMock,
   ConsoleSpy,
   createTestParameter,
 } from "../../testHelpers";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 import Parameter from "../../model/Parameter";
 
 import { insertParameter } from "../../hooks/useParameterInsert";
@@ -39,12 +41,12 @@ describe("insertParameter (Isolated)", () => {
         dateUpdated: new Date().toISOString(),
       };
 
-      global.fetch = createFetchMock(expectedResponse);
+      global.fetch = createModernFetchMock(expectedResponse);
 
       const result = await insertParameter(testParameter);
 
       expect(result).toEqual(expectedResponse);
-      expect(fetch).toHaveBeenCalledWith("/api/parameter/insert", {
+      expect(fetch).toHaveBeenCalledWith("/api/parameter", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -57,11 +59,11 @@ describe("insertParameter (Isolated)", () => {
 
     it("should handle 204 no content response", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await insertParameter(testParameter);
 
-      expect(result).toBeNull();
+      expect(result).toEqual(testParameter);
     });
 
     it("should send complete parameter payload", async () => {
@@ -71,12 +73,12 @@ describe("insertParameter (Isolated)", () => {
         activeStatus: false,
       });
 
-      global.fetch = createFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock({ parameterId: 1 });
 
       await insertParameter(complexParameter);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/insert",
+        "/api/parameter",
         expect.objectContaining({
           body: JSON.stringify(complexParameter),
         }),
@@ -87,7 +89,7 @@ describe("insertParameter (Isolated)", () => {
   describe("API error handling", () => {
     it("should handle 400 error with response message", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createErrorFetchMock("Parameter name already exists", 400);
+      global.fetch = createModernErrorFetchMock("Parameter name already exists", 400);
       consoleSpy.start();
 
       await expect(insertParameter(testParameter)).rejects.toThrow(
@@ -95,7 +97,6 @@ describe("insertParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Parameter name already exists"]);
       expect(calls.error[0]).toEqual([
         "An error occurred: Parameter name already exists",
       ]);
@@ -103,7 +104,7 @@ describe("insertParameter (Isolated)", () => {
 
     it("should handle 500 server error", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createErrorFetchMock("Internal server error", 500);
+      global.fetch = createModernErrorFetchMock("Internal server error", 500);
       consoleSpy.start();
 
       await expect(insertParameter(testParameter)).rejects.toThrow(
@@ -111,7 +112,6 @@ describe("insertParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Internal server error"]);
       expect(calls.error[0]).toEqual([
         "An error occurred: Internal server error",
       ]);
@@ -122,7 +122,7 @@ describe("insertParameter (Isolated)", () => {
         parameterName: "EXISTING_PARAM",
         parameterValue: "some-value",
       });
-      global.fetch = createErrorFetchMock(
+      global.fetch = createModernErrorFetchMock(
         "Parameter already exists with this name",
         409,
       );
@@ -133,7 +133,9 @@ describe("insertParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Parameter already exists with this name"]);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: Parameter already exists with this name",
+      ]);
     });
 
     it("should handle error response without message", async () => {
@@ -146,13 +148,12 @@ describe("insertParameter (Isolated)", () => {
       consoleSpy.start();
 
       await expect(insertParameter(testParameter)).rejects.toThrow(
-        "Failed to parse error response: No error message returned.",
+        "HTTP error! Status: 400",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["No error message returned."]);
       expect(calls.error[0]).toEqual([
-        "An error occurred: Failed to parse error response: No error message returned.",
+        "An error occurred: HTTP error! Status: 400",
       ]);
     });
 
@@ -166,15 +167,12 @@ describe("insertParameter (Isolated)", () => {
       consoleSpy.start();
 
       await expect(insertParameter(testParameter)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON",
+        "HTTP error! Status: 400",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "Failed to parse error response: Invalid JSON",
-      ]);
       expect(calls.error[0]).toEqual([
-        "An error occurred: Failed to parse error response: Invalid JSON",
+        "An error occurred: HTTP error! Status: 400",
       ]);
     });
 
@@ -208,11 +206,11 @@ describe("insertParameter (Isolated)", () => {
   describe("Request format validation", () => {
     it("should send correct headers", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock({ parameterId: 1 });
 
       await insertParameter(testParameter);
 
-      expect(fetch).toHaveBeenCalledWith("/api/parameter/insert", {
+      expect(fetch).toHaveBeenCalledWith("/api/parameter", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -225,19 +223,19 @@ describe("insertParameter (Isolated)", () => {
 
     it("should use correct endpoint", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock({ parameterId: 1 });
 
       await insertParameter(testParameter);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/insert",
+        "/api/parameter",
         expect.any(Object),
       );
     });
 
     it("should send POST method", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock({ parameterId: 1 });
 
       await insertParameter(testParameter);
 
@@ -249,7 +247,7 @@ describe("insertParameter (Isolated)", () => {
 
     it("should include credentials", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock({ parameterId: 1 });
 
       await insertParameter(testParameter);
 
@@ -268,7 +266,7 @@ describe("insertParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...configParam,
         parameterId: 1,
       });
@@ -287,7 +285,7 @@ describe("insertParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...systemParam,
         parameterId: 2,
       });
@@ -305,7 +303,7 @@ describe("insertParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...featureFlag,
         parameterId: 3,
       });
@@ -323,7 +321,7 @@ describe("insertParameter (Isolated)", () => {
         activeStatus: false,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...inactiveParam,
         parameterId: 4,
       });
@@ -341,7 +339,7 @@ describe("insertParameter (Isolated)", () => {
         parameterValue: "special-value",
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...specialParam,
         parameterId: 1,
       });
@@ -357,7 +355,7 @@ describe("insertParameter (Isolated)", () => {
         parameterValue: "测试值 🚀 émojis",
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...unicodeParam,
         parameterId: 1,
       });
@@ -374,7 +372,7 @@ describe("insertParameter (Isolated)", () => {
         parameterValue: longValue,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...longParam,
         parameterId: 1,
       });
@@ -393,7 +391,7 @@ describe("insertParameter (Isolated)", () => {
         parameterValue: jsonValue,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...jsonParam,
         parameterId: 1,
       });
@@ -409,7 +407,7 @@ describe("insertParameter (Isolated)", () => {
         parameterValue: "",
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...emptyParam,
         parameterId: 1,
       });
@@ -436,7 +434,7 @@ describe("insertParameter (Isolated)", () => {
       ];
 
       for (const param of booleanParams) {
-        global.fetch = createFetchMock({ ...param, parameterId: 1 });
+        global.fetch = createModernFetchMock({ ...param, parameterId: 1 });
         const result = await insertParameter(param);
         expect(result.parameterValue).toBe(param.parameterValue);
       }
@@ -444,9 +442,9 @@ describe("insertParameter (Isolated)", () => {
   });
 
   describe("Console logging", () => {
-    it("should log API errors to console.log", async () => {
+    it("should log API errors to console.error", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createErrorFetchMock("API Error", 400);
+      global.fetch = createModernErrorFetchMock("API Error", 400);
       consoleSpy.start();
 
       try {
@@ -456,7 +454,9 @@ describe("insertParameter (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["API Error"]);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: API Error",
+      ]);
     });
 
     it("should log general errors to console.error", async () => {
@@ -476,7 +476,7 @@ describe("insertParameter (Isolated)", () => {
 
     it("should not log anything on successful operations", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock({ parameterId: 1 });
       consoleSpy.start();
 
       await insertParameter(testParameter);
@@ -503,13 +503,13 @@ describe("insertParameter (Isolated)", () => {
         dateUpdated: "2023-12-25T10:30:00.000Z",
       };
 
-      global.fetch = createFetchMock(expectedResponse);
+      global.fetch = createModernFetchMock(expectedResponse);
 
       const result = await insertParameter(newParameter);
 
       expect(result).toEqual(expectedResponse);
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/insert",
+        "/api/parameter",
         expect.objectContaining({
           method: "POST",
           credentials: "include",
@@ -528,7 +528,7 @@ describe("insertParameter (Isolated)", () => {
         parameterValue: "some-value",
       });
 
-      global.fetch = createErrorFetchMock(
+      global.fetch = createModernErrorFetchMock(
         "Parameter name cannot be empty and must be unique",
         400,
       );
@@ -539,9 +539,6 @@ describe("insertParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "Parameter name cannot be empty and must be unique",
-      ]);
       expect(calls.error[0]).toEqual([
         "An error occurred: Parameter name cannot be empty and must be unique",
       ]);
@@ -549,7 +546,7 @@ describe("insertParameter (Isolated)", () => {
 
     it("should handle server errors gracefully", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createErrorFetchMock("Database connection failed", 503);
+      global.fetch = createModernErrorFetchMock("Database connection failed", 503);
       consoleSpy.start();
 
       await expect(insertParameter(testParameter)).rejects.toThrow(
@@ -557,7 +554,6 @@ describe("insertParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Database connection failed"]);
       expect(calls.error[0]).toEqual([
         "An error occurred: Database connection failed",
       ]);
@@ -572,7 +568,7 @@ describe("insertParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...migrationParam,
         parameterId: 1,
       });
@@ -600,7 +596,7 @@ describe("insertParameter (Isolated)", () => {
       ];
 
       for (let i = 0; i < envParams.length; i++) {
-        global.fetch = createFetchMock({
+        global.fetch = createModernFetchMock({
           ...envParams[i],
           parameterId: i + 1,
         });
@@ -618,7 +614,7 @@ describe("insertParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         ...userPrefParam,
         parameterId: 1,
       });

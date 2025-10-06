@@ -3,9 +3,9 @@ import Parameter from "../model/Parameter";
 
 export const deleteParameter = async (
   payload: Parameter,
-): Promise<Parameter> => {
+): Promise<Parameter | null> => {
   try {
-    const endpoint = `/api/parameter/delete/${payload.parameterName}`;
+    const endpoint = `/api/parameter/${payload.parameterId}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -17,28 +17,14 @@ export const deleteParameter = async (
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.status !== 204 ? await response.json() : null;
-  } catch (error) {
-    console.log(`An error occurred: ${error.message}`);
+  } catch (error: any) {
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };

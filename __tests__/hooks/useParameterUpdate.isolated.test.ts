@@ -4,11 +4,13 @@
  */
 
 import {
-  createFetchMock,
-  createErrorFetchMock,
   ConsoleSpy,
   createTestParameter,
 } from "../../testHelpers";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 import Parameter from "../../model/Parameter";
 
 import { updateParameter } from "../../hooks/useParameterUpdate";
@@ -39,13 +41,13 @@ describe("updateParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
       expect(result).toEqual(updatedParameter);
       expect(fetch).toHaveBeenCalledWith(
-        `/api/parameter/update/${oldParameter.parameterName}`,
+        `/api/parameter/${oldParameter.parameterId}`,
         {
           method: "PUT",
           credentials: "include",
@@ -53,47 +55,51 @@ describe("updateParameter (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({}), // Empty object as per original implementation
+          body: JSON.stringify(updatedParameter),
         },
       );
     });
 
-    it("should use old parameter name in endpoint path", async () => {
+    it("should use old parameter ID in endpoint path", async () => {
       const oldParameter = createTestParameter({
+        parameterId: 123,
         parameterName: "ORIGINAL_PARAM",
       });
 
       const newParameter = createTestParameter({
+        parameterId: 123,
         parameterName: "UPDATED_PARAM",
       });
 
-      global.fetch = createFetchMock(newParameter);
+      global.fetch = createModernFetchMock(newParameter);
 
       await updateParameter(oldParameter, newParameter);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/update/ORIGINAL_PARAM",
+        "/api/parameter/123",
         expect.any(Object),
       );
     });
 
-    it("should send empty object in request body", async () => {
+    it("should send newParameter in request body", async () => {
       const oldParameter = createTestParameter({
+        parameterId: 1,
         parameterName: "TEST_PARAM",
       });
       const newParameter = createTestParameter({
+        parameterId: 1,
         parameterName: "TEST_PARAM",
         parameterValue: "new-value",
       });
 
-      global.fetch = createFetchMock(newParameter);
+      global.fetch = createModernFetchMock(newParameter);
 
       await updateParameter(oldParameter, newParameter);
 
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          body: JSON.stringify({}), // Should always send empty object
+          body: JSON.stringify(newParameter),
         }),
       );
     });
@@ -109,7 +115,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: "v1.1.0",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -127,7 +133,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: "true",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -147,7 +153,7 @@ describe("updateParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -172,13 +178,12 @@ describe("updateParameter (Isolated)", () => {
       consoleSpy.start();
 
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "Failed to update transaction state: Not Found",
+        "HTTP error! Status: 404",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Resource not found (404)."]);
-      expect(calls.log[1]).toEqual([
-        "An error occurred: Failed to update transaction state: Not Found",
+      expect(calls.error[0]).toEqual([
+        "An error occurred: HTTP error! Status: 404",
       ]);
     });
 
@@ -195,12 +200,12 @@ describe("updateParameter (Isolated)", () => {
       consoleSpy.start();
 
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "Failed to update transaction state: Bad Request",
+        "HTTP error! Status: 400",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "An error occurred: Failed to update transaction state: Bad Request",
+      expect(calls.error[0]).toEqual([
+        "An error occurred: HTTP error! Status: 400",
       ]);
     });
 
@@ -219,12 +224,12 @@ describe("updateParameter (Isolated)", () => {
       consoleSpy.start();
 
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "Failed to update transaction state: Forbidden",
+        "HTTP error! Status: 403",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "An error occurred: Failed to update transaction state: Forbidden",
+      expect(calls.error[0]).toEqual([
+        "An error occurred: HTTP error! Status: 403",
       ]);
     });
 
@@ -241,12 +246,12 @@ describe("updateParameter (Isolated)", () => {
       consoleSpy.start();
 
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "Failed to update transaction state: Internal Server Error",
+        "HTTP error! Status: 500",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "An error occurred: Failed to update transaction state: Internal Server Error",
+      expect(calls.error[0]).toEqual([
+        "An error occurred: HTTP error! Status: 500",
       ]);
     });
 
@@ -262,7 +267,7 @@ describe("updateParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: Network error"]);
+      expect(calls.error[0]).toEqual(["An error occurred: Network error"]);
     });
 
     it("should handle timeout errors", async () => {
@@ -277,7 +282,7 @@ describe("updateParameter (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: Request timeout"]);
+      expect(calls.error[0]).toEqual(["An error occurred: Request timeout"]);
     });
   });
 
@@ -286,7 +291,7 @@ describe("updateParameter (Isolated)", () => {
       const oldParameter = createTestParameter();
       const newParameter = createTestParameter();
 
-      global.fetch = createFetchMock(newParameter);
+      global.fetch = createModernFetchMock(newParameter);
 
       await updateParameter(oldParameter, newParameter);
 
@@ -300,7 +305,7 @@ describe("updateParameter (Isolated)", () => {
       const oldParameter = createTestParameter();
       const newParameter = createTestParameter();
 
-      global.fetch = createFetchMock(newParameter);
+      global.fetch = createModernFetchMock(newParameter);
 
       await updateParameter(oldParameter, newParameter);
 
@@ -314,7 +319,7 @@ describe("updateParameter (Isolated)", () => {
       const oldParameter = createTestParameter();
       const newParameter = createTestParameter();
 
-      global.fetch = createFetchMock(newParameter);
+      global.fetch = createModernFetchMock(newParameter);
 
       await updateParameter(oldParameter, newParameter);
 
@@ -329,24 +334,26 @@ describe("updateParameter (Isolated)", () => {
       );
     });
 
-    it("should always send empty object in body", async () => {
+    it("should always send newParameter in body", async () => {
       const oldParameter = createTestParameter({
+        parameterId: 1,
         parameterName: "TEST_PARAM",
         parameterValue: "some-value",
       });
       const newParameter = createTestParameter({
+        parameterId: 1,
         parameterName: "TEST_PARAM",
         parameterValue: "different-value",
       });
 
-      global.fetch = createFetchMock(newParameter);
+      global.fetch = createModernFetchMock(newParameter);
 
       await updateParameter(oldParameter, newParameter);
 
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          body: JSON.stringify({}),
+          body: JSON.stringify(newParameter),
         }),
       );
     });
@@ -355,34 +362,38 @@ describe("updateParameter (Isolated)", () => {
   describe("Edge cases and special scenarios", () => {
     it("should handle special characters in parameter names", async () => {
       const oldParameter = createTestParameter({
+        parameterId: 1,
         parameterName: "SPECIAL_CHARS!@#$%",
       });
       const updatedParameter = createTestParameter({
+        parameterId: 1,
         parameterName: "SPECIAL_CHARS!@#$%",
         parameterValue: "updated-value",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
       expect(result.parameterName).toBe("SPECIAL_CHARS!@#$%");
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/update/SPECIAL_CHARS!@#$%",
+        "/api/parameter/1",
         expect.any(Object),
       );
     });
 
     it("should handle unicode characters in parameter names", async () => {
       const oldParameter = createTestParameter({
+        parameterId: 2,
         parameterName: "测试参数",
       });
       const updatedParameter = createTestParameter({
+        parameterId: 2,
         parameterName: "测试参数",
         parameterValue: "unicode-value 🚀",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -393,20 +404,22 @@ describe("updateParameter (Isolated)", () => {
     it("should handle very long parameter names", async () => {
       const longName = "VERY_LONG_PARAMETER_NAME_" + "A".repeat(400);
       const oldParameter = createTestParameter({
+        parameterId: 3,
         parameterName: longName,
       });
       const updatedParameter = createTestParameter({
+        parameterId: 3,
         parameterName: longName,
         parameterValue: "updated-value",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
       expect(result.parameterName).toBe(longName);
       expect(fetch).toHaveBeenCalledWith(
-        `/api/parameter/update/${longName}`,
+        `/api/parameter/3`,
         expect.any(Object),
       );
     });
@@ -421,7 +434,7 @@ describe("updateParameter (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -438,7 +451,7 @@ describe("updateParameter (Isolated)", () => {
         activeStatus: false,
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -457,7 +470,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: "production",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -474,7 +487,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: "error",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -491,7 +504,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: "60000",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -509,7 +522,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: jsonConfig,
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -534,7 +547,7 @@ describe("updateParameter (Isolated)", () => {
           parameterValue: testCase.new,
         });
 
-        global.fetch = createFetchMock(updatedParameter);
+        global.fetch = createModernFetchMock(updatedParameter);
 
         const result = await updateParameter(oldParameter, updatedParameter);
         expect(result.parameterValue).toBe(testCase.new);
@@ -552,7 +565,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: "updated-value",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -570,7 +583,7 @@ describe("updateParameter (Isolated)", () => {
         parameterValue: "20231225_001",
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
@@ -598,13 +611,13 @@ describe("updateParameter (Isolated)", () => {
         dateUpdated: new Date("2023-12-25"),
       });
 
-      global.fetch = createFetchMock(updatedParameter);
+      global.fetch = createModernFetchMock(updatedParameter);
 
       const result = await updateParameter(oldParameter, updatedParameter);
 
       expect(result).toEqual(updatedParameter);
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/update/WORKFLOW_PARAM",
+        "/api/parameter/1",
         {
           method: "PUT",
           credentials: "include",
@@ -612,7 +625,7 @@ describe("updateParameter (Isolated)", () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify(updatedParameter),
         },
       );
     });
@@ -637,12 +650,12 @@ describe("updateParameter (Isolated)", () => {
       await expect(
         updateParameter(oldParameter, invalidParameter),
       ).rejects.toThrow(
-        "Failed to update transaction state: Unprocessable Entity",
+        "HTTP error! Status: 422",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "An error occurred: Failed to update transaction state: Unprocessable Entity",
+      expect(calls.error[0]).toEqual([
+        "An error occurred: HTTP error! Status: 422",
       ]);
     });
   });
@@ -669,10 +682,9 @@ describe("updateParameter (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log).toHaveLength(2);
-      expect(calls.log[0]).toEqual(["Resource not found (404)."]);
-      expect(calls.log[1]).toEqual([
-        "An error occurred: Failed to update transaction state: Not Found",
+      expect(calls.error).toHaveLength(1);
+      expect(calls.error[0]).toEqual([
+        "An error occurred: HTTP error! Status: 404",
       ]);
     });
 
@@ -690,14 +702,14 @@ describe("updateParameter (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: General error"]);
+      expect(calls.error[0]).toEqual(["An error occurred: General error"]);
     });
 
     it("should not log anything on successful operations", async () => {
       const oldParameter = createTestParameter();
       const newParameter = createTestParameter();
 
-      global.fetch = createFetchMock(newParameter);
+      global.fetch = createModernFetchMock(newParameter);
       consoleSpy.start();
 
       await updateParameter(oldParameter, newParameter);

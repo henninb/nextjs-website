@@ -3,7 +3,7 @@ import Parameter from "../model/Parameter";
 
 const fetchParameterData = async (): Promise<Parameter[]> => {
   try {
-    const response = await fetch("/api/parameter/select/active", {
+    const response = await fetch("/api/parameter/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -13,16 +13,11 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No parameters found (404).");
-        return []; // Return empty array for 404, meaning no parameters
-      }
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
-    // Uncomment the line below for debugging
-
     return data;
   } catch (error: any) {
     console.error("Error fetching parameter data:", error);

@@ -5,7 +5,7 @@ export const updateParameter = async (
   oldParameter: Parameter,
   newParameter: Parameter,
 ): Promise<Parameter> => {
-  const endpoint = `/api/parameter/update/${oldParameter.parameterName}`;
+  const endpoint = `/api/parameter/${oldParameter.parameterId}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
@@ -14,22 +14,18 @@ export const updateParameter = async (
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(newParameter),
     });
 
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
     if (!response.ok) {
-      throw new Error(
-        `Failed to update transaction state: ${response.statusText}`,
-      );
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };

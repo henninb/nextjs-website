@@ -5,7 +5,7 @@ export const insertParameter = async (
   payload: Parameter,
 ): Promise<Parameter> => {
   try {
-    const endpoint = "/api/parameter/insert";
+    const endpoint = "/api/parameter";
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -18,27 +18,13 @@ export const insertParameter = async (
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error) {
+    return response.status !== 204 ? await response.json() : payload;
+  } catch (error: any) {
     console.error(`An error occurred: ${error.message}`);
     throw error;
   }
