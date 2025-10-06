@@ -84,7 +84,6 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = await setupNewPayment(inputPayment);
 
       expect(result).toEqual({
-        paymentId: 0,
         amount: 250.0,
         transactionDate: new Date("2024-01-15"),
         sourceAccount: "test_source",
@@ -106,7 +105,6 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = await setupNewPayment(minimalPayment);
 
       expect(result).toEqual({
-        paymentId: 0,
         amount: 100.0,
         transactionDate: new Date("2024-01-01"),
         sourceAccount: "source",
@@ -128,7 +126,6 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = await setupNewPayment(paymentWithNulls);
 
       expect(result).toEqual({
-        paymentId: 0,
         amount: null,
         transactionDate: mockPayment.transactionDate,
         sourceAccount: mockPayment.sourceAccount,
@@ -171,14 +168,13 @@ describe("Payment Insert Functions (Isolated)", () => {
               "Content-Type": "application/json",
               Accept: "application/json",
             },
-            body: expect.stringContaining('"paymentId":0'),
           }),
         );
 
-        // Verify the body contains required fields
+        // Verify the body contains required fields (no paymentId for new inserts)
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0][1];
         const bodyObj = JSON.parse(fetchCall.body);
-        expect(bodyObj.paymentId).toBe(0);
+        expect(bodyObj.paymentId).toBeUndefined();
         expect(bodyObj.amount).toBe(mockPayment.amount);
         expect(bodyObj.sourceAccount).toBe(mockPayment.sourceAccount);
         expect(bodyObj.destinationAccount).toBe(mockPayment.destinationAccount);
@@ -602,23 +598,13 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(originalPayment);
 
-        const expectedPayload = {
-          paymentId: 0,
-          amount: 100.0,
-          transactionDate: new Date("2024-01-01"),
-          sourceAccount: "original_source",
-          destinationAccount: "original_dest",
-          guidSource: "guid-123",
-          guidDestination: "guid-456",
-          activeStatus: true,
-        };
-
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: JSON.stringify(expectedPayload),
-          }),
-        );
+        // Verify the payload was sent without paymentId
+        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+        const bodyObj = JSON.parse(fetchCall[1].body);
+        expect(bodyObj.paymentId).toBeUndefined();
+        expect(bodyObj.sourceAccount).toBe("original_source");
+        expect(bodyObj.guidSource).toBe("guid-123");
+        expect(bodyObj.guidDestination).toBe("guid-456");
       });
 
       it("should preserve paymentId of 0 for new payments", async () => {

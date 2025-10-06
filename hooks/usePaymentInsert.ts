@@ -18,8 +18,9 @@ export const setupNewPayment = async (payload: Payment) => {
       ? payload.guidDestination
       : await generateSecureUUID();
 
+  // Note: Do NOT include paymentId in the payload for new inserts
+  // The backend will auto-generate it
   return {
-    paymentId: 0,
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
     sourceAccount: payload.sourceAccount,
