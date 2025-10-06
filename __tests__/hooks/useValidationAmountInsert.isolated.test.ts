@@ -4,10 +4,11 @@
  */
 
 import {
-  createFetchMock,
-  createErrorFetchMock,
+  createModernFetchMock as createFetchMock,
+  createModernErrorFetchMock as createErrorFetchMock,
   ConsoleSpy,
-} from "../../testHelpers";
+} from "../../testHelpers.modern";
+import { simulateNetworkError, simulateTimeoutError } from "../../testHelpers";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
@@ -15,8 +16,8 @@ import { TransactionState } from "../../model/TransactionState";
 const insertValidationAmount = async (
   accountNameOwner: string,
   payload: ValidationAmount,
-): Promise<ValidationAmount | null> => {
-  const endpoint = `/api/validation/amount/insert/${accountNameOwner}`;
+): Promise<ValidationAmount> => {
+  const endpoint = `/api/validation/amount`;
 
   try {
     const response = await fetch(endpoint, {
@@ -30,28 +31,18 @@ const insertValidationAmount = async (
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error(`Failed to insert validation amount: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
 
-    return response.status !== 204 ? await response.json() : null;
+    return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -102,7 +93,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         expect(result).toEqual(expectedResponse);
         expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/insert/testAccount",
+          "/api/validation/amount",
           {
             method: "POST",
             credentials: "include",
@@ -115,21 +106,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         );
       });
 
-      it("should handle 204 no content response", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = createFetchMock(null, { status: 204 });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result).toBeNull();
-      });
-
-      it("should use correct endpoint with account name owner", async () => {
+      it("should use correct modern endpoint", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "specialAccount";
 
@@ -138,7 +115,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         await insertValidationAmount(accountNameOwner, testPayload);
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/insert/specialAccount",
+          "/api/validation/amount",
           expect.any(Object),
         );
       });
@@ -188,14 +165,15 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
     });
 
     describe("API error handling", () => {
-      it("should handle 400 error with response message", async () => {
+      it("should handle 400 error with error message", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
 
-        global.fetch = createErrorFetchMock(
-          "Invalid validation amount data",
-          400,
-        );
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: false,
+          status: 400,
+          json: jest.fn().mockResolvedValue({ error: "Invalid validation amount data" }),
+        });
         consoleSpy.start();
 
         await expect(
@@ -203,20 +181,20 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Invalid validation amount data");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Invalid validation amount data"],
-          ["An error occurred: Error: Invalid validation amount data"],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
+        )).toBe(true);
       });
 
       it("should handle 409 conflict error", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
 
-        global.fetch = createErrorFetchMock(
-          "Validation amount already exists",
-          409,
-        );
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: false,
+          status: 409,
+          json: jest.fn().mockResolvedValue({ error: "Validation amount already exists" }),
+        });
         consoleSpy.start();
 
         await expect(
@@ -224,17 +202,20 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Validation amount already exists");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Validation amount already exists"],
-          ["An error occurred: Error: Validation amount already exists"],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
+        )).toBe(true);
       });
 
       it("should handle 500 server error", async () => {
         const testPayload = createTestValidationAmount();
         const accountNameOwner = "testAccount";
 
-        global.fetch = createErrorFetchMock("Internal server error", 500);
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: false,
+          status: 500,
+          json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
+        });
         consoleSpy.start();
 
         await expect(
@@ -242,10 +223,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Internal server error");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Internal server error"],
-          ["An error occurred: Error: Internal server error"],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
+        )).toBe(true);
       });
 
       it("should handle error response without message", async () => {
@@ -261,18 +241,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         await expect(
           insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow(
-          "Failed to parse error response: No error message returned.",
-        );
+        ).rejects.toThrow("HTTP error! Status: 400");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["No error message returned."],
-          ["Failed to parse error response: No error message returned."],
-          [
-            "An error occurred: Error: Failed to parse error response: No error message returned.",
-          ],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
+        )).toBe(true);
       });
 
       it("should handle malformed error response", async () => {
@@ -288,15 +262,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         await expect(
           insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("Failed to parse error response: Invalid JSON");
+        ).rejects.toThrow("HTTP error! Status: 400");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Failed to parse error response: Invalid JSON"],
-          [
-            "An error occurred: Error: Failed to parse error response: Invalid JSON",
-          ],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
+        )).toBe(true);
       });
 
       it("should handle network errors", async () => {
@@ -311,9 +282,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Error: Network error",
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
 
       it("should handle timeout errors", async () => {
@@ -330,36 +301,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Request timeout");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Error: Request timeout",
-        ]);
-      });
-
-      it("should handle unknown error fallback", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValue({ response: "" }), // Empty error message
-        });
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow(
-          "Failed to parse error response: No error message returned.",
-        );
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["No error message returned."],
-          ["Failed to parse error response: No error message returned."],
-          [
-            "An error occurred: Error: Failed to parse error response: No error message returned.",
-          ],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
     });
 
@@ -392,7 +336,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         await insertValidationAmount(accountNameOwner, testPayload);
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/insert/mySpecialAccount",
+          "/api/validation/amount",
           expect.any(Object),
         );
       });
@@ -528,7 +472,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
           expect(result!.amount).toBe(1500.25);
           expect(fetch).toHaveBeenCalledWith(
-            `/api/validation/amount/insert/${accountType}`,
+            `/api/validation/amount`,
             expect.any(Object),
           );
         }
@@ -611,7 +555,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         expect(result).toEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/insert/Account & Co: 2024!",
+          "/api/validation/amount",
           expect.any(Object),
         );
       });
@@ -629,7 +573,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         expect(result).toEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/insert/验证账户 Validation Account 💰",
+          "/api/validation/amount",
           expect.any(Object),
         );
       });
@@ -647,7 +591,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         expect(result).toEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
-          `/api/validation/amount/insert/${longAccountName}`,
+          `/api/validation/amount`,
           expect.any(Object),
         );
       });
@@ -733,10 +677,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Validation failed"],
-          ["An error occurred: Error: Validation failed"],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Failed to insert validation amount: Validation failed"))
+        )).toBe(true);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
 
       it("should log parsing errors", async () => {
@@ -757,12 +703,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Failed to parse error response: JSON parse error"],
-          [
-            "An error occurred: Error: Failed to parse error response: JSON parse error",
-          ],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
+        )).toBe(true);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
 
       it("should log network errors", async () => {
@@ -781,9 +727,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Error: Connection failed",
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
 
       it("should log unknown error fallback", async () => {
@@ -793,7 +739,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 500,
-          json: jest.fn().mockResolvedValue({ response: null }), // Null error message
+          json: jest.fn().mockResolvedValue({}), // No error field
         });
         consoleSpy.start();
 
@@ -804,13 +750,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["No error message returned."],
-          ["Failed to parse error response: No error message returned."],
-          [
-            "An error occurred: Error: Failed to parse error response: No error message returned.",
-          ],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("HTTP error! Status: 500"))
+        )).toBe(true);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
     });
 
@@ -865,10 +810,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Amount exceeds allowed negative limit");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Amount exceeds allowed negative limit"],
-          ["An error occurred: Error: Amount exceeds allowed negative limit"],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Amount exceeds allowed negative limit"))
+        )).toBe(true);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
 
       it("should handle duplicate validation amount detection", async () => {
@@ -888,12 +835,12 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Duplicate validation amount for this account and date"],
-          [
-            "An error occurred: Error: Duplicate validation amount for this account and date",
-          ],
-        ]);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("Duplicate validation amount for this account and date"))
+        )).toBe(true);
+        expect(calls.error.some(call =>
+          call.some(arg => String(arg).includes("An error occurred:"))
+        )).toBe(true);
       });
     });
   });

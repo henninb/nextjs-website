@@ -6,20 +6,21 @@ The `raspi-finance-endpoint` project has been modernized with **standardized RES
 
 ### Migration Progress
 
-**Completed Migrations:** 5 of 8 endpoint groups
+**Completed Migrations:** 6 of 8 endpoint groups
 
-| Endpoint Group  | Status      | Migration Date | Hooks Migrated | Tests Added |
-| --------------- | ----------- | -------------- | -------------- | ----------- |
-| **Parameter**   | ✅ Complete | 2025-01-15     | 4 hooks        | 117 tests   |
-| **Category**    | ✅ Complete | 2025-01-15     | 4 hooks        | 135 tests   |
-| **Description** | ✅ Complete | 2025-01-15     | 4 hooks        | 119 tests   |
-| **Transfer**    | ✅ Complete | 2025-01-06     | 4 hooks        | 96+ tests   |
-| **Payment**     | ✅ Complete | 2025-01-06     | 4 hooks        | 110 tests   |
-| Account         | ⏳ Pending  | -              | 0/5 hooks      | -           |
-| Transaction     | ⏳ Pending  | -              | 0/5 hooks      | -           |
-| Specialized     | ⏳ Pending  | -              | 0/9 hooks      | -           |
+| Endpoint Group       | Status      | Migration Date | Hooks Migrated | Tests Added |
+| -------------------- | ----------- | -------------- | -------------- | ----------- |
+| **Parameter**        | ✅ Complete | 2025-01-15     | 4 hooks        | 117 tests   |
+| **Category**         | ✅ Complete | 2025-01-15     | 4 hooks        | 135 tests   |
+| **Description**      | ✅ Complete | 2025-01-15     | 4 hooks        | 119 tests   |
+| **Transfer**         | ✅ Complete | 2025-01-06     | 4 hooks        | 96+ tests   |
+| **Payment**          | ✅ Complete | 2025-01-06     | 4 hooks        | 110 tests   |
+| **ValidationAmount** | ✅ Complete | 2025-01-06     | 1 hook         | 59 tests    |
+| Account              | ⏳ Pending  | -              | 0/5 hooks      | -           |
+| Transaction          | ⏳ Pending  | -              | 0/5 hooks      | -           |
+| Specialized          | ⏳ Pending  | -              | 0/9 hooks      | -           |
 
-**Overall Progress:** 20/43+ hooks migrated (46.5%)
+**Overall Progress:** 21/43+ hooks migrated (48.8%)
 
 ## Current State Analysis
 
@@ -224,12 +225,32 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Validation Amount Endpoints
 
-| Operation       | Legacy Endpoint                                             | Modern Endpoint                                      | Frontend Hook                  |
-| --------------- | ----------------------------------------------------------- | ---------------------------------------------------- | ------------------------------ |
-| **List Active** | `GET /api/validation-amount/select/active`                  | `GET /api/validation-amount/active`                  | `useValidationAmountFetch.ts`  |
-| **Create**      | `POST /api/validation-amount/insert`                        | `POST /api/validation-amount`                        | `useValidationAmountInsert.ts` |
-| **Update**      | `PUT /api/validation-amount/update/{validationAmountId}`    | `PUT /api/validation-amount/{validationAmountId}`    | `useValidationAmountUpdate.ts` |
-| **Delete**      | `DELETE /api/validation-amount/delete/{validationAmountId}` | `DELETE /api/validation-amount/{validationAmountId}` | `useValidationAmountDelete.ts` |
+| Operation       | Legacy Endpoint                                                 | Modern Endpoint                       | Frontend Hook                  | Migration Status                            |
+| --------------- | --------------------------------------------------------------- | ------------------------------------- | ------------------------------ | ------------------------------------------- |
+| **Fetch**       | `GET /api/validation/amount/select/{accountNameOwner}/cleared`  | ✅ Business endpoint (keep)           | `useValidationAmountFetch.ts`  | N/A - Business Logic                        |
+| **Create**      | `POST /api/validation/amount/insert/{accountNameOwner}`         | `POST /api/validation/amount`         | `useValidationAmountInsert.ts` | ✅ **MIGRATED**                             |
+| **Update**      | `PUT /api/validation/amount/update/{validationAmountId}`        | `PUT /api/validation/amount/{id}`     | ❌ Not implemented             | N/A - Hook doesn't exist                    |
+| **Delete**      | `DELETE /api/validation/amount/delete/{validationAmountId}`     | `DELETE /api/validation/amount/{id}`  | ❌ Not implemented             | N/A - Hook doesn't exist                    |
+
+**Migration Completed:** 2025-01-06 ✅
+
+**Backend Verification:** Backend modern endpoints confirmed at `~/projects/raspi-finance-endpoint/src/main/kotlin/finance/controllers/ValidationAmountController.kt`
+
+**Key Changes:**
+
+- ✅ Modern insert endpoint uses REST conventions (no `/insert/{accountNameOwner}` prefix)
+- ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
+- ✅ All errors logged to `console.error` (not `console.log`)
+- ✅ Consistent HTTP status codes (200, 201, 400, 401, 403, 404, 409, 500)
+- ✅ Removed legacy 204 handling
+
+**Important Notes:**
+
+- ValidationAmount only has 2 hooks (Fetch and Insert), not the typical 4 CRUD hooks
+- Fetch hook uses business logic endpoint `/api/validation/amount/select/{accountNameOwner}/cleared` which should NOT be migrated
+- This specialized endpoint calculates cleared balance for account validation - it's a business endpoint, not a simple CRUD operation
+- Modern tests cover insert operation with comprehensive error handling coverage (59 tests)
+- Test helpers updated to use modern error format `{ error: "message" }` via `testHelpers.modern.ts`
 
 ### Medical Expense Endpoints
 

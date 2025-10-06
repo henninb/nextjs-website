@@ -4,8 +4,8 @@ import ValidationAmount from "../model/ValidationAmount";
 const insertValidationAmount = async (
   accountNameOwner: string,
   payload: ValidationAmount,
-): Promise<ValidationAmount | null> => {
-  const endpoint = `/api/validation/amount/insert/${accountNameOwner}`;
+): Promise<ValidationAmount> => {
+  const endpoint = `/api/validation/amount`;
 
   try {
     const response = await fetch(endpoint, {
@@ -19,28 +19,18 @@ const insertValidationAmount = async (
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error(`Failed to insert validation amount: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error) {
-    console.log(`An error occurred: ${error}`);
+    return await response.json();
+  } catch (error: any) {
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -55,10 +45,9 @@ export default function useValidationAmountInsert() {
       payload: ValidationAmount;
     }) => insertValidationAmount(variables.accountNameOwner, variables.payload),
     onError: (error: any) => {
-      console.log("Error during mutation:", error);
+      console.error("Error during mutation:", error);
     },
     onSuccess: (response: ValidationAmount, variables) => {
-      console.log("Mutation successful:", JSON.stringify(response));
       queryClient.setQueryData(
         ["validationAmount", variables.accountNameOwner],
         response,
