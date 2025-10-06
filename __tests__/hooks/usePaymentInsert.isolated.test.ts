@@ -96,8 +96,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: new Date("2024-01-01"),
         sourceAccount: "source",
         destinationAccount: "dest",
-        guidSource: undefined,
-        guidDestination: undefined,
+        guidSource: "",
+        guidDestination: "",
         activeStatus: true,
       });
     });
@@ -118,8 +118,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: mockPayment.transactionDate,
         sourceAccount: mockPayment.sourceAccount,
         destinationAccount: mockPayment.destinationAccount,
-        guidSource: undefined,
-        guidDestination: null,
+        guidSource: "",
+        guidDestination: "",
         activeStatus: true,
       });
     });
@@ -162,8 +162,8 @@ describe("Payment Insert Functions (Isolated)", () => {
               transactionDate: mockPayment.transactionDate,
               sourceAccount: mockPayment.sourceAccount,
               destinationAccount: mockPayment.destinationAccount,
-              guidSource: mockPayment.guidSource,
-              guidDestination: mockPayment.guidDestination,
+              guidSource: mockPayment.guidSource || "",
+              guidDestination: mockPayment.guidDestination || "",
               activeStatus: true,
             }),
           }),

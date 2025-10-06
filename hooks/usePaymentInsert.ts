@@ -13,8 +13,8 @@ export const setupNewPayment = (payload: Payment) => {
     transactionDate: payload?.transactionDate,
     sourceAccount: payload.sourceAccount,
     destinationAccount: payload.destinationAccount,
-    guidSource: payload.guidSource,
-    guidDestination: payload.guidDestination,
+    guidSource: payload.guidSource || "",
+    guidDestination: payload.guidDestination || "",
     activeStatus: true,
   };
 };
