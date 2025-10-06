@@ -69,12 +69,14 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = setupNewPayment(inputPayment);
 
       expect(result).toEqual({
+        paymentId: 0,
         amount: 250.0,
         transactionDate: new Date("2024-01-15"),
         sourceAccount: "test_source",
         destinationAccount: "test_dest",
         guidSource: "guid-source-123",
         guidDestination: "guid-dest-456",
+        activeStatus: true,
       });
     });
 
@@ -89,12 +91,14 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = setupNewPayment(minimalPayment);
 
       expect(result).toEqual({
+        paymentId: 0,
         amount: 100.0,
         transactionDate: new Date("2024-01-01"),
         sourceAccount: "source",
         destinationAccount: "dest",
         guidSource: undefined,
         guidDestination: undefined,
+        activeStatus: true,
       });
     });
 
@@ -109,12 +113,14 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = setupNewPayment(paymentWithNulls);
 
       expect(result).toEqual({
+        paymentId: 0,
         amount: null,
         transactionDate: mockPayment.transactionDate,
         sourceAccount: mockPayment.sourceAccount,
         destinationAccount: mockPayment.destinationAccount,
         guidSource: undefined,
         guidDestination: null,
+        activeStatus: true,
       });
     });
   });
@@ -151,12 +157,14 @@ describe("Payment Insert Functions (Isolated)", () => {
               Accept: "application/json",
             },
             body: JSON.stringify({
+              paymentId: 0,
               amount: mockPayment.amount,
               transactionDate: mockPayment.transactionDate,
               sourceAccount: mockPayment.sourceAccount,
               destinationAccount: mockPayment.destinationAccount,
               guidSource: mockPayment.guidSource,
               guidDestination: mockPayment.guidDestination,
+              activeStatus: true,
             }),
           }),
         );
@@ -580,12 +588,14 @@ describe("Payment Insert Functions (Isolated)", () => {
         await insertPayment(originalPayment);
 
         const expectedPayload = {
+          paymentId: 0,
           amount: 100.0,
           transactionDate: new Date("2024-01-01"),
           sourceAccount: "original_source",
           destinationAccount: "original_dest",
           guidSource: "guid-123",
           guidDestination: "guid-456",
+          activeStatus: true,
         };
 
         expect(global.fetch).toHaveBeenCalledWith(

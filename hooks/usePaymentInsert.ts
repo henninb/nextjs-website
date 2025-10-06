@@ -8,12 +8,14 @@ import {
 
 export const setupNewPayment = (payload: Payment) => {
   return {
+    paymentId: 0,
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
     sourceAccount: payload.sourceAccount,
     destinationAccount: payload.destinationAccount,
     guidSource: payload.guidSource,
     guidDestination: payload.guidDestination,
+    activeStatus: true,
   };
 };
 
