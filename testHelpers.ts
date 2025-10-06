@@ -60,9 +60,9 @@ export class ConsoleSpy {
   }
 
   start() {
-    console.log = this.mockLog;
-    console.error = this.mockError;
-    console.warn = this.mockWarn;
+    console.log = this.mockLog as any;
+    console.error = this.mockError as any;
+    console.warn = this.mockWarn as any;
     return {
       log: this.mockLog,
       error: this.mockError,
@@ -255,6 +255,6 @@ export const expectServerError = async (
   payload: any,
   errorMessage = "Server error",
 ) => {
-  global.fetch = createErrorResponse(errorMessage, 400);
+  global.fetch = createErrorFetchMock(errorMessage, 400);
   await expect(deleteFunction(payload)).rejects.toThrow(errorMessage);
 };
