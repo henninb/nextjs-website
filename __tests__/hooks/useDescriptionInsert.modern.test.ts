@@ -30,8 +30,13 @@ const insertDescriptionModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -238,9 +243,7 @@ describe("useDescriptionInsert Modern Endpoint (TDD)", () => {
     it("should handle network errors", async () => {
       const testDescription = createTestDescription();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -250,9 +253,7 @@ describe("useDescriptionInsert Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 

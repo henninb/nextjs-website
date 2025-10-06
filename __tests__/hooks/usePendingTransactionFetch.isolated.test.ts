@@ -195,9 +195,7 @@ describe("usePendingTransactionFetch Business Logic (Isolated)", () => {
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 

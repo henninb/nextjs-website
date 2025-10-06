@@ -36,14 +36,15 @@ describe("deletePayment (Isolated)", () => {
   });
 
   describe("Successful deletion", () => {
-    it("should delete payment successfully with 204 response", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+    it("should delete payment successfully", async () => {
+      const responseData = { ...mockPayment };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       const result = await deletePayment(mockPayment);
 
-      expect(result).toBeNull();
+      expect(result).toEqual(responseData);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/payment/delete/1",
+        "/api/payment/1",
         expect.objectContaining({
           method: "DELETE",
           credentials: "include",
@@ -55,8 +56,8 @@ describe("deletePayment (Isolated)", () => {
       );
     });
 
-    it("should return payment data for non-204 responses", async () => {
-      const responseData = { ...mockPayment, deleted: true };
+    it("should return payment data from response", async () => {
+      const responseData = { ...mockPayment };
       global.fetch = createFetchMock(responseData, { status: 200 });
 
       const result = await deletePayment(mockPayment);
@@ -66,12 +67,13 @@ describe("deletePayment (Isolated)", () => {
 
     it("should construct correct endpoint URL with payment ID", async () => {
       const paymentWithDifferentId = createTestPayment({ paymentId: 123 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...paymentWithDifferentId };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(paymentWithDifferentId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/payment/delete/123",
+        "/api/payment/123",
         expect.any(Object),
       );
     });
@@ -80,10 +82,16 @@ describe("deletePayment (Isolated)", () => {
   describe("Error handling", () => {
     it("should handle server error with error message", async () => {
       const errorMessage = "Cannot delete payment with pending transactions";
-      global.fetch = createErrorFetchMock(errorMessage, 400);
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: jest.fn().mockResolvedValueOnce({ error: errorMessage }),
+      });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(errorMessage);
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to delete payment:"),
+      );
     });
 
     it("should handle server error without error message", async () => {
@@ -94,10 +102,10 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "No error message returned.",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "No error message returned.",
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to delete payment:"),
       );
     });
 
@@ -109,33 +117,34 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON",
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to delete payment:"),
       );
     });
 
     it("should handle empty error message gracefully", async () => {
-      // Use an empty array which is truthy but stringifies to empty string
       global.fetch = jest.fn().mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: jest.fn().mockResolvedValueOnce({ response: [] }),
+        json: jest.fn().mockResolvedValueOnce({}),
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "cannot throw a null value",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("cannot throw a null value");
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to delete payment:"),
+      );
     });
 
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
       await expect(deletePayment(mockPayment)).rejects.toThrow("Network error");
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error",
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("An error occurred:"),
       );
     });
 
@@ -147,8 +156,8 @@ describe("deletePayment (Isolated)", () => {
       await expect(deletePayment(mockPayment)).rejects.toThrow(
         "Connection failed",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Connection failed",
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("An error occurred:"),
       );
     });
   });
@@ -156,36 +165,39 @@ describe("deletePayment (Isolated)", () => {
   describe("Edge cases", () => {
     it("should handle payment with zero ID", async () => {
       const paymentWithZeroId = createTestPayment({ paymentId: 0 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...paymentWithZeroId };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(paymentWithZeroId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/payment/delete/0",
+        "/api/payment/0",
         expect.any(Object),
       );
     });
 
     it("should handle payment with negative ID", async () => {
       const paymentWithNegativeId = createTestPayment({ paymentId: -1 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...paymentWithNegativeId };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(paymentWithNegativeId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/payment/delete/-1",
+        "/api/payment/-1",
         expect.any(Object),
       );
     });
 
     it("should handle payment with very large ID", async () => {
       const paymentWithLargeId = createTestPayment({ paymentId: 999999999 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...paymentWithLargeId };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(paymentWithLargeId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/payment/delete/999999999",
+        "/api/payment/999999999",
         expect.any(Object),
       );
     });
@@ -212,26 +224,20 @@ describe("deletePayment (Isolated)", () => {
       expect(result).toEqual({});
     });
 
-    it("should prioritize 204 status over response body", async () => {
-      // Even if there's a response body, 204 should return null
-      const mockJson = jest.fn().mockResolvedValueOnce({ message: "ignored" });
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 204,
-        json: mockJson,
-      });
+    it("should return JSON response", async () => {
+      const responseData = { ...mockPayment };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       const result = await deletePayment(mockPayment);
 
-      expect(result).toBeNull();
-      // json() should not be called for 204 responses
-      expect(mockJson).not.toHaveBeenCalled();
+      expect(result).toEqual(responseData);
     });
   });
 
   describe("HTTP headers and credentials", () => {
     it("should include correct headers in request", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...mockPayment };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(mockPayment);
 
@@ -247,7 +253,8 @@ describe("deletePayment (Isolated)", () => {
     });
 
     it("should include credentials in request", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...mockPayment };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(mockPayment);
 
@@ -260,7 +267,8 @@ describe("deletePayment (Isolated)", () => {
     });
 
     it("should use DELETE method", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...mockPayment };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(mockPayment);
 
@@ -276,23 +284,30 @@ describe("deletePayment (Isolated)", () => {
   describe("Console logging behavior", () => {
     it("should log error messages from server", async () => {
       const errorMessage = "Payment deletion failed";
-      global.fetch = createErrorFetchMock(errorMessage, 400);
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: jest.fn().mockResolvedValueOnce({ error: errorMessage }),
+      });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow();
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to delete payment:"),
+      );
     });
 
     it("should log general errors with context", async () => {
       global.fetch = simulateNetworkError();
 
       await expect(deletePayment(mockPayment)).rejects.toThrow();
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "An error occurred: Network error",
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        expect.stringContaining("An error occurred:"),
       );
     });
 
     it("should not log anything for successful deletions", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      const responseData = { ...mockPayment };
+      global.fetch = createFetchMock(responseData, { status: 200 });
 
       await deletePayment(mockPayment);
 

@@ -30,8 +30,13 @@ const deleteCategoryModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -43,9 +48,7 @@ const deleteCategoryModern = async (
 };
 
 // Helper function to create test category data
-const createTestCategory = (
-  overrides: Partial<Category> = {},
-): Category => ({
+const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
   categoryId: 1,
   categoryName: "test_category",
   activeStatus: true,
@@ -66,7 +69,10 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
 
   describe("Modern endpoint behavior", () => {
     it("should use modern endpoint /api/category/{categoryName}", async () => {
-      const testCategory = createTestCategory({ categoryId: 123, categoryName: "groceries" });
+      const testCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "groceries",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -109,7 +115,10 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
     });
 
     it("should use categoryName from payload in URL", async () => {
-      const testCategory = createTestCategory({ categoryId: 999, categoryName: "entertainment" });
+      const testCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "entertainment",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -127,7 +136,10 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
 
   describe("Modern error handling with ServiceResult pattern", () => {
     it("should handle 404 not found with modern error format", async () => {
-      const testCategory = createTestCategory({ categoryId: 999, categoryName: "nonexistent" });
+      const testCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "nonexistent",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
@@ -268,9 +280,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
     it("should handle network errors", async () => {
       const testCategory = createTestCategory();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -280,9 +290,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 
@@ -402,7 +410,12 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
     });
 
     it("should handle different categoryName values", async () => {
-      const categoryNames = ["groceries", "dining", "entertainment", "shopping"];
+      const categoryNames = [
+        "groceries",
+        "dining",
+        "entertainment",
+        "shopping",
+      ];
 
       for (const name of categoryNames) {
         const testCategory = createTestCategory({ categoryName: name });
@@ -438,7 +451,10 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
       const result = await deleteCategoryModern(testCategory);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/category/groceries", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/category/groceries",
+        expect.any(Object),
+      );
     });
 
     it("should delete dining category", async () => {
@@ -632,10 +648,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
       const result = await deleteCategoryModern(testCategory);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/category/",
-        expect.any(Object),
-      );
+      expect(fetch).toHaveBeenCalledWith("/api/category/", expect.any(Object));
     });
 
     it("should handle deletion of category with spaces in name", async () => {
@@ -711,9 +724,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
     it("should log error message to console", async () => {
       const testCategory = createTestCategory();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Test error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Test error"));
 
       consoleSpy.start();
 
@@ -738,7 +749,8 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
         ok: false,
         status: 409,
         json: async () => ({
-          error: "Cannot delete category groceries - 25 transactions reference this category",
+          error:
+            "Cannot delete category groceries - 25 transactions reference this category",
         }),
       });
 

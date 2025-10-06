@@ -3,7 +3,7 @@ import Payment from "../model/Payment";
 
 export const deletePayment = async (payload: Payment): Promise<Payment> => {
   try {
-    const endpoint = `/api/payment/delete/${payload.paymentId}`;
+    const endpoint = `/api/payment/${payload.paymentId}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -15,28 +15,18 @@ export const deletePayment = async (payload: Payment): Promise<Payment> => {
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error(`Failed to delete payment: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
 
-    return response.status !== 204 ? await response.json() : null;
+    return await response.json();
   } catch (error) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -49,7 +39,7 @@ export default function usePaymentDelete() {
     mutationFn: (variables: { oldRow: Payment }) =>
       deletePayment(variables.oldRow),
     onError: (error) => {
-      console.log(error ? error : "error is undefined.");
+      console.error(error ? error : "error is undefined.");
     },
     onSuccess: (_response, variables) => {
       const oldData: any = queryClient.getQueryData(["payment"]) || [];

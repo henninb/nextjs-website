@@ -3,7 +3,7 @@ import Payment from "../model/Payment";
 
 const fetchPaymentData = async (): Promise<Payment[]> => {
   try {
-    const response = await fetch("/api/payment/select", {
+    const response = await fetch("/api/payment/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -13,19 +13,20 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No payments found (404).");
-        return []; // Return empty array for 404, meaning no payments
-      }
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error("Error fetching payment data:", errorMessage);
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-
     return data;
   } catch (error: any) {
     console.error("Error fetching payment data:", error);
-    throw new Error(`Failed to fetch payment data: ${error.message}`);
+    throw error;
   }
 };
 
@@ -36,7 +37,7 @@ export default function usePaymentFetch() {
   });
 
   if (queryResult.isError) {
-    console.log(
+    console.error(
       "Error occurred while fetching payment data:",
       queryResult.error?.message,
     );

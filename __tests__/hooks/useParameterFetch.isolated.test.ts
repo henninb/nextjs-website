@@ -20,8 +20,12 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      throw new Error(
+        errorBody.error || `HTTP error! Status: ${response.status}`,
+      );
     }
 
     const data = await response.json();
@@ -258,9 +262,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 
@@ -328,9 +330,7 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
 
     describe("Edge cases", () => {
       it("should handle parameters with empty values", async () => {
-        const testParameters = [
-          createTestParameter({ parameterValue: "" }),
-        ];
+        const testParameters = [createTestParameter({ parameterValue: "" })];
 
         global.fetch = createModernFetchMock(testParameters);
 
@@ -579,7 +579,9 @@ describe("useParameterFetch Business Logic (Isolated)", () => {
         expect(
           result.find((p) => p.parameterName === "default_category"),
         ).toBeDefined();
-        expect(result.find((p) => p.parameterName === "currency")).toBeDefined();
+        expect(
+          result.find((p) => p.parameterName === "currency"),
+        ).toBeDefined();
         expect(
           result.find((p) => p.parameterName === "date_format"),
         ).toBeDefined();

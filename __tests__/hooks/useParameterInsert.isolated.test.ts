@@ -3,10 +3,7 @@
  * Tests insertParameter function without React Query overhead
  */
 
-import {
-  ConsoleSpy,
-  createTestParameter,
-} from "../../testHelpers";
+import { ConsoleSpy, createTestParameter } from "../../testHelpers";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
@@ -89,7 +86,10 @@ describe("insertParameter (Isolated)", () => {
   describe("API error handling", () => {
     it("should handle 400 error with response message", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createModernErrorFetchMock("Parameter name already exists", 400);
+      global.fetch = createModernErrorFetchMock(
+        "Parameter name already exists",
+        400,
+      );
       consoleSpy.start();
 
       await expect(insertParameter(testParameter)).rejects.toThrow(
@@ -227,10 +227,7 @@ describe("insertParameter (Isolated)", () => {
 
       await insertParameter(testParameter);
 
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter",
-        expect.any(Object),
-      );
+      expect(fetch).toHaveBeenCalledWith("/api/parameter", expect.any(Object));
     });
 
     it("should send POST method", async () => {
@@ -454,9 +451,7 @@ describe("insertParameter (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: API Error",
-      ]);
+      expect(calls.error[0]).toEqual(["An error occurred: API Error"]);
     });
 
     it("should log general errors to console.error", async () => {
@@ -546,7 +541,10 @@ describe("insertParameter (Isolated)", () => {
 
     it("should handle server errors gracefully", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createModernErrorFetchMock("Database connection failed", 503);
+      global.fetch = createModernErrorFetchMock(
+        "Database connection failed",
+        503,
+      );
       consoleSpy.start();
 
       await expect(insertParameter(testParameter)).rejects.toThrow(

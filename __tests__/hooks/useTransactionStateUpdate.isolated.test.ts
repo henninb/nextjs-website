@@ -215,7 +215,9 @@ describe("useTransactionStateUpdate Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         expect(
-          calls.log.some((call) => call[0].includes("Resource not found (404)")),
+          calls.log.some((call) =>
+            call[0].includes("Resource not found (404)"),
+          ),
         ).toBe(true);
       });
 
@@ -269,9 +271,7 @@ describe("useTransactionStateUpdate Business Logic (Isolated)", () => {
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 

@@ -17,8 +17,13 @@ export const deleteDescription = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 

@@ -6,20 +6,20 @@ The `raspi-finance-endpoint` project has been modernized with **standardized RES
 
 ### Migration Progress
 
-**Completed Migrations:** 3 of 8 endpoint groups
+**Completed Migrations:** 5 of 8 endpoint groups
 
-| Endpoint Group | Status | Migration Date | Hooks Migrated | Tests Added |
-|----------------|--------|----------------|----------------|-------------|
-| **Parameter** | ✅ Complete | 2025-01-15 | 4 hooks | 117 tests |
-| **Category** | ✅ Complete | 2025-01-15 | 4 hooks | 135 tests |
-| **Description** | ✅ Complete | 2025-01-15 | 4 hooks | 119 tests |
-| Account | ⏳ Pending | - | 0/5 hooks | - |
-| Transaction | ⏳ Pending | - | 0/5 hooks | - |
-| Payment | ⏳ Pending | - | 0/5 hooks | - |
-| Transfer | ⏳ Pending | - | 0/5 hooks | - |
-| Specialized | ⏳ Pending | - | 0/9 hooks | - |
+| Endpoint Group  | Status      | Migration Date | Hooks Migrated | Tests Added |
+| --------------- | ----------- | -------------- | -------------- | ----------- |
+| **Parameter**   | ✅ Complete | 2025-01-15     | 4 hooks        | 117 tests   |
+| **Category**    | ✅ Complete | 2025-01-15     | 4 hooks        | 135 tests   |
+| **Description** | ✅ Complete | 2025-01-15     | 4 hooks        | 119 tests   |
+| **Transfer**    | ✅ Complete | 2025-01-06     | 4 hooks        | 96+ tests   |
+| **Payment**     | ✅ Complete | 2025-01-06     | 4 hooks        | 110 tests   |
+| Account         | ⏳ Pending  | -              | 0/5 hooks      | -           |
+| Transaction     | ⏳ Pending  | -              | 0/5 hooks      | -           |
+| Specialized     | ⏳ Pending  | -              | 0/9 hooks      | -           |
 
-**Overall Progress:** 12/43+ hooks migrated (27.9%)
+**Overall Progress:** 20/43+ hooks migrated (46.5%)
 
 ## Current State Analysis
 
@@ -50,36 +50,38 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Account Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List Active** | `GET /api/account/select/active` | `GET /api/account/active` | `useAccountFetch.ts` |
-| **Get Single** | `GET /api/account/select/{accountNameOwner}` | `GET /api/account/{accountNameOwner}` | ❌ Not used |
-| **Create** | `POST /api/account/insert` | `POST /api/account` | `useAccountInsert.ts` |
-| **Update** | `PUT /api/account/update/{accountNameOwner}` | `PUT /api/account/{accountNameOwner}` | `useAccountUpdate.ts` |
-| **Delete** | `DELETE /api/account/delete/{accountNameOwner}` | `DELETE /api/account/{accountNameOwner}` | `useAccountDelete.ts` |
+| Operation       | Legacy Endpoint                                 | Modern Endpoint                          | Frontend Hook         |
+| --------------- | ----------------------------------------------- | ---------------------------------------- | --------------------- |
+| **List Active** | `GET /api/account/select/active`                | `GET /api/account/active`                | `useAccountFetch.ts`  |
+| **Get Single**  | `GET /api/account/select/{accountNameOwner}`    | `GET /api/account/{accountNameOwner}`    | ❌ Not used           |
+| **Create**      | `POST /api/account/insert`                      | `POST /api/account`                      | `useAccountInsert.ts` |
+| **Update**      | `PUT /api/account/update/{accountNameOwner}`    | `PUT /api/account/{accountNameOwner}`    | `useAccountUpdate.ts` |
+| **Delete**      | `DELETE /api/account/delete/{accountNameOwner}` | `DELETE /api/account/{accountNameOwner}` | `useAccountDelete.ts` |
 
 **Key Differences:**
+
 - Legacy throws 404 when no accounts exist; Modern returns empty array `[]`
 - Legacy uses `/select/`, `/insert`, `/update/`, `/delete/` prefixes
 - Modern uses standard REST verbs without action prefixes
 
 ### Transaction Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List All Active** | ❌ Not available | `GET /api/transaction/active` | ❌ Not used (returns `[]`) |
-| **Get by ID** | `GET /api/transaction/select/{guid}` | `GET /api/transaction/{guid}` | `useTransactionFetch.ts` |
-| **Create** | `POST /api/transaction/insert` | `POST /api/transaction` | `useTransactionInsert.ts` |
-| **Update** | `PUT /api/transaction/update/{guid}` | `PUT /api/transaction/{guid}` | `useTransactionUpdate.ts` |
-| **Delete** | `DELETE /api/transaction/delete/{guid}` | `DELETE /api/transaction/{guid}` | `useTransactionDelete.ts` |
-| **By Account** | `GET /api/transaction/account/select/{accountNameOwner}` | ✅ Business endpoint (keep) | `useTransactionByAccountFetch.ts` |
-| **By Category** | `GET /api/transaction/category/{category_name}` | ✅ Business endpoint (keep) | `useTransactionByCategoryFetch.ts` |
-| **By Description** | `GET /api/transaction/description/{description_name}` | ✅ Business endpoint (keep) | `useTransactionByDescriptionFetch.ts` |
-| **Update State** | `PUT /api/transaction/state/update/{guid}/{transactionStateValue}` | ✅ Business endpoint (keep) | `useTransactionStateUpdate.ts` |
-| **Account Totals** | `GET /api/transaction/account/totals/{accountNameOwner}` | ✅ Business endpoint (keep) | `useTotalsPerAccountFetch.ts` |
-| **Date Range** | ❌ Not used | `GET /api/transaction/date-range?startDate=...&endDate=...` | ❌ Not implemented |
+| Operation           | Legacy Endpoint                                                    | Modern Endpoint                                             | Frontend Hook                         |
+| ------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------- |
+| **List All Active** | ❌ Not available                                                   | `GET /api/transaction/active`                               | ❌ Not used (returns `[]`)            |
+| **Get by ID**       | `GET /api/transaction/select/{guid}`                               | `GET /api/transaction/{guid}`                               | `useTransactionFetch.ts`              |
+| **Create**          | `POST /api/transaction/insert`                                     | `POST /api/transaction`                                     | `useTransactionInsert.ts`             |
+| **Update**          | `PUT /api/transaction/update/{guid}`                               | `PUT /api/transaction/{guid}`                               | `useTransactionUpdate.ts`             |
+| **Delete**          | `DELETE /api/transaction/delete/{guid}`                            | `DELETE /api/transaction/{guid}`                            | `useTransactionDelete.ts`             |
+| **By Account**      | `GET /api/transaction/account/select/{accountNameOwner}`           | ✅ Business endpoint (keep)                                 | `useTransactionByAccountFetch.ts`     |
+| **By Category**     | `GET /api/transaction/category/{category_name}`                    | ✅ Business endpoint (keep)                                 | `useTransactionByCategoryFetch.ts`    |
+| **By Description**  | `GET /api/transaction/description/{description_name}`              | ✅ Business endpoint (keep)                                 | `useTransactionByDescriptionFetch.ts` |
+| **Update State**    | `PUT /api/transaction/state/update/{guid}/{transactionStateValue}` | ✅ Business endpoint (keep)                                 | `useTransactionStateUpdate.ts`        |
+| **Account Totals**  | `GET /api/transaction/account/totals/{accountNameOwner}`           | ✅ Business endpoint (keep)                                 | `useTotalsPerAccountFetch.ts`         |
+| **Date Range**      | ❌ Not used                                                        | `GET /api/transaction/date-range?startDate=...&endDate=...` | ❌ Not implemented                    |
 
 **Key Differences:**
+
 - Legacy CRUD uses action prefixes (`/select/`, `/insert`, etc.)
 - Modern standardized endpoints for basic CRUD
 - Business logic endpoints (by account, category, description) preserved as-is
@@ -87,20 +89,21 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Category Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook | Migration Status |
-|-----------|----------------|-----------------|---------------|------------------|
-| **List Active** | `GET /api/category/select/active` | `GET /api/category/active` | `useCategoryFetch.ts` | ✅ **MIGRATED** |
-| **Get Single** | `GET /api/category/select/{category_name}` | `GET /api/category/{categoryName}` | ❌ Not used | ✅ **MIGRATED** |
-| **Create** | `POST /api/category/insert` | `POST /api/category` | `useCategoryInsert.ts` | ✅ **MIGRATED** |
-| **Update** | `PUT /api/category/update/{category_name}` | `PUT /api/category/{categoryName}` | `useCategoryUpdate.ts` | ✅ **MIGRATED** |
-| **Delete** | `DELETE /api/category/delete/{categoryName}` | `DELETE /api/category/{categoryName}` | `useCategoryDelete.ts` | ✅ **MIGRATED** |
-| **Merge** | `PUT /api/category/merge?new=...&old=...` | ✅ Business endpoint (keep) | `useCategoryMerge.ts` | N/A - Business Logic |
+| Operation       | Legacy Endpoint                              | Modern Endpoint                       | Frontend Hook          | Migration Status     |
+| --------------- | -------------------------------------------- | ------------------------------------- | ---------------------- | -------------------- |
+| **List Active** | `GET /api/category/select/active`            | `GET /api/category/active`            | `useCategoryFetch.ts`  | ✅ **MIGRATED**      |
+| **Get Single**  | `GET /api/category/select/{category_name}`   | `GET /api/category/{categoryName}`    | ❌ Not used            | ✅ **MIGRATED**      |
+| **Create**      | `POST /api/category/insert`                  | `POST /api/category`                  | `useCategoryInsert.ts` | ✅ **MIGRATED**      |
+| **Update**      | `PUT /api/category/update/{category_name}`   | `PUT /api/category/{categoryName}`    | `useCategoryUpdate.ts` | ✅ **MIGRATED**      |
+| **Delete**      | `DELETE /api/category/delete/{categoryName}` | `DELETE /api/category/{categoryName}` | `useCategoryDelete.ts` | ✅ **MIGRATED**      |
+| **Merge**       | `PUT /api/category/merge?new=...&old=...`    | ✅ Business endpoint (keep)           | `useCategoryMerge.ts`  | N/A - Business Logic |
 
 **Migration Completed:** 2025-01-15 ✅
 
 **Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/CategoryController.kt`
 
 **Key Changes:**
+
 - ✅ Modern endpoints use `categoryName` (string) for URL routing
 - ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
 - ✅ Empty lists handled via error responses (backend returns 404, not empty array)
@@ -112,20 +115,21 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Description Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook | Migration Status |
-|-----------|----------------|-----------------|---------------|------------------|
-| **List Active** | `GET /api/description/select/active` | `GET /api/description/active` | `useDescriptionFetch.ts` | ✅ **MIGRATED** |
-| **Get Single** | ❌ Not implemented | `GET /api/description/{descriptionName}` | ❌ Not used | ✅ **MIGRATED** |
-| **Create** | `POST /api/description/insert` | `POST /api/description` | `useDescriptionInsert.ts` | ✅ **MIGRATED** |
-| **Update** | `PUT /api/description/update/{descriptionId}` | `PUT /api/description/{descriptionName}` | `useDescriptionUpdate.ts` | ✅ **MIGRATED** |
-| **Delete** | `DELETE /api/description/delete/{descriptionId}` | `DELETE /api/description/{descriptionName}` | `useDescriptionDelete.ts` | ✅ **MIGRATED** |
-| **Merge** | `PUT /api/description/merge?new=...&old=...` | ✅ Business endpoint (keep) | `useDescriptionMerge.ts` | N/A - Business Logic |
+| Operation       | Legacy Endpoint                                  | Modern Endpoint                             | Frontend Hook             | Migration Status     |
+| --------------- | ------------------------------------------------ | ------------------------------------------- | ------------------------- | -------------------- |
+| **List Active** | `GET /api/description/select/active`             | `GET /api/description/active`               | `useDescriptionFetch.ts`  | ✅ **MIGRATED**      |
+| **Get Single**  | ❌ Not implemented                               | `GET /api/description/{descriptionName}`    | ❌ Not used               | ✅ **MIGRATED**      |
+| **Create**      | `POST /api/description/insert`                   | `POST /api/description`                     | `useDescriptionInsert.ts` | ✅ **MIGRATED**      |
+| **Update**      | `PUT /api/description/update/{descriptionId}`    | `PUT /api/description/{descriptionName}`    | `useDescriptionUpdate.ts` | ✅ **MIGRATED**      |
+| **Delete**      | `DELETE /api/description/delete/{descriptionId}` | `DELETE /api/description/{descriptionName}` | `useDescriptionDelete.ts` | ✅ **MIGRATED**      |
+| **Merge**       | `PUT /api/description/merge?new=...&old=...`     | ✅ Business endpoint (keep)                 | `useDescriptionMerge.ts`  | N/A - Business Logic |
 
 **Migration Completed:** 2025-01-15 ✅
 
 **Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/DescriptionController.kt`
 
 **Key Changes:**
+
 - ✅ **CRITICAL**: Modern endpoints use `descriptionName` (string) for URL routing (changed from `descriptionId`)
 - ✅ Legacy update/delete used `descriptionId`, modern uses `descriptionName` (natural key)
 - ✅ Modern error handling with ServiceResult pattern `{ error: "message" }` or `{ errors: [...] }`
@@ -136,19 +140,20 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Parameter Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook | Migration Status |
-|-----------|----------------|-----------------|---------------|------------------|
-| **List Active** | `GET /api/parameter/select/active` | `GET /api/parameter/active` | `useParameterFetch.ts` | ✅ **MIGRATED** |
-| **Get Single** | `GET /api/parameter/select/{parameterName}` | `GET /api/parameter/{parameterName}` | ❌ Not used | ✅ **MIGRATED** |
-| **Create** | `POST /api/parameter/insert` | `POST /api/parameter` | `useParameterInsert.ts` | ✅ **MIGRATED** |
-| **Update** | `PUT /api/parameter/update/{parameterName}` | `PUT /api/parameter/{parameterName}` | `useParameterUpdate.ts` | ✅ **MIGRATED** |
-| **Delete** | `DELETE /api/parameter/delete/{parameterName}` | `DELETE /api/parameter/{parameterName}` | `useParameterDelete.ts` | ✅ **MIGRATED** |
+| Operation       | Legacy Endpoint                                | Modern Endpoint                         | Frontend Hook           | Migration Status |
+| --------------- | ---------------------------------------------- | --------------------------------------- | ----------------------- | ---------------- |
+| **List Active** | `GET /api/parameter/select/active`             | `GET /api/parameter/active`             | `useParameterFetch.ts`  | ✅ **MIGRATED**  |
+| **Get Single**  | `GET /api/parameter/select/{parameterName}`    | `GET /api/parameter/{parameterName}`    | ❌ Not used             | ✅ **MIGRATED**  |
+| **Create**      | `POST /api/parameter/insert`                   | `POST /api/parameter`                   | `useParameterInsert.ts` | ✅ **MIGRATED**  |
+| **Update**      | `PUT /api/parameter/update/{parameterName}`    | `PUT /api/parameter/{parameterName}`    | `useParameterUpdate.ts` | ✅ **MIGRATED**  |
+| **Delete**      | `DELETE /api/parameter/delete/{parameterName}` | `DELETE /api/parameter/{parameterName}` | `useParameterDelete.ts` | ✅ **MIGRATED**  |
 
 **Migration Completed:** 2025-01-15 ✅
 
 **Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/ParameterController.kt`
 
 **Key Changes:**
+
 - ✅ Modern endpoints use `parameterName` (string) for URL routing (backend design decision)
 - ✅ Update sends `newParameter` object in request body (not empty object)
 - ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
@@ -159,86 +164,131 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Payment Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List All** | `GET /api/payment/select` | `GET /api/payment/active` | `usePaymentFetch.ts` |
-| **Get Single** | `GET /api/payment/select/{paymentId}` | `GET /api/payment/{paymentId}` | ❌ Not used |
-| **Create** | `POST /api/payment/insert` | `POST /api/payment` | `usePaymentInsert.ts` |
-| **Update** | `PUT /api/payment/update/{paymentId}` | `PUT /api/payment/{paymentId}` | `usePaymentUpdate.ts` |
-| **Delete** | `DELETE /api/payment/delete/{paymentId}` | `DELETE /api/payment/{paymentId}` | `usePaymentDelete.ts` |
+| Operation      | Legacy Endpoint                          | Modern Endpoint                   | Frontend Hook         | Migration Status |
+| -------------- | ---------------------------------------- | --------------------------------- | --------------------- | ---------------- |
+| **List All**   | `GET /api/payment/select`                | `GET /api/payment/active`         | `usePaymentFetch.ts`  | ✅ **MIGRATED**  |
+| **Get Single** | `GET /api/payment/select/{paymentId}`    | `GET /api/payment/{paymentId}`    | ❌ Not used           | ✅ **MIGRATED**  |
+| **Create**     | `POST /api/payment/insert`               | `POST /api/payment`               | `usePaymentInsert.ts` | ✅ **MIGRATED**  |
+| **Update**     | `PUT /api/payment/update/{paymentId}`    | `PUT /api/payment/{paymentId}`    | `usePaymentUpdate.ts` | ✅ **MIGRATED**  |
+| **Delete**     | `DELETE /api/payment/delete/{paymentId}` | `DELETE /api/payment/{paymentId}` | `usePaymentDelete.ts` | ✅ **MIGRATED**  |
+
+**Migration Completed:** 2025-01-06 ✅
+
+**Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/PaymentController.kt`
+
+**Key Changes:**
+
+- ✅ Modern endpoints use REST conventions (no action prefixes like `/insert`, `/update/`, `/delete/`)
+- ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
+- ✅ Update sends `newPayment` object in request body (not complex diff logic)
+- ✅ Delete returns deleted payment object (not 204/null)
+- ✅ All errors logged to `console.error` (not `console.log`)
+- ✅ Consistent HTTP status codes (200, 201, 400, 401, 403, 404, 409, 500)
+- ✅ Removed legacy 404 fallback logic in update
+- ✅ Removed token checking/logging code
+
+**Important Notes:**
+
+- Payment endpoints use `paymentId` (numeric) for URL routing, consistent with backend implementation
+- Modern tests cover all CRUD operations with comprehensive error handling coverage (110 tests)
+- Transaction cascade logic in payment updates maintained and tested
 
 ### Transfer Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List All** | `GET /api/transfer/select` | `GET /api/transfer/active` | `useTransferFetch.ts` |
-| **Get Single** | `GET /api/transfer/select/{transferId}` | `GET /api/transfer/{transferId}` | ❌ Not used |
-| **Create** | `POST /api/transfer/insert` | `POST /api/transfer` | `useTransferInsert.ts` |
-| **Update** | `PUT /api/transfer/update/{transferId}` | `PUT /api/transfer/{transferId}` | `useTransferUpdate.ts` |
-| **Delete** | `DELETE /api/transfer/delete/{transferId}` | `DELETE /api/transfer/{transferId}` | `useTransferDelete.ts` |
+| Operation      | Legacy Endpoint                            | Modern Endpoint                     | Frontend Hook          | Migration Status |
+| -------------- | ------------------------------------------ | ----------------------------------- | ---------------------- | ---------------- |
+| **List All**   | `GET /api/transfer/select`                 | `GET /api/transfer/active`          | `useTransferFetch.ts`  | ✅ **MIGRATED**  |
+| **Get Single** | `GET /api/transfer/select/{transferId}`    | `GET /api/transfer/{transferId}`    | ❌ Not used            | ✅ **MIGRATED**  |
+| **Create**     | `POST /api/transfer/insert`                | `POST /api/transfer`                | `useTransferInsert.ts` | ✅ **MIGRATED**  |
+| **Update**     | `PUT /api/transfer/update/{transferId}`    | `PUT /api/transfer/{transferId}`    | `useTransferUpdate.ts` | ✅ **MIGRATED**  |
+| **Delete**     | `DELETE /api/transfer/delete/{transferId}` | `DELETE /api/transfer/{transferId}` | `useTransferDelete.ts` | ✅ **MIGRATED**  |
+
+**Migration Completed:** 2025-01-06 ✅
+
+**Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/TransferController.kt`
+
+**Key Changes:**
+
+- ✅ Modern endpoints use REST conventions (no action prefixes like `/insert`, `/update/`, `/delete/`)
+- ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
+- ✅ Update sends `newTransfer` object in request body (not empty object)
+- ✅ Delete returns deleted transfer object (not 204/null)
+- ✅ All errors logged to `console.error` (not `console.log`)
+- ✅ Consistent HTTP status codes (200, 201, 400, 401, 403, 404, 409, 500)
+
+**Important Notes:**
+
+- Transfer endpoints use `transferId` (numeric) for URL routing, consistent with backend implementation
+- Legacy `/insert` endpoint contains complex business logic (account validation, transaction creation) - modern endpoint maintains this logic
+- Modern tests created for all CRUD operations with comprehensive error handling coverage
 
 ### Validation Amount Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List Active** | `GET /api/validation-amount/select/active` | `GET /api/validation-amount/active` | `useValidationAmountFetch.ts` |
-| **Create** | `POST /api/validation-amount/insert` | `POST /api/validation-amount` | `useValidationAmountInsert.ts` |
-| **Update** | `PUT /api/validation-amount/update/{validationAmountId}` | `PUT /api/validation-amount/{validationAmountId}` | `useValidationAmountUpdate.ts` |
-| **Delete** | `DELETE /api/validation-amount/delete/{validationAmountId}` | `DELETE /api/validation-amount/{validationAmountId}` | `useValidationAmountDelete.ts` |
+| Operation       | Legacy Endpoint                                             | Modern Endpoint                                      | Frontend Hook                  |
+| --------------- | ----------------------------------------------------------- | ---------------------------------------------------- | ------------------------------ |
+| **List Active** | `GET /api/validation-amount/select/active`                  | `GET /api/validation-amount/active`                  | `useValidationAmountFetch.ts`  |
+| **Create**      | `POST /api/validation-amount/insert`                        | `POST /api/validation-amount`                        | `useValidationAmountInsert.ts` |
+| **Update**      | `PUT /api/validation-amount/update/{validationAmountId}`    | `PUT /api/validation-amount/{validationAmountId}`    | `useValidationAmountUpdate.ts` |
+| **Delete**      | `DELETE /api/validation-amount/delete/{validationAmountId}` | `DELETE /api/validation-amount/{validationAmountId}` | `useValidationAmountDelete.ts` |
 
 ### Medical Expense Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List All** | `GET /api/medical-expenses` | `GET /api/medical-expense/active` | `useMedicalExpenseFetch.ts` |
-| **Get Single** | `GET /api/medical-expenses/{medicalExpenseId}` | `GET /api/medical-expense/{medicalExpenseId}` | ❌ Not used |
-| **Create** | `POST /api/medical-expenses/insert` | `POST /api/medical-expense` | `useMedicalExpenseInsert.ts` |
-| **Update** | `PUT /api/medical-expenses/{medicalExpenseId}` | `PUT /api/medical-expense/{medicalExpenseId}` | `useMedicalExpenseUpdate.ts` |
-| **Delete** | `DELETE /api/medical-expenses/{medicalExpenseId}` | `DELETE /api/medical-expense/{medicalExpenseId}` | `useMedicalExpenseDelete.ts` |
+| Operation      | Legacy Endpoint                                   | Modern Endpoint                                  | Frontend Hook                |
+| -------------- | ------------------------------------------------- | ------------------------------------------------ | ---------------------------- |
+| **List All**   | `GET /api/medical-expenses`                       | `GET /api/medical-expense/active`                | `useMedicalExpenseFetch.ts`  |
+| **Get Single** | `GET /api/medical-expenses/{medicalExpenseId}`    | `GET /api/medical-expense/{medicalExpenseId}`    | ❌ Not used                  |
+| **Create**     | `POST /api/medical-expenses/insert`               | `POST /api/medical-expense`                      | `useMedicalExpenseInsert.ts` |
+| **Update**     | `PUT /api/medical-expenses/{medicalExpenseId}`    | `PUT /api/medical-expense/{medicalExpenseId}`    | `useMedicalExpenseUpdate.ts` |
+| **Delete**     | `DELETE /api/medical-expenses/{medicalExpenseId}` | `DELETE /api/medical-expense/{medicalExpenseId}` | `useMedicalExpenseDelete.ts` |
 
 **Note:** Medical expenses currently use a mixed pattern - already partially modernized
 
 ### Family Member Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List All** | `GET /api/family-members` | `GET /api/family-member/active` | `useFamilyMemberFetch.ts` |
-| **Create** | `POST /api/family-members/insert` | `POST /api/family-member` | `useFamilyMemberInsert.ts` |
-| **Delete** | `DELETE /api/family-members/{familyMemberId}` | `DELETE /api/family-member/{familyMemberId}` | `useFamilyMemberDelete.ts` |
+| Operation    | Legacy Endpoint                               | Modern Endpoint                              | Frontend Hook              |
+| ------------ | --------------------------------------------- | -------------------------------------------- | -------------------------- |
+| **List All** | `GET /api/family-members`                     | `GET /api/family-member/active`              | `useFamilyMemberFetch.ts`  |
+| **Create**   | `POST /api/family-members/insert`             | `POST /api/family-member`                    | `useFamilyMemberInsert.ts` |
+| **Delete**   | `DELETE /api/family-members/{familyMemberId}` | `DELETE /api/family-member/{familyMemberId}` | `useFamilyMemberDelete.ts` |
 
 ### Pending Transaction Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List All** | `GET /api/pending/transaction/all` | ❓ TBD | `usePendingTransactionFetch.ts` |
-| **Delete Single** | `DELETE /api/pending/transaction/delete/{transactionId}` | ❓ TBD | `usePendingTransactionDelete.ts` |
-| **Delete All** | `DELETE /api/pending/transaction/delete/all` | ❓ TBD | `usePendingTransactionDeleteAll.ts` |
+| Operation         | Legacy Endpoint                                          | Modern Endpoint | Frontend Hook                       |
+| ----------------- | -------------------------------------------------------- | --------------- | ----------------------------------- |
+| **List All**      | `GET /api/pending/transaction/all`                       | ❓ TBD          | `usePendingTransactionFetch.ts`     |
+| **Delete Single** | `DELETE /api/pending/transaction/delete/{transactionId}` | ❓ TBD          | `usePendingTransactionDelete.ts`    |
+| **Delete All**    | `DELETE /api/pending/transaction/delete/all`             | ❓ TBD          | `usePendingTransactionDeleteAll.ts` |
 
 **Note:** Pending transactions may not follow standardization pattern - confirm backend implementation
 
 ## Benefits of Migration
 
 ### 1. **Standards Compliance**
+
 - REST conventions followed consistently
 - Predictable endpoint patterns
 - Industry-standard HTTP semantics
 
 ### 2. **Better Error Handling**
+
 - Modern endpoints use `ServiceResult` pattern
 - Structured error responses
 - Consistent error codes and messages
 
 ### 3. **Type Safety**
+
 - Modern endpoints return proper types
 - No more `ResponseEntity<*>` wildcards
 - Better TypeScript integration
 
 ### 4. **Improved Developer Experience**
+
 - Intuitive endpoint naming
 - No action prefixes to remember
 - Clear separation of CRUD vs business logic
 
 ### 5. **Future-Proofing**
+
 - Backend team committed to modern patterns
 - Legacy endpoints will be deprecated
 - New features use modern patterns only
@@ -250,15 +300,18 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 **Goal:** Set up infrastructure for gradual migration
 
 **Tasks:**
+
 1. Create new modern hook variants alongside legacy hooks
    - Naming: `useAccountFetchModern.ts` initially
    - Copy existing logic, update endpoints
    - Maintain same interface/return types
 
 2. Create feature flag system
+
    ```typescript
    // utils/featureFlags.ts
-   export const USE_MODERN_APIS = process.env.NEXT_PUBLIC_USE_MODERN_APIS === 'true';
+   export const USE_MODERN_APIS =
+     process.env.NEXT_PUBLIC_USE_MODERN_APIS === "true";
    ```
 
 3. Create API endpoint constants
@@ -267,30 +320,32 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
    export const API_ENDPOINTS = {
      account: {
        legacy: {
-         list: '/api/account/select/active',
-         get: '/api/account/select/:id',
-         create: '/api/account/insert',
-         update: '/api/account/update/:id',
-         delete: '/api/account/delete/:id',
+         list: "/api/account/select/active",
+         get: "/api/account/select/:id",
+         create: "/api/account/insert",
+         update: "/api/account/update/:id",
+         delete: "/api/account/delete/:id",
        },
        modern: {
-         list: '/api/account/active',
-         get: '/api/account/:id',
-         create: '/api/account',
-         update: '/api/account/:id',
-         delete: '/api/account/:id',
-       }
+         list: "/api/account/active",
+         get: "/api/account/:id",
+         create: "/api/account",
+         update: "/api/account/:id",
+         delete: "/api/account/:id",
+       },
      },
      // ... more resources
    };
    ```
 
 **Files to Create:**
+
 - `/utils/featureFlags.ts`
 - `/utils/apiEndpoints.ts`
 - `/hooks/modern/useAccountFetch.ts` (example)
 
 **Tests Required:**
+
 - All new modern hooks need isolated tests (follow existing pattern)
 - Integration tests comparing legacy vs modern responses
 
@@ -299,6 +354,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 **Goal:** Migrate highest-traffic endpoints
 
 **Priority Order:**
+
 1. ✅ Account endpoints (5 hooks)
    - `useAccountFetch.ts` → `GET /api/account/active`
    - `useAccountInsert.ts` → `POST /api/account`
@@ -314,6 +370,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
    - `useTransactionByAccountFetch.ts` → Keep `/api/transaction/account/select/{accountNameOwner}`
 
 **Implementation Steps per Hook:**
+
 1. Create modern variant hook
 2. Write comprehensive tests (success, errors, edge cases)
 3. Update component to use modern hook with feature flag
@@ -324,6 +381,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 8. Remove legacy hook after 2 weeks of 100% modern usage
 
 **Components to Update:**
+
 - `/pages/finance/accounts/index.tsx`
 - `/pages/finance/transactions/index.tsx`
 - All transaction-related pages
@@ -333,6 +391,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 **Goal:** Migrate category, description, parameter endpoints
 
 **Priority Order:**
+
 1. ✅ Category endpoints (5 hooks + 1 business)
    - `useCategoryFetch.ts` → `GET /api/category/active`
    - `useCategoryInsert.ts` → `POST /api/category`
@@ -354,6 +413,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
    - `useParameterDelete.ts` → `DELETE /api/parameter/{parameterId}`
 
 **Components to Update:**
+
 - `/pages/finance/categories/index.tsx`
 - `/components/SelectCategory.tsx`
 - `/components/SelectDescription.tsx`
@@ -363,19 +423,21 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 **Goal:** Migrate payment and transfer endpoints
 
 **Priority Order:**
-1. ✅ Payment endpoints (5 hooks)
-   - `usePaymentFetch.ts` → `GET /api/payment/active`
-   - `usePaymentInsert.ts` → `POST /api/payment`
-   - `usePaymentUpdate.ts` → `PUT /api/payment/{paymentId}`
-   - `usePaymentDelete.ts` → `DELETE /api/payment/{paymentId}`
 
-2. ✅ Transfer endpoints (5 hooks)
+1. ✅ Payment endpoints (4 hooks) - **COMPLETED**
+   - `usePaymentFetch.ts` → `GET /api/payment/active` ✅
+   - `usePaymentInsert.ts` → `POST /api/payment` ✅
+   - `usePaymentUpdate.ts` → `PUT /api/payment/{paymentId}` ✅
+   - `usePaymentDelete.ts` → `DELETE /api/payment/{paymentId}` ✅
+
+2. ✅ Transfer endpoints (4 hooks) - **COMPLETED**
    - `useTransferFetch.ts` → `GET /api/transfer/active`
    - `useTransferInsert.ts` → `POST /api/transfer`
    - `useTransferUpdate.ts` → `PUT /api/transfer/{transferId}`
    - `useTransferDelete.ts` → `DELETE /api/transfer/{transferId}`
 
 **Components to Update:**
+
 - `/pages/finance/payments/index.tsx`
 - `/pages/finance/transfers/index.tsx`
 
@@ -384,6 +446,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 **Goal:** Migrate remaining specialized endpoints
 
 **Priority Order:**
+
 1. ✅ Validation Amount endpoints (4 hooks)
    - `useValidationAmountFetch.ts` → `GET /api/validation-amount/active`
    - `useValidationAmountInsert.ts` → `POST /api/validation-amount`
@@ -401,6 +464,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
    - `useFamilyMemberDelete.ts` → `DELETE /api/family-member/{familyMemberId}`
 
 **Components to Update:**
+
 - `/pages/finance/medical-expenses/index.tsx`
 - `/components/MedicalExpenseForm.tsx`
 
@@ -409,6 +473,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 **Goal:** Remove legacy code and optimize
 
 **Tasks:**
+
 1. Remove all legacy hooks
 2. Remove feature flag system
 3. Remove legacy endpoint constants
@@ -418,11 +483,13 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 7. Error monitoring review
 
 **Files to Remove:**
+
 - All `hooks/*Fetch.ts` (legacy versions)
 - `utils/featureFlags.ts` (if no other features use it)
 - Legacy endpoint constants from `utils/apiEndpoints.ts`
 
 **Documentation Updates:**
+
 - Update README.md with new API patterns
 - Update CLAUDE.md with modern endpoint examples
 - Create API_REFERENCE.md with all modern endpoints
@@ -433,6 +500,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 **Risk:** Modern endpoints may have subtle differences in response format
 **Mitigation:**
+
 - Comprehensive integration tests comparing legacy vs modern
 - Feature flag rollout (10% → 50% → 100%)
 - Keep legacy endpoints available for quick rollback
@@ -442,6 +510,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 **Risk:** Different error handling may expose edge cases
 **Mitigation:**
+
 - Run both legacy and modern hooks in parallel (shadow mode)
 - Compare results and log discrepancies
 - Fix backend inconsistencies before full migration
@@ -451,6 +520,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 **Risk:** Modern endpoints may have different performance characteristics
 **Mitigation:**
+
 - Load testing before migration
 - Monitor response times during rollout
 - Cache strategy review
@@ -460,6 +530,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 **Risk:** Bugs during migration affect users
 **Mitigation:**
+
 - Gradual rollout with feature flags
 - Enhanced error logging
 - Quick rollback mechanism
@@ -470,6 +541,7 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 ### 1. **Unit Tests**
 
 For each modern hook:
+
 - Isolated business logic tests (follow existing pattern)
 - Mock fetch responses
 - Test success scenarios
@@ -481,6 +553,7 @@ For each modern hook:
 ### 2. **Integration Tests**
 
 Compare legacy vs modern:
+
 - Same input → same output
 - Error parity
 - Performance comparison
@@ -491,6 +564,7 @@ Compare legacy vs modern:
 ### 3. **E2E Tests**
 
 Full user workflows:
+
 - Create account → list accounts → update → delete
 - Transaction lifecycle tests
 - Payment cascade operations
@@ -515,24 +589,26 @@ Full user workflows:
 
 ```typescript
 // Enhanced logging for migration
-logger.info('API_MIGRATION', {
-  hook: 'useAccountFetch',
-  version: 'modern',
-  endpoint: '/api/account/active',
+logger.info("API_MIGRATION", {
+  hook: "useAccountFetch",
+  version: "modern",
+  endpoint: "/api/account/active",
   responseTime: 123,
   statusCode: 200,
-  userSegment: 'beta_10pct'
+  userSegment: "beta_10pct",
 });
 ```
 
 ### 3. **Rollback Triggers**
 
 Automatic rollback if:
+
 - Error rate > 5% for any endpoint
 - Response time > 2x baseline
 - Any 500 errors in first 100 requests
 
 Manual rollback if:
+
 - User complaints spike
 - Data inconsistencies detected
 - Critical bug discovered
@@ -550,6 +626,7 @@ Manual rollback if:
 ### Phase Completion
 
 Each phase is complete when:
+
 - ✅ All hooks migrated
 - ✅ All tests passing (100% coverage maintained)
 - ✅ 100% of users on modern endpoints
@@ -569,15 +646,15 @@ Each phase is complete when:
 
 ## Timeline Summary
 
-| Phase | Duration | Hooks Migrated | Risk Level |
-|-------|----------|----------------|------------|
-| **Phase 1: Foundation** | 2 weeks | 0 (infrastructure) | Low |
-| **Phase 2: Account & Transaction** | 2 weeks | 10 hooks | Medium |
-| **Phase 3: Master Data** | 2 weeks | 14 hooks | Low |
-| **Phase 4: Payment & Transfer** | 2 weeks | 10 hooks | Low |
-| **Phase 5: Specialized** | 2 weeks | 9+ hooks | Low |
-| **Phase 6: Cleanup** | 2 weeks | 0 (removal) | Low |
-| **Total** | **12 weeks** | **43+ hooks** | **Medium** |
+| Phase                              | Duration     | Hooks Migrated     | Risk Level |
+| ---------------------------------- | ------------ | ------------------ | ---------- |
+| **Phase 1: Foundation**            | 2 weeks      | 0 (infrastructure) | Low        |
+| **Phase 2: Account & Transaction** | 2 weeks      | 10 hooks           | Medium     |
+| **Phase 3: Master Data**           | 2 weeks      | 14 hooks           | Low        |
+| **Phase 4: Payment & Transfer**    | 2 weeks      | 10 hooks           | Low        |
+| **Phase 5: Specialized**           | 2 weeks      | 9+ hooks           | Low        |
+| **Phase 6: Cleanup**               | 2 weeks      | 0 (removal)        | Low        |
+| **Total**                          | **12 weeks** | **43+ hooks**      | **Medium** |
 
 ## Appendix A: Modern Endpoint Patterns
 
@@ -585,11 +662,11 @@ Each phase is complete when:
 
 ```typescript
 // Modern pattern - consistent across all resources
-GET    /api/{resource}/active          // List all active
-GET    /api/{resource}/{id}            // Get single by ID
-POST   /api/{resource}                 // Create new
-PUT    /api/{resource}/{id}            // Update existing
-DELETE /api/{resource}/{id}            // Delete by ID
+GET / api / { resource } / active; // List all active
+GET / api / { resource } / { id }; // Get single by ID
+POST / api / { resource }; // Create new
+PUT / api / { resource } / { id }; // Update existing
+DELETE / api / { resource } / { id }; // Delete by ID
 ```
 
 ### Legacy Pattern (Deprecated)
@@ -732,6 +809,7 @@ For each hook being migrated:
 **GraphQL endpoints are separate from REST modernization.**
 
 These hooks:
+
 1. Are already using a modern pattern (GraphQL)
 2. Should be evaluated separately for REST vs GraphQL decision
 3. May be migrated to modern REST OR kept as GraphQL
@@ -758,11 +836,13 @@ To support the gradual migration from legacy to modern endpoints, we've created 
 **Error Format:** `{ response: "error message" }`
 
 **Key Functions:**
+
 - `createFetchMock(data, options)` - Mock successful API responses
 - `createErrorFetchMock(message, status)` - Mock error responses with legacy format
 - `createErrorResponse(message, status)` - Create legacy error response object
 
 **Usage:**
+
 ```typescript
 import { createFetchMock, createErrorFetchMock } from "../../testHelpers";
 
@@ -782,14 +862,19 @@ global.fetch = createErrorFetchMock("Account not found", 404);
 **Error Format:** `{ error: "error message" }` or `{ errors: ["error1", "error2"] }`
 
 **Key Functions:**
+
 - `createModernFetchMock(data, options)` - Mock successful API responses
 - `createModernErrorFetchMock(message, status)` - Mock single error responses
 - `createModernValidationErrorFetchMock(errors, status)` - Mock validation errors
 - `modernEndpoints` - Helper object with modern endpoint patterns
 
 **Usage:**
+
 ```typescript
-import { createModernFetchMock, createModernErrorFetchMock } from "../../testHelpers.modern";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 
 // Success response
 global.fetch = createModernFetchMock({ data: "test" });
@@ -798,10 +883,10 @@ global.fetch = createModernFetchMock({ data: "test" });
 global.fetch = createModernErrorFetchMock("Parameter not found", 404);
 
 // Validation errors (modern format: { errors: [...] })
-global.fetch = createModernValidationErrorFetchMock([
-  "parameterName is required",
-  "parameterValue must be non-empty"
-], 400);
+global.fetch = createModernValidationErrorFetchMock(
+  ["parameterName is required", "parameterValue must be non-empty"],
+  400,
+);
 ```
 
 **Used By:** Migrated parameter hooks and future migrations
@@ -832,7 +917,10 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
 
     await fetchParameterData();
 
-    expect(fetch).toHaveBeenCalledWith("/api/parameter/active", expect.any(Object));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/parameter/active",
+      expect.any(Object),
+    );
   });
 
   it("should return empty array when no parameters exist", async () => {
@@ -859,7 +947,9 @@ import { createModernFetchMock } from "../../testHelpers.modern"; // Changed fro
 global.fetch = createModernFetchMock(testData);
 
 // Update error expectations
-await expect(fetchFunction()).rejects.toThrow("Failed to fetch parameter data: Internal server error");
+await expect(fetchFunction()).rejects.toThrow(
+  "Failed to fetch parameter data: Internal server error",
+);
 ```
 
 #### **Step 3: Implement Hook with Modern Endpoints**
@@ -869,7 +959,8 @@ Update the actual hook implementation:
 ```typescript
 // hooks/useParameterFetch.ts
 const fetchParameterData = async (): Promise<Parameter[]> => {
-  const response = await fetch("/api/parameter/active", { // Modern endpoint
+  const response = await fetch("/api/parameter/active", {
+    // Modern endpoint
     method: "GET",
     credentials: "include",
     headers: {
@@ -881,9 +972,11 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
   if (!response.ok) {
     // Modern error handling with ServiceResult pattern
     const errorBody = await response.json().catch(() => ({
-      error: `HTTP error! Status: ${response.status}`
+      error: `HTTP error! Status: ${response.status}`,
     }));
-    throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+    throw new Error(
+      errorBody.error || `HTTP error! Status: ${response.status}`,
+    );
   }
 
   return await response.json(); // Returns [] for empty, never 404
@@ -925,6 +1018,7 @@ For each migrated endpoint, ensure:
 **Migration Date:** 2025-01-15
 
 **Test Files Created/Updated:** 8 files
+
 - ✅ `useParameterFetch.modern.test.ts` (26 tests)
 - ✅ `useParameterInsert.modern.test.ts` (30 tests)
 - ✅ `useParameterUpdate.modern.test.ts` (32 tests)
@@ -935,11 +1029,13 @@ For each migrated endpoint, ensure:
 - ✅ `useParameterDelete.isolated.test.ts` (32 tests)
 
 **Test Coverage:**
+
 - **253 parameter-specific tests** - All passing ✅
 - **34 configuration page tests** - All passing ✅
 - **2,289 total tests across all suites** - All passing ✅
 
 **Key Testing Patterns Validated:**
+
 - Modern endpoint URLs (no action prefixes)
 - ServiceResult error pattern `{ error: "message" }`
 - Empty array responses (no 404 on empty)
@@ -988,6 +1084,7 @@ Based on the parameter migration experience, recommended order:
 6. **Specialized Endpoints** (ValidationAmount, MedicalExpense, etc.)
 
 Each migration should:
+
 1. Create modern test files using `testHelpers.modern.ts`
 2. Update isolated tests to use modern helpers
 3. Implement modern endpoints in hooks
@@ -1003,10 +1100,12 @@ Each migration should:
 
 ---
 
-**Document Version:** 1.1
-**Last Updated:** 2025-01-15
-**Status:** In Progress - Parameter Endpoints Migrated ✅
+**Document Version:** 1.2
+**Last Updated:** 2025-01-06
+**Status:** In Progress - 5 of 8 Endpoint Groups Migrated (46.5% complete) ✅
 
 **Change Log:**
+
+- v1.2 (2025-01-06): Completed payment endpoint migration (4 hooks, 110 tests)
 - v1.1 (2025-01-15): Added Appendix E with test infrastructure documentation, completed parameter endpoint migration
 - v1.0 (2025-01-15): Initial migration plan created

@@ -72,7 +72,9 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toBe("Deleting pending transaction with id: 42");
+        expect(calls.log[0][0]).toBe(
+          "Deleting pending transaction with id: 42",
+        );
       });
 
       it("should handle deletion of different transaction IDs", async () => {
@@ -218,9 +220,7 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         await expect(deletePendingTransaction(42)).rejects.toThrow(
           "Network error",

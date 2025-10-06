@@ -1,15 +1,20 @@
 /**
  * Isolated tests for useTransferFetch business logic
  * Tests fetchTransferData function without React Query overhead
+ * Using modern endpoint: GET /api/transfer/active
  */
 
-import { createFetchMock, ConsoleSpy } from "../../testHelpers";
+import { ConsoleSpy } from "../../testHelpers";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 import Transfer from "../../model/Transfer";
 
-// Copy the function to test
+// Copy the function to test (modern implementation)
 const fetchTransferData = async (): Promise<Transfer[]> => {
   try {
-    const response = await fetch("/api/transfer/select", {
+    const response = await fetch("/api/transfer/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -19,18 +24,19 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No transfers found (404).");
-        return [];
-      }
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error("Error fetching transfer data:", errorMessage);
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-
     return data;
-  } catch (error) {
-    console.log("Error fetching transfer data:", error);
+  } catch (error: any) {
+    console.error("Error fetching transfer data:", error);
     throw error;
   }
 };
@@ -66,12 +72,12 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ transferId: 2 }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
         expect(result).toEqual(testTransfers);
-        expect(fetch).toHaveBeenCalledWith("/api/transfer/select", {
+        expect(fetch).toHaveBeenCalledWith("/api/transfer/active", {
           method: "GET",
           credentials: "include",
           headers: {
@@ -81,19 +87,14 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
         });
       });
 
-      it("should return empty array when no transfers exist (404)", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
-
-        consoleSpy.start();
+      it("should return empty array when no transfers exist", async () => {
+        // Modern endpoints return empty array on success, not 404
+        global.fetch = createModernFetchMock([]);
 
         const result = await fetchTransferData();
 
         expect(result).toEqual([]);
-        const calls = consoleSpy.getCalls();
-        expect(calls.log.some((call) => call[0].includes("404"))).toBe(true);
+        expect(Array.isArray(result)).toBe(true);
       });
 
       it("should fetch transfers with different amounts", async () => {
@@ -103,7 +104,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ amount: 2000.99 }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -129,7 +130,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -140,7 +141,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
       });
 
       it("should handle empty array response", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         const result = await fetchTransferData();
 
@@ -161,7 +162,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -180,7 +181,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ activeStatus: false }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -189,7 +190,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
       });
 
       it("should use correct HTTP method", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchTransferData();
 
@@ -198,7 +199,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
       });
 
       it("should include credentials", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchTransferData();
 
@@ -207,7 +208,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
       });
 
       it("should include correct headers", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchTransferData();
 
@@ -221,55 +222,40 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
 
     describe("Error handling", () => {
       it("should throw error for 500 server error", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-        });
+        global.fetch = createModernErrorFetchMock("Internal server error", 500);
 
         consoleSpy.start();
 
         await expect(fetchTransferData()).rejects.toThrow(
-          "HTTP error! Status: 500",
+          "Internal server error",
         );
 
         const calls = consoleSpy.getCalls();
         expect(
-          calls.log.some((call) =>
+          calls.error.some((call) =>
             call[0].includes("Error fetching transfer data:"),
           ),
         ).toBe(true);
       });
 
       it("should throw error for 401 unauthorized", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 401,
-        });
+        global.fetch = createModernErrorFetchMock("Unauthorized", 401);
 
         consoleSpy.start();
 
-        await expect(fetchTransferData()).rejects.toThrow(
-          "HTTP error! Status: 401",
-        );
+        await expect(fetchTransferData()).rejects.toThrow("Unauthorized");
       });
 
       it("should throw error for 403 forbidden", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 403,
-        });
+        global.fetch = createModernErrorFetchMock("Forbidden", 403);
 
         consoleSpy.start();
 
-        await expect(fetchTransferData()).rejects.toThrow(
-          "HTTP error! Status: 403",
-        );
+        await expect(fetchTransferData()).rejects.toThrow("Forbidden");
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 
@@ -277,7 +263,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         expect(
-          calls.log.some((call) =>
+          calls.error.some((call) =>
             call[0].includes("Error fetching transfer data:"),
           ),
         ).toBe(true);
@@ -312,18 +298,19 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
         await expect(fetchTransferData()).rejects.toThrow("Timeout");
       });
 
-      it("should log 404 status when no transfers found", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
+      it("should log 404 status when transfer not found", async () => {
+        global.fetch = createModernErrorFetchMock("Transfer not found", 404);
 
         consoleSpy.start();
 
-        await fetchTransferData();
+        await expect(fetchTransferData()).rejects.toThrow();
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toBe("No transfers found (404).");
+        expect(
+          calls.error.some((call) =>
+            call.some((arg: any) => String(arg).includes("Transfer not found")),
+          ),
+        ).toBe(true);
       });
 
       it("should log errors when they occur", async () => {
@@ -340,7 +327,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         expect(
-          calls.log.some((call) =>
+          calls.error.some((call) =>
             call[0].includes("Error fetching transfer data:"),
           ),
         ).toBe(true);
@@ -351,7 +338,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
       it("should handle transfers with zero amount", async () => {
         const testTransfers = [createTestTransfer({ amount: 0 })];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -361,7 +348,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
       it("should handle transfers with negative amount", async () => {
         const testTransfers = [createTestTransfer({ amount: -500.0 })];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -371,7 +358,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
       it("should handle transfers with very large amounts", async () => {
         const testTransfers = [createTestTransfer({ amount: 999999.99 })];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -386,7 +373,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -402,7 +389,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -416,7 +403,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ transactionDate: futureDate }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -429,7 +416,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ transactionDate: pastDate }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -442,7 +429,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ transferId: 67890 }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -455,7 +442,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ transferId: i + 1 }),
         );
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -480,7 +467,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -504,18 +491,18 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
 
     describe("API endpoint", () => {
       it("should call correct API endpoint", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchTransferData();
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/transfer/select",
+          "/api/transfer/active",
           expect.any(Object),
         );
       });
 
       it("should only call API once per fetch", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchTransferData();
 
@@ -534,7 +521,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 
@@ -546,7 +533,7 @@ describe("useTransferFetch Business Logic (Isolated)", () => {
           createTestTransfer({ transferId: 1, amount: 100.0 }),
         ];
 
-        global.fetch = createFetchMock(testTransfers);
+        global.fetch = createModernFetchMock(testTransfers);
 
         const result = await fetchTransferData();
 

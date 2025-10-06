@@ -6,18 +6,7 @@ export const updatePayment = async (
   oldPayment: Payment,
   newPayment: Payment,
 ): Promise<Payment> => {
-  const endpoint = `/api/payment/update/${oldPayment.paymentId}`;
-
-  // Debug: Check if token cookie exists
-  const tokenCookie =
-    typeof window !== "undefined"
-      ? document.cookie.split("; ").find((row) => row.startsWith("token="))
-      : null;
-  console.log(`Attempting to update payment at: ${endpoint}`);
-  console.log(
-    `Token cookie exists: ${!!tokenCookie}`,
-    tokenCookie ? "Found - will be sent via credentials" : "Missing",
-  );
+  const endpoint = `/api/payment/${oldPayment.paymentId}`;
 
   try {
     const response = await fetch(endpoint, {
@@ -27,60 +16,22 @@ export const updatePayment = async (
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      // Build payload that satisfies validation but signals changes correctly
-      body: JSON.stringify({
-        // Always include valid values for required validation fields
-        sourceAccount: oldPayment.sourceAccount,
-        destinationAccount: oldPayment.destinationAccount,
-        guidSource: oldPayment.guidSource,
-        guidDestination: oldPayment.guidDestination,
-        activeStatus: oldPayment.activeStatus,
-
-        // Send actual values for fields being updated, or use current values to preserve them
-        transactionDate:
-          newPayment.transactionDate &&
-          new Date(newPayment.transactionDate).toDateString() !==
-            new Date(oldPayment.transactionDate).toDateString()
-            ? new Date(newPayment.transactionDate).toISOString().split("T")[0]
-            : new Date(oldPayment.transactionDate).toISOString().split("T")[0], // Current date to preserve
-
-        amount:
-          newPayment.amount !== undefined &&
-          Number(newPayment.amount) !== Number(oldPayment.amount)
-            ? Number(newPayment.amount)
-            : Number(oldPayment.amount), // Current amount to preserve
-      }),
+      body: JSON.stringify(newPayment),
     });
 
-    console.log(
-      `Payment update response status: ${response.status} ${response.statusText}`,
-    );
-
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-      return newPayment; // Return fallback data for 404
-    }
-
     if (!response.ok) {
-      const errorBody = await response.text();
-      console.log(
-        `Payment update failed - Status: ${response.status}, StatusText: ${response.statusText}, Body: ${errorBody}`,
-      );
-
-      if (response.status === 409) {
-        throw new Error(
-          `A payment with the same account, date, and amount already exists. Please use a different date or amount.`,
-        );
-      }
-
-      throw new Error(
-        `Failed to update payment state: ${response.statusText} (Status: ${response.status})`,
-      );
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error(`Failed to update payment: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -98,7 +49,7 @@ export default function usePaymentUpdate() {
       newPayment: Payment;
     }) => updatePayment(oldPayment, newPayment),
     onError: (error: any) => {
-      console.log(`Error occurred during mutation: ${error.message}`);
+      console.error(`Error occurred during mutation: ${error.message}`);
     },
     onSuccess: (updatedPayment: Payment) => {
       const oldData = queryClient.getQueryData<Payment[]>(["payment"]);
@@ -149,7 +100,7 @@ export default function usePaymentUpdate() {
         updateLinkedTxns(src, -1);
         updateLinkedTxns(dst, 1);
       } catch (e: any) {
-        console.log(
+        console.error(
           `Payment cascade to transactions failed (non-fatal): ${
             e?.message ?? e
           }`,

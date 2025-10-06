@@ -142,7 +142,7 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         expect(result).toEqual(mockResponse);
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/payment/insert",
+          "/api/payment",
           expect.objectContaining({
             method: "POST",
             credentials: "include",
@@ -270,12 +270,15 @@ describe("Payment Insert Functions (Isolated)", () => {
     describe("Error handling", () => {
       it("should handle server error with error message", async () => {
         const errorMessage = "Invalid payment amount";
-        global.fetch = createErrorFetchMock(errorMessage, 400);
+        global.fetch = jest.fn().mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          json: jest.fn().mockResolvedValueOnce({ error: errorMessage }),
+        });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(errorMessage);
-        expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          `An error occurred: ${errorMessage}`,
+        expect(mockConsole.error).toHaveBeenCalledWith(
+          expect.stringContaining("Failed to insert payment:"),
         );
       });
 
@@ -287,10 +290,10 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "No error message returned.",
+          "HTTP error! Status: 400",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "No error message returned.",
+        expect(mockConsole.error).toHaveBeenCalledWith(
+          expect.stringContaining("Failed to insert payment:"),
         );
       });
 
@@ -302,10 +305,10 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON",
+          "HTTP error! Status: 400",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "Failed to parse error response: Invalid JSON",
+        expect(mockConsole.error).toHaveBeenCalledWith(
+          expect.stringContaining("Failed to insert payment:"),
         );
       });
 
@@ -317,10 +320,10 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "No error message returned.",
+          "HTTP error! Status: 500",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "No error message returned.",
+        expect(mockConsole.error).toHaveBeenCalledWith(
+          expect.stringContaining("Failed to insert payment:"),
         );
       });
 
@@ -330,8 +333,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         await expect(insertPayment(mockPayment)).rejects.toThrow(
           "Network error",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Network error",
+        expect(mockConsole.error).toHaveBeenCalledWith(
+          expect.stringContaining("An error occurred:"),
         );
       });
 
@@ -340,7 +343,11 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         for (const status of errorStatuses) {
           const errorMessage = `Error ${status}`;
-          global.fetch = createErrorFetchMock(errorMessage, status);
+          global.fetch = jest.fn().mockResolvedValueOnce({
+            ok: false,
+            status,
+            json: jest.fn().mockResolvedValueOnce({ error: errorMessage }),
+          });
 
           await expect(insertPayment(mockPayment)).rejects.toThrow(
             errorMessage,
@@ -398,7 +405,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         await insertPayment(mockPayment);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/payment/insert",
+          "/api/payment",
           expect.any(Object),
         );
       });

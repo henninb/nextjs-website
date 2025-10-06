@@ -31,8 +31,13 @@ const updateCategoryModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -44,9 +49,7 @@ const updateCategoryModern = async (
 };
 
 // Helper function to create test category data
-const createTestCategory = (
-  overrides: Partial<Category> = {},
-): Category => ({
+const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
   categoryId: 1,
   categoryName: "test_category",
   activeStatus: true,
@@ -67,7 +70,10 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
 
   describe("Modern endpoint behavior", () => {
     it("should use modern endpoint /api/category/{categoryName}", async () => {
-      const oldCategory = createTestCategory({ categoryId: 123, categoryName: "groceries" });
+      const oldCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "groceries",
+      });
       const newCategory = createTestCategory({
         categoryId: 123,
         categoryName: "groceries",
@@ -110,7 +116,10 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
     });
 
     it("should send newCategory in request body", async () => {
-      const oldCategory = createTestCategory({ categoryId: 1, categoryName: "dining" });
+      const oldCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "dining",
+      });
       const newCategory = createTestCategory({
         categoryId: 1,
         categoryName: "dining",
@@ -126,8 +135,14 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
     });
 
     it("should use categoryName from oldCategory in URL", async () => {
-      const oldCategory = createTestCategory({ categoryId: 999, categoryName: "entertainment" });
-      const newCategory = createTestCategory({ categoryId: 999, categoryName: "entertainment" });
+      const oldCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "entertainment",
+      });
+      const newCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "entertainment",
+      });
 
       global.fetch = createModernFetchMock(newCategory);
 
@@ -142,8 +157,14 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
 
   describe("Modern error handling with ServiceResult pattern", () => {
     it("should handle 404 not found with modern error format", async () => {
-      const oldCategory = createTestCategory({ categoryId: 999, categoryName: "nonexistent" });
-      const newCategory = createTestCategory({ categoryId: 999, categoryName: "nonexistent" });
+      const oldCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "nonexistent",
+      });
+      const newCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "nonexistent",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
@@ -273,9 +294,7 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
       const oldCategory = createTestCategory();
       const newCategory = createTestCategory();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -285,9 +304,7 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 
@@ -380,11 +397,11 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
     it("should update activeStatus", async () => {
       const oldCategory = createTestCategory({
         categoryName: "dining",
-        activeStatus: true
+        activeStatus: true,
       });
       const newCategory = createTestCategory({
         categoryName: "dining",
-        activeStatus: false
+        activeStatus: false,
       });
 
       global.fetch = createModernFetchMock(newCategory);
@@ -637,8 +654,14 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
 
   describe("Data integrity", () => {
     it("should preserve categoryId", async () => {
-      const oldCategory = createTestCategory({ categoryId: 123, categoryName: "test" });
-      const newCategory = createTestCategory({ categoryId: 123, categoryName: "test" });
+      const oldCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "test",
+      });
+      const newCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "test",
+      });
 
       global.fetch = createModernFetchMock(newCategory);
 

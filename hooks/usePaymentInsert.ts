@@ -33,7 +33,7 @@ export const insertPayment = async (payload: Payment): Promise<Payment> => {
       throw new Error(`Payment validation failed: ${errorMessages}`);
     }
 
-    const endpoint = "/api/payment/insert";
+    const endpoint = "/api/payment";
     const newPayload = setupNewPayment(validation.validatedData);
 
     const response = await fetch(endpoint, {
@@ -47,28 +47,18 @@ export const insertPayment = async (payload: Payment): Promise<Payment> => {
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          errorMessage = "No error message returned.";
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        errorMessage = `Failed to parse error response: ${error.message}`;
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error(`Failed to insert payment: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
 
-    return response.status !== 204 ? await response.json() : null;
+    return await response.json();
   } catch (error) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };
@@ -81,7 +71,7 @@ export default function usePaymentInsert() {
     mutationFn: (variables: { payload: Payment }) =>
       insertPayment(variables.payload),
     onError: (error) => {
-      console.log(error ? error : "error is undefined.");
+      console.error(error ? error : "error is undefined.");
     },
     onSuccess: (newPayment) => {
       const oldData: any = queryClient.getQueryData(["payment"]) || [];

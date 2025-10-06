@@ -3,7 +3,7 @@ import Transfer from "../model/Transfer";
 
 const fetchTransferData = async (): Promise<Transfer[]> => {
   try {
-    const response = await fetch("/api/transfer/select", {
+    const response = await fetch("/api/transfer/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -13,18 +13,19 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No transfers found (404).");
-        return []; // Return empty array for 404, meaning no transfers
-      }
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error("Error fetching transfer data:", errorMessage);
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-
     return data;
-  } catch (error) {
-    console.log("Error fetching transfer data:", error);
+  } catch (error: any) {
+    console.error("Error fetching transfer data:", error);
     throw error;
   }
 };
@@ -36,7 +37,7 @@ export default function useTransferFetch() {
   });
 
   if (queryResult.isError) {
-    console.log(
+    console.error(
       "Error occurred while fetching transfer data:",
       queryResult.error?.message,
     );

@@ -334,7 +334,7 @@ describe("Payment Update Cascade Functionality", () => {
     it("should continue payment update even if cascade fails", async () => {
       const queryClient = createTestQueryClient();
 
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
       const mockGetQueryData = jest.fn().mockImplementation((key) => {
         if (key[0] === "accounts") {

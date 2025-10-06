@@ -139,9 +139,13 @@ describe("TransactionImporter Component", () => {
 
     // Verify that the loading state is shown while data is being fetched
     expect(screen.getByText("Transaction Import")).toBeInTheDocument();
-    expect(screen.getByText("Loading pending transactions and accounts...")).toBeInTheDocument();
+    expect(
+      screen.getByText("Loading pending transactions and accounts..."),
+    ).toBeInTheDocument();
     // The form should NOT be visible while loading
-    expect(screen.queryByText("Paste Transaction Data")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Paste Transaction Data"),
+    ).not.toBeInTheDocument();
   });
 
   it("renders transaction input textarea", async () => {

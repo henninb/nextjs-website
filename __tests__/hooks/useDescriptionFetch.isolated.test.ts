@@ -19,8 +19,13 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -232,9 +237,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 
@@ -266,9 +269,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch",
-        );
+        await expect(fetchDescriptionData()).rejects.toThrow("Failed to fetch");
       });
 
       it("should handle timeout errors", async () => {
@@ -296,9 +297,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
 
     describe("Edge cases", () => {
       it("should handle descriptions with empty strings", async () => {
-        const testDescriptions = [
-          createTestDescription({ description: "" }),
-        ];
+        const testDescriptions = [createTestDescription({ description: "" })];
 
         global.fetch = createModernFetchMock(testDescriptions);
 

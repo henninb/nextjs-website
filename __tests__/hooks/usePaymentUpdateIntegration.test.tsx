@@ -142,26 +142,12 @@ describe("Payment Update Integration Test", () => {
       newPayment: updatedNonExistentPayment,
     });
 
-    // The hook should handle 404 gracefully and return the new payment as fallback
+    // Modern version should error on 404, not return fallback
     await waitFor(() =>
-      expect(updateNonExistentResult.current.isSuccess).toBe(true),
+      expect(updateNonExistentResult.current.isError).toBe(true),
     );
 
-    // According to the implementation, it should return the newPayment as fallback for 404
-    expect(updateNonExistentResult.current.data).toEqual(
-      updatedNonExistentPayment,
-    );
-  });
-
-  it("should suggest checking if payment ID exists in the database", () => {
-    console.log("\n=== DEBUGGING PAYMENT UPDATE 404 ===");
-    console.log("1. Check if payment ID 9 exists in your database");
-    console.log(
-      "2. Verify the backend API endpoint: PUT /api/payment/update/{id}",
-    );
-    console.log("3. Check backend logs for more detailed error info");
-    console.log("4. Confirm the payment table has the correct schema");
-    console.log("5. Test with a known existing payment ID first");
-    console.log("=====================================\n");
+    // Should have an error message about not found
+    expect(updateNonExistentResult.current.error?.message).toContain("404");
   });
 });

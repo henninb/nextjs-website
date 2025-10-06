@@ -25,8 +25,12 @@ const fetchDescriptionDataModern = async (): Promise<Description[]> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      throw new Error(
+        errorBody.error || `HTTP error! Status: ${response.status}`,
+      );
     }
 
     const data = await response.json();
@@ -187,9 +191,7 @@ describe("useDescriptionFetch Modern Endpoint (TDD)", () => {
 
   describe("Network and connectivity errors", () => {
     it("should handle network errors", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -378,8 +380,12 @@ describe("useDescriptionFetch Modern Endpoint (TDD)", () => {
       const result = await fetchDescriptionDataModern();
 
       expect(result).toHaveLength(2);
-      expect(result.find((d) => d.descriptionName === "grocery_store")).toBeDefined();
-      expect(result.find((d) => d.descriptionName === "gas_station")).toBeDefined();
+      expect(
+        result.find((d) => d.descriptionName === "grocery_store"),
+      ).toBeDefined();
+      expect(
+        result.find((d) => d.descriptionName === "gas_station"),
+      ).toBeDefined();
     });
   });
 });

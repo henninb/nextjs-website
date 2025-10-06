@@ -209,7 +209,9 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         expect(
-          calls.log.some((call) => call[0].includes("Resource not found (404)")),
+          calls.log.some((call) =>
+            call[0].includes("Resource not found (404)"),
+          ),
         ).toBe(true);
       });
 
@@ -222,9 +224,9 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByDescription("walmart"),
-        ).rejects.toThrow("Failed to fetch transaction by description data:");
+        await expect(fetchTransactionsByDescription("walmart")).rejects.toThrow(
+          "Failed to fetch transaction by description data:",
+        );
       });
 
       it("should throw error for 401 unauthorized", async () => {
@@ -236,9 +238,9 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByDescription("walmart"),
-        ).rejects.toThrow("Failed to fetch transaction by description data:");
+        await expect(fetchTransactionsByDescription("walmart")).rejects.toThrow(
+          "Failed to fetch transaction by description data:",
+        );
       });
 
       it("should throw error for 403 forbidden", async () => {
@@ -250,21 +252,17 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByDescription("walmart"),
-        ).rejects.toThrow("Failed to fetch transaction by description data:");
+        await expect(fetchTransactionsByDescription("walmart")).rejects.toThrow(
+          "Failed to fetch transaction by description data:",
+        );
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByDescription("walmart"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByDescription("walmart")).rejects.toThrow(
           "Failed to fetch transaction by description data: Network error",
         );
 
@@ -285,9 +283,7 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByDescription("walmart"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByDescription("walmart")).rejects.toThrow(
           "Failed to fetch transaction by description data: Invalid JSON",
         );
       });
@@ -299,9 +295,7 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByDescription("walmart"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByDescription("walmart")).rejects.toThrow(
           "Failed to fetch transaction by description data: Failed to fetch",
         );
       });
@@ -311,9 +305,7 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByDescription("walmart"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByDescription("walmart")).rejects.toThrow(
           "Failed to fetch transaction by description data: Timeout",
         );
       });
@@ -555,7 +547,8 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
 
         global.fetch = createFetchMock(testTransactions);
 
-        const result = await fetchTransactionsByDescription("shell gas station");
+        const result =
+          await fetchTransactionsByDescription("shell gas station");
 
         expect(result).toHaveLength(1);
         expect(result![0].description).toBe("shell gas station");

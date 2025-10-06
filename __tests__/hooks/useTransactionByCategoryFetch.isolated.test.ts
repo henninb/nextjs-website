@@ -82,14 +82,17 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
         const result = await fetchTransactionsByCategory("groceries");
 
         expect(result).toEqual(testTransactions);
-        expect(fetch).toHaveBeenCalledWith("/api/transaction/category/groceries", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
+        expect(fetch).toHaveBeenCalledWith(
+          "/api/transaction/category/groceries",
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
           },
-        });
+        );
       });
 
       it("should return null for 204 No Content response", async () => {
@@ -197,7 +200,9 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
 
         const calls = consoleSpy.getCalls();
         expect(
-          calls.log.some((call) => call[0].includes("Resource not found (404)")),
+          calls.log.some((call) =>
+            call[0].includes("Resource not found (404)"),
+          ),
         ).toBe(true);
       });
 
@@ -210,9 +215,9 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByCategory("groceries"),
-        ).rejects.toThrow("Failed to fetch transaction by category data:");
+        await expect(fetchTransactionsByCategory("groceries")).rejects.toThrow(
+          "Failed to fetch transaction by category data:",
+        );
       });
 
       it("should throw error for 401 unauthorized", async () => {
@@ -224,9 +229,9 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByCategory("groceries"),
-        ).rejects.toThrow("Failed to fetch transaction by category data:");
+        await expect(fetchTransactionsByCategory("groceries")).rejects.toThrow(
+          "Failed to fetch transaction by category data:",
+        );
       });
 
       it("should throw error for 403 forbidden", async () => {
@@ -238,21 +243,17 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByCategory("groceries"),
-        ).rejects.toThrow("Failed to fetch transaction by category data:");
+        await expect(fetchTransactionsByCategory("groceries")).rejects.toThrow(
+          "Failed to fetch transaction by category data:",
+        );
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByCategory("groceries"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByCategory("groceries")).rejects.toThrow(
           "Failed to fetch transaction by category data: Network error",
         );
 
@@ -273,9 +274,7 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByCategory("groceries"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByCategory("groceries")).rejects.toThrow(
           "Failed to fetch transaction by category data: Invalid JSON",
         );
       });
@@ -287,9 +286,7 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByCategory("groceries"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByCategory("groceries")).rejects.toThrow(
           "Failed to fetch transaction by category data: Failed to fetch",
         );
       });
@@ -299,9 +296,7 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(
-          fetchTransactionsByCategory("groceries"),
-        ).rejects.toThrow(
+        await expect(fetchTransactionsByCategory("groceries")).rejects.toThrow(
           "Failed to fetch transaction by category data: Timeout",
         );
       });
@@ -472,9 +467,7 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
       });
 
       it("should fetch bills category", async () => {
-        const testTransactions = [
-          createTestTransaction({ category: "bills" }),
-        ];
+        const testTransactions = [createTestTransaction({ category: "bills" })];
 
         global.fetch = createFetchMock(testTransactions);
 

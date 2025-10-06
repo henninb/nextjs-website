@@ -1,13 +1,14 @@
 /**
  * Isolated tests for useTransferInsert business logic
  * Tests insertTransfer function without React Query overhead
+ * Using modern endpoint: POST /api/transfer
  */
 
+import { ConsoleSpy } from "../../testHelpers";
 import {
-  createFetchMock,
-  createErrorFetchMock,
-  ConsoleSpy,
-} from "../../testHelpers";
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 import Transfer from "../../model/Transfer";
 
 import {
@@ -128,12 +129,12 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           transferId: 42,
         };
 
-        global.fetch = createFetchMock(expectedResponse);
+        global.fetch = createModernFetchMock(expectedResponse);
 
         const result = await insertTransfer(testTransfer);
 
         expect(result).toEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith("/api/transfer/insert", {
+        expect(fetch).toHaveBeenCalledWith("/api/transfer", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -146,7 +147,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should handle 204 no content response", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createFetchMock(null, { status: 204 });
+        global.fetch = createModernFetchMock(null, { status: 204 });
 
         const result = await insertTransfer(testTransfer);
 
@@ -159,13 +160,13 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           transactionDate: new Date("2024-03-01T00:00:00.000Z"),
         });
 
-        global.fetch = createFetchMock({ transferId: 1 });
+        global.fetch = createModernFetchMock({ transferId: 1 });
 
         await insertTransfer(testTransfer);
 
         const expectedPayload = overRideTransferValues(testTransfer);
         expect(fetch).toHaveBeenCalledWith(
-          "/api/transfer/insert",
+          "/api/transfer",
           expect.objectContaining({
             body: JSON.stringify(expectedPayload),
           }),
@@ -176,7 +177,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
     describe("API error handling", () => {
       it("should handle 400 error with response message", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createErrorFetchMock("Invalid transfer data", 400);
+        global.fetch = createModernErrorFetchMock("Invalid transfer data", 400);
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
@@ -184,15 +185,18 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Invalid transfer data"],
+        expect(calls.error).toEqual([
+          ["Failed to insert transfer: Invalid transfer data"],
           ["An error occurred: Invalid transfer data"],
         ]);
       });
 
       it("should handle 409 conflict error for duplicate transfer", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createErrorFetchMock("Transfer already exists", 409);
+        global.fetch = createModernErrorFetchMock(
+          "Transfer already exists",
+          409,
+        );
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
@@ -200,15 +204,15 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Transfer already exists"],
+        expect(calls.error).toEqual([
+          ["Failed to insert transfer: Transfer already exists"],
           ["An error occurred: Transfer already exists"],
         ]);
       });
 
       it("should handle 500 server error", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createErrorFetchMock("Internal server error", 500);
+        global.fetch = createModernErrorFetchMock("Internal server error", 500);
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
@@ -216,8 +220,8 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Internal server error"],
+        expect(calls.error).toEqual([
+          ["Failed to insert transfer: Internal server error"],
           ["An error occurred: Internal server error"],
         ]);
       });
@@ -232,17 +236,12 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "No error message returned.",
+          "HTTP error! Status: 400",
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["No error message returned."],
-          ["Failed to parse error response: No error message returned."],
-          [
-            "An error occurred: Failed to parse error response: No error message returned.",
-          ],
-        ]);
+        expect(calls.error[0][0]).toContain("Failed to insert transfer:");
+        expect(calls.error[1][0]).toContain("An error occurred:");
       });
 
       it("should handle malformed error response", async () => {
@@ -255,14 +254,12 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON",
+          "HTTP error! Status: 400",
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Failed to parse error response: Invalid JSON"],
-          ["An error occurred: Failed to parse error response: Invalid JSON"],
-        ]);
+        expect(calls.error[0][0]).toContain("Failed to insert transfer:");
+        expect(calls.error[1][0]).toContain("An error occurred:");
       });
 
       it("should handle network errors", async () => {
@@ -275,7 +272,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Network error"]);
+        expect(calls.error[0]).toEqual(["An error occurred: Network error"]);
       });
 
       it("should handle timeout errors", async () => {
@@ -290,18 +287,18 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Request timeout"]);
+        expect(calls.error[0]).toEqual(["An error occurred: Request timeout"]);
       });
     });
 
     describe("Request format validation", () => {
       it("should send correct headers", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createFetchMock({ transferId: 1 });
+        global.fetch = createModernFetchMock({ transferId: 1 });
 
         await insertTransfer(testTransfer);
 
-        expect(fetch).toHaveBeenCalledWith("/api/transfer/insert", {
+        expect(fetch).toHaveBeenCalledWith("/api/transfer", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -314,19 +311,16 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should use correct endpoint", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createFetchMock({ transferId: 1 });
+        global.fetch = createModernFetchMock({ transferId: 1 });
 
         await insertTransfer(testTransfer);
 
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/transfer/insert",
-          expect.any(Object),
-        );
+        expect(fetch).toHaveBeenCalledWith("/api/transfer", expect.any(Object));
       });
 
       it("should send POST method", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createFetchMock({ transferId: 1 });
+        global.fetch = createModernFetchMock({ transferId: 1 });
 
         await insertTransfer(testTransfer);
 
@@ -338,7 +332,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
 
       it("should include credentials", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createFetchMock({ transferId: 1 });
+        global.fetch = createModernFetchMock({ transferId: 1 });
 
         await insertTransfer(testTransfer);
 
@@ -357,7 +351,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           amount: 2500,
         });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -369,7 +366,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
       it("should handle small amount transfers", async () => {
         const testTransfer = createTestTransfer({ amount: 0.01 });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -379,7 +379,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
       it("should handle large amount transfers", async () => {
         const testTransfer = createTestTransfer({ amount: 999999.99 });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -392,7 +395,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           transactionDate: futureDate,
         });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -403,7 +409,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         const pastDate = new Date("2023-01-01T00:00:00.000Z");
         const testTransfer = createTestTransfer({ transactionDate: pastDate });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -416,7 +425,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           guidDestination: "xyz987-uvw654-rst321",
         });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -427,7 +439,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
       it("should handle inactive status transfers", async () => {
         const testTransfer = createTestTransfer({ activeStatus: false });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -442,7 +457,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           destinationAccount: "Savings@Bank#1",
         });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -456,7 +474,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           destinationAccount: "储蓄账户 Savings 💰",
         });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -471,7 +492,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           destinationAccount: longAccountName,
         });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -482,7 +506,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
       it("should handle zero amounts", async () => {
         const testTransfer = createTestTransfer({ amount: 0 });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -492,7 +519,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
       it("should handle decimal precision amounts", async () => {
         const testTransfer = createTestTransfer({ amount: 123.456789 });
 
-        global.fetch = createFetchMock({ transferId: 1, ...testTransfer });
+        global.fetch = createModernFetchMock({
+          transferId: 1,
+          ...testTransfer,
+        });
 
         const result = await insertTransfer(testTransfer);
 
@@ -503,7 +533,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
     describe("Console logging", () => {
       it("should log API errors", async () => {
         const testTransfer = createTestTransfer();
-        global.fetch = createErrorFetchMock("Server error", 500);
+        global.fetch = createModernErrorFetchMock("Server error", 500);
         consoleSpy.start();
 
         try {
@@ -513,8 +543,8 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Server error"],
+        expect(calls.error).toEqual([
+          ["Failed to insert transfer: Server error"],
           ["An error occurred: Server error"],
         ]);
       });
@@ -533,7 +563,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Connection failed"]);
+        expect(calls.error[0]).toEqual([
+          "An error occurred: Connection failed",
+        ]);
       });
 
       it("should log parsing errors", async () => {
@@ -552,11 +584,9 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Failed to parse error response: JSON parse error"],
-          [
-            "An error occurred: Failed to parse error response: JSON parse error",
-          ],
+        expect(calls.error).toEqual([
+          ["Failed to insert transfer: HTTP error! Status: 400"],
+          ["An error occurred: HTTP error! Status: 400"],
         ]);
       });
     });
@@ -583,7 +613,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           dateUpdated: new Date("2024-06-15T14:35:00.000Z"),
         };
 
-        global.fetch = createFetchMock(expectedResponse);
+        global.fetch = createModernFetchMock(expectedResponse);
 
         const result = await insertTransfer(testTransfer);
 
@@ -596,7 +626,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         const testTransfer = createTestTransfer();
 
         // API returns validation error
-        global.fetch = createErrorFetchMock(
+        global.fetch = createModernErrorFetchMock(
           "Insufficient funds in source account",
           400,
         );
@@ -607,8 +637,8 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Insufficient funds in source account"],
+        expect(calls.error).toEqual([
+          ["Failed to insert transfer: Insufficient funds in source account"],
           ["An error occurred: Insufficient funds in source account"],
         ]);
       });
@@ -617,7 +647,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         const testTransfer = createTestTransfer();
 
         // API returns duplicate error
-        global.fetch = createErrorFetchMock(
+        global.fetch = createModernErrorFetchMock(
           "Transfer with same details already exists",
           409,
         );
@@ -628,8 +658,10 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Transfer with same details already exists"],
+        expect(calls.error).toEqual([
+          [
+            "Failed to insert transfer: Transfer with same details already exists",
+          ],
           ["An error occurred: Transfer with same details already exists"],
         ]);
       });

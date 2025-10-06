@@ -5,7 +5,7 @@ export const updateTransfer = async (
   oldTransfer: Transfer,
   newTransfer: Transfer,
 ): Promise<Transfer> => {
-  const endpoint = `/api/transfer/update/${oldTransfer.transferId}`;
+  const endpoint = `/api/transfer/${oldTransfer.transferId}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
@@ -14,20 +14,22 @@ export const updateTransfer = async (
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(newTransfer),
     });
 
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
     if (!response.ok) {
-      throw new Error(`Failed to update transfer: ${response.statusText}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error(`Failed to update transfer: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };

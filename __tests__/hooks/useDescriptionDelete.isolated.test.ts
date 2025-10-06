@@ -48,7 +48,7 @@ describe("deleteDescription (Isolated)", () => {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json",
+            Accept: "application/json",
           },
         }),
       );
@@ -213,7 +213,7 @@ describe("deleteDescription (Isolated)", () => {
         expect.objectContaining({
           headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json",
+            Accept: "application/json",
           },
         }),
       );

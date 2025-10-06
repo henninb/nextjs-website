@@ -25,8 +25,12 @@ const fetchCategoryDataModern = async (): Promise<Category[]> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      throw new Error(
+        errorBody.error || `HTTP error! Status: ${response.status}`,
+      );
     }
 
     const data = await response.json();
@@ -38,9 +42,7 @@ const fetchCategoryDataModern = async (): Promise<Category[]> => {
 };
 
 // Helper function to create test category data
-const createTestCategory = (
-  overrides: Partial<Category> = {},
-): Category => ({
+const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
   categoryId: 1,
   categoryName: "test_category",
   activeStatus: true,
@@ -187,9 +189,7 @@ describe("useCategoryFetch Modern Endpoint (TDD)", () => {
 
   describe("Network and connectivity errors", () => {
     it("should handle network errors", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -364,7 +364,9 @@ describe("useCategoryFetch Modern Endpoint (TDD)", () => {
       expect(result).toHaveLength(3);
       expect(result.find((c) => c.categoryName === "groceries")).toBeDefined();
       expect(result.find((c) => c.categoryName === "dining")).toBeDefined();
-      expect(result.find((c) => c.categoryName === "entertainment")).toBeDefined();
+      expect(
+        result.find((c) => c.categoryName === "entertainment"),
+      ).toBeDefined();
     });
   });
 });

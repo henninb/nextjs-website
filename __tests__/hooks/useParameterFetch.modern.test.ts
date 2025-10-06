@@ -25,8 +25,12 @@ const fetchParameterDataModern = async (): Promise<Parameter[]> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      throw new Error(
+        errorBody.error || `HTTP error! Status: ${response.status}`,
+      );
     }
 
     const data = await response.json();
@@ -194,9 +198,7 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
 
   describe("Network and connectivity errors", () => {
     it("should handle network errors", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -339,9 +341,7 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
     });
 
     it("should handle parameters with empty values", async () => {
-      const testParameters = [
-        createTestParameter({ parameterValue: "" }),
-      ];
+      const testParameters = [createTestParameter({ parameterValue: "" })];
 
       global.fetch = createModernFetchMock(testParameters);
 
@@ -447,7 +447,8 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
 
       expect(result).toHaveLength(3);
       expect(
-        result.find((p) => p.parameterName === "default_category")?.parameterValue,
+        result.find((p) => p.parameterName === "default_category")
+          ?.parameterValue,
       ).toBe("groceries");
       expect(
         result.find((p) => p.parameterName === "currency")?.parameterValue,

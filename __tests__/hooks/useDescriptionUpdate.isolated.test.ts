@@ -473,18 +473,15 @@ describe("updateDescription (Isolated)", () => {
       const result = await updateDescription(oldDescription, newDescription);
 
       expect(result).toEqual(newDescription);
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/description/originalDesc",
-        {
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(newDescription),
+      expect(fetch).toHaveBeenCalledWith("/api/description/originalDesc", {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify(newDescription),
+      });
     });
 
     it("should handle server validation errors gracefully", async () => {

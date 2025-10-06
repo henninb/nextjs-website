@@ -13,8 +13,12 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      throw new Error(
+        errorBody.error || `HTTP error! Status: ${response.status}`,
+      );
     }
 
     const data = await response.json();

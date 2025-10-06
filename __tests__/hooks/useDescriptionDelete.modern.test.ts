@@ -29,8 +29,13 @@ const deleteDescriptionModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -65,7 +70,10 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
 
   describe("Modern endpoint behavior", () => {
     it("should use modern endpoint /api/description/{descriptionName}", async () => {
-      const testDescription = createTestDescription({ descriptionId: 123, descriptionName: "test_desc_123" });
+      const testDescription = createTestDescription({
+        descriptionId: 123,
+        descriptionName: "test_desc_123",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -108,7 +116,10 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
     });
 
     it("should use descriptionName from payload in URL", async () => {
-      const testDescription = createTestDescription({ descriptionId: 999, descriptionName: "test_desc_999" });
+      const testDescription = createTestDescription({
+        descriptionId: 999,
+        descriptionName: "test_desc_999",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -267,9 +278,7 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
     it("should handle network errors", async () => {
       const testDescription = createTestDescription();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -279,9 +288,7 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 
@@ -404,7 +411,9 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
       const descriptionNames = ["desc_1", "desc_100", "desc_999", "desc_12345"];
 
       for (const name of descriptionNames) {
-        const testDescription = createTestDescription({ descriptionName: name });
+        const testDescription = createTestDescription({
+          descriptionName: name,
+        });
 
         global.fetch = jest.fn().mockResolvedValue({
           ok: true,
@@ -436,7 +445,10 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
       const result = await deleteDescriptionModern(testDescription);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/description/amazon", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/amazon",
+        expect.any(Object),
+      );
     });
 
     it("should delete walmart description", async () => {
@@ -453,7 +465,10 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
       const result = await deleteDescriptionModern(testDescription);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/description/walmart", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/walmart",
+        expect.any(Object),
+      );
     });
 
     it("should delete target description", async () => {
@@ -470,7 +485,10 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
       const result = await deleteDescriptionModern(testDescription);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/description/target", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/target",
+        expect.any(Object),
+      );
     });
 
     it("should delete grocery store description", async () => {
@@ -487,7 +505,10 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
       const result = await deleteDescriptionModern(testDescription);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/description/grocery_store", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/grocery_store",
+        expect.any(Object),
+      );
     });
 
     it("should delete gas station description", async () => {
@@ -504,7 +525,10 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
       const result = await deleteDescriptionModern(testDescription);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/description/gas_station", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/gas_station",
+        expect.any(Object),
+      );
     });
 
     it("should delete inactive description", async () => {
@@ -635,9 +659,7 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
     it("should log error message to console", async () => {
       const testDescription = createTestDescription();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Test error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Test error"));
 
       consoleSpy.start();
 

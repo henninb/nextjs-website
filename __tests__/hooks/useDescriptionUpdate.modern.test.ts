@@ -31,8 +31,13 @@ const updateDescriptionModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -67,7 +72,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
   describe("Modern endpoint behavior", () => {
     it("should use modern endpoint /api/description/{descriptionName}", async () => {
-      const oldDescription = createTestDescription({ descriptionId: 123, descriptionName: "test_desc_123" });
+      const oldDescription = createTestDescription({
+        descriptionId: 123,
+        descriptionName: "test_desc_123",
+      });
       const newDescription = createTestDescription({
         descriptionId: 123,
         descriptionName: "test_desc_123_updated",
@@ -100,7 +108,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result).toEqual(newDescription);
       expect(result.descriptionName).toBe("new_name");
@@ -122,8 +133,14 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
     });
 
     it("should use descriptionName from oldDescription in URL", async () => {
-      const oldDescription = createTestDescription({ descriptionId: 999, descriptionName: "test_desc_999" });
-      const newDescription = createTestDescription({ descriptionId: 999, descriptionName: "test_desc_999_new" });
+      const oldDescription = createTestDescription({
+        descriptionId: 999,
+        descriptionName: "test_desc_999",
+      });
+      const newDescription = createTestDescription({
+        descriptionId: 999,
+        descriptionName: "test_desc_999_new",
+      });
 
       global.fetch = createModernFetchMock(newDescription);
 
@@ -269,9 +286,7 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
       const oldDescription = createTestDescription();
       const newDescription = createTestDescription();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -281,9 +296,7 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 
@@ -368,7 +381,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("new_store");
     });
@@ -379,7 +395,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.activeStatus).toBe(false);
     });
@@ -396,7 +415,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("new_name");
       expect(result.activeStatus).toBe(false);
@@ -412,7 +434,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("store-with_special.chars");
     });
@@ -425,7 +450,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("店舗 🏪");
     });
@@ -438,7 +466,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("  store with spaces  ");
     });
@@ -446,11 +477,16 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
     it("should handle descriptions with very long names", async () => {
       const longName = "a".repeat(500);
       const oldDescription = createTestDescription();
-      const newDescription = createTestDescription({ descriptionName: longName });
+      const newDescription = createTestDescription({
+        descriptionName: longName,
+      });
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe(longName);
       expect(result.descriptionName.length).toBe(500);
@@ -468,7 +504,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("amazon");
     });
@@ -483,7 +522,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("grocery_store");
     });
@@ -500,7 +542,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.activeStatus).toBe(false);
     });
@@ -515,7 +560,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("gas_station");
     });
@@ -530,7 +578,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionName).toBe("walmart");
     });
@@ -543,7 +594,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result.descriptionId).toBe(123);
     });
@@ -558,7 +612,10 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
 
       global.fetch = createModernFetchMock(newDescription);
 
-      const result = await updateDescriptionModern(oldDescription, newDescription);
+      const result = await updateDescriptionModern(
+        oldDescription,
+        newDescription,
+      );
 
       expect(result).toEqual(newDescription);
     });

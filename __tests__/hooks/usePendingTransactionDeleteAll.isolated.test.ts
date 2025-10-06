@@ -241,9 +241,7 @@ describe("usePendingTransactionDeleteAll Business Logic (Isolated)", () => {
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         await expect(deleteAllPendingTransactions()).rejects.toThrow(
           "Network error",

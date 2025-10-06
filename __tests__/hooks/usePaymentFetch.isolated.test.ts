@@ -9,7 +9,7 @@ import Payment from "../../model/Payment";
 // Copy the function to test
 const fetchPaymentData = async (): Promise<Payment[]> => {
   try {
-    const response = await fetch("/api/payment/select", {
+    const response = await fetch("/api/payment/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -19,19 +19,20 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No payments found (404).");
-        return [];
-      }
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error || `HTTP error! Status: ${response.status}`;
+      console.error("Error fetching payment data:", errorMessage);
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-
     return data;
   } catch (error: any) {
     console.error("Error fetching payment data:", error);
-    throw new Error(`Failed to fetch payment data: ${error.message}`);
+    throw error;
   }
 };
 
@@ -71,7 +72,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
         const result = await fetchPaymentData();
 
         expect(result).toEqual(testPayments);
-        expect(fetch).toHaveBeenCalledWith("/api/payment/select", {
+        expect(fetch).toHaveBeenCalledWith("/api/payment/active", {
           method: "GET",
           credentials: "include",
           headers: {
@@ -81,19 +82,22 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
         });
       });
 
-      it("should return empty array when no payments exist (404)", async () => {
+      it("should handle 404 errors correctly", async () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 404,
+          json: jest.fn().mockResolvedValue({ error: "Not found" }),
         });
 
         consoleSpy.start();
 
-        const result = await fetchPaymentData();
-
-        expect(result).toEqual([]);
+        await expect(fetchPaymentData()).rejects.toThrow("Not found");
         const calls = consoleSpy.getCalls();
-        expect(calls.log.some((call) => call[0].includes("404"))).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call[0].includes("Error fetching payment data:"),
+          ),
+        ).toBe(true);
       });
 
       it("should fetch payments with different amounts", async () => {
@@ -224,12 +228,13 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 500,
+          json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
         });
 
         consoleSpy.start();
 
         await expect(fetchPaymentData()).rejects.toThrow(
-          "Failed to fetch payment data: HTTP error! Status: 500",
+          "Internal server error",
         );
 
         const calls = consoleSpy.getCalls();
@@ -244,38 +249,32 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 401,
+          json: jest.fn().mockResolvedValue({ error: "Unauthorized" }),
         });
 
         consoleSpy.start();
 
-        await expect(fetchPaymentData()).rejects.toThrow(
-          "Failed to fetch payment data: HTTP error! Status: 401",
-        );
+        await expect(fetchPaymentData()).rejects.toThrow("Unauthorized");
       });
 
       it("should throw error for 403 forbidden", async () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 403,
+          json: jest.fn().mockResolvedValue({ error: "Forbidden" }),
         });
 
         consoleSpy.start();
 
-        await expect(fetchPaymentData()).rejects.toThrow(
-          "Failed to fetch payment data: HTTP error! Status: 403",
-        );
+        await expect(fetchPaymentData()).rejects.toThrow("Forbidden");
       });
 
       it("should handle network errors", async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Network error"));
+        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
         consoleSpy.start();
 
-        await expect(fetchPaymentData()).rejects.toThrow(
-          "Failed to fetch payment data: Network error",
-        );
+        await expect(fetchPaymentData()).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
         expect(
@@ -293,9 +292,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(fetchPaymentData()).rejects.toThrow(
-          "Failed to fetch payment data: Invalid JSON",
-        );
+        await expect(fetchPaymentData()).rejects.toThrow("Invalid JSON");
       });
 
       it("should handle fetch failure", async () => {
@@ -305,9 +302,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(fetchPaymentData()).rejects.toThrow(
-          "Failed to fetch payment data: Failed to fetch",
-        );
+        await expect(fetchPaymentData()).rejects.toThrow("Failed to fetch");
       });
 
       it("should handle timeout errors", async () => {
@@ -315,23 +310,21 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(fetchPaymentData()).rejects.toThrow(
-          "Failed to fetch payment data: Timeout",
-        );
+        await expect(fetchPaymentData()).rejects.toThrow("Timeout");
       });
 
-      it("should log 404 status when no payments found", async () => {
+      it("should handle error response without error field", async () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
-          status: 404,
+          status: 500,
+          json: jest.fn().mockResolvedValue({}),
         });
 
         consoleSpy.start();
 
-        await fetchPaymentData();
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toBe("No payments found (404).");
+        await expect(fetchPaymentData()).rejects.toThrow(
+          "HTTP error! Status: 500",
+        );
       });
     });
 
@@ -458,7 +451,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
           await fetchPaymentData();
           fail("Should have thrown an error");
         } catch (error: any) {
-          expect(error.message).toContain("Failed to fetch payment data");
+          expect(error.message).toContain("Custom error");
         }
       });
     });
@@ -470,7 +463,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
         await fetchPaymentData();
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/payment/select",
+          "/api/payment/active",
           expect.any(Object),
         );
       });

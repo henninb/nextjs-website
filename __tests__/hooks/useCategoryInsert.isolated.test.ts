@@ -1,8 +1,5 @@
 import Category from "../../model/Category";
-import {
-  ConsoleSpy,
-  createTestCategory,
-} from "../../testHelpers";
+import { ConsoleSpy, createTestCategory } from "../../testHelpers";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,

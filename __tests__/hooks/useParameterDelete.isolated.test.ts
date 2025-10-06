@@ -418,7 +418,10 @@ describe("deleteParameter (Isolated)", () => {
         consoleSpy = new ConsoleSpy();
         mockConsole = consoleSpy.start();
 
-        global.fetch = createModernErrorFetchMock(scenario.error, scenario.status);
+        global.fetch = createModernErrorFetchMock(
+          scenario.error,
+          scenario.status,
+        );
 
         await expect(deleteParameter(mockParameter)).rejects.toThrow(
           scenario.error,

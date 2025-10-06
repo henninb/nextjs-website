@@ -13,9 +13,7 @@ import { createModernFetchMock } from "../../testHelpers.modern";
 import Category from "../../model/Category";
 
 // Modern implementation to test
-const insertCategoryModern = async (
-  payload: Category,
-): Promise<Category> => {
+const insertCategoryModern = async (payload: Category): Promise<Category> => {
   try {
     const endpoint = "/api/category";
 
@@ -30,8 +28,13 @@ const insertCategoryModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -43,9 +46,7 @@ const insertCategoryModern = async (
 };
 
 // Helper function to create test category data
-const createTestCategory = (
-  overrides: Partial<Category> = {},
-): Category => ({
+const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
   categoryId: 1,
   categoryName: "test_category",
   activeStatus: true,
@@ -256,9 +257,7 @@ describe("useCategoryInsert Modern Endpoint (TDD)", () => {
     it("should handle network errors", async () => {
       const testCategory = createTestCategory();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -268,9 +267,7 @@ describe("useCategoryInsert Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 

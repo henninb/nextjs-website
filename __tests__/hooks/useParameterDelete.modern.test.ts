@@ -29,8 +29,13 @@ const deleteParameterModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -66,7 +71,10 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
 
   describe("Modern endpoint behavior", () => {
     it("should use modern endpoint /api/parameter/{parameterName}", async () => {
-      const testParameter = createTestParameter({ parameterId: 123, parameterName: "test_param_123" });
+      const testParameter = createTestParameter({
+        parameterId: 123,
+        parameterName: "test_param_123",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -109,7 +117,10 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
     });
 
     it("should use parameterName from payload in URL", async () => {
-      const testParameter = createTestParameter({ parameterId: 999, parameterName: "test_param_999" });
+      const testParameter = createTestParameter({
+        parameterId: 999,
+        parameterName: "test_param_999",
+      });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -268,9 +279,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
     it("should handle network errors", async () => {
       const testParameter = createTestParameter();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -280,9 +289,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 
@@ -402,7 +409,12 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
     });
 
     it("should handle different parameterName values", async () => {
-      const parameterNames = ["param_1", "param_100", "param_999", "param_12345"];
+      const parameterNames = [
+        "param_1",
+        "param_100",
+        "param_999",
+        "param_12345",
+      ];
 
       for (const name of parameterNames) {
         const testParameter = createTestParameter({ parameterName: name });
@@ -438,7 +450,10 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       const result = await deleteParameterModern(testParameter);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/parameter/payment_account", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/parameter/payment_account",
+        expect.any(Object),
+      );
     });
 
     it("should delete configuration parameter", async () => {
@@ -583,9 +598,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
     it("should log error message to console", async () => {
       const testParameter = createTestParameter();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Test error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Test error"));
 
       consoleSpy.start();
 

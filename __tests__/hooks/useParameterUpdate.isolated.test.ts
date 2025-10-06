@@ -3,10 +3,7 @@
  * Tests updateParameter function without React Query overhead
  */
 
-import {
-  ConsoleSpy,
-  createTestParameter,
-} from "../../testHelpers";
+import { ConsoleSpy, createTestParameter } from "../../testHelpers";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
@@ -616,18 +613,15 @@ describe("updateParameter (Isolated)", () => {
       const result = await updateParameter(oldParameter, updatedParameter);
 
       expect(result).toEqual(updatedParameter);
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/WORKFLOW_PARAM",
-        {
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(updatedParameter),
+      expect(fetch).toHaveBeenCalledWith("/api/parameter/WORKFLOW_PARAM", {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify(updatedParameter),
+      });
     });
 
     it("should handle server validation errors gracefully", async () => {
@@ -649,9 +643,7 @@ describe("updateParameter (Isolated)", () => {
 
       await expect(
         updateParameter(oldParameter, invalidParameter),
-      ).rejects.toThrow(
-        "HTTP error! Status: 422",
-      );
+      ).rejects.toThrow("HTTP error! Status: 422");
 
       const calls = consoleSpy.getCalls();
       expect(calls.error[0]).toEqual([

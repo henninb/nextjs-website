@@ -60,7 +60,10 @@ describe("deleteCategory (Isolated)", () => {
   });
 
   it("should throw error when API returns error response", async () => {
-    global.fetch = createModernErrorFetchMock("Cannot delete this category", 400);
+    global.fetch = createModernErrorFetchMock(
+      "Cannot delete this category",
+      400,
+    );
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
       "Cannot delete this category",

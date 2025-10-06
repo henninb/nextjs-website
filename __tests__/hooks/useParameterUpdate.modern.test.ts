@@ -31,8 +31,13 @@ const updateParameterModern = async (
     });
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
       throw new Error(errorMessage);
     }
 
@@ -68,7 +73,10 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
 
   describe("Modern endpoint behavior", () => {
     it("should use modern endpoint /api/parameter/{parameterName}", async () => {
-      const oldParameter = createTestParameter({ parameterId: 123, parameterName: "test_param_123" });
+      const oldParameter = createTestParameter({
+        parameterId: 123,
+        parameterName: "test_param_123",
+      });
       const newParameter = createTestParameter({
         parameterId: 123,
         parameterName: "test_param_123",
@@ -124,8 +132,14 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
     });
 
     it("should use parameterName from oldParameter in URL", async () => {
-      const oldParameter = createTestParameter({ parameterId: 999, parameterName: "test_param_999" });
-      const newParameter = createTestParameter({ parameterId: 999, parameterName: "test_param_999" });
+      const oldParameter = createTestParameter({
+        parameterId: 999,
+        parameterName: "test_param_999",
+      });
+      const newParameter = createTestParameter({
+        parameterId: 999,
+        parameterName: "test_param_999",
+      });
 
       global.fetch = createModernFetchMock(newParameter);
 
@@ -271,9 +285,7 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
       const oldParameter = createTestParameter();
       const newParameter = createTestParameter();
 
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       consoleSpy.start();
 
@@ -283,9 +295,7 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
 
       const calls = consoleSpy.getCalls();
       expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred:"),
-        ),
+        calls.error.some((call) => call[0].includes("An error occurred:")),
       ).toBe(true);
     });
 

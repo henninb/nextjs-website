@@ -185,7 +185,10 @@ describe("insertDescription (Isolated)", () => {
 
   describe("API error handling", () => {
     it("should handle 400 error with response message", async () => {
-      global.fetch = createModernErrorFetchMock("Description already exists", 400);
+      global.fetch = createModernErrorFetchMock(
+        "Description already exists",
+        400,
+      );
       consoleSpy.start();
 
       await expect(insertDescription("duplicate-description")).rejects.toThrow(

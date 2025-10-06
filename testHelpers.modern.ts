@@ -9,7 +9,17 @@
  */
 
 // Re-export common utilities from legacy helpers
-export { ConsoleSpy, createTestParameter, createTestAccount, createTestCategory, createTestPayment, createTestTransaction, createTestTransfer, createTestUser, createTestDescription } from './testHelpers';
+export {
+  ConsoleSpy,
+  createTestParameter,
+  createTestAccount,
+  createTestCategory,
+  createTestPayment,
+  createTestTransaction,
+  createTestTransfer,
+  createTestUser,
+  createTestDescription,
+} from "./testHelpers";
 
 // Modern mock response utilities
 export interface ModernMockResponse {
@@ -71,21 +81,33 @@ export const createModernFetchMock = (
   responseData: any,
   options: { status?: number; ok?: boolean } = {},
 ) => {
-  return jest.fn().mockResolvedValue(createModernMockResponse(responseData, options));
+  return jest
+    .fn()
+    .mockResolvedValue(createModernMockResponse(responseData, options));
 };
 
 /**
  * Create a modern fetch mock for error responses
  */
-export const createModernErrorFetchMock = (message: string, status: number = 400) => {
-  return jest.fn().mockResolvedValue(createModernErrorResponse(message, status));
+export const createModernErrorFetchMock = (
+  message: string,
+  status: number = 400,
+) => {
+  return jest
+    .fn()
+    .mockResolvedValue(createModernErrorResponse(message, status));
 };
 
 /**
  * Create a modern fetch mock for validation errors
  */
-export const createModernValidationErrorFetchMock = (errors: string[], status: number = 400) => {
-  return jest.fn().mockResolvedValue(createModernValidationErrorResponse(errors, status));
+export const createModernValidationErrorFetchMock = (
+  errors: string[],
+  status: number = 400,
+) => {
+  return jest
+    .fn()
+    .mockResolvedValue(createModernValidationErrorResponse(errors, status));
 };
 
 /**
@@ -93,18 +115,18 @@ export const createModernValidationErrorFetchMock = (errors: string[], status: n
  */
 function getStatusText(status: number): string {
   const statusTexts: Record<number, string> = {
-    200: 'OK',
-    201: 'Created',
-    204: 'No Content',
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    403: 'Forbidden',
-    404: 'Not Found',
-    409: 'Conflict',
-    500: 'Internal Server Error',
-    503: 'Service Unavailable',
+    200: "OK",
+    201: "Created",
+    204: "No Content",
+    400: "Bad Request",
+    401: "Unauthorized",
+    403: "Forbidden",
+    404: "Not Found",
+    409: "Conflict",
+    500: "Internal Server Error",
+    503: "Service Unavailable",
   };
-  return statusTexts[status] || 'Unknown';
+  return statusTexts[status] || "Unknown";
 }
 
 /**
@@ -118,7 +140,9 @@ export const simulateModernTimeoutError = () => {
   return jest.fn().mockRejectedValue(new Error("Request timeout"));
 };
 
-export const simulateModernServerError = (message = "Internal server error") => {
+export const simulateModernServerError = (
+  message = "Internal server error",
+) => {
   return createModernErrorFetchMock(message, 500);
 };
 
@@ -217,14 +241,15 @@ export const modernEndpoints = {
 export const verifyModernEndpoint = (
   actualEndpoint: string,
   expectedResource: string,
-  operation: 'list' | 'get' | 'create' | 'update' | 'delete',
+  operation: "list" | "get" | "create" | "update" | "delete",
   id?: string | number,
 ) => {
-  const expected = operation === 'list'
-    ? modernEndpoints.list(expectedResource)
-    : operation === 'create'
-    ? modernEndpoints.create(expectedResource)
-    : modernEndpoints[operation](expectedResource, id!);
+  const expected =
+    operation === "list"
+      ? modernEndpoints.list(expectedResource)
+      : operation === "create"
+        ? modernEndpoints.create(expectedResource)
+        : modernEndpoints[operation](expectedResource, id!);
 
   expect(actualEndpoint).toBe(expected);
 };

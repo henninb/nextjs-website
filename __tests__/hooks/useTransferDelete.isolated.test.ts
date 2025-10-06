@@ -1,14 +1,13 @@
 import Transfer from "../../model/Transfer";
 import {
-  createFetchMock,
-  createErrorFetchMock,
   ConsoleSpy,
   createTestTransfer,
-  expectSuccessfulDeletion,
-  expectValidationError,
-  expectServerError,
   simulateNetworkError,
 } from "../../testHelpers";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 
 import { deleteTransfer } from "../../hooks/useTransferDelete";
 
@@ -38,14 +37,14 @@ describe("deleteTransfer (Isolated)", () => {
   });
 
   describe("Successful deletion", () => {
-    it("should delete transfer successfully with 204 response", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+    it("should delete transfer successfully and return transfer data", async () => {
+      global.fetch = createModernFetchMock(mockTransfer, { status: 200 });
 
       const result = await deleteTransfer(mockTransfer);
 
-      expect(result).toBeNull();
+      expect(result).toEqual(mockTransfer);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/delete/1",
+        "/api/transfer/1",
         expect.objectContaining({
           method: "DELETE",
           credentials: "include",
@@ -59,7 +58,7 @@ describe("deleteTransfer (Isolated)", () => {
 
     it("should return transfer data for non-204 responses", async () => {
       const responseData = { ...mockTransfer, deleted: true };
-      global.fetch = createFetchMock(responseData, { status: 200 });
+      global.fetch = createModernFetchMock(responseData, { status: 200 });
 
       const result = await deleteTransfer(mockTransfer);
 
@@ -68,12 +67,12 @@ describe("deleteTransfer (Isolated)", () => {
 
     it("should construct correct endpoint URL with transfer ID", async () => {
       const transferWithDifferentId = createTestTransfer({ transferId: 999 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(transferWithDifferentId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/delete/999",
+        "/api/transfer/999",
         expect.any(Object),
       );
     });
@@ -82,10 +81,15 @@ describe("deleteTransfer (Isolated)", () => {
   describe("Error handling", () => {
     it("should handle server error with error message", async () => {
       const errorMessage = "Cannot delete transfer with pending reconciliation";
-      global.fetch = createErrorFetchMock(errorMessage, 400);
+      global.fetch = createModernErrorFetchMock(errorMessage, 400);
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(errorMessage);
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        `Failed to delete transfer: ${errorMessage}`,
+      );
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        `An error occurred: ${errorMessage}`,
+      );
     });
 
     it("should handle server error without error message", async () => {
@@ -96,10 +100,10 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "No error message returned.",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "No error message returned.",
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        "Failed to delete transfer: HTTP error! Status: 400",
       );
     });
 
@@ -111,10 +115,10 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON",
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        "Failed to delete transfer: HTTP error! Status: 400",
       );
     });
 
@@ -126,9 +130,11 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "cannot throw a null value",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("cannot throw a null value");
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        "Failed to delete transfer: HTTP error! Status: 400",
+      );
     });
 
     it("should handle network errors", async () => {
@@ -137,7 +143,7 @@ describe("deleteTransfer (Isolated)", () => {
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
         "Network error",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
+      expect(mockConsole.error).toHaveBeenCalledWith(
         "An error occurred: Network error",
       );
     });
@@ -150,7 +156,7 @@ describe("deleteTransfer (Isolated)", () => {
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
         "Connection failed",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
+      expect(mockConsole.error).toHaveBeenCalledWith(
         "An error occurred: Connection failed",
       );
     });
@@ -159,36 +165,36 @@ describe("deleteTransfer (Isolated)", () => {
   describe("Edge cases", () => {
     it("should handle transfer with zero ID", async () => {
       const transferWithZeroId = createTestTransfer({ transferId: 0 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(transferWithZeroId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/delete/0",
+        "/api/transfer/0",
         expect.any(Object),
       );
     });
 
     it("should handle transfer with negative ID", async () => {
       const transferWithNegativeId = createTestTransfer({ transferId: -1 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(transferWithNegativeId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/delete/-1",
+        "/api/transfer/-1",
         expect.any(Object),
       );
     });
 
     it("should handle transfer with very large ID", async () => {
       const transferWithLargeId = createTestTransfer({ transferId: 999999999 });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(transferWithLargeId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/delete/999999999",
+        "/api/transfer/999999999",
         expect.any(Object),
       );
     });
@@ -205,7 +211,7 @@ describe("deleteTransfer (Isolated)", () => {
         ],
         timestamp: "2024-01-01T00:00:00Z",
       };
-      global.fetch = createFetchMock(jsonResponse, { status: 200 });
+      global.fetch = createModernFetchMock(jsonResponse, { status: 200 });
 
       const result = await deleteTransfer(mockTransfer);
 
@@ -213,25 +219,19 @@ describe("deleteTransfer (Isolated)", () => {
     });
 
     it("should handle empty JSON response", async () => {
-      global.fetch = createFetchMock({}, { status: 200 });
+      global.fetch = createModernFetchMock({}, { status: 200 });
 
       const result = await deleteTransfer(mockTransfer);
 
       expect(result).toEqual({});
     });
 
-    it("should prioritize 204 status over response body", async () => {
-      const mockJson = jest.fn().mockResolvedValueOnce({ message: "ignored" });
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 204,
-        json: mockJson,
-      });
+    it("should return transfer data from JSON response", async () => {
+      global.fetch = createModernFetchMock(mockTransfer, { status: 200 });
 
       const result = await deleteTransfer(mockTransfer);
 
-      expect(result).toBeNull();
-      expect(mockJson).not.toHaveBeenCalled();
+      expect(result).toEqual(mockTransfer);
     });
 
     it("should handle complex JSON response with transfer details", async () => {
@@ -246,7 +246,7 @@ describe("deleteTransfer (Isolated)", () => {
           reversalRequired: false,
         },
       };
-      global.fetch = createFetchMock(complexResponse, { status: 200 });
+      global.fetch = createModernFetchMock(complexResponse, { status: 200 });
 
       const result = await deleteTransfer(mockTransfer);
 
@@ -256,7 +256,7 @@ describe("deleteTransfer (Isolated)", () => {
 
   describe("HTTP headers and credentials", () => {
     it("should include correct headers in request", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(mockTransfer);
 
@@ -272,7 +272,7 @@ describe("deleteTransfer (Isolated)", () => {
     });
 
     it("should include credentials in request", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(mockTransfer);
 
@@ -285,7 +285,7 @@ describe("deleteTransfer (Isolated)", () => {
     });
 
     it("should use DELETE method", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(mockTransfer);
 
@@ -301,27 +301,32 @@ describe("deleteTransfer (Isolated)", () => {
   describe("Console logging behavior", () => {
     it("should log error messages from server", async () => {
       const errorMessage = "Transfer deletion failed due to business rules";
-      global.fetch = createErrorFetchMock(errorMessage, 400);
+      global.fetch = createModernErrorFetchMock(errorMessage, 400);
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow();
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        `Failed to delete transfer: ${errorMessage}`,
+      );
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        `An error occurred: ${errorMessage}`,
+      );
     });
 
     it("should log general errors with context", async () => {
       global.fetch = simulateNetworkError();
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow();
-      expect(mockConsole.log).toHaveBeenCalledWith(
+      expect(mockConsole.error).toHaveBeenCalledWith(
         "An error occurred: Network error",
       );
     });
 
     it("should not log anything for successful deletions", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(mockTransfer);
 
-      expect(mockConsole.log).not.toHaveBeenCalled();
+      expect(mockConsole.error).not.toHaveBeenCalled();
       expect(mockConsole.error).not.toHaveBeenCalled();
       expect(mockConsole.warn).not.toHaveBeenCalled();
     });
@@ -341,12 +346,20 @@ describe("deleteTransfer (Isolated)", () => {
         consoleSpy = new ConsoleSpy();
         mockConsole = consoleSpy.start();
 
-        global.fetch = createErrorFetchMock(scenario.error, scenario.status);
+        global.fetch = createModernErrorFetchMock(
+          scenario.error,
+          scenario.status,
+        );
 
         await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
           scenario.error,
         );
-        expect(mockConsole.log).toHaveBeenCalledWith(scenario.error);
+        expect(mockConsole.error).toHaveBeenCalledWith(
+          `Failed to delete transfer: ${scenario.error}`,
+        );
+        expect(mockConsole.error).toHaveBeenCalledWith(
+          `An error occurred: ${scenario.error}`,
+        );
       }
     });
   });
@@ -366,13 +379,13 @@ describe("deleteTransfer (Isolated)", () => {
         dateUpdated: new Date("2024-02-15"),
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(fullTransfer);
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/delete/123",
+        "/api/transfer/123",
         expect.any(Object),
       );
     });
@@ -385,13 +398,13 @@ describe("deleteTransfer (Isolated)", () => {
         amount: 50.0,
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(minimalTransfer);
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/delete/456",
+        "/api/transfer/456",
         expect.any(Object),
       );
     });
@@ -404,7 +417,7 @@ describe("deleteTransfer (Isolated)", () => {
         amount: 100.0,
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(sameAccountTransfer);
 
@@ -417,7 +430,7 @@ describe("deleteTransfer (Isolated)", () => {
         amount: 999999.99,
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(largeAmountTransfer);
 
@@ -430,7 +443,7 @@ describe("deleteTransfer (Isolated)", () => {
         amount: 0,
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(zeroAmountTransfer);
 
@@ -446,7 +459,7 @@ describe("deleteTransfer (Isolated)", () => {
         destinationAccount: "Destination_Account.with.dots",
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(specialAccountTransfer);
 
@@ -460,7 +473,7 @@ describe("deleteTransfer (Isolated)", () => {
         guidDestination: "dest-67890-fghij",
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(guidTransfer);
 
@@ -474,7 +487,7 @@ describe("deleteTransfer (Isolated)", () => {
         guidDestination: undefined,
       });
 
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteTransfer(noGuidTransfer);
 
