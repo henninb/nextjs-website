@@ -42,12 +42,14 @@ import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
 const initialPaymentData: Payment = {
-  paymentId: undefined,
+  paymentId: 0,
   transactionDate: new Date(),
   destinationAccount: "",
   sourceAccount: "",
   activeStatus: true,
   amount: 0.0,
+  guidSource: "",
+  guidDestination: "",
 };
 
 export default function Payments() {

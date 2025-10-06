@@ -19,8 +19,14 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
+// Mock UUID generator
+jest.mock("../../utils/security/secureUUID", () => ({
+  generateSecureUUID: jest.fn(),
+}));
+
 import { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
 import { hookValidators, DataValidator } from "../../utils/validation";
+import { generateSecureUUID } from "../../utils/security/secureUUID";
 
 describe("Payment Insert Functions (Isolated)", () => {
   const mockPayment = createTestPayment({
@@ -33,19 +39,28 @@ describe("Payment Insert Functions (Isolated)", () => {
   });
 
   const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
+  const mockGenerateSecureUUID = generateSecureUUID as jest.Mock;
   let consoleSpy: ConsoleSpy;
   let mockConsole: any;
+  let uuidCounter = 0;
 
   beforeEach(() => {
     consoleSpy = new ConsoleSpy();
     mockConsole = consoleSpy.start();
     jest.clearAllMocks();
+    uuidCounter = 0;
 
     // Reset validation mocks to default success state
     mockValidateApiPayload.mockReturnValue({
       isValid: true,
       validatedData: mockPayment,
       errors: null,
+    });
+
+    // Mock UUID generation to return unique UUIDs
+    mockGenerateSecureUUID.mockImplementation(() => {
+      uuidCounter++;
+      return Promise.resolve(`test-uuid-${uuidCounter.toString().padStart(4, "0")}-0000-0000-0000-000000000000`);
     });
   });
 
@@ -54,7 +69,7 @@ describe("Payment Insert Functions (Isolated)", () => {
   });
 
   describe("setupNewPayment function", () => {
-    it("should extract required payment fields", () => {
+    it("should extract required payment fields", async () => {
       const inputPayment = createTestPayment({
         paymentId: 123, // Should be excluded
         sourceAccount: "test_source",
@@ -66,7 +81,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         activeStatus: true, // Should be excluded
       });
 
-      const result = setupNewPayment(inputPayment);
+      const result = await setupNewPayment(inputPayment);
 
       expect(result).toEqual({
         paymentId: 0,
@@ -80,7 +95,7 @@ describe("Payment Insert Functions (Isolated)", () => {
       });
     });
 
-    it("should handle payment with missing optional fields", () => {
+    it("should handle payment with missing optional fields and generate UUIDs", async () => {
       const minimalPayment = createTestPayment({
         sourceAccount: "source",
         destinationAccount: "dest",
@@ -88,7 +103,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: new Date("2024-01-01"),
       });
 
-      const result = setupNewPayment(minimalPayment);
+      const result = await setupNewPayment(minimalPayment);
 
       expect(result).toEqual({
         paymentId: 0,
@@ -96,13 +111,13 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: new Date("2024-01-01"),
         sourceAccount: "source",
         destinationAccount: "dest",
-        guidSource: "",
-        guidDestination: "",
+        guidSource: "test-uuid-0001-0000-0000-0000-000000000000",
+        guidDestination: "test-uuid-0002-0000-0000-0000-000000000000",
         activeStatus: true,
       });
     });
 
-    it("should handle null and undefined values", () => {
+    it("should handle null and undefined values and generate UUIDs", async () => {
       const paymentWithNulls = {
         ...mockPayment,
         amount: null,
@@ -110,7 +125,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         guidDestination: null,
       };
 
-      const result = setupNewPayment(paymentWithNulls);
+      const result = await setupNewPayment(paymentWithNulls);
 
       expect(result).toEqual({
         paymentId: 0,
@@ -118,8 +133,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: mockPayment.transactionDate,
         sourceAccount: mockPayment.sourceAccount,
         destinationAccount: mockPayment.destinationAccount,
-        guidSource: "",
-        guidDestination: "",
+        guidSource: "test-uuid-0001-0000-0000-0000-000000000000",
+        guidDestination: "test-uuid-0002-0000-0000-0000-000000000000",
         activeStatus: true,
       });
     });
@@ -156,18 +171,20 @@ describe("Payment Insert Functions (Isolated)", () => {
               "Content-Type": "application/json",
               Accept: "application/json",
             },
-            body: JSON.stringify({
-              paymentId: 0,
-              amount: mockPayment.amount,
-              transactionDate: mockPayment.transactionDate,
-              sourceAccount: mockPayment.sourceAccount,
-              destinationAccount: mockPayment.destinationAccount,
-              guidSource: mockPayment.guidSource || "",
-              guidDestination: mockPayment.guidDestination || "",
-              activeStatus: true,
-            }),
+            body: expect.stringContaining('"paymentId":0'),
           }),
         );
+
+        // Verify the body contains required fields
+        const fetchCall = (global.fetch as jest.Mock).mock.calls[0][1];
+        const bodyObj = JSON.parse(fetchCall.body);
+        expect(bodyObj.paymentId).toBe(0);
+        expect(bodyObj.amount).toBe(mockPayment.amount);
+        expect(bodyObj.sourceAccount).toBe(mockPayment.sourceAccount);
+        expect(bodyObj.destinationAccount).toBe(mockPayment.destinationAccount);
+        expect(bodyObj.activeStatus).toBe(true);
+        expect(bodyObj.guidSource).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
+        expect(bodyObj.guidDestination).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
       });
 
       it("should handle 204 no content response", async () => {
@@ -193,13 +210,12 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        const expectedPayload = setupNewPayment(validatedPayment);
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: JSON.stringify(expectedPayload),
-          }),
-        );
+        // Verify the fetch was called with correct data (UUIDs will be auto-generated)
+        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+        const bodyObj = JSON.parse(fetchCall[1].body);
+        expect(bodyObj.sourceAccount).toBe("sanitized_source");
+        expect(bodyObj.guidSource).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
+        expect(bodyObj.guidDestination).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
       });
 
       it("should handle different success status codes", async () => {
@@ -482,7 +498,7 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         expect(result).toEqual(mockResponse);
 
-        const expectedPayload = setupNewPayment(fullPayment);
+        const expectedPayload = await setupNewPayment(fullPayment);
         expect(global.fetch).toHaveBeenCalledWith(
           expect.any(String),
           expect.objectContaining({
@@ -545,13 +561,12 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(paymentWithNulls);
 
-        const expectedPayload = setupNewPayment(paymentWithNulls);
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: JSON.stringify(expectedPayload),
-          }),
-        );
+        // Verify the fetch was called with correct data (UUIDs will be auto-generated)
+        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+        const bodyObj = JSON.parse(fetchCall[1].body);
+        expect(bodyObj.amount).toBe(mockPayment.amount);
+        expect(bodyObj.guidSource).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
+        expect(bodyObj.guidDestination).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
       });
     });
 

@@ -5,16 +5,27 @@ import {
   hookValidators,
   ValidationError,
 } from "../utils/validation";
+import { generateSecureUUID } from "../utils/security/secureUUID";
 
-export const setupNewPayment = (payload: Payment) => {
+export const setupNewPayment = async (payload: Payment) => {
+  // Generate UUIDs if not provided
+  const guidSource =
+    payload.guidSource && payload.guidSource !== ""
+      ? payload.guidSource
+      : await generateSecureUUID();
+  const guidDestination =
+    payload.guidDestination && payload.guidDestination !== ""
+      ? payload.guidDestination
+      : await generateSecureUUID();
+
   return {
     paymentId: 0,
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
     sourceAccount: payload.sourceAccount,
     destinationAccount: payload.destinationAccount,
-    guidSource: payload.guidSource || "",
-    guidDestination: payload.guidDestination || "",
+    guidSource,
+    guidDestination,
     activeStatus: true,
   };
 };
@@ -36,7 +47,7 @@ export const insertPayment = async (payload: Payment): Promise<Payment> => {
     }
 
     const endpoint = "/api/payment";
-    const newPayload = setupNewPayment(validation.validatedData);
+    const newPayload = await setupNewPayment(validation.validatedData);
 
     const response = await fetch(endpoint, {
       method: "POST",
