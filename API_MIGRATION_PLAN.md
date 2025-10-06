@@ -117,19 +117,23 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 | Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook | Migration Status |
 |-----------|----------------|-----------------|---------------|------------------|
 | **List Active** | `GET /api/parameter/select/active` | `GET /api/parameter/active` | `useParameterFetch.ts` | ✅ **MIGRATED** |
-| **Get Single** | `GET /api/parameter/select/{parameterId}` | `GET /api/parameter/{parameterId}` | ❌ Not used | ✅ **MIGRATED** |
+| **Get Single** | `GET /api/parameter/select/{parameterName}` | `GET /api/parameter/{parameterName}` | ❌ Not used | ✅ **MIGRATED** |
 | **Create** | `POST /api/parameter/insert` | `POST /api/parameter` | `useParameterInsert.ts` | ✅ **MIGRATED** |
-| **Update** | `PUT /api/parameter/update/{parameterName}` | `PUT /api/parameter/{parameterId}` | `useParameterUpdate.ts` | ✅ **MIGRATED** |
-| **Delete** | `DELETE /api/parameter/delete/{parameterName}` | `DELETE /api/parameter/{parameterId}` | `useParameterDelete.ts` | ✅ **MIGRATED** |
+| **Update** | `PUT /api/parameter/update/{parameterName}` | `PUT /api/parameter/{parameterName}` | `useParameterUpdate.ts` | ✅ **MIGRATED** |
+| **Delete** | `DELETE /api/parameter/delete/{parameterName}` | `DELETE /api/parameter/{parameterName}` | `useParameterDelete.ts` | ✅ **MIGRATED** |
 
 **Migration Completed:** 2025-01-15 ✅
 
+**Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/ParameterController.kt`
+
 **Key Changes:**
-- ✅ Update/Delete now use `parameterId` instead of `parameterName` in URL path
+- ✅ Modern endpoints use `parameterName` (string) for URL routing (backend design decision)
 - ✅ Update sends `newParameter` object in request body (not empty object)
 - ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
 - ✅ Empty lists return `[]` instead of throwing 404
 - ✅ All errors logged to `console.error` (not `console.log`)
+
+**Important Note:** The modern parameter endpoints use `parameterName` as the path parameter, not `parameterId`. This is consistent with the backend implementation which uses natural keys (parameter names) for routing rather than numeric IDs.
 
 ### Payment Endpoints
 

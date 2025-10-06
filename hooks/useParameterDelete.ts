@@ -5,7 +5,7 @@ export const deleteParameter = async (
   payload: Parameter,
 ): Promise<Parameter | null> => {
   try {
-    const endpoint = `/api/parameter/${payload.parameterId}`;
+    const endpoint = `/api/parameter/${payload.parameterName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

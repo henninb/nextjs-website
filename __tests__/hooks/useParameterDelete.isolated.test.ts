@@ -42,7 +42,7 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/1",
+        "/api/parameter/TEST_PARAMETER",
         expect.objectContaining({
           method: "DELETE",
           credentials: "include",
@@ -63,7 +63,7 @@ describe("deleteParameter (Isolated)", () => {
       expect(result).toEqual(responseData);
     });
 
-    it("should construct correct endpoint URL with parameter ID", async () => {
+    it("should construct correct endpoint URL with parameter name", async () => {
       const parameterWithDifferentId = createTestParameter({
         parameterId: 999,
         parameterName: "CUSTOM_CONFIG",
@@ -73,7 +73,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(parameterWithDifferentId);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/999",
+        "/api/parameter/CUSTOM_CONFIG",
         expect.any(Object),
       );
     });
@@ -162,7 +162,7 @@ describe("deleteParameter (Isolated)", () => {
     });
   });
 
-  describe("Parameter ID edge cases", () => {
+  describe("Parameter name edge cases", () => {
     it("should handle parameter with uppercase name", async () => {
       const uppercaseParameter = createTestParameter({
         parameterId: 100,
@@ -173,7 +173,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(uppercaseParameter);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/100",
+        "/api/parameter/UPPERCASE_PARAMETER",
         expect.any(Object),
       );
     });
@@ -188,7 +188,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(lowercaseParameter);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/101",
+        "/api/parameter/lowercase_parameter",
         expect.any(Object),
       );
     });
@@ -203,7 +203,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(mixedCaseParameter);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/102",
+        "/api/parameter/Mixed_Case_Parameter_123",
         expect.any(Object),
       );
     });
@@ -218,7 +218,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(specialCharParameter);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/103",
+        "/api/parameter/param-with.special@chars_123",
         expect.any(Object),
       );
     });
@@ -234,7 +234,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(longNameParameter);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/parameter/104`,
+        `/api/parameter/${longName}`,
         expect.any(Object),
       );
     });
@@ -249,7 +249,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(singleCharParameter);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/105",
+        "/api/parameter/A",
         expect.any(Object),
       );
     });
@@ -264,7 +264,7 @@ describe("deleteParameter (Isolated)", () => {
       await deleteParameter(numericParameter);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/106",
+        "/api/parameter/12345",
         expect.any(Object),
       );
     });
@@ -447,7 +447,7 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/123",
+        "/api/parameter/FULL_CONFIG_PARAM",
         expect.any(Object),
       );
     });
@@ -466,7 +466,7 @@ describe("deleteParameter (Isolated)", () => {
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/456",
+        "/api/parameter/MIN_PARAM",
         expect.any(Object),
       );
     });

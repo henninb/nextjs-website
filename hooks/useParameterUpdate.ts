@@ -5,7 +5,7 @@ export const updateParameter = async (
   oldParameter: Parameter,
   newParameter: Parameter,
 ): Promise<Parameter> => {
-  const endpoint = `/api/parameter/${oldParameter.parameterId}`;
+  const endpoint = `/api/parameter/${oldParameter.parameterName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",

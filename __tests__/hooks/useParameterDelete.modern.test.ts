@@ -1,10 +1,10 @@
 /**
  * TDD Tests for Modern useParameterDelete
- * Modern endpoint: DELETE /api/parameter/{parameterId}
+ * Modern endpoint: DELETE /api/parameter/{parameterName}
  *
  * Key differences from legacy:
- * - Endpoint: /api/parameter/{parameterId} (vs /api/parameter/delete/{parameterName})
- * - Uses parameterId instead of parameterName
+ * - Endpoint: /api/parameter/{parameterName} (vs /api/parameter/delete/{parameterName})
+ * - Uses parameterName instead of parameterId
  * - Uses ServiceResult pattern for errors
  */
 
@@ -17,7 +17,7 @@ const deleteParameterModern = async (
   payload: Parameter,
 ): Promise<Parameter | null> => {
   try {
-    const endpoint = `/api/parameter/${payload.parameterId}`;
+    const endpoint = `/api/parameter/${payload.parameterName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
@@ -65,8 +65,8 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
   });
 
   describe("Modern endpoint behavior", () => {
-    it("should use modern endpoint /api/parameter/{parameterId}", async () => {
-      const testParameter = createTestParameter({ parameterId: 123 });
+    it("should use modern endpoint /api/parameter/{parameterName}", async () => {
+      const testParameter = createTestParameter({ parameterId: 123, parameterName: "test_param_123" });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -75,7 +75,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
 
       await deleteParameterModern(testParameter);
 
-      expect(fetch).toHaveBeenCalledWith("/api/parameter/123", {
+      expect(fetch).toHaveBeenCalledWith("/api/parameter/test_param_123", {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -108,8 +108,8 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       expect(result).toEqual(testParameter);
     });
 
-    it("should use parameterId from payload in URL", async () => {
-      const testParameter = createTestParameter({ parameterId: 999 });
+    it("should use parameterName from payload in URL", async () => {
+      const testParameter = createTestParameter({ parameterId: 999, parameterName: "test_param_999" });
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -119,7 +119,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       await deleteParameterModern(testParameter);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/999",
+        "/api/parameter/test_param_999",
         expect.any(Object),
       );
     });
@@ -401,11 +401,11 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       expect(result).toEqual(testParameter);
     });
 
-    it("should handle different parameterId values", async () => {
-      const parameterIds = [1, 100, 999, 12345];
+    it("should handle different parameterName values", async () => {
+      const parameterNames = ["param_1", "param_100", "param_999", "param_12345"];
 
-      for (const id of parameterIds) {
-        const testParameter = createTestParameter({ parameterId: id });
+      for (const name of parameterNames) {
+        const testParameter = createTestParameter({ parameterName: name });
 
         global.fetch = jest.fn().mockResolvedValue({
           ok: true,
@@ -415,7 +415,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
         await deleteParameterModern(testParameter);
 
         expect(fetch).toHaveBeenCalledWith(
-          `/api/parameter/${id}`,
+          `/api/parameter/${name}`,
           expect.any(Object),
         );
       }
@@ -438,7 +438,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       const result = await deleteParameterModern(testParameter);
 
       expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/parameter/1", expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith("/api/parameter/payment_account", expect.any(Object));
     });
 
     it("should delete configuration parameter", async () => {
@@ -490,7 +490,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       await deleteParameterModern(testParameter);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/100",
+        "/api/parameter/param-with_special.chars",
         expect.any(Object),
       );
     });
@@ -546,7 +546,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
   });
 
   describe("Data integrity", () => {
-    it("should use correct parameterId from payload", async () => {
+    it("should use correct parameterName from payload", async () => {
       const testParameter = createTestParameter({
         parameterId: 456,
         parameterName: "test",
@@ -560,7 +560,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       await deleteParameterModern(testParameter);
 
       const url = (fetch as jest.Mock).mock.calls[0][0];
-      expect(url).toBe("/api/parameter/456");
+      expect(url).toBe("/api/parameter/test");
     });
 
     it("should return exact parameter data when API returns 200", async () => {

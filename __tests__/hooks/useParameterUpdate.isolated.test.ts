@@ -47,7 +47,7 @@ describe("updateParameter (Isolated)", () => {
 
       expect(result).toEqual(updatedParameter);
       expect(fetch).toHaveBeenCalledWith(
-        `/api/parameter/${oldParameter.parameterId}`,
+        `/api/parameter/${oldParameter.parameterName}`,
         {
           method: "PUT",
           credentials: "include",
@@ -60,7 +60,7 @@ describe("updateParameter (Isolated)", () => {
       );
     });
 
-    it("should use old parameter ID in endpoint path", async () => {
+    it("should use old parameter name in endpoint path", async () => {
       const oldParameter = createTestParameter({
         parameterId: 123,
         parameterName: "ORIGINAL_PARAM",
@@ -68,7 +68,7 @@ describe("updateParameter (Isolated)", () => {
 
       const newParameter = createTestParameter({
         parameterId: 123,
-        parameterName: "UPDATED_PARAM",
+        parameterName: "ORIGINAL_PARAM",
       });
 
       global.fetch = createModernFetchMock(newParameter);
@@ -76,7 +76,7 @@ describe("updateParameter (Isolated)", () => {
       await updateParameter(oldParameter, newParameter);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/123",
+        "/api/parameter/ORIGINAL_PARAM",
         expect.any(Object),
       );
     });
@@ -377,7 +377,7 @@ describe("updateParameter (Isolated)", () => {
 
       expect(result.parameterName).toBe("SPECIAL_CHARS!@#$%");
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/1",
+        "/api/parameter/SPECIAL_CHARS!@#$%",
         expect.any(Object),
       );
     });
@@ -419,7 +419,7 @@ describe("updateParameter (Isolated)", () => {
 
       expect(result.parameterName).toBe(longName);
       expect(fetch).toHaveBeenCalledWith(
-        `/api/parameter/3`,
+        `/api/parameter/${longName}`,
         expect.any(Object),
       );
     });
@@ -617,7 +617,7 @@ describe("updateParameter (Isolated)", () => {
 
       expect(result).toEqual(updatedParameter);
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/1",
+        "/api/parameter/WORKFLOW_PARAM",
         {
           method: "PUT",
           credentials: "include",

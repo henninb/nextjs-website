@@ -1,10 +1,10 @@
 /**
  * TDD Tests for Modern useParameterUpdate
- * Modern endpoint: PUT /api/parameter/{parameterId}
+ * Modern endpoint: PUT /api/parameter/{parameterName}
  *
  * Key differences from legacy:
- * - Endpoint: /api/parameter/{parameterId} (vs /api/parameter/update/{parameterName})
- * - Uses parameterId instead of parameterName
+ * - Endpoint: /api/parameter/{parameterName} (vs /api/parameter/update/{parameterName})
+ * - Uses parameterName instead of parameterId
  * - Sends newParameter in request body
  * - Uses ServiceResult pattern for errors
  */
@@ -18,7 +18,7 @@ const updateParameterModern = async (
   oldParameter: Parameter,
   newParameter: Parameter,
 ): Promise<Parameter> => {
-  const endpoint = `/api/parameter/${oldParameter.parameterId}`;
+  const endpoint = `/api/parameter/${oldParameter.parameterName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
@@ -67,10 +67,11 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
   });
 
   describe("Modern endpoint behavior", () => {
-    it("should use modern endpoint /api/parameter/{parameterId}", async () => {
-      const oldParameter = createTestParameter({ parameterId: 123 });
+    it("should use modern endpoint /api/parameter/{parameterName}", async () => {
+      const oldParameter = createTestParameter({ parameterId: 123, parameterName: "test_param_123" });
       const newParameter = createTestParameter({
         parameterId: 123,
+        parameterName: "test_param_123",
         parameterValue: "updated_value",
       });
 
@@ -78,7 +79,7 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
 
       await updateParameterModern(oldParameter, newParameter);
 
-      expect(fetch).toHaveBeenCalledWith("/api/parameter/123", {
+      expect(fetch).toHaveBeenCalledWith("/api/parameter/test_param_123", {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -122,16 +123,16 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
       expect(callArgs.body).toBe(JSON.stringify(newParameter));
     });
 
-    it("should use parameterId from oldParameter in URL", async () => {
-      const oldParameter = createTestParameter({ parameterId: 999 });
-      const newParameter = createTestParameter({ parameterId: 999 });
+    it("should use parameterName from oldParameter in URL", async () => {
+      const oldParameter = createTestParameter({ parameterId: 999, parameterName: "test_param_999" });
+      const newParameter = createTestParameter({ parameterId: 999, parameterName: "test_param_999" });
 
       global.fetch = createModernFetchMock(newParameter);
 
       await updateParameterModern(oldParameter, newParameter);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/999",
+        "/api/parameter/test_param_999",
         expect.any(Object),
       );
     });
