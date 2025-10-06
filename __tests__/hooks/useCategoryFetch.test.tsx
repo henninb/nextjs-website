@@ -89,22 +89,22 @@ describe("useCategoryFetch", () => {
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "Not found" }), { status: 404 }),
+        new Response(JSON.stringify({ error: "Not found" }), { status: 404 }),
       );
 
-    const consoleSpy = jest.spyOn(console, "log");
+    const consoleSpy = jest.spyOn(console, "error");
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Should be successful with empty data for 404
-    expect(result.current.data).toEqual([]);
-    expect(result.current.isError).toBe(false);
-    expect(result.current.error).toBeNull();
-    expect(consoleSpy).toHaveBeenCalledWith("No categories found (404).");
+    // Modern error handling - 404 is an error, not empty success
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isSuccess).toBe(false);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.error?.message).toContain("Not found");
 
     consoleSpy.mockRestore();
     global.fetch = originalFetch;
@@ -133,10 +133,10 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("Failed to fetch");
+    expect(result.current.error?.message).toContain("HTTP error! Status: 500");
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching category data:",
-      expect.anything(),
+      expect.any(String),
     );
 
     consoleSpy.mockRestore();
@@ -262,7 +262,7 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("Failed to fetch");
+    expect(result.current.error?.message).toContain("HTTP error! Status: 401");
 
     consoleSpy.mockRestore();
     global.fetch = originalFetch;

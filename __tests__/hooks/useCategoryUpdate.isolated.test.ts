@@ -1,11 +1,12 @@
 import Category from "../../model/Category";
 import {
-  createFetchMock,
-  createErrorFetchMock,
   ConsoleSpy,
   createTestCategory,
-  simulateNetworkError,
 } from "../../testHelpers";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 
 import { updateCategory } from "../../hooks/useCategoryUpdate";
 
@@ -46,13 +47,13 @@ describe("updateCategory (Isolated)", () => {
         ...mockNewCategory,
         dateUpdated: new Date("2024-01-20"),
       });
-      global.fetch = createFetchMock(responseCategory);
+      global.fetch = createModernFetchMock(responseCategory);
 
       const result = await updateCategory(mockOldCategory, mockNewCategory);
 
       expect(result).toEqual(responseCategory);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/update/old_category",
+        "/api/category/old_category",
         expect.objectContaining({
           method: "PUT",
           credentials: "include",
@@ -70,12 +71,12 @@ describe("updateCategory (Isolated)", () => {
         ...mockOldCategory,
         categoryName: "specific_category",
       });
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(categoryWithDifferentName, mockNewCategory);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/update/specific_category",
+        "/api/category/specific_category",
         expect.any(Object),
       );
     });
@@ -86,7 +87,7 @@ describe("updateCategory (Isolated)", () => {
         categoryName: "completely_new_name",
         categoryCount: 100,
       });
-      global.fetch = createFetchMock(updatedCategoryData);
+      global.fetch = createModernFetchMock(updatedCategoryData);
 
       await updateCategory(mockOldCategory, updatedCategoryData);
 
@@ -103,12 +104,12 @@ describe("updateCategory (Isolated)", () => {
         ...mockOldCategory,
         categoryName: "category & subcategory",
       });
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(specialCategory, mockNewCategory);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/update/category & subcategory",
+        "/api/category/category & subcategory",
         expect.any(Object),
       );
     });
@@ -120,7 +121,7 @@ describe("updateCategory (Isolated)", () => {
         categoryCount: 25,
         additionalField: "extra data",
       });
-      global.fetch = createFetchMock(responseData);
+      global.fetch = createModernFetchMock(responseData);
 
       const result = await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -129,69 +130,43 @@ describe("updateCategory (Isolated)", () => {
   });
 
   describe("Error handling", () => {
-    it("should handle 404 errors with special logging", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: "Not Found",
-        json: jest
-          .fn()
-          .mockResolvedValueOnce({ message: "Category not found" }),
-      });
+    it("should handle 404 errors", async () => {
+      global.fetch = createModernErrorFetchMock("Category not found", 404);
 
       await expect(
         updateCategory(mockOldCategory, mockNewCategory),
-      ).rejects.toThrow("Failed to update transaction state: Not Found");
-
-      expect(mockConsole.log).toHaveBeenCalledWith("Resource not found (404).");
+      ).rejects.toThrow("Category not found");
     });
 
     it("should handle server error responses", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        statusText: "Bad Request",
-        json: jest.fn().mockResolvedValueOnce({ message: "Invalid data" }),
-      });
+      global.fetch = createModernErrorFetchMock("Invalid data", 400);
 
       await expect(
         updateCategory(mockOldCategory, mockNewCategory),
-      ).rejects.toThrow("Failed to update transaction state: Bad Request");
+      ).rejects.toThrow("Invalid data");
     });
 
     it("should handle various HTTP error statuses", async () => {
       const errorStatuses = [
-        { status: 400, statusText: "Bad Request" },
-        { status: 401, statusText: "Unauthorized" },
-        { status: 403, statusText: "Forbidden" },
-        { status: 409, statusText: "Conflict" },
-        { status: 422, statusText: "Unprocessable Entity" },
-        { status: 500, statusText: "Internal Server Error" },
+        { status: 400, message: "Bad Request" },
+        { status: 401, message: "Unauthorized" },
+        { status: 403, message: "Forbidden" },
+        { status: 409, message: "Conflict" },
+        { status: 422, message: "Unprocessable Entity" },
+        { status: 500, message: "Internal Server Error" },
       ];
 
-      for (const { status, statusText } of errorStatuses) {
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          ok: false,
-          status,
-          statusText,
-          json: jest.fn().mockResolvedValueOnce({}),
-        });
+      for (const { status, message } of errorStatuses) {
+        global.fetch = createModernErrorFetchMock(message, status);
 
         await expect(
           updateCategory(mockOldCategory, mockNewCategory),
-        ).rejects.toThrow(`Failed to update transaction state: ${statusText}`);
-
-        // Check 404 specific logging
-        if (status === 404) {
-          expect(mockConsole.log).toHaveBeenCalledWith(
-            "Resource not found (404).",
-          );
-        }
+        ).rejects.toThrow(message);
       }
     });
 
     it("should handle network errors", async () => {
-      global.fetch = simulateNetworkError();
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       await expect(
         updateCategory(mockOldCategory, mockNewCategory),
@@ -224,7 +199,7 @@ describe("updateCategory (Isolated)", () => {
 
   describe("Request format validation", () => {
     it("should use PUT method", async () => {
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -237,7 +212,7 @@ describe("updateCategory (Isolated)", () => {
     });
 
     it("should include credentials", async () => {
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -250,7 +225,7 @@ describe("updateCategory (Isolated)", () => {
     });
 
     it("should include correct headers", async () => {
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -266,7 +241,7 @@ describe("updateCategory (Isolated)", () => {
     });
 
     it("should serialize new category data to JSON", async () => {
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -286,12 +261,12 @@ describe("updateCategory (Isolated)", () => {
         ...mockOldCategory,
         categoryName: "",
       });
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(categoryWithEmptyName, mockNewCategory);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/update/",
+        "/api/category/",
         expect.any(Object),
       );
     });
@@ -314,7 +289,7 @@ describe("updateCategory (Isolated)", () => {
         dateUpdated: new Date("2024-01-01"),
       });
 
-      global.fetch = createFetchMock(complexNewCategory);
+      global.fetch = createModernFetchMock(complexNewCategory);
 
       const result = await updateCategory(
         complexOldCategory,
@@ -323,7 +298,7 @@ describe("updateCategory (Isolated)", () => {
 
       expect(result).toEqual(complexNewCategory);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/update/complex_old",
+        "/api/category/complex_old",
         expect.objectContaining({
           body: JSON.stringify(complexNewCategory),
         }),
@@ -336,7 +311,7 @@ describe("updateCategory (Isolated)", () => {
         categoryCount: null as any,
         dateAdded: null as any,
       };
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(mockOldCategory, categoryWithNulls);
 
@@ -354,12 +329,12 @@ describe("updateCategory (Isolated)", () => {
         ...mockOldCategory,
         categoryName: longCategoryName,
       });
-      global.fetch = createFetchMock(mockNewCategory);
+      global.fetch = createModernFetchMock(mockNewCategory);
 
       await updateCategory(longNameCategory, mockNewCategory);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/category/update/${longCategoryName}`,
+        `/api/category/${longCategoryName}`,
         expect.any(Object),
       );
     });
@@ -373,7 +348,7 @@ describe("updateCategory (Isolated)", () => {
         dateAdded: new Date("2025-01-01"),
         dateUpdated: new Date("2025-01-15"),
       });
-      global.fetch = createFetchMock(fullyUpdatedCategory);
+      global.fetch = createModernFetchMock(fullyUpdatedCategory);
 
       const result = await updateCategory(
         mockOldCategory,
@@ -382,7 +357,7 @@ describe("updateCategory (Isolated)", () => {
 
       expect(result).toEqual(fullyUpdatedCategory);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/update/old_category", // Uses old category name in endpoint
+        "/api/category/old_category", // Uses old category name in endpoint
         expect.objectContaining({
           body: JSON.stringify(fullyUpdatedCategory), // Sends new data
         }),
@@ -392,7 +367,7 @@ describe("updateCategory (Isolated)", () => {
 
   describe("Response handling", () => {
     it("should handle empty response body", async () => {
-      global.fetch = createFetchMock({});
+      global.fetch = createModernFetchMock({});
 
       const result = await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -406,7 +381,7 @@ describe("updateCategory (Isolated)", () => {
         version: 2,
         metadata: { lastModifiedBy: "admin" },
       });
-      global.fetch = createFetchMock(responseWithExtras);
+      global.fetch = createModernFetchMock(responseWithExtras);
 
       const result = await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -420,7 +395,7 @@ describe("updateCategory (Isolated)", () => {
         const responseCategory = createTestCategory({
           categoryId: status, // Use status as ID for uniqueness
         });
-        global.fetch = createFetchMock(responseCategory, { status });
+        global.fetch = createModernFetchMock(responseCategory, { status });
 
         const result = await updateCategory(mockOldCategory, mockNewCategory);
 
@@ -435,13 +410,13 @@ describe("updateCategory (Isolated)", () => {
         ...mockNewCategory,
         categoryName: "totally_different_name",
       });
-      global.fetch = createFetchMock(newCategoryWithDifferentName);
+      global.fetch = createModernFetchMock(newCategoryWithDifferentName);
 
       await updateCategory(mockOldCategory, newCategoryWithDifferentName);
 
       // Should still use old category name in endpoint
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/update/old_category",
+        "/api/category/old_category",
         expect.any(Object),
       );
 
@@ -459,7 +434,7 @@ describe("updateCategory (Isolated)", () => {
         ...mockNewCategory,
         categoryId: mockOldCategory.categoryId, // Should preserve ID
       });
-      global.fetch = createFetchMock(updatedCategory);
+      global.fetch = createModernFetchMock(updatedCategory);
 
       const result = await updateCategory(mockOldCategory, updatedCategory);
 
@@ -475,7 +450,7 @@ describe("updateCategory (Isolated)", () => {
         ...activeCategory,
         activeStatus: false,
       });
-      global.fetch = createFetchMock(inactiveCategory);
+      global.fetch = createModernFetchMock(inactiveCategory);
 
       const result = await updateCategory(activeCategory, inactiveCategory);
 
@@ -491,7 +466,7 @@ describe("updateCategory (Isolated)", () => {
         ...categoryWithCount,
         categoryCount: 15,
       });
-      global.fetch = createFetchMock(updatedCountCategory);
+      global.fetch = createModernFetchMock(updatedCountCategory);
 
       const result = await updateCategory(
         categoryWithCount,

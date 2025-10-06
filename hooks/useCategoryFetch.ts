@@ -4,7 +4,7 @@ import { useAuth } from "../components/AuthProvider";
 
 const fetchCategoryData = async (): Promise<Category[]> => {
   try {
-    const response = await fetch("/api/category/select/active", {
+    const response = await fetch("/api/category/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -14,17 +14,15 @@ const fetchCategoryData = async (): Promise<Category[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No categories found (404).");
-        return []; // Return empty array for 404, meaning no categories
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
-    console.error("Error fetching category data:", error);
-    throw new Error(`Failed to fetch category data: ${error.message}`);
+    console.error("Error fetching category data:", error.message);
+    throw error;
   }
 };
 

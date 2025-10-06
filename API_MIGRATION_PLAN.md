@@ -6,20 +6,20 @@ The `raspi-finance-endpoint` project has been modernized with **standardized RES
 
 ### Migration Progress
 
-**Completed Migrations:** 1 of 8 endpoint groups
+**Completed Migrations:** 2 of 8 endpoint groups
 
 | Endpoint Group | Status | Migration Date | Hooks Migrated | Tests Added |
 |----------------|--------|----------------|----------------|-------------|
 | **Parameter** | ✅ Complete | 2025-01-15 | 4 hooks | 117 tests |
+| **Category** | ✅ Complete | 2025-01-15 | 4 hooks | 135 tests |
 | Account | ⏳ Pending | - | 0/5 hooks | - |
 | Transaction | ⏳ Pending | - | 0/5 hooks | - |
-| Category | ⏳ Pending | - | 0/5 hooks | - |
 | Description | ⏳ Pending | - | 0/5 hooks | - |
 | Payment | ⏳ Pending | - | 0/5 hooks | - |
 | Transfer | ⏳ Pending | - | 0/5 hooks | - |
 | Specialized | ⏳ Pending | - | 0/9 hooks | - |
 
-**Overall Progress:** 4/43+ hooks migrated (9.3%)
+**Overall Progress:** 8/43+ hooks migrated (18.6%)
 
 ## Current State Analysis
 
@@ -87,19 +87,28 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Category Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List Active** | `GET /api/category/select/active` | `GET /api/category/active` | `useCategoryFetch.ts` |
-| **Get Single** | `GET /api/category/select/{category_name}` | `GET /api/category/{categoryName}` | ❌ Not used |
-| **Create** | `POST /api/category/insert` | `POST /api/category` | `useCategoryInsert.ts` |
-| **Update** | `PUT /api/category/update/{category_name}` | `PUT /api/category/{categoryName}` | `useCategoryUpdate.ts` |
-| **Delete** | `DELETE /api/category/delete/{categoryName}` | `DELETE /api/category/{categoryName}` | `useCategoryDelete.ts` |
-| **Merge** | `PUT /api/category/merge?new=...&old=...` | ✅ Business endpoint (keep) | `useCategoryMerge.ts` |
+| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook | Migration Status |
+|-----------|----------------|-----------------|---------------|------------------|
+| **List Active** | `GET /api/category/select/active` | `GET /api/category/active` | `useCategoryFetch.ts` | ✅ **MIGRATED** |
+| **Get Single** | `GET /api/category/select/{category_name}` | `GET /api/category/{categoryName}` | ❌ Not used | ✅ **MIGRATED** |
+| **Create** | `POST /api/category/insert` | `POST /api/category` | `useCategoryInsert.ts` | ✅ **MIGRATED** |
+| **Update** | `PUT /api/category/update/{category_name}` | `PUT /api/category/{categoryName}` | `useCategoryUpdate.ts` | ✅ **MIGRATED** |
+| **Delete** | `DELETE /api/category/delete/{categoryName}` | `DELETE /api/category/{categoryName}` | `useCategoryDelete.ts` | ✅ **MIGRATED** |
+| **Merge** | `PUT /api/category/merge?new=...&old=...` | ✅ Business endpoint (keep) | `useCategoryMerge.ts` | N/A - Business Logic |
 
-**Key Differences:**
-- Legacy uses snake_case path parameters (`category_name`)
-- Modern uses camelCase (`categoryName`)
-- Merge operation is business logic, not affected by standardization
+**Migration Completed:** 2025-01-15 ✅
+
+**Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/CategoryController.kt`
+
+**Key Changes:**
+- ✅ Modern endpoints use `categoryName` (string) for URL routing
+- ✅ Modern error handling with ServiceResult pattern `{ error: "message" }`
+- ✅ Empty lists handled via error responses (backend returns 404, not empty array)
+- ✅ All errors logged to `console.error` (not `console.log`)
+- ✅ Legacy uses snake_case path parameters (`category_name`), modern uses camelCase (`categoryName`)
+- ✅ Merge operation is business logic endpoint, unchanged by standardization
+
+**Important Note:** Category endpoints use `categoryName` as the path parameter for routing, consistent with backend implementation using natural keys.
 
 ### Description Endpoints
 

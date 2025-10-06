@@ -5,7 +5,7 @@ export const updateCategory = async (
   oldCategory: Category,
   newCategory: Category,
 ): Promise<Category> => {
-  const endpoint = `/api/category/update/${oldCategory.categoryName}`;
+  const endpoint = `/api/category/${oldCategory.categoryName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
@@ -17,18 +17,15 @@ export const updateCategory = async (
       body: JSON.stringify(newCategory),
     });
 
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
     if (!response.ok) {
-      throw new Error(
-        `Failed to update transaction state: ${response.statusText}`,
-      );
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
+    console.error(`Error updating category: ${error.message}`);
     throw error;
   }
 };

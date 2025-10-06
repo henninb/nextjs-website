@@ -1,4 +1,8 @@
 import Category from "../../model/Category";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 
 import { deleteCategory } from "../../hooks/useCategoryDelete";
 
@@ -30,7 +34,7 @@ describe("deleteCategory (Isolated)", () => {
     const result = await deleteCategory(mockCategory);
 
     expect(fetch).toHaveBeenCalledWith(
-      `/api/category/delete/${mockCategory.categoryName}`,
+      `/api/category/${mockCategory.categoryName}`,
       {
         method: "DELETE",
         credentials: "include",
@@ -56,25 +60,14 @@ describe("deleteCategory (Isolated)", () => {
   });
 
   it("should throw error when API returns error response", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
-    global.fetch = jest.fn().mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-      json: jest.fn().mockResolvedValueOnce({
-        response: "Cannot delete this category",
-      }),
-    });
+    global.fetch = createModernErrorFetchMock("Cannot delete this category", 400);
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
       "Cannot delete this category",
     );
-
-    expect(consoleSpy).toHaveBeenCalledWith("Cannot delete this category");
-    consoleSpy.mockRestore();
   });
 
   it("should handle error response without message", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 400,
@@ -82,15 +75,11 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "No error message returned.",
+      "HTTP error! Status: 400",
     );
-
-    expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
-    consoleSpy.mockRestore();
   });
 
   it("should handle JSON parsing errors", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 400,
@@ -98,13 +87,8 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "Failed to parse error response: Invalid JSON",
+      "HTTP error! Status: 400",
     );
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to parse error response: Invalid JSON",
-    );
-    consoleSpy.mockRestore();
   });
 
   it("should handle network errors", async () => {
@@ -138,30 +122,21 @@ describe("deleteCategory (Isolated)", () => {
     await deleteCategory(categoryWithSpecialChars);
 
     expect(fetch).toHaveBeenCalledWith(
-      `/api/category/delete/electronics & gadgets`,
+      `/api/category/electronics & gadgets`,
       expect.any(Object),
     );
   });
 
   it("should handle empty error message gracefully", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 500,
-      json: jest.fn().mockResolvedValueOnce({
-        response: "",
-      }),
+      json: jest.fn().mockResolvedValueOnce({}),
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "Failed to parse error response: No error message returned.",
+      "HTTP error! Status: 500",
     );
-
-    expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to parse error response: No error message returned.",
-    );
-    consoleSpy.mockRestore();
   });
 
   it("should use correct HTTP method and headers", async () => {

@@ -20,8 +20,7 @@ export const insertCategory = async (
       throw new Error(`Category validation failed: ${errorMessages}`);
     }
 
-    const endpoint = "/api/category/insert";
-    //const payload = { category: categoryName, activeStatus: true };
+    const endpoint = "/api/category";
 
     console.log("passed: " + JSON.stringify(category));
 
@@ -35,23 +34,9 @@ export const insertCategory = async (
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return await response.json();

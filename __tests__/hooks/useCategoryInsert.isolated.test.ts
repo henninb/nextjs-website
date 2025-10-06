@@ -1,12 +1,12 @@
 import Category from "../../model/Category";
 import {
-  createFetchMock,
-  createErrorFetchMock,
   ConsoleSpy,
   createTestCategory,
-  simulateNetworkError,
-  createMockValidationUtils,
 } from "../../testHelpers";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
 
 // Mock validation utilities
 jest.mock("../../utils/validation", () => ({
@@ -67,13 +67,13 @@ describe("insertCategory (Isolated)", () => {
         validatedData: mockCategory,
       });
 
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       const result = await insertCategory(mockCategory);
 
       expect(result).toEqual(mockResponse);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/insert",
+        "/api/category",
         expect.objectContaining({
           method: "POST",
           credentials: "include",
@@ -93,7 +93,7 @@ describe("insertCategory (Isolated)", () => {
         validatedData: mockCategory,
       });
 
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       await insertCategory(mockCategory);
 
@@ -113,7 +113,7 @@ describe("insertCategory (Isolated)", () => {
         validatedData: validatedCategory,
       });
 
-      global.fetch = createFetchMock(validatedCategory);
+      global.fetch = createModernFetchMock(validatedCategory);
 
       await insertCategory(mockCategory);
 
@@ -135,7 +135,7 @@ describe("insertCategory (Isolated)", () => {
         });
 
         const mockResponse = createTestCategory({ categoryId: status });
-        global.fetch = createFetchMock(mockResponse, { status });
+        global.fetch = createModernFetchMock(mockResponse, { status });
 
         const result = await insertCategory(mockCategory);
 
@@ -192,7 +192,7 @@ describe("insertCategory (Isolated)", () => {
         validatedData: mockCategory,
       });
 
-      global.fetch = createFetchMock(mockCategory);
+      global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(mockCategory);
 
@@ -214,10 +214,9 @@ describe("insertCategory (Isolated)", () => {
 
     it("should handle server error with error message", async () => {
       const errorMessage = "Category name already exists";
-      global.fetch = createErrorFetchMock(errorMessage, 400);
+      global.fetch = createModernErrorFetchMock(errorMessage, 400);
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(errorMessage);
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
     });
 
     it("should handle server error without error message", async () => {
@@ -228,10 +227,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "No error message returned.",
-      );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "No error message returned.",
+        "HTTP error! Status: 400",
       );
     });
 
@@ -243,10 +239,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON",
-      );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON",
+        "HTTP error! Status: 400",
       );
     });
 
@@ -258,15 +251,12 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "No error message returned.",
-      );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "No error message returned.",
+        "HTTP error! Status: 500",
       );
     });
 
     it("should handle network errors", async () => {
-      global.fetch = simulateNetworkError();
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
         "Network error",
@@ -278,7 +268,7 @@ describe("insertCategory (Isolated)", () => {
 
       for (const status of errorStatuses) {
         const errorMessage = `Error ${status}`;
-        global.fetch = createErrorFetchMock(errorMessage, status);
+        global.fetch = createModernErrorFetchMock(errorMessage, status);
 
         await expect(insertCategory(mockCategory)).rejects.toThrow(
           errorMessage,
@@ -296,7 +286,7 @@ describe("insertCategory (Isolated)", () => {
     });
 
     it("should use POST method", async () => {
-      global.fetch = createFetchMock(mockCategory);
+      global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(mockCategory);
 
@@ -309,7 +299,7 @@ describe("insertCategory (Isolated)", () => {
     });
 
     it("should include credentials", async () => {
-      global.fetch = createFetchMock(mockCategory);
+      global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(mockCategory);
 
@@ -322,7 +312,7 @@ describe("insertCategory (Isolated)", () => {
     });
 
     it("should include correct headers", async () => {
-      global.fetch = createFetchMock(mockCategory);
+      global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(mockCategory);
 
@@ -337,12 +327,12 @@ describe("insertCategory (Isolated)", () => {
     });
 
     it("should use correct endpoint", async () => {
-      global.fetch = createFetchMock(mockCategory);
+      global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(mockCategory);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/insert",
+        "/api/category",
         expect.any(Object),
       );
     });
@@ -362,7 +352,7 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "entertainment",
         categoryCount: 5,
       });
-      global.fetch = createFetchMock(responseData);
+      global.fetch = createModernFetchMock(responseData);
 
       const result = await insertCategory(mockCategory);
 
@@ -370,7 +360,7 @@ describe("insertCategory (Isolated)", () => {
     });
 
     it("should handle empty response body", async () => {
-      global.fetch = createFetchMock({});
+      global.fetch = createModernFetchMock({});
 
       const result = await insertCategory(mockCategory);
 
@@ -384,7 +374,7 @@ describe("insertCategory (Isolated)", () => {
         additionalField: "extra data",
         nested: { property: "value" },
       });
-      global.fetch = createFetchMock(complexResponse);
+      global.fetch = createModernFetchMock(complexResponse);
 
       const result = await insertCategory(mockCategory);
 
@@ -413,7 +403,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       const mockResponse = createTestCategory({ categoryId: 111 });
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       const result = await insertCategory(minimalCategory);
 
@@ -436,7 +426,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       const mockResponse = createTestCategory({ categoryId: 555 });
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       const result = await insertCategory(fullCategory);
 
@@ -455,7 +445,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       const mockResponse = createTestCategory({ categoryId: 777 });
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       const result = await insertCategory(specialCategory);
 
@@ -475,7 +465,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       const mockResponse = createTestCategory({ categoryId: 888 });
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       const result = await insertCategory(longCategory);
 
@@ -494,7 +484,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       const mockResponse = createTestCategory({ categoryId: 444 });
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       const result = await insertCategory(inactiveCategory);
 
@@ -513,7 +503,7 @@ describe("insertCategory (Isolated)", () => {
         validatedData: categoryWithNulls,
       });
 
-      global.fetch = createFetchMock(mockCategory);
+      global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(categoryWithNulls);
 
@@ -536,7 +526,7 @@ describe("insertCategory (Isolated)", () => {
 
     it("should enforce validation before API call", async () => {
       const mockResponse = createTestCategory({ categoryId: 123 });
-      global.fetch = createFetchMock(mockResponse);
+      global.fetch = createModernFetchMock(mockResponse);
 
       await insertCategory(mockCategory);
 
@@ -557,7 +547,7 @@ describe("insertCategory (Isolated)", () => {
         validatedData: sanitizedCategory,
       });
 
-      global.fetch = createFetchMock(sanitizedCategory);
+      global.fetch = createModernFetchMock(sanitizedCategory);
 
       await insertCategory(originalCategory);
 
@@ -584,7 +574,7 @@ describe("insertCategory (Isolated)", () => {
         categoryId: 999,
         categoryName: "new_category",
       });
-      global.fetch = createFetchMock(responseCategory);
+      global.fetch = createModernFetchMock(responseCategory);
 
       const result = await insertCategory(newCategory);
 
