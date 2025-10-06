@@ -312,7 +312,7 @@ export default function TransactionsByAccount() {
     const roundedAmount = Math.round(clearedAmount * 100) / 100;
 
     const payload: ValidationAmount = {
-      validationId: Math.random(),
+      validationId: 0,
       activeStatus: true,
       amount: roundedAmount,
       transactionState: transactionState,
