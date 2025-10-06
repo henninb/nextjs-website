@@ -1,11 +1,14 @@
 import Description from "../../model/Description";
 import {
-  createFetchMock,
-  createErrorFetchMock,
+  createModernFetchMock,
+  createModernErrorFetchMock,
   ConsoleSpy,
   createTestDescription,
-  simulateNetworkError,
-} from "../../testHelpers";
+} from "../../testHelpers.modern";
+
+const simulateNetworkError = () => {
+  return jest.fn().mockRejectedValue(new Error("Network error"));
+};
 
 import { deleteDescription } from "../../hooks/useDescriptionDelete";
 
@@ -33,18 +36,19 @@ describe("deleteDescription (Isolated)", () => {
 
   describe("Successful deletion", () => {
     it("should delete description successfully with 204 status", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await deleteDescription(mockDescription);
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/electronics",
+        "/api/description/electronics",
         expect.objectContaining({
           method: "DELETE",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            "Accept": "application/json",
           },
         }),
       );
@@ -52,7 +56,7 @@ describe("deleteDescription (Isolated)", () => {
 
     it("should return JSON data when status is not 204", async () => {
       const mockResponse = { message: "Description deleted", id: 1 };
-      global.fetch = createFetchMock(mockResponse, { status: 200 });
+      global.fetch = createModernFetchMock(mockResponse, { status: 200 });
 
       const result = await deleteDescription(mockDescription);
 
@@ -64,12 +68,12 @@ describe("deleteDescription (Isolated)", () => {
         ...mockDescription,
         descriptionName: "groceries",
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(descriptionWithDifferentName);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/groceries",
+        "/api/description/groceries",
         expect.any(Object),
       );
     });
@@ -79,12 +83,12 @@ describe("deleteDescription (Isolated)", () => {
         ...mockDescription,
         descriptionName: "food & dining",
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(specialDescription);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/food & dining",
+        "/api/description/food & dining",
         expect.any(Object),
       );
     });
@@ -93,12 +97,12 @@ describe("deleteDescription (Isolated)", () => {
   describe("Error handling", () => {
     it("should handle server error with error message", async () => {
       const errorMessage = "Cannot delete this description";
-      global.fetch = createErrorFetchMock(errorMessage, 400);
+      global.fetch = createModernErrorFetchMock(errorMessage, 400);
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
         errorMessage,
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
+      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle server error without error message", async () => {
@@ -109,11 +113,9 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "No error message returned.",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "No error message returned.",
-      );
+      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle JSON parsing errors in error response", async () => {
@@ -124,11 +126,9 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON",
+        "HTTP error! Status: 400",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Failed to parse error response: Invalid JSON",
-      );
+      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle empty error message gracefully", async () => {
@@ -139,11 +139,9 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "No error message returned.",
+        "HTTP error! Status: 500",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "No error message returned.",
-      );
+      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle network errors", async () => {
@@ -159,7 +157,7 @@ describe("deleteDescription (Isolated)", () => {
 
       for (const status of errorStatuses) {
         const errorMessage = `Error ${status}`;
-        global.fetch = createErrorFetchMock(errorMessage, status);
+        global.fetch = createModernErrorFetchMock(errorMessage, status);
 
         await expect(deleteDescription(mockDescription)).rejects.toThrow(
           errorMessage,
@@ -180,7 +178,7 @@ describe("deleteDescription (Isolated)", () => {
 
   describe("Request format validation", () => {
     it("should use DELETE method", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(mockDescription);
 
@@ -193,7 +191,7 @@ describe("deleteDescription (Isolated)", () => {
     });
 
     it("should include credentials", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(mockDescription);
 
@@ -206,7 +204,7 @@ describe("deleteDescription (Isolated)", () => {
     });
 
     it("should include correct headers", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(mockDescription);
 
@@ -215,13 +213,14 @@ describe("deleteDescription (Isolated)", () => {
         expect.objectContaining({
           headers: {
             "Content-Type": "application/json",
+            "Accept": "application/json",
           },
         }),
       );
     });
 
     it("should not include request body for DELETE", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(mockDescription);
 
@@ -242,7 +241,7 @@ describe("deleteDescription (Isolated)", () => {
         message: "Successfully deleted",
         timestamp: "2024-01-15T10:00:00Z",
       };
-      global.fetch = createFetchMock(responseData, { status: 200 });
+      global.fetch = createModernFetchMock(responseData, { status: 200 });
 
       const result = await deleteDescription(mockDescription);
 
@@ -250,7 +249,7 @@ describe("deleteDescription (Isolated)", () => {
     });
 
     it("should handle empty response body", async () => {
-      global.fetch = createFetchMock({}, { status: 200 });
+      global.fetch = createModernFetchMock({}, { status: 200 });
 
       const result = await deleteDescription(mockDescription);
 
@@ -267,7 +266,7 @@ describe("deleteDescription (Isolated)", () => {
           reason: "cleanup",
         },
       };
-      global.fetch = createFetchMock(complexResponse, { status: 200 });
+      global.fetch = createModernFetchMock(complexResponse, { status: 200 });
 
       const result = await deleteDescription(mockDescription);
 
@@ -297,12 +296,12 @@ describe("deleteDescription (Isolated)", () => {
         ...mockDescription,
         descriptionName: "",
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(emptyNameDescription);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/",
+        "/api/description/",
         expect.any(Object),
       );
     });
@@ -313,12 +312,12 @@ describe("deleteDescription (Isolated)", () => {
         ...mockDescription,
         descriptionName: longDescriptionName,
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(longNameDescription);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/description/delete/${longDescriptionName}`,
+        `/api/description/${longDescriptionName}`,
         expect.any(Object),
       );
     });
@@ -328,12 +327,12 @@ describe("deleteDescription (Isolated)", () => {
         ...mockDescription,
         descriptionName: "12345",
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(numericDescription);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/12345",
+        "/api/description/12345",
         expect.any(Object),
       );
     });
@@ -343,12 +342,12 @@ describe("deleteDescription (Isolated)", () => {
         ...mockDescription,
         descriptionName: "café & résumé",
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(unicodeDescription);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/café & résumé",
+        "/api/description/café & résumé",
         expect.any(Object),
       );
     });
@@ -359,12 +358,12 @@ describe("deleteDescription (Isolated)", () => {
         dateAdded: null as any,
         dateUpdated: undefined as any,
       };
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(descriptionWithNulls);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/electronics",
+        "/api/description/electronics",
         expect.any(Object),
       );
     });
@@ -377,12 +376,12 @@ describe("deleteDescription (Isolated)", () => {
         descriptionName: "business_expense",
         activeStatus: false, // Should not affect endpoint
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(businessDescription);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/business_expense",
+        "/api/description/business_expense",
         expect.any(Object),
       );
     });
@@ -393,13 +392,13 @@ describe("deleteDescription (Isolated)", () => {
         descriptionName: "original_description",
         activeStatus: true,
       });
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteDescription(originalDescription);
 
       // Verify endpoint uses exact description name
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/delete/original_description",
+        "/api/description/original_description",
         expect.any(Object),
       );
     });
@@ -417,12 +416,12 @@ describe("deleteDescription (Isolated)", () => {
           ...mockDescription,
           descriptionName: name,
         });
-        global.fetch = createFetchMock(null, { status: 204 });
+        global.fetch = createModernFetchMock(null, { status: 204 });
 
         await deleteDescription(description);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          `/api/description/delete/${name}`,
+          `/api/description/${name}`,
           expect.any(Object),
         );
       }
@@ -436,7 +435,7 @@ describe("deleteDescription (Isolated)", () => {
       for (const status of successStatuses) {
         const responseData =
           status === 204 ? null : { message: `Status ${status}` };
-        global.fetch = createFetchMock(responseData, { status });
+        global.fetch = createModernFetchMock(responseData, { status });
 
         const result = await deleteDescription(mockDescription);
 
@@ -459,7 +458,7 @@ describe("deleteDescription (Isolated)", () => {
       ];
 
       for (const { status, message } of errorStatuses) {
-        global.fetch = createErrorFetchMock(message, status);
+        global.fetch = createModernErrorFetchMock(message, status);
 
         await expect(deleteDescription(mockDescription)).rejects.toThrow(
           message,

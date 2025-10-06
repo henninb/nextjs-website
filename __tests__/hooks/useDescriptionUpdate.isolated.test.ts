@@ -4,10 +4,10 @@
  */
 
 import {
-  createFetchMock,
-  createErrorFetchMock,
+  createModernFetchMock,
+  createModernErrorFetchMock,
   ConsoleSpy,
-} from "../../testHelpers";
+} from "../../testHelpers.modern";
 import Description from "../../model/Description";
 
 // Mock description data
@@ -48,13 +48,13 @@ describe("updateDescription (Isolated)", () => {
         dateUpdated: new Date("2023-12-25"),
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
       expect(result).toEqual(newDescription);
       expect(fetch).toHaveBeenCalledWith(
-        `/api/description/update/${oldDescription.descriptionName}`,
+        `/api/description/${oldDescription.descriptionName}`,
         {
           method: "PUT",
           credentials: "include",
@@ -76,12 +76,12 @@ describe("updateDescription (Isolated)", () => {
         descriptionName: "newName",
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       await updateDescription(oldDescription, newDescription);
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/description/update/originalName",
+        "/api/description/originalName",
         expect.any(Object),
       );
     });
@@ -97,7 +97,7 @@ describe("updateDescription (Isolated)", () => {
         activeStatus: false,
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       await updateDescription(oldDescription, newDescription);
 
@@ -120,7 +120,7 @@ describe("updateDescription (Isolated)", () => {
         activeStatus: false, // Deactivating
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -138,20 +138,16 @@ describe("updateDescription (Isolated)", () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 404,
-        statusText: "Not Found",
-        json: jest.fn().mockResolvedValue({}),
+        json: jest.fn().mockResolvedValue({ error: "Not found" }),
       });
       consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
-      ).rejects.toThrow("Failed to update transaction state: Not Found");
+      ).rejects.toThrow("Not found");
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Resource not found (404)."]);
-      expect(calls.log[1]).toEqual([
-        "An error occurred: Failed to update transaction state: Not Found",
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle 400 bad request errors", async () => {
@@ -161,19 +157,16 @@ describe("updateDescription (Isolated)", () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 400,
-        statusText: "Bad Request",
-        json: jest.fn().mockResolvedValue({}),
+        json: jest.fn().mockResolvedValue({ error: "Bad request" }),
       });
       consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
-      ).rejects.toThrow("Failed to update transaction state: Bad Request");
+      ).rejects.toThrow("Bad request");
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "An error occurred: Failed to update transaction state: Bad Request",
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle 500 server errors", async () => {
@@ -183,21 +176,16 @@ describe("updateDescription (Isolated)", () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 500,
-        statusText: "Internal Server Error",
-        json: jest.fn().mockResolvedValue({}),
+        json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
       });
       consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
-      ).rejects.toThrow(
-        "Failed to update transaction state: Internal Server Error",
-      );
+      ).rejects.toThrow("Internal server error");
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "An error occurred: Failed to update transaction state: Internal Server Error",
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle network errors", async () => {
@@ -212,7 +200,7 @@ describe("updateDescription (Isolated)", () => {
       ).rejects.toThrow("Network error");
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: Network error"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle timeout errors", async () => {
@@ -227,7 +215,7 @@ describe("updateDescription (Isolated)", () => {
       ).rejects.toThrow("Request timeout");
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: Request timeout"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 
@@ -236,7 +224,7 @@ describe("updateDescription (Isolated)", () => {
       const oldDescription = createTestDescription();
       const newDescription = createTestDescription();
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       await updateDescription(oldDescription, newDescription);
 
@@ -250,7 +238,7 @@ describe("updateDescription (Isolated)", () => {
       const oldDescription = createTestDescription();
       const newDescription = createTestDescription();
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       await updateDescription(oldDescription, newDescription);
 
@@ -264,7 +252,7 @@ describe("updateDescription (Isolated)", () => {
       const oldDescription = createTestDescription();
       const newDescription = createTestDescription();
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       await updateDescription(oldDescription, newDescription);
 
@@ -289,13 +277,13 @@ describe("updateDescription (Isolated)", () => {
         descriptionName: "new-special-chars&*()_+",
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
       expect(result.descriptionName).toBe("new-special-chars&*()_+");
       expect(fetch).toHaveBeenCalledWith(
-        "/api/description/update/special-chars!@#$%",
+        "/api/description/special-chars!@#$%",
         expect.any(Object),
       );
     });
@@ -308,7 +296,7 @@ describe("updateDescription (Isolated)", () => {
         descriptionName: "新的测试描述 🚀",
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -324,7 +312,7 @@ describe("updateDescription (Isolated)", () => {
         descriptionName: longName,
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -341,7 +329,7 @@ describe("updateDescription (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -358,7 +346,7 @@ describe("updateDescription (Isolated)", () => {
         activeStatus: false,
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -374,7 +362,7 @@ describe("updateDescription (Isolated)", () => {
         dateUpdated: newDate,
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -393,13 +381,13 @@ describe("updateDescription (Isolated)", () => {
         activeStatus: true,
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
       expect(result.descriptionName).toBe("newName");
       expect(fetch).toHaveBeenCalledWith(
-        "/api/description/update/oldName",
+        "/api/description/oldName",
         expect.any(Object),
       );
     });
@@ -416,7 +404,7 @@ describe("updateDescription (Isolated)", () => {
         dateUpdated: new Date("2023-12-25"),
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -435,7 +423,7 @@ describe("updateDescription (Isolated)", () => {
         activeStatus: false, // Only change status
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -453,7 +441,7 @@ describe("updateDescription (Isolated)", () => {
         descriptionName: "updated-preserve-id",
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
@@ -480,13 +468,13 @@ describe("updateDescription (Isolated)", () => {
         dateUpdated: new Date("2023-12-25"), // Update modification date
       });
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
 
       const result = await updateDescription(oldDescription, newDescription);
 
       expect(result).toEqual(newDescription);
       expect(fetch).toHaveBeenCalledWith(
-        "/api/description/update/originalDesc",
+        "/api/description/originalDesc",
         {
           method: "PUT",
           credentials: "include",
@@ -510,21 +498,16 @@ describe("updateDescription (Isolated)", () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 422,
-        statusText: "Unprocessable Entity",
-        json: jest.fn().mockResolvedValue({}),
+        json: jest.fn().mockResolvedValue({ error: "Unprocessable entity" }),
       });
       consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
-      ).rejects.toThrow(
-        "Failed to update transaction state: Unprocessable Entity",
-      );
+      ).rejects.toThrow("Unprocessable entity");
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "An error occurred: Failed to update transaction state: Unprocessable Entity",
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 
@@ -538,8 +521,7 @@ describe("updateDescription (Isolated)", () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 404,
-        statusText: "Not Found",
-        json: jest.fn().mockResolvedValue({}),
+        json: jest.fn().mockResolvedValue({ error: "Not found" }),
       });
       consoleSpy.start();
 
@@ -550,11 +532,7 @@ describe("updateDescription (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log).toHaveLength(2);
-      expect(calls.log[0]).toEqual(["Resource not found (404)."]);
-      expect(calls.log[1]).toEqual([
-        "An error occurred: Failed to update transaction state: Not Found",
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should log general errors", async () => {
@@ -571,14 +549,14 @@ describe("updateDescription (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: General error"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should not log anything on successful operations", async () => {
       const oldDescription = createTestDescription();
       const newDescription = createTestDescription();
 
-      global.fetch = createFetchMock(newDescription);
+      global.fetch = createModernFetchMock(newDescription);
       consoleSpy.start();
 
       await updateDescription(oldDescription, newDescription);

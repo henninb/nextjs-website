@@ -5,47 +5,26 @@ export const deleteDescription = async (
   oldRow: Description,
 ): Promise<Description | null> => {
   try {
-    const endpoint = `/api/description/delete/${oldRow.descriptionName}`;
+    const endpoint = `/api/description/${oldRow.descriptionName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        // Uncomment and modify if authentication is required
+        Accept: "application/json",
       },
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.status !== 204 ? await response.json() : null;
-    //return await response.json();
-  } catch (error) {
-    // if (error instanceof TypeError && error.message === "Failed to fetch") {
-    //   console.warn("Network error: Unable to connect to finance.lan. The server may be down.");
-    //   //return null; // Return null instead of throwing an error to prevent crashes
-    //   throw error;
-    // }
-    //throw new Error("error");
-    //throw new Error(`Delete request failed: ${error.message}`);
+  } catch (error: any) {
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };

@@ -4,7 +4,7 @@ import { useAuth } from "../components/AuthProvider";
 
 const fetchDescriptionData = async (): Promise<Description[]> => {
   try {
-    const response = await fetch("/api/description/select/active", {
+    const response = await fetch("/api/description/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -14,17 +14,15 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No descriptions found (404).");
-        return []; // Return empty array for 404, meaning no descriptions
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
-    console.error("Error fetching description data:", error);
-    throw new Error(`Failed to fetch description data: ${error.message}`);
+    console.error("Error fetching description data:", error.message);
+    throw error;
   }
 };
 

@@ -3,13 +3,13 @@
  * Tests fetchDescriptionData function without React Query overhead
  */
 
-import { createFetchMock, ConsoleSpy } from "../../testHelpers";
+import { createModernFetchMock, ConsoleSpy } from "../../testHelpers.modern";
 import Description from "../../model/Description";
 
 // Copy the function to test
 const fetchDescriptionData = async (): Promise<Description[]> => {
   try {
-    const response = await fetch("/api/description/select/active", {
+    const response = await fetch("/api/description/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -19,17 +19,15 @@ const fetchDescriptionData = async (): Promise<Description[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No descriptions found (404).");
-        return [];
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
-    console.error("Error fetching description data:", error);
-    throw new Error(`Failed to fetch description data: ${error.message}`);
+    console.error("Error fetching description data:", error.message);
+    throw error;
   }
 };
 
@@ -63,12 +61,12 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ descriptionId: 2, description: "walmart" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
         expect(result).toEqual(testDescriptions);
-        expect(fetch).toHaveBeenCalledWith("/api/description/select/active", {
+        expect(fetch).toHaveBeenCalledWith("/api/description/active", {
           method: "GET",
           credentials: "include",
           headers: {
@@ -78,19 +76,13 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
         });
       });
 
-      it("should return empty array when no descriptions exist (404)", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
-
-        consoleSpy.start();
+      it("should return empty array when no descriptions exist", async () => {
+        global.fetch = createModernFetchMock([]);
 
         const result = await fetchDescriptionData();
 
         expect(result).toEqual([]);
-        const calls = consoleSpy.getCalls();
-        expect(calls.log.some((call) => call[0].includes("404"))).toBe(true);
+        expect(Array.isArray(result)).toBe(true);
       });
 
       it("should fetch descriptions with various names", async () => {
@@ -101,7 +93,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "costco" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -113,7 +105,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
       });
 
       it("should handle empty array response", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         const result = await fetchDescriptionData();
 
@@ -127,7 +119,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ activeStatus: true }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -135,7 +127,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
       });
 
       it("should use correct HTTP method", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchDescriptionData();
 
@@ -144,7 +136,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
       });
 
       it("should include credentials", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchDescriptionData();
 
@@ -153,7 +145,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
       });
 
       it("should include correct headers", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchDescriptionData();
 
@@ -171,7 +163,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ descriptionId: 999 }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -186,12 +178,13 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 500,
+          json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
         });
 
         consoleSpy.start();
 
         await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch description data: HTTP error! status: 500",
+          "Internal server error",
         );
 
         const calls = consoleSpy.getCalls();
@@ -206,26 +199,36 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 401,
+          json: jest.fn().mockResolvedValue({ error: "Unauthorized" }),
         });
 
         consoleSpy.start();
 
-        await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch description data: HTTP error! status: 401",
-        );
+        await expect(fetchDescriptionData()).rejects.toThrow("Unauthorized");
       });
 
       it("should throw error for 403 forbidden", async () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 403,
+          json: jest.fn().mockResolvedValue({ error: "Forbidden" }),
         });
 
         consoleSpy.start();
 
-        await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch description data: HTTP error! status: 403",
-        );
+        await expect(fetchDescriptionData()).rejects.toThrow("Forbidden");
+      });
+
+      it("should throw error for 404 not found", async () => {
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: false,
+          status: 404,
+          json: jest.fn().mockResolvedValue({ error: "Not found" }),
+        });
+
+        consoleSpy.start();
+
+        await expect(fetchDescriptionData()).rejects.toThrow("Not found");
       });
 
       it("should handle network errors", async () => {
@@ -235,9 +238,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch description data: Network error",
-        );
+        await expect(fetchDescriptionData()).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
         expect(
@@ -255,9 +256,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch description data: Invalid JSON",
-        );
+        await expect(fetchDescriptionData()).rejects.toThrow("Invalid JSON");
       });
 
       it("should handle fetch failure", async () => {
@@ -268,7 +267,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
         consoleSpy.start();
 
         await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch description data: Failed to fetch",
+          "Failed to fetch",
         );
       });
 
@@ -277,23 +276,21 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
 
         consoleSpy.start();
 
-        await expect(fetchDescriptionData()).rejects.toThrow(
-          "Failed to fetch description data: Timeout",
-        );
+        await expect(fetchDescriptionData()).rejects.toThrow("Timeout");
       });
 
-      it("should log 404 status when no descriptions found", async () => {
+      it("should handle error response without json body", async () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
-          status: 404,
+          status: 500,
+          json: jest.fn().mockRejectedValue(new Error("No JSON")),
         });
 
         consoleSpy.start();
 
-        await fetchDescriptionData();
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toBe("No descriptions found (404).");
+        await expect(fetchDescriptionData()).rejects.toThrow(
+          "HTTP error! Status: 500",
+        );
       });
     });
 
@@ -303,7 +300,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -316,7 +313,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "name!@#$%" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -331,7 +328,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "🏪 store" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -346,7 +343,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: longName }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -359,7 +356,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "  store name  " }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -372,7 +369,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ descriptionId: 67890 }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -388,7 +385,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           }),
         );
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -404,7 +401,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "MixedCase" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -421,25 +418,25 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           await fetchDescriptionData();
           fail("Should have thrown an error");
         } catch (error: any) {
-          expect(error.message).toContain("Failed to fetch description data");
+          expect(error.message).toContain("Custom error");
         }
       });
     });
 
     describe("API endpoint", () => {
       it("should call correct API endpoint for active descriptions", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchDescriptionData();
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/description/select/active",
+          "/api/description/active",
           expect.any(Object),
         );
       });
 
       it("should only call API once per fetch", async () => {
-        global.fetch = createFetchMock([]);
+        global.fetch = createModernFetchMock([]);
 
         await fetchDescriptionData();
 
@@ -457,7 +454,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -473,7 +470,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -491,7 +488,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "target" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -508,7 +505,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           createTestDescription({ description: "internet provider" }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 
@@ -530,7 +527,7 @@ describe("useDescriptionFetch Business Logic (Isolated)", () => {
           }),
         ];
 
-        global.fetch = createFetchMock(testDescriptions);
+        global.fetch = createModernFetchMock(testDescriptions);
 
         const result = await fetchDescriptionData();
 

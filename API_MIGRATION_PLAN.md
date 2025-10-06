@@ -6,20 +6,20 @@ The `raspi-finance-endpoint` project has been modernized with **standardized RES
 
 ### Migration Progress
 
-**Completed Migrations:** 2 of 8 endpoint groups
+**Completed Migrations:** 3 of 8 endpoint groups
 
 | Endpoint Group | Status | Migration Date | Hooks Migrated | Tests Added |
 |----------------|--------|----------------|----------------|-------------|
 | **Parameter** | ✅ Complete | 2025-01-15 | 4 hooks | 117 tests |
 | **Category** | ✅ Complete | 2025-01-15 | 4 hooks | 135 tests |
+| **Description** | ✅ Complete | 2025-01-15 | 4 hooks | 119 tests |
 | Account | ⏳ Pending | - | 0/5 hooks | - |
 | Transaction | ⏳ Pending | - | 0/5 hooks | - |
-| Description | ⏳ Pending | - | 0/5 hooks | - |
 | Payment | ⏳ Pending | - | 0/5 hooks | - |
 | Transfer | ⏳ Pending | - | 0/5 hooks | - |
 | Specialized | ⏳ Pending | - | 0/9 hooks | - |
 
-**Overall Progress:** 8/43+ hooks migrated (18.6%)
+**Overall Progress:** 12/43+ hooks migrated (27.9%)
 
 ## Current State Analysis
 
@@ -112,14 +112,27 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Description Endpoints
 
-| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook |
-|-----------|----------------|-----------------|---------------|
-| **List Active** | `GET /api/description/select/active` | `GET /api/description/active` | `useDescriptionFetch.ts` |
-| **Get Single** | ❌ Not implemented | `GET /api/description/{descriptionId}` | ❌ Not used |
-| **Create** | `POST /api/description/insert` | `POST /api/description` | `useDescriptionInsert.ts` |
-| **Update** | `PUT /api/description/update/{descriptionId}` | `PUT /api/description/{descriptionId}` | `useDescriptionUpdate.ts` |
-| **Delete** | `DELETE /api/description/delete/{descriptionId}` | `DELETE /api/description/{descriptionId}` | `useDescriptionDelete.ts` |
-| **Merge** | `PUT /api/description/merge?new=...&old=...` | ✅ Business endpoint (keep) | `useDescriptionMerge.ts` |
+| Operation | Legacy Endpoint | Modern Endpoint | Frontend Hook | Migration Status |
+|-----------|----------------|-----------------|---------------|------------------|
+| **List Active** | `GET /api/description/select/active` | `GET /api/description/active` | `useDescriptionFetch.ts` | ✅ **MIGRATED** |
+| **Get Single** | ❌ Not implemented | `GET /api/description/{descriptionName}` | ❌ Not used | ✅ **MIGRATED** |
+| **Create** | `POST /api/description/insert` | `POST /api/description` | `useDescriptionInsert.ts` | ✅ **MIGRATED** |
+| **Update** | `PUT /api/description/update/{descriptionId}` | `PUT /api/description/{descriptionName}` | `useDescriptionUpdate.ts` | ✅ **MIGRATED** |
+| **Delete** | `DELETE /api/description/delete/{descriptionId}` | `DELETE /api/description/{descriptionName}` | `useDescriptionDelete.ts` | ✅ **MIGRATED** |
+| **Merge** | `PUT /api/description/merge?new=...&old=...` | ✅ Business endpoint (keep) | `useDescriptionMerge.ts` | N/A - Business Logic |
+
+**Migration Completed:** 2025-01-15 ✅
+
+**Backend Verification:** Backend modern endpoints confirmed at `~/projects/github.com/henninb/raspi-finance-endpoint/src/main/kotlin/finance/controllers/DescriptionController.kt`
+
+**Key Changes:**
+- ✅ **CRITICAL**: Modern endpoints use `descriptionName` (string) for URL routing (changed from `descriptionId`)
+- ✅ Legacy update/delete used `descriptionId`, modern uses `descriptionName` (natural key)
+- ✅ Modern error handling with ServiceResult pattern `{ error: "message" }` or `{ errors: [...] }`
+- ✅ Empty lists return `[]` instead of throwing 404
+- ✅ All errors logged to `console.error` (not `console.log`)
+
+**Important Note:** The description migration required changing from numeric `descriptionId` to string `descriptionName` in URL paths for update and delete operations. This matches the backend's natural key routing pattern and is consistent with parameter and category endpoints.
 
 ### Parameter Endpoints
 

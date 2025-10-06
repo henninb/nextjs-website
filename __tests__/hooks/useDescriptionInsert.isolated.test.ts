@@ -4,11 +4,10 @@
  */
 
 import {
-  createFetchMock,
-  createErrorFetchMock,
+  createModernFetchMock,
+  createModernErrorFetchMock,
   ConsoleSpy,
-  createMockValidationUtils,
-} from "../../testHelpers";
+} from "../../testHelpers.modern";
 
 // Mock the validation utilities
 jest.mock("../../utils/validation", () => ({
@@ -56,7 +55,7 @@ describe("insertDescription (Isolated)", () => {
         dateUpdated: new Date().toISOString(),
       };
 
-      global.fetch = createFetchMock(mockDescription);
+      global.fetch = createModernFetchMock(mockDescription);
 
       const result = await insertDescription("test-description");
 
@@ -66,7 +65,7 @@ describe("insertDescription (Isolated)", () => {
         DataValidator.validateDescription,
         "insertDescription",
       );
-      expect(fetch).toHaveBeenCalledWith("/api/description/insert", {
+      expect(fetch).toHaveBeenCalledWith("/api/description", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -81,7 +80,7 @@ describe("insertDescription (Isolated)", () => {
     });
 
     it("should handle 204 no content response", async () => {
-      global.fetch = createFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(null, { status: 204 });
 
       const result = await insertDescription("test-description");
 
@@ -100,11 +99,11 @@ describe("insertDescription (Isolated)", () => {
         errors: [],
       });
 
-      global.fetch = createFetchMock({ descriptionId: 1 });
+      global.fetch = createModernFetchMock({ descriptionId: 1 });
 
       await insertDescription("original-description");
 
-      expect(fetch).toHaveBeenCalledWith("/api/description/insert", {
+      expect(fetch).toHaveBeenCalledWith("/api/description", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -186,7 +185,7 @@ describe("insertDescription (Isolated)", () => {
 
   describe("API error handling", () => {
     it("should handle 400 error with response message", async () => {
-      global.fetch = createErrorFetchMock("Description already exists", 400);
+      global.fetch = createModernErrorFetchMock("Description already exists", 400);
       consoleSpy.start();
 
       await expect(insertDescription("duplicate-description")).rejects.toThrow(
@@ -194,11 +193,11 @@ describe("insertDescription (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Description already exists"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle 500 server error", async () => {
-      global.fetch = createErrorFetchMock("Internal server error", 500);
+      global.fetch = createModernErrorFetchMock("Internal server error", 500);
       consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
@@ -206,7 +205,7 @@ describe("insertDescription (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["Internal server error"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle error response without message", async () => {
@@ -218,11 +217,11 @@ describe("insertDescription (Isolated)", () => {
       consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
-        "No error message returned.",
+        "HTTP error! Status: 400",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["No error message returned."]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle malformed error response", async () => {
@@ -234,13 +233,11 @@ describe("insertDescription (Isolated)", () => {
       consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
-        "Failed to parse error response: Invalid JSON",
+        "HTTP error! Status: 400",
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual([
-        "Failed to parse error response: Invalid JSON",
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle network errors", async () => {
@@ -252,7 +249,7 @@ describe("insertDescription (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: Network error"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle timeout errors", async () => {
@@ -264,17 +261,17 @@ describe("insertDescription (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: Request timeout"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 
   describe("Request format validation", () => {
     it("should send correct headers", async () => {
-      global.fetch = createFetchMock({ descriptionId: 1 });
+      global.fetch = createModernFetchMock({ descriptionId: 1 });
 
       await insertDescription("test-description");
 
-      expect(fetch).toHaveBeenCalledWith("/api/description/insert", {
+      expect(fetch).toHaveBeenCalledWith("/api/description", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -289,18 +286,18 @@ describe("insertDescription (Isolated)", () => {
     });
 
     it("should use correct endpoint", async () => {
-      global.fetch = createFetchMock({ descriptionId: 1 });
+      global.fetch = createModernFetchMock({ descriptionId: 1 });
 
       await insertDescription("test-description");
 
       expect(fetch).toHaveBeenCalledWith(
-        "/api/description/insert",
+        "/api/description",
         expect.any(Object),
       );
     });
 
     it("should send POST method", async () => {
-      global.fetch = createFetchMock({ descriptionId: 1 });
+      global.fetch = createModernFetchMock({ descriptionId: 1 });
 
       await insertDescription("test-description");
 
@@ -311,7 +308,7 @@ describe("insertDescription (Isolated)", () => {
     });
 
     it("should include credentials", async () => {
-      global.fetch = createFetchMock({ descriptionId: 1 });
+      global.fetch = createModernFetchMock({ descriptionId: 1 });
 
       await insertDescription("test-description");
 
@@ -334,7 +331,7 @@ describe("insertDescription (Isolated)", () => {
         errors: [],
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         descriptionId: 1,
         descriptionName: specialDescription,
       });
@@ -343,7 +340,7 @@ describe("insertDescription (Isolated)", () => {
 
       expect(result.descriptionName).toBe(specialDescription);
       expect(fetch).toHaveBeenCalledWith(
-        "/api/description/insert",
+        "/api/description",
         expect.objectContaining({
           body: JSON.stringify({
             descriptionName: specialDescription,
@@ -364,7 +361,7 @@ describe("insertDescription (Isolated)", () => {
         errors: [],
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         descriptionId: 1,
         descriptionName: unicodeDescription,
       });
@@ -382,7 +379,7 @@ describe("insertDescription (Isolated)", () => {
         errors: [],
       });
 
-      global.fetch = createFetchMock({
+      global.fetch = createModernFetchMock({
         descriptionId: 1,
         descriptionName: longDescription,
       });
@@ -410,13 +407,11 @@ describe("insertDescription (Isolated)", () => {
 
       // The error gets logged in the catch block
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0][0]).toContain(
-        "An error occurred: Description validation failed:",
-      );
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should log API errors", async () => {
-      global.fetch = createErrorFetchMock("Server error", 500);
+      global.fetch = createModernErrorFetchMock("Server error", 500);
       consoleSpy.start();
 
       try {
@@ -426,10 +421,7 @@ describe("insertDescription (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log).toEqual([
-        ["Server error"],
-        ["An error occurred: Server error"],
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should log network errors", async () => {
@@ -445,7 +437,7 @@ describe("insertDescription (Isolated)", () => {
       }
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log[0]).toEqual(["An error occurred: Connection failed"]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 
@@ -466,7 +458,7 @@ describe("insertDescription (Isolated)", () => {
         errors: [],
       });
 
-      global.fetch = createFetchMock(expectedResponse);
+      global.fetch = createModernFetchMock(expectedResponse);
 
       const result = await insertDescription(testDescription);
 
@@ -490,7 +482,7 @@ describe("insertDescription (Isolated)", () => {
       });
 
       // Then API returns error
-      global.fetch = createErrorFetchMock(
+      global.fetch = createModernErrorFetchMock(
         "Description already exists in database",
         409,
       );
@@ -501,10 +493,7 @@ describe("insertDescription (Isolated)", () => {
       );
 
       const calls = consoleSpy.getCalls();
-      expect(calls.log).toEqual([
-        ["Description already exists in database"],
-        ["An error occurred: Description already exists in database"],
-      ]);
+      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 });

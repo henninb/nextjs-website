@@ -18,7 +18,7 @@ export const insertDescription = async (
         "Validation failed";
       throw new Error(`Description validation failed: ${errorMessages}`);
     }
-    const endpoint = "/api/description/insert";
+    const endpoint = "/api/description";
     const payload = validation.validatedData;
 
     const response = await fetch(endpoint, {
@@ -32,28 +32,14 @@ export const insertDescription = async (
     });
 
     if (!response.ok) {
-      let errorMessage = "";
-
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };

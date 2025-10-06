@@ -5,7 +5,7 @@ export const updateDescription = async (
   oldDescription: Description,
   newDescription: Description,
 ): Promise<Description> => {
-  const endpoint = `/api/description/update/${oldDescription.descriptionName}`;
+  const endpoint = `/api/description/${oldDescription.descriptionName}`;
   try {
     const response = await fetch(endpoint, {
       method: "PUT",
@@ -17,19 +17,15 @@ export const updateDescription = async (
       body: JSON.stringify(newDescription),
     });
 
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
-
     if (!response.ok) {
-      throw new Error(
-        `Failed to update transaction state: ${response.statusText}`,
-      );
+      const errorBody = await response.json().catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage = errorBody.error || errorBody.errors?.join(", ") || `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
+    console.error(`An error occurred: ${error.message}`);
     throw error;
   }
 };
