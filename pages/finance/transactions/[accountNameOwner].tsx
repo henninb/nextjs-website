@@ -311,8 +311,23 @@ export default function TransactionsByAccount() {
     const clearedAmount = fetchedTotals?.totalsCleared ?? 0;
     const roundedAmount = Math.round(clearedAmount * 100) / 100;
 
+    // Find the account to get the accountId
+    const currentAccount = fetchedAccounts?.find(
+      (account) => account.accountNameOwner === accountNameOwner,
+    );
+
+    if (!currentAccount) {
+      handleError(
+        new Error("Account not found"),
+        `Account not found: ${accountNameOwner}`,
+        false,
+      );
+      return;
+    }
+
     const payload: ValidationAmount = {
       validationId: 0,
+      accountId: currentAccount.accountId,
       activeStatus: true,
       amount: roundedAmount,
       transactionState: transactionState,
