@@ -60,7 +60,9 @@ describe("Payment Insert Functions (Isolated)", () => {
     // Mock UUID generation to return unique UUIDs
     mockGenerateSecureUUID.mockImplementation(() => {
       uuidCounter++;
-      return Promise.resolve(`test-uuid-${uuidCounter.toString().padStart(4, "0")}-0000-0000-0000-000000000000`);
+      return Promise.resolve(
+        `test-uuid-${uuidCounter.toString().padStart(4, "0")}-0000-0000-0000-000000000000`,
+      );
     });
   });
 
@@ -76,8 +78,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         destinationAccount: "test_dest",
         amount: 250.0,
         transactionDate: new Date("2024-01-15"),
-        
-        
+
         activeStatus: true, // Should be excluded
       });
 
@@ -587,8 +588,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           destinationAccount: "original_dest",
           amount: 100.0,
           transactionDate: new Date("2024-01-01"),
-          
-          
+
           activeStatus: true, // Should be excluded by setupNewPayment
         });
 

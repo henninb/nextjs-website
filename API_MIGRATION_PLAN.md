@@ -225,12 +225,12 @@ The Kotlin/Spring Boot backend now implements a **dual-endpoint strategy**:
 
 ### Validation Amount Endpoints
 
-| Operation       | Legacy Endpoint                                                 | Modern Endpoint                       | Frontend Hook                  | Migration Status                            |
-| --------------- | --------------------------------------------------------------- | ------------------------------------- | ------------------------------ | ------------------------------------------- |
-| **Fetch**       | `GET /api/validation/amount/select/{accountNameOwner}/cleared`  | ✅ Business endpoint (keep)           | `useValidationAmountFetch.ts`  | N/A - Business Logic                        |
-| **Create**      | `POST /api/validation/amount/insert/{accountNameOwner}`         | `POST /api/validation/amount`         | `useValidationAmountInsert.ts` | ✅ **MIGRATED**                             |
-| **Update**      | `PUT /api/validation/amount/update/{validationAmountId}`        | `PUT /api/validation/amount/{id}`     | ❌ Not implemented             | N/A - Hook doesn't exist                    |
-| **Delete**      | `DELETE /api/validation/amount/delete/{validationAmountId}`     | `DELETE /api/validation/amount/{id}`  | ❌ Not implemented             | N/A - Hook doesn't exist                    |
+| Operation  | Legacy Endpoint                                                | Modern Endpoint                      | Frontend Hook                  | Migration Status         |
+| ---------- | -------------------------------------------------------------- | ------------------------------------ | ------------------------------ | ------------------------ |
+| **Fetch**  | `GET /api/validation/amount/select/{accountNameOwner}/cleared` | ✅ Business endpoint (keep)          | `useValidationAmountFetch.ts`  | N/A - Business Logic     |
+| **Create** | `POST /api/validation/amount/insert/{accountNameOwner}`        | `POST /api/validation/amount`        | `useValidationAmountInsert.ts` | ✅ **MIGRATED**          |
+| **Update** | `PUT /api/validation/amount/update/{validationAmountId}`       | `PUT /api/validation/amount/{id}`    | ❌ Not implemented             | N/A - Hook doesn't exist |
+| **Delete** | `DELETE /api/validation/amount/delete/{validationAmountId}`    | `DELETE /api/validation/amount/{id}` | ❌ Not implemented             | N/A - Hook doesn't exist |
 
 **Migration Completed:** 2025-01-06 ✅
 

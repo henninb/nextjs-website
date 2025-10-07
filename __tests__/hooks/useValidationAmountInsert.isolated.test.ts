@@ -92,18 +92,15 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         );
 
         expect(result).toEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(testPayload),
+        expect(fetch).toHaveBeenCalledWith("/api/validation/amount", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
-        );
+          body: JSON.stringify(testPayload),
+        });
       });
 
       it("should use correct modern endpoint", async () => {
@@ -172,7 +169,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 400,
-          json: jest.fn().mockResolvedValue({ error: "Invalid validation amount data" }),
+          json: jest
+            .fn()
+            .mockResolvedValue({ error: "Invalid validation amount data" }),
         });
         consoleSpy.start();
 
@@ -181,9 +180,13 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Invalid validation amount data");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes("Failed to insert validation amount:"),
+            ),
+          ),
+        ).toBe(true);
       });
 
       it("should handle 409 conflict error", async () => {
@@ -193,7 +196,9 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         global.fetch = jest.fn().mockResolvedValue({
           ok: false,
           status: 409,
-          json: jest.fn().mockResolvedValue({ error: "Validation amount already exists" }),
+          json: jest
+            .fn()
+            .mockResolvedValue({ error: "Validation amount already exists" }),
         });
         consoleSpy.start();
 
@@ -202,9 +207,13 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Validation amount already exists");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes("Failed to insert validation amount:"),
+            ),
+          ),
+        ).toBe(true);
       });
 
       it("should handle 500 server error", async () => {
@@ -223,9 +232,13 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Internal server error");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes("Failed to insert validation amount:"),
+            ),
+          ),
+        ).toBe(true);
       });
 
       it("should handle error response without message", async () => {
@@ -244,9 +257,13 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("HTTP error! Status: 400");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes("Failed to insert validation amount:"),
+            ),
+          ),
+        ).toBe(true);
       });
 
       it("should handle malformed error response", async () => {
@@ -265,9 +282,13 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("HTTP error! Status: 400");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes("Failed to insert validation amount:"),
+            ),
+          ),
+        ).toBe(true);
       });
 
       it("should handle network errors", async () => {
@@ -282,9 +303,11 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Network error");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
 
       it("should handle timeout errors", async () => {
@@ -301,9 +324,11 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Request timeout");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
     });
 
@@ -677,12 +702,20 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Failed to insert validation amount: Validation failed"))
-        )).toBe(true);
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes(
+                "Failed to insert validation amount: Validation failed",
+              ),
+            ),
+          ),
+        ).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
 
       it("should log parsing errors", async () => {
@@ -703,12 +736,18 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Failed to insert validation amount:"))
-        )).toBe(true);
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes("Failed to insert validation amount:"),
+            ),
+          ),
+        ).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
 
       it("should log network errors", async () => {
@@ -727,9 +766,11 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
 
       it("should log unknown error fallback", async () => {
@@ -750,12 +791,16 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         }
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("HTTP error! Status: 500"))
-        )).toBe(true);
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("HTTP error! Status: 500")),
+          ),
+        ).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
     });
 
@@ -810,12 +855,18 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         ).rejects.toThrow("Amount exceeds allowed negative limit");
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Amount exceeds allowed negative limit"))
-        )).toBe(true);
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes("Amount exceeds allowed negative limit"),
+            ),
+          ),
+        ).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
 
       it("should handle duplicate validation amount detection", async () => {
@@ -835,12 +886,20 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
         );
 
         const calls = consoleSpy.getCalls();
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("Duplicate validation amount for this account and date"))
-        )).toBe(true);
-        expect(calls.error.some(call =>
-          call.some(arg => String(arg).includes("An error occurred:"))
-        )).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) =>
+              String(arg).includes(
+                "Duplicate validation amount for this account and date",
+              ),
+            ),
+          ),
+        ).toBe(true);
+        expect(
+          calls.error.some((call) =>
+            call.some((arg) => String(arg).includes("An error occurred:")),
+          ),
+        ).toBe(true);
       });
     });
   });

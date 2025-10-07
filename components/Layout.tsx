@@ -93,6 +93,11 @@ const financeLinks = [
     icon: <SettingsIcon />,
   },
   {
+    text: "Configuration NextGen",
+    href: "/finance/configuration-next",
+    icon: <SettingsIcon />,
+  },
+  {
     text: "Import",
     href: "/finance/transactions/import",
     icon: <ImportExportIcon />,
