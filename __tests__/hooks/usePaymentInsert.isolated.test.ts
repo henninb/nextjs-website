@@ -76,8 +76,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         destinationAccount: "test_dest",
         amount: 250.0,
         transactionDate: new Date("2024-01-15"),
-        guidSource: "guid-source-123",
-        guidDestination: "guid-dest-456",
+        
+        
         activeStatus: true, // Should be excluded
       });
 
@@ -88,8 +88,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: new Date("2024-01-15"),
         sourceAccount: "test_source",
         destinationAccount: "test_dest",
-        guidSource: "guid-source-123",
-        guidDestination: "guid-dest-456",
+        
+        
         activeStatus: true,
       });
     });
@@ -109,8 +109,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: new Date("2024-01-01"),
         sourceAccount: "source",
         destinationAccount: "dest",
-        guidSource: "test-uuid-0001-0000-0000-0000-000000000000",
-        guidDestination: "test-uuid-0002-0000-0000-0000-000000000000",
+        
+        
         activeStatus: true,
       });
     });
@@ -130,8 +130,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         transactionDate: mockPayment.transactionDate,
         sourceAccount: mockPayment.sourceAccount,
         destinationAccount: mockPayment.destinationAccount,
-        guidSource: "test-uuid-0001-0000-0000-0000-000000000000",
-        guidDestination: "test-uuid-0002-0000-0000-0000-000000000000",
+        
+        
         activeStatus: true,
       });
     });
@@ -171,7 +171,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           }),
         );
 
-        // Verify the body contains required fields (no paymentId for new inserts)
+        // Verify the body contains required fields (no paymentId or GUIDs for new inserts)
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0][1];
         const bodyObj = JSON.parse(fetchCall.body);
         expect(bodyObj.paymentId).toBeUndefined();
@@ -179,8 +179,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         expect(bodyObj.sourceAccount).toBe(mockPayment.sourceAccount);
         expect(bodyObj.destinationAccount).toBe(mockPayment.destinationAccount);
         expect(bodyObj.activeStatus).toBe(true);
-        expect(bodyObj.guidSource).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
-        expect(bodyObj.guidDestination).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
+        expect(bodyObj.guidSource).toBeUndefined();
+        expect(bodyObj.guidDestination).toBeUndefined();
       });
 
       it("should handle 204 no content response", async () => {
@@ -206,12 +206,12 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        // Verify the fetch was called with correct data (UUIDs will be auto-generated)
+        // Verify the fetch was called with correct data (GUIDs should NOT be included)
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
         const bodyObj = JSON.parse(fetchCall[1].body);
         expect(bodyObj.sourceAccount).toBe("sanitized_source");
-        expect(bodyObj.guidSource).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
-        expect(bodyObj.guidDestination).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
+        expect(bodyObj.guidSource).toBeUndefined();
+        expect(bodyObj.guidDestination).toBeUndefined();
       });
 
       it("should handle different success status codes", async () => {
@@ -557,12 +557,12 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(paymentWithNulls);
 
-        // Verify the fetch was called with correct data (UUIDs will be auto-generated)
+        // Verify the fetch was called with correct data (GUIDs should NOT be included)
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
         const bodyObj = JSON.parse(fetchCall[1].body);
         expect(bodyObj.amount).toBe(mockPayment.amount);
-        expect(bodyObj.guidSource).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
-        expect(bodyObj.guidDestination).toMatch(/^test-uuid-\d{4}-0000-0000-0000-000000000000$/);
+        expect(bodyObj.guidSource).toBeUndefined();
+        expect(bodyObj.guidDestination).toBeUndefined();
       });
     });
 
@@ -584,8 +584,8 @@ describe("Payment Insert Functions (Isolated)", () => {
           destinationAccount: "original_dest",
           amount: 100.0,
           transactionDate: new Date("2024-01-01"),
-          guidSource: "guid-123",
-          guidDestination: "guid-456",
+          
+          
           activeStatus: true, // Should be excluded by setupNewPayment
         });
 
@@ -598,13 +598,13 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(originalPayment);
 
-        // Verify the payload was sent without paymentId
+        // Verify the payload was sent without paymentId or GUIDs
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
         const bodyObj = JSON.parse(fetchCall[1].body);
         expect(bodyObj.paymentId).toBeUndefined();
         expect(bodyObj.sourceAccount).toBe("original_source");
-        expect(bodyObj.guidSource).toBe("guid-123");
-        expect(bodyObj.guidDestination).toBe("guid-456");
+        expect(bodyObj.guidSource).toBeUndefined();
+        expect(bodyObj.guidDestination).toBeUndefined();
       });
 
       it("should preserve paymentId of 0 for new payments", async () => {

@@ -48,8 +48,8 @@ const initialPaymentData: Payment = {
   sourceAccount: "",
   activeStatus: true,
   amount: 0.0,
-  guidSource: "",
-  guidDestination: "",
+  guidSource: undefined,
+  guidDestination: undefined,
 };
 
 export default function Payments() {
@@ -394,7 +394,11 @@ export default function Payments() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => {
+                setPaymentData(initialPaymentData);
+                setFormErrors({});
+                setShowModalAdd(true);
+              }}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Payment
@@ -471,7 +475,11 @@ export default function Payments() {
                     dataType="payments"
                     variant="create"
                     actionLabel="Add Payment"
-                    onAction={() => setShowModalAdd(true)}
+                    onAction={() => {
+                      setPaymentData(initialPaymentData);
+                      setFormErrors({});
+                      setShowModalAdd(true);
+                    }}
                     onRefresh={() => {
                       refetchPayments();
                       refetchAccounts();

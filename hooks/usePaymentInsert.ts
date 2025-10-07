@@ -5,28 +5,15 @@ import {
   hookValidators,
   ValidationError,
 } from "../utils/validation";
-import { generateSecureUUID } from "../utils/security/secureUUID";
 
 export const setupNewPayment = async (payload: Payment) => {
-  // Generate UUIDs if not provided
-  const guidSource =
-    payload.guidSource && payload.guidSource !== ""
-      ? payload.guidSource
-      : await generateSecureUUID();
-  const guidDestination =
-    payload.guidDestination && payload.guidDestination !== ""
-      ? payload.guidDestination
-      : await generateSecureUUID();
-
-  // Note: Do NOT include paymentId in the payload for new inserts
-  // The backend will auto-generate it
+  // Note: Do NOT include paymentId, guidSource, or guidDestination for new inserts
+  // The backend will create the transactions and generate these values
   return {
     amount: payload?.amount,
     transactionDate: payload?.transactionDate,
     sourceAccount: payload.sourceAccount,
     destinationAccount: payload.destinationAccount,
-    guidSource,
-    guidDestination,
     activeStatus: true,
   };
 };
