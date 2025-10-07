@@ -8,13 +8,16 @@ import {
 import { formatDateForInput } from "../components/Common";
 
 export const setupNewPayment = async (payload: Payment) => {
-  // Note: Do NOT include paymentId, guidSource, or guidDestination for new inserts
+  // Note: guidSource and guidDestination must be explicitly null for backend validation
   // The backend will create the transactions and generate these values
   return {
+    paymentId: 0,
     amount: payload?.amount,
     transactionDate: formatDateForInput(payload?.transactionDate),
     sourceAccount: payload.sourceAccount,
     destinationAccount: payload.destinationAccount,
+    guidSource: null,
+    guidDestination: null,
     activeStatus: true,
   };
 };

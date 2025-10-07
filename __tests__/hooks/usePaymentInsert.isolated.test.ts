@@ -84,12 +84,13 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = await setupNewPayment(inputPayment);
 
       expect(result).toEqual({
+        paymentId: 0,
         amount: 250.0,
         transactionDate: "2024-01-14", // UTC formatted date from new Date("2024-01-15")
         sourceAccount: "test_source",
         destinationAccount: "test_dest",
-
-
+        guidSource: null,
+        guidDestination: null,
         activeStatus: true,
       });
     });
@@ -105,12 +106,13 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = await setupNewPayment(minimalPayment);
 
       expect(result).toEqual({
+        paymentId: 0,
         amount: 100.0,
         transactionDate: "2023-12-31", // UTC formatted date from new Date("2024-01-01")
         sourceAccount: "source",
         destinationAccount: "dest",
-
-
+        guidSource: null,
+        guidDestination: null,
         activeStatus: true,
       });
     });
@@ -126,12 +128,13 @@ describe("Payment Insert Functions (Isolated)", () => {
       const result = await setupNewPayment(paymentWithNulls);
 
       expect(result).toEqual({
+        paymentId: 0,
         amount: null,
         transactionDate: "2024-11-30", // UTC formatted date from new Date("2024-12-01")
         sourceAccount: mockPayment.sourceAccount,
         destinationAccount: mockPayment.destinationAccount,
-
-
+        guidSource: null,
+        guidDestination: null,
         activeStatus: true,
       });
     });
@@ -174,13 +177,13 @@ describe("Payment Insert Functions (Isolated)", () => {
         // Verify the body contains required fields (no paymentId or GUIDs for new inserts)
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0][1];
         const bodyObj = JSON.parse(fetchCall.body);
-        expect(bodyObj.paymentId).toBeUndefined();
+        expect(bodyObj.paymentId).toBe(0);
         expect(bodyObj.amount).toBe(mockPayment.amount);
         expect(bodyObj.sourceAccount).toBe(mockPayment.sourceAccount);
         expect(bodyObj.destinationAccount).toBe(mockPayment.destinationAccount);
         expect(bodyObj.activeStatus).toBe(true);
-        expect(bodyObj.guidSource).toBeUndefined();
-        expect(bodyObj.guidDestination).toBeUndefined();
+        expect(bodyObj.guidSource).toBeNull();
+        expect(bodyObj.guidDestination).toBeNull();
       });
 
       it("should handle 204 no content response", async () => {
@@ -210,8 +213,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
         const bodyObj = JSON.parse(fetchCall[1].body);
         expect(bodyObj.sourceAccount).toBe("sanitized_source");
-        expect(bodyObj.guidSource).toBeUndefined();
-        expect(bodyObj.guidDestination).toBeUndefined();
+        expect(bodyObj.guidSource).toBeNull();
+        expect(bodyObj.guidDestination).toBeNull();
       });
 
       it("should handle different success status codes", async () => {
@@ -561,8 +564,8 @@ describe("Payment Insert Functions (Isolated)", () => {
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
         const bodyObj = JSON.parse(fetchCall[1].body);
         expect(bodyObj.amount).toBe(mockPayment.amount);
-        expect(bodyObj.guidSource).toBeUndefined();
-        expect(bodyObj.guidDestination).toBeUndefined();
+        expect(bodyObj.guidSource).toBeNull();
+        expect(bodyObj.guidDestination).toBeNull();
       });
     });
 
@@ -601,10 +604,10 @@ describe("Payment Insert Functions (Isolated)", () => {
         // Verify the payload was sent without paymentId or GUIDs
         const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
         const bodyObj = JSON.parse(fetchCall[1].body);
-        expect(bodyObj.paymentId).toBeUndefined();
+        expect(bodyObj.paymentId).toBe(0);
         expect(bodyObj.sourceAccount).toBe("original_source");
-        expect(bodyObj.guidSource).toBeUndefined();
-        expect(bodyObj.guidDestination).toBeUndefined();
+        expect(bodyObj.guidSource).toBeNull();
+        expect(bodyObj.guidDestination).toBeNull();
       });
 
       it("should preserve paymentId of 0 for new payments", async () => {
