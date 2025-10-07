@@ -85,11 +85,11 @@ describe("Payment Insert Functions (Isolated)", () => {
 
       expect(result).toEqual({
         amount: 250.0,
-        transactionDate: new Date("2024-01-15"),
+        transactionDate: "2024-01-14", // UTC formatted date from new Date("2024-01-15")
         sourceAccount: "test_source",
         destinationAccount: "test_dest",
-        
-        
+
+
         activeStatus: true,
       });
     });
@@ -106,11 +106,11 @@ describe("Payment Insert Functions (Isolated)", () => {
 
       expect(result).toEqual({
         amount: 100.0,
-        transactionDate: new Date("2024-01-01"),
+        transactionDate: "2023-12-31", // UTC formatted date from new Date("2024-01-01")
         sourceAccount: "source",
         destinationAccount: "dest",
-        
-        
+
+
         activeStatus: true,
       });
     });
@@ -127,11 +127,11 @@ describe("Payment Insert Functions (Isolated)", () => {
 
       expect(result).toEqual({
         amount: null,
-        transactionDate: mockPayment.transactionDate,
+        transactionDate: "2024-11-30", // UTC formatted date from new Date("2024-12-01")
         sourceAccount: mockPayment.sourceAccount,
         destinationAccount: mockPayment.destinationAccount,
-        
-        
+
+
         activeStatus: true,
       });
     });

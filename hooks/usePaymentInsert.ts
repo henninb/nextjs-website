@@ -5,13 +5,14 @@ import {
   hookValidators,
   ValidationError,
 } from "../utils/validation";
+import { formatDateForInput } from "../components/Common";
 
 export const setupNewPayment = async (payload: Payment) => {
   // Note: Do NOT include paymentId, guidSource, or guidDestination for new inserts
   // The backend will create the transactions and generate these values
   return {
     amount: payload?.amount,
-    transactionDate: payload?.transactionDate,
+    transactionDate: formatDateForInput(payload?.transactionDate),
     sourceAccount: payload.sourceAccount,
     destinationAccount: payload.destinationAccount,
     activeStatus: true,
