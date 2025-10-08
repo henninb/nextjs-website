@@ -83,6 +83,11 @@ const financeLinks = [
   },
   { text: "Categories", href: "/finance/categories", icon: <CategoryIcon /> },
   {
+    text: "Categories NextGen",
+    href: "/finance/categories-next",
+    icon: <CategoryIcon />,
+  },
+  {
     text: "Descriptions",
     href: "/finance/descriptions",
     icon: <DescriptionIcon />,

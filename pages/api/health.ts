@@ -1,6 +1,3 @@
-import { NextApiRequest, NextApiResponse } from "next";
-
-// Add Edge Runtime support for Cloudflare Pages compatibility
 export const runtime = "edge";
 
 interface HealthResponse {
@@ -11,79 +8,54 @@ interface HealthResponse {
   environment: string;
   checks: {
     server: "ok" | "error";
-    memory: "ok" | "warning" | "error";
-    nodejs: "ok" | "error";
+    memory: "ok";
+    runtime: "edge" | "nodejs";
   };
 }
 
-export default function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<HealthResponse>,
-) {
+export default function handler(req: Request) {
   try {
     // Edge Runtime compatible health check
-    let memoryStatus: "ok" | "warning" | "error" = "ok";
-    let uptime = 0;
-
-    // Check if we're in Node.js runtime (Cloud Run) or Edge Runtime (Cloudflare)
-    const isNodeRuntime = typeof process !== "undefined" && process.memoryUsage;
-
-    if (isNodeRuntime) {
-      // Node.js runtime - get actual memory stats
-      const memoryUsage = process.memoryUsage();
-      const memoryUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
-      const memoryTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
-
-      // Memory check: warn if over 80% usage, error if over 95%
-      const memoryPercentage = (memoryUsedMB / memoryTotalMB) * 100;
-      if (memoryPercentage > 95) {
-        memoryStatus = "error";
-      } else if (memoryPercentage > 80) {
-        memoryStatus = "warning";
-      }
-
-      uptime = process.uptime();
-    } else {
-      // Edge Runtime - simplified checks
-      memoryStatus = "ok"; // Edge Runtime manages memory automatically
-      uptime = Date.now() / 1000; // Approximate uptime since service start
-    }
+    // Edge Runtime doesn't support process.memoryUsage() or process.uptime()
+    // so we use simplified checks appropriate for serverless edge functions
 
     const health: HealthResponse = {
       status: "healthy",
       timestamp: new Date().toISOString(),
-      uptime: uptime,
+      uptime: Date.now() / 1000, // Milliseconds since epoch / 1000 for seconds
       version: process.env.npm_package_version,
-      environment: process.env.NODE_ENV || "unknown",
+      environment: process.env.NODE_ENV || "production",
       checks: {
         server: "ok",
-        memory: memoryStatus,
-        nodejs: isNodeRuntime ? "ok" : "ok", // Both runtimes are considered healthy
+        memory: "ok", // Edge Runtime manages memory automatically
+        runtime: "edge",
       },
     };
 
-    // Overall health status
-    const hasErrors = Object.values(health.checks).includes("error");
-    if (hasErrors) {
-      health.status = "unhealthy";
-      res.status(503);
-    } else {
-      res.status(200);
-    }
-
-    res.json(health);
+    return new Response(JSON.stringify(health), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+      },
+    });
   } catch (error) {
     console.error("Health check error:", error);
-    res.status(503).json({
+    const errorResponse: HealthResponse = {
       status: "unhealthy",
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV || "unknown",
+      uptime: 0,
+      environment: process.env.NODE_ENV || "production",
       checks: {
         server: "error",
-        memory: "error",
-        nodejs: "error",
+        memory: "ok",
+        runtime: "edge",
       },
+    };
+
+    return new Response(JSON.stringify(errorResponse), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
