@@ -3,18 +3,12 @@ import { graphqlRequest } from "../utils/graphqlClient";
 import Parameter from "../model/Parameter";
 
 type DeleteParameterResult = {
-  deleteParameter: {
-    success: boolean;
-    parameterId?: number | null;
-  };
+  deleteParameter: boolean;
 };
 
 const DELETE_PARAMETER_MUTATION = /* GraphQL */ `
-  mutation DeleteParameter($id: ID!) {
-    deleteParameter(id: $id) {
-      success
-      parameterId
-    }
+  mutation DeleteParameter($parameterId: ID!) {
+    deleteParameter(parameterId: $parameterId)
   }
 `;
 
@@ -27,9 +21,9 @@ export default function useParameterDeleteGql() {
       const p = variables.oldRow;
       const data = await graphqlRequest<DeleteParameterResult>({
         query: DELETE_PARAMETER_MUTATION,
-        variables: { id: p.parameterId },
+        variables: { parameterId: p.parameterId },
       });
-      return { ok: data.deleteParameter?.success ?? true, id: p.parameterId };
+      return { ok: data.deleteParameter, id: p.parameterId };
     },
     onSuccess: (_res, variables) => {
       const key = ["parameterGQL"];
