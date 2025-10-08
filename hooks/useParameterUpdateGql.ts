@@ -14,8 +14,8 @@ type UpdateParameterResult = {
 };
 
 const UPDATE_PARAMETER_MUTATION = /* GraphQL */ `
-  mutation UpdateParameter($id: ID!, $input: ParameterUpdateInput!) {
-    updateParameter(id: $id, input: $input) {
+  mutation UpdateParameter($parameter: ParameterInput!) {
+    updateParameter(parameter: $parameter) {
       parameterId
       parameterName
       parameterValue
@@ -38,14 +38,15 @@ export default function useParameterUpdateGql() {
       oldParameter: Parameter;
       newParameter: Parameter;
     }) => {
-      const input = {
+      const parameter = {
+        parameterId: oldParameter.parameterId,
         parameterName: newParameter.parameterName,
         parameterValue: newParameter.parameterValue,
         activeStatus: newParameter.activeStatus,
       };
       const data = await graphqlRequest<UpdateParameterResult>({
         query: UPDATE_PARAMETER_MUTATION,
-        variables: { id: oldParameter.parameterId, input },
+        variables: { parameter },
       });
       const t = data.updateParameter;
       const mapped: Parameter = {
