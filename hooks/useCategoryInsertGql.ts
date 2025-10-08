@@ -33,8 +33,16 @@ export default function useCategoryInsertGql() {
     mutationKey: ["insertCategoryGQL"],
     mutationFn: async (variables: { category: Category }) => {
       const c = variables.category;
+      // Normalize category name for GraphQL backend:
+      // - Remove spaces (backend doesn't allow spaces)
+      // - Convert to lowercase (backend auto-converts anyway)
+      const normalizedName = c.categoryName
+        .replace(/\s+/g, "")
+        .toLowerCase()
+        .trim();
+
       const category = {
-        categoryName: c.categoryName,
+        categoryName: normalizedName,
         activeStatus: c.activeStatus,
       };
       const data = await graphqlRequest<CreateCategoryResult>({

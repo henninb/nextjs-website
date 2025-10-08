@@ -38,8 +38,16 @@ export default function useCategoryUpdateGql() {
       oldCategory: Category;
       newCategory: Category;
     }) => {
+      // Normalize category name for GraphQL backend:
+      // - Remove spaces (backend doesn't allow spaces)
+      // - Convert to lowercase (backend auto-converts anyway)
+      const normalizedName = newCategory.categoryName
+        .replace(/\s+/g, "")
+        .toLowerCase()
+        .trim();
+
       const category = {
-        categoryName: newCategory.categoryName,
+        categoryName: normalizedName,
         activeStatus: newCategory.activeStatus,
       };
       const data = await graphqlRequest<UpdateCategoryResult>({

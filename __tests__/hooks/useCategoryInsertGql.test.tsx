@@ -43,14 +43,14 @@ describe("useCategoryInsertGql", () => {
 
     const newCategory: Category = {
       categoryId: 0,
-      categoryName: "groceries",
+      categoryName: "Groceries Test",
       activeStatus: true,
     };
 
     const mockCreateResponse = {
       createCategory: {
         categoryId: 1,
-        categoryName: "groceries",
+        categoryName: "groceriestest",
         activeStatus: true,
         categoryCount: 0,
         dateAdded: "2024-01-01T00:00:00Z",
@@ -73,7 +73,7 @@ describe("useCategoryInsertGql", () => {
       query: expect.stringContaining("mutation CreateCategory"),
       variables: {
         category: {
-          categoryName: "groceries",
+          categoryName: "groceriestest", // Normalized: spaces removed, lowercase
           activeStatus: true,
         },
       },
@@ -82,7 +82,7 @@ describe("useCategoryInsertGql", () => {
     expect(result.current.data).toEqual(
       expect.objectContaining({
         categoryId: 1,
-        categoryName: "groceries",
+        categoryName: "groceriestest",
         activeStatus: true,
       }),
     );

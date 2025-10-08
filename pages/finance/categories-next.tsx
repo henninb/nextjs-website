@@ -146,10 +146,11 @@ export default function CategoriesNextGen() {
     if (!name || name.trim() === "") {
       errs.categoryName = "Name is required";
     } else {
-      if (name.length > 255) {
-        errs.categoryName = "Name too long";
-      } else if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
-        errs.categoryName = "Name contains invalid characters";
+      if (name.length > 50) {
+        errs.categoryName = "Name too long (max 50 characters)";
+      } else if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+        errs.categoryName =
+          "Name can only contain letters, numbers, hyphens, and underscores (no spaces)";
       }
     }
     // Validate status: must be boolean; allow string 'true'/'false'
@@ -374,7 +375,10 @@ export default function CategoriesNextGen() {
             margin="normal"
             value={categoryData?.categoryName || ""}
             error={!!formErrors.categoryName}
-            helperText={formErrors.categoryName}
+            helperText={
+              formErrors.categoryName ||
+              "Lowercase letters, numbers, hyphens, and underscores only (no spaces)"
+            }
             onChange={(e) =>
               setCategoryData((prev) => ({
                 ...prev,
