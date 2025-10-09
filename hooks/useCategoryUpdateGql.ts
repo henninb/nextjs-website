@@ -14,8 +14,8 @@ type UpdateCategoryResult = {
 };
 
 const UPDATE_CATEGORY_MUTATION = /* GraphQL */ `
-  mutation UpdateCategory($category: CategoryInput!) {
-    updateCategory(category: $category) {
+  mutation UpdateCategory($category: CategoryInput!, $oldCategoryName: String) {
+    updateCategory(category: $category, oldCategoryName: $oldCategoryName) {
       categoryId
       categoryName
       activeStatus
@@ -46,13 +46,26 @@ export default function useCategoryUpdateGql() {
         .toLowerCase()
         .trim();
 
+      const normalizedOldName = oldCategory.categoryName
+        .replace(/\s+/g, "")
+        .toLowerCase()
+        .trim();
+
+      // Check if this is a rename operation
+      const isRename = normalizedOldName !== normalizedName;
+
       const category = {
+        categoryId: newCategory.categoryId || oldCategory.categoryId,
         categoryName: normalizedName,
         activeStatus: newCategory.activeStatus,
       };
+
       const data = await graphqlRequest<UpdateCategoryResult>({
         query: UPDATE_CATEGORY_MUTATION,
-        variables: { category },
+        variables: {
+          category,
+          oldCategoryName: isRename ? normalizedOldName : null,
+        },
       });
       const t = data.updateCategory;
       const mapped: Category = {

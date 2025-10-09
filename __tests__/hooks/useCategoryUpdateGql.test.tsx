@@ -82,9 +82,11 @@ describe("useCategoryUpdateGql", () => {
       query: expect.stringContaining("mutation UpdateCategory"),
       variables: {
         category: {
+          categoryId: 1,
           categoryName: "food",
           activeStatus: true,
         },
+        oldCategoryName: "groceries",
       },
     });
 
@@ -236,9 +238,11 @@ describe("useCategoryUpdateGql", () => {
       query: expect.stringContaining("mutation UpdateCategory"),
       variables: {
         category: {
+          categoryId: 1,
           categoryName: "groceries",
           activeStatus: false,
         },
+        oldCategoryName: null,
       },
     });
 

@@ -48,10 +48,7 @@ describe("useCategoryDeleteGql", () => {
     };
 
     const mockDeleteResponse = {
-      deleteCategory: {
-        success: true,
-        categoryName: "groceries",
-      },
+      deleteCategory: true,
     };
 
     mockGraphqlRequest.mockResolvedValueOnce(mockDeleteResponse);
@@ -103,10 +100,7 @@ describe("useCategoryDeleteGql", () => {
     };
 
     const mockDeleteResponse = {
-      deleteCategory: {
-        success: true,
-        categoryName: "groceries",
-      },
+      deleteCategory: true,
     };
 
     mockGraphqlRequest.mockResolvedValueOnce(mockDeleteResponse);
@@ -164,10 +158,7 @@ describe("useCategoryDeleteGql", () => {
     };
 
     const mockDeleteResponse = {
-      deleteCategory: {
-        success: true,
-        categoryName: "groceries",
-      },
+      deleteCategory: true,
     };
 
     mockGraphqlRequest.mockResolvedValueOnce(mockDeleteResponse);
@@ -195,10 +186,7 @@ describe("useCategoryDeleteGql", () => {
     };
 
     const mockDeleteResponse = {
-      deleteCategory: {
-        success: true,
-        categoryName: "groceries",
-      },
+      deleteCategory: true,
     };
 
     mockGraphqlRequest.mockResolvedValueOnce(mockDeleteResponse);
@@ -226,10 +214,7 @@ describe("useCategoryDeleteGql", () => {
     };
 
     const mockDeleteResponse = {
-      deleteCategory: {
-        success: false,
-        categoryName: null,
-      },
+      deleteCategory: false,
     };
 
     mockGraphqlRequest.mockResolvedValueOnce(mockDeleteResponse);
