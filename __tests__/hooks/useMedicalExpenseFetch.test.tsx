@@ -84,7 +84,7 @@ describe("useMedicalExpenseFetch", () => {
     expect(result.current.data).toEqual(mockMedicalExpenses);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(mockFetch).toHaveBeenCalledWith("/api/medical-expenses");
+    expect(mockFetch).toHaveBeenCalledWith("/api/medical-expenses/active");
   });
 
   it("should handle empty medical expenses response", async () => {

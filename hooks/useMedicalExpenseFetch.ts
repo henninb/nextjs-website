@@ -5,7 +5,7 @@ export default function useMedicalExpenseFetch() {
   return useQuery<MedicalExpense[]>({
     queryKey: ["medicalExpenses"],
     queryFn: async () => {
-      const response = await fetch("/api/medical-expenses");
+      const response = await fetch("/api/medical-expenses/active");
 
       if (!response.ok) {
         throw new Error("Failed to fetch medical expenses");
