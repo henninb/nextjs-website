@@ -3,18 +3,12 @@ import { graphqlRequest } from "../utils/graphqlClient";
 import Category from "../model/Category";
 
 type DeleteCategoryResult = {
-  deleteCategory: {
-    success: boolean;
-    categoryName?: string | null;
-  };
+  deleteCategory: boolean;
 };
 
 const DELETE_CATEGORY_MUTATION = /* GraphQL */ `
   mutation DeleteCategory($categoryName: String!) {
-    deleteCategory(categoryName: $categoryName) {
-      success
-      categoryName
-    }
+    deleteCategory(categoryName: $categoryName)
   }
 `;
 
@@ -29,7 +23,7 @@ export default function useCategoryDeleteGql() {
         variables: { categoryName: category.categoryName },
       });
       return {
-        ok: data.deleteCategory?.success ?? true,
+        ok: data.deleteCategory,
         categoryName: category.categoryName,
       };
     },
