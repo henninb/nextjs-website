@@ -10,6 +10,8 @@ import {
   Typography,
   Autocomplete,
   Tooltip,
+  Fade,
+  Grow,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -39,6 +41,9 @@ import SummaryBar from "../../components/SummaryBar";
 import StatCard from "../../components/StatCard";
 import SearchFilterBar from "../../components/SearchFilterBar";
 import ViewToggle from "../../components/ViewToggle";
+import AccountCard from "../../components/AccountCard";
+import StatCardSkeleton from "../../components/StatCardSkeleton";
+import AccountCardSkeleton from "../../components/AccountCardSkeleton";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -401,39 +406,8 @@ export default function Accounts() {
           }
         />
         {showSpinner ? (
-          <LoadingState
-            variant="card"
-            message="Loading accounts and totals..."
-          />
-        ) : (
           <div>
-            {/* Search and Filter Bar */}
-            <SearchFilterBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              activeFilters={activeFilters}
-              onFilterChange={setActiveFilters}
-              onClearFilters={handleClearFilters}
-              resultCount={filteredAccounts.length}
-              totalCount={fetchedAccounts?.length || 0}
-            />
-
-            {/* View Toggle and Result Count */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3,
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                {/* Placeholder for additional info */}
-              </Typography>
-              <ViewToggle view={viewMode} onChange={setViewMode} />
-            </Box>
-
-            {/* Summary Stats Cards */}
+            {/* Loading Skeletons */}
             <Box
               sx={{
                 display: "grid",
@@ -446,37 +420,148 @@ export default function Accounts() {
                 mb: 3,
               }}
             >
-              <StatCard
-                icon={<AccountBalanceIcon />}
-                label="Total"
-                value={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                color="primary"
-              />
-              <StatCard
-                icon={<CheckCircleIcon />}
-                label="Cleared"
-                value={currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
-                color="success"
-              />
-              <StatCard
-                icon={<AccessTimeIcon />}
-                label="Outstanding"
-                value={currencyFormat(
-                  noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-                )}
-                color="warning"
-              />
-              <StatCard
-                icon={<EventNoteIcon />}
-                label="Future"
-                value={currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
-                color="info"
-              />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </Box>
+
+            {/* Loading skeleton for accounts grid */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                },
+                gap: 3,
+                maxWidth: "1400px",
+                mx: "auto",
+              }}
+            >
+              <AccountCardSkeleton />
+              <AccountCardSkeleton />
+              <AccountCardSkeleton />
+              <AccountCardSkeleton />
+              <AccountCardSkeleton />
+              <AccountCardSkeleton />
+            </Box>
+          </div>
+        ) : (
+          <div>
+            {/* Search and Filter Bar */}
+            <Fade in={true} timeout={500}>
+              <Box>
+                <SearchFilterBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  activeFilters={activeFilters}
+                  onFilterChange={setActiveFilters}
+                  onClearFilters={handleClearFilters}
+                  resultCount={filteredAccounts.length}
+                  totalCount={fetchedAccounts?.length || 0}
+                />
+              </Box>
+            </Fade>
+
+            {/* View Toggle and Result Count */}
+            <Fade in={true} timeout={600}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  {/* Placeholder for additional info */}
+                </Typography>
+                <ViewToggle view={viewMode} onChange={setViewMode} />
+              </Box>
+            </Fade>
+
+            {/* Summary Stats Cards with stagger animation */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(4, 1fr)",
+                },
+                gap: 2,
+                mb: 3,
+              }}
+            >
+              <Grow
+                in={true}
+                timeout={700}
+                style={{ transformOrigin: "0 0 0" }}
+              >
+                <Box>
+                  <StatCard
+                    icon={<AccountBalanceIcon />}
+                    label="Total"
+                    value={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                    color="primary"
+                  />
+                </Box>
+              </Grow>
+              <Grow
+                in={true}
+                timeout={800}
+                style={{ transformOrigin: "0 0 0" }}
+              >
+                <Box>
+                  <StatCard
+                    icon={<CheckCircleIcon />}
+                    label="Cleared"
+                    value={currencyFormat(
+                      noNaN(fetchedTotals?.totalsCleared ?? 0),
+                    )}
+                    color="success"
+                  />
+                </Box>
+              </Grow>
+              <Grow
+                in={true}
+                timeout={900}
+                style={{ transformOrigin: "0 0 0" }}
+              >
+                <Box>
+                  <StatCard
+                    icon={<AccessTimeIcon />}
+                    label="Outstanding"
+                    value={currencyFormat(
+                      noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+                    )}
+                    color="warning"
+                  />
+                </Box>
+              </Grow>
+              <Grow
+                in={true}
+                timeout={1000}
+                style={{ transformOrigin: "0 0 0" }}
+              >
+                <Box>
+                  <StatCard
+                    icon={<EventNoteIcon />}
+                    label="Future"
+                    value={currencyFormat(
+                      noNaN(fetchedTotals?.totalsFuture ?? 0),
+                    )}
+                    color="info"
+                  />
+                </Box>
+              </Grow>
             </Box>
 
             {/* Data Grid / Grid View */}
             <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "fit-content" }}>
+              <Box sx={{ width: viewMode === "grid" ? "100%" : "fit-content" }}>
                 {filteredAccounts && filteredAccounts.length > 0 ? (
                   viewMode === "table" ? (
                     <DataGridBase
@@ -514,13 +599,41 @@ export default function Accounts() {
                       }}
                     />
                   ) : (
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="h6" color="text.secondary">
-                        Grid view coming in Phase 2
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        For now, please use table view to see your accounts.
-                      </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "1fr",
+                          sm: "repeat(2, 1fr)",
+                          md: "repeat(3, 1fr)",
+                        },
+                        gap: 3,
+                        width: "100%",
+                        maxWidth: "1400px",
+                      }}
+                    >
+                      {filteredAccounts.map((account, index) => (
+                        <Grow
+                          key={account.accountId ?? account.accountNameOwner}
+                          in={true}
+                          timeout={600 + index * 100}
+                          style={{ transformOrigin: "0 0 0" }}
+                        >
+                          <Box>
+                            <AccountCard
+                              account={account}
+                              onEdit={(account) => {
+                                setAccountData(account);
+                                setShowModelAdd(true);
+                              }}
+                              onDelete={(account) => {
+                                setSelectedAccount(account);
+                                setShowModelDelete(true);
+                              }}
+                            />
+                          </Box>
+                        </Grow>
+                      ))}
                     </Box>
                   )
                 ) : (
