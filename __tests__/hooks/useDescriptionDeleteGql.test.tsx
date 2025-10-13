@@ -112,8 +112,9 @@ describe("useDescriptionDeleteGql", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Check that cache was updated
-    const updatedCache =
-      queryClient.getQueryData<Description[]>(["descriptionGQL"]);
+    const updatedCache = queryClient.getQueryData<Description[]>([
+      "descriptionGQL",
+    ]);
     expect(updatedCache).toHaveLength(1);
     expect(updatedCache?.[0].descriptionName).toBe("netflix");
   });
@@ -178,8 +179,9 @@ describe("useDescriptionDeleteGql", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Cache should still have the original description
-    const updatedCache =
-      queryClient.getQueryData<Description[]>(["descriptionGQL"]);
+    const updatedCache = queryClient.getQueryData<Description[]>([
+      "descriptionGQL",
+    ]);
     expect(updatedCache).toHaveLength(1);
     expect(updatedCache?.[0].descriptionName).toBe("netflix");
   });

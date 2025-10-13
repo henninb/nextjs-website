@@ -84,11 +84,7 @@ export default function DescriptionsNextGen() {
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (
-      isFetchingDescriptions ||
-      loading ||
-      (!loading && !isAuthenticated)
-    ) {
+    if (isFetchingDescriptions || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }

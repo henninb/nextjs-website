@@ -14,8 +14,14 @@ type UpdateDescriptionResult = {
 };
 
 const UPDATE_DESCRIPTION_MUTATION = /* GraphQL */ `
-  mutation UpdateDescription($description: DescriptionInput!, $oldDescriptionName: String) {
-    updateDescription(description: $description, oldDescriptionName: $oldDescriptionName) {
+  mutation UpdateDescription(
+    $description: DescriptionInput!
+    $oldDescriptionName: String
+  ) {
+    updateDescription(
+      description: $description
+      oldDescriptionName: $oldDescriptionName
+    ) {
       descriptionId
       descriptionName
       activeStatus
@@ -55,7 +61,8 @@ export default function useDescriptionUpdateGql() {
       const isRename = normalizedOldName !== normalizedName;
 
       const description = {
-        descriptionId: newDescription.descriptionId || oldDescription.descriptionId,
+        descriptionId:
+          newDescription.descriptionId || oldDescription.descriptionId,
         descriptionName: normalizedName,
         activeStatus: newDescription.activeStatus,
       };

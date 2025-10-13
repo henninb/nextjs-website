@@ -83,11 +83,7 @@ export default function CategoriesNextGen() {
   }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
-    if (
-      isFetchingCategories ||
-      loading ||
-      (!loading && !isAuthenticated)
-    ) {
+    if (isFetchingCategories || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
       return;
     }

@@ -129,8 +129,9 @@ describe("useDescriptionInsertGql", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Check that cache was updated
-    const updatedCache =
-      queryClient.getQueryData<Description[]>(["descriptionGQL"]);
+    const updatedCache = queryClient.getQueryData<Description[]>([
+      "descriptionGQL",
+    ]);
     expect(updatedCache).toHaveLength(2);
     expect(updatedCache?.[0].descriptionName).toBe("netflix");
     expect(updatedCache?.[1].descriptionName).toBe("existing");
