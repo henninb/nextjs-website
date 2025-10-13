@@ -144,12 +144,11 @@ describe("Accounts Component", () => {
       error: null,
     });
 
-    render(<Accounts />, { wrapper: createWrapper() });
+    const { container } = render(<Accounts />, { wrapper: createWrapper() });
 
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(
-      screen.getByText("Loading accounts and totals..."),
-    ).toBeInTheDocument();
+    // Check for MUI Skeleton components (should have multiple skeletons during loading)
+    const skeletons = container.querySelectorAll(".MuiSkeleton-root");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("renders data grid component", () => {
@@ -239,13 +238,11 @@ describe("Accounts Component", () => {
       loading: false,
     });
 
-    render(<Accounts />, { wrapper: createWrapper() });
+    const { container } = render(<Accounts />, { wrapper: createWrapper() });
 
-    // When not authenticated, the component shows a spinner while redirecting
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(
-      screen.getByText("Loading accounts and totals..."),
-    ).toBeInTheDocument();
+    // When not authenticated, the component shows skeleton loaders while redirecting
+    const skeletons = container.querySelectorAll(".MuiSkeleton-root");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("handles account type tab completion", () => {

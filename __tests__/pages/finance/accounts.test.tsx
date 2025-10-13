@@ -104,10 +104,10 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
-    expect(
-      screen.getByText(/Loading accounts and totals/i),
-    ).toBeInTheDocument();
+    const { container } = render(<AccountsPage />);
+    // Check for MUI Skeleton components (should have multiple skeletons during loading)
+    const skeletons = container.querySelectorAll(".MuiSkeleton-root");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("renders error display and retry when a hook errors", () => {

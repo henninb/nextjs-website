@@ -706,12 +706,13 @@ describe("Finance Pages - Integration Tests", () => {
         refetch: jest.fn(),
       });
 
-      render(<AccountsPage />, { wrapper: createWrapper() });
+      const { container } = render(<AccountsPage />, {
+        wrapper: createWrapper(),
+      });
 
-      // Should show coordinated loading state
-      expect(
-        screen.getByText("Loading accounts and totals..."),
-      ).toBeInTheDocument();
+      // Should show coordinated loading state with skeleton loaders
+      const skeletons = container.querySelectorAll(".MuiSkeleton-root");
+      expect(skeletons.length).toBeGreaterThan(0);
     });
 
     it("handles sequential data loading appropriately", async () => {
@@ -733,14 +734,13 @@ describe("Finance Pages - Integration Tests", () => {
         refetch: jest.fn(),
       });
 
-      const { rerender } = render(<AccountsPage />, {
+      const { rerender, container } = render(<AccountsPage />, {
         wrapper: createWrapper(),
       });
 
       // Should still show loading since not all data is ready
-      expect(
-        screen.getByText("Loading accounts and totals..."),
-      ).toBeInTheDocument();
+      let skeletons = container.querySelectorAll(".MuiSkeleton-root");
+      expect(skeletons.length).toBeGreaterThan(0);
 
       // Then totals load
       mockUseTotalsFetch.mockReturnValue({
@@ -755,9 +755,8 @@ describe("Finance Pages - Integration Tests", () => {
 
       // Now should show the full interface
       expect(screen.getByText("Account Overview")).toBeInTheDocument();
-      expect(
-        screen.queryByText("Loading accounts and totals..."),
-      ).not.toBeInTheDocument();
+      skeletons = container.querySelectorAll(".MuiSkeleton-root");
+      expect(skeletons.length).toBe(0);
     });
   });
 });
