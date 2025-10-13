@@ -842,6 +842,7 @@ export default function TransactionsByAccount() {
                       columns={columns}
                       getRowId={(row: any) => row.transactionId || 0}
                       checkboxSelection={true}
+                      rowSelection={true}
                       paginationModel={paginationModel}
                       hideFooter={filteredTransactions?.length < 25}
                       onPaginationModelChange={(newModel) => {
