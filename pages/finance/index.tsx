@@ -70,9 +70,17 @@ export default function Accounts() {
   const [activeFilters, setActiveFilters] = useState<{
     accountType: "all" | "debit" | "credit";
     activeStatus: "all" | "active" | "inactive";
+    balanceStatus:
+      | "all"
+      | "hasActivity"
+      | "hasOutstanding"
+      | "hasFuture"
+      | "hasCleared"
+      | "zeroBalance";
   }>({
     accountType: "all",
     activeStatus: "all",
+    balanceStatus: "all",
   });
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
@@ -165,7 +173,23 @@ export default function Accounts() {
           ? account.activeStatus
           : !account.activeStatus);
 
-      return matchesSearch && matchesType && matchesStatus;
+      // Balance status filter
+      const matchesBalance =
+        activeFilters.balanceStatus === "all" ||
+        (activeFilters.balanceStatus === "hasActivity" &&
+          (account.outstanding > 0 ||
+            account.future > 0 ||
+            account.cleared > 0)) ||
+        (activeFilters.balanceStatus === "hasOutstanding" &&
+          account.outstanding > 0) ||
+        (activeFilters.balanceStatus === "hasFuture" && account.future > 0) ||
+        (activeFilters.balanceStatus === "hasCleared" && account.cleared > 0) ||
+        (activeFilters.balanceStatus === "zeroBalance" &&
+          account.outstanding === 0 &&
+          account.future === 0 &&
+          account.cleared === 0);
+
+      return matchesSearch && matchesType && matchesStatus && matchesBalance;
     });
   }, [fetchedAccounts, searchTerm, activeFilters]);
 
@@ -174,6 +198,7 @@ export default function Accounts() {
     setActiveFilters({
       accountType: "all",
       activeStatus: "all",
+      balanceStatus: "all",
     });
   };
 
@@ -641,14 +666,16 @@ export default function Accounts() {
                     title={
                       searchTerm ||
                       activeFilters.accountType !== "all" ||
-                      activeFilters.activeStatus !== "all"
+                      activeFilters.activeStatus !== "all" ||
+                      activeFilters.balanceStatus !== "all"
                         ? "No Matching Accounts"
                         : "No Accounts Found"
                     }
                     message={
                       searchTerm ||
                       activeFilters.accountType !== "all" ||
-                      activeFilters.activeStatus !== "all"
+                      activeFilters.activeStatus !== "all" ||
+                      activeFilters.balanceStatus !== "all"
                         ? "No accounts match your current filters. Try adjusting your search or filters."
                         : "You haven't created any accounts yet. Get started by adding your first account."
                     }
@@ -657,7 +684,8 @@ export default function Accounts() {
                     actionLabel={
                       searchTerm ||
                       activeFilters.accountType !== "all" ||
-                      activeFilters.activeStatus !== "all"
+                      activeFilters.activeStatus !== "all" ||
+                      activeFilters.balanceStatus !== "all"
                         ? "Clear Filters"
                         : "Add Account"
                     }
@@ -665,7 +693,8 @@ export default function Accounts() {
                       if (
                         searchTerm ||
                         activeFilters.accountType !== "all" ||
-                        activeFilters.activeStatus !== "all"
+                        activeFilters.activeStatus !== "all" ||
+                        activeFilters.balanceStatus !== "all"
                       ) {
                         handleClearFilters();
                       } else {

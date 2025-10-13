@@ -18,6 +18,13 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 type FilterState = {
   accountType: "all" | "debit" | "credit";
   activeStatus: "all" | "active" | "inactive";
+  balanceStatus:
+    | "all"
+    | "hasActivity"
+    | "hasOutstanding"
+    | "hasFuture"
+    | "hasCleared"
+    | "zeroBalance";
 };
 
 type SearchFilterBarProps = {
@@ -45,7 +52,8 @@ export default function SearchFilterBar({
   const hasActiveFilters =
     searchTerm !== "" ||
     activeFilters.accountType !== "all" ||
-    activeFilters.activeStatus !== "all";
+    activeFilters.activeStatus !== "all" ||
+    activeFilters.balanceStatus !== "all";
 
   const handleAccountTypeFilter = (type: "all" | "debit" | "credit") => {
     onFilterChange({
@@ -58,6 +66,21 @@ export default function SearchFilterBar({
     onFilterChange({
       ...activeFilters,
       activeStatus: status,
+    });
+  };
+
+  const handleBalanceStatusFilter = (
+    status:
+      | "all"
+      | "hasActivity"
+      | "hasOutstanding"
+      | "hasFuture"
+      | "hasCleared"
+      | "zeroBalance",
+  ) => {
+    onFilterChange({
+      ...activeFilters,
+      balanceStatus: status,
     });
   };
 
@@ -233,6 +256,120 @@ export default function SearchFilterBar({
                 }
                 variant={
                   activeFilters.activeStatus === "inactive"
+                    ? "filled"
+                    : "outlined"
+                }
+                size={isMobile ? "medium" : "small"}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 500,
+                }}
+              />
+            </Box>
+
+            {/* Balance Status Filters */}
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+              <Chip
+                label="All Balances"
+                onClick={() => handleBalanceStatusFilter("all")}
+                color={
+                  activeFilters.balanceStatus === "all" ? "info" : "default"
+                }
+                variant={
+                  activeFilters.balanceStatus === "all" ? "filled" : "outlined"
+                }
+                size={isMobile ? "medium" : "small"}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 500,
+                }}
+              />
+              <Chip
+                label="Has Activity"
+                onClick={() => handleBalanceStatusFilter("hasActivity")}
+                color={
+                  activeFilters.balanceStatus === "hasActivity"
+                    ? "info"
+                    : "default"
+                }
+                variant={
+                  activeFilters.balanceStatus === "hasActivity"
+                    ? "filled"
+                    : "outlined"
+                }
+                size={isMobile ? "medium" : "small"}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 500,
+                }}
+              />
+              <Chip
+                label="Has Outstanding"
+                onClick={() => handleBalanceStatusFilter("hasOutstanding")}
+                color={
+                  activeFilters.balanceStatus === "hasOutstanding"
+                    ? "info"
+                    : "default"
+                }
+                variant={
+                  activeFilters.balanceStatus === "hasOutstanding"
+                    ? "filled"
+                    : "outlined"
+                }
+                size={isMobile ? "medium" : "small"}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 500,
+                }}
+              />
+              <Chip
+                label="Has Future"
+                onClick={() => handleBalanceStatusFilter("hasFuture")}
+                color={
+                  activeFilters.balanceStatus === "hasFuture"
+                    ? "info"
+                    : "default"
+                }
+                variant={
+                  activeFilters.balanceStatus === "hasFuture"
+                    ? "filled"
+                    : "outlined"
+                }
+                size={isMobile ? "medium" : "small"}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 500,
+                }}
+              />
+              <Chip
+                label="Has Cleared"
+                onClick={() => handleBalanceStatusFilter("hasCleared")}
+                color={
+                  activeFilters.balanceStatus === "hasCleared"
+                    ? "info"
+                    : "default"
+                }
+                variant={
+                  activeFilters.balanceStatus === "hasCleared"
+                    ? "filled"
+                    : "outlined"
+                }
+                size={isMobile ? "medium" : "small"}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 500,
+                }}
+              />
+              <Chip
+                label="Zero Balance"
+                onClick={() => handleBalanceStatusFilter("zeroBalance")}
+                color={
+                  activeFilters.balanceStatus === "zeroBalance"
+                    ? "info"
+                    : "default"
+                }
+                variant={
+                  activeFilters.balanceStatus === "zeroBalance"
                     ? "filled"
                     : "outlined"
                 }
