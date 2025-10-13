@@ -44,6 +44,7 @@ import ViewToggle from "../../components/ViewToggle";
 import AccountCard from "../../components/AccountCard";
 import StatCardSkeleton from "../../components/StatCardSkeleton";
 import AccountCardSkeleton from "../../components/AccountCardSkeleton";
+import PresetFilters from "../../components/PresetFilters";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -490,6 +491,19 @@ export default function Accounts() {
               </Box>
             </Fade>
 
+            {/* Preset Filters */}
+            <Fade in={true} timeout={550}>
+              <Box>
+                <PresetFilters
+                  onPresetClick={(filters) => {
+                    setSearchTerm("");
+                    setActiveFilters(filters);
+                  }}
+                  currentFilters={activeFilters}
+                />
+              </Box>
+            </Fade>
+
             {/* View Toggle and Result Count */}
             <Fade in={true} timeout={600}>
               <Box
@@ -547,6 +561,10 @@ export default function Accounts() {
                       noNaN(fetchedTotals?.totalsCleared ?? 0),
                     )}
                     color="success"
+                    highlighted={
+                      activeFilters.balanceStatus === "hasCleared" ||
+                      activeFilters.balanceStatus === "hasActivity"
+                    }
                   />
                 </Box>
               </Grow>
@@ -563,6 +581,10 @@ export default function Accounts() {
                       noNaN(fetchedTotals?.totalsOutstanding ?? 0),
                     )}
                     color="warning"
+                    highlighted={
+                      activeFilters.balanceStatus === "hasOutstanding" ||
+                      activeFilters.balanceStatus === "hasActivity"
+                    }
                   />
                 </Box>
               </Grow>
@@ -579,6 +601,10 @@ export default function Accounts() {
                       noNaN(fetchedTotals?.totalsFuture ?? 0),
                     )}
                     color="info"
+                    highlighted={
+                      activeFilters.balanceStatus === "hasFuture" ||
+                      activeFilters.balanceStatus === "hasActivity"
+                    }
                   />
                 </Box>
               </Grow>

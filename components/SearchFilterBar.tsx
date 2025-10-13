@@ -14,6 +14,12 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import PendingIcon from "@mui/icons-material/Pending";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 
 type FilterState = {
   accountType: "all" | "debit" | "credit";
@@ -270,6 +276,7 @@ export default function SearchFilterBar({
             {/* Balance Status Filters */}
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
               <Chip
+                icon={<AllInclusiveIcon />}
                 label="All Balances"
                 onClick={() => handleBalanceStatusFilter("all")}
                 color={
@@ -285,6 +292,7 @@ export default function SearchFilterBar({
                 }}
               />
               <Chip
+                icon={<TrendingUpIcon />}
                 label="Has Activity"
                 onClick={() => handleBalanceStatusFilter("hasActivity")}
                 color={
@@ -304,6 +312,7 @@ export default function SearchFilterBar({
                 }}
               />
               <Chip
+                icon={<PendingIcon />}
                 label="Has Outstanding"
                 onClick={() => handleBalanceStatusFilter("hasOutstanding")}
                 color={
@@ -323,6 +332,7 @@ export default function SearchFilterBar({
                 }}
               />
               <Chip
+                icon={<ScheduleIcon />}
                 label="Has Future"
                 onClick={() => handleBalanceStatusFilter("hasFuture")}
                 color={
@@ -342,6 +352,7 @@ export default function SearchFilterBar({
                 }}
               />
               <Chip
+                icon={<CheckCircleIcon />}
                 label="Has Cleared"
                 onClick={() => handleBalanceStatusFilter("hasCleared")}
                 color={
@@ -361,6 +372,7 @@ export default function SearchFilterBar({
                 }}
               />
               <Chip
+                icon={<RemoveCircleOutlineIcon />}
                 label="Zero Balance"
                 onClick={() => handleBalanceStatusFilter("zeroBalance")}
                 color={

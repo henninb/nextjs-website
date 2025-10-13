@@ -1,5 +1,13 @@
 import React from "react";
-import { Card, CardContent, Box, Typography, useTheme } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Box,
+  Typography,
+  useTheme,
+  Chip,
+} from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 type StatCardProps = {
   icon: React.ReactNode;
@@ -10,6 +18,7 @@ type StatCardProps = {
     value: number;
     direction: "up" | "down";
   };
+  highlighted?: boolean;
 };
 
 export default function StatCard({
@@ -18,6 +27,7 @@ export default function StatCard({
   value,
   color = "primary",
   trend,
+  highlighted = false,
 }: StatCardProps) {
   const theme = useTheme();
 
@@ -52,7 +62,9 @@ export default function StatCard({
             "0 12px 24px -4px rgba(0, 0, 0, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.3)",
         },
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, rgba(${parseInt(cardColor.slice(1, 3), 16)}, ${parseInt(cardColor.slice(3, 5), 16)}, ${parseInt(cardColor.slice(5, 7), 16)}, 0.05) 100%)`,
-        border: `1px solid ${theme.palette.divider}`,
+        border: highlighted
+          ? `2px solid ${cardColor}`
+          : `1px solid ${theme.palette.divider}`,
         position: "relative",
         overflow: "hidden",
         "&::before": {
@@ -66,6 +78,32 @@ export default function StatCard({
         },
       }}
     >
+      {highlighted && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 1,
+          }}
+        >
+          <Chip
+            icon={<FilterListIcon sx={{ fontSize: "0.9rem !important" }} />}
+            label="Filtered"
+            size="small"
+            sx={{
+              backgroundColor: cardColor,
+              color: theme.palette.getContrastText(cardColor),
+              fontWeight: 600,
+              fontSize: "0.65rem",
+              height: "20px",
+              "& .MuiChip-icon": {
+                color: theme.palette.getContrastText(cardColor),
+              },
+            }}
+          />
+        </Box>
+      )}
       <CardContent
         sx={{
           display: "flex",
