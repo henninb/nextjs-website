@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
 import {
@@ -13,6 +13,10 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import EventNoteIcon from "@mui/icons-material/EventNote";
 import Spinner from "../../components/Spinner";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
 import ErrorDisplay from "../../components/ErrorDisplay";
@@ -32,6 +36,9 @@ import PageHeader from "../../components/PageHeader";
 import ActionBar from "../../components/ActionBar";
 import DataGridBase from "../../components/DataGridBase";
 import SummaryBar from "../../components/SummaryBar";
+import StatCard from "../../components/StatCard";
+import SearchFilterBar from "../../components/SearchFilterBar";
+import ViewToggle from "../../components/ViewToggle";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -52,6 +59,17 @@ export default function Accounts() {
   //   pageSize: 25,
   //   page: 0,
   // });
+
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilters, setActiveFilters] = useState<{
+    accountType: "all" | "debit" | "credit";
+    activeStatus: "all" | "active" | "inactive";
+  }>({
+    accountType: "all",
+    activeStatus: "all",
+  });
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
   const {
     data: fetchedAccounts,
@@ -103,6 +121,56 @@ export default function Accounts() {
     loading,
     isAuthenticated,
   ]);
+
+  // Load view preference from localStorage
+  useEffect(() => {
+    const savedView = localStorage.getItem("finance-accounts-view");
+    if (savedView === "grid" || savedView === "table") {
+      setViewMode(savedView);
+    }
+  }, []);
+
+  // Save view preference to localStorage
+  useEffect(() => {
+    localStorage.setItem("finance-accounts-view", viewMode);
+  }, [viewMode]);
+
+  // Filter accounts based on search and filters
+  const filteredAccounts = useMemo(() => {
+    if (!fetchedAccounts) return [];
+
+    return fetchedAccounts.filter((account) => {
+      // Search filter
+      const matchesSearch =
+        searchTerm === "" ||
+        account.accountNameOwner
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        account.moniker?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Account type filter
+      const matchesType =
+        activeFilters.accountType === "all" ||
+        account.accountType.toLowerCase() === activeFilters.accountType;
+
+      // Active status filter
+      const matchesStatus =
+        activeFilters.activeStatus === "all" ||
+        (activeFilters.activeStatus === "active"
+          ? account.activeStatus
+          : !account.activeStatus);
+
+      return matchesSearch && matchesType && matchesStatus;
+    });
+  }, [fetchedAccounts, searchTerm, activeFilters]);
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setActiveFilters({
+      accountType: "all",
+      activeStatus: "all",
+    });
+  };
 
   const handleAccountTypeKeyDown = (event: any) => {
     if (event.key === "Tab") {
@@ -339,60 +407,158 @@ export default function Accounts() {
           />
         ) : (
           <div>
-            <Box sx={{ maxWidth: 600, mx: "auto", mb: 2 }}>
-              <SummaryBar
-                total={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                cleared={currencyFormat(
-                  noNaN(fetchedTotals?.totalsCleared ?? 0),
-                )}
-                outstanding={currencyFormat(
+            {/* Search and Filter Bar */}
+            <SearchFilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              activeFilters={activeFilters}
+              onFilterChange={setActiveFilters}
+              onClearFilters={handleClearFilters}
+              resultCount={filteredAccounts.length}
+              totalCount={fetchedAccounts?.length || 0}
+            />
+
+            {/* View Toggle and Result Count */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                {/* Placeholder for additional info */}
+              </Typography>
+              <ViewToggle view={viewMode} onChange={setViewMode} />
+            </Box>
+
+            {/* Summary Stats Cards */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(4, 1fr)",
+                },
+                gap: 2,
+                mb: 3,
+              }}
+            >
+              <StatCard
+                icon={<AccountBalanceIcon />}
+                label="Total"
+                value={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                color="primary"
+              />
+              <StatCard
+                icon={<CheckCircleIcon />}
+                label="Cleared"
+                value={currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))}
+                color="success"
+              />
+              <StatCard
+                icon={<AccessTimeIcon />}
+                label="Outstanding"
+                value={currencyFormat(
                   noNaN(fetchedTotals?.totalsOutstanding ?? 0),
                 )}
-                future={currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+                color="warning"
+              />
+              <StatCard
+                icon={<EventNoteIcon />}
+                label="Future"
+                value={currencyFormat(noNaN(fetchedTotals?.totalsFuture ?? 0))}
+                color="info"
               />
             </Box>
+
+            {/* Data Grid / Grid View */}
             <Box display="flex" justifyContent="center">
               <Box sx={{ width: "fit-content" }}>
-                {fetchedAccounts && fetchedAccounts.length > 0 ? (
-                  <DataGridBase
-                    rows={fetchedAccounts?.filter((row) => row != null) || []}
-                    columns={columns}
-                    getRowId={(row: any) =>
-                      row.accountId ?? row.accountNameOwner
-                    }
-                    pageSizeOptions={[25, 50, 100]}
-                    checkboxSelection={false}
-                    rowSelection={false}
-                    processRowUpdate={async (
-                      newRow: Account,
-                      oldRow: Account,
-                    ): Promise<Account> => {
-                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                        return oldRow;
+                {filteredAccounts && filteredAccounts.length > 0 ? (
+                  viewMode === "table" ? (
+                    <DataGridBase
+                      rows={filteredAccounts.filter((row) => row != null) || []}
+                      columns={columns}
+                      getRowId={(row: any) =>
+                        row.accountId ?? row.accountNameOwner
                       }
-                      try {
-                        await updateAccount({ newRow: newRow, oldRow: oldRow });
-                        setMessage("Account updated successfully.");
-                        setShowSnackbar(true);
-                        return { ...newRow };
-                      } catch (error: any) {
-                        handleError(
-                          error,
-                          `Update Account ${error.message}`,
-                          false,
-                        );
-                        return oldRow;
-                      }
-                    }}
-                  />
+                      pageSizeOptions={[25, 50, 100]}
+                      checkboxSelection={false}
+                      rowSelection={false}
+                      processRowUpdate={async (
+                        newRow: Account,
+                        oldRow: Account,
+                      ): Promise<Account> => {
+                        if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                          return oldRow;
+                        }
+                        try {
+                          await updateAccount({
+                            newRow: newRow,
+                            oldRow: oldRow,
+                          });
+                          setMessage("Account updated successfully.");
+                          setShowSnackbar(true);
+                          return { ...newRow };
+                        } catch (error: any) {
+                          handleError(
+                            error,
+                            `Update Account ${error.message}`,
+                            false,
+                          );
+                          return oldRow;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Box sx={{ p: 2 }}>
+                      <Typography variant="h6" color="text.secondary">
+                        Grid view coming in Phase 2
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        For now, please use table view to see your accounts.
+                      </Typography>
+                    </Box>
+                  )
                 ) : (
                   <EmptyState
-                    title="No Accounts Found"
-                    message="You haven't created any accounts yet. Get started by adding your first account."
+                    title={
+                      searchTerm ||
+                      activeFilters.accountType !== "all" ||
+                      activeFilters.activeStatus !== "all"
+                        ? "No Matching Accounts"
+                        : "No Accounts Found"
+                    }
+                    message={
+                      searchTerm ||
+                      activeFilters.accountType !== "all" ||
+                      activeFilters.activeStatus !== "all"
+                        ? "No accounts match your current filters. Try adjusting your search or filters."
+                        : "You haven't created any accounts yet. Get started by adding your first account."
+                    }
                     dataType="accounts"
                     variant="create"
-                    actionLabel="Add Account"
-                    onAction={() => setShowModelAdd(true)}
+                    actionLabel={
+                      searchTerm ||
+                      activeFilters.accountType !== "all" ||
+                      activeFilters.activeStatus !== "all"
+                        ? "Clear Filters"
+                        : "Add Account"
+                    }
+                    onAction={() => {
+                      if (
+                        searchTerm ||
+                        activeFilters.accountType !== "all" ||
+                        activeFilters.activeStatus !== "all"
+                      ) {
+                        handleClearFilters();
+                      } else {
+                        setShowModelAdd(true);
+                      }
+                    }}
                     onRefresh={() => {
                       refetchAccounts();
                       refetchTotals();
