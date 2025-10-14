@@ -55,10 +55,19 @@ import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import Totals from "../../../model/Totals";
-import SummaryBar from "../../../components/SummaryBar";
+import StatCard from "../../../components/StatCard";
+import StatCardSkeleton from "../../../components/StatCardSkeleton";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import PendingActionsIcon from "@mui/icons-material/PendingActions";
+import ChecklistIcon from "@mui/icons-material/Checklist";
+import Fade from "@mui/material/Fade";
+import Grow from "@mui/material/Grow";
+import TransactionFilterBar, {
+  TransactionFilters,
+} from "../../../components/TransactionFilterBar";
 
 import { useAuth } from "../../../components/AuthProvider";
 import { useUI } from "../../../contexts/UIContext";
@@ -89,11 +98,29 @@ export default function TransactionsByAccount() {
 
   // Local UI filters/search
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [stateFilter, setStateFilter] = useState<{
-    cleared: boolean;
-    outstanding: boolean;
-    future: boolean;
-  }>({ cleared: true, outstanding: true, future: true });
+  const [transactionFilters, setTransactionFilters] =
+    useState<TransactionFilters>({
+      states: new Set(["cleared", "outstanding", "future"]),
+      types: new Set(["expense", "income", "transfer", "undefined"]),
+      reoccurring: new Set([
+        "onetime",
+        "monthly",
+        "annually",
+        "bi_annually",
+        "fortnightly",
+        "quarterly",
+        "undefined",
+      ]),
+      dateRange: {
+        start: null,
+        end: null,
+        preset: "all",
+      },
+      amountRange: {
+        min: -10000,
+        max: 10000,
+      },
+    });
 
   const [rowSelectionModel, setRowSelectionModel] = useState<
     Array<string | number>
@@ -302,6 +329,43 @@ export default function TransactionsByAccount() {
     setSnackbarSeverity("success");
     setShowSnackbar(true);
   }, []);
+
+  // Calculate amount bounds from actual data
+  const amountBounds = useMemo(() => {
+    if (!fetchedTransactions || fetchedTransactions.length === 0) {
+      return { min: -10000, max: 10000 };
+    }
+    const amounts = fetchedTransactions
+      .map((t) => t.amount ?? 0)
+      .filter((a) => !isNaN(a));
+    return {
+      min: Math.floor(Math.min(...amounts, 0)),
+      max: Math.ceil(Math.max(...amounts, 0)),
+    };
+  }, [fetchedTransactions]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery("");
+    setTransactionFilters({
+      states: new Set(["cleared", "outstanding", "future"]),
+      types: new Set(["expense", "income", "transfer", "undefined"]),
+      reoccurring: new Set([
+        "onetime",
+        "monthly",
+        "annually",
+        "bi_annually",
+        "fortnightly",
+        "quarterly",
+        "undefined",
+      ]),
+      dateRange: {
+        start: null,
+        end: null,
+        preset: "all",
+      },
+      amountRange: amountBounds,
+    });
+  }, [amountBounds]);
 
   const handleInsertNewValidationData = async (
     accountNameOwner: string,
@@ -641,19 +705,57 @@ export default function TransactionsByAccount() {
     [updateTransaction, handleError],
   );
 
+  // Update filter amount range when data changes
+  useEffect(() => {
+    setTransactionFilters((prev) => ({
+      ...prev,
+      amountRange: amountBounds,
+    }));
+  }, [amountBounds]);
+
   // Apply client-side filters and search
   const filteredTransactions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    const allowedStates = new Set(
-      [
-        stateFilter.cleared && "cleared",
-        stateFilter.outstanding && "outstanding",
-        stateFilter.future && "future",
-      ].filter(Boolean) as string[],
-    );
+
     return (fetchedTransactions || []).filter((row) => {
       if (!row) return false;
-      if (!allowedStates.has(row.transactionState as string)) return false;
+
+      // State filter
+      if (!transactionFilters.states.has(row.transactionState)) return false;
+
+      // Type filter
+      const rowType = row.transactionType || ("undefined" as any);
+      if (!transactionFilters.types.has(rowType)) return false;
+
+      // Reoccurring filter
+      if (!transactionFilters.reoccurring.has(row.reoccurringType))
+        return false;
+
+      // Date range filter
+      if (
+        transactionFilters.dateRange.start ||
+        transactionFilters.dateRange.end
+      ) {
+        const transactionDate = new Date(row.transactionDate);
+        if (transactionFilters.dateRange.start) {
+          if (transactionDate < transactionFilters.dateRange.start)
+            return false;
+        }
+        if (transactionFilters.dateRange.end) {
+          if (transactionDate > transactionFilters.dateRange.end) return false;
+        }
+      }
+
+      // Amount range filter
+      const amount = row.amount ?? 0;
+      if (
+        amount < transactionFilters.amountRange.min ||
+        amount > transactionFilters.amountRange.max
+      ) {
+        return false;
+      }
+
+      // Search query filter
       if (!q) return true;
       const haystack =
         `${row.description || ""} ${row.category || ""} ${row.notes || ""}`.toLowerCase();
@@ -666,7 +768,7 @@ export default function TransactionsByAccount() {
       const amtStr = (row.amount ?? "").toString();
       return amtStr.includes(q);
     });
-  }, [fetchedTransactions, searchQuery, stateFilter]);
+  }, [fetchedTransactions, searchQuery, transactionFilters]);
 
   // Handle error states first
   if (
@@ -714,95 +816,146 @@ export default function TransactionsByAccount() {
           title={validAccountNameOwner || "Account Transactions"}
           subtitle="View and manage all transactions for this account. Track balances, edit transactions, and monitor account activity."
           actions={
-            <Stack
-              spacing={1.5}
-              direction={{ xs: "column", sm: "row" }}
-              sx={{ alignItems: "center" }}
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setShowModalAdd(true)}
+              sx={{ backgroundColor: "primary.main" }}
             >
-              <TextField
-                size="small"
-                label="Search"
-                placeholder="Find by description, category, notes"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Stack direction="row" spacing={1}>
-                <Chip
-                  label="Cleared"
-                  color={stateFilter.cleared ? "primary" : "default"}
-                  variant={stateFilter.cleared ? "filled" : "outlined"}
-                  onClick={() =>
-                    setStateFilter((s) => ({ ...s, cleared: !s.cleared }))
-                  }
-                  size="small"
-                />
-                <Chip
-                  label="Outstanding"
-                  color={stateFilter.outstanding ? "primary" : "default"}
-                  variant={stateFilter.outstanding ? "filled" : "outlined"}
-                  onClick={() =>
-                    setStateFilter((s) => ({
-                      ...s,
-                      outstanding: !s.outstanding,
-                    }))
-                  }
-                  size="small"
-                />
-                <Chip
-                  label="Future"
-                  color={stateFilter.future ? "primary" : "default"}
-                  variant={stateFilter.future ? "filled" : "outlined"}
-                  onClick={() =>
-                    setStateFilter((s) => ({ ...s, future: !s.future }))
-                  }
-                  size="small"
-                />
-              </Stack>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Transaction
-              </Button>
-            </Stack>
+              Add Transaction
+            </Button>
           }
         />
         {showSpinner ? (
-          <LoadingState
-            variant="card"
-            message="Loading account transactions..."
-          />
+          <Box sx={{ mb: 4 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(4, 1fr)",
+                },
+                gap: 2,
+                maxWidth: "1400px",
+                margin: "0 auto",
+                mb: 3,
+              }}
+            >
+              {/* Show 4 skeleton cards while loading */}
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </Box>
+            <LoadingState
+              variant="card"
+              message="Loading account transactions..."
+            />
+          </Box>
         ) : (
           <div>
-            <div>
-              <div
-                style={{
-                  maxWidth: "600px",
-                  margin: "0 auto",
-                  marginBottom: "16px",
-                }}
-              >
-                <SummaryBar
-                  total={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
-                  cleared={currencyFormat(
-                    noNaN(fetchedTotals?.totalsCleared ?? 0),
-                  )}
-                  outstanding={currencyFormat(
-                    noNaN(fetchedTotals?.totalsOutstanding ?? 0),
-                  )}
-                  future={currencyFormat(
-                    noNaN(fetchedTotals?.totalsFuture ?? 0),
-                  )}
-                  selected={
+            {/* Stat Cards Section */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md:
                     selectedTotal !== null
-                      ? currencyFormat(noNaN(selectedTotal))
-                      : undefined
-                  }
-                />
-              </div>
+                      ? "repeat(5, 1fr)"
+                      : "repeat(4, 1fr)",
+                },
+                gap: 2,
+                maxWidth: "1400px",
+                margin: "0 auto",
+                mb: 4,
+              }}
+            >
+              {/* Total Card */}
+              <Grow in={true} timeout={700}>
+                <Box>
+                  <StatCard
+                    icon={<AccountBalanceWalletIcon />}
+                    label="Total"
+                    value={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
+                    color="primary"
+                  />
+                </Box>
+              </Grow>
 
+              {/* Cleared Card */}
+              <Grow in={true} timeout={800}>
+                <Box>
+                  <StatCard
+                    icon={<CheckCircleIcon />}
+                    label="Cleared"
+                    value={currencyFormat(
+                      noNaN(fetchedTotals?.totalsCleared ?? 0),
+                    )}
+                    color="success"
+                  />
+                </Box>
+              </Grow>
+
+              {/* Outstanding Card */}
+              <Grow in={true} timeout={900}>
+                <Box>
+                  <StatCard
+                    icon={<PendingActionsIcon />}
+                    label="Outstanding"
+                    value={currencyFormat(
+                      noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+                    )}
+                    color="warning"
+                  />
+                </Box>
+              </Grow>
+
+              {/* Future Card */}
+              <Grow in={true} timeout={1000}>
+                <Box>
+                  <StatCard
+                    icon={<EventNoteIcon />}
+                    label="Future"
+                    value={currencyFormat(
+                      noNaN(fetchedTotals?.totalsFuture ?? 0),
+                    )}
+                    color="info"
+                  />
+                </Box>
+              </Grow>
+
+              {/* Selected Card - Only show when rows are selected */}
+              {selectedTotal !== null && (
+                <Grow in={true} timeout={1100}>
+                  <Box>
+                    <StatCard
+                      icon={<ChecklistIcon />}
+                      label="Selected"
+                      value={currencyFormat(noNaN(selectedTotal))}
+                      color="secondary"
+                      highlighted={true}
+                    />
+                  </Box>
+                </Grow>
+              )}
+            </Box>
+
+            {/* Transaction Filter Bar */}
+            <TransactionFilterBar
+              searchTerm={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeFilters={transactionFilters}
+              onFilterChange={setTransactionFilters}
+              onClearFilters={handleClearFilters}
+              resultCount={filteredTransactions?.length}
+              totalCount={fetchedTransactions?.length}
+              amountBounds={amountBounds}
+            />
+
+            <div>
               <div>
                 <Box display="flex" justifyContent="center" mt={2}>
                   <Button
