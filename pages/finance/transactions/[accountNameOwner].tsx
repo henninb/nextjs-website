@@ -68,6 +68,9 @@ import Grow from "@mui/material/Grow";
 import TransactionFilterBar, {
   TransactionFilters,
 } from "../../../components/TransactionFilterBar";
+import TransactionCard from "../../../components/TransactionCard";
+import TransactionCardSkeleton from "../../../components/TransactionCardSkeleton";
+import ViewToggle from "../../../components/ViewToggle";
 
 import { useAuth } from "../../../components/AuthProvider";
 import { useUI } from "../../../contexts/UIContext";
@@ -95,6 +98,9 @@ export default function TransactionsByAccount() {
   });
 
   const [selectedTotal, setSelectedTotal] = useState<number | null>(null);
+
+  // View state for grid/table toggle
+  const [view, setView] = useState<"grid" | "table">("table");
 
   // Local UI filters/search
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -816,14 +822,17 @@ export default function TransactionsByAccount() {
           title={validAccountNameOwner || "Account Transactions"}
           subtitle="View and manage all transactions for this account. Track balances, edit transactions, and monitor account activity."
           actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
-              sx={{ backgroundColor: "primary.main" }}
-            >
-              Add Transaction
-            </Button>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <ViewToggle view={view} onChange={setView} />
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowModalAdd(true)}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Transaction
+              </Button>
+            </Stack>
           }
         />
         {showSpinner ? (
