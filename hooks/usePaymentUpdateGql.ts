@@ -18,8 +18,8 @@ type UpdatePaymentResult = {
 };
 
 const UPDATE_PAYMENT_MUTATION = /* GraphQL */ `
-  mutation UpdatePayment($id: ID!, $input: PaymentUpdateInput!) {
-    updatePayment(id: $id, input: $input) {
+  mutation UpdatePayment($id: ID!, $payment: PaymentInput!) {
+    updatePayment(id: $id, payment: $payment) {
       paymentId
       sourceAccount
       destinationAccount
@@ -58,7 +58,7 @@ export default function usePaymentUpdateGql() {
       };
       const data = await graphqlRequest<UpdatePaymentResult>({
         query: UPDATE_PAYMENT_MUTATION,
-        variables: { id: oldPayment.paymentId, input },
+        variables: { id: oldPayment.paymentId, payment: input },
       });
       const t = data.updatePayment;
       const mapped: Payment = {
