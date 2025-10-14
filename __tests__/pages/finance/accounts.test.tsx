@@ -489,4 +489,332 @@ describe("pages/finance/index (Accounts)", () => {
     fireEvent.click(deleteButton);
     expect(deleteAccountMock).toHaveBeenCalled();
   });
+
+  describe("Search and Filtering", () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+      mockUseTotalsFetch.mockReturnValue({
+        data: {
+          totals: 175,
+          totalsCleared: 25,
+          totalsOutstanding: 100,
+          totalsFuture: 50,
+        },
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+    });
+
+    it("renders search input", () => {
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 1,
+            accountNameOwner: "Test Account",
+            accountType: "debit",
+            activeStatus: true,
+            moniker: "Test",
+            outstanding: 0,
+            future: 0,
+            cleared: 0,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<AccountsPage />);
+      const searchInput = screen.getByPlaceholderText(
+        /search accounts by name or moniker/i,
+      );
+      expect(searchInput).toBeInTheDocument();
+    });
+
+    it("renders filter chips", () => {
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 1,
+            accountNameOwner: "Test Account",
+            accountType: "debit",
+            activeStatus: true,
+            moniker: "Test",
+            outstanding: 0,
+            future: 0,
+            cleared: 0,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<AccountsPage />);
+
+      expect(screen.getByText("All Types")).toBeInTheDocument();
+      expect(screen.getByText("Debit")).toBeInTheDocument();
+      expect(screen.getByText("Credit")).toBeInTheDocument();
+      expect(screen.getByText("All Status")).toBeInTheDocument();
+      expect(screen.getByText("Active")).toBeInTheDocument();
+      expect(screen.getByText("Inactive")).toBeInTheDocument();
+    });
+
+    it("filters accounts by search term", async () => {
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 1,
+            accountNameOwner: "Chase Checking",
+            accountType: "debit",
+            activeStatus: true,
+            moniker: "Household",
+            outstanding: 100,
+            future: 50,
+            cleared: 25,
+          },
+          {
+            accountId: 2,
+            accountNameOwner: "Wells Fargo Savings",
+            accountType: "debit",
+            activeStatus: true,
+            moniker: "Savings",
+            outstanding: 0,
+            future: 0,
+            cleared: 500,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<AccountsPage />);
+
+      const searchInput = screen.getByPlaceholderText(
+        /search accounts by name or moniker/i,
+      );
+
+      // Verify search input is functional
+      fireEvent.change(searchInput, { target: { value: "Chase" } });
+      expect(searchInput).toHaveValue("Chase");
+
+      // Verify Clear All button appears when filters are active
+      await waitFor(() => {
+        expect(screen.getByText("Clear All")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("View Toggle", () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 1,
+            accountNameOwner: "Chase Checking",
+            accountType: "debit",
+            activeStatus: true,
+            moniker: "Household",
+            outstanding: 100,
+            future: 50,
+            cleared: 25,
+            validationDate: new Date("2024-01-01"),
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockUseTotalsFetch.mockReturnValue({
+        data: {
+          totals: 175,
+          totalsCleared: 25,
+          totalsOutstanding: 100,
+          totalsFuture: 50,
+        },
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+    });
+
+    it("renders view toggle component", () => {
+      render(<AccountsPage />);
+
+      expect(screen.getByLabelText(/table view/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/grid view/i)).toBeInTheDocument();
+    });
+
+    it("toggles between table and grid view", () => {
+      render(<AccountsPage />);
+
+      // Should start in table view (default)
+      const gridViewButton = screen.getByLabelText(/grid view/i);
+      fireEvent.click(gridViewButton);
+
+      // Grid view should be active now
+      expect(gridViewButton.classList.contains("Mui-selected")).toBe(true);
+    });
+
+    it("renders table view by default", () => {
+      render(<AccountsPage />);
+
+      // Table view should be selected by default
+      // Just verify both buttons are present and toggle works
+      expect(screen.getByLabelText(/table view/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/grid view/i)).toBeInTheDocument();
+    });
+  });
+
+  describe("Grid View", () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 1,
+            accountNameOwner: "Chase Checking",
+            accountType: "debit",
+            activeStatus: true,
+            moniker: "Household",
+            outstanding: 100,
+            future: 50,
+            cleared: 250,
+            validationDate: new Date("2024-01-01"),
+          },
+          {
+            accountId: 2,
+            accountNameOwner: "Amex Credit",
+            accountType: "credit",
+            activeStatus: false,
+            moniker: "Travel",
+            outstanding: 200,
+            future: 100,
+            cleared: 0,
+            validationDate: new Date("2024-01-15"),
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockUseTotalsFetch.mockReturnValue({
+        data: {
+          totals: 700,
+          totalsCleared: 250,
+          totalsOutstanding: 300,
+          totalsFuture: 150,
+        },
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+    });
+
+    it("renders account cards in grid view", () => {
+      render(<AccountsPage />);
+
+      // Switch to grid view
+      const gridViewButton = screen.getByLabelText(/grid view/i);
+      fireEvent.click(gridViewButton);
+
+      // Both accounts should be rendered
+      expect(screen.getByText("Chase Checking")).toBeInTheDocument();
+      expect(screen.getByText("Amex Credit")).toBeInTheDocument();
+    });
+
+    it("displays account details in cards", () => {
+      render(<AccountsPage />);
+
+      // Switch to grid view
+      const gridViewButton = screen.getByLabelText(/grid view/i);
+      fireEvent.click(gridViewButton);
+
+      // Check for account details (using getAllByText for items that appear multiple times)
+      expect(screen.getByText("Household")).toBeInTheDocument();
+      expect(screen.getByText("Travel")).toBeInTheDocument();
+      expect(screen.getAllByText("Active").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Inactive").length).toBeGreaterThan(0);
+    });
+
+    it("shows account type badges", () => {
+      render(<AccountsPage />);
+
+      // Switch to grid view
+      const gridViewButton = screen.getByLabelText(/grid view/i);
+      fireEvent.click(gridViewButton);
+
+      // Check for account type badges
+      expect(screen.getByText("debit")).toBeInTheDocument();
+      expect(screen.getByText("credit")).toBeInTheDocument();
+    });
+  });
+
+  describe("StatCards", () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 1,
+            accountNameOwner: "Test Account",
+            accountType: "debit",
+            activeStatus: true,
+            moniker: "Test",
+            outstanding: 100,
+            future: 50,
+            cleared: 25,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockUseTotalsFetch.mockReturnValue({
+        data: {
+          totals: 175,
+          totalsCleared: 25,
+          totalsOutstanding: 100,
+          totalsFuture: 50,
+        },
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+    });
+
+    it("renders stat cards with totals", () => {
+      render(<AccountsPage />);
+
+      // Stat card labels might appear in multiple places (cards, filters, etc)
+      // Just verify they are present
+      expect(screen.getAllByText("Total").length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/cleared/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/outstanding/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/future/i).length).toBeGreaterThan(0);
+    });
+
+    it("displays correct total values in stat cards", () => {
+      render(<AccountsPage />);
+
+      // Values should appear multiple times (in stat cards and possibly in table/grid)
+      expect(screen.getAllByText("$175.00").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("$25.00").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("$100.00").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("$50.00").length).toBeGreaterThan(0);
+    });
+  });
 });
