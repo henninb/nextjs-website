@@ -3,18 +3,12 @@ import { graphqlRequest } from "../utils/graphqlClient";
 import Payment from "../model/Payment";
 
 type DeletePaymentResult = {
-  deletePayment: {
-    success: boolean;
-    paymentId?: number | null;
-  };
+  deletePayment: boolean;
 };
 
 const DELETE_PAYMENT_MUTATION = /* GraphQL */ `
   mutation DeletePayment($id: ID!) {
-    deletePayment(id: $id) {
-      success
-      paymentId
-    }
+    deletePayment(id: $id)
   }
 `;
 
@@ -29,7 +23,7 @@ export default function usePaymentDeleteGql() {
         query: DELETE_PAYMENT_MUTATION,
         variables: { id: p.paymentId },
       });
-      return { ok: data.deletePayment?.success ?? true, id: p.paymentId };
+      return { ok: data.deletePayment ?? true, id: p.paymentId };
     },
     onSuccess: (_res, variables) => {
       const key = ["paymentGQL"];
