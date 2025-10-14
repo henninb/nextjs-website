@@ -823,15 +823,21 @@ export default function TransactionsByAccount() {
           subtitle="View and manage all transactions for this account. Track balances, edit transactions, and monitor account activity."
           actions={
             <Stack direction="row" spacing={2} alignItems="center">
-              <ViewToggle view={view} onChange={setView} />
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Transaction
-              </Button>
+              <Fade in={true} timeout={600}>
+                <Box>
+                  <ViewToggle view={view} onChange={setView} />
+                </Box>
+              </Fade>
+              <Fade in={true} timeout={700}>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => setShowModalAdd(true)}
+                  sx={{ backgroundColor: "primary.main" }}
+                >
+                  Add Transaction
+                </Button>
+              </Fade>
             </Stack>
           }
         />
@@ -857,10 +863,33 @@ export default function TransactionsByAccount() {
               <StatCardSkeleton />
               <StatCardSkeleton />
             </Box>
-            <LoadingState
-              variant="card"
-              message="Loading account transactions..."
-            />
+
+            {/* Show grid view skeletons if grid view is active */}
+            {view === "grid" ? (
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                  },
+                  gap: 3,
+                  maxWidth: "1400px",
+                  margin: "0 auto",
+                  pb: 4,
+                }}
+              >
+                {[...Array(6)].map((_, i) => (
+                  <TransactionCardSkeleton key={i} />
+                ))}
+              </Box>
+            ) : (
+              <LoadingState
+                variant="card"
+                message="Loading account transactions..."
+              />
+            )}
           </Box>
         ) : (
           <div>
@@ -952,109 +981,230 @@ export default function TransactionsByAccount() {
               )}
             </Box>
 
-            {/* Transaction Filter Bar */}
-            <TransactionFilterBar
-              searchTerm={searchQuery}
-              onSearchChange={setSearchQuery}
-              activeFilters={transactionFilters}
-              onFilterChange={setTransactionFilters}
-              onClearFilters={handleClearFilters}
-              resultCount={filteredTransactions?.length}
-              totalCount={fetchedTransactions?.length}
-              amountBounds={amountBounds}
-            />
+            {/* Transaction Filter Bar with fade-in animation */}
+            <Fade in={true} timeout={500}>
+              <Box>
+                <TransactionFilterBar
+                  searchTerm={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  activeFilters={transactionFilters}
+                  onFilterChange={setTransactionFilters}
+                  onClearFilters={handleClearFilters}
+                  resultCount={filteredTransactions?.length}
+                  totalCount={fetchedTransactions?.length}
+                  amountBounds={amountBounds}
+                />
+              </Box>
+            </Fade>
 
             <div>
               <div>
-                <Box display="flex" justifyContent="center" mt={2}>
-                  <Button
-                    onClick={() =>
-                      handleInsertNewValidationData(
-                        validAccountNameOwner,
-                        "cleared",
-                      )
-                    }
-                    variant="contained"
-                    sx={{ backgroundColor: "secondary.main" }}
-                  >
-                    {fetchedValidationData?.amount
-                      ? fetchedValidationData?.amount.toLocaleString("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        })
-                      : "$0.00"}
-                    {" - "}
-                    {
-                      fetchedValidationData?.validationDate // Check if validationDate exists
-                        ? new Date(
-                            fetchedValidationData?.validationDate,
-                          ).toLocaleString("en-US")
-                        : "No Date" // Or handle the absence of a date as needed
-                    }
-                  </Button>
-                </Box>
+                <Fade in={true} timeout={800}>
+                  <Box display="flex" justifyContent="center" mt={2}>
+                    <Button
+                      onClick={() =>
+                        handleInsertNewValidationData(
+                          validAccountNameOwner,
+                          "cleared",
+                        )
+                      }
+                      variant="contained"
+                      sx={{
+                        backgroundColor: "secondary.main",
+                        animation:
+                          fetchedValidationData?.validationDate &&
+                          new Date().getTime() -
+                            new Date(
+                              fetchedValidationData.validationDate,
+                            ).getTime() >
+                            7 * 24 * 60 * 60 * 1000 // 7 days
+                            ? "pulse 2s ease-in-out infinite"
+                            : "none",
+                        "@keyframes pulse": {
+                          "0%, 100%": {
+                            transform: "scale(1)",
+                            boxShadow: "0 0 0 0 rgba(156, 39, 176, 0.7)",
+                          },
+                          "50%": {
+                            transform: "scale(1.05)",
+                            boxShadow: "0 0 0 10px rgba(156, 39, 176, 0)",
+                          },
+                        },
+                      }}
+                    >
+                      {fetchedValidationData?.amount
+                        ? fetchedValidationData?.amount.toLocaleString(
+                            "en-US",
+                            {
+                              style: "currency",
+                              currency: "USD",
+                            },
+                          )
+                        : "$0.00"}
+                      {" - "}
+                      {
+                        fetchedValidationData?.validationDate // Check if validationDate exists
+                          ? new Date(
+                              fetchedValidationData?.validationDate,
+                            ).toLocaleString("en-US")
+                          : "No Date" // Or handle the absence of a date as needed
+                      }
+                    </Button>
+                  </Box>
+                </Fade>
                 {/* Add button moved to PageHeader actions; avoid duplicate here */}
               </div>
 
               <Box display="flex" justifyContent="center">
-                <Box sx={{ width: "100%", maxWidth: "1200px" }}>
+                <Box sx={{ width: "100%", maxWidth: "1400px" }}>
                   {filteredTransactions && filteredTransactions.length > 0 ? (
-                    <DataGridBase
-                      rows={filteredTransactions}
-                      columns={columns}
-                      getRowId={(row: any) => row.transactionId || 0}
-                      checkboxSelection={true}
-                      rowSelection={true}
-                      paginationModel={paginationModel}
-                      hideFooter={filteredTransactions?.length < 25}
-                      onPaginationModelChange={(newModel) => {
-                        setPaginationModel(newModel);
-                      }}
-                      pageSizeOptions={[25, 50, 100]}
-                      disableColumnFilter
-                      disableColumnMenu
-                      disableVirtualization={false}
-                      autoHeight
-                      disableColumnResize={false}
-                      sx={{
-                        "& .MuiDataGrid-cell": {
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        },
-                      }}
-                      // initialState={{
-                      //   sorting: {
-                      //     sortModel: [{ field: "transactionDate", sort: "desc" }],
-                      //   },
-                      // }}
-                      processRowUpdate={async (
-                        newRow: Transaction,
-                        oldRow: Transaction,
-                      ): Promise<Transaction> => {
-                        if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                          return oldRow;
-                        }
-                        try {
-                          await updateTransaction({
-                            newRow: newRow,
-                            oldRow: oldRow,
-                          });
-                          handleSuccess("Transaction updated successfully.");
-                          return { ...newRow };
-                        } catch (error) {
-                          handleError(
-                            error,
-                            "Update Transaction failure.",
-                            false,
-                          );
-                          return oldRow;
-                        }
-                      }}
-                      disableRowSelectionOnClick={true}
-                      rowSelectionModel={rowSelectionModel}
-                      onRowSelectionModelChange={setRowSelectionModel}
-                    />
+                    <>
+                      {/* Table View */}
+                      {view === "table" && (
+                        <DataGridBase
+                          rows={filteredTransactions}
+                          columns={columns}
+                          getRowId={(row: any) => row.transactionId || 0}
+                          checkboxSelection={true}
+                          rowSelection={true}
+                          paginationModel={paginationModel}
+                          hideFooter={filteredTransactions?.length < 25}
+                          onPaginationModelChange={(newModel) => {
+                            setPaginationModel(newModel);
+                          }}
+                          pageSizeOptions={[25, 50, 100]}
+                          disableColumnFilter
+                          disableColumnMenu
+                          disableVirtualization={false}
+                          autoHeight
+                          disableColumnResize={false}
+                          sx={{
+                            "& .MuiDataGrid-cell": {
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            },
+                          }}
+                          // initialState={{
+                          //   sorting: {
+                          //     sortModel: [{ field: "transactionDate", sort: "desc" }],
+                          //   },
+                          // }}
+                          processRowUpdate={async (
+                            newRow: Transaction,
+                            oldRow: Transaction,
+                          ): Promise<Transaction> => {
+                            if (
+                              JSON.stringify(newRow) === JSON.stringify(oldRow)
+                            ) {
+                              return oldRow;
+                            }
+                            try {
+                              await updateTransaction({
+                                newRow: newRow,
+                                oldRow: oldRow,
+                              });
+                              handleSuccess(
+                                "Transaction updated successfully.",
+                              );
+                              return { ...newRow };
+                            } catch (error) {
+                              handleError(
+                                error,
+                                "Update Transaction failure.",
+                                false,
+                              );
+                              return oldRow;
+                            }
+                          }}
+                          disableRowSelectionOnClick={true}
+                          rowSelectionModel={rowSelectionModel}
+                          onRowSelectionModelChange={setRowSelectionModel}
+                        />
+                      )}
+
+                      {/* Grid View */}
+                      {view === "grid" && (
+                        <Box
+                          sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                              xs: "1fr",
+                              sm: "repeat(2, 1fr)",
+                              md: "repeat(3, 1fr)",
+                            },
+                            gap: 3,
+                            pb: 4,
+                          }}
+                        >
+                          {filteredTransactions.map((transaction, index) => (
+                            <Fade
+                              key={transaction.transactionId || index}
+                              in={true}
+                              timeout={600 + index * 100}
+                            >
+                              <Box>
+                                <TransactionCard
+                                  transaction={transaction}
+                                  onClone={(t) => {
+                                    setSelectedTransaction(t);
+                                    setShowModalClone(true);
+                                  }}
+                                  onMove={(t) => {
+                                    setSelectedTransaction(t);
+                                    setOriginalRow(t);
+                                    setShowModalMove(true);
+                                  }}
+                                  onDelete={(t) => {
+                                    setSelectedTransaction(t);
+                                    setShowModalDelete(true);
+                                  }}
+                                  onStateChange={async (t, newState) => {
+                                    try {
+                                      const updatedRow = {
+                                        ...t,
+                                        transactionState: newState,
+                                      };
+                                      await updateTransaction({
+                                        newRow: updatedRow,
+                                        oldRow: t,
+                                      });
+                                      handleSuccess(
+                                        "Transaction state updated successfully.",
+                                      );
+                                    } catch (error) {
+                                      handleError(
+                                        error,
+                                        "Failed to update transaction state.",
+                                        false,
+                                      );
+                                    }
+                                  }}
+                                  selected={
+                                    transaction.transactionId
+                                      ? rowSelectionModel.includes(
+                                          transaction.transactionId,
+                                        )
+                                      : false
+                                  }
+                                  onSelect={(transactionId) => {
+                                    setRowSelectionModel((prev) => {
+                                      if (prev.includes(transactionId)) {
+                                        return prev.filter(
+                                          (id) => id !== transactionId,
+                                        );
+                                      } else {
+                                        return [...prev, transactionId];
+                                      }
+                                    });
+                                  }}
+                                />
+                              </Box>
+                            </Fade>
+                          ))}
+                        </Box>
+                      )}
+                    </>
                   ) : (
                     <EmptyState
                       title="No Transactions Found"

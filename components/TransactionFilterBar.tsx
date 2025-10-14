@@ -65,6 +65,13 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
     activeFilters.amountRange.max,
   ]);
 
+  // Reusable chip animation styles
+  const chipAnimationSx = {
+    transition: "all 0.2s ease-in-out",
+    "&:hover": { transform: "scale(1.05)", boxShadow: 2 },
+    "&:active": { transform: "scale(0.95)" },
+  };
+
   // Date range presets
   const datePresets = [
     { label: "All Time", value: "all" },
@@ -233,6 +240,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                     : "outlined"
                 }
                 size="small"
+                sx={chipAnimationSx}
               />
             ))}
           </Stack>
@@ -273,6 +281,11 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.states.has("cleared") ? "filled" : "outlined"
               }
               size="small"
+              sx={{
+                transition: "all 0.2s ease-in-out",
+                "&:hover": { transform: "scale(1.05)", boxShadow: 2 },
+                "&:active": { transform: "scale(0.95)" },
+              }}
             />
             <Chip
               label="Outstanding"
@@ -284,6 +297,11 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.states.has("outstanding") ? "filled" : "outlined"
               }
               size="small"
+              sx={{
+                transition: "all 0.2s ease-in-out",
+                "&:hover": { transform: "scale(1.05)", boxShadow: 2 },
+                "&:active": { transform: "scale(0.95)" },
+              }}
             />
             <Chip
               label="Future"
@@ -293,6 +311,11 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.states.has("future") ? "filled" : "outlined"
               }
               size="small"
+              sx={{
+                transition: "all 0.2s ease-in-out",
+                "&:hover": { transform: "scale(1.05)", boxShadow: 2 },
+                "&:active": { transform: "scale(0.95)" },
+              }}
             />
           </Stack>
         </Box>
@@ -319,6 +342,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
               color={activeFilters.types.size === 4 ? "primary" : "default"}
               variant={activeFilters.types.size === 4 ? "filled" : "outlined"}
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Expense"
@@ -328,6 +352,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.types.has("expense") ? "filled" : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Income"
@@ -337,6 +362,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.types.has("income") ? "filled" : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Transfer"
@@ -346,6 +372,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.types.has("transfer") ? "filled" : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Undefined"
@@ -357,6 +384,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.types.has("undefined") ? "filled" : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
           </Stack>
         </Box>
@@ -390,6 +418,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.reoccurring.size === 7 ? "filled" : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="One-Time"
@@ -401,6 +430,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.reoccurring.has("onetime") ? "filled" : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Monthly"
@@ -412,6 +442,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 activeFilters.reoccurring.has("monthly") ? "filled" : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Annually"
@@ -427,6 +458,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                   : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Quarterly"
@@ -442,6 +474,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                   : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Fortnightly"
@@ -457,6 +490,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                   : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Bi-Annually"
@@ -472,6 +506,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                   : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
             <Chip
               label="Undefined"
@@ -487,6 +522,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                   : "outlined"
               }
               size="small"
+              sx={chipAnimationSx}
             />
           </Stack>
         </Box>
