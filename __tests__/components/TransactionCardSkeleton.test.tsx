@@ -21,14 +21,14 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Check for MuiCard class
-      const card = container.querySelector('.MuiCard-root');
+      const card = container.querySelector(".MuiCard-root");
       expect(card).toBeInTheDocument();
     });
 
     it("should have minimum height matching TransactionCard", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
-      const card = container.querySelector('.MuiCard-root');
+      const card = container.querySelector(".MuiCard-root");
       expect(card).toHaveStyle({ minHeight: "280px" });
     });
   });
@@ -38,11 +38,15 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Should have skeleton for date badge (rounded)
-      const roundedSkeleton = container.querySelector('[class*="MuiSkeleton-rounded"]');
+      const roundedSkeleton = container.querySelector(
+        '[class*="MuiSkeleton-rounded"]',
+      );
       expect(roundedSkeleton).toBeInTheDocument();
 
       // Should have skeleton for action button (circular)
-      const circularSkeleton = container.querySelector('[class*="MuiSkeleton-circular"]');
+      const circularSkeleton = container.querySelector(
+        '[class*="MuiSkeleton-circular"]',
+      );
       expect(circularSkeleton).toBeInTheDocument();
     });
 
@@ -50,7 +54,9 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Should have text skeletons for description lines
-      const textSkeletons = container.querySelectorAll('[class*="MuiSkeleton-text"]');
+      const textSkeletons = container.querySelectorAll(
+        '[class*="MuiSkeleton-text"]',
+      );
       expect(textSkeletons.length).toBeGreaterThan(0);
     });
 
@@ -58,7 +64,9 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Should have rounded skeleton for category
-      const roundedSkeletons = container.querySelectorAll('[class*="MuiSkeleton-rounded"]');
+      const roundedSkeletons = container.querySelectorAll(
+        '[class*="MuiSkeleton-rounded"]',
+      );
       expect(roundedSkeletons.length).toBeGreaterThan(1);
     });
 
@@ -66,7 +74,9 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Should have larger text skeleton for amount
-      const textSkeletons = container.querySelectorAll('[class*="MuiSkeleton-text"]');
+      const textSkeletons = container.querySelectorAll(
+        '[class*="MuiSkeleton-text"]',
+      );
       // Amount skeleton should be present
       expect(textSkeletons.length).toBeGreaterThan(2);
     });
@@ -75,7 +85,9 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Should have multiple rounded skeletons for state badges
-      const roundedSkeletons = container.querySelectorAll('[class*="MuiSkeleton-rounded"]');
+      const roundedSkeletons = container.querySelectorAll(
+        '[class*="MuiSkeleton-rounded"]',
+      );
       expect(roundedSkeletons.length).toBeGreaterThan(3);
     });
 
@@ -83,7 +95,9 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Should have rounded skeletons for type and reoccurring
-      const roundedSkeletons = container.querySelectorAll('[class*="MuiSkeleton-rounded"]');
+      const roundedSkeletons = container.querySelectorAll(
+        '[class*="MuiSkeleton-rounded"]',
+      );
       expect(roundedSkeletons.length).toBeGreaterThan(4);
     });
 
@@ -91,7 +105,9 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       // Should have text skeletons for notes
-      const textSkeletons = container.querySelectorAll('[class*="MuiSkeleton-text"]');
+      const textSkeletons = container.querySelectorAll(
+        '[class*="MuiSkeleton-text"]',
+      );
       // Should have multiple text skeletons including notes
       expect(textSkeletons.length).toBeGreaterThan(4);
     });
@@ -101,21 +117,21 @@ describe("TransactionCardSkeleton", () => {
     it("should use flexbox layout", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
-      const card = container.querySelector('.MuiCard-root');
+      const card = container.querySelector(".MuiCard-root");
       expect(card).toHaveStyle({
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
       });
     });
 
     it("should have proper CardContent structure", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
-      const cardContent = container.querySelector('.MuiCardContent-root');
+      const cardContent = container.querySelector(".MuiCardContent-root");
       expect(cardContent).toBeInTheDocument();
       expect(cardContent).toHaveStyle({
         padding: "24px",
-        flex: "1"
+        flex: "1",
       });
     });
   });
@@ -124,14 +140,14 @@ describe("TransactionCardSkeleton", () => {
     it("should match TransactionCard min-height", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
-      const card = container.querySelector('.MuiCard-root');
+      const card = container.querySelector(".MuiCard-root");
       expect(card).toHaveStyle({ minHeight: "280px" });
     });
 
     it("should use similar spacing structure", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
-      const cardContent = container.querySelector('.MuiCardContent-root');
+      const cardContent = container.querySelector(".MuiCardContent-root");
       expect(cardContent).toHaveStyle({ padding: "24px" });
     });
   });
@@ -145,10 +161,10 @@ describe("TransactionCardSkeleton", () => {
             <TransactionCardSkeleton />
             <TransactionCardSkeleton />
           </div>
-        </ThemeProvider>
+        </ThemeProvider>,
       );
 
-      const cards = container.querySelectorAll('.MuiCard-root');
+      const cards = container.querySelectorAll(".MuiCard-root");
       expect(cards.length).toBe(3);
     });
   });

@@ -46,6 +46,7 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import WatchIcon from "@mui/icons-material/Watch";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import VerifiedIcon from "@mui/icons-material/Verified";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -80,6 +81,11 @@ const financeLinks = [
     text: "Medical Expenses",
     href: "/finance/medical-expenses",
     icon: <MedicalServicesIcon />,
+  },
+  {
+    text: "Validation Amounts",
+    href: "/finance/validation-amounts",
+    icon: <VerifiedIcon />,
   },
   { text: "Categories", href: "/finance/categories", icon: <CategoryIcon /> },
   {

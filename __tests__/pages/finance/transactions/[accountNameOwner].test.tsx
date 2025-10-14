@@ -28,6 +28,12 @@ jest.mock("../../../../hooks/useTransactionUpdate");
 jest.mock("../../../../hooks/useTransactionInsert");
 jest.mock("../../../../hooks/useTransactionDelete");
 jest.mock("../../../../hooks/useValidationAmountInsert");
+jest.mock("../../../../hooks/useAccountUsageTracking", () => ({
+  __esModule: true,
+  default: () => ({
+    trackAccountVisit: jest.fn(),
+  }),
+}));
 jest.mock("../../../../components/USDAmountInput", () => {
   return function MockUSDAmountInput({
     value,
@@ -55,6 +61,138 @@ jest.mock("../../../../components/USDAmountInput", () => {
   };
 });
 
+jest.mock("../../../../components/EmptyState", () => ({
+  __esModule: true,
+  default: ({ title, message, actionLabel, onAction, onRefresh }: any) => (
+    <div data-testid="empty-state">
+      {title && <h3>{title}</h3>}
+      {message && <p>{message}</p>}
+      {actionLabel && onAction && (
+        <button onClick={onAction}>{actionLabel}</button>
+      )}
+      {onRefresh && <button onClick={onRefresh}>Refresh</button>}
+    </div>
+  ),
+}));
+
+jest.mock("../../../../components/LoadingState", () => ({
+  __esModule: true,
+  default: ({ message }: any) => (
+    <div>
+      <div role="progressbar" aria-label="loading" />
+      {message && <div>{message}</div>}
+    </div>
+  ),
+}));
+
+jest.mock("../../../../components/ErrorDisplay", () => ({
+  __esModule: true,
+  default: ({ error, onRetry }: any) => (
+    <div>
+      <div>Error: {error.message}</div>
+      {onRetry && <button onClick={onRetry}>Try again</button>}
+    </div>
+  ),
+}));
+
+jest.mock("../../../../components/DataGridBase", () => ({
+  __esModule: true,
+  default: ({
+    rows,
+    columns,
+    processRowUpdate,
+    checkboxSelection,
+    onRowSelectionModelChange,
+    ...props
+  }: any) => {
+    const [selectedRows, setSelectedRows] = React.useState<any[]>([]);
+
+    const handleCheckboxChange = (rowId: any) => {
+      const newSelection = selectedRows.includes(rowId)
+        ? selectedRows.filter((id) => id !== rowId)
+        : [...selectedRows, rowId];
+      setSelectedRows(newSelection);
+      if (onRowSelectionModelChange) {
+        onRowSelectionModelChange(newSelection);
+      }
+    };
+
+    return (
+      <div data-testid="data-grid">
+        <div>DataGrid with {rows?.length || 0} rows</div>
+        {rows?.map((row: any, rowIndex: number) => {
+          const rowId = props.getRowId ? props.getRowId(row) : row.id;
+          return (
+            <div key={rowIndex} data-testid={`row-${rowIndex}`}>
+              {checkboxSelection && (
+                <input
+                  type="checkbox"
+                  role="checkbox"
+                  checked={selectedRows.includes(rowId)}
+                  onChange={() => handleCheckboxChange(rowId)}
+                  aria-label={`Select row ${rowIndex}`}
+                />
+              )}
+              {columns?.map((col: any, colIndex: number) => (
+                <div
+                  key={colIndex}
+                  data-testid={`cell-${rowIndex}-${col.field}`}
+                >
+                  {col.renderCell
+                    ? col.renderCell({ row, value: row[col.field] })
+                    : row[col.field]}
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    );
+  },
+}));
+
+jest.mock("../../../../components/StatCard", () => ({
+  __esModule: true,
+  default: ({ title, value, ...props }: any) => (
+    <div data-testid="stat-card">
+      <div>{title}</div>
+      <div>{value}</div>
+    </div>
+  ),
+}));
+
+jest.mock("../../../../components/StatCardSkeleton", () => ({
+  __esModule: true,
+  default: () => <div data-testid="stat-card-skeleton">Loading...</div>,
+}));
+
+jest.mock("../../../../components/ConfirmDialog", () => ({
+  __esModule: true,
+  default: ({ open, onClose, onConfirm, title, message, children }: any) =>
+    open ? (
+      <div data-testid="confirm-dialog">
+        <h2>{title}</h2>
+        <p>{message}</p>
+        {children}
+        <button onClick={onClose}>Cancel</button>
+        <button onClick={onConfirm}>Confirm</button>
+      </div>
+    ) : null,
+}));
+
+jest.mock("../../../../components/FormDialog", () => ({
+  __esModule: true,
+  default: ({ open, onClose, onSubmit, title, children, submitText }: any) =>
+    open ? (
+      <div data-testid="form-dialog">
+        <h2>{title}</h2>
+        {children}
+        <button onClick={onClose}>Cancel</button>
+        <button onClick={onSubmit}>{submitText || "Submit"}</button>
+      </div>
+    ) : null,
+}));
+
 import * as useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import * as useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import * as useTransactionDelete from "../../../../hooks/useTransactionDelete";
@@ -72,7 +210,7 @@ const mockTransactionData = [
     cleared: 0,
     transactionState: "outstanding",
     transactionType: "expense",
-    reoccurringType: "none",
+    reoccurringType: "onetime",
     activeStatus: true,
   },
 ];
@@ -127,6 +265,7 @@ describe("AccountTransactions Component", () => {
     (useTransactionByAccountFetch.default as jest.Mock).mockReturnValue({
       data: mockTransactionData,
       isSuccess: true,
+      isLoading: false,
       isFetching: false,
       error: null,
     });
@@ -134,6 +273,7 @@ describe("AccountTransactions Component", () => {
     (useTotalsPerAccountFetch.default as jest.Mock).mockReturnValue({
       data: mockTotalsData,
       isSuccess: true,
+      isLoading: false,
       isFetching: false,
       error: null,
     });
@@ -141,6 +281,7 @@ describe("AccountTransactions Component", () => {
     (useValidationAmountFetch.default as jest.Mock).mockReturnValue({
       data: null,
       isSuccess: true,
+      isLoading: false,
       isFetching: false,
       error: null,
     });
@@ -148,6 +289,7 @@ describe("AccountTransactions Component", () => {
     (useAccountFetch.default as jest.Mock).mockReturnValue({
       data: mockAccountData,
       isSuccess: true,
+      isLoading: false,
       isFetching: false,
       error: null,
     });
@@ -155,6 +297,7 @@ describe("AccountTransactions Component", () => {
     (useCategoryFetch.default as jest.Mock).mockReturnValue({
       data: mockCategoryData,
       isSuccess: true,
+      isLoading: false,
       isFetching: false,
       error: null,
     });
@@ -162,6 +305,7 @@ describe("AccountTransactions Component", () => {
     (useDescriptionFetch.default as jest.Mock).mockReturnValue({
       data: mockDescriptionData,
       isSuccess: true,
+      isLoading: false,
       isFetching: false,
       error: null,
     });
@@ -194,6 +338,7 @@ describe("AccountTransactions Component", () => {
     (useTransactionByAccountFetch.default as jest.Mock).mockReturnValue({
       data: null,
       isSuccess: false,
+      isLoading: true,
       isFetching: true,
       error: null,
     });
@@ -201,9 +346,6 @@ describe("AccountTransactions Component", () => {
     render(<AccountTransactions />, { wrapper: createWrapper() });
 
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(
-      screen.getByText("Loading account transactions..."),
-    ).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {

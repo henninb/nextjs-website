@@ -58,7 +58,9 @@ describe("TransactionFilterBar", () => {
         />,
       );
 
-      expect(screen.getByPlaceholderText(/Search by description/)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/Search by description/),
+      ).toBeInTheDocument();
     });
 
     it("should render search input", () => {
@@ -485,7 +487,9 @@ describe("TransactionFilterBar", () => {
         />,
       );
 
-      expect(screen.getByText(/Amount Range: \$-1000\.00 - \$1000\.00/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Amount Range: \$-1000\.00 - \$1000\.00/),
+      ).toBeInTheDocument();
     });
 
     it("should call onFilterChange when amount range slider is adjusted and committed", () => {
