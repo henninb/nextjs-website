@@ -94,9 +94,7 @@ describe("useAccountFetch", () => {
     const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify([]), { status: 200 }),
-      );
+      .mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }));
 
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),

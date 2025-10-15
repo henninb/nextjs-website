@@ -14,20 +14,26 @@ Successfully updated all Account-related test files to use **modern RESTful endp
 
 ## Test Files Updated
 
-### 1. ✅ __tests__/hooks/useAccountInsert.isolated.test.ts
+### 1. ✅ **tests**/hooks/useAccountInsert.isolated.test.ts
+
 **Changes**: All endpoint references updated
+
 - **Before**: `/api/account/insert`
 - **After**: `/api/account`
 - **Occurrences**: 11 test assertions updated
 
-### 2. ✅ __tests__/hooks/useAccountUpdate.isolated.test.ts
+### 2. ✅ **tests**/hooks/useAccountUpdate.isolated.test.ts
+
 **Changes**: All endpoint references updated
+
 - **Before**: `/api/account/update/{accountNameOwner}`
 - **After**: `/api/account/{accountNameOwner}`
 - **Pattern**: All URL constructions updated throughout file
 
-### 3. ✅ __tests__/hooks/useAccountDelete.isolated.test.ts
+### 3. ✅ **tests**/hooks/useAccountDelete.isolated.test.ts
+
 **Changes**: All endpoint references updated
+
 - **Before**: `/api/account/delete/{accountNameOwner}`
 - **After**: `/api/account/{accountNameOwner}`
 - **Pattern**: All URL constructions updated throughout file
@@ -36,11 +42,11 @@ Successfully updated all Account-related test files to use **modern RESTful endp
 
 ## Migration Details
 
-| Test File | Legacy Pattern | Modern Pattern | Tests Updated |
-|-----------|---------------|----------------|---------------|
-| **useAccountInsert.isolated.test.ts** | `/api/account/insert` | `/api/account` | 11+ assertions |
-| **useAccountUpdate.isolated.test.ts** | `/api/account/update/{id}` | `/api/account/{id}` | All URL refs |
-| **useAccountDelete.isolated.test.ts** | `/api/account/delete/{id}` | `/api/account/{id}` | All URL refs |
+| Test File                             | Legacy Pattern             | Modern Pattern      | Tests Updated  |
+| ------------------------------------- | -------------------------- | ------------------- | -------------- |
+| **useAccountInsert.isolated.test.ts** | `/api/account/insert`      | `/api/account`      | 11+ assertions |
+| **useAccountUpdate.isolated.test.ts** | `/api/account/update/{id}` | `/api/account/{id}` | All URL refs   |
+| **useAccountDelete.isolated.test.ts** | `/api/account/delete/{id}` | `/api/account/{id}` | All URL refs   |
 
 ---
 
@@ -51,6 +57,7 @@ Successfully updated all Account-related test files to use **modern RESTful endp
 All `expect(global.fetch).toHaveBeenCalledWith()` assertions updated:
 
 **Before**:
+
 ```typescript
 expect(global.fetch).toHaveBeenCalledWith(
   "/api/account/insert",
@@ -62,6 +69,7 @@ expect(global.fetch).toHaveBeenCalledWith(
 ```
 
 **After**:
+
 ```typescript
 expect(global.fetch).toHaveBeenCalledWith(
   "/api/account",
@@ -77,6 +85,7 @@ expect(global.fetch).toHaveBeenCalledWith(
 All endpoint URL constructions updated:
 
 **Before**:
+
 ```typescript
 expect(global.fetch).toHaveBeenCalledWith(
   "/api/account/update/test_account",
@@ -85,6 +94,7 @@ expect(global.fetch).toHaveBeenCalledWith(
 ```
 
 **After**:
+
 ```typescript
 expect(global.fetch).toHaveBeenCalledWith(
   "/api/account/test_account",
@@ -97,25 +107,21 @@ expect(global.fetch).toHaveBeenCalledWith(
 All delete endpoint references updated:
 
 **Before**:
+
 ```typescript
-expect(fetch).toHaveBeenCalledWith(
-  "/api/account/delete/test_account",
-  {
-    method: "DELETE",
-    // ...
-  }
-);
+expect(fetch).toHaveBeenCalledWith("/api/account/delete/test_account", {
+  method: "DELETE",
+  // ...
+});
 ```
 
 **After**:
+
 ```typescript
-expect(fetch).toHaveBeenCalledWith(
-  "/api/account/test_account",
-  {
-    method: "DELETE",
-    // ...
-  }
-);
+expect(fetch).toHaveBeenCalledWith("/api/account/test_account", {
+  method: "DELETE",
+  // ...
+});
 ```
 
 ---
@@ -125,6 +131,7 @@ expect(fetch).toHaveBeenCalledWith(
 All test scenarios remain the same, only endpoint URLs changed:
 
 ### useAccountInsert Tests (Still Cover)
+
 - ✅ Successful insertion with 201 response
 - ✅ 204 no content response handling
 - ✅ Validation before insertion
@@ -138,6 +145,7 @@ All test scenarios remain the same, only endpoint URLs changed:
 - ✅ Status code handling
 
 ### useAccountUpdate Tests (Still Cover)
+
 - ✅ Successful updates
 - ✅ Endpoint URL construction
 - ✅ Request body data
@@ -147,6 +155,7 @@ All test scenarios remain the same, only endpoint URLs changed:
 - ✅ Network failures
 
 ### useAccountDelete Tests (Still Cover)
+
 - ✅ Successful deletion with 204
 - ✅ JSON response handling
 - ✅ Missing account name validation
@@ -160,6 +169,7 @@ All test scenarios remain the same, only endpoint URLs changed:
 ## Verification Steps
 
 ### 1. Run Tests Locally
+
 ```bash
 cd /Users/brianhenning/projects/nextjs-website
 
@@ -175,6 +185,7 @@ npm test -- useAccountDelete.isolated.test.ts
 **Expected Result**: All tests should PASS ✅
 
 ### 2. Check Test Coverage
+
 ```bash
 npm test -- --coverage useAccount
 ```
@@ -182,7 +193,9 @@ npm test -- --coverage useAccount
 **Expected**: No decrease in coverage percentage
 
 ### 3. Integration Testing
+
 After running unit tests, verify integration:
+
 ```bash
 # Run full test suite
 npm test
@@ -196,6 +209,7 @@ npm run test:e2e
 ## Why Tests Still Pass
 
 ### No Behavioral Changes
+
 - Tests mock `global.fetch` - implementation doesn't care about URL pattern
 - Modern endpoints have same response format as legacy
 - Same request body structure
@@ -203,10 +217,12 @@ npm run test:e2e
 - Same validation behavior
 
 ### What Changed
+
 - ❌ OLD: `/api/account/insert` (action in URL)
 - ✅ NEW: `/api/account` (RESTful - action via HTTP method)
 
 ### What Stayed the Same
+
 - Request structure (headers, body, credentials)
 - Response format (status codes, JSON structure)
 - Error handling (same error scenarios)
@@ -293,6 +309,7 @@ git revert <commit-sha>
 ```
 
 Or manually edit the 3 test files and change URLs back:
+
 - Change `/api/account"` back to `/api/account/insert"`
 - Change `/api/account/` back to `/api/account/update/`
 - Change `/api/account/` back to `/api/account/delete/`
@@ -310,12 +327,14 @@ Or manually edit the 3 test files and change URLs back:
 ## Success Criteria
 
 ### Immediate
+
 - ✅ All 3 test files updated
 - ⏳ All tests pass when run locally
 - ⏳ No decrease in test coverage
 - ⏳ No new warnings or errors
 
 ### Continuous Integration
+
 - ⏳ CI/CD pipeline passes all tests
 - ⏳ No regressions in other test suites
 - ⏳ Code quality checks pass
@@ -345,6 +364,7 @@ Or manually edit the 3 test files and change URLs back:
 ### Mock Independence
 
 Because tests use `global.fetch` mocks, they're independent of actual backend:
+
 - Tests don't make real HTTP calls
 - URL changes don't affect test logic
 - Same mock responses work with any URL pattern

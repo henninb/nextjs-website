@@ -62,18 +62,15 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         );
 
         expect(result).toEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/42",
-          {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(newPendingTransaction),
+        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/42", {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
-        );
+          body: JSON.stringify(newPendingTransaction),
+        });
       });
 
       it("should use correct endpoint with pending transaction ID", async () => {
@@ -450,7 +447,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         );
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/update/123",
+          "/api/pending/transaction/123",
           expect.objectContaining({
             body: JSON.stringify(newPendingTransaction),
           }),
@@ -593,7 +590,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         );
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/update/0",
+          "/api/pending/transaction/0",
           expect.any(Object),
         );
       });
@@ -615,7 +612,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         );
 
         expect(fetch).toHaveBeenCalledWith(
-          `/api/pending/transaction/update/${largeId}`,
+          `/api/pending/transaction/${largeId}`,
           expect.any(Object),
         );
       });
@@ -972,7 +969,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         // Should use old pending transaction ID in endpoint, regardless of new ID
         expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/update/100",
+          "/api/pending/transaction/100",
           expect.any(Object),
         );
       });

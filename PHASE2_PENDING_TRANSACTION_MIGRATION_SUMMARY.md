@@ -12,24 +12,28 @@ Successfully migrated frontend to use modern PendingTransaction endpoints, prepa
 ### Hooks Updated (4 files)
 
 #### 1. usePendingTransactionFetch.ts
+
 - **Old**: `GET /api/pending/transaction/all`
 - **New**: `GET /api/pending/transaction/active`
 - **Key Change**: Modern endpoint returns empty array instead of 404 when no transactions exist
 - **Benefit**: More RESTful behavior, simpler error handling
 
 #### 2. usePendingTransactionInsert.ts
+
 - **Old**: `POST /api/pending/transaction/insert`
 - **New**: `POST /api/pending/transaction`
 - **Key Change**: Simplified endpoint path following REST conventions
 - **Benefit**: Consistent with other modern endpoints
 
 #### 3. usePendingTransactionUpdate.ts
+
 - **Old**: `PUT /api/pending/transaction/update/{id}`
 - **New**: `PUT /api/pending/transaction/{id}`
 - **Key Change**: Removed `/update` prefix from path
 - **Benefit**: Standard RESTful pattern
 
 #### 4. usePendingTransactionDelete.ts
+
 - **Old**: `DELETE /api/pending/transaction/delete/{id}`
 - **New**: `DELETE /api/pending/transaction/{id}`
 - **Key Change**: Removed `/delete` prefix from path
@@ -38,19 +42,23 @@ Successfully migrated frontend to use modern PendingTransaction endpoints, prepa
 ### Test Files Updated (3 files)
 
 #### 1. usePendingTransactionFetch.isolated.test.ts
+
 - Updated endpoint URL to `/active`
 - Removed special 404 handling test (modern endpoint returns empty array)
 - Added test for empty array response behavior
 
 #### 2. usePendingTransactionInsert.isolated.test.ts
+
 - Updated all endpoint references from `/insert` to root path
 - Verified all test assertions pass with modern endpoint
 
 #### 3. usePendingTransactionUpdate.isolated.test.ts
+
 - Updated all endpoint references from `/update/{id}` to `/{id}`
 - Maintained all existing test coverage
 
 #### 4. usePendingTransactionDelete.isolated.test.ts
+
 - Updated all endpoint references from `/delete/{id}` to `/{id}`
 - Maintained all existing test coverage
 
@@ -79,35 +87,43 @@ The following components import the updated hooks but require no code changes:
 The following legacy endpoints in `PendingTransactionController.kt` can now be safely deleted:
 
 ### 1. getAllPendingTransactions (lines 199-228)
+
 ```kotlin
 @Deprecated("Use GET /api/pending/transaction/active instead")
 @GetMapping("/all")
 fun getAllPendingTransactions(): ResponseEntity<List<PendingTransaction>>
 ```
+
 **Frontend Status**: ✅ Migrated to `/active`
 
 ### 2. insertPendingTransaction (lines 230-263)
+
 ```kotlin
 @Deprecated("Use POST /api/pending/transaction instead")
 @PostMapping("/insert")
 fun insertPendingTransaction(@RequestBody pendingTransaction: PendingTransaction): ResponseEntity<PendingTransaction>
 ```
+
 **Frontend Status**: ✅ Migrated to root POST
 
 ### 3. deletePendingTransaction (lines 265-295)
+
 ```kotlin
 @Deprecated("Use DELETE /api/pending/transaction/{pendingTransactionId} instead")
 @DeleteMapping("/delete/{id}")
 fun deletePendingTransaction(@PathVariable id: Long): ResponseEntity<Void>
 ```
+
 **Frontend Status**: ✅ Migrated to `/{pendingTransactionId}`
 
 ### 4. KEEP: deleteAllPendingTransactions (lines 297-327)
+
 ```kotlin
 @Deprecated("Bulk delete operations should be replaced with individual deletes or batch processing")
 @DeleteMapping("/delete/all")
 fun deleteAllPendingTransactions(): ResponseEntity<Void>
 ```
+
 **Frontend Status**: ⚠️ Still in use - keep this endpoint for now
 
 **Note**: There is no legacy `/update` endpoint - update functionality already uses modern endpoint pattern.
@@ -115,26 +131,31 @@ fun deleteAllPendingTransactions(): ResponseEntity<Void>
 ## Migration Benefits
 
 ### 1. Consistency
+
 - All CRUD operations now follow standard RESTful conventions
 - Endpoint patterns match other modernized controllers (Payment, Transfer, Category)
 
 ### 2. Improved Error Handling
+
 - `/active` endpoint returns empty array instead of 404
 - Cleaner, more predictable frontend logic
 - Reduced special-case handling
 
 ### 3. Reduced Maintenance
+
 - Fewer endpoints to maintain in backend
 - Simpler API documentation
 - Easier for new developers to understand
 
 ### 4. Performance
+
 - No functional performance changes
 - Future optimization opportunities with standardized patterns
 
 ## Testing Strategy
 
 ### Frontend Testing
+
 ```bash
 # Run all pending transaction tests
 cd /Users/brianhenning/projects/nextjs-website
@@ -148,6 +169,7 @@ npm test -- usePendingTransactionDelete.isolated.test.ts
 ```
 
 ### Backend Testing (After Legacy Endpoint Deletion)
+
 ```bash
 # Run pending transaction functional tests
 cd /Users/brianhenning/projects/raspi-finance-endpoint
@@ -160,6 +182,7 @@ SPRING_PROFILES_ACTIVE=func ./gradlew functionalTest --continue
 ## Deployment Plan
 
 ### Step 1: Frontend Deployment ✅ READY
+
 1. Deploy frontend changes to staging
 2. Verify all pending transaction operations work correctly
 3. Monitor error logs for any endpoint issues
@@ -167,6 +190,7 @@ SPRING_PROFILES_ACTIVE=func ./gradlew functionalTest --continue
 5. Monitor for 1 week
 
 ### Step 2: Backend Cleanup (After 1 Week Monitoring)
+
 1. Delete 3 legacy endpoints from PendingTransactionController.kt
 2. Keep `deleteAllPendingTransactions` endpoint
 3. Run functional tests
@@ -177,7 +201,9 @@ SPRING_PROFILES_ACTIVE=func ./gradlew functionalTest --continue
 ## Rollback Strategy
 
 ### Frontend Rollback
+
 If issues are discovered, simply revert the frontend deployment:
+
 ```bash
 # Revert to previous commit
 git revert <commit-hash>
@@ -185,6 +211,7 @@ git push origin main
 ```
 
 ### Backend Safety
+
 - Legacy endpoints remain in backend until frontend migration is verified
 - Zero risk of breaking changes during frontend deployment
 
@@ -219,18 +246,21 @@ git push origin main
 ## Files Modified
 
 ### Frontend Hook Files (4 files)
+
 - `/Users/brianhenning/projects/nextjs-website/hooks/usePendingTransactionFetch.ts`
 - `/Users/brianhenning/projects/nextjs-website/hooks/usePendingTransactionInsert.ts`
 - `/Users/brianhenning/projects/nextjs-website/hooks/usePendingTransactionUpdate.ts`
 - `/Users/brianhenning/projects/nextjs-website/hooks/usePendingTransactionDelete.ts`
 
 ### Frontend Test Files (3 files)
+
 - `/Users/brianhenning/projects/nextjs-website/__tests__/hooks/usePendingTransactionFetch.isolated.test.ts`
 - `/Users/brianhenning/projects/nextjs-website/__tests__/hooks/usePendingTransactionInsert.isolated.test.ts`
 - `/Users/brianhenning/projects/nextjs-website/__tests__/hooks/usePendingTransactionUpdate.isolated.test.ts`
 - `/Users/brianhenning/projects/nextjs-website/__tests__/hooks/usePendingTransactionDelete.isolated.test.ts`
 
 ### Backend Controller (Pending Deletion)
+
 - `/Users/brianhenning/projects/raspi-finance-endpoint/src/main/kotlin/finance/controllers/PendingTransactionController.kt`
   - Lines 199-228: `getAllPendingTransactions` - DELETE
   - Lines 230-263: `insertPendingTransaction` - DELETE

@@ -63,13 +63,10 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
 
         await deletePendingTransaction(42);
 
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/42",
-          {
-            method: "DELETE",
-            credentials: "include",
-          },
-        );
+        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/42", {
+          method: "DELETE",
+          credentials: "include",
+        });
 
         const calls = consoleSpy.getCalls();
         expect(calls.log[0][0]).toBe(
@@ -87,13 +84,10 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
 
         for (const id of testIds) {
           await deletePendingTransaction(id);
-          expect(fetch).toHaveBeenCalledWith(
-            `/api/pending/transaction/${id}`,
-            {
-              method: "DELETE",
-              credentials: "include",
-            },
-          );
+          expect(fetch).toHaveBeenCalledWith(`/api/pending/transaction/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
         }
 
         expect(fetch).toHaveBeenCalledTimes(testIds.length);
@@ -257,13 +251,10 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
 
         await deletePendingTransaction(0);
 
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/delete/0",
-          {
-            method: "DELETE",
-            credentials: "include",
-          },
-        );
+        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/0", {
+          method: "DELETE",
+          credentials: "include",
+        });
       });
 
       it("should handle deletion with very large ID", async () => {
@@ -277,7 +268,7 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
         await deletePendingTransaction(largeId);
 
         expect(fetch).toHaveBeenCalledWith(
-          `/api/pending/transaction/delete/${largeId}`,
+          `/api/pending/transaction/${largeId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -293,13 +284,10 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
 
         await deletePendingTransaction(-1);
 
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/delete/-1",
-          {
-            method: "DELETE",
-            credentials: "include",
-          },
-        );
+        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/-1", {
+          method: "DELETE",
+          credentials: "include",
+        });
       });
 
       it("should preserve error stack trace", async () => {
