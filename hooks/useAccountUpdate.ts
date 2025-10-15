@@ -7,7 +7,7 @@ export const updateAccount = async (
   newRow: Account,
 ): Promise<Account> => {
   try {
-    let endpoint = `/api/account/update/${oldRow.accountNameOwner}`;
+    let endpoint = `/api/account/${oldRow.accountNameOwner}`;
 
     const response = await fetch(endpoint, {
       method: "PUT",

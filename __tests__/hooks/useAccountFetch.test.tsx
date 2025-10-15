@@ -87,18 +87,16 @@ describe("useAccountFetch", () => {
     global.fetch = originalFetch;
   });
 
-  it("should handle 404 as empty data (no accounts found)", async () => {
+  it("should handle empty array when no accounts found (modern endpoint)", async () => {
     const queryClient = createTestQueryClient();
 
-    // Mock the global fetch function to return 404
+    // Mock the global fetch function to return 200 with empty array (modern behavior)
     const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValue(
-        new Response(JSON.stringify({ message: "Not found" }), { status: 404 }),
+        new Response(JSON.stringify([]), { status: 200 }),
       );
-
-    const consoleSpy = jest.spyOn(console, "log");
 
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),
@@ -109,13 +107,11 @@ describe("useAccountFetch", () => {
       timeout: 5000,
     });
 
-    // Should return empty array for 404 (no accounts found)
+    // Modern endpoint returns 200 OK with empty array (not 404)
     expect(result.current.data).toEqual([]);
     expect(result.current.isSuccess).toBe(true);
     expect(result.current.isError).toBe(false);
-    expect(consoleSpy).toHaveBeenCalledWith("No accounts found (404).");
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 

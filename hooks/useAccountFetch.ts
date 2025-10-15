@@ -4,7 +4,7 @@ import { useAuth } from "../components/AuthProvider";
 
 const fetchAccountData = async (): Promise<Account[] | null> => {
   try {
-    const response = await fetch("/api/account/select/active", {
+    const response = await fetch("/api/account/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -14,16 +14,13 @@ const fetchAccountData = async (): Promise<Account[] | null> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No accounts found (404).");
-        return []; // Return empty array for 404, meaning no accounts
-      }
       const errorDetails = await response.json();
       throw new Error(
         `HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`,
       );
     }
 
+    // Modern endpoint always returns 200 OK with empty array [] if no accounts
     return response.status !== 204 ? await response.json() : null;
   } catch (error: any) {
     console.error("Error fetching account data:", error);

@@ -38,7 +38,7 @@ export const insertAccount = async (
       throw new Error(`Account validation failed: ${errorMessages}`);
     }
 
-    const endpoint = "/api/account/insert";
+    const endpoint = "/api/account";
     const newPayload = setupNewAccount(validation.validatedData);
 
     console.log(

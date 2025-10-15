@@ -155,7 +155,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         expect(result).toEqual(responseAccount);
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.objectContaining({
             method: "POST",
             credentials: "include",
@@ -178,7 +178,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         expect(result).toBeNull();
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.any(Object),
         );
       });
@@ -209,7 +209,7 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(mockAccount);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.objectContaining({
             body: expect.stringContaining('"accountNameOwner":"validated"'),
           }),
@@ -363,7 +363,7 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(mockAccount);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
@@ -378,7 +378,7 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(mockAccount);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.objectContaining({
             credentials: "include",
           }),
@@ -391,7 +391,7 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(mockAccount);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.objectContaining({
             method: "POST",
           }),
@@ -404,7 +404,7 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(mockAccount);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.any(Object),
         );
       });
@@ -431,7 +431,7 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(fullAccount);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.objectContaining({
             body: expect.stringContaining('"accountNameOwner":"fullAccount"'),
           }),
@@ -453,7 +453,7 @@ describe("Account Insert Functions (Isolated)", () => {
         await insertAccount(minimalAccount);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/account/insert",
+          "/api/account",
           expect.objectContaining({
             body: expect.stringContaining('"accountNameOwner":"minimal"'),
           }),
@@ -520,7 +520,7 @@ describe("Account Insert Functions (Isolated)", () => {
           await insertAccount(typedAccount);
 
           expect(global.fetch).toHaveBeenCalledWith(
-            "/api/account/insert",
+            "/api/account",
             expect.objectContaining({
               body: expect.stringContaining(`"accountType":"${accountType}"`),
             }),

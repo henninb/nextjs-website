@@ -48,7 +48,7 @@ describe("updateAccount (Isolated)", () => {
 
       expect(result).toEqual(mockNewAccount);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/update/test_account",
+        "/api/account/test_account",
         expect.objectContaining({
           method: "PUT",
           credentials: "include",
@@ -70,7 +70,7 @@ describe("updateAccount (Isolated)", () => {
       await updateAccount(accountWithDifferentName, mockNewAccount);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/update/savings_account",
+        "/api/account/savings_account",
         expect.any(Object),
       );
     });
@@ -103,7 +103,7 @@ describe("updateAccount (Isolated)", () => {
       await updateAccount(specialAccount, mockNewAccount);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/update/test & account",
+        "/api/account/test & account",
         expect.any(Object),
       );
     });
@@ -286,7 +286,7 @@ describe("updateAccount (Isolated)", () => {
       await updateAccount(accountWithEmptyName, mockNewAccount);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/update/",
+        "/api/account/",
         expect.any(Object),
       );
     });
@@ -370,7 +370,7 @@ describe("updateAccount (Isolated)", () => {
 
       expect(result).toEqual(fullyUpdatedAccount);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/update/test_account", // Uses old account name in endpoint
+        "/api/account/test_account", // Uses old account name in endpoint
         expect.objectContaining({
           body: JSON.stringify(fullyUpdatedAccount), // Sends new data
         }),

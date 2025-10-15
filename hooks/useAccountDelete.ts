@@ -25,7 +25,7 @@ export const deleteAccount = async (
       sanitizedAccountName,
     );
 
-    const endpoint = `/api/account/delete/${sanitizedAccountName}`;
+    const endpoint = `/api/account/${sanitizedAccountName}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

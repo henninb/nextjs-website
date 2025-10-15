@@ -57,7 +57,7 @@ describe("deleteAccount (Isolated)", () => {
       "test_account",
       "test_account",
     );
-    expect(fetch).toHaveBeenCalledWith("/api/account/delete/test_account", {
+    expect(fetch).toHaveBeenCalledWith("/api/account/test_account", {
       method: "DELETE",
       credentials: "include",
       headers: {
@@ -213,7 +213,7 @@ describe("deleteAccount (Isolated)", () => {
     await deleteAccount(mockAccount);
 
     expect(fetch).toHaveBeenCalledWith(
-      "/api/account/delete/sanitized_name",
+      "/api/account/sanitized_name",
       expect.any(Object),
     );
   });
