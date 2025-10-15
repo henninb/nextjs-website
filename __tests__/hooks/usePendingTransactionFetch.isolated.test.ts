@@ -14,7 +14,7 @@ import PendingTransaction from "../../model/PendingTransaction";
 // We need to export it from the hook file
 const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
   try {
-    const response = await fetch("/api/pending/transaction/all", {
+    const response = await fetch("/api/pending/transaction/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -24,10 +24,6 @@ const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No pending transactions found (404).");
-        return [];
-      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -78,7 +74,7 @@ describe("usePendingTransactionFetch Business Logic (Isolated)", () => {
         const result = await fetchPendingTransactions();
 
         expect(result).toEqual(testTransactions);
-        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/all", {
+        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/active", {
           method: "GET",
           credentials: "include",
           headers: {
@@ -88,19 +84,13 @@ describe("usePendingTransactionFetch Business Logic (Isolated)", () => {
         });
       });
 
-      it("should return empty array when no pending transactions exist (404)", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-        });
-
-        consoleSpy.start();
+      it("should return empty array when no pending transactions exist", async () => {
+        global.fetch = createFetchMock([]);
 
         const result = await fetchPendingTransactions();
 
         expect(result).toEqual([]);
-        const calls = consoleSpy.getCalls();
-        expect(calls.log.some((call) => call[0].includes("404"))).toBe(true);
+        expect(Array.isArray(result)).toBe(true);
       });
 
       it("should fetch pending transactions with different amounts", async () => {

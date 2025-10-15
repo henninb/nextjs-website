@@ -3,7 +3,7 @@ import PendingTransaction from "../model/PendingTransaction";
 
 const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
   try {
-    const response = await fetch("/api/pending/transaction/all", {
+    const response = await fetch("/api/pending/transaction/active", {
       method: "GET",
       credentials: "include",
       headers: {
@@ -13,10 +13,6 @@ const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log("No pending transactions found (404).");
-        return []; // Return empty array for 404, meaning no pending transactions
-      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 

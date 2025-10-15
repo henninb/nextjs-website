@@ -8,7 +8,7 @@ import { createFetchMock, ConsoleSpy } from "../../testHelpers";
 // Copy the function to test
 const deletePendingTransaction = async (id: number): Promise<void> => {
   try {
-    const endpoint = `/api/pending/transaction/delete/${id}`;
+    const endpoint = `/api/pending/transaction/${id}`;
     console.log(`Deleting pending transaction with id: ${id}`);
 
     const response = await fetch(endpoint, {
@@ -64,7 +64,7 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
         await deletePendingTransaction(42);
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/delete/42",
+          "/api/pending/transaction/42",
           {
             method: "DELETE",
             credentials: "include",
@@ -88,7 +88,7 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
         for (const id of testIds) {
           await deletePendingTransaction(id);
           expect(fetch).toHaveBeenCalledWith(
-            `/api/pending/transaction/delete/${id}`,
+            `/api/pending/transaction/${id}`,
             {
               method: "DELETE",
               credentials: "include",

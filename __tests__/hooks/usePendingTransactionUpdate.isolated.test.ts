@@ -63,7 +63,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
 
         expect(result).toEqual(expectedResponse);
         expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/update/42",
+          "/api/pending/transaction/42",
           {
             method: "PUT",
             credentials: "include",
@@ -92,7 +92,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         );
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/update/999",
+          "/api/pending/transaction/999",
           expect.any(Object),
         );
       });

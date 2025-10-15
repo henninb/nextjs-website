@@ -52,7 +52,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         const result = await insertPendingTransaction(testPendingTransaction);
 
         expect(result).toEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/insert", {
+        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -292,7 +292,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         await insertPendingTransaction(testPendingTransaction);
 
-        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/insert", {
+        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -310,7 +310,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await insertPendingTransaction(testPendingTransaction);
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/pending/transaction/insert",
+          "/api/pending/transaction",
           expect.any(Object),
         );
       });
