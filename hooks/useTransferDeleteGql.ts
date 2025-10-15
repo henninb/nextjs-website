@@ -3,18 +3,12 @@ import { graphqlRequest } from "../utils/graphqlClient";
 import Transfer from "../model/Transfer";
 
 type DeleteTransferResult = {
-  deleteTransfer: {
-    success: boolean;
-    transferId?: number | null;
-  };
+  deleteTransfer: boolean;
 };
 
 const DELETE_TRANSFER_MUTATION = /* GraphQL */ `
   mutation DeleteTransfer($id: ID!) {
-    deleteTransfer(id: $id) {
-      success
-      transferId
-    }
+    deleteTransfer(id: $id)
   }
 `;
 
@@ -29,7 +23,7 @@ export default function useTransferDeleteGql() {
         query: DELETE_TRANSFER_MUTATION,
         variables: { id: t.transferId },
       });
-      return { ok: data.deleteTransfer?.success ?? true, id: t.transferId };
+      return { ok: data.deleteTransfer ?? true, id: t.transferId };
     },
     onSuccess: (_res, variables) => {
       const key = ["transferGQL"];

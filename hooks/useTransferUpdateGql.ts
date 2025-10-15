@@ -18,8 +18,8 @@ type UpdateTransferResult = {
 };
 
 const UPDATE_TRANSFER_MUTATION = /* GraphQL */ `
-  mutation UpdateTransfer($id: ID!, $input: TransferUpdateInput!) {
-    updateTransfer(id: $id, input: $input) {
+  mutation UpdateTransfer($id: ID!, $transfer: TransferInput!) {
+    updateTransfer(id: $id, transfer: $transfer) {
       transferId
       sourceAccount
       destinationAccount
@@ -58,7 +58,7 @@ export default function useTransferUpdateGql() {
       };
       const data = await graphqlRequest<UpdateTransferResult>({
         query: UPDATE_TRANSFER_MUTATION,
-        variables: { id: oldTransfer.transferId, input },
+        variables: { id: oldTransfer.transferId, transfer: input },
       });
       const t = data.updateTransfer;
       const mapped: Transfer = {
