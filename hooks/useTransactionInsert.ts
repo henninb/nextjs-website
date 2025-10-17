@@ -70,9 +70,9 @@ export const insertTransaction = async (
     throw new Error(errorMessages);
   }
 
-  let endpoint = "/api/transaction/insert";
+  let endpoint = "/api/transaction";
   if (isFutureTransaction) {
-    endpoint = "/api/transaction/future/insert";
+    endpoint = "/api/transaction/future";
   }
 
   const newPayload = await setupNewTransaction(

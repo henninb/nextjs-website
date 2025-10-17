@@ -35,7 +35,7 @@ export const updateTransaction = async (
   try {
     const sanitizedGuid = sanitizeGuid(oldData.guid);
 
-    const endpoint = `/api/transaction/update/${sanitizedGuid}`;
+    const endpoint = `/api/transaction/${sanitizedGuid}`;
 
     if (newData.receiptImage !== undefined) {
       newData["receiptImage"].image = newData["receiptImage"].image.replace(

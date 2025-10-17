@@ -192,7 +192,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         expect(result).toEqual(mockResponse);
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/transaction/insert",
+          "/api/transaction",
           expect.objectContaining({
             method: "POST",
             credentials: "include",
@@ -248,7 +248,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         expect(result).toEqual(mockResponse);
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/transaction/future/insert",
+          "/api/transaction/future",
           expect.any(Object),
         );
       });
@@ -479,7 +479,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await insertTransaction("test_account", mockTransaction, false, false);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/transaction/insert",
+          "/api/transaction",
           expect.any(Object),
         );
       });
@@ -490,7 +490,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await insertTransaction("test_account", mockTransaction, true, false);
 
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/transaction/future/insert",
+          "/api/transaction/future",
           expect.any(Object),
         );
       });
@@ -747,14 +747,14 @@ describe("Transaction Insert Functions (Isolated)", () => {
         // Regular transaction
         await insertTransaction("test_account", mockTransaction, false, false);
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/transaction/insert",
+          "/api/transaction",
           expect.any(Object),
         );
 
         // Future transaction
         await insertTransaction("test_account", mockTransaction, true, false);
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/transaction/future/insert",
+          "/api/transaction/future",
           expect.any(Object),
         );
       });

@@ -10,7 +10,7 @@ export const deleteTransaction = async (
   payload: Transaction,
 ): Promise<Transaction> => {
   try {
-    const endpoint = `/api/transaction/delete/${payload.guid}`;
+    const endpoint = `/api/transaction/${payload.guid}`;
 
     const response = await fetch(endpoint, {
       method: "DELETE",

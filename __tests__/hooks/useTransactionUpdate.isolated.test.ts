@@ -227,7 +227,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
 
         expect(result).toEqual(expectedResponse);
         expect(fetch).toHaveBeenCalledWith(
-          "/api/transaction/update/123e4567-e89b-12d3-a456-426614174000",
+          "/api/transaction/123e4567-e89b-12d3-a456-426614174000",
           {
             method: "PUT",
             credentials: "include",
@@ -473,7 +473,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         await updateTransaction(newTransaction, oldTransaction);
 
         expect(fetch).toHaveBeenCalledWith(
-          `/api/transaction/update/${encodeURIComponent(guidWithSpecialChars)}`,
+          `/api/transaction/${encodeURIComponent(guidWithSpecialChars)}`,
           expect.any(Object),
         );
       });
@@ -758,7 +758,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
         expect(loggedData).not.toContain("data:image/jpeg;base64,");
 
         expect(fetch).toHaveBeenCalledWith(
-          "/api/transaction/update/123e4567-e89b-12d3-a456-426614174000",
+          "/api/transaction/123e4567-e89b-12d3-a456-426614174000",
           expect.objectContaining({
             method: "PUT",
             credentials: "include",

@@ -51,7 +51,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/delete/test-guid-456",
+        "/api/transaction/test-guid-456",
         expect.objectContaining({
           method: "DELETE",
           credentials: "include",
@@ -81,7 +81,7 @@ describe("deleteTransaction (Isolated)", () => {
       await deleteTransaction(transactionWithDifferentGuid);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/delete/custom-guid-789",
+        "/api/transaction/custom-guid-789",
         expect.any(Object),
       );
     });
@@ -174,7 +174,7 @@ describe("deleteTransaction (Isolated)", () => {
       await deleteTransaction(transactionWithEmptyGuid);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/delete/",
+        "/api/transaction/",
         expect.any(Object),
       );
     });
@@ -188,7 +188,7 @@ describe("deleteTransaction (Isolated)", () => {
       await deleteTransaction(transactionWithSpecialGuid);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/delete/guid-with-special@#$%chars",
+        "/api/transaction/guid-with-special@#$%chars",
         expect.any(Object),
       );
     });
@@ -201,7 +201,7 @@ describe("deleteTransaction (Isolated)", () => {
       await deleteTransaction(transactionWithLongGuid);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/transaction/delete/${longGuid}`,
+        `/api/transaction/${longGuid}`,
         expect.any(Object),
       );
     });
@@ -214,7 +214,7 @@ describe("deleteTransaction (Isolated)", () => {
       await deleteTransaction(transactionWithUuid);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/delete/550e8400-e29b-41d4-a716-446655440000",
+        "/api/transaction/550e8400-e29b-41d4-a716-446655440000",
         expect.any(Object),
       );
     });
@@ -394,7 +394,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/delete/full-transaction-guid",
+        "/api/transaction/full-transaction-guid",
         expect.any(Object),
       );
     });
@@ -411,7 +411,7 @@ describe("deleteTransaction (Isolated)", () => {
 
       expect(result).toBeNull();
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/delete/minimal-guid",
+        "/api/transaction/minimal-guid",
         expect.any(Object),
       );
     });
