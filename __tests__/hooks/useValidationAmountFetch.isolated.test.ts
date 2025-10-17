@@ -41,13 +41,14 @@ describe("fetchValidationAmount (Isolated)", () => {
   describe("Successful Validation Amount Fetch", () => {
     it("should fetch validation amount data successfully", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       const result = await fetchValidationAmount("testAccount");
 
       expect(result).toEqual(testData);
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/select/testAccount/cleared",
+        "/api/validation/amount/active?accountNameOwner=testAccount&transactionState=cleared",
         {
           method: "GET",
           credentials: "include",
@@ -70,7 +71,8 @@ describe("fetchValidationAmount (Isolated)", () => {
         dateAdded: new Date("2023-06-01T08:30:00Z"),
         dateUpdated: new Date("2023-06-15T14:45:00Z"),
       });
-      global.fetch = createFetchMock(completeData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([completeData]);
 
       const result = await fetchValidationAmount("businessAccount");
 
@@ -84,24 +86,26 @@ describe("fetchValidationAmount (Isolated)", () => {
 
     it("should construct correct endpoint URL for different account names", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount("my-special-account");
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/select/my-special-account/cleared",
+        "/api/validation/amount/active?accountNameOwner=my-special-account&transactionState=cleared",
         expect.any(Object),
       );
     });
 
     it("should handle account names with special characters", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount("account-with-dashes_and_underscores");
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/select/account-with-dashes_and_underscores/cleared",
+        "/api/validation/amount/active?accountNameOwner=account-with-dashes_and_underscores&transactionState=cleared",
         expect.any(Object),
       );
     });
@@ -208,7 +212,8 @@ describe("fetchValidationAmount (Isolated)", () => {
   describe("Request Configuration", () => {
     it("should use correct HTTP method and headers", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount("testAccount");
 
@@ -224,7 +229,8 @@ describe("fetchValidationAmount (Isolated)", () => {
 
     it("should include credentials for authentication", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount("testAccount");
 
@@ -240,7 +246,8 @@ describe("fetchValidationAmount (Isolated)", () => {
   describe("Response Parsing", () => {
     it("should parse JSON response correctly", async () => {
       const testData = createTestValidationAmount();
-      const mockResponse = createMockResponse(testData);
+      // Modern endpoint returns an array
+      const mockResponse = createMockResponse([testData]);
       global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
       const result = await fetchValidationAmount("testAccount");
@@ -250,11 +257,20 @@ describe("fetchValidationAmount (Isolated)", () => {
     });
 
     it("should handle empty response data", async () => {
-      global.fetch = createFetchMock({});
+      // Empty array response should return zero values
+      global.fetch = createFetchMock([]);
 
       const result = await fetchValidationAmount("testAccount");
 
-      expect(result).toEqual({});
+      expect(result).toEqual(
+        expect.objectContaining({
+          validationId: 0,
+          amount: 0,
+          transactionState: "cleared",
+          activeStatus: true,
+        }),
+      );
+      expect(result.validationDate).toEqual(new Date("1970-01-01"));
     });
 
     it("should handle response with null values", async () => {
@@ -268,7 +284,8 @@ describe("fetchValidationAmount (Isolated)", () => {
         dateAdded: null,
         dateUpdated: null,
       };
-      global.fetch = createFetchMock(dataWithNulls);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([dataWithNulls]);
 
       const result = await fetchValidationAmount("testAccount");
 
@@ -279,24 +296,27 @@ describe("fetchValidationAmount (Isolated)", () => {
   describe("Edge Cases", () => {
     it("should handle empty account name", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount("");
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/select//cleared",
+        "/api/validation/amount/active?accountNameOwner=&transactionState=cleared",
         expect.any(Object),
       );
     });
 
     it("should handle account names with spaces", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount("account with spaces");
 
+      // URL encoding converts spaces to %20
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/select/account with spaces/cleared",
+        "/api/validation/amount/active?accountNameOwner=account%20with%20spaces&transactionState=cleared",
         expect.any(Object),
       );
     });
@@ -304,24 +324,26 @@ describe("fetchValidationAmount (Isolated)", () => {
     it("should handle very long account names", async () => {
       const longAccountName = "a".repeat(255);
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount(longAccountName);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/validation/amount/select/${longAccountName}/cleared`,
+        `/api/validation/amount/active?accountNameOwner=${longAccountName}&transactionState=cleared`,
         expect.any(Object),
       );
     });
 
     it("should handle numeric account names", async () => {
       const testData = createTestValidationAmount();
-      global.fetch = createFetchMock(testData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([testData]);
 
       await fetchValidationAmount("12345");
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/select/12345/cleared",
+        "/api/validation/amount/active?accountNameOwner=12345&transactionState=cleared",
         expect.any(Object),
       );
     });
@@ -335,7 +357,8 @@ describe("fetchValidationAmount (Isolated)", () => {
         const testData = createTestValidationAmount({
           transactionState: state,
         });
-        global.fetch = createFetchMock(testData);
+        // Modern endpoint returns an array
+        global.fetch = createFetchMock([testData]);
 
         const result = await fetchValidationAmount("testAccount");
         expect(result.transactionState).toBe(state);
@@ -347,7 +370,8 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       for (const amount of amounts) {
         const testData = createTestValidationAmount({ amount });
-        global.fetch = createFetchMock(testData);
+        // Modern endpoint returns an array
+        global.fetch = createFetchMock([testData]);
 
         const result = await fetchValidationAmount("testAccount");
         expect(result.amount).toBe(amount);
@@ -358,11 +382,13 @@ describe("fetchValidationAmount (Isolated)", () => {
       const activeData = createTestValidationAmount({ activeStatus: true });
       const inactiveData = createTestValidationAmount({ activeStatus: false });
 
-      global.fetch = createFetchMock(activeData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([activeData]);
       let result = await fetchValidationAmount("activeAccount");
       expect(result.activeStatus).toBe(true);
 
-      global.fetch = createFetchMock(inactiveData);
+      // Modern endpoint returns an array
+      global.fetch = createFetchMock([inactiveData]);
       result = await fetchValidationAmount("inactiveAccount");
       expect(result.activeStatus).toBe(false);
     });

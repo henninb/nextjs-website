@@ -5,7 +5,8 @@ import { useAuth } from "../components/AuthProvider";
 export const fetchAllValidationAmounts = async (
   accountNameOwner: string,
 ): Promise<ValidationAmount[]> => {
-  const endpoint = `/api/validation/amount/select/${accountNameOwner}/cleared`;
+  // Modern endpoint with query parameters for filtering
+  const endpoint = `/api/validation/amount/active?accountNameOwner=${encodeURIComponent(accountNameOwner)}&transactionState=cleared`;
 
   try {
     const response = await fetch(endpoint, {
@@ -29,8 +30,8 @@ export const fetchAllValidationAmounts = async (
     }
 
     const data = await response.json();
-    // Ensure we always return an array
-    return Array.isArray(data) ? data : [data];
+    // Modern endpoint always returns an array
+    return Array.isArray(data) ? data : [];
   } catch (error: any) {
     console.error("Error fetching validation amounts:", error);
     throw new Error(`Failed to fetch validation amounts: ${error.message}`);

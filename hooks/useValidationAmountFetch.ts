@@ -6,7 +6,8 @@ import { useAuth } from "../components/AuthProvider";
 export const fetchValidationAmount = async (
   accountNameOwner: string,
 ): Promise<ValidationAmount> => {
-  const endpoint = `/api/validation/amount/select/${accountNameOwner}/cleared`;
+  // Modern endpoint with query parameters for filtering
+  const endpoint = `/api/validation/amount/active?accountNameOwner=${encodeURIComponent(accountNameOwner)}&transactionState=cleared`;
 
   try {
     const response = await fetch(endpoint, {
@@ -37,7 +38,22 @@ export const fetchValidationAmount = async (
       );
     }
 
-    return response.json();
+    const data = await response.json();
+
+    // Modern endpoint returns an array, extract the first (latest) item
+    if (Array.isArray(data) && data.length > 0) {
+      return data[0];
+    }
+
+    // If empty array, return zero values
+    const zeroValidation: ValidationAmount = {
+      validationId: 0,
+      validationDate: new Date("1970-01-01"),
+      amount: 0,
+      transactionState: "cleared",
+      activeStatus: true,
+    };
+    return zeroValidation;
   } catch (error: any) {
     console.error("Error fetching validation amount data:", error);
     throw new Error(`Failed to fetch validation amount data: ${error.message}`);
