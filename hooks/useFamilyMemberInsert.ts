@@ -10,7 +10,7 @@ export default function useFamilyMemberInsert() {
     { payload: FamilyMemberCreateRequest }
   >({
     mutationFn: async ({ payload }) => {
-      const response = await fetch("/api/family-members/insert", {
+      const response = await fetch("/api/family-members", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

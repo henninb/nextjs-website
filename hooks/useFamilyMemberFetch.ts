@@ -4,7 +4,7 @@ import { useAuth } from "../components/AuthProvider";
 
 const fetchFamilyMembers = async (): Promise<FamilyMember[]> => {
   try {
-    const response = await fetch("/api/family-members", {
+    const response = await fetch("/api/family-members/active", {
       method: "GET",
       credentials: "include",
       headers: {

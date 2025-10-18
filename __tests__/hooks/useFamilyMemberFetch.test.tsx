@@ -102,7 +102,7 @@ describe("useFamilyMemberFetch", () => {
     expect(result.current.data).toEqual(mockFamilyMembers);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(mockFetch).toHaveBeenCalledWith("/api/family-members", {
+    expect(mockFetch).toHaveBeenCalledWith("/api/family-members/active", {
       method: "GET",
       credentials: "include",
       headers: {
