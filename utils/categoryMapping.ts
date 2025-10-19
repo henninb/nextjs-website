@@ -20,9 +20,11 @@ export function getCategoryFromDescription(description: string): string {
     desc.includes("speedway") ||
     desc.includes("wawa") ||
     desc.includes("sunoco") ||
-    desc.includes("marathon")
+    desc.includes("marathon") ||
+    desc.includes("bill's superette") ||
+    desc.includes("bills superette")
   ) {
-    return "gas";
+    return "fuel";
   }
 
   // Transportation (check early to catch taxi, uber, etc.)
@@ -79,7 +81,6 @@ export function getCategoryFromDescription(description: string): string {
     desc.includes("kroger") ||
     desc.includes("grocery") ||
     desc.includes("supermarket") ||
-    desc.includes("superette") || // for "Bill's Superette"
     desc.includes("safeway") ||
     desc.includes("whole foods") ||
     desc.includes("trader joe") ||
