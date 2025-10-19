@@ -2,6 +2,18 @@
 export function getCategoryFromDescription(description: string): string {
   const desc = description.toLowerCase().trim();
 
+  // Check for payment/income transactions first (before other categories)
+  if (
+    desc.includes("electronic payment received") ||
+    desc.includes("payment received") ||
+    desc.includes("ach credit") ||
+    desc.includes("direct deposit") ||
+    desc.includes("payroll") ||
+    desc.includes("salary")
+  ) {
+    return "payment";
+  }
+
   // Check for gas stations first (before groceries) to handle "COSTCO GAS", "Walmart Gas"
   if (
     desc.includes(" gas ") ||
@@ -65,6 +77,8 @@ export function getCategoryFromDescription(description: string): string {
     desc.includes("applebee") ||
     desc.includes("olive garden") ||
     desc.includes("chick-fil-a") ||
+    desc.includes("chik-fil-a") || // Alternate spelling
+    desc.includes("chickfila") ||
     desc.includes("panera") ||
     desc.includes("cafe") ||
     desc.includes("coffee") ||

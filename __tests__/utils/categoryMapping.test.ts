@@ -11,10 +11,10 @@ describe("getCategoryFromDescription", () => {
   });
 
   it("should categorize gas station descriptions correctly", () => {
-    expect(getCategoryFromDescription("Shell Gas Station")).toBe("gas");
-    expect(getCategoryFromDescription("BP Fuel Stop")).toBe("gas");
-    expect(getCategoryFromDescription("shell")).toBe("gas");
-    expect(getCategoryFromDescription("FUEL")).toBe("gas");
+    expect(getCategoryFromDescription("Shell Gas Station")).toBe("fuel");
+    expect(getCategoryFromDescription("BP Fuel Stop")).toBe("fuel");
+    expect(getCategoryFromDescription("shell")).toBe("fuel");
+    expect(getCategoryFromDescription("FUEL")).toBe("fuel");
   });
 
   it("should categorize restaurant descriptions correctly", () => {
@@ -24,6 +24,20 @@ describe("getCategoryFromDescription", () => {
     );
     expect(getCategoryFromDescription("PIZZA")).toBe("restaurants");
     expect(getCategoryFromDescription("mcdonalds")).toBe("restaurants");
+  });
+
+  it("should categorize payment/income descriptions correctly", () => {
+    expect(getCategoryFromDescription("Electronic Payment Received")).toBe(
+      "payment",
+    );
+    expect(getCategoryFromDescription("ELECTRONIC PAYMENT RECEIVED")).toBe(
+      "payment",
+    );
+    expect(getCategoryFromDescription("Payment Received")).toBe("payment");
+    expect(getCategoryFromDescription("ACH Credit")).toBe("payment");
+    expect(getCategoryFromDescription("Direct Deposit")).toBe("payment");
+    expect(getCategoryFromDescription("Payroll")).toBe("payment");
+    expect(getCategoryFromDescription("Salary Payment")).toBe("payment");
   });
 
   it("should categorize bill descriptions correctly", () => {
@@ -45,9 +59,19 @@ describe("getCategoryFromDescription", () => {
     it("should categorize gas stations correctly even when combined with store names", () => {
       expect(
         getCategoryFromDescription("COSTCO GAS #1344 SAINT CLOUD US"),
-      ).toBe("gas");
-      expect(getCategoryFromDescription("Shell Gas Station")).toBe("gas");
-      expect(getCategoryFromDescription("Walmart Gas")).toBe("gas");
+      ).toBe("fuel");
+      expect(getCategoryFromDescription("Shell Gas Station")).toBe("fuel");
+      expect(getCategoryFromDescription("Walmart Gas")).toBe("fuel");
+    });
+
+    it("should categorize Chick-fil-A with various spellings correctly", () => {
+      expect(getCategoryFromDescription("Chick-fil-A")).toBe("restaurants");
+      expect(getCategoryFromDescription("CHICK-FIL-A")).toBe("restaurants");
+      expect(getCategoryFromDescription("Chik-fil-a")).toBe("restaurants");
+      expect(getCategoryFromDescription("ChickFilA")).toBe("restaurants");
+      expect(getCategoryFromDescription("Chick-fil-A - Store #1234")).toBe(
+        "restaurants",
+      );
     });
 
     it("should categorize Target as shopping, not groceries", () => {
@@ -55,11 +79,11 @@ describe("getCategoryFromDescription", () => {
       expect(getCategoryFromDescription("Target Store")).toBe("shopping");
     });
 
-    it("should categorize superettes and small grocery stores correctly", () => {
+    it("should categorize Bill's Superette as fuel (it's a gas station)", () => {
       expect(getCategoryFromDescription("Bill's Superette - Ramsey")).toBe(
-        "groceries",
+        "fuel",
       );
-      expect(getCategoryFromDescription("Joe's Superette")).toBe("groceries");
+      expect(getCategoryFromDescription("Bills Superette")).toBe("fuel");
     });
 
     it("should categorize transportation fees correctly", () => {
@@ -101,7 +125,7 @@ describe("getCategoryFromDescription", () => {
     it("should handle Bill's vs bill correctly", () => {
       expect(getCategoryFromDescription("Bill's Store")).toBe("imported"); // Person's store
       expect(getCategoryFromDescription("Electric Bill")).toBe("bills"); // Utility bill
-      expect(getCategoryFromDescription("Bill's Superette")).toBe("groceries"); // Grocery store
+      expect(getCategoryFromDescription("Bill's Superette")).toBe("fuel"); // Gas station
     });
   });
 });
