@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
 import {
@@ -11,9 +11,15 @@ import {
   Switch,
   FormControlLabel,
   Typography,
+  Fade,
+  Grow,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DescriptionIcon from "@mui/icons-material/Description";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import WarningIcon from "@mui/icons-material/Warning";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import PageHeader from "../../components/PageHeader";
 import DataGridBase from "../../components/DataGridBase";
@@ -23,6 +29,14 @@ import LoadingState from "../../components/LoadingState";
 import EmptyState from "../../components/EmptyState";
 import ErrorDisplay from "../../components/ErrorDisplay";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import StatCard from "../../components/StatCard";
+import StatCardSkeleton from "../../components/StatCardSkeleton";
+import ViewToggle from "../../components/ViewToggle";
+import DescriptionFilterBar, {
+  DescriptionFilters,
+} from "../../components/DescriptionFilterBar";
+import DescriptionCard from "../../components/DescriptionCard";
+import DescriptionCardSkeleton from "../../components/DescriptionCardSkeleton";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -60,6 +74,19 @@ export default function DescriptionsNextGen() {
     activeStatus?: string;
   }>({});
 
+  // Modern view state
+  const [view, setView] = useState<"grid" | "table">(
+    () =>
+      (typeof window !== "undefined" &&
+        (localStorage.getItem("descriptionView") as "grid" | "table")) ||
+      "table",
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState<DescriptionFilters>({
+    status: "all",
+    usage: "all",
+  });
+
   const {
     data: fetchedDescriptions,
     isSuccess: isSuccessDescriptions,
@@ -73,8 +100,57 @@ export default function DescriptionsNextGen() {
   const { mutateAsync: deleteDescription } = useDescriptionDeleteGql();
   const { mutateAsync: updateDescription } = useDescriptionUpdateGql();
 
-  const descriptionsToDisplay =
-    fetchedDescriptions?.filter((row) => row != null) || [];
+  // Persist view preference
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("descriptionView", view);
+    }
+  }, [view]);
+
+  // Filtering logic
+  const filteredDescriptions = useMemo(() => {
+    let filtered = fetchedDescriptions?.filter((row) => row != null) || [];
+
+    // Search filter
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter((desc) =>
+        desc.descriptionName.toLowerCase().includes(lowerSearch),
+      );
+    }
+
+    // Status filter
+    if (filters.status !== "all") {
+      filtered = filtered.filter((desc) =>
+        filters.status === "active" ? desc.activeStatus : !desc.activeStatus,
+      );
+    }
+
+    // Usage filter (KEY FEATURE)
+    if (filters.usage !== "all") {
+      filtered = filtered.filter((desc) => {
+        const isUnused = !desc.descriptionCount || desc.descriptionCount === 0;
+        return filters.usage === "unused" ? isUnused : !isUnused;
+      });
+    }
+
+    return filtered;
+  }, [fetchedDescriptions, searchTerm, filters]);
+
+  // Stats calculation
+  const stats = useMemo(() => {
+    const all = fetchedDescriptions || [];
+    const total = all.length;
+    const active = all.filter((desc) => desc.activeStatus).length;
+    const inactive = all.filter((desc) => !desc.activeStatus).length;
+    const unused = all.filter(
+      (desc) => !desc.descriptionCount || desc.descriptionCount === 0,
+    ).length;
+
+    return { total, active, inactive, unused };
+  }, [fetchedDescriptions]);
+
+  const descriptionsToDisplay = filteredDescriptions;
 
   useEffect(() => {
     if (loading) setShowSpinner(true);
@@ -179,6 +255,14 @@ export default function DescriptionsNextGen() {
     }
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilters({
+      status: "all",
+      usage: "all",
+    });
+  };
+
   const getRowId = (row: any) =>
     row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
 
@@ -263,68 +347,229 @@ export default function DescriptionsNextGen() {
           title="Description Management (Next‑Gen)"
           subtitle="GraphQL-powered description organization for better tracking"
           actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
-              sx={{ backgroundColor: "primary.main" }}
-            >
-              Add Description
-            </Button>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+              <Fade in timeout={600}>
+                <Box>
+                  <ViewToggle view={view} onChange={setView} />
+                </Box>
+              </Fade>
+              <Fade in timeout={700}>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => setShowModalAdd(true)}
+                  sx={{ backgroundColor: "primary.main" }}
+                >
+                  Add Description
+                </Button>
+              </Fade>
+            </Box>
           }
         />
+
+        {/* Filter Bar */}
+        <Fade in timeout={500}>
+          <Box>
+            <DescriptionFilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              activeFilters={filters}
+              onFilterChange={setFilters}
+              onClearFilters={handleClearFilters}
+              resultCount={descriptionsToDisplay.length}
+              totalCount={fetchedDescriptions?.length || 0}
+            />
+          </Box>
+        </Fade>
+
+        {/* StatCards */}
+        {showSpinner ? (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            {[0, 1, 2, 3].map((i) => (
+              <Grow in timeout={700 + i * 100} key={i}>
+                <Box>
+                  <StatCardSkeleton />
+                </Box>
+              </Grow>
+            ))}
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            <Grow in timeout={700}>
+              <Box>
+                <StatCard
+                  icon={<DescriptionIcon />}
+                  label="Total"
+                  value={stats.total}
+                  color="primary"
+                />
+              </Box>
+            </Grow>
+            <Grow in timeout={800}>
+              <Box>
+                <StatCard
+                  icon={<CheckCircleIcon />}
+                  label="Active"
+                  value={stats.active}
+                  color="success"
+                />
+              </Box>
+            </Grow>
+            <Grow in timeout={900}>
+              <Box>
+                <StatCard
+                  icon={<CancelIcon />}
+                  label="Inactive"
+                  value={stats.inactive}
+                  color="warning"
+                />
+              </Box>
+            </Grow>
+            <Grow in timeout={1000}>
+              <Box>
+                <StatCard
+                  icon={<WarningIcon />}
+                  label="Not Used"
+                  value={stats.unused}
+                  color="secondary"
+                />
+              </Box>
+            </Grow>
+          </Box>
+        )}
+
+        {/* View Content */}
         {showSpinner ? (
           <LoadingState variant="card" message="Loading descriptions..." />
         ) : descriptionsToDisplay && descriptionsToDisplay.length > 0 ? (
-          <Box display="flex" justifyContent="center">
-            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-              <DataGridBase
-                rows={descriptionsToDisplay}
-                columns={columns}
-                getRowId={getRowId}
-                checkboxSelection={false}
-                rowSelection={false}
-                paginationModel={paginationModel}
-                onPaginationModelChange={(m) => setPaginationModel(m)}
-                pageSizeOptions={[25, 50, 100]}
-                processRowUpdate={async (
-                  newRow: Description,
-                  oldRow: Description,
-                ): Promise<Description> => {
-                  if (JSON.stringify(newRow) === JSON.stringify(oldRow))
-                    return oldRow;
-                  try {
-                    await updateDescription({
-                      oldDescription: oldRow,
-                      newDescription: newRow,
-                    });
-                    handleSuccess("Description updated successfully.");
-                    return { ...newRow };
-                  } catch (error: any) {
-                    handleError(error, "Update Description failure.", false);
-                    return oldRow;
-                  }
-                }}
-                autoHeight
-                disableColumnResize={false}
-                sx={{
-                  "& .MuiDataGrid-cell": {
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  },
-                }}
-              />
+          view === "grid" ? (
+            // Grid View
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                  lg: "repeat(4, 1fr)",
+                },
+                gap: 2,
+              }}
+            >
+              {descriptionsToDisplay.map((description, index) => (
+                <Fade
+                  in
+                  timeout={600 + index * 100}
+                  key={description.descriptionId}
+                >
+                  <Box>
+                    <DescriptionCard
+                      description={description}
+                      onDelete={(desc) => {
+                        setSelectedDescription(desc);
+                        setShowModalDelete(true);
+                      }}
+                    />
+                  </Box>
+                </Fade>
+              ))}
             </Box>
-          </Box>
+          ) : (
+            // Table View
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
+                <DataGridBase
+                  rows={descriptionsToDisplay}
+                  columns={columns}
+                  getRowId={getRowId}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(m) => setPaginationModel(m)}
+                  pageSizeOptions={[25, 50, 100]}
+                  processRowUpdate={async (
+                    newRow: Description,
+                    oldRow: Description,
+                  ): Promise<Description> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow))
+                      return oldRow;
+                    try {
+                      await updateDescription({
+                        oldDescription: oldRow,
+                        newDescription: newRow,
+                      });
+                      handleSuccess("Description updated successfully.");
+                      return { ...newRow };
+                    } catch (error: any) {
+                      handleError(error, "Update Description failure.", false);
+                      return oldRow;
+                    }
+                  }}
+                  autoHeight
+                  disableColumnResize={false}
+                  sx={{
+                    "& .MuiDataGrid-cell": {
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          )
         ) : (
           <EmptyState
             title="No Descriptions Found"
-            message="You haven't created any descriptions yet. Create your first description to organize your transactions."
+            message={
+              searchTerm || filters.status !== "all" || filters.usage !== "all"
+                ? "No descriptions match your current filters. Try adjusting your search or filter criteria."
+                : "You haven't created any descriptions yet. Create your first description to organize your transactions."
+            }
             dataType="descriptions"
-            variant="create"
-            actionLabel="Add Description"
-            onAction={() => setShowModalAdd(true)}
+            variant={
+              searchTerm || filters.status !== "all" || filters.usage !== "all"
+                ? "search"
+                : "create"
+            }
+            actionLabel={
+              searchTerm || filters.status !== "all" || filters.usage !== "all"
+                ? "Clear Filters"
+                : "Add Description"
+            }
+            onAction={() => {
+              if (
+                searchTerm ||
+                filters.status !== "all" ||
+                filters.usage !== "all"
+              ) {
+                handleClearFilters();
+              } else {
+                setShowModalAdd(true);
+              }
+            }}
             onRefresh={() => refetchDescriptions()}
           />
         )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/router";
 import { GridColDef } from "@mui/x-data-grid";
 import {
@@ -11,9 +11,15 @@ import {
   Switch,
   FormControlLabel,
   Typography,
+  Fade,
+  Grow,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CategoryIcon from "@mui/icons-material/Category";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import WarningIcon from "@mui/icons-material/Warning";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import PageHeader from "../../components/PageHeader";
 import DataGridBase from "../../components/DataGridBase";
@@ -23,6 +29,14 @@ import LoadingState from "../../components/LoadingState";
 import EmptyState from "../../components/EmptyState";
 import ErrorDisplay from "../../components/ErrorDisplay";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
+import StatCard from "../../components/StatCard";
+import StatCardSkeleton from "../../components/StatCardSkeleton";
+import ViewToggle from "../../components/ViewToggle";
+import CategoryFilterBar, {
+  CategoryFilters,
+} from "../../components/CategoryFilterBar";
+import CategoryCard from "../../components/CategoryCard";
+import CategoryCardSkeleton from "../../components/CategoryCardSkeleton";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -59,6 +73,19 @@ export default function CategoriesNextGen() {
     activeStatus?: string;
   }>({});
 
+  // Modern view state
+  const [view, setView] = useState<"grid" | "table">(
+    () =>
+      (typeof window !== "undefined" &&
+        (localStorage.getItem("categoryView") as "grid" | "table")) ||
+      "table",
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState<CategoryFilters>({
+    status: "all",
+    usage: "all",
+  });
+
   const {
     data: fetchedCategories,
     isSuccess: isSuccessCategories,
@@ -72,8 +99,57 @@ export default function CategoriesNextGen() {
   const { mutateAsync: deleteCategory } = useCategoryDeleteGql();
   const { mutateAsync: updateCategory } = useCategoryUpdateGql();
 
-  const categoriesToDisplay =
-    fetchedCategories?.filter((row) => row != null) || [];
+  // Persist view preference
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("categoryView", view);
+    }
+  }, [view]);
+
+  // Filtering logic
+  const filteredCategories = useMemo(() => {
+    let filtered = fetchedCategories?.filter((row) => row != null) || [];
+
+    // Search filter
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter((cat) =>
+        cat.categoryName.toLowerCase().includes(lowerSearch),
+      );
+    }
+
+    // Status filter
+    if (filters.status !== "all") {
+      filtered = filtered.filter((cat) =>
+        filters.status === "active" ? cat.activeStatus : !cat.activeStatus,
+      );
+    }
+
+    // Usage filter (KEY FEATURE)
+    if (filters.usage !== "all") {
+      filtered = filtered.filter((cat) => {
+        const isUnused = !cat.categoryCount || cat.categoryCount === 0;
+        return filters.usage === "unused" ? isUnused : !isUnused;
+      });
+    }
+
+    return filtered;
+  }, [fetchedCategories, searchTerm, filters]);
+
+  // Stats calculation
+  const stats = useMemo(() => {
+    const all = fetchedCategories || [];
+    const total = all.length;
+    const active = all.filter((cat) => cat.activeStatus).length;
+    const inactive = all.filter((cat) => !cat.activeStatus).length;
+    const unused = all.filter(
+      (cat) => !cat.categoryCount || cat.categoryCount === 0,
+    ).length;
+
+    return { total, active, inactive, unused };
+  }, [fetchedCategories]);
+
+  const categoriesToDisplay = filteredCategories;
 
   useEffect(() => {
     if (loading) setShowSpinner(true);
@@ -178,6 +254,14 @@ export default function CategoriesNextGen() {
     }
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilters({
+      status: "all",
+      usage: "all",
+    });
+  };
+
   const getRowId = (row: any) =>
     row.categoryId ?? `${row.categoryName}-${row.activeStatus}`;
 
@@ -262,68 +346,225 @@ export default function CategoriesNextGen() {
           title="Category Management (Next‑Gen)"
           subtitle="GraphQL-powered category organization for better tracking"
           actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
-              sx={{ backgroundColor: "primary.main" }}
-            >
-              Add Category
-            </Button>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+              <Fade in timeout={600}>
+                <Box>
+                  <ViewToggle view={view} onChange={setView} />
+                </Box>
+              </Fade>
+              <Fade in timeout={700}>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => setShowModalAdd(true)}
+                  sx={{ backgroundColor: "primary.main" }}
+                >
+                  Add Category
+                </Button>
+              </Fade>
+            </Box>
           }
         />
+
+        {/* Filter Bar */}
+        <Fade in timeout={500}>
+          <Box>
+            <CategoryFilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              activeFilters={filters}
+              onFilterChange={setFilters}
+              onClearFilters={handleClearFilters}
+              resultCount={categoriesToDisplay.length}
+              totalCount={fetchedCategories?.length || 0}
+            />
+          </Box>
+        </Fade>
+
+        {/* StatCards */}
+        {showSpinner ? (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            {[0, 1, 2, 3].map((i) => (
+              <Grow in timeout={700 + i * 100} key={i}>
+                <Box>
+                  <StatCardSkeleton />
+                </Box>
+              </Grow>
+            ))}
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(4, 1fr)",
+              },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            <Grow in timeout={700}>
+              <Box>
+                <StatCard
+                  icon={<CategoryIcon />}
+                  label="Total"
+                  value={stats.total}
+                  color="primary"
+                />
+              </Box>
+            </Grow>
+            <Grow in timeout={800}>
+              <Box>
+                <StatCard
+                  icon={<CheckCircleIcon />}
+                  label="Active"
+                  value={stats.active}
+                  color="success"
+                />
+              </Box>
+            </Grow>
+            <Grow in timeout={900}>
+              <Box>
+                <StatCard
+                  icon={<CancelIcon />}
+                  label="Inactive"
+                  value={stats.inactive}
+                  color="warning"
+                />
+              </Box>
+            </Grow>
+            <Grow in timeout={1000}>
+              <Box>
+                <StatCard
+                  icon={<WarningIcon />}
+                  label="Not Used"
+                  value={stats.unused}
+                  color="secondary"
+                />
+              </Box>
+            </Grow>
+          </Box>
+        )}
+
+        {/* View Content */}
         {showSpinner ? (
           <LoadingState variant="card" message="Loading categories..." />
         ) : categoriesToDisplay && categoriesToDisplay.length > 0 ? (
-          <Box display="flex" justifyContent="center">
-            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-              <DataGridBase
-                rows={categoriesToDisplay}
-                columns={columns}
-                getRowId={getRowId}
-                checkboxSelection={false}
-                rowSelection={false}
-                paginationModel={paginationModel}
-                onPaginationModelChange={(m) => setPaginationModel(m)}
-                pageSizeOptions={[25, 50, 100]}
-                processRowUpdate={async (
-                  newRow: Category,
-                  oldRow: Category,
-                ): Promise<Category> => {
-                  if (JSON.stringify(newRow) === JSON.stringify(oldRow))
-                    return oldRow;
-                  try {
-                    await updateCategory({
-                      oldCategory: oldRow,
-                      newCategory: newRow,
-                    });
-                    handleSuccess("Category updated successfully.");
-                    return { ...newRow };
-                  } catch (error: any) {
-                    handleError(error, "Update Category failure.", false);
-                    return oldRow;
-                  }
-                }}
-                autoHeight
-                disableColumnResize={false}
-                sx={{
-                  "& .MuiDataGrid-cell": {
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  },
-                }}
-              />
+          view === "grid" ? (
+            // Grid View
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                  lg: "repeat(4, 1fr)",
+                },
+                gap: 2,
+              }}
+            >
+              {categoriesToDisplay.map((category, index) => (
+                <Fade in timeout={600 + index * 100} key={category.categoryId}>
+                  <Box>
+                    <CategoryCard
+                      category={category}
+                      onDelete={(cat) => {
+                        setSelectedCategory(cat);
+                        setShowModalDelete(true);
+                      }}
+                    />
+                  </Box>
+                </Fade>
+              ))}
             </Box>
-          </Box>
+          ) : (
+            // Table View
+            <Box display="flex" justifyContent="center">
+              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
+                <DataGridBase
+                  rows={categoriesToDisplay}
+                  columns={columns}
+                  getRowId={getRowId}
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(m) => setPaginationModel(m)}
+                  pageSizeOptions={[25, 50, 100]}
+                  processRowUpdate={async (
+                    newRow: Category,
+                    oldRow: Category,
+                  ): Promise<Category> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow))
+                      return oldRow;
+                    try {
+                      await updateCategory({
+                        oldCategory: oldRow,
+                        newCategory: newRow,
+                      });
+                      handleSuccess("Category updated successfully.");
+                      return { ...newRow };
+                    } catch (error: any) {
+                      handleError(error, "Update Category failure.", false);
+                      return oldRow;
+                    }
+                  }}
+                  autoHeight
+                  disableColumnResize={false}
+                  sx={{
+                    "& .MuiDataGrid-cell": {
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          )
         ) : (
           <EmptyState
             title="No Categories Found"
-            message="You haven't created any categories yet. Create your first category to organize your transactions."
+            message={
+              searchTerm || filters.status !== "all" || filters.usage !== "all"
+                ? "No categories match your current filters. Try adjusting your search or filter criteria."
+                : "You haven't created any categories yet. Create your first category to organize your transactions."
+            }
             dataType="categories"
-            variant="create"
-            actionLabel="Add Category"
-            onAction={() => setShowModalAdd(true)}
+            variant={
+              searchTerm || filters.status !== "all" || filters.usage !== "all"
+                ? "search"
+                : "create"
+            }
+            actionLabel={
+              searchTerm || filters.status !== "all" || filters.usage !== "all"
+                ? "Clear Filters"
+                : "Add Category"
+            }
+            onAction={() => {
+              if (
+                searchTerm ||
+                filters.status !== "all" ||
+                filters.usage !== "all"
+              ) {
+                handleClearFilters();
+              } else {
+                setShowModalAdd(true);
+              }
+            }}
             onRefresh={() => refetchCategories()}
           />
         )}

@@ -59,7 +59,7 @@ describe("getCategoryFromDescription", () => {
     it("should categorize gas stations correctly even when combined with store names", () => {
       expect(
         getCategoryFromDescription("COSTCO GAS #1344 SAINT CLOUD US"),
-      ).toBe("fuel");
+      ).toBe("fuel"); // Costco Gas is fuel, not costco
       expect(getCategoryFromDescription("Shell Gas Station")).toBe("fuel");
       expect(getCategoryFromDescription("Walmart Gas")).toBe("fuel");
     });
@@ -74,9 +74,21 @@ describe("getCategoryFromDescription", () => {
       );
     });
 
-    it("should categorize Target as shopping, not groceries", () => {
-      expect(getCategoryFromDescription("Target - Champlin")).toBe("shopping");
-      expect(getCategoryFromDescription("Target Store")).toBe("shopping");
+    it("should categorize Costco with its own category (except gas)", () => {
+      expect(getCategoryFromDescription("Costco Wholesale")).toBe("costco");
+      expect(getCategoryFromDescription("COSTCO")).toBe("costco");
+      expect(getCategoryFromDescription("Costco - Store #1234")).toBe("costco");
+      // But Costco Gas should be fuel
+      expect(
+        getCategoryFromDescription("COSTCO GAS #1344 SAINT CLOUD US"),
+      ).toBe("fuel");
+      expect(getCategoryFromDescription("Costco Gas")).toBe("fuel");
+    });
+
+    it("should categorize Target with its own category", () => {
+      expect(getCategoryFromDescription("Target - Champlin")).toBe("target");
+      expect(getCategoryFromDescription("Target Store")).toBe("target");
+      expect(getCategoryFromDescription("TARGET")).toBe("target");
     });
 
     it("should categorize Bill's Superette as fuel (it's a gas station)", () => {

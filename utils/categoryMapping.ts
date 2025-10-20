@@ -14,7 +14,7 @@ export function getCategoryFromDescription(description: string): string {
     return "payment";
   }
 
-  // Check for gas stations first (before groceries) to handle "COSTCO GAS", "Walmart Gas"
+  // Check for gas stations first (before other categories to catch Costco Gas, Walmart Gas, etc.)
   if (
     desc.includes(" gas ") ||
     desc.includes(" gas#") ||
@@ -37,6 +37,16 @@ export function getCategoryFromDescription(description: string): string {
     desc.includes("bills superette")
   ) {
     return "fuel";
+  }
+
+  // Costco - specific category (but NOT Costco Gas, which is caught above)
+  if (desc.includes("costco")) {
+    return "costco";
+  }
+
+  // Target - specific category
+  if (desc.includes("target")) {
+    return "target";
   }
 
   // Transportation (check early to catch taxi, uber, etc.)
@@ -89,7 +99,7 @@ export function getCategoryFromDescription(description: string): string {
     return "restaurants";
   }
 
-  // Grocery stores and supermarkets (moved after gas to avoid conflicts)
+  // Grocery stores and supermarkets
   if (
     desc.includes("walmart") ||
     desc.includes("kroger") ||
@@ -98,13 +108,11 @@ export function getCategoryFromDescription(description: string): string {
     desc.includes("safeway") ||
     desc.includes("whole foods") ||
     desc.includes("trader joe") ||
-    (desc.includes("costco") && !desc.includes(" gas")) || // Costco but not gas station
     desc.includes("food lion") ||
     desc.includes("publix") ||
     desc.includes("aldi") ||
     desc.includes("harris teeter") ||
     desc.includes("wegmans")
-    // Removed "target" from here since it should be shopping
   ) {
     return "groceries";
   }
@@ -162,7 +170,6 @@ export function getCategoryFromDescription(description: string): string {
   // Shopping and retail (specific stores only, avoid generic terms)
   if (
     desc.includes("amazon") ||
-    desc.includes("target") || // Target should be shopping, not groceries
     desc.includes("best buy") ||
     desc.includes("home depot") ||
     desc.includes("lowes") ||
