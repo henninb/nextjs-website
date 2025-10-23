@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export const config = {
   matcher: [
-    // Match ALL API routes - we'll filter locally inside the middleware
+    // Match ALL API routes - we'll filter locally inside the proxy
     "/api/(.*)",
     // Handle direct GraphQL requests in production
     "/graphql",
@@ -10,10 +10,11 @@ export const config = {
     // extension-based static assets in code below.
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
-  runtime: "experimental-edge",
+  // Note: Next.js 16 proxy does not support runtime config
+  // Edge runtime is now the default for proxy functions
 };
 
-export async function middleware(request) {
+export default async function proxy(request) {
   const isProduction = process.env.NODE_ENV === "production";
   const isDev = !isProduction;
 

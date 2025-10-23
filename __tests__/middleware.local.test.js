@@ -1,5 +1,5 @@
-import { middleware } from "../middleware";
 import { NextResponse } from "next/server";
+import proxy from "../proxy.js";
 
 // Mock NextResponse.next() to track calls
 jest.mock("next/server", () => ({
@@ -36,7 +36,7 @@ const createMockRequest = (url, host) => {
   };
 };
 
-describe("Middleware Local API Handling", () => {
+describe("Proxy Local API Handling", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -63,6 +63,8 @@ describe("Middleware Local API Handling", () => {
     "/api/weather",
     "/api/uuid",
     "/api/uuid/generate",
+    "/api/human",
+    "/api/health",
   ];
 
   const proxiedApis = ["/api/users", "/api/graphql", "/graphql"];
@@ -78,7 +80,7 @@ describe("Middleware Local API Handling", () => {
           `https://vercel.bhenning.com${path}`,
           "vercel.bhenning.com",
         );
-        await middleware(req);
+        await proxy(req);
         expect(NextResponse.next).toHaveBeenCalled();
         expect(global.fetch).not.toHaveBeenCalled();
       });
@@ -90,7 +92,7 @@ describe("Middleware Local API Handling", () => {
           `https://vercel.bhenning.com${path}`,
           "vercel.bhenning.com",
         );
-        await middleware(req);
+        await proxy(req);
         expect(NextResponse.next).not.toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });
@@ -108,7 +110,7 @@ describe("Middleware Local API Handling", () => {
           `http://localhost:3000${path}`,
           "localhost:3000",
         );
-        await middleware(req);
+        await proxy(req);
         expect(NextResponse.next).toHaveBeenCalled();
         expect(global.fetch).not.toHaveBeenCalled();
       });
@@ -120,7 +122,7 @@ describe("Middleware Local API Handling", () => {
           `http://localhost:3000${path}`,
           "localhost:3000",
         );
-        await middleware(req);
+        await proxy(req);
         expect(NextResponse.next).not.toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });

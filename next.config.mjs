@@ -62,7 +62,14 @@ const nextConfig = {
     },
   },
 
-  // Minimal webpack configuration - let Next.js handle everything
+  // Turbopack configuration for Next.js 16+
+  // Turbopack handles HMR natively - no custom webpack config needed
+  turbopack: {
+    // Empty config to silence migration warning
+    // Turbopack has better HMR out of the box than our custom webpack config
+  },
+
+  // Keep webpack config for fallback when explicitly using --webpack flag
   webpack: (config, { dev, isServer, webpack }) => {
     if (dev && !isServer) {
       // Force enable HMR and ensure proper configuration
@@ -93,14 +100,9 @@ const nextConfig = {
     ];
   },
 
-  // Add server configuration to ensure proper handling
-  serverRuntimeConfig: {
-    // Will only be available on the server side
-  },
-  publicRuntimeConfig: {
-    // Will be available on both server and client
-    apiUrl: "https://finance.bhenning.com",
-  },
+  // Runtime config replaced with environment variables in Next.js 16
+  // Use NEXT_PUBLIC_API_URL="https://finance.bhenning.com" in .env instead
+  // Access via process.env.NEXT_PUBLIC_API_URL
 
   async headers() {
     return [

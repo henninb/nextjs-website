@@ -3,7 +3,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { middleware } from "../middleware.js";
+import proxy from "../proxy.js";
 
 // Enhanced NextResponse mock to support constructor usage and headers
 jest.mock("next/server", () => {
@@ -62,7 +62,7 @@ global.AbortController = jest.fn(() => ({
 global.setTimeout = jest.fn();
 global.clearTimeout = jest.fn();
 
-describe("Middleware", () => {
+describe("Proxy (middleware replacement)", () => {
   let mockRequest;
   let mockUrl;
 
@@ -118,7 +118,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/graphql?query=test",
@@ -147,7 +147,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/api/me",
@@ -171,7 +171,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/api/users?limit=10",
@@ -195,7 +195,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/graphql?query=test",
@@ -229,7 +229,7 @@ describe("Middleware", () => {
       };
       global.fetch.mockResolvedValue(mockResponse);
 
-      const res = await middleware(mockRequest);
+      const res = await proxy(mockRequest);
       // Our NextResponse mock returns the options.headers as provided by middleware
       const setCookie = res.headers.get
         ? res.headers.get("set-cookie")
@@ -262,7 +262,7 @@ describe("Middleware", () => {
       };
       global.fetch.mockResolvedValue(mockResponse);
 
-      const res = await middleware(mockRequest);
+      const res = await proxy(mockRequest);
       const setCookie = res.headers.get
         ? res.headers.get("set-cookie")
         : undefined;
@@ -287,7 +287,7 @@ describe("Middleware", () => {
       };
       global.fetch.mockResolvedValue(mockResponse);
 
-      const res = await middleware(mockRequest);
+      const res = await proxy(mockRequest);
       const setCookie = res.headers.get
         ? res.headers.get("set-cookie")
         : undefined;
@@ -325,7 +325,7 @@ describe("Middleware", () => {
 
           global.fetch.mockResolvedValue(mockResponse);
 
-          await middleware(mockRequest);
+          await proxy(mockRequest);
 
           expect(global.fetch).toHaveBeenCalledWith(
             "https://finance.bhenning.com/graphql?query=test",
@@ -363,7 +363,7 @@ describe("Middleware", () => {
 
         global.fetch.mockResolvedValue(mockResponse);
 
-        await middleware(mockRequest);
+        await proxy(mockRequest);
 
         expect(global.fetch).toHaveBeenCalledWith(
           "https://finance.bhenning.com/graphql?query=test",
@@ -406,7 +406,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       // This should map /api/graphql to /graphql on the backend
       expect(global.fetch).toHaveBeenCalledWith(
@@ -449,7 +449,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       // FIXED: Now correctly maps /api/graphql to /graphql for vercel.bhenning.com
       expect(global.fetch).toHaveBeenCalledWith(
@@ -481,7 +481,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://custom-backend.com/api/test",
@@ -503,7 +503,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/api/test",
@@ -524,7 +524,7 @@ describe("Middleware", () => {
       timeoutError.name = "AbortError";
       global.fetch.mockRejectedValue(timeoutError);
 
-      const result = await middleware(mockRequest);
+      const result = await proxy(mockRequest);
 
       expect(result).toBeDefined();
       // The middleware should return a 504 response for timeout
@@ -535,7 +535,7 @@ describe("Middleware", () => {
 
       global.fetch.mockRejectedValue(new Error("Network error"));
 
-      const result = await middleware(mockRequest);
+      const result = await proxy(mockRequest);
 
       expect(result).toBeDefined();
       // The middleware should return a 502 response for proxy errors
@@ -554,7 +554,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.AbortController).toHaveBeenCalled();
       expect(global.setTimeout).toHaveBeenCalledWith(
@@ -580,7 +580,7 @@ describe("Middleware", () => {
       };
       global.fetch.mockResolvedValue(mockResponse);
 
-      const res = await middleware(mockRequest);
+      const res = await proxy(mockRequest);
       const get = res.headers.get?.bind(res.headers);
       expect(get("Access-Control-Allow-Origin")).toBe("http://localhost:3000");
       expect(get("Access-Control-Allow-Credentials")).toBe("true");
@@ -596,7 +596,7 @@ describe("Middleware", () => {
       mockRequest.headers = new Map([["host", "evil.example.com"]]);
       mockUrl.pathname = "/api/test";
 
-      const res = await middleware(mockRequest);
+      const res = await proxy(mockRequest);
       expect(res.status).toBe(403);
       if (typeof res.body === "string") {
         expect(res.body).toContain("Forbidden");
@@ -609,7 +609,7 @@ describe("Middleware", () => {
       mockRequest.headers.set("host", "malicious-host.com");
       mockUrl.pathname = "/api/test";
 
-      const result = await middleware(mockRequest);
+      const result = await proxy(mockRequest);
 
       // Should return 403 for unauthorized host
       expect(result).toBeDefined();
@@ -631,7 +631,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -665,7 +665,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/graphql",
@@ -693,7 +693,7 @@ describe("Middleware", () => {
 
       global.fetch.mockResolvedValue(mockResponse);
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://finance.bhenning.com/graphql",
@@ -712,7 +712,7 @@ describe("Middleware", () => {
       const mockNext = jest.fn(() => ({ headers: { set: jest.fn() } }));
       NextResponse.next = mockNext;
 
-      const result = await middleware(mockRequest);
+      const result = await proxy(mockRequest);
 
       expect(mockNext).toHaveBeenCalled();
       expect(result.headers.set).toHaveBeenCalledWith(
@@ -727,7 +727,7 @@ describe("Middleware", () => {
       const mockNext = jest.fn();
       NextResponse.next = mockNext;
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(mockNext).toHaveBeenCalled();
     });
@@ -738,7 +738,7 @@ describe("Middleware", () => {
       const mockNext = jest.fn();
       NextResponse.next = mockNext;
 
-      await middleware(mockRequest);
+      await proxy(mockRequest);
 
       expect(mockNext).toHaveBeenCalled();
     });
@@ -766,7 +766,7 @@ describe("Middleware", () => {
         const mockLocalResponse = { headers: { set: jest.fn() } };
         NextResponse.next = jest.fn(() => mockLocalResponse);
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         // This should NOT be a 403 error
         expect(result.status).not.toBe(403);
@@ -789,7 +789,7 @@ describe("Middleware", () => {
         const mockLocalResponse = { headers: { set: jest.fn() } };
         NextResponse.next = jest.fn(() => mockLocalResponse);
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         expect(result.status).not.toBe(403);
         expect(NextResponse.next).toHaveBeenCalled();
@@ -822,7 +822,7 @@ describe("Middleware", () => {
           const mockLocalResponse = { headers: { set: jest.fn() } };
           NextResponse.next = jest.fn(() => mockLocalResponse);
 
-          const result = await middleware(mockRequest);
+          const result = await proxy(mockRequest);
 
           // Log the result to understand what's happening
           console.log(
@@ -943,7 +943,7 @@ describe("Middleware", () => {
             const mockLocalResponse = { headers: { set: jest.fn() } };
             NextResponse.next = jest.fn(() => mockLocalResponse);
 
-            const result = await middleware(mockRequest);
+            const result = await proxy(mockRequest);
 
             // This should be the failing case that reproduces the user's issue
             if (result && result.status === 403) {
@@ -980,7 +980,7 @@ describe("Middleware", () => {
           const mockLocalResponse = { headers: { set: jest.fn() } };
           NextResponse.next = jest.fn(() => mockLocalResponse);
 
-          const result = await middleware(mockRequest);
+          const result = await proxy(mockRequest);
 
           console.log(
             `Path "${path}": status = ${result?.status || "undefined"}`,
@@ -1043,7 +1043,7 @@ describe("Middleware", () => {
           const mockLocalResponse = { headers: { set: jest.fn() } };
           NextResponse.next = jest.fn(() => mockLocalResponse);
 
-          const result = await middleware(mockRequest);
+          const result = await proxy(mockRequest);
 
           console.log(`Testing ${testCase.description}: "${testCase.path}"`);
 
@@ -1084,7 +1084,7 @@ describe("Middleware", () => {
           const mockLocalResponse = { headers: { set: jest.fn() } };
           NextResponse.next = jest.fn(() => mockLocalResponse);
 
-          const result = await middleware(mockRequest);
+          const result = await proxy(mockRequest);
 
           console.log(`Testing ${api.sport} API: "${api.path}"`);
           console.log(`  Result status: ${result?.status || "undefined"}`);
@@ -1144,7 +1144,7 @@ describe("Middleware", () => {
           const mockLocalResponse = { headers: { set: jest.fn() } };
           NextResponse.next = jest.fn(() => mockLocalResponse);
 
-          const result = await middleware(mockRequest);
+          const result = await proxy(mockRequest);
 
           console.log(`NFL Test - ${scenario.name}:`);
           console.log(`  Status: ${result?.status || "undefined"}`);
@@ -1201,7 +1201,7 @@ describe("Middleware", () => {
 
       it("should properly handle middleware config for API routes", async () => {
         // Import and test the actual config from middleware.js
-        const { config } = require("../middleware.js");
+        const { config } = require("../proxy.js");
 
         console.log("Current middleware matcher patterns:", config.matcher);
 
@@ -1235,7 +1235,7 @@ describe("Middleware", () => {
         const mockLocalResponse = { headers: { set: jest.fn() } };
         NextResponse.next = jest.fn(() => mockLocalResponse);
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         // Should NOT call fetch (no proxy)
         expect(global.fetch).not.toHaveBeenCalled();
@@ -1251,7 +1251,7 @@ describe("Middleware", () => {
         const mockLocalResponse = { headers: { set: jest.fn() } };
         NextResponse.next = jest.fn(() => mockLocalResponse);
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         expect(global.fetch).not.toHaveBeenCalled();
         expect(NextResponse.next).toHaveBeenCalled();
@@ -1264,7 +1264,7 @@ describe("Middleware", () => {
         const mockLocalResponse = { headers: { set: jest.fn() } };
         NextResponse.next = jest.fn(() => mockLocalResponse);
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         expect(global.fetch).not.toHaveBeenCalled();
         expect(NextResponse.next).toHaveBeenCalled();
@@ -1279,7 +1279,7 @@ describe("Middleware", () => {
         const mockLocalResponse = { headers: { set: jest.fn() } };
         NextResponse.next = jest.fn(() => mockLocalResponse);
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         expect(global.fetch).not.toHaveBeenCalled();
         expect(NextResponse.next).toHaveBeenCalled();
@@ -1293,7 +1293,7 @@ describe("Middleware", () => {
         const mockLocalResponse = { headers: { set: jest.fn() } };
         NextResponse.next = jest.fn(() => mockLocalResponse);
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         expect(global.fetch).not.toHaveBeenCalled();
         expect(NextResponse.next).toHaveBeenCalled();
@@ -1309,7 +1309,7 @@ describe("Middleware", () => {
           const mockLocalResponse = { headers: { set: jest.fn() } };
           NextResponse.next = jest.fn(() => mockLocalResponse);
 
-          await middleware(mockRequest);
+          await proxy(mockRequest);
 
           expect(global.fetch).not.toHaveBeenCalled();
           expect(NextResponse.next).toHaveBeenCalled();
@@ -1338,7 +1338,7 @@ describe("Middleware", () => {
 
         global.fetch.mockResolvedValue(mockResponse);
 
-        await middleware(mockRequest);
+        await proxy(mockRequest);
 
         expect(global.fetch).toHaveBeenCalledWith(
           "https://finance.bhenning.com/graphql?query=test",
@@ -1368,7 +1368,7 @@ describe("Middleware", () => {
 
         global.fetch.mockResolvedValue(mockResponse);
 
-        await middleware(mockRequest);
+        await proxy(mockRequest);
 
         expect(global.fetch).toHaveBeenCalledWith(
           "https://finance.bhenning.com/api/me",
@@ -1401,7 +1401,7 @@ describe("Middleware", () => {
 
           global.fetch.mockResolvedValue(mockResponse);
 
-          await middleware(mockRequest);
+          await proxy(mockRequest);
 
           expect(global.fetch).toHaveBeenCalledWith(
             `https://finance.bhenning.com${route}`,
@@ -1420,7 +1420,7 @@ describe("Middleware", () => {
         mockRequest.headers.set("host", "malicious.com");
         mockUrl.pathname = "/api/nhl";
 
-        const result = await middleware(mockRequest);
+        const result = await proxy(mockRequest);
 
         // Local APIs bypass host validation entirely (this prevents 403 errors)
         expect(result).toBeDefined(); // NextResponse.next() returns a response object
@@ -1449,7 +1449,7 @@ describe("Middleware", () => {
 
           global.fetch.mockResolvedValue(mockResponse);
 
-          await middleware(mockRequest);
+          await proxy(mockRequest);
 
           // Should be proxied (not bypassed)
           expect(global.fetch).toHaveBeenCalled();
@@ -1461,9 +1461,9 @@ describe("Middleware", () => {
     });
   });
 
-  describe("Middleware Config", () => {
+  describe("Proxy Config", () => {
     it("should export correct config", () => {
-      const { config } = require("../middleware.js");
+      const { config } = require("../proxy.js");
 
       expect(config).toEqual({
         matcher: [
@@ -1471,7 +1471,6 @@ describe("Middleware", () => {
           "/graphql",
           "/((?!_next/static|_next/image|favicon.ico).*)",
         ],
-        runtime: "experimental-edge",
       });
     });
   });

@@ -447,10 +447,10 @@ describe("TransactionImporter Component", () => {
       );
     });
 
-    it("should assign 'gas' category for gas station descriptions", async () => {
+    it("should assign 'fuel' category for gas station descriptions", async () => {
       // Test the category mapping function directly
-      expect(getCategoryFromDescription("Shell Gas Station")).toBe("gas");
-      expect(getCategoryFromDescription("BP Fuel Stop")).toBe("gas");
+      expect(getCategoryFromDescription("Shell Gas Station")).toBe("fuel");
+      expect(getCategoryFromDescription("BP Fuel Stop")).toBe("fuel");
     });
 
     it("should assign 'restaurants' category for restaurant descriptions", async () => {
@@ -478,7 +478,7 @@ describe("TransactionImporter Component", () => {
     it("should handle mixed descriptions with different categories", async () => {
       // Test the category mapping function directly with various descriptions
       expect(getCategoryFromDescription("Walmart Grocery")).toBe("groceries");
-      expect(getCategoryFromDescription("Shell Gas Station")).toBe("gas");
+      expect(getCategoryFromDescription("Shell Gas Station")).toBe("fuel");
       expect(getCategoryFromDescription("McDonald's Restaurant")).toBe(
         "restaurants",
       );
