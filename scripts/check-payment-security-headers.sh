@@ -54,16 +54,10 @@ check_header() {
 
     printf "%-30s: " "$header_name"
     if [ -n "$header_value" ]; then
-        echo "PRESENT - $header_value"
-        echo "  Description: $header_description"
-        echo "  PCI DSS 11.6.1 Relevance: $pci_relevance"
+        echo "PRESENT"
     else
         echo "MISSING"
-        echo "  Description: $header_description"
-        echo "  PCI DSS 11.6.1 Relevance: $pci_relevance"
-        echo "  ⚠️  RECOMMENDATION: Implement this header for better security"
     fi
-    echo ""
 }
 
 echo "=== PCI DSS 11.6.1 RELEVANT SECURITY HEADERS ==="
@@ -123,29 +117,3 @@ case "$URL" in
 esac
 echo ""
 
-# Summary
-echo "=== SECURITY ASSESSMENT SUMMARY ==="
-missing_critical=$(echo "$HEADERS" | grep -i "strict-transport-security" > /dev/null || echo "1")
-missing_csp=$(echo "$HEADERS" | grep -i "content-security-policy" > /dev/null || echo "1")
-missing_frame=$(echo "$HEADERS" | grep -i "x-frame-options" > /dev/null || echo "1")
-
-if [ "$missing_critical" = "1" ] || [ "$missing_csp" = "1" ] || [ "$missing_frame" = "1" ]; then
-    echo "⚠️  SECURITY GAPS IDENTIFIED"
-    echo "   Review missing headers above and implement per PCI DSS 11.6.1 requirements"
-else
-    echo "✅ Core security headers are present"
-fi
-
-case "$URL" in
-    http://*)
-        echo "❌ CRITICAL: Use HTTPS for all payment pages (PCI DSS requirement)"
-        ;;
-esac
-
-echo ""
-echo "=== PCI DSS 11.6.1 COMPLIANCE NOTES ==="
-echo "• Requirement 11.6.1: Deploy change-detection mechanisms"
-echo "• Security headers help prevent common attack vectors"
-echo "• Regular monitoring of these headers is recommended"
-echo "• Consider implementing Content Security Policy monitoring"
-echo "• Ensure all payment-related pages use HTTPS"
