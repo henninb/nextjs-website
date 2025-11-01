@@ -29,18 +29,19 @@ export const getTotalsKey = (accountNameOwner: string) => [
 export const setupNewTransaction = async (
   payload: Transaction,
   accountNameOwner: string,
-): Promise<Transaction> => {
+): Promise<Partial<Transaction>> => {
   // Generate secure UUID server-side
   const secureGuid = await generateSecureUUID();
 
-  return {
+  // Build payload object excluding fields that should not be sent to backend
+  // Backend will generate transactionId, accountId, and receiptImage
+  const result: Partial<Transaction> = {
     guid: secureGuid, // Now using secure server-side generation
     transactionDate: payload.transactionDate,
     description: payload.description,
     category: payload.category || "",
     notes: payload.notes || "",
     amount: payload.amount,
-    dueDate: payload.dueDate || undefined,
     transactionType: payload.transactionType || "undefined",
     transactionState: payload.transactionState || "outstanding",
     activeStatus: true,
@@ -48,6 +49,15 @@ export const setupNewTransaction = async (
     reoccurringType: payload.reoccurringType || "onetime",
     accountNameOwner: payload.accountNameOwner || "",
   };
+
+  // Only include dueDate if it has a value
+  if (payload.dueDate) {
+    result.dueDate = payload.dueDate;
+  }
+
+  // Explicitly DO NOT include: transactionId, accountId, receiptImage
+  // These are generated/managed by the backend
+  return result;
 };
 
 export const insertTransaction = async (
