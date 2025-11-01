@@ -10,6 +10,8 @@ import {
   TextField,
   Typography,
   Autocomplete,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -71,6 +73,9 @@ export default function Payments() {
     amount?: string;
     accounts?: string;
   }>({});
+  const [paymentMode, setPaymentMode] = useState<"payBill" | "balanceTransfer">(
+    "payBill",
+  );
 
   const {
     data: fetchedPayments,
@@ -397,6 +402,7 @@ export default function Payments() {
               onClick={() => {
                 setPaymentData(initialPaymentData);
                 setFormErrors({});
+                setPaymentMode("payBill");
                 setShowModalAdd(true);
               }}
               sx={{ backgroundColor: "primary.main" }}
@@ -478,6 +484,7 @@ export default function Payments() {
                     onAction={() => {
                       setPaymentData(initialPaymentData);
                       setFormErrors({});
+                      setPaymentMode("payBill");
                       setShowModalAdd(true);
                     }}
                     onRefresh={() => {
@@ -523,6 +530,37 @@ export default function Payments() {
               : "Add Payment"
           }
         >
+          <Box sx={{ mb: 2, mt: 1 }}>
+            <Typography variant="body2" sx={{ mb: 1, color: "text.secondary" }}>
+              Payment Type
+            </Typography>
+            <ToggleButtonGroup
+              value={paymentMode}
+              exclusive
+              onChange={(event, newMode) => {
+                if (newMode !== null) {
+                  setPaymentMode(newMode);
+                  setPaymentData((prev) => ({
+                    ...prev,
+                    sourceAccount: "",
+                    destinationAccount: "",
+                  }));
+                }
+              }}
+              fullWidth
+              size="small"
+            >
+              <ToggleButton value="payBill" aria-label="Pay Bill">
+                Pay Bill
+              </ToggleButton>
+              <ToggleButton
+                value="balanceTransfer"
+                aria-label="Balance Transfer"
+              >
+                Balance Transfer
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
           <TextField
             label="Transaction Date"
             fullWidth
@@ -543,8 +581,10 @@ export default function Payments() {
           <Autocomplete
             options={
               isSuccessAccounts
-                ? fetchedAccounts.filter(
-                    (account) => account.accountType === "debit",
+                ? fetchedAccounts.filter((account) =>
+                    paymentMode === "payBill"
+                      ? account.accountType === "debit"
+                      : account.accountType === "credit",
                   )
                 : []
             }
@@ -581,8 +621,10 @@ export default function Payments() {
           <Autocomplete
             options={
               isSuccessAccounts
-                ? fetchedAccounts.filter(
-                    (account) => account.accountType === "credit",
+                ? fetchedAccounts.filter((account) =>
+                    paymentMode === "payBill"
+                      ? account.accountType === "credit"
+                      : account.accountType === "credit",
                   )
                 : []
             }
