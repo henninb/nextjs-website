@@ -207,13 +207,13 @@ describe("Transaction Insert Functions (Isolated)", () => {
               category: mockTransaction.category,
               notes: mockTransaction.notes,
               amount: mockTransaction.amount,
-              dueDate: mockTransaction.dueDate, // Include dueDate from createTestTransaction
               transactionType: mockTransaction.transactionType,
               transactionState: mockTransaction.transactionState,
               activeStatus: true,
               accountType: mockTransaction.accountType,
               reoccurringType: mockTransaction.reoccurringType,
               accountNameOwner: mockTransaction.accountNameOwner,
+              dueDate: mockTransaction.dueDate, // dueDate is added at the end by setupNewTransaction
             }),
           }),
         );
@@ -723,7 +723,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           category: originalTransaction.category, // Use actual value from createTestTransaction
           notes: originalTransaction.notes || "",
           amount: 75.0,
-          dueDate: originalTransaction.dueDate, // Use actual value from createTestTransaction
           transactionType: originalTransaction.transactionType,
           transactionState:
             originalTransaction.transactionState || "outstanding",
@@ -731,6 +730,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           accountType: originalTransaction.accountType,
           reoccurringType: originalTransaction.reoccurringType,
           accountNameOwner: originalTransaction.accountNameOwner,
+          dueDate: originalTransaction.dueDate, // dueDate is added at the end by setupNewTransaction
         };
 
         expect(global.fetch).toHaveBeenCalledWith(
