@@ -76,6 +76,7 @@ export default function Payments() {
   const [paymentMode, setPaymentMode] = useState<"payBill" | "balanceTransfer">(
     "payBill",
   );
+  const [lastSubmittedPayment, setLastSubmittedPayment] = useState<Payment | null>(null);
 
   const {
     data: fetchedPayments,
@@ -233,6 +234,7 @@ export default function Payments() {
 
     try {
       await insertPayment({ payload: newData });
+      setLastSubmittedPayment(newData);
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
       handleSuccess(
@@ -400,7 +402,7 @@ export default function Payments() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setPaymentData(initialPaymentData);
+                setPaymentData(lastSubmittedPayment || initialPaymentData);
                 setFormErrors({});
                 setPaymentMode("payBill");
                 setShowModalAdd(true);
@@ -482,7 +484,7 @@ export default function Payments() {
                     variant="create"
                     actionLabel="Add Payment"
                     onAction={() => {
-                      setPaymentData(initialPaymentData);
+                      setPaymentData(lastSubmittedPayment || initialPaymentData);
                       setFormErrors({});
                       setPaymentMode("payBill");
                       setShowModalAdd(true);
