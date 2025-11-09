@@ -81,7 +81,16 @@ const transactionTypeEnum = z
   })
   .optional();
 
-const reoccurringTypeEnum = z.enum(["onetime", "monthly", "weekly", "yearly"], {
+const reoccurringTypeEnum = z.enum([
+  "onetime",
+  "weekly",
+  "fortnightly",
+  "monthly",
+  "quarterly",
+  "bi_annually",
+  "annually",
+  "undefined",
+], {
   message: "Invalid reoccurring type",
 });
 
