@@ -645,8 +645,30 @@ export default function TransactionsByAccount() {
         field: "reoccurringType",
         headerName: "Reoccur",
         flex: 0.8,
-        minWidth: 100,
-        renderCell: (params: any) => params.value || "undefined",
+        minWidth: 120,
+        type: "singleSelect",
+        valueOptions: [
+          { value: "onetime", label: "One-Time" },
+          { value: "weekly", label: "Weekly" },
+          { value: "fortnightly", label: "Fortnightly" },
+          { value: "monthly", label: "Monthly" },
+          { value: "quarterly", label: "Quarterly" },
+          { value: "bi_annually", label: "Bi-Annually" },
+          { value: "annually", label: "Annually" },
+        ],
+        editable: true,
+        renderCell: (params: any) => {
+          const valueMap: Record<string, string> = {
+            onetime: "One-Time",
+            weekly: "Weekly",
+            fortnightly: "Fortnightly",
+            monthly: "Monthly",
+            quarterly: "Quarterly",
+            bi_annually: "Bi-Annually",
+            annually: "Annually",
+          };
+          return valueMap[params.value] || params.value || "undefined";
+        },
       },
       {
         field: "notes",
@@ -1438,7 +1460,11 @@ export default function TransactionsByAccount() {
           >
             <MenuItem value="onetime">One-Time</MenuItem>
             <MenuItem value="weekly">Weekly</MenuItem>
+            <MenuItem value="fortnightly">Fortnightly</MenuItem>
             <MenuItem value="monthly">Monthly</MenuItem>
+            <MenuItem value="quarterly">Quarterly</MenuItem>
+            <MenuItem value="bi_annually">Bi-Annually</MenuItem>
+            <MenuItem value="annually">Annually</MenuItem>
           </Select>
 
           <Select
