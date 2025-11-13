@@ -103,6 +103,12 @@ const FurnacePage: NextPage = () => {
                     </TableRow>
                     <TableRow>
                       <TableCell>
+                        <strong>BTU Output</strong>
+                      </TableCell>
+                      <TableCell>~83,700 BTU/hr (90,000 × 93%)</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
                         <strong>Furnace Type</strong>
                       </TableCell>
                       <TableCell>Condensing Gas Furnace</TableCell>
@@ -120,6 +126,18 @@ const FurnacePage: NextPage = () => {
                         <strong>Configuration</strong>
                       </TableCell>
                       <TableCell>Upflow/Horizontal</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <strong>Blower Airflow</strong>
+                      </TableCell>
+                      <TableCell>~1600 CFM</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>
+                        <strong>A/C Compatibility</strong>
+                      </TableCell>
+                      <TableCell>3–4 Ton Systems</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>
@@ -160,6 +178,84 @@ const FurnacePage: NextPage = () => {
               </TableContainer>
             </Box>
           </Box>
+
+          <Alert severity="info" sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Understanding Your Model Number: G1D93AU090D16C-1A
+            </Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Code</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Meaning</strong>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <strong>G1D93</strong>
+                    </TableCell>
+                    <TableCell>
+                      93% AFUE, condensing gas furnace
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>A</strong>
+                    </TableCell>
+                    <TableCell>Upflow / Horizontal configuration</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>U</strong>
+                    </TableCell>
+                    <TableCell>Natural gas (not propane)</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>090</strong>
+                    </TableCell>
+                    <TableCell>Nominal input = 90,000 BTU/hr</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>D16</strong>
+                    </TableCell>
+                    <TableCell>
+                      Blower size and airflow capacity (~1600 CFM)
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>C</strong>
+                    </TableCell>
+                    <TableCell>Revision code</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>-1A</strong>
+                    </TableCell>
+                    <TableCell>Variant identifier</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Typography sx={{ mt: 2 }}>
+              <strong>HVAC Trade Nomenclature:</strong> HVAC professionals often
+              refer to furnaces by their airflow capacity class. Your furnace is
+              a <strong>"2K furnace"</strong> (≈2000 CFM class), which refers to
+              equipment in the 80,000–100,000 BTU/hr range. This is{" "}
+              <strong>not</strong> a "4K furnace" (≈4000 CFM class for
+              150,000–200,000 BTU/hr systems). The "2K" designation indicates
+              it's properly sized for typical 3–4 ton A/C systems in residential
+              applications.
+            </Typography>
+          </Alert>
         </Paper>
 
         {/* How It Works */}
@@ -690,6 +786,175 @@ const FurnacePage: NextPage = () => {
             <strong>Important:</strong> When ordering parts, have your complete
             model and serial number ready. Some parts vary by manufacturing date
             and specific furnace configuration.
+          </Alert>
+        </Paper>
+
+        {/* Critical Spare Parts */}
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            🧰 Critical Spare Parts (Most Likely to Fail)
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+
+          <Alert severity="info" sx={{ mb: 2 }}>
+            These are the components most likely to fail during your furnace's
+            lifetime, ordered by replacement frequency. Consider keeping critical
+            items on hand for emergency repairs.
+          </Alert>
+
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <strong>Component</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Function</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Typical Lifespan</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Common Replacement / Equivalent</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Notes</strong>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <strong>Flame Sensor</strong>
+                  </TableCell>
+                  <TableCell>Confirms burner flame</TableCell>
+                  <TableCell>3–5 years</TableCell>
+                  <TableCell>
+                    Armstrong / Lennox 28K65 or 62-24044-01
+                  </TableCell>
+                  <TableCell>
+                    Clean yearly; inexpensive (~$15–25)
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Hot Surface Igniter (HSI)</strong>
+                  </TableCell>
+                  <TableCell>Ignites gas</TableCell>
+                  <TableCell>5–8 years</TableCell>
+                  <TableCell>Norton 271M, White-Rodgers 767A-380</TableCell>
+                  <TableCell>
+                    Fragile — don't touch the element; ~$30
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Blower Capacitor</strong>
+                  </TableCell>
+                  <TableCell>Starts blower motor</TableCell>
+                  <TableCell>5–10 years</TableCell>
+                  <TableCell>
+                    Match µF & voltage (often 10 µF 370 V)
+                  </TableCell>
+                  <TableCell>
+                    Read rating printed on side; cheap (~$10)
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Inducer Motor / Draft Fan</strong>
+                  </TableCell>
+                  <TableCell>Pulls exhaust through heat exchangers</TableCell>
+                  <TableCell>10–15 years</TableCell>
+                  <TableCell>Fasco A150, Armstrong 60W66</TableCell>
+                  <TableCell>Listen for squealing/bearing noise</TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Pressure Switch</strong>
+                  </TableCell>
+                  <TableCell>Verifies inducer airflow</TableCell>
+                  <TableCell>10–15 years</TableCell>
+                  <TableCell>
+                    0.60″ WC or 0.70″ WC switch, e.g., Lennox 11U38
+                  </TableCell>
+                  <TableCell>Mounting and rating must match exactly</TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Control Board</strong>
+                  </TableCell>
+                  <TableCell>Brain of furnace</TableCell>
+                  <TableCell>15–25 years</TableCell>
+                  <TableCell>
+                    Armstrong / Lennox R47594-001 (or White-Rodgers 50A65-475)
+                  </TableCell>
+                  <TableCell>
+                    Keep a used one as backup if possible
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Blower Motor (PSC)</strong>
+                  </TableCell>
+                  <TableCell>Circulates air</TableCell>
+                  <TableCell>15–25 years</TableCell>
+                  <TableCell>
+                    1/3 HP 115 V 3-speed (Rheem 51-23012-41, Century DL1076)
+                  </TableCell>
+                  <TableCell>
+                    Replace with matching rotation & shaft
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Limit Switch / Rollout Switch</strong>
+                  </TableCell>
+                  <TableCell>Safety devices</TableCell>
+                  <TableCell>15+ years</TableCell>
+                  <TableCell>
+                    Various — often L270F or manual-reset rollouts
+                  </TableCell>
+                  <TableCell>Keep one of each style as spare</TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong>Condensate Trap & Hose Kit</strong>
+                  </TableCell>
+                  <TableCell>Drains water</TableCell>
+                  <TableCell>N/A (maintenance item)</TableCell>
+                  <TableCell>OEM Armstrong trap + tubing</TableCell>
+                  <TableCell>
+                    Clean yearly; replace if brittle or clogged
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <Alert severity="success" sx={{ mt: 3 }}>
+            <Typography variant="body2">
+              <strong>Pro Tip:</strong> The flame sensor, HSI, and blower
+              capacitor fail most frequently. Consider keeping these inexpensive
+              parts on hand, especially before winter. A $20 part can save you
+              from an emergency service call costing $200+.
+            </Typography>
+          </Alert>
+
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <strong>Compatibility Note:</strong> Always verify part numbers with
+            your furnace's model and serial number. Some parts vary by
+            manufacturing date. When in doubt, take the old part to a supplier
+            for visual confirmation.
           </Alert>
         </Paper>
 
