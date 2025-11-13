@@ -6,7 +6,6 @@ import {
   Typography,
   Box,
   Paper,
-  Grid,
   Card,
   CardContent,
   Accordion,
@@ -61,8 +60,14 @@ const FurnacePage: NextPage = () => {
             Technical Specifications
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 2,
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
               <TableContainer>
                 <Table size="small">
                   <TableBody>
@@ -105,8 +110,8 @@ const FurnacePage: NextPage = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Grid>
-            <Grid item xs={12} md={6}>
+            </Box>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <TableContainer>
                 <Table size="small">
                   <TableBody>
@@ -153,8 +158,8 @@ const FurnacePage: NextPage = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Paper>
 
         {/* How It Works */}
@@ -469,8 +474,8 @@ const FurnacePage: NextPage = () => {
             compatibility before ordering.
           </Alert>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -495,9 +500,9 @@ const FurnacePage: NextPage = () => {
                   </Link>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -522,9 +527,9 @@ const FurnacePage: NextPage = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -550,9 +555,9 @@ const FurnacePage: NextPage = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -575,9 +580,9 @@ const FurnacePage: NextPage = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -602,9 +607,9 @@ const FurnacePage: NextPage = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -627,9 +632,9 @@ const FurnacePage: NextPage = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -652,9 +657,9 @@ const FurnacePage: NextPage = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -678,8 +683,8 @@ const FurnacePage: NextPage = () => {
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           <Alert severity="warning" sx={{ mt: 3 }}>
             <strong>Important:</strong> When ordering parts, have your complete
@@ -695,8 +700,8 @@ const FurnacePage: NextPage = () => {
           </Typography>
           <Divider sx={{ mb: 2 }} />
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -715,9 +720,9 @@ const FurnacePage: NextPage = () => {
                   </Link>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -735,9 +740,9 @@ const FurnacePage: NextPage = () => {
                   </Link>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -755,9 +760,9 @@ const FurnacePage: NextPage = () => {
                   </Link>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -775,9 +780,9 @@ const FurnacePage: NextPage = () => {
                   </Link>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -796,9 +801,9 @@ const FurnacePage: NextPage = () => {
                   </Link>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -816,8 +821,8 @@ const FurnacePage: NextPage = () => {
                   </Link>
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Paper>
 
         {/* Official Resources */}
@@ -827,8 +832,8 @@ const FurnacePage: NextPage = () => {
           </Typography>
           <Divider sx={{ mb: 2 }} />
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={4}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+            <Box sx={{ flex: "1 1 calc(33.333% - 10px)", minWidth: "250px" }}>
               <Link
                 href="https://www.armstrongair.com/owners/literature/"
                 target="_blank"
@@ -846,9 +851,9 @@ const FurnacePage: NextPage = () => {
                   </CardContent>
                 </Card>
               </Link>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} sm={6} md={4}>
+            <Box sx={{ flex: "1 1 calc(33.333% - 10px)", minWidth: "250px" }}>
               <Link
                 href="https://www.armstrongair.com/owners/troubleshooting/"
                 target="_blank"
@@ -866,9 +871,9 @@ const FurnacePage: NextPage = () => {
                   </CardContent>
                 </Card>
               </Link>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} sm={6} md={4}>
+            <Box sx={{ flex: "1 1 calc(33.333% - 10px)", minWidth: "250px" }}>
               <Link
                 href="https://www.armstrongair.com/owners/maintenance-and-service/"
                 target="_blank"
@@ -886,9 +891,9 @@ const FurnacePage: NextPage = () => {
                   </CardContent>
                 </Card>
               </Link>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} sm={6} md={4}>
+            <Box sx={{ flex: "1 1 calc(33.333% - 10px)", minWidth: "250px" }}>
               <Link
                 href="https://inspectapedia.com/heat/Armstrong-Heater-Age-Manuals-Contact.php"
                 target="_blank"
@@ -906,9 +911,9 @@ const FurnacePage: NextPage = () => {
                   </CardContent>
                 </Card>
               </Link>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} sm={6} md={4}>
+            <Box sx={{ flex: "1 1 calc(33.333% - 10px)", minWidth: "250px" }}>
               <Link
                 href="https://www.furnacepartsource.com/brands/Armstrong-Furnace.html"
                 target="_blank"
@@ -926,9 +931,9 @@ const FurnacePage: NextPage = () => {
                   </CardContent>
                 </Card>
               </Link>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} sm={6} md={4}>
+            <Box sx={{ flex: "1 1 calc(33.333% - 10px)", minWidth: "250px" }}>
               <Link
                 href="https://www.energystar.gov/"
                 target="_blank"
@@ -946,8 +951,8 @@ const FurnacePage: NextPage = () => {
                   </CardContent>
                 </Card>
               </Link>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Paper>
 
         {/* Safety & Warranty */}
