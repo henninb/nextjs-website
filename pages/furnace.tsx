@@ -328,112 +328,6 @@ const FurnacePage: NextPage = () => {
           </Alert>
         </Paper>
 
-        {/* Maintenance Schedule */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            Maintenance Schedule
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-
-          <Accordion defaultExpanded>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">Monthly Tasks</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box component="ul" sx={{ pl: 2 }}>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Check/Replace Air Filter:</strong> Inspect monthly,
-                  replace when dirty (typically every 1-3 months depending on
-                  usage and filter type). Dirty filters are the #1 cause of
-                  furnace problems.
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Visual Inspection:</strong> Look for any unusual
-                  sounds, smells, or leaks around the furnace.
-                </Box>
-              </Box>
-              <Alert severity="warning" sx={{ mt: 2 }}>
-                <strong>Filter Size:</strong> Check your existing filter for
-                printed dimensions. Common sizes are 16x20x1, 16x25x1, or
-                20x25x1. Measure the filter slot if unsure.
-              </Alert>
-            </AccordionDetails>
-          </Accordion>
-
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">Seasonal Tasks (Fall/Spring)</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box component="ul" sx={{ pl: 2 }}>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Condensate Drain & Trap:</strong> Clean the condensate
-                  trap and drain line to prevent clogs. Pour water through the
-                  trap to ensure it drains properly.
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Flame Sensor Cleaning:</strong> Gently clean the flame
-                  sensor rod with fine sandpaper or steel wool to remove carbon
-                  buildup.
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Blower Compartment:</strong> Vacuum dust and debris
-                  from the blower compartment and blower wheel.
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Inspect Venting:</strong> Check PVC vent pipes for
-                  blockages, proper slope, and secure connections.
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Test Thermostat:</strong> Verify accurate temperature
-                  reading and proper operation.
-                </Box>
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">Annual Professional Service</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box component="ul" sx={{ pl: 2 }}>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Complete system inspection and safety check
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Combustion analysis and efficiency testing
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Heat exchanger inspection for cracks or corrosion
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Burner cleaning and adjustment
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Inducer motor and pressure switch testing
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Blower motor lubrication (if applicable)
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Gas pressure and valve testing
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Electrical connection inspection
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  Control board diagnostics
-                </Box>
-              </Box>
-              <Alert severity="info" sx={{ mt: 2 }}>
-                Schedule professional service in late summer/early fall before
-                heating season begins.
-              </Alert>
-            </AccordionDetails>
-          </Accordion>
-        </Paper>
-
         {/* Troubleshooting */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h5" gutterBottom>
@@ -555,14 +449,10 @@ const FurnacePage: NextPage = () => {
             and call your gas company. Never ignore a 5-flash error (rollout
             switch) - this indicates dangerous flame spillage.
           </Alert>
-        </Paper>
 
-        {/* Advanced Troubleshooting */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            Advanced Troubleshooting Scenarios
+          <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
+            Common Problem Scenarios
           </Typography>
-          <Divider sx={{ mb: 2 }} />
 
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -800,19 +690,125 @@ const FurnacePage: NextPage = () => {
           </Accordion>
         </Paper>
 
-        {/* DIY Maintenance Procedures */}
+        {/* Maintenance Schedule & DIY Procedures */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h5" gutterBottom>
-            Detailed DIY Maintenance Procedures
+            Maintenance Schedule & DIY Procedures
           </Typography>
           <Divider sx={{ mb: 2 }} />
 
           <Alert severity="warning" sx={{ mb: 2 }}>
             <strong>Safety Warning:</strong> Always turn off power at the
-            disconnect switch AND circuit breaker before performing maintenance.
+            disconnect switch AND circuit breaker before performing DIY maintenance.
             Never work on gas components - call a professional for gas-related
             repairs.
           </Alert>
+
+          <Typography variant="h6" gutterBottom>
+            Quick Reference Schedule
+          </Typography>
+
+          <Accordion defaultExpanded>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Monthly Tasks</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box component="ul" sx={{ pl: 2 }}>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <strong>Check/Replace Air Filter:</strong> Inspect monthly,
+                  replace when dirty (typically every 1-3 months depending on
+                  usage and filter type). Dirty filters are the #1 cause of
+                  furnace problems.
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <strong>Visual Inspection:</strong> Look for any unusual
+                  sounds, smells, or leaks around the furnace.
+                </Box>
+              </Box>
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                <strong>Filter Size:</strong> Check your existing filter for
+                printed dimensions. Common sizes are 16x20x1, 16x25x1, or
+                20x25x1. Measure the filter slot if unsure.
+              </Alert>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Seasonal Tasks (Fall/Spring)</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box component="ul" sx={{ pl: 2 }}>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <strong>Condensate Drain & Trap:</strong> Clean the condensate
+                  trap and drain line to prevent clogs. Pour water through the
+                  trap to ensure it drains properly.
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <strong>Flame Sensor Cleaning:</strong> Gently clean the flame
+                  sensor rod with fine sandpaper or steel wool to remove carbon
+                  buildup.
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <strong>Blower Compartment:</strong> Vacuum dust and debris
+                  from the blower compartment and blower wheel.
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <strong>Inspect Venting:</strong> Check PVC vent pipes for
+                  blockages, proper slope, and secure connections.
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <strong>Test Thermostat:</strong> Verify accurate temperature
+                  reading and proper operation.
+                </Box>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Annual Professional Service</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box component="ul" sx={{ pl: 2 }}>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Complete system inspection and safety check
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Combustion analysis and efficiency testing
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Heat exchanger inspection for cracks or corrosion
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Burner cleaning and adjustment
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Inducer motor and pressure switch testing
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Blower motor lubrication (if applicable)
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Gas pressure and valve testing
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Electrical connection inspection
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  Control board diagnostics
+                </Box>
+              </Box>
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Schedule professional service in late summer/early fall before
+                heating season begins.
+              </Alert>
+            </AccordionDetails>
+          </Accordion>
+
+          <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
+            Detailed DIY Procedures
+          </Typography>
 
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -978,70 +974,47 @@ const FurnacePage: NextPage = () => {
           <Divider sx={{ mb: 2 }} />
 
           <Typography variant="body2" paragraph>
-            Your 93% AFUE furnace is already highly efficient, but these tips can
-            maximize performance and minimize operating costs:
+            Your 93% AFUE furnace is already highly efficient. Here are key strategies
+            to maximize performance and minimize operating costs:
           </Typography>
 
-          <Accordion>
+          <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h6">
-                Optimizing Combustion Efficiency
+                System Performance & Airflow
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Box component="ul" sx={{ pl: 2 }}>
+              <Typography variant="body2" paragraph>
+                <strong>Airflow Optimization:</strong>
+              </Typography>
+              <Box component="ul" sx={{ pl: 2, mb: 2 }}>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Proper Gas Pressure:</strong> Should be 3.5" WC inlet,
-                  manifold adjusted per rating plate (typically 3.0-3.5" WC).
-                  Have technician verify annually.
+                  Target 1600 CFM at high heat speed; temperature rise should be 40-70°F
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Clean Burners:</strong> Carbon buildup reduces flame
-                  quality. Professional cleaning every 3-5 years maintains peak
-                  efficiency.
+                  Use MERV 11 pleated filters, change every 60-90 days
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Flame Appearance Check:</strong> Flames should be blue
-                  with slight orange tips. Yellow/lazy flames indicate incomplete
-                  combustion - call technician.
+                  Seal duct joints with mastic (not duct tape) - saves 20-30%
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Condensate pH Testing:</strong> Condensate should be
-                  mildly acidic (pH 3-5). Extremely acidic indicates combustion
-                  issues.
+                  Ensure return air grilles total 6-8 sq ft for your system
                 </Box>
               </Box>
-            </AccordionDetails>
-          </Accordion>
 
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">Airflow Optimization</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
+              <Typography variant="body2" paragraph>
+                <strong>Combustion & Burner Maintenance:</strong>
+              </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Target Airflow:</strong> Your furnace should deliver
-                  ~1600 CFM at high heat speed. Under-airflow causes overheating;
-                  over-airflow reduces efficiency.
+                  Gas pressure: 3.5" WC inlet, manifold per rating plate - verify annually
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Temperature Rise Check:</strong> Measure supply minus
-                  return air temp - should be 40-70°F. Outside this range
-                  indicates airflow problems.
+                  Flames should be blue with slight orange tips; yellow = call technician
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Duct Sealing:</strong> Seal all duct joints with mastic
-                  (not duct tape). Leaky ducts waste 20-30% of heated air.
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Return Air Adequacy:</strong> Return air grilles should
-                  total at least 2 sq ft per ton (6-8 sq ft for your system).
-                  Restricted returns kill efficiency.
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Filter Upgrade:</strong> Use MERV 11 pleated filters -
-                  balance between filtration and airflow. Change every 60-90 days.
+                  Professional burner cleaning every 3-5 years maintains peak efficiency
                 </Box>
               </Box>
             </AccordionDetails>
@@ -1398,249 +1371,18 @@ const FurnacePage: NextPage = () => {
           </Accordion>
         </Paper>
 
-        {/* Parts Catalog */}
+        {/* Critical Spare Parts */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h5" gutterBottom>
-            Common Replacement Parts
+            🧰 Critical Spare Parts & Replacement Guide
           </Typography>
           <Divider sx={{ mb: 2 }} />
 
           <Alert severity="info" sx={{ mb: 2 }}>
             Armstrong Air is now part of Allied/Lennox. Many parts are
-            interchangeable with Lennox and Ducane furnaces. Always verify part
-            compatibility before ordering.
-          </Alert>
-
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Air Filters
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Common Sizes:</strong> 16x20x1, 16x25x1, 20x25x1
-                    (verify your size)
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>MERV Ratings:</strong>
-                    <br />• MERV 8: Standard protection
-                    <br />• MERV 11: Better allergen filtration
-                    <br />• MERV 13: Premium filtration
-                  </Typography>
-                  <Link
-                    href="https://www.amazon.com/s?k=furnace+filter"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    Buy on Amazon →
-                  </Link>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Draft Inducer Motor
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Part Numbers:</strong>
-                    <br />• R100676-01 (Inducer Assembly)
-                    <br />• R06428D455 (With Pressure Switch)
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Symptoms: No heat, 3-flash error, unusual noises
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Link
-                      href="https://www.furnacepartsource.com/brands/Armstrong-Furnace.html"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Furnace Parts Source →
-                    </Link>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Pressure Switch
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Part Numbers:</strong>
-                    <br />• R102614-01 (-0.40" WC)
-                    <br />• R102699-01 (-0.60" WC)
-                    <br />• R101432-13 (-0.60" WC)
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Symptoms: 2-flash or 3-flash error codes
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Link
-                      href="https://www.northamericahvac.com/oem-mpl-lennox-armstrong-furnace-air-pressure-switch-9370do-bs-0036/"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      North America HVAC →
-                    </Link>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Hot Surface Igniter
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Universal Part:</strong> Most 80-90% furnaces
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Symptoms: 7-flash error, no ignition, cracked igniter
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Link
-                      href="https://www.amazon.com/s?k=hot+surface+igniter"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Buy on Amazon →
-                    </Link>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Flame Sensor
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Maintenance:</strong> Clean with fine sandpaper
-                    every 6 months
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Symptoms: 1-flash or 8-flash error, furnace shuts off after
-                    ignition
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Link
-                      href="https://www.amazon.com/s?k=furnace+flame+sensor"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Buy on Amazon →
-                    </Link>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Blower Motor
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Type:</strong> Multi-Speed PSC Motor
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Symptoms: No airflow, weak airflow, loud bearing noise
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Link
-                      href="https://shortyshvac.com/index.php?main_page=index&cPath=535_155"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Shortys HVAC →
-                    </Link>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Control Board
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Part Number:</strong> R40403-003 (Blower Control)
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Symptoms: No operation, erratic LED codes, blower issues
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Link
-                      href="https://www.climatedoctors.com/products/armstrong-r40403-003-board-furnace-blower-control-circuit-board.html"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Climate Doctors →
-                    </Link>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: "1 1 calc(50% - 8px)", minWidth: "300px" }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Gas Valve
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Type:</strong> Two-Stage Natural Gas Valve
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Symptoms: No gas flow, 7-flash error, clicking but no
-                    ignition
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Link
-                      href="https://www.furnacepartsource.com/brands/Armstrong-Furnace.html"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Furnace Parts Source →
-                    </Link>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-          </Box>
-
-          <Alert severity="warning" sx={{ mt: 3 }}>
-            <strong>Important:</strong> When ordering parts, have your complete
-            model and serial number ready. Some parts vary by manufacturing date
-            and specific furnace configuration.
-          </Alert>
-        </Paper>
-
-        {/* Critical Spare Parts */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            🧰 Critical Spare Parts (Most Likely to Fail)
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-
-          <Alert severity="info" sx={{ mb: 2 }}>
-            These are the components most likely to fail during your furnace's
-            lifetime, ordered by replacement frequency. Consider keeping critical
-            items on hand for emergency repairs.
+            interchangeable with Lennox and Ducane furnaces. Components below are
+            ordered by replacement frequency. Consider keeping frequently-failing
+            parts on hand for emergency repairs.
           </Alert>
 
           <TableContainer>
@@ -1790,6 +1532,102 @@ const FurnacePage: NextPage = () => {
               from an emergency service call costing $200+.
             </Typography>
           </Alert>
+
+          <Accordion sx={{ mt: 2 }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">
+                Additional Part Numbers & Purchasing Links
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography variant="body2" paragraph>
+                <strong>Air Filters:</strong>
+                <br />
+                Common sizes: 16x20x1, 16x25x1, 20x25x1 (verify your size)
+                <br />
+                MERV 8 (standard), MERV 11 (recommended), MERV 13 (premium)
+                <br />
+                <Link
+                  href="https://www.amazon.com/s?k=furnace+filter"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Buy on Amazon →
+                </Link>
+              </Typography>
+
+              <Typography variant="body2" paragraph>
+                <strong>Inducer Motor Assembly:</strong>
+                <br />
+                R100676-01 (Inducer Assembly), R06428D455 (With Pressure Switch)
+                <br />
+                <Link
+                  href="https://www.furnacepartsource.com/brands/Armstrong-Furnace.html"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Furnace Parts Source →
+                </Link>
+              </Typography>
+
+              <Typography variant="body2" paragraph>
+                <strong>Pressure Switch (additional part numbers):</strong>
+                <br />
+                R102614-01 (-0.40" WC), R102699-01 (-0.60" WC), R101432-13
+                (-0.60" WC)
+                <br />
+                <Link
+                  href="https://www.northamericahvac.com/oem-mpl-lennox-armstrong-furnace-air-pressure-switch-9370do-bs-0036/"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  North America HVAC →
+                </Link>
+              </Typography>
+
+              <Typography variant="body2" paragraph>
+                <strong>Control Board:</strong>
+                <br />
+                R40403-003 (Blower Control)
+                <br />
+                <Link
+                  href="https://www.climatedoctors.com/products/armstrong-r40403-003-board-furnace-blower-control-circuit-board.html"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Climate Doctors →
+                </Link>
+              </Typography>
+
+              <Typography variant="body2" paragraph>
+                <strong>General Parts Suppliers:</strong>
+                <br />
+                <Link
+                  href="https://www.furnacepartsource.com/brands/Armstrong-Furnace.html"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Furnace Parts Source
+                </Link>
+                {" | "}
+                <Link
+                  href="https://shortyshvac.com/"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Shortys HVAC
+                </Link>
+                {" | "}
+                <Link
+                  href="https://www.amazon.com/s?k=armstrong+furnace+parts"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Amazon
+                </Link>
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
 
           <Alert severity="warning" sx={{ mt: 2 }}>
             <strong>Compatibility Note:</strong> Always verify part numbers with
