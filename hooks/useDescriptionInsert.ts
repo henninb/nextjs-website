@@ -1,67 +1,84 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
-import { DataValidator, hookValidators } from "../utils/validation";
+import { DataValidator } from "../utils/validation";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useDescriptionInsert");
+
+/**
+ * Insert a new description via API
+ * Validates input and sanitizes data before sending
+ *
+ * @param descriptionName - Name of the description to insert
+ * @returns Newly created description
+ */
 export const insertDescription = async (
   descriptionName: string,
 ): Promise<Description> => {
-  try {
-    // Validate and sanitize via shared validator
-    const validation = hookValidators.validateApiPayload(
-      { descriptionName, activeStatus: true },
-      DataValidator.validateDescription,
-      "insertDescription",
-    );
-    if (!validation.isValid) {
-      const errorMessages =
-        validation.errors?.map((e) => e.message).join(", ") ||
-        "Validation failed";
-      throw new Error(`Description validation failed: ${errorMessages}`);
-    }
-    const endpoint = "/api/description";
-    const payload = validation.validatedData;
+  // Create description object with default activeStatus
+  const descriptionData = { descriptionName, activeStatus: true };
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+  // Validate description data
+  const validatedData = HookValidator.validateInsert(
+    descriptionData,
+    DataValidator.validateDescription,
+    "insertDescription",
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+  log.debug("Inserting description", {
+    descriptionName: validatedData.descriptionName,
+  });
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  const endpoint = "/api/description";
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(validatedData),
+  });
+
+  return parseResponse<Description>(response) as Promise<Description>;
 };
 
+/**
+ * Hook for inserting a new description
+ * Automatically updates the description list cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useDescriptionInsert();
+ * mutate({ descriptionName: "New Description" });
+ * ```
+ */
 export default function useDescriptionInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (variables: { descriptionName: string }) =>
+  return useStandardMutation(
+    (variables: { descriptionName: string }) =>
       insertDescription(variables.descriptionName),
-    onError: (error: unknown) => {
-      console.log(error || "An unknown error occurred.");
+    {
+      mutationKey: ["insertDescription"],
+      onSuccess: (newDescription) => {
+        if (newDescription) {
+          log.debug("Description inserted successfully", {
+            descriptionName: newDescription.descriptionName,
+          });
+
+          CacheUpdateStrategies.addToList(
+            queryClient,
+            QueryKeys.description(),
+            newDescription,
+            "start",
+          );
+        }
+      },
+      onError: (error) => {
+        log.error("Insert failed", error);
+      },
     },
-    onSuccess: (newDescription) => {
-      const oldData: Description[] =
-        queryClient.getQueryData(["description"]) || [];
-      queryClient.setQueryData(["description"], [newDescription, ...oldData]);
-    },
-  });
+  );
 }

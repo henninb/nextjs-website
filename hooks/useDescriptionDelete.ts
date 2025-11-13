@@ -1,57 +1,79 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useDescriptionDelete");
+
+/**
+ * Delete a description via API
+ * Validates identifier and sanitizes before sending
+ *
+ * @param oldRow - Description to delete
+ * @returns Deleted description or null
+ */
 export const deleteDescription = async (
   oldRow: Description,
 ): Promise<Description | null> => {
-  try {
-    const endpoint = `/api/description/${oldRow.descriptionName}`;
+  // Validate that description name exists
+  HookValidator.validateDelete(oldRow, "descriptionName", "deleteDescription");
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+  // Sanitize description name for URL
+  const sanitizedDescriptionName = InputSanitizer.sanitizeDescription(
+    oldRow.descriptionName,
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+  log.debug("Deleting description", {
+    descriptionName: sanitizedDescriptionName,
+  });
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  const endpoint = `/api/description/${sanitizedDescriptionName}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "DELETE",
+  });
+
+  return parseResponse<Description>(response);
 };
 
+/**
+ * Hook for deleting a description
+ * Automatically removes description from the cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useDescriptionDelete();
+ * mutate(descriptionToDelete);
+ * ```
+ */
 export default function useDescriptionDelete() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["deleteDescription"],
-    mutationFn: (variables: Description) => deleteDescription(variables),
-    onError: (error: any) => {
-      console.warn("Mutation error:", error);
-    },
-    onSuccess: (response, variables) => {
-      console.log("Delete was successful.", response);
+  return useStandardMutation(
+    (variables: Description) => deleteDescription(variables),
+    {
+      mutationKey: ["deleteDescription"],
+      onSuccess: (response, variables) => {
+        log.debug("Description deleted successfully", {
+          descriptionName: variables.descriptionName,
+        });
 
-      const oldData: any = queryClient.getQueryData(["description"]) || [];
-      const newData = oldData.filter(
-        (item: Description) =>
-          item.descriptionName !== variables.descriptionName,
-      );
-      queryClient.setQueryData(["description"], newData);
+        // Remove from cache using descriptionName as identifier
+        CacheUpdateStrategies.removeFromList(
+          queryClient,
+          QueryKeys.description(),
+          variables,
+          "descriptionName",
+        );
+      },
+      onError: (error) => {
+        log.error("Delete failed", error);
+      },
     },
-  });
+  );
 }

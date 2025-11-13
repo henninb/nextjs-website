@@ -1,53 +1,78 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useParameterInsert");
+
+/**
+ * Insert a new parameter via API
+ * Sanitizes input before sending
+ *
+ * @param payload - Parameter data to insert
+ * @returns Newly created parameter
+ */
 export const insertParameter = async (
   payload: Parameter,
 ): Promise<Parameter> => {
-  try {
-    const endpoint = "/api/parameter";
+  // Sanitize parameter name
+  const sanitizedPayload = {
+    ...payload,
+    parameterName: InputSanitizer.sanitizeParameterName(payload.parameterName),
+  };
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+  log.debug("Inserting parameter", { parameterName: sanitizedPayload.parameterName });
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+  const endpoint = "/api/parameter";
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(sanitizedPayload),
+  });
 
-    return response.status !== 204 ? await response.json() : payload;
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  const result = await parseResponse<Parameter>(response);
+  // Return payload if 204 No Content, otherwise return parsed response
+  return result || payload;
 };
 
+/**
+ * Hook for inserting a new parameter
+ * Automatically updates the parameter list cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useParameterInsert();
+ * mutate({ payload: newParameter });
+ * ```
+ */
 export default function useParameterInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["insertParameter"],
-    mutationFn: (variables: { payload: Parameter }) =>
-      insertParameter(variables.payload),
-    onError: (error) => {
-      console.log(error ? error : "error is undefined.");
+  return useStandardMutation(
+    (variables: { payload: Parameter }) => insertParameter(variables.payload),
+    {
+      mutationKey: ["insertParameter"],
+      onSuccess: (newParameter) => {
+        if (newParameter) {
+          log.debug("Parameter inserted successfully", {
+            parameterName: newParameter.parameterName,
+          });
+
+          CacheUpdateStrategies.addToList(
+            queryClient,
+            QueryKeys.parameter(),
+            newParameter,
+            "start",
+          );
+        }
+      },
+      onError: (error) => {
+        log.error("Insert failed", error);
+      },
     },
-    onSuccess: (newParameter) => {
-      const oldData: any = queryClient.getQueryData(["parameter"]) || [];
-      queryClient.setQueryData(["parameter"], [newParameter, ...oldData]);
-    },
-  });
+  );
 }

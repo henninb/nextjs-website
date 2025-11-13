@@ -1,50 +1,44 @@
-import { useQuery } from "@tanstack/react-query";
 import Description from "../model/Description";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createQueryFn } from "../utils/fetchUtils";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-const fetchDescriptionData = async (): Promise<Description[]> => {
-  try {
-    const response = await fetch("/api/description/active", {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+const log = createHookLogger("useDescriptionFetch");
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+/**
+ * Fetch active descriptions from API
+ *
+ * @returns List of active descriptions
+ */
+const fetchDescriptionData = createQueryFn<Description[]>(
+  "/api/description/active",
+  { method: "GET" },
+);
 
-    return await response.json();
-  } catch (error: any) {
-    console.error("Error fetching description data:", error.message);
-    throw error;
-  }
-};
-
+/**
+ * Hook for fetching active descriptions
+ * Automatically gated by authentication
+ *
+ * @returns React Query result with description data
+ *
+ * @example
+ * ```typescript
+ * const { data: descriptions, isLoading } = useDescriptionFetch();
+ * ```
+ */
 export default function useDescriptionFetch() {
-  const { isAuthenticated, loading } = useAuth();
-
-  const queryResult = useQuery<Description[], Error>({
-    queryKey: ["description"], // Make the key an array to support caching and refetching better
-    queryFn: fetchDescriptionData,
-    enabled: !loading && isAuthenticated,
-  });
+  const queryResult = useAuthenticatedQuery(
+    QueryKeys.description(),
+    fetchDescriptionData,
+  );
 
   if (queryResult.isError) {
-    console.log(
-      "Error occurred while fetching description data:",
-      queryResult.error?.message,
-    );
+    log.error("Fetch failed", queryResult.error);
+  }
+
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Fetched descriptions", { count: queryResult.data.length });
   }
 
   return queryResult;

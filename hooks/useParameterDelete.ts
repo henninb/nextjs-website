@@ -1,57 +1,74 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useParameterDelete");
+
+/**
+ * Delete a parameter via API
+ * Validates identifier and sanitizes before sending
+ *
+ * @param payload - Parameter to delete
+ * @returns Deleted parameter or null
+ */
 export const deleteParameter = async (
   payload: Parameter,
 ): Promise<Parameter | null> => {
-  try {
-    const endpoint = `/api/parameter/${payload.parameterName}`;
+  // Validate that parameter name exists
+  HookValidator.validateDelete(payload, "parameterName", "deleteParameter");
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+  // Sanitize parameter name for URL
+  const sanitizedParameterName = InputSanitizer.sanitizeParameterName(
+    payload.parameterName,
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+  log.debug("Deleting parameter", { parameterName: sanitizedParameterName });
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  const endpoint = `/api/parameter/${sanitizedParameterName}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "DELETE",
+  });
+
+  return parseResponse<Parameter>(response);
 };
 
+/**
+ * Hook for deleting a parameter
+ * Automatically removes parameter from the cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useParameterDelete();
+ * mutate(parameterToDelete);
+ * ```
+ */
 export default function useParameterDelete() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useStandardMutation((variables: Parameter) => deleteParameter(variables), {
     mutationKey: ["deleteParameter"],
-    //mutationFn: (variables: any) => deleteParameter(variables.payload),
-    mutationFn: (variables: Parameter) => deleteParameter(variables),
-    onError: (error) => {
-      console.log("Mutation error:", error);
-    },
     onSuccess: (response, variables) => {
-      console.log("Delete was successful.", response);
+      log.debug("Parameter deleted successfully", {
+        parameterName: variables.parameterName,
+      });
 
-      const oldData: any = queryClient.getQueryData(["parameter"]) || [];
-      const newData = oldData.filter(
-        (item: Parameter) => item.parameterName !== variables.parameterName,
+      // Remove from cache using parameterName as identifier
+      CacheUpdateStrategies.removeFromList(
+        queryClient,
+        QueryKeys.parameter(),
+        variables,
+        "parameterName",
       );
-      queryClient.setQueryData(["parameter"], newData);
+    },
+    onError: (error) => {
+      log.error("Delete failed", error);
     },
   });
 }

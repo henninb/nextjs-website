@@ -1,55 +1,77 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useCategoryDelete");
+
+/**
+ * Delete a category via API
+ * Validates identifier and sanitizes before sending
+ *
+ * @param payload - Category to delete
+ * @returns Deleted category or null
+ */
 export const deleteCategory = async (
   payload: Category,
 ): Promise<Category | null> => {
-  try {
-    const endpoint = `/api/category/${payload.categoryName}`;
+  // Validate that category name exists
+  HookValidator.validateDelete(payload, "categoryName", "deleteCategory");
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  // Sanitize category name for URL
+  const sanitizedCategoryName = InputSanitizer.sanitizeCategory(
+    payload.categoryName,
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+  log.debug("Deleting category", { categoryName: sanitizedCategoryName });
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error(`Error deleting category: ${error.message}`);
-    throw error;
-  }
+  const endpoint = `/api/category/${sanitizedCategoryName}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "DELETE",
+  });
+
+  return parseResponse<Category>(response);
 };
 
+/**
+ * Hook for deleting a category
+ * Automatically removes category from the cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useCategoryDelete();
+ * mutate(categoryToDelete);
+ * ```
+ */
 export default function useCategoryDelete() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["deleteCategory"],
-    mutationFn: (variables: Category) => deleteCategory(variables),
-    onError: (error) => {
-      console.info("Mutation error:", error);
-    },
-    onSuccess: (response, variables) => {
-      console.log("Delete was successful.", response);
+  return useStandardMutation(
+    (variables: Category) => deleteCategory(variables),
+    {
+      mutationKey: ["deleteCategory"],
+      onSuccess: (response, variables) => {
+        log.debug("Category deleted successfully", {
+          categoryName: variables.categoryName,
+        });
 
-      const oldData: any = queryClient.getQueryData(["category"]) || [];
-      const newData = oldData.filter(
-        (item: Category) => item.categoryName !== variables.categoryName,
-      );
-      queryClient.setQueryData(["category"], newData);
+        // Remove from cache using categoryName as identifier
+        CacheUpdateStrategies.removeFromList(
+          queryClient,
+          QueryKeys.category(),
+          variables,
+          "categoryName",
+        );
+      },
+      onError: (error) => {
+        log.error("Delete failed", error);
+      },
     },
-  });
+  );
 }

@@ -1,67 +1,78 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
-import { DataValidator, hookValidators } from "../utils/validation";
+import { DataValidator } from "../utils/validation";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useCategoryInsert");
+
+/**
+ * Insert a new category via API
+ * Validates input and sanitizes data before sending
+ *
+ * @param category - Category data to insert
+ * @returns Newly created category or null
+ */
 export const insertCategory = async (
   category: Category,
 ): Promise<Category | null> => {
-  try {
-    // Validate and sanitize using shared validator
-    const validation = hookValidators.validateApiPayload(
-      category,
-      DataValidator.validateCategory,
-      "insertCategory",
-    );
+  // Validate category data
+  const validatedData = HookValidator.validateInsert(
+    category,
+    DataValidator.validateCategory,
+    "insertCategory",
+  );
 
-    if (!validation.isValid) {
-      const errorMessages =
-        validation.errors?.map((e) => e.message).join(", ") ||
-        "Validation failed";
-      throw new Error(`Category validation failed: ${errorMessages}`);
-    }
+  log.debug("Inserting category", { categoryName: validatedData.categoryName });
 
-    const endpoint = "/api/category";
+  const endpoint = "/api/category";
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(validatedData),
+  });
 
-    console.log("passed: " + JSON.stringify(category));
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(validation.validatedData),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    throw error;
-  }
+  return parseResponse<Category>(response);
 };
 
+/**
+ * Hook for inserting a new category
+ * Automatically updates the category list cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useCategoryInsert();
+ * mutate({ category: newCategory });
+ * ```
+ */
 export default function useCategoryInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (variables: { category: Category }) =>
-      insertCategory(variables.category),
-    onError: (error: any) => {
-      console.log(error || "An unknown error occurred.");
+  return useStandardMutation(
+    (variables: { category: Category }) => insertCategory(variables.category),
+    {
+      mutationKey: ["insertCategory"],
+      onSuccess: (newCategory) => {
+        if (newCategory) {
+          log.debug("Category inserted successfully", {
+            categoryName: newCategory.categoryName,
+          });
+
+          CacheUpdateStrategies.addToList(
+            queryClient,
+            QueryKeys.category(),
+            newCategory,
+            "start",
+          );
+        }
+      },
+      onError: (error) => {
+        log.error("Insert failed", error);
+      },
     },
-    onSuccess: (newCategory) => {
-      const oldData: Category[] = queryClient.getQueryData(["category"]) || [];
-      queryClient.setQueryData(["category"], [newCategory, ...oldData]);
-    },
-  });
+  );
 }

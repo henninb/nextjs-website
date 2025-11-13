@@ -1,79 +1,95 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
+import { DataValidator } from "../utils/validation";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useCategoryUpdate");
+
+/**
+ * Update an existing category via API
+ * Validates and sanitizes input before sending
+ *
+ * @param oldCategory - Original category data (for identifier)
+ * @param newCategory - Updated category data
+ * @returns Updated category
+ */
 export const updateCategory = async (
   oldCategory: Category,
   newCategory: Category,
 ): Promise<Category> => {
-  const endpoint = `/api/category/${oldCategory.categoryName}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newCategory),
-    });
+  // Validate new category data
+  const validatedData = HookValidator.validateUpdate(
+    newCategory,
+    oldCategory,
+    DataValidator.validateCategory,
+    "updateCategory",
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+  // Sanitize category name for URL
+  const sanitizedCategoryName = InputSanitizer.sanitizeCategory(
+    oldCategory.categoryName,
+  );
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`Error updating category: ${error.message}`);
-    throw error;
-  }
+  log.debug("Updating category", {
+    oldName: oldCategory.categoryName,
+    newName: validatedData.categoryName,
+  });
+
+  const endpoint = `/api/category/${sanitizedCategoryName}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "PUT",
+    body: JSON.stringify(validatedData),
+  });
+
+  return parseResponse<Category>(response) as Promise<Category>;
 };
 
+/**
+ * Hook for updating an existing category
+ * Automatically updates the category list cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useCategoryUpdate();
+ * mutate({ oldCategory, newCategory });
+ * ```
+ */
 export default function useCategoryUpdate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["categoryUpdate"],
-    mutationFn: ({
+  return useStandardMutation(
+    ({
       oldCategory,
       newCategory,
     }: {
       oldCategory: Category;
       newCategory: Category;
     }) => updateCategory(oldCategory, newCategory),
-    onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
-    },
-    onSuccess: (updatedCategory: Category) => {
-      const oldData = queryClient.getQueryData<Category[]>(["category"]);
-      if (oldData) {
-        // Use a stable identifier (e.g., categoryId) for matching and updating
-        const newData = oldData.map((element) =>
-          element.categoryId === updatedCategory.categoryId
-            ? { ...element, ...updatedCategory }
-            : element,
+    {
+      mutationKey: ["updateCategory"],
+      onSuccess: (updatedCategory: Category) => {
+        log.debug("Category updated successfully", {
+          categoryName: updatedCategory.categoryName,
+        });
+
+        // Use categoryId as stable identifier for cache updates
+        CacheUpdateStrategies.updateInList(
+          queryClient,
+          QueryKeys.category(),
+          updatedCategory,
+          "categoryId",
         );
-
-        queryClient.setQueryData(["category"], newData);
-      }
+      },
+      onError: (error) => {
+        log.error("Update failed", error);
+      },
     },
-    // onSuccess: (updatedCategory: Category) => {
-    //   const oldData = queryClient.getQueryData<Category[]>(["category"]);
-    //   if (oldData) {
-    //     const newData = oldData.map((element) =>
-    //       element.categoryName === updatedCategory.categoryName
-    //         ? { ...element, ...updatedCategory }
-    //         : element,
-    //     );
-
-    //     queryClient.setQueryData(["category"], newData);
-    //   }
-    // },
-  });
+  );
 }
