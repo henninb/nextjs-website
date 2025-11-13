@@ -1,87 +1,91 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
-import { InputSanitizer, SecurityLogger } from "../utils/validation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { QueryKeys, CacheUpdateStrategies } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useAccountDelete");
+
+/**
+ * Delete an account with validation and sanitization
+ * Exported for testing and reuse
+ *
+ * @param payload - Account to delete
+ * @returns Deleted account or null
+ * @throws {HookValidationError} If validation fails
+ * @throws {FetchError} If API request fails
+ */
 export const deleteAccount = async (
   payload: Account,
 ): Promise<Account | null> => {
-  try {
-    // Validate and sanitize account identifier for deletion
-    if (!payload.accountNameOwner) {
-      throw new Error("Account name is required for deletion");
-    }
+  // Validate that account identifier exists
+  HookValidator.validateDelete(payload, "accountNameOwner", "deleteAccount");
 
-    const sanitizedAccountName = InputSanitizer.sanitizeAccountName(
-      payload.accountNameOwner,
-    );
-    if (!sanitizedAccountName) {
-      throw new Error("Invalid account name provided");
-    }
+  // Sanitize account name for URL
+  const sanitizedAccountName = InputSanitizer.sanitizeAccountName(
+    payload.accountNameOwner,
+  );
 
-    // Log security-sensitive deletion attempt
-    SecurityLogger.logSanitizationAttempt(
-      "accountNameOwner",
-      payload.accountNameOwner,
-      sanitizedAccountName,
-    );
+  log.debug("Deleting account", {
+    accountNameOwner: sanitizedAccountName,
+  });
 
-    const endpoint = `/api/account/${sanitizedAccountName}`;
+  const endpoint = `/api/account/${sanitizedAccountName}`;
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "DELETE",
+  });
 
-    if (!response.ok) {
-      let errorMessage = "";
+  const result = await parseResponse<Account>(response);
 
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
+  log.debug("Account deleted successfully", {
+    accountNameOwner: sanitizedAccountName,
+  });
 
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  return result;
 };
 
+/**
+ * Hook to delete an account
+ * Handles validation, API call, and cache updates
+ *
+ * @returns Mutation object with mutate, mutateAsync, and state
+ *
+ * @example
+ * ```typescript
+ * const deleteMutation = useAccountDelete();
+ *
+ * const handleDelete = async (account: Account) => {
+ *   await deleteMutation.mutateAsync({ oldRow: account });
+ * };
+ * ```
+ */
 export default function useAccountDelete() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["deleteAccount"],
-    mutationFn: (variables: { oldRow: Account }) =>
-      deleteAccount(variables.oldRow),
-    onError: (error: any) => {
-      console.log(error ? error : "Error is undefined.");
-    },
-    onSuccess: (response, variables) => {
-      const oldData: Account[] | undefined = queryClient.getQueryData([
-        "account",
-      ]);
-      if (oldData) {
-        const newData: Account[] = oldData.filter(
-          (t: Account) => t.accountId !== variables.oldRow.accountId,
+  return useStandardMutation(
+    (variables: { oldRow: Account }) => deleteAccount(variables.oldRow),
+    {
+      mutationKey: ["deleteAccount"],
+      onError: (error) => {
+        log.error("Failed to delete account", error);
+      },
+      onSuccess: (_, variables) => {
+        log.debug("Cache updated - account removed", {
+          accountId: variables.oldRow.accountId,
+        });
+
+        // Optimistically remove from cache
+        CacheUpdateStrategies.removeFromList(
+          queryClient,
+          QueryKeys.account(),
+          variables.oldRow,
+          "accountId",
         );
-        queryClient.setQueryData(["account"], newData);
-      }
+      },
     },
-  });
+  );
 }

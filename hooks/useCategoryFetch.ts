@@ -1,50 +1,46 @@
-import { useQuery } from "@tanstack/react-query";
 import Category from "../model/Category";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createQueryFn } from "../utils/fetchUtils";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-const fetchCategoryData = async (): Promise<Category[]> => {
-  try {
-    const response = await fetch("/api/category/active", {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+const log = createHookLogger("useCategoryFetch");
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+/**
+ * Fetch active categories for the authenticated user
+ * Uses centralized query configuration with automatic authentication gating
+ */
+const fetchCategoryData = createQueryFn<Category[]>("/api/category/active", {
+  method: "GET",
+});
 
-    return await response.json();
-  } catch (error: any) {
-    console.error("Error fetching category data:", error.message);
-    throw error;
-  }
-};
-
+/**
+ * Hook to fetch all active categories
+ * Automatically handles authentication, caching, and error states
+ *
+ * @returns React Query result with categories data, loading, and error states
+ *
+ * @example
+ * ```typescript
+ * const { data: categories, isLoading, error } = useCategoryFetch();
+ * ```
+ */
 export default function useCategoryFetch() {
-  const { isAuthenticated, loading } = useAuth();
+  const queryResult = useAuthenticatedQuery(
+    QueryKeys.category(),
+    fetchCategoryData,
+  );
 
-  const queryResult = useQuery<Category[], Error>({
-    queryKey: ["category"], // Make the key an array to support caching and refetching better
-    queryFn: fetchCategoryData,
-    enabled: !loading && isAuthenticated,
-  });
-
+  // Log errors (React Query v5 removed onError from queries)
   if (queryResult.isError) {
-    console.log(
-      "Error occurred while fetching category data:",
-      queryResult.error?.message,
-    );
+    log.error("Failed to fetch categories", queryResult.error);
+  }
+
+  // Log success in development
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Categories fetched successfully", {
+      count: queryResult.data.length,
+    });
   }
 
   return queryResult;

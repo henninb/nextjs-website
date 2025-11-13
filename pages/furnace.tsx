@@ -200,9 +200,7 @@ const FurnacePage: NextPage = () => {
                     <TableCell>
                       <strong>G1D93</strong>
                     </TableCell>
-                    <TableCell>
-                      93% AFUE, condensing gas furnace
-                    </TableCell>
+                    <TableCell>93% AFUE, condensing gas furnace</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>
@@ -470,8 +468,8 @@ const FurnacePage: NextPage = () => {
               </Typography>
               <Box component="ol" sx={{ pl: 2 }}>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Dirty Filter:</strong> Replace air filter immediately -
-                  restricted airflow triggers high limit switch
+                  <strong>Dirty Filter:</strong> Replace air filter immediately
+                  - restricted airflow triggers high limit switch
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Dirty Flame Sensor:</strong> Clean with fine sandpaper
@@ -502,8 +500,8 @@ const FurnacePage: NextPage = () => {
             </AccordionSummary>
             <AccordionDetails>
               <Typography variant="body2" paragraph>
-                <strong>Symptoms:</strong> Water pooling around furnace, gurgling
-                sounds, 3-flash error code.
+                <strong>Symptoms:</strong> Water pooling around furnace,
+                gurgling sounds, 3-flash error code.
               </Typography>
               <Typography variant="body2" paragraph>
                 <strong>Step-by-Step Fix:</strong>
@@ -561,19 +559,19 @@ const FurnacePage: NextPage = () => {
                   indicates duct issues.
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Verify Blower Speed Setting:</strong> Control board may
-                  have incorrect blower speed tap selected (should be
+                  <strong>Verify Blower Speed Setting:</strong> Control board
+                  may have incorrect blower speed tap selected (should be
                   "HEAT-HIGH" tap for proper CFM)
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Inspect Blower Wheel:</strong> Remove blower assembly -
-                  clean accumulated dust from wheel fins (reduces airflow by
+                  <strong>Inspect Blower Wheel:</strong> Remove blower assembly
+                  - clean accumulated dust from wheel fins (reduces airflow by
                   30-50% when dirty)
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Check Ductwork:</strong> Inspect for disconnected ducts
-                  in attic/crawlspace, crushed flex duct, or blocked return air
-                  paths
+                  <strong>Check Ductwork:</strong> Inspect for disconnected
+                  ducts in attic/crawlspace, crushed flex duct, or blocked
+                  return air paths
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Blower Capacitor Test:</strong> Weak capacitor causes
@@ -620,8 +618,8 @@ const FurnacePage: NextPage = () => {
                         <strong>Rumbling During Burner Operation</strong>
                       </TableCell>
                       <TableCell>
-                        Delayed ignition due to dirty burners or weak
-                        igniter - clean burners and test igniter amperage
+                        Delayed ignition due to dirty burners or weak igniter -
+                        clean burners and test igniter amperage
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -629,8 +627,8 @@ const FurnacePage: NextPage = () => {
                         <strong>Loud Humming from Inducer Motor</strong>
                       </TableCell>
                       <TableCell>
-                        Inducer motor bearing wear or debris in impeller - inspect
-                        and replace if necessary
+                        Inducer motor bearing wear or debris in impeller -
+                        inspect and replace if necessary
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -682,8 +680,8 @@ const FurnacePage: NextPage = () => {
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Check 3A or 5A Fuse on Control Board:</strong> Small
-                  automotive-style fuse protects low-voltage circuit - replace if
-                  blown
+                  automotive-style fuse protects low-voltage circuit - replace
+                  if blown
                 </Box>
               </Box>
             </AccordionDetails>
@@ -699,9 +697,9 @@ const FurnacePage: NextPage = () => {
 
           <Alert severity="warning" sx={{ mb: 2 }}>
             <strong>Safety Warning:</strong> Always turn off power at the
-            disconnect switch AND circuit breaker before performing DIY maintenance.
-            Never work on gas components - call a professional for gas-related
-            repairs.
+            disconnect switch AND circuit breaker before performing DIY
+            maintenance. Never work on gas components - call a professional for
+            gas-related repairs.
           </Alert>
 
           <Typography variant="h6" gutterBottom>
@@ -832,16 +830,16 @@ const FurnacePage: NextPage = () => {
                   Remove burner access panel (usually front lower panel)
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Locate flame sensor - thin metal rod (about 1/4" diameter, 3-4"
-                  long) positioned in front of burner flames
+                  Locate flame sensor - thin metal rod (about 1/4" diameter,
+                  3-4" long) positioned in front of burner flames
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   Remove mounting screw/nut - sensor usually has one wire
                   connected
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Gently clean the metal rod portion with fine sandpaper - remove
-                  all white/gray oxidation until shiny
+                  Gently clean the metal rod portion with fine sandpaper -
+                  remove all white/gray oxidation until shiny
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   DO NOT use water or chemicals - dry cleaning only
@@ -888,7 +886,8 @@ const FurnacePage: NextPage = () => {
                   Remove blower compartment door and lower access panel
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Disconnect blower motor wiring (take photo first for reference)
+                  Disconnect blower motor wiring (take photo first for
+                  reference)
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   Remove blower assembly - typically slides out on rails after
@@ -926,8 +925,10 @@ const FurnacePage: NextPage = () => {
             </AccordionSummary>
             <AccordionDetails>
               <Typography variant="body2" paragraph>
-                <strong>Perform these checks in late September/early October
-                before heating season:</strong>
+                <strong>
+                  Perform these checks in late September/early October before
+                  heating season:
+                </strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
                 <Box component="li" sx={{ mb: 1 }}>
@@ -943,10 +944,12 @@ const FurnacePage: NextPage = () => {
                   Clean condensate trap and flush drain line with vinegar/water
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Inspect PVC vent pipes - clear debris from outdoor terminations
+                  Inspect PVC vent pipes - clear debris from outdoor
+                  terminations
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Test thermostat by setting 5°F above room temp - verify startup
+                  Test thermostat by setting 5°F above room temp - verify
+                  startup
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   Listen for unusual noises during first few cycles
@@ -974,15 +977,13 @@ const FurnacePage: NextPage = () => {
           <Divider sx={{ mb: 2 }} />
 
           <Typography variant="body2" paragraph>
-            Your 93% AFUE furnace is already highly efficient. Here are key strategies
-            to maximize performance and minimize operating costs:
+            Your 93% AFUE furnace is already highly efficient. Here are key
+            strategies to maximize performance and minimize operating costs:
           </Typography>
 
           <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">
-                System Performance & Airflow
-              </Typography>
+              <Typography variant="h6">System Performance & Airflow</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Typography variant="body2" paragraph>
@@ -990,7 +991,8 @@ const FurnacePage: NextPage = () => {
               </Typography>
               <Box component="ul" sx={{ pl: 2, mb: 2 }}>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Target 1600 CFM at high heat speed; temperature rise should be 40-70°F
+                  Target 1600 CFM at high heat speed; temperature rise should be
+                  40-70°F
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   Use MERV 11 pleated filters, change every 60-90 days
@@ -1008,13 +1010,16 @@ const FurnacePage: NextPage = () => {
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Gas pressure: 3.5" WC inlet, manifold per rating plate - verify annually
+                  Gas pressure: 3.5" WC inlet, manifold per rating plate -
+                  verify annually
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Flames should be blue with slight orange tips; yellow = call technician
+                  Flames should be blue with slight orange tips; yellow = call
+                  technician
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  Professional burner cleaning every 3-5 years maintains peak efficiency
+                  Professional burner cleaning every 3-5 years maintains peak
+                  efficiency
                 </Box>
               </Box>
             </AccordionDetails>
@@ -1112,9 +1117,9 @@ const FurnacePage: NextPage = () => {
 
           <Alert severity="success" sx={{ mt: 2 }}>
             <strong>Efficiency Tracking:</strong> Monitor your gas bills
-            year-over-year (adjusted for weather). A properly maintained 93% AFUE
-            furnace should use 15-20% less gas than older 80% furnaces. Sudden
-            increases indicate maintenance needs or system problems.
+            year-over-year (adjusted for weather). A properly maintained 93%
+            AFUE furnace should use 15-20% less gas than older 80% furnaces.
+            Sudden increases indicate maintenance needs or system problems.
           </Alert>
         </Paper>
 
@@ -1146,13 +1151,13 @@ const FurnacePage: NextPage = () => {
                   BTU output) furnace typically heats:
                   <br />• Cold Climate (USDA Zone 5-6): 1,800-2,200 sq ft
                   <br />• Moderate Climate (Zone 6-7): 2,200-2,800 sq ft
-                  <br />• Assumptions: Standard insulation, 8-9 ft ceilings, newer
-                  construction
+                  <br />• Assumptions: Standard insulation, 8-9 ft ceilings,
+                  newer construction
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Manual J Calculation:</strong> Professional load
-                  calculation considers insulation, windows, orientation, climate.
-                  Ask installer for copy.
+                  calculation considers insulation, windows, orientation,
+                  climate. Ask installer for copy.
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Signs of Oversizing:</strong> Short cycling (runs less
@@ -1186,8 +1191,8 @@ const FurnacePage: NextPage = () => {
                   <strong>Blower Capacity:</strong> ~1600 CFM maximum
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Compatible A/C Sizes:</strong> 2.5 to 4 tons (30,000 to
-                  48,000 BTU cooling)
+                  <strong>Compatible A/C Sizes:</strong> 2.5 to 4 tons (30,000
+                  to 48,000 BTU cooling)
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Ideal Pairing:</strong> 3-ton (36,000 BTU) A/C system
@@ -1233,8 +1238,8 @@ const FurnacePage: NextPage = () => {
                   equivalent length (each elbow = 5 ft equivalent)
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Slope Requirements:</strong> Vent pipes must slope 1/4"
-                  per foot back to furnace to drain condensate
+                  <strong>Slope Requirements:</strong> Vent pipes must slope
+                  1/4" per foot back to furnace to drain condensate
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Outdoor Termination:</strong> Must be at least 4 ft
@@ -1246,10 +1251,10 @@ const FurnacePage: NextPage = () => {
                 </Box>
               </Box>
               <Alert severity="warning" sx={{ mt: 2 }}>
-                <strong>Common Venting Problems:</strong> Sagging horizontal runs
-                create water traps (3-flash error). Blocked outdoor terminations
-                from snow, leaves, or bird nests cause pressure switch errors.
-                Inspect vents seasonally.
+                <strong>Common Venting Problems:</strong> Sagging horizontal
+                runs create water traps (3-flash error). Blocked outdoor
+                terminations from snow, leaves, or bird nests cause pressure
+                switch errors. Inspect vents seasonally.
               </Alert>
             </AccordionDetails>
           </Accordion>
@@ -1269,7 +1274,8 @@ const FurnacePage: NextPage = () => {
                   <strong>Voltage:</strong> 120V AC, 60 Hz, single phase
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Circuit:</strong> Dedicated 15A or 20A circuit required
+                  <strong>Circuit:</strong> Dedicated 15A or 20A circuit
+                  required
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Amperage Draw:</strong>
@@ -1331,20 +1337,23 @@ const FurnacePage: NextPage = () => {
             </AccordionSummary>
             <AccordionDetails>
               <Typography variant="body2" paragraph>
-                <strong>When your furnace eventually needs replacement, consider
-                these upgrades:</strong>
+                <strong>
+                  When your furnace eventually needs replacement, consider these
+                  upgrades:
+                </strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Variable-Speed Blower:</strong> Current furnace has PSC
-                  (permanent split capacitor) motor. Variable-speed ECM motors use
-                  30-50% less electricity, provide better humidity control, and
-                  quieter operation.
+                  <strong>Variable-Speed Blower:</strong> Current furnace has
+                  PSC (permanent split capacitor) motor. Variable-speed ECM
+                  motors use 30-50% less electricity, provide better humidity
+                  control, and quieter operation.
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Two-Stage or Modulating Burner:</strong> Your
-                  single-stage burner runs full-blast or off. Two-stage (low/high)
-                  or modulating (10-100%) burners improve comfort and efficiency.
+                  single-stage burner runs full-blast or off. Two-stage
+                  (low/high) or modulating (10-100%) burners improve comfort and
+                  efficiency.
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>96-98% AFUE:</strong> Next tier of condensing furnaces
@@ -1356,16 +1365,16 @@ const FurnacePage: NextPage = () => {
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Smart Controls:</strong> Communicating furnace +
-                  thermostat optimizes staging, airflow, and humidity for maximum
-                  comfort/efficiency
+                  thermostat optimizes staging, airflow, and humidity for
+                  maximum comfort/efficiency
                 </Box>
               </Box>
               <Alert severity="info" sx={{ mt: 2 }}>
                 <strong>Furnace Lifespan:</strong> Well-maintained condensing
                 furnaces typically last 15-20 years. Plan for replacement when:
                 repair costs exceed 50% of new furnace cost, multiple major
-                component failures, or efficiency drops significantly (indicated by
-                rising gas bills).
+                component failures, or efficiency drops significantly (indicated
+                by rising gas bills).
               </Alert>
             </AccordionDetails>
           </Accordion>
@@ -1380,9 +1389,9 @@ const FurnacePage: NextPage = () => {
 
           <Alert severity="info" sx={{ mb: 2 }}>
             Armstrong Air is now part of Allied/Lennox. Many parts are
-            interchangeable with Lennox and Ducane furnaces. Components below are
-            ordered by replacement frequency. Consider keeping frequently-failing
-            parts on hand for emergency repairs.
+            interchangeable with Lennox and Ducane furnaces. Components below
+            are ordered by replacement frequency. Consider keeping
+            frequently-failing parts on hand for emergency repairs.
           </Alert>
 
           <TableContainer>
@@ -1413,12 +1422,8 @@ const FurnacePage: NextPage = () => {
                   </TableCell>
                   <TableCell>Confirms burner flame</TableCell>
                   <TableCell>3–5 years</TableCell>
-                  <TableCell>
-                    Armstrong / Lennox 28K65 or 62-24044-01
-                  </TableCell>
-                  <TableCell>
-                    Clean yearly; inexpensive (~$15–25)
-                  </TableCell>
+                  <TableCell>Armstrong / Lennox 28K65 or 62-24044-01</TableCell>
+                  <TableCell>Clean yearly; inexpensive (~$15–25)</TableCell>
                 </TableRow>
 
                 <TableRow>
@@ -1428,9 +1433,7 @@ const FurnacePage: NextPage = () => {
                   <TableCell>Ignites gas</TableCell>
                   <TableCell>5–8 years</TableCell>
                   <TableCell>Norton 271M, White-Rodgers 767A-380</TableCell>
-                  <TableCell>
-                    Fragile — don't touch the element; ~$30
-                  </TableCell>
+                  <TableCell>Fragile — don't touch the element; ~$30</TableCell>
                 </TableRow>
 
                 <TableRow>
@@ -1439,9 +1442,7 @@ const FurnacePage: NextPage = () => {
                   </TableCell>
                   <TableCell>Starts blower motor</TableCell>
                   <TableCell>5–10 years</TableCell>
-                  <TableCell>
-                    Match µF & voltage (often 10 µF 370 V)
-                  </TableCell>
+                  <TableCell>Match µF & voltage (often 10 µF 370 V)</TableCell>
                   <TableCell>
                     Read rating printed on side; cheap (~$10)
                   </TableCell>
@@ -1478,9 +1479,7 @@ const FurnacePage: NextPage = () => {
                   <TableCell>
                     Armstrong / Lennox R47594-001 (or White-Rodgers 50A65-475)
                   </TableCell>
-                  <TableCell>
-                    Keep a used one as backup if possible
-                  </TableCell>
+                  <TableCell>Keep a used one as backup if possible</TableCell>
                 </TableRow>
 
                 <TableRow>
@@ -1492,9 +1491,7 @@ const FurnacePage: NextPage = () => {
                   <TableCell>
                     1/3 HP 115 V 3-speed (Rheem 51-23012-41, Century DL1076)
                   </TableCell>
-                  <TableCell>
-                    Replace with matching rotation & shaft
-                  </TableCell>
+                  <TableCell>Replace with matching rotation & shaft</TableCell>
                 </TableRow>
 
                 <TableRow>

@@ -1,49 +1,46 @@
-import { useQuery } from "@tanstack/react-query";
 import Account from "../model/Account";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createQueryFn } from "../utils/fetchUtils";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-const fetchAccountData = async (): Promise<Account[] | null> => {
-  try {
-    const response = await fetch("/api/account/active", {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+const log = createHookLogger("useAccountFetch");
 
-    if (!response.ok) {
-      const errorDetails = await response.json();
-      throw new Error(
-        `HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`,
-      );
-    }
+/**
+ * Fetch active accounts for the authenticated user
+ * Uses centralized query configuration with automatic authentication gating
+ */
+const fetchAccountData = createQueryFn<Account[]>("/api/account/active", {
+  method: "GET",
+});
 
-    // Modern endpoint always returns 200 OK with empty array [] if no accounts
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error("Error fetching account data:", error);
-    throw new Error(`Failed to fetch account data: ${error.message}`);
-  }
-};
-
+/**
+ * Hook to fetch all active accounts
+ * Automatically handles authentication, caching, and error states
+ *
+ * @returns React Query result with accounts data, loading, and error states
+ *
+ * @example
+ * ```typescript
+ * const { data: accounts, isLoading, error } = useAccountFetch();
+ * ```
+ */
 export default function useAccountFetch() {
-  const { isAuthenticated, loading } = useAuth();
+  const queryResult = useAuthenticatedQuery(
+    QueryKeys.account(),
+    fetchAccountData,
+  );
 
-  const queryResult = useQuery<Account[], Error>({
-    queryKey: ["account"],
-    queryFn: fetchAccountData,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-    enabled: !loading && isAuthenticated,
-  });
-
+  // Log errors (React Query v5 removed onError from queries)
   if (queryResult.isError) {
-    console.log(
-      "Error occurred while fetching account data:",
-      queryResult.error?.message,
-    );
+    log.error("Failed to fetch accounts", queryResult.error);
+  }
+
+  // Log success in development
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Accounts fetched successfully", {
+      count: queryResult.data.length,
+    });
   }
 
   return queryResult;

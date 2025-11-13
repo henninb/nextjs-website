@@ -188,6 +188,59 @@ export class InputSanitizer {
     }
     return cleaned;
   }
+
+  /**
+   * Sanitize parameter name (key)
+   * Only allows safe characters for parameter names
+   */
+  static sanitizeParameterName(input: string): string {
+    if (typeof input !== "string") return "";
+
+    return input
+      .trim()
+      .replace(/[^a-zA-Z0-9_.-]/g, "") // Only alphanumeric, underscore, dot, dash
+      .slice(0, 100); // Limit length
+  }
+
+  /**
+   * Sanitize numeric ID
+   * Ensures ID is a positive integer
+   */
+  static sanitizeNumericId(
+    input: number | string,
+    fieldName: string = "ID",
+  ): number {
+    const numId = typeof input === "string" ? parseInt(input, 10) : input;
+
+    if (isNaN(numId) || numId < 0 || !Number.isInteger(numId)) {
+      throw new Error(`Invalid ${fieldName}: must be a positive integer`);
+    }
+
+    return numId;
+  }
+
+  /**
+   * Sanitize for URL usage
+   * Properly encodes value for use in URLs
+   */
+  static sanitizeForUrl(value: string): string {
+    if (typeof value !== "string") return "";
+    return encodeURIComponent(value.trim());
+  }
+
+  /**
+   * Sanitize boolean value
+   * Converts various truthy/falsy values to boolean
+   */
+  static sanitizeBoolean(input: any): boolean {
+    if (typeof input === "boolean") return input;
+    if (typeof input === "string") {
+      const lower = input.toLowerCase().trim();
+      return lower === "true" || lower === "1" || lower === "yes";
+    }
+    if (typeof input === "number") return input !== 0;
+    return Boolean(input);
+  }
 }
 
 /**

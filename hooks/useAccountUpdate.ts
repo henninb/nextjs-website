@@ -1,62 +1,105 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { useQueryClient } from "@tanstack/react-query";
 import Account from "../model/Account";
+import { DataValidator } from "../utils/validation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { QueryKeys, CacheUpdateStrategies } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useAccountUpdate");
+
+/**
+ * Update an existing account with validation and sanitization
+ * Exported for testing and reuse
+ *
+ * @param oldRow - Existing account data
+ * @param newRow - Updated account data
+ * @returns Updated account
+ * @throws {HookValidationError} If validation fails
+ * @throws {FetchError} If API request fails
+ */
 export const updateAccount = async (
   oldRow: Account,
   newRow: Account,
 ): Promise<Account> => {
-  try {
-    let endpoint = `/api/account/${oldRow.accountNameOwner}`;
+  // Validate new data
+  const validatedData = HookValidator.validateUpdate(
+    newRow,
+    oldRow,
+    DataValidator.validateAccount,
+    "updateAccount",
+  );
 
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newRow),
-    });
+  // Sanitize account name for URL
+  const sanitizedAccountName = InputSanitizer.sanitizeAccountName(
+    oldRow.accountNameOwner,
+  );
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).", await response.json());
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+  log.debug("Updating account", {
+    accountNameOwner: sanitizedAccountName,
+  });
 
-    return await response.json();
-  } catch (error: any) {
-    throw error;
+  const endpoint = `/api/account/${sanitizedAccountName}`;
+
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "PUT",
+    body: JSON.stringify(validatedData),
+  });
+
+  const result = await parseResponse<Account>(response);
+
+  if (!result) {
+    throw new Error("Update failed: No data returned");
   }
+
+  log.debug("Account updated successfully", {
+    accountNameOwner: result.accountNameOwner,
+  });
+
+  return result;
 };
 
+/**
+ * Hook to update an existing account
+ * Handles validation, API call, and cache updates
+ *
+ * @returns Mutation object with mutate, mutateAsync, and state
+ *
+ * @example
+ * ```typescript
+ * const updateMutation = useAccountUpdate();
+ *
+ * const handleUpdate = async (oldAccount: Account, newAccount: Account) => {
+ *   await updateMutation.mutateAsync({ oldRow: oldAccount, newRow: newAccount });
+ * };
+ * ```
+ */
 export default function useAccountUpdate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["updateAccount"],
-    mutationFn: (variables: { oldRow: Account; newRow: Account }) =>
+  return useStandardMutation(
+    (variables: { oldRow: Account; newRow: Account }) =>
       updateAccount(variables.oldRow, variables.newRow),
-    onError: (error: any) => {
-      console.log(error ? error : "Error is undefined.");
-    },
-    onSuccess: (response: Account) => {
-      const oldData: Account[] | undefined = queryClient.getQueryData([
-        "account",
-      ]);
+    {
+      mutationKey: ["updateAccount"],
+      onError: (error) => {
+        log.error("Failed to update account", error);
+      },
+      onSuccess: (response) => {
+        log.debug("Cache updated with updated account", {
+          accountId: response.accountId,
+        });
 
-      if (oldData) {
-        // Use a stable identifier like accountId to find and update the account
-        const newData = oldData.map((account) =>
-          account.accountId === response.accountId ? response : account,
+        // Optimistically update cache using accountId as stable identifier
+        CacheUpdateStrategies.updateInList(
+          queryClient,
+          QueryKeys.account(),
+          response,
+          "accountId",
         );
-
-        queryClient.setQueryData(["account"], newData);
-      } else {
-        // If no old data, initialize with the new response
-        queryClient.setQueryData(["account"], [response]);
-      }
+      },
     },
-  });
+  );
 }
