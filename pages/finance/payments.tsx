@@ -105,7 +105,8 @@ export default function Payments() {
   const [paymentMode, setPaymentMode] = useState<"payBill" | "balanceTransfer">(
     "payBill",
   );
-  const [lastSubmittedPayment, setLastSubmittedPayment] = useState<Payment | null>(null);
+  const [lastSubmittedPayment, setLastSubmittedPayment] =
+    useState<Payment | null>(null);
 
   // Initialize last payment from localStorage on mount
   useEffect(() => {
@@ -522,7 +523,9 @@ export default function Payments() {
                     variant="create"
                     actionLabel="Add Payment"
                     onAction={() => {
-                      setPaymentData(lastSubmittedPayment || initialPaymentData);
+                      setPaymentData(
+                        lastSubmittedPayment || initialPaymentData,
+                      );
                       setFormErrors({});
                       setPaymentMode("payBill");
                       setShowModalAdd(true);

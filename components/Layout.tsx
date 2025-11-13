@@ -47,6 +47,7 @@ import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import WatchIcon from "@mui/icons-material/Watch";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import VerifiedIcon from "@mui/icons-material/Verified";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import FinanceLayout from "../layouts/FinanceLayout";
@@ -134,6 +135,7 @@ const generalLinks = [
   // { text: "Howto", href: "/howto", icon: <MenuBookIcon /> },
   { text: "Tools", href: "/tools", icon: <BuildIcon /> },
   { text: "Temperature", href: "/temperature", icon: <DeviceThermostatIcon /> },
+  { text: "Furnace", href: "/furnace", icon: <LocalFireDepartmentIcon /> },
   { text: "Lead", href: "/lead", icon: <ContactPageIcon /> },
   { text: "Payment", href: "/payment", icon: <PaymentIcon /> },
   { text: "SpotifyAuth", href: "/spotifyauth", icon: <MusicNoteIcon /> },
