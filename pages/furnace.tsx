@@ -1182,9 +1182,9 @@ const FurnacePage: NextPage = () => {
                   Ask installer for copy.
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
-                  <strong>Signs of Oversizing:</strong> Short cycling (runs <10
-                  minutes), temperature swings, some rooms too hot while others
-                  cold
+                  <strong>Signs of Oversizing:</strong> Short cycling (runs less
+                  than 10 minutes), temperature swings, some rooms too hot while
+                  others cold
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
                   <strong>Signs of Undersizing:</strong> Runs continuously on
