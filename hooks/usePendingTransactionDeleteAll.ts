@@ -1,50 +1,51 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling } from "../utils/fetchUtils";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-const deleteAllPendingTransactions = async (): Promise<void> => {
-  try {
-    const endpoint = "/api/pending/transaction/delete/all";
-    console.log("Deleting all pending transactions");
+const log = createHookLogger("usePendingTransactionDeleteAll");
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-    });
+/**
+ * Delete all pending transactions via API
+ * Bulk delete operation
+ *
+ * @returns void
+ */
+export const deleteAllPendingTransactions = async (): Promise<void> => {
+  log.debug("Deleting all pending transactions");
 
-    if (!response.ok) {
-      let errorMessage = "";
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-      console.log(errorMessage || "Unknown error");
-      throw new Error(errorMessage || "Unknown error");
-    }
-
-    // No content is expected on success (HTTP 204)
-    return;
-  } catch (error: any) {
-    throw error;
-  }
+  const endpoint = "/api/pending/transaction/delete/all";
+  await fetchWithErrorHandling(endpoint, {
+    method: "DELETE",
+  });
 };
 
+/**
+ * Hook for deleting all pending transactions
+ * Automatically clears pending transactions cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = usePendingTransactionDeleteAll();
+ * mutate();
+ * ```
+ */
 export default function usePendingTransactionDeleteAll() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: deleteAllPendingTransactions,
-    onError: (error: any) => {
-      console.log(error || "An unknown error occurred.");
-    },
+  return useStandardMutation(() => deleteAllPendingTransactions(), {
+    mutationKey: ["deleteAllPendingTransactions"],
     onSuccess: () => {
-      // Update the query cache. Here we clear out the pending transactions.
-      queryClient.setQueryData(["pendingTransactions"], []);
+      log.debug("All pending transactions deleted successfully");
+
+      // Clear the pending transactions cache (set to empty array)
+      queryClient.setQueryData(QueryKeys.pendingTransaction(), []);
+    },
+    onError: (error) => {
+      log.error("Delete all failed", error);
     },
   });
 }

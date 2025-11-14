@@ -1,39 +1,69 @@
-import { useMutation } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-type MergePayload = {
+const log = createHookLogger("useCategoryMerge");
+
+/**
+ * Payload for merging categories
+ */
+export type MergePayload = {
   sourceNames: string[];
   targetName: string;
 };
 
-const mergeCategories = async (payload: MergePayload): Promise<any> => {
-  const response = await fetch("/api/category/merge", {
+/**
+ * Merge multiple source categories into a single target category via API
+ * This operation updates all transactions referencing the source categories
+ *
+ * @param payload - Source category names and target category name
+ * @returns Merge operation result
+ */
+export const mergeCategories = async (payload: MergePayload): Promise<any> => {
+  log.debug("Merging categories", {
+    sourceCount: payload.sourceNames.length,
+    targetName: payload.targetName,
+  });
+
+  const endpoint = "/api/category/merge";
+  const response = await fetchWithErrorHandling(endpoint, {
     method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    try {
-      const body = await response.json();
-      if (body && body.response) {
-        throw new Error(body.response);
-      }
-    } catch (_) {
-      // ignore JSON parse error and fall through
-    }
-    throw new Error(response.statusText || "Failed to merge categories");
-  }
-
-  return await response.json();
+  return parseResponse<any>(response) as Promise<any>;
 };
 
+/**
+ * Hook for merging categories
+ * Automatically invalidates category cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useCategoryMerge();
+ * mutate({ sourceNames: ["food", "dining"], targetName: "restaurants" });
+ * ```
+ */
 export default function useCategoryMerge() {
-  return useMutation({
+  const queryClient = useQueryClient();
+
+  return useStandardMutation((payload: MergePayload) => mergeCategories(payload), {
     mutationKey: ["categoryMerge"],
-    mutationFn: (payload: MergePayload) => mergeCategories(payload),
+    onSuccess: (_response, variables) => {
+      log.debug("Categories merged successfully", {
+        sourceNames: variables.sourceNames,
+        targetName: variables.targetName,
+      });
+
+      // Invalidate categories to refresh the list
+      queryClient.invalidateQueries({ queryKey: QueryKeys.category() });
+    },
+    onError: (error) => {
+      log.error("Merge failed", error);
+    },
   });
 }

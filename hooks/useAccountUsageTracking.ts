@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Account from "../model/Account";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useAccountUsageTracking");
 
 interface AccountUsage {
   accountNameOwner: string;
@@ -10,6 +13,20 @@ interface AccountUsage {
 const STORAGE_KEY = "financeApp_accountUsage";
 const MAX_QUICK_LINKS = 6;
 
+/**
+ * Hook for tracking account visit frequency using localStorage
+ * Client-side only - no API calls
+ * Used for "most used accounts" quick navigation feature
+ *
+ * @returns Functions to track visits, remove accounts, and get most used accounts
+ *
+ * @example
+ * ```typescript
+ * const { trackAccountVisit, getMostUsedAccounts } = useAccountUsageTracking();
+ * trackAccountVisit("checking_alice");
+ * const mostUsed = getMostUsedAccounts(allAccounts, 6);
+ * ```
+ */
 export default function useAccountUsageTracking() {
   const [accountUsage, setAccountUsage] = useState<AccountUsage[]>([]);
 
@@ -22,8 +39,11 @@ export default function useAccountUsageTracking() {
           lastVisited: new Date(item.lastVisited),
         }));
         setAccountUsage(parsed);
+        log.debug("Loaded account usage from storage", {
+          count: parsed.length,
+        });
       } catch (error) {
-        console.warn("Failed to parse account usage data:", error);
+        log.error("Failed to parse account usage data", error);
         setAccountUsage([]);
       }
     }
@@ -32,8 +52,9 @@ export default function useAccountUsageTracking() {
   const saveToStorage = useCallback((usage: AccountUsage[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(usage));
+      log.debug("Saved account usage to storage", { count: usage.length });
     } catch (error) {
-      console.warn("Failed to save account usage data:", error);
+      log.error("Failed to save account usage data", error);
     }
   }, []);
 
@@ -52,6 +73,10 @@ export default function useAccountUsageTracking() {
             visitCount: updated[existingIndex].visitCount + 1,
             lastVisited: new Date(),
           };
+          log.debug("Updated account visit count", {
+            account: accountNameOwner,
+            visitCount: updated[existingIndex].visitCount,
+          });
         } else {
           updated = [
             ...prev,
@@ -61,6 +86,7 @@ export default function useAccountUsageTracking() {
               lastVisited: new Date(),
             },
           ];
+          log.debug("Tracked new account visit", { account: accountNameOwner });
         }
 
         saveToStorage(updated);
@@ -76,6 +102,9 @@ export default function useAccountUsageTracking() {
         const updated = prev.filter(
           (item) => item.accountNameOwner !== accountNameOwner,
         );
+        log.debug("Removed account from usage tracking", {
+          account: accountNameOwner,
+        });
         saveToStorage(updated);
         return updated;
       });

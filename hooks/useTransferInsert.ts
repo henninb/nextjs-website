@@ -1,6 +1,20 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
+import { DataValidator } from "../utils/validation";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useTransferInsert");
+
+/**
+ * Setup new transfer payload with required defaults
+ *
+ * @param payload - Transfer data to setup
+ * @returns Formatted transfer payload
+ */
 export const overRideTransferValues = (payload: Transfer) => {
   return {
     amount: payload?.amount,
@@ -9,51 +23,74 @@ export const overRideTransferValues = (payload: Transfer) => {
   };
 };
 
+/**
+ * Insert a new transfer via API
+ * Validates input and sanitizes data before sending
+ *
+ * @param payload - Transfer data to insert
+ * @returns Newly created transfer
+ */
 export const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
-  try {
-    const endpoint = "/api/transfer";
-    const newPayload = overRideTransferValues(payload);
+  // Validate transfer data
+  const validatedData = HookValidator.validateInsert(
+    payload,
+    DataValidator.validateTransfer,
+    "insertTransfer",
+  );
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPayload),
-    });
+  log.debug("Inserting transfer", {
+    sourceAccount: validatedData.sourceAccount,
+    destinationAccount: validatedData.destinationAccount,
+    amount: validatedData.amount,
+  });
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error || `HTTP error! Status: ${response.status}`;
-      console.error(`Failed to insert transfer: ${errorMessage}`);
-      throw new Error(errorMessage);
-    }
+  const endpoint = "/api/transfer";
+  const newPayload = overRideTransferValues(validatedData);
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(newPayload),
+  });
+
+  return parseResponse<Transfer>(response) as Promise<Transfer>;
 };
 
+/**
+ * Hook for inserting a new transfer
+ * Automatically updates the transfer list cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useTransferInsert();
+ * mutate({ payload: newTransfer });
+ * ```
+ */
 export default function useTransferInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["insertTransfer"],
-    mutationFn: (variables: { payload: Transfer }) =>
-      insertTransfer(variables.payload),
-    onError: (error) => {
-      console.error(error ? error : "error is undefined.");
+  return useStandardMutation(
+    (variables: { payload: Transfer }) => insertTransfer(variables.payload),
+    {
+      mutationKey: ["insertTransfer"],
+      onSuccess: (newTransfer) => {
+        if (newTransfer) {
+          log.debug("Transfer inserted successfully", {
+            transferId: newTransfer.transferId,
+          });
+
+          CacheUpdateStrategies.addToList(
+            queryClient,
+            QueryKeys.transfer(),
+            newTransfer,
+            "start",
+          );
+        }
+      },
+      onError: (error) => {
+        log.error("Insert failed", error);
+      },
     },
-    onSuccess: (newTransfer) => {
-      const oldData: any = queryClient.getQueryData(["transfer"]) || [];
-      queryClient.setQueryData(["transfer"], [newTransfer, ...oldData]);
-    },
-  });
+  );
 }

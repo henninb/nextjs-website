@@ -1,13 +1,15 @@
-//import { v4 as uuidv4 } from "uuid";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
-import {
-  DataValidator,
-  hookValidators,
-  ValidationError,
-} from "../utils/validation";
+import { DataValidator } from "../utils/validation";
 import { generateSecureUUID } from "../utils/security/secureUUID";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { getAccountKey, getTotalsKey } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useTransactionInsert");
 
 export type TransactionInsertType = {
   accountNameOwner: string;
@@ -16,16 +18,14 @@ export type TransactionInsertType = {
   isImportTransaction: boolean;
 };
 
-export const getAccountKey = (accountNameOwner: string) => [
-  "accounts",
-  accountNameOwner,
-];
-
-export const getTotalsKey = (accountNameOwner: string) => [
-  "totals",
-  accountNameOwner,
-];
-
+/**
+ * Setup new transaction payload with secure UUID and defaults
+ * Preserves business logic for transaction creation
+ *
+ * @param payload - Transaction data
+ * @param accountNameOwner - Account name owner
+ * @returns Formatted transaction payload
+ */
 export const setupNewTransaction = async (
   payload: Transaction,
   accountNameOwner: string,
@@ -60,128 +60,136 @@ export const setupNewTransaction = async (
   return result;
 };
 
+/**
+ * Insert a new transaction via API
+ * Validates input and sanitizes data before sending
+ * Supports both regular and future transactions
+ *
+ * @param accountNameOwner - Account name owner
+ * @param payload - Transaction data to insert
+ * @param isFutureTransaction - Whether this is a future transaction
+ * @param isImportTransaction - Whether this is from import (affects cache updates)
+ * @returns Newly created transaction
+ */
 export const insertTransaction = async (
   accountNameOwner: string,
   payload: Transaction,
   isFutureTransaction: boolean,
   isImportTransaction: boolean,
 ): Promise<Transaction> => {
-  // Validate and sanitize the transaction data
-  const validation = hookValidators.validateApiPayload(
+  // Validate transaction data
+  const validatedData = HookValidator.validateInsert(
     payload,
     DataValidator.validateTransaction,
     "insertTransaction",
   );
 
-  if (!validation.isValid) {
-    const errorMessages =
-      validation.errors?.map((err) => err.message).join(", ") ||
-      "Validation failed";
-    throw new Error(errorMessages);
-  }
-
-  let endpoint = "/api/transaction";
-  if (isFutureTransaction) {
-    endpoint = "/api/transaction/future";
-  }
-
-  const newPayload = await setupNewTransaction(
-    validation.validatedData,
+  log.debug("Inserting transaction", {
     accountNameOwner,
-  );
+    isFutureTransaction,
+    isImportTransaction,
+    amount: validatedData.amount,
+    description: validatedData.description,
+  });
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPayload),
-    });
+  // Determine endpoint based on transaction type
+  const endpoint = isFutureTransaction
+    ? "/api/transaction/future"
+    : "/api/transaction";
 
-    if (!response.ok) {
-      let errorMessage = "";
+  const newPayload = await setupNewTransaction(validatedData, accountNameOwner);
 
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          console.log("No error message returned.");
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(newPayload),
+  });
 
-      console.log(errorMessage || "cannot throw a null value");
-      throw new Error(errorMessage || "cannot throw a null value");
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  return parseResponse<Transaction>(response) as Promise<Transaction>;
 };
 
+/**
+ * Hook for inserting a new transaction
+ * Automatically updates transaction list and totals cache on success
+ * Skips cache updates for import transactions
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useTransactionInsert();
+ * mutate({
+ *   accountNameOwner: "checking",
+ *   newRow: transaction,
+ *   isFutureTransaction: false,
+ *   isImportTransaction: false
+ * });
+ * ```
+ */
 export default function useTransactionInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["insertTransaction"],
-    mutationFn: (variables: TransactionInsertType) =>
+  return useStandardMutation(
+    (variables: TransactionInsertType) =>
       insertTransaction(
         variables.newRow.accountNameOwner,
         variables.newRow,
         variables.isFutureTransaction,
         variables.isImportTransaction,
       ),
-    onError: (error: any) => {
-      console.log(`Mutation error: ${error.message}`);
-    },
-    onSuccess: (response: Transaction, variables: TransactionInsertType) => {
-      if (!variables.isImportTransaction) {
-        const oldData: Transaction[] =
-          queryClient.getQueryData(getAccountKey(response.accountNameOwner)) ||
-          [];
-        queryClient.setQueryData(getAccountKey(response.accountNameOwner), [
-          response,
-          ...oldData,
-        ]);
+    {
+      mutationKey: ["insertTransaction"],
+      onSuccess: (response: Transaction, variables: TransactionInsertType) => {
+        log.debug("Transaction inserted successfully", {
+          transactionId: response.transactionId,
+          guid: response.guid,
+          isImportTransaction: variables.isImportTransaction,
+        });
 
-        const oldTotals: Totals = queryClient.getQueryData(
-          getTotalsKey(response.accountNameOwner),
-        ) || {
-          totals: 0,
-          totalsFuture: 0,
-          totalsCleared: 0,
-          totalsOutstanding: 0,
-        };
+        // Skip cache updates for import transactions
+        if (!variables.isImportTransaction) {
+          const accountKey = getAccountKey(response.accountNameOwner);
+          const totalsKey = getTotalsKey(response.accountNameOwner);
 
-        const newTotals = { ...oldTotals };
+          // Add transaction to account's transaction list
+          const oldData: Transaction[] =
+            queryClient.getQueryData(accountKey) || [];
+          queryClient.setQueryData(accountKey, [response, ...oldData]);
 
-        // Adjust totals based on transaction state
-        newTotals.totals += response.amount;
+          // Update totals based on transaction state
+          const oldTotals: Totals = queryClient.getQueryData(totalsKey) || {
+            totals: 0,
+            totalsFuture: 0,
+            totalsCleared: 0,
+            totalsOutstanding: 0,
+          };
 
-        if (response.transactionState === "cleared") {
-          newTotals.totalsCleared += response.amount;
-        } else if (response.transactionState === "outstanding") {
-          newTotals.totalsOutstanding += response.amount;
-        } else if (response.transactionState === "future") {
-          newTotals.totalsFuture += response.amount;
-        } else {
-          console.log("cannot adjust totals.");
+          const newTotals = { ...oldTotals };
+          newTotals.totals += response.amount;
+
+          // Adjust state-specific totals
+          if (response.transactionState === "cleared") {
+            newTotals.totalsCleared += response.amount;
+          } else if (response.transactionState === "outstanding") {
+            newTotals.totalsOutstanding += response.amount;
+          } else if (response.transactionState === "future") {
+            newTotals.totalsFuture += response.amount;
+          } else {
+            log.warn("Unknown transaction state, totals may be incorrect", {
+              transactionState: response.transactionState,
+            });
+          }
+
+          queryClient.setQueryData(totalsKey, newTotals);
+
+          log.debug("Cache updated", {
+            accountNameOwner: response.accountNameOwner,
+            newTotals,
+          });
         }
-
-        queryClient.setQueryData(
-          getTotalsKey(response.accountNameOwner),
-          newTotals,
-        );
-      }
+      },
+      onError: (error) => {
+        log.error("Insert failed", error);
+      },
     },
-  });
+  );
 }

@@ -1,55 +1,89 @@
-import { useQuery } from "@tanstack/react-query";
 import Totals from "../model/Totals";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useTotalsPerAccountFetch");
+
+/**
+ * Fetch totals for a specific account from API
+ * Requires authentication
+ *
+ * @param accountNameOwner - Account name to fetch totals for
+ * @returns Account-specific totals data
+ */
 export const fetchTotalsPerAccount = async (
   accountNameOwner: string,
 ): Promise<Totals> => {
-  try {
-    const response = await fetch(
-      "/api/transaction/account/totals/" + accountNameOwner,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+  // Sanitize account name for URL
+  const sanitizedAccount = InputSanitizer.sanitizeAccountName(accountNameOwner);
+
+  log.debug("Fetching totals for account", {
+    accountNameOwner: sanitizedAccount,
+  });
+
+  const response = await fetch(
+    `/api/transaction/account/totals/${encodeURIComponent(sanitizedAccount)}`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
-    );
+    },
+  );
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).");
-      }
-      throw new Error(
-        `Failed to fetch totalsPerAccount: ${response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error: any) {
-    console.error("Error fetching totals per account data:", error);
-    throw new Error(
-      `Failed to fetch totals per account data: ${error.message}`,
-    );
+  if (!response.ok) {
+    const errorDetails = await response.json().catch(() => ({}));
+    const errorMessage = `HTTP error! Status: ${response.status} Details: ${JSON.stringify(errorDetails)}`;
+    log.error("Fetch failed", { status: response.status, errorDetails });
+    throw new Error(errorMessage);
   }
+
+  const data = await response.json();
+  log.debug("Fetched account totals", {
+    accountNameOwner: sanitizedAccount,
+    totals: data.totals,
+    cleared: data.cleared,
+  });
+  return data;
 };
 
+/**
+ * Hook for fetching totals for a specific account
+ * Requires authentication
+ *
+ * @param accountNameOwner - Account name to fetch totals for
+ * @returns React Query result with account totals data
+ *
+ * @example
+ * ```typescript
+ * const { data: totals, isLoading } = useTotalsPerAccountFetch("chase_checking");
+ * ```
+ */
 export default function useTotalsPerAccountFetch(accountNameOwner: string) {
-  const { isAuthenticated, loading } = useAuth();
+  const queryResult = useAuthenticatedQuery(
+    QueryKeys.totals(accountNameOwner),
+    () => fetchTotalsPerAccount(accountNameOwner),
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      enabled: !!accountNameOwner,
+    }
+  );
 
-  const queryResult = useQuery({
-    queryKey: ["totals", accountNameOwner],
-    queryFn: () => fetchTotalsPerAccount(accountNameOwner),
-    enabled: !loading && isAuthenticated && !!accountNameOwner,
-  });
   if (queryResult.isError) {
-    console.log(
-      "Error occurred while fetching account_totals data:",
-      queryResult.error?.message,
-    );
+    log.error("Fetch failed", queryResult.error);
+  }
+
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Query successful", {
+      accountNameOwner,
+      totals: queryResult.data.totals,
+    });
   }
 
   return queryResult;

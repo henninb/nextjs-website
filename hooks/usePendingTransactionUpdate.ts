@@ -1,70 +1,88 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import PendingTransaction from "../model/PendingTransaction";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-// Async function to update a pending transaction
+const log = createHookLogger("usePendingTransactionUpdate");
+
+/**
+ * Update a pending transaction via API
+ * Sanitizes ID before sending
+ *
+ * @param oldPendingTransaction - Original pending transaction (for ID)
+ * @param newPendingTransaction - Updated pending transaction data
+ * @returns Updated pending transaction
+ */
 export const updatePendingTransaction = async (
   oldPendingTransaction: PendingTransaction,
   newPendingTransaction: PendingTransaction,
 ): Promise<PendingTransaction> => {
-  const endpoint = `/api/pending/transaction/${oldPendingTransaction.pendingTransactionId}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPendingTransaction),
-    });
+  // Sanitize pending transaction ID
+  const sanitizedId = InputSanitizer.sanitizeNumericId(
+    oldPendingTransaction.pendingTransactionId,
+    "pendingTransactionId",
+  );
 
-    if (response.status === 404) {
-      console.log("Resource not found (404).");
-    }
+  log.debug("Updating pending transaction", {
+    pendingTransactionId: sanitizedId,
+  });
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to update pending transaction: ${response.statusText}`,
-      );
-    }
+  const endpoint = `/api/pending/transaction/${sanitizedId}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "PUT",
+    body: JSON.stringify(newPendingTransaction),
+  });
 
-    return await response.json();
-  } catch (error: any) {
-    console.log(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  return parseResponse<PendingTransaction>(
+    response,
+  ) as Promise<PendingTransaction>;
 };
 
+/**
+ * Hook for updating a pending transaction
+ * Automatically updates transaction in cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = usePendingTransactionUpdate();
+ * mutate({ oldPendingTransaction, newPendingTransaction });
+ * ```
+ */
 export default function usePendingTransactionUpdate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["pendingTransactionUpdate"],
-    mutationFn: ({
-      oldPendingTransaction,
-      newPendingTransaction,
-    }: {
+  return useStandardMutation(
+    (variables: {
       oldPendingTransaction: PendingTransaction;
       newPendingTransaction: PendingTransaction;
     }) =>
-      updatePendingTransaction(oldPendingTransaction, newPendingTransaction),
-    onError: (error: any) => {
-      console.log(`Error occurred during mutation: ${error.message}`);
-    },
-    onSuccess: (updatedPendingTransaction: PendingTransaction) => {
-      const oldData = queryClient.getQueryData<PendingTransaction[]>([
-        "pendingTransactions",
-      ]);
-      if (oldData) {
-        // Use a stable identifier (e.g., pendingTransactionId) for matching and updating
-        const newData = oldData.map((element) =>
-          element.pendingTransactionId ===
-          updatedPendingTransaction.pendingTransactionId
-            ? { ...element, ...updatedPendingTransaction }
-            : element,
+      updatePendingTransaction(
+        variables.oldPendingTransaction,
+        variables.newPendingTransaction,
+      ),
+    {
+      mutationKey: ["pendingTransactionUpdate"],
+      onSuccess: (updatedTransaction) => {
+        log.debug("Pending transaction updated successfully", {
+          pendingTransactionId: updatedTransaction.pendingTransactionId,
+        });
+
+        // Update transaction in cache
+        CacheUpdateStrategies.updateInList(
+          queryClient,
+          QueryKeys.pendingTransaction(),
+          updatedTransaction,
+          "pendingTransactionId",
         );
-        queryClient.setQueryData(["pendingTransactions"], newData);
-      }
+      },
+      onError: (error) => {
+        log.error("Update failed", error);
+      },
     },
-  });
+  );
 }

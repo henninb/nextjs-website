@@ -1,52 +1,77 @@
-import { useQuery } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useTransactionByDescriptionFetch");
+
+/**
+ * Fetch transactions for a specific description
+ * Requires authentication
+ *
+ * @param descriptionName - Description name to fetch transactions for
+ * @returns List of transactions for the description
+ */
 const fetchTransactionsByDescription = async (
-  description: string,
+  descriptionName: string,
 ): Promise<Transaction[] | null> => {
-  try {
-    const response = await fetch(
-      `/api/transaction/description/${description}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      },
-    );
+  // Sanitize description name for URL
+  const sanitizedDescription = InputSanitizer.sanitizeForUrl(descriptionName);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).");
-      }
-      throw new Error(
-        `Failed to fetch transactionsByDescription data: ${response.statusText}`,
-      );
-    }
+  log.debug("Fetching transactions by description", { descriptionName });
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error("Error fetching transaction by description data:", error);
-    throw new Error(
-      `Failed to fetch transaction by description data: ${error.message}`,
-    );
+  const endpoint = `/api/transaction/description/${sanitizedDescription}`;
+  const response = await fetch(endpoint, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorMessage = `Failed to fetch transactions for description: ${response.statusText}`;
+    log.error("Fetch failed", { error: errorMessage, status: response.status });
+    throw new Error(errorMessage);
   }
+
+  return response.status !== 204 ? await response.json() : null;
 };
 
+/**
+ * Hook for fetching transactions by description
+ * Requires authentication
+ *
+ * @param descriptionName - Description name to fetch transactions for
+ * @returns React Query result with transaction data
+ *
+ * @example
+ * ```typescript
+ * const { data: transactions, isLoading } = useTransactionByDescriptionFetch("amazon");
+ * ```
+ */
 export default function useTransactionByDescriptionFetch(
-  accountNameOwner: string,
+  descriptionName: string,
 ) {
-  const queryResult = useQuery({
-    queryKey: ["descriptions", accountNameOwner],
-    queryFn: () => fetchTransactionsByDescription(accountNameOwner),
-  });
+  const queryResult = useAuthenticatedQuery(
+    QueryKeys.transactionByDescription(descriptionName),
+    () => fetchTransactionsByDescription(descriptionName),
+    {
+      enabled: !!descriptionName,
+    },
+  );
+
   if (queryResult.isError) {
-    console.log(
-      "Error occurred while fetching transaction data:",
-      queryResult.error?.message,
-    );
+    log.error("Fetch failed", queryResult.error);
+  }
+
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Fetched transactions", {
+      descriptionName,
+      count: queryResult.data.length,
+    });
   }
 
   return queryResult;

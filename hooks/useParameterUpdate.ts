@@ -26,7 +26,9 @@ export const updateParameter = async (
   );
   const sanitizedNewParameter = {
     ...newParameter,
-    parameterName: InputSanitizer.sanitizeParameterName(newParameter.parameterName),
+    parameterName: InputSanitizer.sanitizeParameterName(
+      newParameter.parameterName,
+    ),
   };
 
   log.debug("Updating parameter", {

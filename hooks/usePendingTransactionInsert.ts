@@ -1,63 +1,74 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import PendingTransaction from "../model/PendingTransaction";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("usePendingTransactionInsert");
+
+/**
+ * Insert a new pending transaction via API
+ * No validation/sanitization needed - PendingTransaction validated by API
+ *
+ * @param payload - Pending transaction data to insert
+ * @returns Newly created pending transaction
+ */
 export const insertPendingTransaction = async (
-  pendingTransaction: PendingTransaction,
-): Promise<PendingTransaction | null> => {
-  try {
-    const endpoint = "/api/pending/transaction";
-    console.log("Sending data: " + JSON.stringify(pendingTransaction));
+  payload: PendingTransaction,
+): Promise<PendingTransaction> => {
+  log.debug("Inserting pending transaction", {
+    accountNameOwner: payload.accountNameOwner,
+    transactionDate: payload.transactionDate,
+  });
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(pendingTransaction),
-    });
+  const endpoint = "/api/pending/transaction";
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 
-    if (!response.ok) {
-      let errorMessage = "";
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          throw new Error("No error message returned.");
-        }
-      } catch (error) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-
-      console.log(errorMessage || "Unknown error");
-      throw new Error(errorMessage || "Unknown error");
-    }
-
-    return await response.json();
-  } catch (error: any) {
-    throw error;
-  }
+  return parseResponse<PendingTransaction>(
+    response,
+  ) as Promise<PendingTransaction>;
 };
 
+/**
+ * Hook for inserting a new pending transaction
+ * Automatically adds to pending transactions cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = usePendingTransactionInsert();
+ * mutate({ pendingTransaction: newTransaction });
+ * ```
+ */
 export default function usePendingTransactionInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (variables: { pendingTransaction: PendingTransaction }) =>
+  return useStandardMutation(
+    (variables: { pendingTransaction: PendingTransaction }) =>
       insertPendingTransaction(variables.pendingTransaction),
-    onError: (error: any) => {
-      console.log(error || "An unknown error occurred.");
+    {
+      mutationKey: ["insertPendingTransaction"],
+      onSuccess: (newTransaction) => {
+        log.debug("Pending transaction inserted successfully", {
+          pendingTransactionId: newTransaction.pendingTransactionId,
+        });
+
+        // Add new transaction to start of list
+        CacheUpdateStrategies.addToList(
+          queryClient,
+          QueryKeys.pendingTransaction(),
+          newTransaction,
+          "start",
+        );
+      },
+      onError: (error) => {
+        log.error("Insert failed", error);
+      },
     },
-    onSuccess: (newPendingTransaction) => {
-      const oldData: PendingTransaction[] =
-        queryClient.getQueryData(["pendingTransactions"]) || [];
-      queryClient.setQueryData(
-        ["pendingTransactions"],
-        [newPendingTransaction, ...oldData],
-      );
-    },
-  });
+  );
 }

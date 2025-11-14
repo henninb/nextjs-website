@@ -24,7 +24,9 @@ export const insertParameter = async (
     parameterName: InputSanitizer.sanitizeParameterName(payload.parameterName),
   };
 
-  log.debug("Inserting parameter", { parameterName: sanitizedPayload.parameterName });
+  log.debug("Inserting parameter", {
+    parameterName: sanitizedPayload.parameterName,
+  });
 
   const endpoint = "/api/parameter";
   const response = await fetchWithErrorHandling(endpoint, {

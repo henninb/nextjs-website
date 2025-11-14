@@ -1,43 +1,72 @@
-import { useMutation } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-type MergePayload = {
+const log = createHookLogger("useDescriptionMerge");
+
+/**
+ * Payload for merging descriptions
+ */
+export type MergePayload = {
   sourceNames: string[];
   targetName: string;
 };
 
-const mergeDescriptions = async (payload: MergePayload): Promise<any> => {
-  try {
-    const response = await fetch("/api/description/merge", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+/**
+ * Merge multiple source descriptions into a single target description via API
+ * This operation updates all transactions referencing the source descriptions
+ *
+ * @param payload - Source description names and target description name
+ * @returns Merge operation result
+ */
+export const mergeDescriptions = async (payload: MergePayload): Promise<any> => {
+  log.debug("Merging descriptions", {
+    sourceCount: payload.sourceNames.length,
+    targetName: payload.targetName,
+  });
 
-    if (!response.ok) {
-      try {
-        const body = await response.json();
-        if (body && body.response) {
-          throw new Error(body.response);
-        }
-      } catch (e: any) {
-        // fallthrough: if parsing fails, include status text
-      }
-      throw new Error(response.statusText || "Failed to merge descriptions");
-    }
+  const endpoint = "/api/description/merge";
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 
-    return await response.json();
-  } catch (error) {
-    throw error;
-  }
+  return parseResponse<any>(response) as Promise<any>;
 };
 
+/**
+ * Hook for merging descriptions
+ * Automatically invalidates description cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useDescriptionMerge();
+ * mutate({ sourceNames: ["starbucks", "coffee"], targetName: "Starbucks Coffee" });
+ * ```
+ */
 export default function useDescriptionMerge() {
-  return useMutation({
-    mutationKey: ["descriptionMerge"],
-    mutationFn: (payload: MergePayload) => mergeDescriptions(payload),
-  });
+  const queryClient = useQueryClient();
+
+  return useStandardMutation(
+    (payload: MergePayload) => mergeDescriptions(payload),
+    {
+      mutationKey: ["descriptionMerge"],
+      onSuccess: (_response, variables) => {
+        log.debug("Descriptions merged successfully", {
+          sourceNames: variables.sourceNames,
+          targetName: variables.targetName,
+        });
+
+        // Invalidate descriptions to refresh the list
+        queryClient.invalidateQueries({ queryKey: QueryKeys.description() });
+      },
+      onError: (error) => {
+        log.error("Merge failed", error);
+      },
+    },
+  );
 }

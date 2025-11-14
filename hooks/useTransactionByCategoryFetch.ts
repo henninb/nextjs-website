@@ -1,49 +1,75 @@
-import { useQuery } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useTransactionByCategoryFetch");
+
+/**
+ * Fetch transactions for a specific category
+ * Requires authentication
+ *
+ * @param categoryName - Category name to fetch transactions for
+ * @returns List of transactions for the category
+ */
 const fetchTransactionsByCategory = async (
   categoryName: string,
 ): Promise<Transaction[] | null> => {
-  try {
-    const response = await fetch(`/api/transaction/category/${categoryName}`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+  // Sanitize category name for URL
+  const sanitizedCategory = InputSanitizer.sanitizeForUrl(categoryName);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).");
-      }
-      throw new Error(
-        `Failed to fetch transactionsByCategory data: ${response.statusText}`,
-      );
-    }
+  log.debug("Fetching transactions by category", { categoryName });
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error("Error fetching transaction by category data:", error);
-    throw new Error(
-      `Failed to fetch transaction by category data: ${error.message}`,
-    );
+  const endpoint = `/api/transaction/category/${sanitizedCategory}`;
+  const response = await fetch(endpoint, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorMessage = `Failed to fetch transactions for category: ${response.statusText}`;
+    log.error("Fetch failed", { error: errorMessage, status: response.status });
+    throw new Error(errorMessage);
   }
+
+  return response.status !== 204 ? await response.json() : null;
 };
 
-export default function useTransactionByCategoryFetch(
-  accountNameOwner: string,
-) {
-  const queryResult = useQuery({
-    queryKey: ["categories", accountNameOwner],
-    queryFn: () => fetchTransactionsByCategory(accountNameOwner),
-  });
+/**
+ * Hook for fetching transactions by category
+ * Requires authentication
+ *
+ * @param categoryName - Category name to fetch transactions for
+ * @returns React Query result with transaction data
+ *
+ * @example
+ * ```typescript
+ * const { data: transactions, isLoading } = useTransactionByCategoryFetch("groceries");
+ * ```
+ */
+export default function useTransactionByCategoryFetch(categoryName: string) {
+  const queryResult = useAuthenticatedQuery(
+    QueryKeys.transactionByCategory(categoryName),
+    () => fetchTransactionsByCategory(categoryName),
+    {
+      enabled: !!categoryName,
+    },
+  );
+
   if (queryResult.isError) {
-    console.log(
-      "Error occurred while fetching transaction data:",
-      queryResult.error?.message,
-    );
+    log.error("Fetch failed", queryResult.error);
+  }
+
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Fetched transactions", {
+      categoryName,
+      count: queryResult.data.length,
+    });
   }
 
   return queryResult;

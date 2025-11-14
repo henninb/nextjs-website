@@ -1,46 +1,44 @@
-import { useQuery } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createQueryFn } from "../utils/fetchUtils";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
-const fetchTransferData = async (): Promise<Transfer[]> => {
-  try {
-    const response = await fetch("/api/transfer/active", {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+const log = createHookLogger("useTransferFetch");
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error || `HTTP error! Status: ${response.status}`;
-      console.error("Error fetching transfer data:", errorMessage);
-      throw new Error(errorMessage);
-    }
+/**
+ * Fetch active transfers from API
+ * Requires authentication
+ *
+ * @returns List of active transfers
+ */
+const fetchTransferData = createQueryFn<Transfer[]>("/api/transfer/active", {
+  method: "GET",
+});
 
-    const data = await response.json();
-    return data;
-  } catch (error: any) {
-    console.error("Error fetching transfer data:", error);
-    throw error;
-  }
-};
-
+/**
+ * Hook for fetching active transfers
+ * Requires authentication
+ *
+ * @returns React Query result with transfer data
+ *
+ * @example
+ * ```typescript
+ * const { data: transfers, isLoading } = useTransferFetch();
+ * ```
+ */
 export default function useTransferFetch() {
-  const queryResult = useQuery<Transfer[], Error>({
-    queryKey: ["transfer"],
-    queryFn: fetchTransferData,
-  });
+  const queryResult = useAuthenticatedQuery(
+    QueryKeys.transfer(),
+    fetchTransferData,
+  );
 
   if (queryResult.isError) {
-    console.error(
-      "Error occurred while fetching transfer data:",
-      queryResult.error?.message,
-    );
+    log.error("Fetch failed", queryResult.error);
+  }
+
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Fetched transfers", { count: queryResult.data.length });
   }
 
   return queryResult;

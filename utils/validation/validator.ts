@@ -178,6 +178,62 @@ export class DataValidator {
   }
 
   /**
+   * Validate and sanitize transfer data
+   */
+  static validateTransfer(data: any): {
+    success: boolean;
+    data?: any;
+    errors?: ValidationError[];
+  } {
+    try {
+      const sanitizedData = sanitize.transfer(data);
+
+      // Additional checks for transfers
+      const financialValidation = DataValidator.validateFinancialBoundaries({
+        amount: sanitizedData.amount,
+        transactionDate: sanitizedData.transactionDate,
+      });
+
+      if (!financialValidation.success) {
+        return financialValidation;
+      }
+
+      // Ensure source and destination accounts are different
+      if (sanitizedData.sourceAccount === sanitizedData.destinationAccount) {
+        return {
+          success: false,
+          errors: [
+            {
+              field: "accounts",
+              message: "Source and destination accounts must be different",
+              code: "SAME_ACCOUNT_ERROR",
+            },
+          ],
+        };
+      }
+
+      const result = validateSchema(TransferSchema, sanitizedData);
+
+      if (!result.success) {
+        SecurityLogger.logValidationFailure(result.errors || [], data);
+      }
+
+      return result;
+    } catch (error: any) {
+      return {
+        success: false,
+        errors: [
+          {
+            field: "validation",
+            message: error.message || "Transfer validation failed",
+            code: "VALIDATION_ERROR",
+          },
+        ],
+      };
+    }
+  }
+
+  /**
    * Validate and sanitize category data
    */
   static validateCategory(data: any): {

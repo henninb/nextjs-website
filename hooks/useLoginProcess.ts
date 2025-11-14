@@ -3,64 +3,92 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../components/AuthProvider";
 import { useRouter } from "next/router";
 import User from "../model/User";
-import {
-  DataValidator,
-  hookValidators,
-  InputSanitizer,
-} from "../utils/validation";
+import { fetchWithErrorHandling } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { DataValidator } from "../utils/validation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useLoginProcess");
+
+/**
+ * Process user login via API
+ * Validates credentials before sending
+ * Returns void on success (204 No Content expected)
+ *
+ * @param payload - User login credentials
+ * @returns void on successful login
+ */
 export const processLogin = async (payload: User): Promise<void> => {
-  // Validate and sanitize login credentials
-  const validation = hookValidators.validateApiPayload(
+  // Validate login credentials (without full insert validation)
+  const validatedData = HookValidator.validateInsert(
     payload,
     DataValidator.validateUser,
     "login",
   );
 
-  if (!validation.isValid) {
-    const errorMessages =
-      validation.errors?.map((err) => err.message).join(", ") ||
-      "Validation failed";
-    throw new Error(`Login validation failed: ${errorMessages}`);
-  }
-
-  // Don't log credentials - security improvement
-  console.log(
-    "Login attempt for user:",
-    InputSanitizer.sanitizeUsername(payload.username),
+  const sanitizedUsername = InputSanitizer.sanitizeUsername(
+    validatedData.username,
   );
 
-  const response = await fetch("/api/login", {
+  log.debug("Processing login", { username: sanitizedUsername });
+
+  const response = await fetchWithErrorHandling("/api/login", {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(validation.validatedData),
+    body: JSON.stringify(validatedData),
   });
 
-  // Check for 204 (No Content) which indicates a successful login.
+  // 204 No Content indicates successful login
   if (response.status === 204) {
+    log.debug("Login successful", { username: sanitizedUsername });
     return;
-  } else {
-    const errorBody = await response.json();
-    throw new Error(errorBody.error || "Login failed");
   }
+
+  // Any other status should have been caught by fetchWithErrorHandling
+  const errorBody = await response.json().catch(() => ({}));
+  log.error("Login failed with unexpected status", {
+    status: response.status,
+    errorBody,
+  });
+  throw new Error(errorBody.error || "Login failed");
 };
 
-export default function useLogin() {
+/**
+ * Hook for user login process
+ * Integrates with AuthProvider and handles routing
+ * Maintains error state for UI display
+ *
+ * @returns Login mutation and error message
+ *
+ * @example
+ * ```typescript
+ * const { loginMutation, errorMessage } = useLoginProcess();
+ * loginMutation.mutate(credentials);
+ * ```
+ */
+export default function useLoginProcess() {
   const { login } = useAuth();
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const loginMutation = useMutation({
+    mutationKey: ["login"],
     mutationFn: (payload: User): Promise<void> => processLogin(payload),
-    onSuccess: (response, variables: any) => {
-      // Update your global auth state via the AuthProvider.
+    onSuccess: (_response, variables) => {
+      log.debug("Login mutation successful", {
+        username: variables.username,
+      });
+
+      // Update global auth state via AuthProvider
       login(variables);
-      // Redirect the user after a successful login.
+
+      // Redirect user after successful login
       router.push("/");
     },
     onError: (error: Error) => {
-      setErrorMessage(error.message || "Failed login. Please try again.");
+      const message = error.message || "Failed login. Please try again.";
+      log.error("Login mutation failed", { error: message });
+      setErrorMessage(message);
     },
   });
 

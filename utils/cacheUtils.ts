@@ -242,8 +242,10 @@ export const QueryKeys = {
   familyMember: () => ["familyMember"] as const,
 
   // Validation amount keys
-  validationAmount: () => ["validationAmount"] as const,
-  validationAmounts: () => ["validationAmounts"] as const,
+  validationAmount: (accountName: string) =>
+    ["validationAmount", accountName] as const,
+  validationAmountAll: (accountName: string) =>
+    ["validationAmount", accountName, "all"] as const,
 
   // Totals keys
   totals: (accountName: string) => ["totals", accountName] as const,

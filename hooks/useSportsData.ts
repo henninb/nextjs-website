@@ -1,5 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useSportsData");
+
+/**
+ * Result type for sports data hook
+ */
 interface SportsDataHook {
   data: any[] | null;
   loading: boolean;
@@ -7,64 +13,104 @@ interface SportsDataHook {
   retry: () => void;
 }
 
-export function useSportsData(apiEndpoint: string): SportsDataHook {
-  const [data, setData] = useState<any[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/**
+ * Fetch sports data from API endpoint with timeout
+ * Handles 404 and 500 errors with specific messaging
+ *
+ * @param apiEndpoint - API endpoint URL to fetch sports data from
+ * @returns Sports data array
+ */
+async function fetchSportsData(apiEndpoint: string): Promise<any[]> {
+  log.debug("Fetching sports data", { endpoint: apiEndpoint });
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    try {
-      const res = await fetch(apiEndpoint, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-        credentials: "include",
-      });
+  try {
+    const res = await fetch(apiEndpoint, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+      credentials: "include",
+    });
 
-      if (!res.ok) {
-        let message = "Failed to fetch sports data";
-        if (res.status === 500) {
-          message =
-            "Server error. The sports data service may be temporarily unavailable.";
-        } else if (res.status === 404) {
-          message = "Sports data not found for this season.";
-        }
-        try {
-          const body = await res.json();
-          if (body?.message) message = body.message;
-        } catch {}
-        throw new Error(message);
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      let message = "Failed to fetch sports data";
+      if (res.status === 500) {
+        message =
+          "Server error. The sports data service may be temporarily unavailable.";
+      } else if (res.status === 404) {
+        message = "Sports data not found for this season.";
       }
 
-      const data = await res.json();
-      setData(data);
-    } catch (err: any) {
-      const isAbort = err?.name === "AbortError";
-      const message = isAbort
-        ? "Connection timeout. Please check your internet connection."
-        : err?.message || "Failed to fetch sports data";
-      setError(message);
-      console.error("Error fetching sports data:", err);
-      // Re-throw to keep behavioral parity with previous implementation
-      throw new Error(`Failed to fetch sports data: ${message}`);
-    } finally {
-      clearTimeout(timeoutId);
-      setLoading(false);
+      // Try to get error message from response
+      try {
+        const body = await res.json();
+        if (body?.message) message = body.message;
+      } catch {
+        // Ignore JSON parse errors
+      }
+
+      log.error("Fetch failed", { status: res.status, message });
+      throw new Error(message);
     }
-  }, [apiEndpoint]);
 
-  const retry = useCallback(() => {
-    fetchData();
-  }, [fetchData]);
+    const data = await res.json();
+    log.debug("Fetched sports data", { count: data?.length || 0 });
+    return data;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    const isAbort = err?.name === "AbortError";
+    const message = isAbort
+      ? "Connection timeout. Please check your internet connection."
+      : err?.message || "Failed to fetch sports data";
 
-  return { data, loading, error, retry };
+    log.error("Fetch error", { error: message, isAbort });
+    throw new Error(message);
+  }
+}
+
+/**
+ * Hook for fetching sports data from dynamic endpoints
+ * Uses React Query for caching and automatic refetching
+ * Provides retry functionality and error handling
+ *
+ * @param apiEndpoint - API endpoint URL (e.g., "/api/nfl", "/api/nba")
+ * @returns Sports data, loading state, error message, and retry function
+ *
+ * @example
+ * ```typescript
+ * const { data, loading, error, retry } = useSportsData("/api/nfl");
+ * ```
+ */
+export function useSportsData(apiEndpoint: string): SportsDataHook {
+  const queryResult = useQuery({
+    queryKey: ["sportsData", apiEndpoint],
+    queryFn: () => fetchSportsData(apiEndpoint),
+    staleTime: 15 * 60 * 1000, // 15 minutes (sports data changes infrequently)
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    retry: 1, // Retry once on failure
+    enabled: !!apiEndpoint, // Only fetch if endpoint is provided
+  });
+
+  if (queryResult.isError) {
+    log.error("Query failed", queryResult.error);
+  }
+
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Query successful", { count: queryResult.data.length });
+  }
+
+  return {
+    data: queryResult.data ?? null,
+    loading: queryResult.isLoading,
+    error: queryResult.error?.message ?? null,
+    retry: () => queryResult.refetch(),
+  };
 }

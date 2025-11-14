@@ -1,15 +1,24 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
-import {
-  DataValidator,
-  hookValidators,
-  ValidationError,
-} from "../utils/validation";
+import { DataValidator } from "../utils/validation";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
 import { formatDateForInput } from "../components/Common";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("usePaymentInsert");
+
+/**
+ * Setup new payment payload
+ * Note: guidSource and guidDestination must be explicitly null for backend validation
+ * The backend will create the transactions and generate these values
+ *
+ * @param payload - Payment data to setup
+ * @returns Formatted payment payload
+ */
 export const setupNewPayment = async (payload: Payment) => {
-  // Note: guidSource and guidDestination must be explicitly null for backend validation
-  // The backend will create the transactions and generate these values
   return {
     paymentId: 0,
     amount: payload?.amount,
@@ -22,65 +31,74 @@ export const setupNewPayment = async (payload: Payment) => {
   };
 };
 
+/**
+ * Insert a new payment via API
+ * Validates input and sanitizes data before sending
+ *
+ * @param payload - Payment data to insert
+ * @returns Newly created payment
+ */
 export const insertPayment = async (payload: Payment): Promise<Payment> => {
-  try {
-    // Validate and sanitize the payment data
-    const validation = hookValidators.validateApiPayload(
-      payload,
-      DataValidator.validatePayment,
-      "insertPayment",
-    );
+  // Validate payment data
+  const validatedData = HookValidator.validateInsert(
+    payload,
+    DataValidator.validatePayment,
+    "insertPayment",
+  );
 
-    if (!validation.isValid) {
-      const errorMessages =
-        validation.errors?.map((err) => err.message).join(", ") ||
-        "Validation failed";
-      throw new Error(`Payment validation failed: ${errorMessages}`);
-    }
+  log.debug("Inserting payment", {
+    sourceAccount: validatedData.sourceAccount,
+    destinationAccount: validatedData.destinationAccount,
+    amount: validatedData.amount,
+  });
 
-    const endpoint = "/api/payment";
-    const newPayload = await setupNewPayment(validation.validatedData);
+  const endpoint = "/api/payment";
+  const newPayload = await setupNewPayment(validatedData);
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPayload),
-    });
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "POST",
+    body: JSON.stringify(newPayload),
+  });
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error || `HTTP error! Status: ${response.status}`;
-      console.error(`Failed to insert payment: ${errorMessage}`);
-      throw new Error(errorMessage);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  return parseResponse<Payment>(response) as Promise<Payment>;
 };
 
+/**
+ * Hook for inserting a new payment
+ * Automatically updates the payment list cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = usePaymentInsert();
+ * mutate({ payload: newPayment });
+ * ```
+ */
 export default function usePaymentInsert() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["insertPayment"],
-    mutationFn: (variables: { payload: Payment }) =>
-      insertPayment(variables.payload),
-    onError: (error) => {
-      console.error(error ? error : "error is undefined.");
+  return useStandardMutation(
+    (variables: { payload: Payment }) => insertPayment(variables.payload),
+    {
+      mutationKey: ["insertPayment"],
+      onSuccess: (newPayment) => {
+        if (newPayment) {
+          log.debug("Payment inserted successfully", {
+            paymentId: newPayment.paymentId,
+          });
+
+          CacheUpdateStrategies.addToList(
+            queryClient,
+            QueryKeys.payment(),
+            newPayment,
+            "start",
+          );
+        }
+      },
+      onError: (error) => {
+        log.error("Insert failed", error);
+      },
     },
-    onSuccess: (newPayment) => {
-      const oldData: any = queryClient.getQueryData(["payment"]) || [];
-      queryClient.setQueryData(["payment"], [newPayment, ...oldData]);
-    },
-  });
+  );
 }

@@ -1,53 +1,66 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import ValidationAmount from "../model/ValidationAmount";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling } from "../utils/fetchUtils";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useValidationAmountDelete");
+
+/**
+ * Delete a validation amount via API
+ * Validates and sanitizes ID before sending
+ *
+ * @param payload - Validation amount to delete
+ * @returns void
+ */
 export const deleteValidationAmount = async (
   payload: ValidationAmount,
-): Promise<ValidationAmount | null> => {
-  try {
-    const endpoint = `/api/validation/amount/${payload.validationId}`;
+): Promise<void> => {
+  // Sanitize validation ID
+  const sanitizedId = InputSanitizer.sanitizeNumericId(
+    payload.validationId,
+    "validationId",
+  );
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  log.debug("Deleting validation amount", { validationId: sanitizedId });
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
-
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error(`Error deleting validation amount: ${error.message}`);
-    throw error;
-  }
+  const endpoint = `/api/validation/amount/${sanitizedId}`;
+  await fetchWithErrorHandling(endpoint, {
+    method: "DELETE",
+  });
 };
 
+/**
+ * Hook for deleting a validation amount
+ * Automatically invalidates validation amount caches on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useValidationAmountDelete();
+ * mutate(validationToDelete);
+ * ```
+ */
 export default function useValidationAmountDelete() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["deleteValidationAmount"],
-    mutationFn: (variables: ValidationAmount) =>
-      deleteValidationAmount(variables),
-    onError: (error) => {
-      console.info("Mutation error:", error);
-    },
-    onSuccess: (response, variables) => {
-      console.log("Delete was successful.", response);
+  return useStandardMutation(
+    (variables: ValidationAmount) => deleteValidationAmount(variables),
+    {
+      mutationKey: ["deleteValidationAmount"],
+      onSuccess: (_response, variables) => {
+        log.debug("Validation amount deleted successfully", {
+          validationId: variables.validationId,
+        });
 
-      // Invalidate all validation amount queries to refetch
-      queryClient.invalidateQueries({ queryKey: ["validationAmount"] });
+        // Invalidate all validation amount queries to refetch
+        queryClient.invalidateQueries({ queryKey: ["validationAmount"] });
+      },
+      onError: (error) => {
+        log.error("Delete failed", error);
+      },
     },
-  });
+  );
 }

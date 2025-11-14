@@ -12,10 +12,9 @@ const log = createHookLogger("useParameterFetch");
  *
  * @returns List of active parameters
  */
-const fetchParameterData = createQueryFn<Parameter[]>(
-  "/api/parameter/active",
-  { method: "GET" }
-);
+const fetchParameterData = createQueryFn<Parameter[]>("/api/parameter/active", {
+  method: "GET",
+});
 
 /**
  * Hook for fetching active parameters
@@ -29,10 +28,7 @@ const fetchParameterData = createQueryFn<Parameter[]>(
  * ```
  */
 export default function useParameterFetch() {
-  const queryResult = usePublicQuery(
-    QueryKeys.parameter(),
-    fetchParameterData
-  );
+  const queryResult = usePublicQuery(QueryKeys.parameter(), fetchParameterData);
 
   if (queryResult.isError) {
     log.error("Fetch failed", queryResult.error);

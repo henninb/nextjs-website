@@ -325,6 +325,29 @@ export const sanitize = {
       : undefined,
   }),
 
+  transfer: (data: any) => ({
+    transferId: data.transferId ? parseInt(data.transferId) : undefined,
+    sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
+    destinationAccount: InputSanitizer.sanitizeAccountName(
+      data.destinationAccount,
+    ),
+    transactionDate: InputSanitizer.sanitizeDate(data.transactionDate),
+    amount: InputSanitizer.sanitizeAmount(data.amount),
+    guidSource: data.guidSource
+      ? InputSanitizer.sanitizeGuid(data.guidSource)
+      : undefined,
+    guidDestination: data.guidDestination
+      ? InputSanitizer.sanitizeGuid(data.guidDestination)
+      : undefined,
+    activeStatus: Boolean(data.activeStatus),
+    dateAdded: data.dateAdded
+      ? InputSanitizer.sanitizeDate(data.dateAdded)
+      : undefined,
+    dateUpdated: data.dateUpdated
+      ? InputSanitizer.sanitizeDate(data.dateUpdated)
+      : undefined,
+  }),
+
   category: (data: any) => ({
     categoryId: data.categoryId ? parseInt(data.categoryId) : undefined,
     categoryName: InputSanitizer.sanitizeCategory(

@@ -1,58 +1,84 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import ValidationAmount from "../model/ValidationAmount";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useValidationAmountUpdate");
+
+/**
+ * Update a validation amount via API
+ * Sanitizes ID before sending
+ *
+ * @param oldValidationAmount - Original validation amount (for ID)
+ * @param newValidationAmount - Updated validation amount data
+ * @returns Updated validation amount
+ */
 export const updateValidationAmount = async (
   oldValidationAmount: ValidationAmount,
   newValidationAmount: ValidationAmount,
 ): Promise<ValidationAmount> => {
-  const endpoint = `/api/validation/amount/${oldValidationAmount.validationId}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newValidationAmount),
-    });
+  // Sanitize validation ID
+  const sanitizedId = InputSanitizer.sanitizeNumericId(
+    oldValidationAmount.validationId,
+    "validationId",
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+  log.debug("Updating validation amount", {
+    validationId: sanitizedId,
+    oldAmount: oldValidationAmount.amount,
+    newAmount: newValidationAmount.amount,
+  });
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`Error updating validation amount: ${error.message}`);
-    throw error;
-  }
+  const endpoint = `/api/validation/amount/${sanitizedId}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "PUT",
+    body: JSON.stringify(newValidationAmount),
+  });
+
+  return parseResponse<ValidationAmount>(response) as Promise<ValidationAmount>;
 };
 
+/**
+ * Hook for updating a validation amount
+ * Invalidates all validation amount caches on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useValidationAmountUpdate();
+ * mutate({ oldValidationAmount, newValidationAmount });
+ * ```
+ */
 export default function useValidationAmountUpdate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["validationAmountUpdate"],
-    mutationFn: ({
-      oldValidationAmount,
-      newValidationAmount,
-    }: {
+  return useStandardMutation(
+    (variables: {
       oldValidationAmount: ValidationAmount;
       newValidationAmount: ValidationAmount;
-    }) => updateValidationAmount(oldValidationAmount, newValidationAmount),
-    onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
+    }) =>
+      updateValidationAmount(
+        variables.oldValidationAmount,
+        variables.newValidationAmount,
+      ),
+    {
+      mutationKey: ["validationAmountUpdate"],
+      onSuccess: (updatedValidation) => {
+        log.debug("Validation amount updated successfully", {
+          validationId: updatedValidation.validationId,
+          amount: updatedValidation.amount,
+        });
+
+        // Invalidate all validation amount queries to refetch
+        queryClient.invalidateQueries({ queryKey: ["validationAmount"] });
+      },
+      onError: (error) => {
+        log.error("Update failed", error);
+      },
     },
-    onSuccess: (updatedValidationAmount: ValidationAmount, variables) => {
-      // Invalidate all validation amount queries to refetch
-      queryClient.invalidateQueries({ queryKey: ["validationAmount"] });
-    },
-  });
+  );
 }

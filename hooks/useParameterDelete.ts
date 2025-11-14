@@ -52,23 +52,26 @@ export const deleteParameter = async (
 export default function useParameterDelete() {
   const queryClient = useQueryClient();
 
-  return useStandardMutation((variables: Parameter) => deleteParameter(variables), {
-    mutationKey: ["deleteParameter"],
-    onSuccess: (response, variables) => {
-      log.debug("Parameter deleted successfully", {
-        parameterName: variables.parameterName,
-      });
+  return useStandardMutation(
+    (variables: Parameter) => deleteParameter(variables),
+    {
+      mutationKey: ["deleteParameter"],
+      onSuccess: (response, variables) => {
+        log.debug("Parameter deleted successfully", {
+          parameterName: variables.parameterName,
+        });
 
-      // Remove from cache using parameterName as identifier
-      CacheUpdateStrategies.removeFromList(
-        queryClient,
-        QueryKeys.parameter(),
-        variables,
-        "parameterName",
-      );
+        // Remove from cache using parameterName as identifier
+        CacheUpdateStrategies.removeFromList(
+          queryClient,
+          QueryKeys.parameter(),
+          variables,
+          "parameterName",
+        );
+      },
+      onError: (error) => {
+        log.error("Delete failed", error);
+      },
     },
-    onError: (error) => {
-      log.error("Delete failed", error);
-    },
-  });
+  );
 }

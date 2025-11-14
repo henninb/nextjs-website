@@ -176,6 +176,15 @@ export const transformToTrendsData = (
 
 /**
  * React Query hook for spending trends analysis
+ * Requires authentication
+ *
+ * @param filters - Optional filters for date range and spending analysis
+ * @returns React Query result with analyzed spending trends data
+ *
+ * @example
+ * ```typescript
+ * const { data: trends, isLoading } = useSpendingTrends({ dateRange: { months: 12 } });
+ * ```
  */
 export default function useSpendingTrends(
   filters: TrendsFilters = {},
@@ -189,6 +198,7 @@ export default function useSpendingTrends(
       return transformToTrendsData(transactions, filters);
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 1,
     enabled: !loading && isAuthenticated,
   });

@@ -1,65 +1,97 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
+import { DataValidator } from "../utils/validation";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useTransferUpdate");
+
+/**
+ * Update an existing transfer via API
+ * Validates and sanitizes input before sending
+ *
+ * @param oldTransfer - Original transfer data (for identifier)
+ * @param newTransfer - Updated transfer data
+ * @returns Updated transfer
+ */
 export const updateTransfer = async (
   oldTransfer: Transfer,
   newTransfer: Transfer,
 ): Promise<Transfer> => {
-  const endpoint = `/api/transfer/${oldTransfer.transferId}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newTransfer),
-    });
+  // Validate new transfer data
+  const validatedData = HookValidator.validateUpdate(
+    newTransfer,
+    oldTransfer,
+    DataValidator.validateTransfer,
+    "updateTransfer",
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error || `HTTP error! Status: ${response.status}`;
-      console.error(`Failed to update transfer: ${errorMessage}`);
-      throw new Error(errorMessage);
-    }
+  // Validate and sanitize transfer ID
+  const sanitizedTransferId = InputSanitizer.sanitizeNumericId(
+    oldTransfer.transferId,
+    "transferId",
+  );
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  log.debug("Updating transfer", {
+    transferId: sanitizedTransferId,
+    oldAmount: oldTransfer.amount,
+    newAmount: validatedData.amount,
+  });
+
+  const endpoint = `/api/transfer/${sanitizedTransferId}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "PUT",
+    body: JSON.stringify(validatedData),
+  });
+
+  return parseResponse<Transfer>(response) as Promise<Transfer>;
 };
 
+/**
+ * Hook for updating an existing transfer
+ * Automatically updates transfer cache on success
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = useTransferUpdate();
+ * mutate({ oldTransfer, newTransfer });
+ * ```
+ */
 export default function useTransferUpdate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["transferUpdate"],
-    mutationFn: ({
+  return useStandardMutation(
+    ({
       oldTransfer,
       newTransfer,
     }: {
       oldTransfer: Transfer;
       newTransfer: Transfer;
     }) => updateTransfer(oldTransfer, newTransfer),
-    onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
-    },
-    onSuccess: (updatedTransfer: Transfer) => {
-      const oldData = queryClient.getQueryData<Transfer[]>(["transfer"]);
-      if (oldData) {
-        const newData = oldData.map((element) =>
-          element.transferId === updatedTransfer.transferId
-            ? { ...element, ...updatedTransfer }
-            : element,
-        );
+    {
+      mutationKey: ["transferUpdate"],
+      onSuccess: (updatedTransfer: Transfer) => {
+        log.debug("Transfer updated successfully", {
+          transferId: updatedTransfer.transferId,
+        });
 
-        queryClient.setQueryData(["transfer"], newData);
-      }
+        // Update transfer in cache using transferId as stable identifier
+        CacheUpdateStrategies.updateInList(
+          queryClient,
+          QueryKeys.transfer(),
+          updatedTransfer,
+          "transferId",
+        );
+      },
+      onError: (error) => {
+        log.error("Update failed", error);
+      },
     },
-  });
+  );
 }

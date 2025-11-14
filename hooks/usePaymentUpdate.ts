@@ -1,111 +1,140 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
 import Transaction from "../model/Transaction";
+import { DataValidator } from "../utils/validation";
+import { useStandardMutation } from "../utils/queryConfig";
+import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
+import { HookValidator } from "../utils/hookValidation";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("usePaymentUpdate");
+
+/**
+ * Update an existing payment via API
+ * Validates and sanitizes input before sending
+ *
+ * @param oldPayment - Original payment data (for identifier)
+ * @param newPayment - Updated payment data
+ * @returns Updated payment
+ */
 export const updatePayment = async (
   oldPayment: Payment,
   newPayment: Payment,
 ): Promise<Payment> => {
-  const endpoint = `/api/payment/${oldPayment.paymentId}`;
+  // Validate new payment data
+  const validatedData = HookValidator.validateUpdate(
+    newPayment,
+    oldPayment,
+    DataValidator.validatePayment,
+    "updatePayment",
+  );
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newPayment),
-    });
+  // Validate and sanitize payment ID
+  const sanitizedPaymentId = InputSanitizer.sanitizeNumericId(
+    oldPayment.paymentId,
+    "paymentId",
+  );
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error || `HTTP error! Status: ${response.status}`;
-      console.error(`Failed to update payment: ${errorMessage}`);
-      throw new Error(errorMessage);
-    }
+  log.debug("Updating payment", {
+    paymentId: sanitizedPaymentId,
+    oldAmount: oldPayment.amount,
+    newAmount: validatedData.amount,
+  });
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
+  const endpoint = `/api/payment/${sanitizedPaymentId}`;
+  const response = await fetchWithErrorHandling(endpoint, {
+    method: "PUT",
+    body: JSON.stringify(validatedData),
+  });
+
+  return parseResponse<Payment>(response) as Promise<Payment>;
 };
 
+/**
+ * Hook for updating an existing payment
+ * Automatically updates payment cache and cascades to linked transactions
+ *
+ * @returns React Query mutation hook
+ *
+ * @example
+ * ```typescript
+ * const { mutate } = usePaymentUpdate();
+ * mutate({ oldPayment, newPayment });
+ * ```
+ */
 export default function usePaymentUpdate() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationKey: ["paymentUpdate"],
-    mutationFn: ({
+  return useStandardMutation(
+    ({
       oldPayment,
       newPayment,
     }: {
       oldPayment: Payment;
       newPayment: Payment;
     }) => updatePayment(oldPayment, newPayment),
-    onError: (error: any) => {
-      console.error(`Error occurred during mutation: ${error.message}`);
-    },
-    onSuccess: (updatedPayment: Payment) => {
-      const oldData = queryClient.getQueryData<Payment[]>(["payment"]);
-      if (oldData) {
-        const newData = oldData.map((element) =>
-          element.paymentId === updatedPayment.paymentId
-            ? { ...element, ...updatedPayment }
-            : element,
+    {
+      mutationKey: ["updatePayment"],
+      onSuccess: (updatedPayment: Payment) => {
+        log.debug("Payment updated successfully", {
+          paymentId: updatedPayment.paymentId,
+        });
+
+        // Update payment in cache using paymentId as stable identifier
+        CacheUpdateStrategies.updateInList(
+          queryClient,
+          QueryKeys.payment(),
+          updatedPayment,
+          "paymentId",
         );
 
-        queryClient.setQueryData(["payment"], newData);
-      }
+        // Minimal cascade: update linked transactions in source and destination accounts
+        try {
+          const paymentId = updatedPayment?.paymentId;
+          const src = updatedPayment?.sourceAccount;
+          const dst = updatedPayment?.destinationAccount;
+          const txDate = updatedPayment?.transactionDate as any;
 
-      // Minimal cascade: update linked transactions in source and destination accounts
-      try {
-        const paymentId = updatedPayment?.paymentId;
-        const src = updatedPayment?.sourceAccount;
-        const dst = updatedPayment?.destinationAccount;
-        const txDate = updatedPayment?.transactionDate as any;
+          const updateLinkedTxns = (
+            accountNameOwner: string | undefined,
+            sign: 1 | -1,
+          ) => {
+            if (!accountNameOwner) return;
+            const key = ["accounts", accountNameOwner];
+            const txns = queryClient.getQueryData<Transaction[]>(key);
+            if (!txns || !paymentId) return;
 
-        const updateLinkedTxns = (
-          accountNameOwner: string | undefined,
-          sign: 1 | -1,
-        ) => {
-          if (!accountNameOwner) return;
-          const key = ["accounts", accountNameOwner];
-          const txns = queryClient.getQueryData<Transaction[]>(key);
-          if (!txns || !paymentId) return;
+            const updated = txns.map((t) => {
+              const linked =
+                typeof t.notes === "string" &&
+                t.notes.includes(`paymentId:${paymentId}`);
+              if (linked) {
+                return {
+                  ...t,
+                  amount: sign * Number(updatedPayment.amount ?? 0),
+                  transactionDate: txDate,
+                } as Transaction;
+              }
+              return t;
+            });
 
-          const updated = txns.map((t) => {
-            const linked =
-              typeof t.notes === "string" &&
-              t.notes.includes(`paymentId:${paymentId}`);
-            if (linked) {
-              return {
-                ...t,
-                amount: sign * Number(updatedPayment.amount ?? 0),
-                transactionDate: txDate,
-              } as Transaction;
-            }
-            return t;
-          });
+            queryClient.setQueryData(key, updated);
+          };
 
-          queryClient.setQueryData(key, updated);
-        };
+          // Source: cash outflow (negative). Destination: cash inflow (positive).
+          updateLinkedTxns(src, -1);
+          updateLinkedTxns(dst, 1);
 
-        // Source: cash outflow (negative). Destination: cash inflow (positive).
-        updateLinkedTxns(src, -1);
-        updateLinkedTxns(dst, 1);
-      } catch (e: any) {
-        console.error(
-          `Payment cascade to transactions failed (non-fatal): ${
-            e?.message ?? e
-          }`,
-        );
-      }
+          log.debug("Payment cascade to transactions completed");
+        } catch (e: any) {
+          log.warn("Payment cascade to transactions failed (non-fatal)", e);
+        }
+      },
+      onError: (error) => {
+        log.error("Update failed", error);
+      },
     },
-  });
+  );
 }

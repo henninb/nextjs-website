@@ -1,57 +1,77 @@
-import { useQuery } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { InputSanitizer } from "../utils/validation/sanitization";
+import { getAccountKey } from "../utils/cacheUtils";
+import { createHookLogger } from "../utils/logger";
 
+const log = createHookLogger("useTransactionByAccountFetch");
+
+/**
+ * Fetch transactions for a specific account
+ * Requires authentication
+ *
+ * @param accountNameOwner - Account name to fetch transactions for
+ * @returns List of transactions for the account
+ */
 export const fetchTransactionsByAccount = async (
   accountNameOwner: string,
 ): Promise<Transaction[] | null> => {
-  try {
-    const response = await fetch(
-      `/api/transaction/account/select/${accountNameOwner}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      },
-    );
+  // Sanitize account name for URL
+  const sanitizedAccount = InputSanitizer.sanitizeForUrl(accountNameOwner);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log("Resource not found (404).");
-      }
-      throw new Error(
-        `Failed to fetch transactionsByAccount data: ${response.statusText}`,
-      );
-    }
+  log.debug("Fetching transactions by account", { accountNameOwner });
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error("Error fetching transaction by account data:", error);
-    throw new Error(
-      `Failed to fetch transaction by account data: ${error.message}`,
-    );
+  const endpoint = `/api/transaction/account/select/${sanitizedAccount}`;
+  const response = await fetch(endpoint, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorMessage = `Failed to fetch transactions for account: ${response.statusText}`;
+    log.error("Fetch failed", { error: errorMessage, status: response.status });
+    throw new Error(errorMessage);
   }
+
+  return response.status !== 204 ? await response.json() : null;
 };
 
+/**
+ * Hook for fetching transactions by account
+ * Requires authentication
+ *
+ * @param accountNameOwner - Account name to fetch transactions for
+ * @returns React Query result with transaction data
+ *
+ * @example
+ * ```typescript
+ * const { data: transactions, isLoading } = useTransactionByAccountFetch("checking");
+ * ```
+ */
 export default function useTransactionByAccountFetch(accountNameOwner: string) {
-  const { isAuthenticated, loading } = useAuth();
+  const queryResult = useAuthenticatedQuery(
+    getAccountKey(accountNameOwner),
+    () => fetchTransactionsByAccount(accountNameOwner),
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      enabled: !!accountNameOwner,
+    },
+  );
 
-  const queryResult = useQuery({
-    queryKey: ["accounts", accountNameOwner],
-    queryFn: () => fetchTransactionsByAccount(accountNameOwner),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    //cacheTime: 10 * 60 * 1000, // 10 minutes
-    retry: 1,
-    enabled: !loading && isAuthenticated && !!accountNameOwner,
-  });
   if (queryResult.isError) {
-    console.log(
-      "Error occurred while fetching transaction data:",
-      queryResult.error?.message,
-    );
+    log.error("Fetch failed", queryResult.error);
+  }
+
+  if (queryResult.isSuccess && queryResult.data) {
+    log.debug("Fetched transactions", {
+      accountNameOwner,
+      count: queryResult.data.length,
+    });
   }
 
   return queryResult;
