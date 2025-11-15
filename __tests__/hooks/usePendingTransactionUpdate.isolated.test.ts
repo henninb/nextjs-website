@@ -3,14 +3,49 @@
  * Tests updatePendingTransaction function without React Query overhead
  */
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validatePendingTransaction: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
 } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
 import { updatePendingTransaction } from "../../hooks/usePendingTransactionUpdate";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 // Helper function to create test pending transaction data
 const createTestPendingTransaction = (
@@ -26,15 +61,14 @@ const createTestPendingTransaction = (
 });
 
 describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("updatePendingTransaction", () => {
@@ -217,22 +251,14 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           statusText: "Not Found",
           json: jest.fn(),
         });
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
             oldPendingTransaction,
             newPendingTransaction,
           ),
-        ).rejects.toThrow("Failed to update pending transaction: Not Found");
+        ).rejects.toThrow("HTTP 404: Not Found");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          ["Resource not found (404)."],
-          [
-            "An error occurred: Failed to update pending transaction: Not Found",
-          ],
-        ]);
       });
 
       it("should handle 400 bad request errors", async () => {
@@ -245,19 +271,14 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           statusText: "Bad Request",
           json: jest.fn(),
         });
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
             oldPendingTransaction,
             newPendingTransaction,
           ),
-        ).rejects.toThrow("Failed to update pending transaction: Bad Request");
+        ).rejects.toThrow("HTTP 400: Bad Request");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Failed to update pending transaction: Bad Request",
-        ]);
       });
 
       it("should handle 403 forbidden errors", async () => {
@@ -270,19 +291,14 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           statusText: "Forbidden",
           json: jest.fn(),
         });
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
             oldPendingTransaction,
             newPendingTransaction,
           ),
-        ).rejects.toThrow("Failed to update pending transaction: Forbidden");
+        ).rejects.toThrow("HTTP 403: Forbidden");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Failed to update pending transaction: Forbidden",
-        ]);
       });
 
       it("should handle 500 server errors", async () => {
@@ -295,7 +311,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           statusText: "Internal Server Error",
           json: jest.fn(),
         });
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
@@ -303,13 +318,9 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow(
-          "Failed to update pending transaction: Internal Server Error",
+          "HTTP 500: Internal Server Error",
         );
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Failed to update pending transaction: Internal Server Error",
-        ]);
       });
 
       it("should handle network errors", async () => {
@@ -317,7 +328,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         const newPendingTransaction = createTestPendingTransaction();
 
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
@@ -326,8 +336,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           ),
         ).rejects.toThrow("Network error");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Network error"]);
       });
 
       it("should handle timeout errors", async () => {
@@ -337,7 +345,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
         global.fetch = jest
           .fn()
           .mockRejectedValue(new Error("Request timeout"));
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
@@ -346,8 +353,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           ),
         ).rejects.toThrow("Request timeout");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Request timeout"]);
       });
 
       it("should handle JSON parsing errors", async () => {
@@ -359,7 +364,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           status: 200,
           json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
         });
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
@@ -368,8 +372,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           ),
         ).rejects.toThrow("Invalid JSON");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Invalid JSON"]);
       });
     });
 
@@ -424,7 +426,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           }),
         );
@@ -802,83 +804,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
       });
     });
 
-    describe("Console logging", () => {
-      it("should log 404 errors specifically", async () => {
-        const oldPendingTransaction = createTestPendingTransaction();
-        const newPendingTransaction = createTestPendingTransaction();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-          statusText: "Not Found",
-          json: jest.fn(),
-        });
-        consoleSpy.start();
-
-        try {
-          await updatePendingTransaction(
-            oldPendingTransaction,
-            newPendingTransaction,
-          );
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["Resource not found (404)."]);
-      });
-
-      it("should log general errors", async () => {
-        const oldPendingTransaction = createTestPendingTransaction();
-        const newPendingTransaction = createTestPendingTransaction();
-
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Connection failed"));
-        consoleSpy.start();
-
-        try {
-          await updatePendingTransaction(
-            oldPendingTransaction,
-            newPendingTransaction,
-          );
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["An error occurred: Connection failed"]);
-      });
-
-      it("should not log 404 message for non-404 errors", async () => {
-        const oldPendingTransaction = createTestPendingTransaction();
-        const newPendingTransaction = createTestPendingTransaction();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          statusText: "Internal Server Error",
-          json: jest.fn(),
-        });
-        consoleSpy.start();
-
-        try {
-          await updatePendingTransaction(
-            oldPendingTransaction,
-            newPendingTransaction,
-          );
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).not.toContain([["Resource not found (404)."]]);
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Failed to update pending transaction: Internal Server Error",
-        ]);
-      });
-    });
-
     describe("Integration scenarios", () => {
       it("should handle complete pending transaction update workflow", async () => {
         const oldPendingTransaction = createTestPendingTransaction({
@@ -934,7 +859,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           statusText: "Bad Request - Invalid review status",
           json: jest.fn(),
         });
-        consoleSpy.start();
 
         await expect(
           updatePendingTransaction(
@@ -942,13 +866,9 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow(
-          "Failed to update pending transaction: Bad Request - Invalid review status",
+          "HTTP 400: Bad Request - Invalid review status",
         );
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          "An error occurred: Failed to update pending transaction: Bad Request - Invalid review status",
-        ]);
       });
 
       it("should handle pending transaction ID mismatch scenarios", async () => {

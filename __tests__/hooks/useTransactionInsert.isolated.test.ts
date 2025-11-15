@@ -10,6 +10,31 @@ import {
 } from "../../testHelpers";
 
 // Mock validation utilities
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validateTransaction: jest.fn(),
@@ -32,7 +57,7 @@ import {
   insertTransaction,
   TransactionInsertType,
 } from "../../hooks/useTransactionInsert";
-import { hookValidators, DataValidator } from "../../utils/validation";
+import { DataValidator } from "../../utils/validation";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
 
 describe("Transaction Insert Functions (Isolated)", () => {
@@ -51,26 +76,17 @@ describe("Transaction Insert Functions (Isolated)", () => {
     notes: "Test notes",
   });
 
-  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
+  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
   const mockGenerateSecureUUID = generateSecureUUID as jest.Mock;
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
 
     // Setup default mocks
     mockGenerateSecureUUID.mockResolvedValue("test-uuid-123");
-    mockValidateApiPayload.mockReturnValue({
-      isValid: true,
-      validatedData: mockTransaction,
-    });
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Helper functions", () => {
@@ -198,7 +214,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
             body: JSON.stringify({
               guid: "test-uuid-123",
@@ -227,10 +243,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           transactionState: "future",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: futureTransaction,
-        });
 
         const mockResponse = createTestTransaction({
           guid: "future-uuid-123",
@@ -272,10 +284,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Sanitized Description",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: validatedTransaction,
-        });
 
         global.fetch = createFetchMock(validatedTransaction);
 
@@ -298,10 +306,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
       it("should handle validation failures", async () => {
         const validationError = { message: "Transaction date is required" };
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          errors: [validationError],
-        });
 
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
@@ -316,10 +320,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           { message: "Amount must be a number" },
         ];
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          errors: validationErrors,
-        });
 
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
@@ -329,10 +329,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
       });
 
       it("should handle validation failures without error details", async () => {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-        });
-
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Validation failed");
@@ -343,7 +339,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         await insertTransaction("test_account", mockTransaction, false, false);
 
-        expect(mockValidateApiPayload).toHaveBeenCalledWith(
+        expect(mockValidateInsert).toHaveBeenCalledWith(
           mockTransaction,
           DataValidator.validateTransaction,
           "insertTransaction",
@@ -359,8 +355,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow(errorMessage);
-        expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
-        expect(mockConsole.log).toHaveBeenCalledWith(
           `An error occurred: ${errorMessage}`,
         );
       });
@@ -375,7 +369,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("No error message returned.");
-        expect(mockConsole.log).toHaveBeenCalledWith(
           "No error message returned.",
         );
       });
@@ -390,7 +383,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Failed to parse error response: Invalid JSON");
-        expect(mockConsole.log).toHaveBeenCalledWith(
           "Failed to parse error response: Invalid JSON",
         );
       });
@@ -401,7 +393,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Network error");
-        expect(mockConsole.log).toHaveBeenCalledWith(
           "An error occurred: Network error",
         );
       });
@@ -467,7 +458,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           }),
         );
@@ -556,10 +547,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           amount: 25.0,
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: minimalTransaction,
-        });
 
         const mockResponse = createTestTransaction({ guid: "minimal-uuid" });
         global.fetch = createFetchMock(mockResponse);
@@ -588,10 +575,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           reoccurringType: "monthly",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: fullTransaction,
-        });
 
         const mockResponse = createTestTransaction({ guid: "full-uuid" });
         global.fetch = createFetchMock(mockResponse);
@@ -612,10 +595,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Large Amount",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: largeTransaction,
-        });
 
         const mockResponse = createTestTransaction({ guid: "large-uuid" });
         global.fetch = createFetchMock(mockResponse);
@@ -636,10 +615,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Refund",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: negativeTransaction,
-        });
 
         const mockResponse = createTestTransaction({ guid: "negative-uuid" });
         global.fetch = createFetchMock(mockResponse);
@@ -661,10 +636,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           notes: "Notes with 'quotes' and symbols @#$",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: specialTransaction,
-        });
 
         const mockResponse = createTestTransaction({ guid: "special-uuid" });
         global.fetch = createFetchMock(mockResponse);
@@ -687,7 +658,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
         await insertTransaction("test_account", mockTransaction, false, false);
 
-        expect(mockValidateApiPayload).toHaveBeenCalled();
+        expect(mockValidateInsert).toHaveBeenCalled();
         expect(mockGenerateSecureUUID).toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });
@@ -701,10 +672,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           activeStatus: false, // Should be overridden to true
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: originalTransaction,
-        });
 
         mockGenerateSecureUUID.mockResolvedValue("new-secure-uuid");
         global.fetch = createFetchMock(originalTransaction);

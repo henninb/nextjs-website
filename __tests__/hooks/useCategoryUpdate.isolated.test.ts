@@ -5,7 +5,41 @@ import {
   createModernErrorFetchMock,
 } from "../../testHelpers.modern";
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateCategory: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import { updateCategory } from "../../hooks/useCategoryUpdate";
+import { HookValidator } from "../../utils/hookValidation";
 
 describe("updateCategory (Isolated)", () => {
   const mockOldCategory = createTestCategory({
@@ -25,17 +59,15 @@ describe("updateCategory (Isolated)", () => {
     dateUpdated: new Date("2024-01-15"),
   });
 
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
+  const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
+    // Reset validation mock to pass-through by default
+    mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful updates", () => {
@@ -105,8 +137,9 @@ describe("updateCategory (Isolated)", () => {
 
       await updateCategory(specialCategory, mockNewCategory);
 
+      // Special characters are sanitized in category names
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/category & subcategory",
+        "/api/category/category subcategory",
         expect.any(Object),
       );
     });

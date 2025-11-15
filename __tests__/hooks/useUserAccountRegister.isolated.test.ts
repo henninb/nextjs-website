@@ -4,6 +4,7 @@
  */
 
 import { userAccountRegister } from "../../hooks/useUserAccountRegister";
+import { HookValidator } from "../../utils/hookValidation";
 import User from "../../model/User";
 import {
   createFetchMock,
@@ -17,6 +18,31 @@ import {
 } from "../../testHelpers";
 
 // Mock the validation utils
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validateUser: jest.fn(),
@@ -30,17 +56,14 @@ jest.mock("../../utils/validation", () => ({
 import { hookValidators } from "../../utils/validation";
 
 describe("userAccountRegister (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
   const originalFetch = global.fetch;
-  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
+  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
     global.fetch = originalFetch;
   });
 
@@ -49,10 +72,6 @@ describe("userAccountRegister (Isolated)", () => {
       const testUser = createTestUser();
       const mockConsoleLog = consoleSpy.start().log;
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -64,6 +83,7 @@ describe("userAccountRegister (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+            Accept: "application/json",
         },
         body: JSON.stringify(testUser),
       });
@@ -76,10 +96,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should return payload for non-201 success responses", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(testUser, { status: 200 });
 
@@ -92,10 +108,6 @@ describe("userAccountRegister (Isolated)", () => {
       const originalUser = createTestUser({ username: "  test@example.com  " });
       const sanitizedUser = createTestUser({ username: "test@example.com" });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: sanitizedUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -118,10 +130,6 @@ describe("userAccountRegister (Isolated)", () => {
         lastName: "User",
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: completeUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -148,10 +156,6 @@ describe("userAccountRegister (Isolated)", () => {
         { message: "First name must be at least 2 characters" },
       ];
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: validationErrors,
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
@@ -167,10 +171,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should handle validation errors without specific messages", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: null,
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
@@ -183,10 +183,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should handle validation errors with empty error array", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: [],
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow(
@@ -200,16 +196,12 @@ describe("userAccountRegister (Isolated)", () => {
       const testUser = createTestUser();
       const { DataValidator } = require("../../utils/validation");
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
       await userAccountRegister(testUser);
 
-      expect(mockValidateApiPayload).toHaveBeenCalledWith(
+      expect(mockValidateInsert).toHaveBeenCalledWith(
         testUser,
         DataValidator.validateUser,
         "userAccountRegister",
@@ -222,10 +214,6 @@ describe("userAccountRegister (Isolated)", () => {
       const testUser = createTestUser();
       const mockConsoleLog = consoleSpy.start().log;
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
 
       global.fetch = jest.fn().mockResolvedValue({
@@ -249,10 +237,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should handle 500 error with response message", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
 
       global.fetch = jest.fn().mockResolvedValue({
@@ -273,10 +257,6 @@ describe("userAccountRegister (Isolated)", () => {
       const testUser = createTestUser();
       const mockConsoleLog = consoleSpy.start().log;
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
 
       global.fetch = jest.fn().mockResolvedValue({
@@ -300,10 +280,6 @@ describe("userAccountRegister (Isolated)", () => {
       const testUser = createTestUser();
       const mockConsoleLog = consoleSpy.start().log;
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
 
       global.fetch = jest.fn().mockResolvedValue({
@@ -326,10 +302,6 @@ describe("userAccountRegister (Isolated)", () => {
       const testUser = createTestUser();
       const mockConsoleLog = consoleSpy.start().log;
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = simulateNetworkError();
 
@@ -345,10 +317,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should handle timeout errors", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = simulateTimeoutError();
 
@@ -366,10 +334,6 @@ describe("userAccountRegister (Isolated)", () => {
       });
       const mockConsoleLog = consoleSpy.start().log;
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -394,10 +358,6 @@ describe("userAccountRegister (Isolated)", () => {
       });
       const mockConsoleLog = consoleSpy.start().log;
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: [{ message: "Invalid username format" }],
       });
 
       await expect(userAccountRegister(testUser)).rejects.toThrow();
@@ -416,10 +376,6 @@ describe("userAccountRegister (Isolated)", () => {
       const mockConsoleLog = consoleSpy.start().log;
       const originalError = new Error("Original error");
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
 
       global.fetch = jest.fn().mockRejectedValue(originalError);
@@ -438,10 +394,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should use correct HTTP method and headers", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -452,6 +404,7 @@ describe("userAccountRegister (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+            Accept: "application/json",
         },
         body: JSON.stringify(testUser),
       });
@@ -460,10 +413,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should include credentials for authentication", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -480,10 +429,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should send data as JSON in request body", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -522,10 +467,6 @@ describe("userAccountRegister (Isolated)", () => {
       ];
 
       for (const user of users) {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: user,
-          errors: [],
         });
         global.fetch = createFetchMock(null, { status: 201 });
 
@@ -546,10 +487,6 @@ describe("userAccountRegister (Isolated)", () => {
       ];
 
       for (const user of edgeUsers) {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: user,
-          errors: [],
         });
         global.fetch = createFetchMock(null, { status: 201 });
 
@@ -569,10 +506,6 @@ describe("userAccountRegister (Isolated)", () => {
 
       for (const email of emailFormats) {
         const user = createTestUser({ username: email });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: user,
-          errors: [],
         });
         global.fetch = createFetchMock(null, { status: 201 });
 
@@ -589,10 +522,6 @@ describe("userAccountRegister (Isolated)", () => {
         lastName: "User",
       };
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: minimalUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -612,10 +541,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should return null for 201 Created", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(null, { status: 201 });
 
@@ -627,10 +552,6 @@ describe("userAccountRegister (Isolated)", () => {
     it("should return payload for 200 OK", async () => {
       const testUser = createTestUser();
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: testUser,
-        errors: [],
       });
       global.fetch = createFetchMock(testUser, { status: 200 });
 
@@ -644,10 +565,6 @@ describe("userAccountRegister (Isolated)", () => {
       const statusCodes = [202, 204];
 
       for (const status of statusCodes) {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: testUser,
-          errors: [],
         });
         global.fetch = createFetchMock(testUser, { status });
 

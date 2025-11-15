@@ -19,7 +19,7 @@ const changeTransactionState = async (
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+            Accept: "application/json",
       },
       body: JSON.stringify({}),
     });
@@ -91,7 +91,7 @@ describe("useTransactionStateUpdate Business Logic (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
             body: JSON.stringify({}),
           },

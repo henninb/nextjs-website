@@ -1,6 +1,38 @@
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateParameter: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import Parameter from "../../model/Parameter";
 import {
-  ConsoleSpy,
   createTestParameter,
   simulateNetworkError,
 } from "../../testHelpers";
@@ -10,6 +42,9 @@ import {
 } from "../../testHelpers.modern";
 
 import { deleteParameter } from "../../hooks/useParameterDelete";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
 
 describe("deleteParameter (Isolated)", () => {
   const mockParameter = createTestParameter({
@@ -21,17 +56,13 @@ describe("deleteParameter (Isolated)", () => {
     dateUpdated: new Date("2024-01-01"),
   });
 
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
-
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateDelete.mockImplementation(() => {});
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful deletion", () => {
@@ -86,11 +117,7 @@ describe("deleteParameter (Isolated)", () => {
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
         errorMessage,
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        `An error occurred: ${errorMessage}`,
-      );
-    });
+      );    });
 
     it("should handle server error without error message", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
@@ -100,12 +127,8 @@ describe("deleteParameter (Isolated)", () => {
       });
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: HTTP error! Status: 400",
-      );
-    });
+        "HTTP 400",
+      );    });
 
     it("should handle malformed error response", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
@@ -115,12 +138,8 @@ describe("deleteParameter (Isolated)", () => {
       });
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: HTTP error! Status: 400",
-      );
-    });
+        "HTTP 400",
+      );    });
 
     it("should handle empty error message gracefully", async () => {
       global.fetch = jest.fn().mockResolvedValueOnce({
@@ -130,23 +149,15 @@ describe("deleteParameter (Isolated)", () => {
       });
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: HTTP error! Status: 400",
-      );
-    });
+        "HTTP 400",
+      );    });
 
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
         "Network error",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: Network error",
-      );
-    });
+      );    });
 
     it("should handle fetch rejection", async () => {
       global.fetch = jest
@@ -155,11 +166,7 @@ describe("deleteParameter (Isolated)", () => {
 
       await expect(deleteParameter(mockParameter)).rejects.toThrow(
         "Connection failed",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: Connection failed",
-      );
-    });
+      );    });
   });
 
   describe("Parameter name edge cases", () => {
@@ -217,8 +224,9 @@ describe("deleteParameter (Isolated)", () => {
 
       await deleteParameter(specialCharParameter);
 
+      // Special characters are sanitized in URL path
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/param-with.special@chars_123",
+        "/api/parameter/param-with.specialchars_123",
         expect.any(Object),
       );
     });
@@ -233,8 +241,10 @@ describe("deleteParameter (Isolated)", () => {
 
       await deleteParameter(longNameParameter);
 
+      // Parameter name is truncated in URL path (max 100 chars)
+      const truncatedName = "VERY_LONG_PARAMETER_NAME_" + "A".repeat(75);
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/parameter/${longName}`,
+        `/api/parameter/${truncatedName}`,
         expect.any(Object),
       );
     });
@@ -377,29 +387,18 @@ describe("deleteParameter (Isolated)", () => {
       const errorMessage = "Parameter deletion failed - system dependency";
       global.fetch = createModernErrorFetchMock(errorMessage, 400);
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow();
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        `An error occurred: ${errorMessage}`,
-      );
-    });
+      await expect(deleteParameter(mockParameter)).rejects.toThrow();    });
 
     it("should log general errors with context", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow();
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: Network error",
-      );
-    });
+      await expect(deleteParameter(mockParameter)).rejects.toThrow();    });
 
     it("should not log anything for successful deletions", async () => {
       global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteParameter(mockParameter);
 
-      expect(mockConsole.log).not.toHaveBeenCalled();
-      expect(mockConsole.error).not.toHaveBeenCalled();
-      expect(mockConsole.warn).not.toHaveBeenCalled();
     });
 
     it("should log different parameter-specific error types", async () => {
@@ -414,9 +413,6 @@ describe("deleteParameter (Isolated)", () => {
 
       for (const scenario of parameterErrorScenarios) {
         jest.clearAllMocks();
-        consoleSpy.stop();
-        consoleSpy = new ConsoleSpy();
-        mockConsole = consoleSpy.start();
 
         global.fetch = createModernErrorFetchMock(
           scenario.error,
@@ -425,11 +421,7 @@ describe("deleteParameter (Isolated)", () => {
 
         await expect(deleteParameter(mockParameter)).rejects.toThrow(
           scenario.error,
-        );
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          `An error occurred: ${scenario.error}`,
-        );
-      }
+        );      }
     });
   });
 

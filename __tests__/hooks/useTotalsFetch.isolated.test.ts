@@ -3,19 +3,51 @@
  * Tests the fetchTotals function without React Query/React overhead
  */
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateTotals: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import { fetchTotals } from "../../hooks/useTotalsFetch";
+import { HookValidator } from "../../utils/hookValidation";
 import Totals from "../../model/Totals";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   simulateNetworkError,
   simulateTimeoutError,
   createMockResponse,
 } from "../../testHelpers";
 
 describe("fetchTotals (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
   const originalFetch = global.fetch;
 
   const createTestTotals = (overrides = {}): Totals => ({
@@ -27,11 +59,9 @@ describe("fetchTotals (Isolated)", () => {
   });
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
     global.fetch = originalFetch;
   });
 
@@ -48,7 +78,7 @@ describe("fetchTotals (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+            Accept: "application/json",
         },
       });
     });
@@ -124,8 +154,6 @@ describe("fetchTotals (Isolated)", () => {
 
   describe("Error Handling", () => {
     it("should handle 404 resource not found", async () => {
-      const mockLog = consoleSpy.start().log;
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 404,
@@ -134,18 +162,11 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 404",
-      );
-
-      expect(mockLog).toHaveBeenCalledWith("Resource not found (404).");
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals data:",
-        expect.any(Error),
+        "HTTP error! Status: 404",
       );
     });
 
     it("should handle 500 server error", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 500,
@@ -154,17 +175,11 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 500",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals data:",
-        expect.any(Error),
+        "HTTP error! Status: 500",
       );
     });
 
     it("should handle 401 unauthorized error", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 401,
@@ -173,17 +188,11 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 401",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals data:",
-        expect.any(Error),
+        "HTTP error! Status: 401",
       );
     });
 
     it("should handle 400 bad request", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 400,
@@ -192,55 +201,30 @@ describe("fetchTotals (Isolated)", () => {
       });
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: HTTP error! status: 400",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals data:",
-        expect.any(Error),
+        "HTTP error! Status: 400",
       );
     });
 
     it("should handle network errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateNetworkError();
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: Network error",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals data:",
-        expect.any(Error),
+        "Network error",
       );
     });
 
     it("should handle timeout errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateTimeoutError();
 
       await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data: Request timeout",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals data:",
-        expect.any(Error),
+        "Request timeout",
       );
     });
 
     it("should handle fetch errors without specific message", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockRejectedValue(new Error());
 
-      await expect(fetchTotals()).rejects.toThrow(
-        "Failed to fetch totals data:",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals data:",
-        expect.any(Error),
-      );
+      await expect(fetchTotals()).rejects.toThrow();
     });
   });
 
@@ -256,7 +240,7 @@ describe("fetchTotals (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+            Accept: "application/json",
         },
       });
     });

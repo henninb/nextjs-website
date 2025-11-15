@@ -3,7 +3,40 @@
  * Tests insertParameter function without React Query overhead
  */
 
-import { ConsoleSpy, createTestParameter } from "../../testHelpers";
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateParameter: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
+import { createTestParameter } from "../../testHelpers";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
@@ -11,17 +44,19 @@ import {
 import Parameter from "../../model/Parameter";
 
 import { insertParameter } from "../../hooks/useParameterInsert";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
 describe("insertParameter (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateInsert.mockImplementation((data) => data);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful insertion", () => {
@@ -90,32 +125,16 @@ describe("insertParameter (Isolated)", () => {
         "Parameter name already exists",
         400,
       );
-      consoleSpy.start();
-
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Parameter name already exists",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: Parameter name already exists",
-      ]);
-    });
+      );    });
 
     it("should handle 500 server error", async () => {
       const testParameter = createTestParameter();
       global.fetch = createModernErrorFetchMock("Internal server error", 500);
-      consoleSpy.start();
-
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Internal server error",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: Internal server error",
-      ]);
-    });
+      );    });
 
     it("should handle 409 conflict error for duplicate parameters", async () => {
       const duplicateParameter = createTestParameter({
@@ -126,17 +145,9 @@ describe("insertParameter (Isolated)", () => {
         "Parameter already exists with this name",
         409,
       );
-      consoleSpy.start();
-
       await expect(insertParameter(duplicateParameter)).rejects.toThrow(
         "Parameter already exists with this name",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: Parameter already exists with this name",
-      ]);
-    });
+      );    });
 
     it("should handle error response without message", async () => {
       const testParameter = createTestParameter();
@@ -145,17 +156,9 @@ describe("insertParameter (Isolated)", () => {
         status: 400,
         json: jest.fn().mockResolvedValue({}),
       });
-      consoleSpy.start();
-
       await expect(insertParameter(testParameter)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 400",
-      ]);
-    });
+        "HTTP 400",
+      );    });
 
     it("should handle malformed error response", async () => {
       const testParameter = createTestParameter();
@@ -164,43 +167,23 @@ describe("insertParameter (Isolated)", () => {
         status: 400,
         json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
       });
-      consoleSpy.start();
-
       await expect(insertParameter(testParameter)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 400",
-      ]);
-    });
+        "HTTP 400",
+      );    });
 
     it("should handle network errors", async () => {
       const testParameter = createTestParameter();
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-      consoleSpy.start();
-
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Network error",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual(["An error occurred: Network error"]);
-    });
+      );    });
 
     it("should handle timeout errors", async () => {
       const testParameter = createTestParameter();
       global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
-      consoleSpy.start();
-
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Request timeout",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual(["An error occurred: Request timeout"]);
-    });
+      );    });
   });
 
   describe("Request format validation", () => {
@@ -438,50 +421,6 @@ describe("insertParameter (Isolated)", () => {
     });
   });
 
-  describe("Console logging", () => {
-    it("should log API errors to console.error", async () => {
-      const testParameter = createTestParameter();
-      global.fetch = createModernErrorFetchMock("API Error", 400);
-      consoleSpy.start();
-
-      try {
-        await insertParameter(testParameter);
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual(["An error occurred: API Error"]);
-    });
-
-    it("should log general errors to console.error", async () => {
-      const testParameter = createTestParameter();
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
-      consoleSpy.start();
-
-      try {
-        await insertParameter(testParameter);
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual(["An error occurred: Network failure"]);
-    });
-
-    it("should not log anything on successful operations", async () => {
-      const testParameter = createTestParameter();
-      global.fetch = createModernFetchMock({ parameterId: 1 });
-      consoleSpy.start();
-
-      await insertParameter(testParameter);
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.log).toHaveLength(0);
-      expect(calls.error).toHaveLength(0);
-      expect(calls.warn).toHaveLength(0);
-    });
-  });
 
   describe("Integration scenarios", () => {
     it("should handle complete successful parameter creation flow", async () => {
@@ -527,17 +466,9 @@ describe("insertParameter (Isolated)", () => {
         "Parameter name cannot be empty and must be unique",
         400,
       );
-      consoleSpy.start();
-
       await expect(insertParameter(invalidParameter)).rejects.toThrow(
         "Parameter name cannot be empty and must be unique",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: Parameter name cannot be empty and must be unique",
-      ]);
-    });
+      );    });
 
     it("should handle server errors gracefully", async () => {
       const testParameter = createTestParameter();
@@ -545,17 +476,9 @@ describe("insertParameter (Isolated)", () => {
         "Database connection failed",
         503,
       );
-      consoleSpy.start();
-
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Database connection failed",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: Database connection failed",
-      ]);
-    });
+      );    });
   });
 
   describe("Parameter-specific business logic", () => {

@@ -11,6 +11,7 @@ import {
 import Transfer from "../../model/Transfer";
 
 import { updateTransfer } from "../../hooks/useTransferUpdate";
+import { HookValidator } from "../../utils/hookValidation";
 
 // Helper function to create test transfer data
 const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
@@ -28,15 +29,12 @@ const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
 });
 
 describe("useTransferUpdate Business Logic (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("updateTransfer", () => {
@@ -322,7 +320,7 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           }),
         );

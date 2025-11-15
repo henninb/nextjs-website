@@ -3,7 +3,40 @@
  * Tests updateParameter function without React Query overhead
  */
 
-import { ConsoleSpy, createTestParameter } from "../../testHelpers";
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateParameter: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
+import { createTestParameter } from "../../testHelpers";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
@@ -11,17 +44,19 @@ import {
 import Parameter from "../../model/Parameter";
 
 import { updateParameter } from "../../hooks/useParameterUpdate";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 describe("updateParameter (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful updates", () => {
@@ -172,17 +207,9 @@ describe("updateParameter (Isolated)", () => {
         statusText: "Not Found",
         json: jest.fn().mockResolvedValue({}),
       });
-      consoleSpy.start();
-
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "HTTP error! Status: 404",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 404",
-      ]);
-    });
+        "HTTP 404",
+      );    });
 
     it("should handle 400 bad request errors", async () => {
       const oldParameter = createTestParameter();
@@ -194,17 +221,9 @@ describe("updateParameter (Isolated)", () => {
         statusText: "Bad Request",
         json: jest.fn().mockResolvedValue({}),
       });
-      consoleSpy.start();
-
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 400",
-      ]);
-    });
+        "HTTP 400",
+      );    });
 
     it("should handle 403 forbidden errors for restricted parameters", async () => {
       const oldParameter = createTestParameter({
@@ -218,17 +237,9 @@ describe("updateParameter (Isolated)", () => {
         statusText: "Forbidden",
         json: jest.fn().mockResolvedValue({}),
       });
-      consoleSpy.start();
-
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "HTTP error! Status: 403",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 403",
-      ]);
-    });
+        "HTTP 403",
+      );    });
 
     it("should handle 500 server errors", async () => {
       const oldParameter = createTestParameter();
@@ -240,47 +251,27 @@ describe("updateParameter (Isolated)", () => {
         statusText: "Internal Server Error",
         json: jest.fn().mockResolvedValue({}),
       });
-      consoleSpy.start();
-
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
-        "HTTP error! Status: 500",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 500",
-      ]);
-    });
+        "HTTP 500",
+      );    });
 
     it("should handle network errors", async () => {
       const oldParameter = createTestParameter();
       const newParameter = createTestParameter();
 
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-      consoleSpy.start();
-
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "Network error",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual(["An error occurred: Network error"]);
-    });
+      );    });
 
     it("should handle timeout errors", async () => {
       const oldParameter = createTestParameter();
       const newParameter = createTestParameter();
 
       global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
-      consoleSpy.start();
-
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "Request timeout",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual(["An error occurred: Request timeout"]);
-    });
+      );    });
   });
 
   describe("Request format validation", () => {
@@ -373,8 +364,9 @@ describe("updateParameter (Isolated)", () => {
       const result = await updateParameter(oldParameter, updatedParameter);
 
       expect(result.parameterName).toBe("SPECIAL_CHARS!@#$%");
+      // Special characters are sanitized in URL path
       expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/SPECIAL_CHARS!@#$%",
+        "/api/parameter/SPECIAL_CHARS",
         expect.any(Object),
       );
     });
@@ -415,8 +407,10 @@ describe("updateParameter (Isolated)", () => {
       const result = await updateParameter(oldParameter, updatedParameter);
 
       expect(result.parameterName).toBe(longName);
+      // Parameter name is truncated in URL path (max 100 chars)
+      const truncatedName = "VERY_LONG_PARAMETER_NAME_" + "A".repeat(75);
       expect(fetch).toHaveBeenCalledWith(
-        `/api/parameter/${longName}`,
+        `/api/parameter/${truncatedName}`,
         expect.any(Object),
       );
     });
@@ -639,77 +633,9 @@ describe("updateParameter (Isolated)", () => {
         statusText: "Unprocessable Entity",
         json: jest.fn().mockResolvedValue({}),
       });
-      consoleSpy.start();
-
       await expect(
         updateParameter(oldParameter, invalidParameter),
-      ).rejects.toThrow("HTTP error! Status: 422");
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 422",
-      ]);
-    });
-  });
-
-  describe("Console logging", () => {
-    it("should log 404 errors specifically", async () => {
-      const oldParameter = createTestParameter({
-        parameterName: "NOTFOUND_PARAM",
-      });
-      const newParameter = createTestParameter();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        statusText: "Not Found",
-        json: jest.fn().mockResolvedValue({}),
-      });
-      consoleSpy.start();
-
-      try {
-        await updateParameter(oldParameter, newParameter);
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error).toHaveLength(1);
-      expect(calls.error[0]).toEqual([
-        "An error occurred: HTTP error! Status: 404",
-      ]);
-    });
-
-    it("should log general errors", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("General error"));
-      consoleSpy.start();
-
-      try {
-        await updateParameter(oldParameter, newParameter);
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0]).toEqual(["An error occurred: General error"]);
-    });
-
-    it("should not log anything on successful operations", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = createModernFetchMock(newParameter);
-      consoleSpy.start();
-
-      await updateParameter(oldParameter, newParameter);
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.log).toHaveLength(0);
-      expect(calls.error).toHaveLength(0);
-      expect(calls.warn).toHaveLength(0);
+      ).rejects.toThrow("HTTP 422");
     });
   });
 });

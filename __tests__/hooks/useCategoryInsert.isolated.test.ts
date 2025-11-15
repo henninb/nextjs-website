@@ -5,19 +5,42 @@ import {
   createModernErrorFetchMock,
 } from "../../testHelpers.modern";
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
 // Mock validation utilities
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validateCategory: jest.fn(),
   },
-  hookValidators: {
-    validateApiPayload: jest.fn(),
-  },
   ValidationError: jest.fn(),
 }));
 
 import { insertCategory } from "../../hooks/useCategoryInsert";
-import { hookValidators, DataValidator } from "../../utils/validation";
+import { HookValidator } from "../../utils/hookValidation";
+import { DataValidator } from "../../utils/validation";
 
 describe("insertCategory (Isolated)", () => {
   const mockCategory = createTestCategory({
@@ -29,25 +52,13 @@ describe("insertCategory (Isolated)", () => {
     dateUpdated: new Date(),
   });
 
-  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
+  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
 
-    // Reset validation mocks to default success state
-    mockValidateApiPayload.mockReturnValue({
-      isValid: true,
-      validatedData: mockCategory,
-      errors: null,
-    });
-  });
-
-  afterEach(() => {
-    consoleSpy.stop();
+    // Reset validation mocks to default success state (pass-through)
+    mockValidateInsert.mockImplementation((data) => data);
   });
 
   describe("Successful insertion", () => {
@@ -57,11 +68,6 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "groceries",
         activeStatus: true,
         categoryCount: 1,
-      });
-
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
       });
 
       global.fetch = createModernFetchMock(mockResponse);
@@ -76,6 +82,7 @@ describe("insertCategory (Isolated)", () => {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
           body: JSON.stringify(mockCategory),
         }),
@@ -85,18 +92,11 @@ describe("insertCategory (Isolated)", () => {
     it("should log the category data being passed", async () => {
       const mockResponse = createTestCategory({ categoryId: 456 });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
-      });
-
       global.fetch = createModernFetchMock(mockResponse);
 
       await insertCategory(mockCategory);
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        `passed: ${JSON.stringify(mockCategory)}`,
-      );
+      // Logging tested in logger.test.ts
     });
 
     it("should use validated data in request body", async () => {
@@ -105,11 +105,7 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "sanitized_groceries",
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: validatedCategory,
-      });
-
+      mockValidateInsert.mockReturnValue(validatedCategory);
       global.fetch = createModernFetchMock(validatedCategory);
 
       await insertCategory(mockCategory);
@@ -126,10 +122,6 @@ describe("insertCategory (Isolated)", () => {
       const successStatuses = [200, 201];
 
       for (const status of successStatuses) {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: mockCategory,
-        });
 
         const mockResponse = createTestCategory({ categoryId: status });
         global.fetch = createModernFetchMock(mockResponse, { status });
@@ -143,59 +135,45 @@ describe("insertCategory (Isolated)", () => {
 
   describe("Validation handling", () => {
     it("should handle validation failures", async () => {
-      const validationError = { message: "Category name is required" };
-
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        errors: [validationError],
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertCategory validation failed: Category name is required");
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Category validation failed: Category name is required",
+        "insertCategory validation failed: Category name is required",
       );
 
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it("should handle validation failures with multiple errors", async () => {
-      const validationErrors = [
-        { message: "Category name is required" },
-        { message: "Active status must be boolean" },
-      ];
-
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        errors: validationErrors,
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertCategory validation failed: Category name is required, Active status must be boolean");
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Category validation failed: Category name is required, Active status must be boolean",
+        "insertCategory validation failed: Category name is required, Active status must be boolean",
       );
     });
 
     it("should handle validation failures without error details", async () => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertCategory validation failed: Validation failed");
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "Category validation failed: Validation failed",
+        "insertCategory validation failed: Validation failed",
       );
     });
 
     it("should call validation with correct parameters", async () => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
-      });
-
       global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(mockCategory);
 
-      expect(mockValidateApiPayload).toHaveBeenCalledWith(
+      expect(mockValidateInsert).toHaveBeenCalledWith(
         mockCategory,
-        DataValidator.validateCategory,
+        expect.any(Function), // DataValidator.validateCategory
         "insertCategory",
       );
     });
@@ -203,10 +181,6 @@ describe("insertCategory (Isolated)", () => {
 
   describe("Error handling", () => {
     beforeEach(() => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
-      });
     });
 
     it("should handle server error with error message", async () => {
@@ -224,7 +198,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
     });
 
@@ -236,7 +210,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
     });
 
@@ -248,7 +222,7 @@ describe("insertCategory (Isolated)", () => {
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "HTTP error! Status: 500",
+        "HTTP 500",
       );
     });
 
@@ -276,10 +250,6 @@ describe("insertCategory (Isolated)", () => {
 
   describe("Request format validation", () => {
     beforeEach(() => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
-      });
     });
 
     it("should use POST method", async () => {
@@ -318,6 +288,7 @@ describe("insertCategory (Isolated)", () => {
         expect.objectContaining({
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
         }),
       );
@@ -337,10 +308,6 @@ describe("insertCategory (Isolated)", () => {
 
   describe("Response handling", () => {
     beforeEach(() => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
-      });
     });
 
     it("should return parsed JSON response", async () => {
@@ -381,10 +348,6 @@ describe("insertCategory (Isolated)", () => {
 
   describe("Edge cases", () => {
     beforeEach(() => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
-      });
     });
 
     it("should handle minimal category data", async () => {
@@ -394,10 +357,6 @@ describe("insertCategory (Isolated)", () => {
         activeStatus: true,
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: minimalCategory,
-      });
 
       const mockResponse = createTestCategory({ categoryId: 111 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -417,10 +376,6 @@ describe("insertCategory (Isolated)", () => {
         dateUpdated: new Date("2024-01-15"),
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: fullCategory,
-      });
 
       const mockResponse = createTestCategory({ categoryId: 555 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -436,10 +391,6 @@ describe("insertCategory (Isolated)", () => {
         activeStatus: true,
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: specialCategory,
-      });
 
       const mockResponse = createTestCategory({ categoryId: 777 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -456,10 +407,6 @@ describe("insertCategory (Isolated)", () => {
         activeStatus: true,
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: longCategory,
-      });
 
       const mockResponse = createTestCategory({ categoryId: 888 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -475,10 +422,6 @@ describe("insertCategory (Isolated)", () => {
         activeStatus: false,
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: inactiveCategory,
-      });
 
       const mockResponse = createTestCategory({ categoryId: 444 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -495,10 +438,6 @@ describe("insertCategory (Isolated)", () => {
         dateAdded: null as any,
       };
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: categoryWithNulls,
-      });
 
       global.fetch = createModernFetchMock(mockCategory);
 
@@ -515,10 +454,6 @@ describe("insertCategory (Isolated)", () => {
 
   describe("Business logic validation", () => {
     beforeEach(() => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockCategory,
-      });
     });
 
     it("should enforce validation before API call", async () => {
@@ -527,7 +462,7 @@ describe("insertCategory (Isolated)", () => {
 
       await insertCategory(mockCategory);
 
-      expect(mockValidateApiPayload).toHaveBeenCalled();
+      expect(mockValidateInsert).toHaveBeenCalled();
       expect(global.fetch).toHaveBeenCalled();
     });
 
@@ -539,11 +474,7 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "original_sanitized",
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: sanitizedCategory,
-      });
-
+      mockValidateInsert.mockReturnValue(sanitizedCategory);
       global.fetch = createModernFetchMock(sanitizedCategory);
 
       await insertCategory(originalCategory);
@@ -562,10 +493,6 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "new_category",
       });
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: newCategory,
-      });
 
       const responseCategory = createTestCategory({
         categoryId: 999,

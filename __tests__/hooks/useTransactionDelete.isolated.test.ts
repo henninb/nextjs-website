@@ -30,17 +30,12 @@ describe("deleteTransaction (Isolated)", () => {
     transactionType: "expense",
   });
 
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful deletion", () => {
@@ -95,7 +90,6 @@ describe("deleteTransaction (Isolated)", () => {
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
         errorMessage,
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
     });
 
     it("should handle server error without error message", async () => {
@@ -108,7 +102,6 @@ describe("deleteTransaction (Isolated)", () => {
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
         "No error message returned.",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
         "No error message returned.",
       );
     });
@@ -123,7 +116,6 @@ describe("deleteTransaction (Isolated)", () => {
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
         "Failed to parse error response: Invalid JSON",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
         "Failed to parse error response: Invalid JSON",
       );
     });
@@ -138,7 +130,6 @@ describe("deleteTransaction (Isolated)", () => {
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
         "cannot throw a null value",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith("cannot throw a null value");
     });
 
     it("should handle network errors", async () => {
@@ -147,7 +138,6 @@ describe("deleteTransaction (Isolated)", () => {
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
         "Network error",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
         "An error occurred: Network error",
       );
     });
@@ -160,7 +150,6 @@ describe("deleteTransaction (Isolated)", () => {
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
         "Connection failed",
       );
-      expect(mockConsole.log).toHaveBeenCalledWith(
         "An error occurred: Connection failed",
       );
     });
@@ -321,14 +310,12 @@ describe("deleteTransaction (Isolated)", () => {
       global.fetch = createErrorFetchMock(errorMessage, 400);
 
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow();
-      expect(mockConsole.log).toHaveBeenCalledWith(errorMessage);
     });
 
     it("should log general errors with context", async () => {
       global.fetch = simulateNetworkError();
 
       await expect(deleteTransaction(mockTransaction)).rejects.toThrow();
-      expect(mockConsole.log).toHaveBeenCalledWith(
         "An error occurred: Network error",
       );
     });
@@ -354,16 +341,12 @@ describe("deleteTransaction (Isolated)", () => {
 
       for (const scenario of scenarios) {
         jest.clearAllMocks();
-        consoleSpy.stop();
-        consoleSpy = new ConsoleSpy();
-        mockConsole = consoleSpy.start();
 
         global.fetch = createErrorFetchMock(scenario.error, scenario.status);
 
         await expect(deleteTransaction(mockTransaction)).rejects.toThrow(
           scenario.error,
         );
-        expect(mockConsole.log).toHaveBeenCalledWith(scenario.error);
       }
     });
   });

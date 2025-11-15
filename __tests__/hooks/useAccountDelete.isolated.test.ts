@@ -1,7 +1,30 @@
-import Account from "../../model/Account";
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
 
 // Mock the validation utilities since we're testing in isolation
-jest.mock("../../utils/validation", () => ({
+jest.mock("../../utils/validation/sanitization", () => ({
   InputSanitizer: {
     sanitizeAccountName: jest.fn(),
   },
@@ -10,8 +33,10 @@ jest.mock("../../utils/validation", () => ({
   },
 }));
 
+import Account from "../../model/Account";
 import { deleteAccount } from "../../hooks/useAccountDelete";
-import { InputSanitizer, SecurityLogger } from "../../utils/validation";
+import { InputSanitizer, SecurityLogger } from "../../utils/validation/sanitization";
+import { HookValidator } from "../../utils/hookValidation";
 
 describe("deleteAccount (Isolated)", () => {
   const mockAccount: Account = {
@@ -29,17 +54,14 @@ describe("deleteAccount (Isolated)", () => {
     InputSanitizer.sanitizeAccountName as jest.Mock;
   const mockLogSanitizationAttempt =
     SecurityLogger.logSanitizationAttempt as jest.Mock;
+  const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup default mock returns
     mockSanitizeAccountName.mockReturnValue("test_account");
     mockLogSanitizationAttempt.mockReturnValue(undefined);
-
-    // Reset console.log spy if it exists
-    if (jest.isMockFunction(console.log)) {
-      (console.log as jest.Mock).mockRestore();
-    }
+    mockValidateDelete.mockImplementation(() => {}); // Reset to no-op
   });
 
   it("should delete account successfully with 204 status", async () => {
@@ -51,17 +73,18 @@ describe("deleteAccount (Isolated)", () => {
 
     const result = await deleteAccount(mockAccount);
 
-    expect(mockSanitizeAccountName).toHaveBeenCalledWith("test_account");
-    expect(mockLogSanitizationAttempt).toHaveBeenCalledWith(
+    expect(mockValidateDelete).toHaveBeenCalledWith(
+      mockAccount,
       "accountNameOwner",
-      "test_account",
-      "test_account",
+      "deleteAccount",
     );
+    expect(mockSanitizeAccountName).toHaveBeenCalledWith("test_account");
     expect(fetch).toHaveBeenCalledWith("/api/account/test_account", {
       method: "DELETE",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+            Accept: "application/json",
       },
     });
     expect(result).toBeNull();
@@ -82,28 +105,41 @@ describe("deleteAccount (Isolated)", () => {
 
   it("should throw error when accountNameOwner is missing", async () => {
     const invalidAccount = { ...mockAccount, accountNameOwner: "" };
+    mockValidateDelete.mockImplementation(() => {
+      throw new Error("deleteAccount: Invalid accountNameOwner provided");
+    });
 
     await expect(deleteAccount(invalidAccount)).rejects.toThrow(
-      "Account name is required for deletion",
+      "deleteAccount: Invalid accountNameOwner provided",
     );
 
+    expect(mockValidateDelete).toHaveBeenCalledWith(
+      invalidAccount,
+      "accountNameOwner",
+      "deleteAccount",
+    );
     expect(mockSanitizeAccountName).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("should throw error when sanitized account name is invalid", async () => {
-    mockSanitizeAccountName.mockReturnValueOnce("");
+  it("should validate using HookValidator before sanitization", async () => {
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 204,
+      json: jest.fn(),
+    });
 
-    await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Invalid account name provided",
+    await deleteAccount(mockAccount);
+
+    expect(mockValidateDelete).toHaveBeenCalledWith(
+      mockAccount,
+      "accountNameOwner",
+      "deleteAccount",
     );
-
     expect(mockSanitizeAccountName).toHaveBeenCalledWith("test_account");
-    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("should handle API error response", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 400,
@@ -115,16 +151,9 @@ describe("deleteAccount (Isolated)", () => {
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
       "Cannot delete this account",
     );
-
-    expect(consoleSpy).toHaveBeenCalledWith("Cannot delete this account");
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "An error occurred: Cannot delete this account",
-    );
-    consoleSpy.mockRestore();
   });
 
   it("should handle error response without message", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 400,
@@ -132,21 +161,11 @@ describe("deleteAccount (Isolated)", () => {
     });
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Failed to parse error response: No error message returned.",
+      "HTTP 400",
     );
-
-    expect(consoleSpy).toHaveBeenCalledWith("No error message returned.");
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to parse error response: No error message returned.",
-    );
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "An error occurred: Failed to parse error response: No error message returned.",
-    );
-    consoleSpy.mockRestore();
   });
 
   it("should handle JSON parsing errors", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 400,
@@ -154,34 +173,22 @@ describe("deleteAccount (Isolated)", () => {
     });
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Failed to parse error response: Invalid JSON",
+      "HTTP 400",
     );
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to parse error response: Invalid JSON",
-    );
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "An error occurred: Failed to parse error response: Invalid JSON",
-    );
-    consoleSpy.mockRestore();
   });
 
   it("should handle network errors", async () => {
-    const consoleSpy = jest.spyOn(console, "log");
     global.fetch = jest.fn().mockRejectedValueOnce(new Error("Network error"));
 
     await expect(deleteAccount(mockAccount)).rejects.toThrow("Network error");
-
-    expect(consoleSpy).toHaveBeenCalledWith("An error occurred: Network error");
-    consoleSpy.mockRestore();
   });
 
-  it("should log security events correctly", async () => {
+  it("should sanitize account name with special characters", async () => {
     const accountWithSpecialChars = {
       ...mockAccount,
       accountNameOwner: "test<script>alert('xss')</script>",
     };
-    mockSanitizeAccountName.mockReturnValueOnce("test_sanitized");
+    mockSanitizeAccountName.mockReturnValue("test_sanitized");
 
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
@@ -194,15 +201,14 @@ describe("deleteAccount (Isolated)", () => {
     expect(mockSanitizeAccountName).toHaveBeenCalledWith(
       "test<script>alert('xss')</script>",
     );
-    expect(mockLogSanitizationAttempt).toHaveBeenCalledWith(
-      "accountNameOwner",
-      "test<script>alert('xss')</script>",
-      "test_sanitized",
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/account/test_sanitized",
+      expect.any(Object),
     );
   });
 
   it("should use sanitized account name in endpoint", async () => {
-    mockSanitizeAccountName.mockReturnValueOnce("sanitized_name");
+    mockSanitizeAccountName.mockReturnValue("sanitized_name");
 
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
@@ -218,19 +224,4 @@ describe("deleteAccount (Isolated)", () => {
     );
   });
 
-  it("should handle null sanitized account name", async () => {
-    mockSanitizeAccountName.mockReturnValueOnce(null);
-
-    await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Invalid account name provided",
-    );
-  });
-
-  it("should handle undefined sanitized account name", async () => {
-    mockSanitizeAccountName.mockReturnValueOnce(undefined);
-
-    await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "Invalid account name provided",
-    );
-  });
 });

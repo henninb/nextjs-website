@@ -1,8 +1,40 @@
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validatePayment: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import Payment from "../../model/Payment";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   createTestPayment,
   expectSuccessfulDeletion,
   expectValidationError,
@@ -11,6 +43,9 @@ import {
 } from "../../testHelpers";
 
 import { deletePayment } from "../../hooks/usePaymentDelete";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
 
 describe("deletePayment (Isolated)", () => {
   const mockPayment = createTestPayment({
@@ -22,17 +57,14 @@ describe("deletePayment (Isolated)", () => {
     activeStatus: true,
   });
 
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateDelete.mockImplementation(() => {});
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful deletion", () => {
@@ -102,7 +134,7 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
       expect(mockConsole.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to delete payment:"),
@@ -117,7 +149,7 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
       expect(mockConsole.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to delete payment:"),
@@ -132,7 +164,7 @@ describe("deletePayment (Isolated)", () => {
       });
 
       await expect(deletePayment(mockPayment)).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
       expect(mockConsole.error).toHaveBeenCalledWith(
         expect.stringContaining("Failed to delete payment:"),
@@ -278,42 +310,6 @@ describe("deletePayment (Isolated)", () => {
           method: "DELETE",
         }),
       );
-    });
-  });
-
-  describe("Console logging behavior", () => {
-    it("should log error messages from server", async () => {
-      const errorMessage = "Payment deletion failed";
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValueOnce({ error: errorMessage }),
-      });
-
-      await expect(deletePayment(mockPayment)).rejects.toThrow();
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to delete payment:"),
-      );
-    });
-
-    it("should log general errors with context", async () => {
-      global.fetch = simulateNetworkError();
-
-      await expect(deletePayment(mockPayment)).rejects.toThrow();
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        expect.stringContaining("An error occurred:"),
-      );
-    });
-
-    it("should not log anything for successful deletions", async () => {
-      const responseData = { ...mockPayment };
-      global.fetch = createFetchMock(responseData, { status: 200 });
-
-      await deletePayment(mockPayment);
-
-      expect(mockConsole.log).not.toHaveBeenCalled();
-      expect(mockConsole.error).not.toHaveBeenCalled();
-      expect(mockConsole.warn).not.toHaveBeenCalled();
     });
   });
 });

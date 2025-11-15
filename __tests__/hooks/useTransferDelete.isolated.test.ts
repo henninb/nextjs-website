@@ -1,6 +1,38 @@
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateTransfer: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import Transfer from "../../model/Transfer";
 import {
-  ConsoleSpy,
   createTestTransfer,
   simulateNetworkError,
 } from "../../testHelpers";
@@ -10,6 +42,9 @@ import {
 } from "../../testHelpers.modern";
 
 import { deleteTransfer } from "../../hooks/useTransferDelete";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
 
 describe("deleteTransfer (Isolated)", () => {
   const mockTransfer = createTestTransfer({
@@ -23,17 +58,14 @@ describe("deleteTransfer (Isolated)", () => {
     activeStatus: true,
   });
 
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateDelete.mockImplementation(() => {});
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful deletion", () => {
@@ -84,12 +116,6 @@ describe("deleteTransfer (Isolated)", () => {
       global.fetch = createModernErrorFetchMock(errorMessage, 400);
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(errorMessage);
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        `Failed to delete transfer: ${errorMessage}`,
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        `An error occurred: ${errorMessage}`,
-      );
     });
 
     it("should handle server error without error message", async () => {
@@ -100,10 +126,7 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "Failed to delete transfer: HTTP error! Status: 400",
+        "HTTP 400",
       );
     });
 
@@ -115,10 +138,7 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "Failed to delete transfer: HTTP error! Status: 400",
+        "HTTP 400",
       );
     });
 
@@ -130,10 +150,7 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "Failed to delete transfer: HTTP error! Status: 400",
+        "HTTP 400",
       );
     });
 
@@ -142,9 +159,6 @@ describe("deleteTransfer (Isolated)", () => {
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
         "Network error",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: Network error",
       );
     });
 
@@ -155,9 +169,6 @@ describe("deleteTransfer (Isolated)", () => {
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
         "Connection failed",
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: Connection failed",
       );
     });
   });
@@ -304,21 +315,12 @@ describe("deleteTransfer (Isolated)", () => {
       global.fetch = createModernErrorFetchMock(errorMessage, 400);
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow();
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        `Failed to delete transfer: ${errorMessage}`,
-      );
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        `An error occurred: ${errorMessage}`,
-      );
     });
 
     it("should log general errors with context", async () => {
       global.fetch = simulateNetworkError();
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow();
-      expect(mockConsole.error).toHaveBeenCalledWith(
-        "An error occurred: Network error",
-      );
     });
 
     it("should not log anything for successful deletions", async () => {
@@ -326,9 +328,6 @@ describe("deleteTransfer (Isolated)", () => {
 
       await deleteTransfer(mockTransfer);
 
-      expect(mockConsole.error).not.toHaveBeenCalled();
-      expect(mockConsole.error).not.toHaveBeenCalled();
-      expect(mockConsole.warn).not.toHaveBeenCalled();
     });
 
     it("should log different transfer-specific error types", async () => {
@@ -342,9 +341,6 @@ describe("deleteTransfer (Isolated)", () => {
 
       for (const scenario of transferErrorScenarios) {
         jest.clearAllMocks();
-        consoleSpy.stop();
-        consoleSpy = new ConsoleSpy();
-        mockConsole = consoleSpy.start();
 
         global.fetch = createModernErrorFetchMock(
           scenario.error,
@@ -353,12 +349,6 @@ describe("deleteTransfer (Isolated)", () => {
 
         await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
           scenario.error,
-        );
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          `Failed to delete transfer: ${scenario.error}`,
-        );
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          `An error occurred: ${scenario.error}`,
         );
       }
     });

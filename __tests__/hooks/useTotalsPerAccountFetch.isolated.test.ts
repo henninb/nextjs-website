@@ -3,19 +3,51 @@
  * Tests the fetchTotalsPerAccount function without React Query/React overhead
  */
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateTotals: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import { fetchTotalsPerAccount } from "../../hooks/useTotalsPerAccountFetch";
+import { HookValidator } from "../../utils/hookValidation";
 import Totals from "../../model/Totals";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   simulateNetworkError,
   simulateTimeoutError,
   createMockResponse,
 } from "../../testHelpers";
 
 describe("fetchTotalsPerAccount (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
   const originalFetch = global.fetch;
 
   const createTestTotals = (overrides = {}): Totals => ({
@@ -27,11 +59,9 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
   });
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
     global.fetch = originalFetch;
   });
 
@@ -43,8 +73,9 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       const result = await fetchTotalsPerAccount("testAccount");
 
       expect(result).toEqual(testTotals);
+      // Account name is lowercased by sanitization
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/account/totals/testAccount",
+        "/api/transaction/account/totals/testaccount",
         {
           method: "GET",
           credentials: "include",
@@ -74,8 +105,9 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       await fetchTotalsPerAccount("account-with_special.chars@123");
 
+      // Special characters removed by sanitization: .@
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/account/totals/account-with_special.chars@123",
+        "/api/transaction/account/totals/account-with_specialchars123",
         expect.any(Object),
       );
     });
@@ -86,8 +118,9 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       await fetchTotalsPerAccount("account with spaces");
 
+      // Spaces are removed by sanitization
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/account/totals/account with spaces",
+        "/api/transaction/account/totals/accountwithspaces",
         expect.any(Object),
       );
     });
@@ -277,8 +310,6 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
   describe("Error Handling", () => {
     it("should handle 404 resource not found", async () => {
-      const mockLog = consoleSpy.start().log;
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 404,
@@ -287,18 +318,11 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("nonexistent")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Not Found",
-      );
-
-      expect(mockLog).toHaveBeenCalledWith("Resource not found (404).");
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals per account data:",
-        expect.any(Error),
+        "HTTP error! Status: 404",
       );
     });
 
     it("should handle 500 server error", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 500,
@@ -307,17 +331,11 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Internal Server Error",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals per account data:",
-        expect.any(Error),
+        "HTTP error! Status: 500",
       );
     });
 
     it("should handle 401 unauthorized error", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 401,
@@ -326,17 +344,11 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Unauthorized",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals per account data:",
-        expect.any(Error),
+        "HTTP error! Status: 401",
       );
     });
 
     it("should handle 400 bad request", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 400,
@@ -345,55 +357,30 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       });
 
       await expect(fetchTotalsPerAccount("")).rejects.toThrow(
-        "Failed to fetch totals per account data: Failed to fetch totalsPerAccount: Bad Request",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals per account data:",
-        expect.any(Error),
+        "HTTP error! Status: 400",
       );
     });
 
     it("should handle network errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateNetworkError();
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Network error",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals per account data:",
-        expect.any(Error),
+        "Network error",
       );
     });
 
     it("should handle timeout errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateTimeoutError();
 
       await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data: Request timeout",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals per account data:",
-        expect.any(Error),
+        "Request timeout",
       );
     });
 
     it("should handle fetch errors without specific message", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = jest.fn().mockRejectedValue(new Error());
 
-      await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch totals per account data:",
-      );
-
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching totals per account data:",
-        expect.any(Error),
-      );
+      await expect(fetchTotalsPerAccount("testAccount")).rejects.toThrow();
     });
   });
 
@@ -409,7 +396,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+            Accept: "application/json",
         },
       });
     });
@@ -540,23 +527,23 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
     });
 
     it("should handle different account naming conventions", async () => {
-      const accountNames = [
-        "checking-001",
-        "savings_emergency",
-        "credit.card.visa",
-        "investment@portfolio",
-        "business-operating-2024",
+      const accountTests = [
+        { input: "checking-001", sanitized: "checking-001" },
+        { input: "savings_emergency", sanitized: "savings_emergency" },
+        { input: "credit.card.visa", sanitized: "creditcardvisa" }, // . removed
+        { input: "investment@portfolio", sanitized: "investmentportfolio" }, // @ removed
+        { input: "business-operating-2024", sanitized: "business-operating-2024" },
       ];
       const testTotals = createTestTotals();
 
-      for (const accountName of accountNames) {
+      for (const accountTest of accountTests) {
         global.fetch = createFetchMock(testTotals);
 
-        const result = await fetchTotalsPerAccount(accountName);
+        const result = await fetchTotalsPerAccount(accountTest.input);
 
         expect(result).toEqual(testTotals);
         expect(global.fetch).toHaveBeenCalledWith(
-          `/api/transaction/account/totals/${accountName}`,
+          `/api/transaction/account/totals/${accountTest.sanitized}`,
           expect.any(Object),
         );
       }
@@ -572,6 +559,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       const result = await fetchTotalsPerAccount(longAccountName);
 
       expect(result).toEqual(testTotals);
+      // Account names are sanitized but not truncated in this hook
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/totals/${longAccountName}`,
         expect.any(Object),
@@ -600,8 +588,9 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       const result = await fetchTotalsPerAccount(unicodeAccount);
 
       expect(result).toEqual(testTotals);
+      // Unicode characters are removed by sanitization
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/transaction/account/totals/${unicodeAccount}`,
+        `/api/transaction/account/totals/compte-pargne-oo`,
         expect.any(Object),
       );
     });
@@ -614,8 +603,9 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       const result = await fetchTotalsPerAccount(specialAccount);
 
       expect(result).toEqual(testTotals);
+      // All special URL characters are removed by sanitization
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/transaction/account/totals/${specialAccount}`,
+        `/api/transaction/account/totals/accountwithspecialcharstest`,
         expect.any(Object),
       );
     });

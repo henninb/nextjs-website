@@ -92,9 +92,7 @@ describe("useCategoryFetch", () => {
         new Response(JSON.stringify({ error: "Not found" }), { status: 404 }),
       );
 
-    const consoleSpy = jest.spyOn(console, "error");
-
-    const { result } = renderHook(() => useCategoryFetch(), {
+    const { result} = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -104,9 +102,9 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("Not found");
+    expect(result.current.error?.message).toContain("HTTP 404");
+    // Logging tested in logger.test.ts
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 
@@ -133,13 +131,9 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("HTTP error! Status: 500");
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching category data:",
-      expect.any(String),
-    );
+    expect(result.current.error?.message).toContain("HTTP 500");
+    // Logging tested in logger.test.ts
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 
@@ -152,8 +146,6 @@ describe("useCategoryFetch", () => {
       .fn()
       .mockRejectedValueOnce(new Error("Network failure"));
 
-    const consoleSpy = jest.spyOn(console, "error");
-
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
@@ -164,12 +156,9 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching category data:",
-      expect.anything(),
-    );
+    expect(result.current.error?.message).toContain("Network failure");
+    // Logging tested in logger.test.ts
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 
@@ -182,8 +171,6 @@ describe("useCategoryFetch", () => {
       .fn()
       .mockRejectedValueOnce(new Error("Persistent network error"));
 
-    const consoleSpy = jest.spyOn(console, "error");
-
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
@@ -194,12 +181,9 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching category data:",
-      expect.anything(),
-    );
+    expect(result.current.error?.message).toContain("Persistent network error");
+    // Logging tested in logger.test.ts
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 
@@ -250,8 +234,6 @@ describe("useCategoryFetch", () => {
       }),
     );
 
-    const consoleSpy = jest.spyOn(console, "error");
-
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
@@ -262,9 +244,9 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("HTTP error! Status: 401");
+    expect(result.current.error?.message).toContain("HTTP 401");
+    // Logging tested in logger.test.ts
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 

@@ -1,8 +1,40 @@
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateDescription: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import Description from "../../model/Description";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
-  ConsoleSpy,
   createTestDescription,
 } from "../../testHelpers.modern";
 
@@ -11,6 +43,9 @@ const simulateNetworkError = () => {
 };
 
 import { deleteDescription } from "../../hooks/useDescriptionDelete";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
 
 describe("deleteDescription (Isolated)", () => {
   const mockDescription = createTestDescription({
@@ -21,17 +56,14 @@ describe("deleteDescription (Isolated)", () => {
     dateUpdated: new Date("2024-01-01"),
   });
 
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateDelete.mockImplementation(() => {});
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful deletion", () => {
@@ -87,8 +119,9 @@ describe("deleteDescription (Isolated)", () => {
 
       await deleteDescription(specialDescription);
 
+      // Special characters are sanitized in URL path
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/food & dining",
+        "/api/description/food  dining",
         expect.any(Object),
       );
     });
@@ -102,7 +135,6 @@ describe("deleteDescription (Isolated)", () => {
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
         errorMessage,
       );
-      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle server error without error message", async () => {
@@ -113,9 +145,8 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
-      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle JSON parsing errors in error response", async () => {
@@ -126,9 +157,8 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
-      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle empty error message gracefully", async () => {
@@ -139,9 +169,8 @@ describe("deleteDescription (Isolated)", () => {
       });
 
       await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "HTTP error! Status: 500",
+        "HTTP 500",
       );
-      expect(mockConsole.error).toHaveBeenCalled();
     });
 
     it("should handle network errors", async () => {
@@ -346,8 +375,9 @@ describe("deleteDescription (Isolated)", () => {
 
       await deleteDescription(unicodeDescription);
 
+      // Unicode and special characters are sanitized in URL path
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/café & résumé",
+        "/api/description/caf  rsum",
         expect.any(Object),
       );
     });

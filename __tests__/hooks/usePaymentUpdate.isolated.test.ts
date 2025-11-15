@@ -1,14 +1,49 @@
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validatePayment: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import Payment from "../../model/Payment";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   createTestPayment,
   simulateNetworkError,
   simulateTimeoutError,
 } from "../../testHelpers";
 
 import { updatePayment } from "../../hooks/usePaymentUpdate";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 // Mock window globally for isolated testing
 (global as any).window = {
@@ -18,17 +53,14 @@ import { updatePayment } from "../../hooks/usePaymentUpdate";
 };
 
 describe("updatePayment (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
-  let mockLog: jest.SpyInstance;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    const spies = consoleSpy.start();
-    mockLog = spies.log;
+    jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
     global.fetch = jest.fn(); // Reset fetch
   });
 

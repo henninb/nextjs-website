@@ -4,6 +4,7 @@
  */
 
 import { fetchValidationAmount } from "../../hooks/useValidationAmountFetch";
+import { HookValidator } from "../../utils/hookValidation";
 import ValidationAmount from "../../model/ValidationAmount";
 import {
   createFetchMock,
@@ -15,7 +16,6 @@ import {
 } from "../../testHelpers";
 
 describe("fetchValidationAmount (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
   const originalFetch = global.fetch;
 
   const createTestValidationAmount = (overrides = {}): ValidationAmount => ({
@@ -30,11 +30,9 @@ describe("fetchValidationAmount (Isolated)", () => {
   });
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
     global.fetch = originalFetch;
   });
 
@@ -222,7 +220,7 @@ describe("fetchValidationAmount (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+            Accept: "application/json",
         },
       });
     });

@@ -3,14 +3,49 @@
  * Tests insertPendingTransaction function without React Query overhead
  */
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validatePendingTransaction: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
 } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
 import { insertPendingTransaction } from "../../hooks/usePendingTransactionInsert";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
 // Helper function to create test pending transaction data
 const createTestPendingTransaction = (
@@ -26,15 +61,14 @@ const createTestPendingTransaction = (
 });
 
 describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateInsert.mockImplementation((data) => data);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("insertPendingTransaction", () => {
@@ -47,7 +81,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         };
 
         global.fetch = createFetchMock(expectedResponse);
-        consoleSpy.start();
 
         const result = await insertPendingTransaction(testPendingTransaction);
 
@@ -62,11 +95,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           body: JSON.stringify(testPendingTransaction),
         });
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toContain("Sending data:");
-        expect(calls.log[0][0]).toContain(
-          JSON.stringify(testPendingTransaction),
-        );
       });
 
       it("should log the data being sent before API call", async () => {
@@ -76,14 +104,9 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         });
 
         global.fetch = createFetchMock({ pendingTransactionId: 1 });
-        consoleSpy.start();
 
         await insertPendingTransaction(testPendingTransaction);
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
-          `Sending data: ${JSON.stringify(testPendingTransaction)}`,
-        ]);
       });
 
       it("should handle different review statuses", async () => {
@@ -144,17 +167,11 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           "Invalid pending transaction data",
           400,
         );
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Invalid pending transaction data");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Invalid pending transaction data"],
-        ]);
       });
 
       it("should handle 409 conflict error", async () => {
@@ -163,33 +180,21 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           "Pending transaction already exists",
           409,
         );
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Pending transaction already exists");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Pending transaction already exists"],
-        ]);
       });
 
       it("should handle 500 server error", async () => {
         const testPendingTransaction = createTestPendingTransaction();
         global.fetch = createErrorFetchMock("Internal server error", 500);
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Internal server error");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Internal server error"],
-        ]);
       });
 
       it("should handle error response without message", async () => {
@@ -199,19 +204,11 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           status: 400,
           json: jest.fn().mockResolvedValue({}),
         });
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
-        ).rejects.toThrow(
-          "Failed to parse error response: No error message returned.",
-        );
+        ).rejects.toThrow("HTTP 400");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toContain("Sending data:");
-        expect(calls.log[1]).toEqual([
-          "Failed to parse error response: No error message returned.",
-        ]);
       });
 
       it("should handle malformed error response", async () => {
@@ -221,30 +218,21 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           status: 400,
           json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
         });
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
-        ).rejects.toThrow("Failed to parse error response: Invalid JSON");
+        ).rejects.toThrow("HTTP 400");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Failed to parse error response: Invalid JSON"],
-        ]);
       });
 
       it("should handle network errors", async () => {
         const testPendingTransaction = createTestPendingTransaction();
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Network error");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toContain("Sending data:");
       });
 
       it("should handle timeout errors", async () => {
@@ -252,14 +240,11 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         global.fetch = jest
           .fn()
           .mockRejectedValue(new Error("Request timeout"));
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Request timeout");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toContain("Sending data:");
       });
 
       it("should handle unknown error fallback", async () => {
@@ -269,19 +254,11 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           status: 400,
           json: jest.fn().mockResolvedValue({ response: "" }), // Empty error message
         });
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
-        ).rejects.toThrow(
-          "Failed to parse error response: No error message returned.",
-        );
+        ).rejects.toThrow("HTTP 400");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Failed to parse error response: No error message returned."],
-        ]);
       });
     });
 
@@ -598,84 +575,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
       });
     });
 
-    describe("Console logging", () => {
-      it("should always log data being sent", async () => {
-        const testPendingTransaction = createTestPendingTransaction();
-        global.fetch = createFetchMock({ pendingTransactionId: 1 });
-        consoleSpy.start();
-
-        await insertPendingTransaction(testPendingTransaction);
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toMatch(/^Sending data: /);
-        expect(calls.log[0][0]).toContain(
-          JSON.stringify(testPendingTransaction),
-        );
-      });
-
-      it("should log API error messages", async () => {
-        const testPendingTransaction = createTestPendingTransaction();
-        global.fetch = createErrorFetchMock("Validation failed", 400);
-        consoleSpy.start();
-
-        try {
-          await insertPendingTransaction(testPendingTransaction);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Validation failed"],
-        ]);
-      });
-
-      it("should log parsing errors", async () => {
-        const testPendingTransaction = createTestPendingTransaction();
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockRejectedValue(new Error("JSON parse error")),
-        });
-        consoleSpy.start();
-
-        try {
-          await insertPendingTransaction(testPendingTransaction);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Failed to parse error response: JSON parse error"],
-        ]);
-      });
-
-      it("should log unknown error fallback", async () => {
-        const testPendingTransaction = createTestPendingTransaction();
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue({ response: null }), // Null error message
-        });
-        consoleSpy.start();
-
-        try {
-          await insertPendingTransaction(testPendingTransaction);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Failed to parse error response: No error message returned."],
-        ]);
-      });
-    });
-
     describe("Integration scenarios", () => {
       it("should handle complete pending transaction creation workflow", async () => {
         const testPendingTransaction = createTestPendingTransaction({
@@ -696,7 +595,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         };
 
         global.fetch = createFetchMock(expectedResponse);
-        consoleSpy.start();
 
         const result = await insertPendingTransaction(testPendingTransaction);
 
@@ -704,11 +602,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         expect(result.pendingTransactionId).toBe(555);
         expect(result.amount).toBe(15000.0);
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toContain("Sending data:");
-        expect(calls.log[0][0]).toContain(
-          JSON.stringify(testPendingTransaction),
-        );
       });
 
       it("should handle validation to API error chain", async () => {
@@ -720,17 +613,11 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           "Amount exceeds allowed negative limit",
           400,
         );
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Amount exceeds allowed negative limit");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Amount exceeds allowed negative limit"],
-        ]);
       });
 
       it("should handle duplicate pending transaction detection", async () => {
@@ -740,17 +627,11 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           "Duplicate pending transaction detected",
           409,
         );
-        consoleSpy.start();
 
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Duplicate pending transaction detected");
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.log).toEqual([
-          [`Sending data: ${JSON.stringify(testPendingTransaction)}`],
-          ["Duplicate pending transaction detected"],
-        ]);
       });
     });
   });

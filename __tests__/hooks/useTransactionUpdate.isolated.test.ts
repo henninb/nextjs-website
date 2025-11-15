@@ -40,15 +40,12 @@ const processReceiptImageForTesting = (
 };
 
 describe("useTransactionUpdate Business Logic (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("isValidGuid", () => {
@@ -233,7 +230,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
             body: JSON.stringify(newTransaction),
           },
@@ -455,7 +452,7 @@ describe("useTransactionUpdate Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           }),
         );

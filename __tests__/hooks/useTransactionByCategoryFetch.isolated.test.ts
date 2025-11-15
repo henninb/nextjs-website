@@ -16,7 +16,7 @@ const fetchTransactionsByCategory = async (
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+            Accept: "application/json",
       },
     });
 
@@ -89,7 +89,7 @@ describe("useTransactionByCategoryFetch Business Logic (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           },
         );

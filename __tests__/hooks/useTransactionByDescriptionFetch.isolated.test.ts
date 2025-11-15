@@ -18,7 +18,7 @@ const fetchTransactionsByDescription = async (
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+            Accept: "application/json",
         },
       },
     );
@@ -92,7 +92,7 @@ describe("useTransactionByDescriptionFetch Business Logic (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           },
         );

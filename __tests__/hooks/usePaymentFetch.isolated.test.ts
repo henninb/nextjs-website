@@ -14,7 +14,7 @@ const fetchPaymentData = async (): Promise<Payment[]> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+            Accept: "application/json",
       },
     });
 

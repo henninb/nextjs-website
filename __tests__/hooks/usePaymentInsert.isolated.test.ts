@@ -9,6 +9,31 @@ import {
 } from "../../testHelpers";
 
 // Mock validation utilities
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validatePayment: jest.fn(),
@@ -25,7 +50,8 @@ jest.mock("../../utils/security/secureUUID", () => ({
 }));
 
 import { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
-import { hookValidators, DataValidator } from "../../utils/validation";
+import { HookValidator } from "../../utils/hookValidation";
+import { DataValidator } from "../../utils/validation";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
 
 describe("Payment Insert Functions (Isolated)", () => {
@@ -38,23 +64,15 @@ describe("Payment Insert Functions (Isolated)", () => {
     activeStatus: true,
   });
 
-  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
+  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
   const mockGenerateSecureUUID = generateSecureUUID as jest.Mock;
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
   let uuidCounter = 0;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
     uuidCounter = 0;
 
     // Reset validation mocks to default success state
-    mockValidateApiPayload.mockReturnValue({
-      isValid: true,
-      validatedData: mockPayment,
-      errors: null,
     });
 
     // Mock UUID generation to return unique UUIDs
@@ -67,7 +85,6 @@ describe("Payment Insert Functions (Isolated)", () => {
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("setupNewPayment function", () => {
@@ -143,10 +160,6 @@ describe("Payment Insert Functions (Isolated)", () => {
 
   describe("insertPayment function", () => {
     beforeEach(() => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: mockPayment,
-      });
     });
 
     describe("Successful insertion", () => {
@@ -170,7 +183,7 @@ describe("Payment Insert Functions (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           }),
         );
@@ -201,10 +214,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           sourceAccount: "sanitized_source",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: validatedPayment,
-        });
 
         global.fetch = createFetchMock(validatedPayment);
 
@@ -240,10 +249,6 @@ describe("Payment Insert Functions (Isolated)", () => {
       it("should handle validation failures", async () => {
         const validationError = { message: "Amount must be positive" };
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          errors: [validationError],
-        });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
           "Payment validation failed: Amount must be positive",
@@ -258,10 +263,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           { message: "Source account is required" },
         ];
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          errors: validationErrors,
-        });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
           "Payment validation failed: Amount must be positive, Source account is required",
@@ -269,10 +270,6 @@ describe("Payment Insert Functions (Isolated)", () => {
       });
 
       it("should handle validation failures without error details", async () => {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-        });
-
         await expect(insertPayment(mockPayment)).rejects.toThrow(
           "Payment validation failed: Validation failed",
         );
@@ -283,7 +280,7 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        expect(mockValidateApiPayload).toHaveBeenCalledWith(
+        expect(mockValidateInsert).toHaveBeenCalledWith(
           mockPayment,
           DataValidator.validatePayment,
           "insertPayment",
@@ -314,7 +311,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "HTTP error! Status: 400",
+          "HTTP 400",
         );
         expect(mockConsole.error).toHaveBeenCalledWith(
           expect.stringContaining("Failed to insert payment:"),
@@ -329,7 +326,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "HTTP error! Status: 400",
+          "HTTP 400",
         );
         expect(mockConsole.error).toHaveBeenCalledWith(
           expect.stringContaining("Failed to insert payment:"),
@@ -344,7 +341,7 @@ describe("Payment Insert Functions (Isolated)", () => {
         });
 
         await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "HTTP error! Status: 500",
+          "HTTP 500",
         );
         expect(mockConsole.error).toHaveBeenCalledWith(
           expect.stringContaining("Failed to insert payment:"),
@@ -417,7 +414,7 @@ describe("Payment Insert Functions (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-              Accept: "application/json",
+            Accept: "application/json",
             },
           }),
         );
@@ -486,10 +483,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           description: "Full payment test",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: fullPayment,
-        });
 
         const mockResponse = createTestPayment({ paymentId: 888 });
         global.fetch = createFetchMock(mockResponse);
@@ -513,10 +506,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           sourceAccount: "large_source",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: largePayment,
-        });
 
         const mockResponse = createTestPayment({ paymentId: 777 });
         global.fetch = createFetchMock(mockResponse);
@@ -532,10 +521,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           destinationAccount: "dest (special)",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: specialPayment,
-        });
 
         const mockResponse = createTestPayment({ paymentId: 666 });
         global.fetch = createFetchMock(mockResponse);
@@ -552,10 +537,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           guidDestination: undefined,
         };
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: paymentWithNulls,
-        });
 
         global.fetch = createFetchMock(mockPayment);
 
@@ -577,7 +558,7 @@ describe("Payment Insert Functions (Isolated)", () => {
 
         await insertPayment(mockPayment);
 
-        expect(mockValidateApiPayload).toHaveBeenCalled();
+        expect(mockValidateInsert).toHaveBeenCalled();
         expect(global.fetch).toHaveBeenCalled();
       });
 
@@ -592,10 +573,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           activeStatus: true, // Should be excluded by setupNewPayment
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: originalPayment,
-        });
 
         global.fetch = createFetchMock(originalPayment);
 
@@ -616,10 +593,6 @@ describe("Payment Insert Functions (Isolated)", () => {
           sourceAccount: "new_source",
         });
 
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: newPayment,
-        });
 
         const responsePayment = createTestPayment({
           paymentId: 555,

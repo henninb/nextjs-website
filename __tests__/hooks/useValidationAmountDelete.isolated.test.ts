@@ -23,6 +23,7 @@ const deleteValidationAmount = async (
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+            Accept: "application/json",
       },
     });
 
@@ -88,6 +89,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
+            Accept: "application/json",
             },
           },
         );
@@ -283,6 +285,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
+            Accept: "application/json",
             },
           }),
         );

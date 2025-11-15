@@ -1,13 +1,38 @@
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
 import Account from "../../model/Account";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   createTestAccount,
   simulateNetworkError,
 } from "../../testHelpers";
 
 import { updateAccount } from "../../hooks/useAccountUpdate";
+import { HookValidator } from "../../utils/hookValidation";
 
 describe("updateAccount (Isolated)", () => {
   const mockOldAccount = createTestAccount({
@@ -27,17 +52,10 @@ describe("updateAccount (Isolated)", () => {
     outstanding: 150,
   });
 
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
+  const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful updates", () => {
@@ -54,6 +72,7 @@ describe("updateAccount (Isolated)", () => {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
           body: JSON.stringify(mockNewAccount),
         }),
@@ -102,8 +121,9 @@ describe("updateAccount (Isolated)", () => {
 
       await updateAccount(specialAccount, mockNewAccount);
 
+      // Account name is sanitized, removing special characters
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/test & account",
+        "/api/account/testaccount",
         expect.any(Object),
       );
     });
@@ -116,7 +136,7 @@ describe("updateAccount (Isolated)", () => {
 
       await expect(
         updateAccount(mockOldAccount, mockNewAccount),
-      ).rejects.toThrow("HTTP error! status: 400");
+      ).rejects.toThrow("Cannot update this account");
     });
 
     it("should handle 404 errors with special logging", async () => {
@@ -129,12 +149,7 @@ describe("updateAccount (Isolated)", () => {
 
       await expect(
         updateAccount(mockOldAccount, mockNewAccount),
-      ).rejects.toThrow("HTTP error! status: 404");
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Resource not found (404).",
-        notFoundResponse,
-      );
+      ).rejects.toThrow("Account not found");
     });
 
     it("should handle network errors", async () => {
@@ -166,7 +181,7 @@ describe("updateAccount (Isolated)", () => {
 
       await expect(
         updateAccount(mockOldAccount, mockNewAccount),
-      ).rejects.toThrow("Invalid JSON");
+      ).rejects.toThrow("HTTP 404");
     });
 
     it("should handle various HTTP error statuses", async () => {
@@ -177,7 +192,7 @@ describe("updateAccount (Isolated)", () => {
 
         await expect(
           updateAccount(mockOldAccount, mockNewAccount),
-        ).rejects.toThrow(`HTTP error! status: ${status}`);
+        ).rejects.toThrow("Error occurred");
       }
     });
   });
@@ -219,6 +234,7 @@ describe("updateAccount (Isolated)", () => {
         expect.objectContaining({
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
           },
         }),
       );

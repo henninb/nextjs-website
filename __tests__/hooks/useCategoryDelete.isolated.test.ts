@@ -4,7 +4,41 @@ import {
   createModernErrorFetchMock,
 } from "../../testHelpers.modern";
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateCategory: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import { deleteCategory } from "../../hooks/useCategoryDelete";
+import { HookValidator } from "../../utils/hookValidation";
 
 describe("deleteCategory (Isolated)", () => {
   const mockCategory: Category = {
@@ -16,12 +50,12 @@ describe("deleteCategory (Isolated)", () => {
     dateUpdated: new Date(),
   };
 
+  const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset console.log spy if it exists
-    if (jest.isMockFunction(console.log)) {
-      (console.log as jest.Mock).mockRestore();
-    }
+    // Reset validation mock
+    mockValidateDelete.mockImplementation(() => {});
   });
 
   it("should delete category successfully with 204 status", async () => {
@@ -40,6 +74,7 @@ describe("deleteCategory (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+            Accept: "application/json",
         },
       },
     );
@@ -78,7 +113,7 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "HTTP error! Status: 400",
+      "HTTP 400",
     );
   });
 
@@ -90,7 +125,7 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "HTTP error! Status: 400",
+      "HTTP 400",
     );
   });
 
@@ -124,8 +159,9 @@ describe("deleteCategory (Isolated)", () => {
 
     await deleteCategory(categoryWithSpecialChars);
 
+    // Special characters are sanitized in category names
     expect(fetch).toHaveBeenCalledWith(
-      `/api/category/electronics & gadgets`,
+      `/api/category/electronics gadgets`,
       expect.any(Object),
     );
   });
@@ -138,7 +174,7 @@ describe("deleteCategory (Isolated)", () => {
     });
 
     await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "HTTP error! Status: 500",
+      "HTTP 500",
     );
   });
 
@@ -158,6 +194,7 @@ describe("deleteCategory (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+            Accept: "application/json",
         },
       }),
     );

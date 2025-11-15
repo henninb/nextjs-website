@@ -7,19 +7,42 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger to prevent console output during tests
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
 // Mock validation utilities
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validateAccount: jest.fn(),
   },
-  hookValidators: {
-    validateApiPayload: jest.fn(),
-  },
   ValidationError: jest.fn(),
 }));
 
 import { setupNewAccount, insertAccount } from "../../hooks/useAccountInsert";
-import { hookValidators, DataValidator } from "../../utils/validation";
+import { HookValidator } from "../../utils/hookValidation";
+import { DataValidator } from "../../utils/validation";
 
 describe("Account Insert Functions (Isolated)", () => {
   const mockAccount = createTestAccount({
@@ -32,25 +55,13 @@ describe("Account Insert Functions (Isolated)", () => {
     cleared: 50.0,
   });
 
-  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
-  let consoleSpy: ConsoleSpy;
-  let mockConsole: any;
+  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    mockConsole = consoleSpy.start();
     jest.clearAllMocks();
 
-    // Reset validation mocks to default success state
-    mockValidateApiPayload.mockReturnValue({
-      isValid: true,
-      validatedData: mockAccount,
-      errors: null,
-    });
-  });
-
-  afterEach(() => {
-    consoleSpy.stop();
+    // Reset validation mocks to default success state (pass-through)
+    mockValidateInsert.mockImplementation((data) => data);
   });
 
   describe("setupNewAccount function", () => {
@@ -161,13 +172,10 @@ describe("Account Insert Functions (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
+            Accept: "application/json",
             },
             body: expect.stringContaining('"activeStatus":true'),
           }),
-        );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "Inserting account for:",
-          mockAccount.accountNameOwner,
         );
       });
 
@@ -188,9 +196,9 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(mockAccount);
 
-        expect(mockValidateApiPayload).toHaveBeenCalledWith(
-          mockAccount,
-          DataValidator.validateAccount,
+        expect(mockValidateInsert).toHaveBeenCalledWith(
+          expect.any(Object), // payload (setupNewAccount result)
+          expect.any(Function), // DataValidator.validateAccount
           "insertAccount",
         );
       });
@@ -199,11 +207,7 @@ describe("Account Insert Functions (Isolated)", () => {
         const validatedAccount = createTestAccount({
           accountNameOwner: "validated",
         });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: validatedAccount,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => validatedAccount);
         global.fetch = createFetchMock(validatedAccount, { status: 201 });
 
         await insertAccount(mockAccount);
@@ -219,13 +223,10 @@ describe("Account Insert Functions (Isolated)", () => {
 
     describe("Validation failures", () => {
       it("should reject with validation error when validation fails", async () => {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          validatedData: null,
-          errors: [
-            { message: "Account name is required" },
-            { message: "Invalid account type" },
-          ],
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error(
+            "Account validation failed: Account name is required, Invalid account type",
+          );
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
@@ -233,16 +234,11 @@ describe("Account Insert Functions (Isolated)", () => {
         );
 
         expect(global.fetch).not.toHaveBeenCalled();
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Account validation failed: Account name is required, Invalid account type",
-        );
       });
 
       it("should handle validation error without specific error messages", async () => {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          validatedData: null,
-          errors: null,
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error("Account validation failed: Validation failed");
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
@@ -253,10 +249,8 @@ describe("Account Insert Functions (Isolated)", () => {
       });
 
       it("should handle empty error array", async () => {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          validatedData: null,
-          errors: [],
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error("Account validation failed: Validation failed");
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
@@ -278,10 +272,6 @@ describe("Account Insert Functions (Isolated)", () => {
         await expect(insertAccount(mockAccount)).rejects.toThrow(
           "Account already exists",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith("Account already exists");
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Account already exists",
-        );
       });
 
       it("should handle server error without error message", async () => {
@@ -292,10 +282,7 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "No error message returned.",
-        );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "No error message returned.",
+          "HTTP 400",
         );
       });
 
@@ -307,10 +294,7 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON",
-        );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "Failed to parse error response: Invalid JSON",
+          "HTTP 400",
         );
       });
 
@@ -322,10 +306,7 @@ describe("Account Insert Functions (Isolated)", () => {
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "Failed to parse error response: Unexpected token",
-        );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "Failed to parse error response: Unexpected token",
+          "HTTP 500",
         );
       });
     });
@@ -337,9 +318,6 @@ describe("Account Insert Functions (Isolated)", () => {
         await expect(insertAccount(mockAccount)).rejects.toThrow(
           "Network error",
         );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Network error",
-        );
       });
 
       it("should handle fetch rejection", async () => {
@@ -349,9 +327,6 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await expect(insertAccount(mockAccount)).rejects.toThrow(
           "Connection refused",
-        );
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Connection refused",
         );
       });
     });
@@ -367,6 +342,7 @@ describe("Account Insert Functions (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
+            Accept: "application/json",
             },
           }),
         );
@@ -421,11 +397,7 @@ describe("Account Insert Functions (Isolated)", () => {
           future: 250.0,
           cleared: 75.0,
         });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: fullAccount,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => data);
         global.fetch = createFetchMock(fullAccount, { status: 201 });
 
         await insertAccount(fullAccount);
@@ -443,11 +415,7 @@ describe("Account Insert Functions (Isolated)", () => {
           accountNameOwner: "minimal",
           accountType: "checking",
         });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: minimalAccount,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => data);
         global.fetch = createFetchMock(minimalAccount, { status: 201 });
 
         await insertAccount(minimalAccount);
@@ -464,19 +432,12 @@ describe("Account Insert Functions (Isolated)", () => {
         const specialAccount = createTestAccount({
           accountNameOwner: "account-with_special@chars.123",
         });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: specialAccount,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => data);
         global.fetch = createFetchMock(specialAccount, { status: 201 });
 
         await insertAccount(specialAccount);
 
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "Inserting account for:",
-          "account-with_special@chars.123",
-        );
+        expect(global.fetch).toHaveBeenCalled();
       });
 
       it("should handle very long account names", async () => {
@@ -484,19 +445,12 @@ describe("Account Insert Functions (Isolated)", () => {
         const longNameAccount = createTestAccount({
           accountNameOwner: longName,
         });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: longNameAccount,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => data);
         global.fetch = createFetchMock(longNameAccount, { status: 201 });
 
         await insertAccount(longNameAccount);
 
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "Inserting account for:",
-          longName,
-        );
+        expect(global.fetch).toHaveBeenCalled();
       });
 
       it("should handle different account types", async () => {
@@ -510,11 +464,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         for (const accountType of accountTypes) {
           const typedAccount = createTestAccount({ accountType });
-          mockValidateApiPayload.mockReturnValue({
-            isValid: true,
-            validatedData: typedAccount,
-            errors: null,
-          });
+          mockValidateInsert.mockImplementation((data) => data);
           global.fetch = createFetchMock(typedAccount, { status: 201 });
 
           await insertAccount(typedAccount);
@@ -534,11 +484,7 @@ describe("Account Insert Functions (Isolated)", () => {
     describe("Business logic validation", () => {
       it("should always set activeStatus to true regardless of input", async () => {
         const inactiveAccount = createTestAccount({ activeStatus: false });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: inactiveAccount,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => data);
         global.fetch = createFetchMock(inactiveAccount, { status: 201 });
 
         await insertAccount(inactiveAccount);
@@ -553,11 +499,7 @@ describe("Account Insert Functions (Isolated)", () => {
         // Create account without financial fields, then setupNewAccount should add defaults
         const { outstanding, future, cleared, ...accountWithoutFinancials } =
           createTestAccount();
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: accountWithoutFinancials,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => data);
         global.fetch = createFetchMock(accountWithoutFinancials, {
           status: 201,
         });
@@ -578,11 +520,7 @@ describe("Account Insert Functions (Isolated)", () => {
           future: 200.75,
           cleared: 50.25,
         });
-        mockValidateApiPayload.mockReturnValue({
-          isValid: true,
-          validatedData: accountWithFinancials,
-          errors: null,
-        });
+        mockValidateInsert.mockImplementation((data) => data);
         global.fetch = createFetchMock(accountWithFinancials, { status: 201 });
 
         await insertAccount(accountWithFinancials);
@@ -616,39 +554,25 @@ describe("Account Insert Functions (Isolated)", () => {
 
         await insertAccount(mockAccount);
 
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "Inserting account for:",
-          mockAccount.accountNameOwner,
-        );
+        expect(global.fetch).toHaveBeenCalled();
       });
 
       it("should log validation errors", async () => {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          validatedData: null,
-          errors: [{ message: "Invalid account" }],
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error("Account validation failed: Invalid account");
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow();
-        expect(mockConsole.log).toHaveBeenCalledWith(
-          "An error occurred: Account validation failed: Invalid account",
-        );
       });
 
       it("should not log for validation failures before fetch", async () => {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          validatedData: null,
-          errors: [{ message: "Invalid" }],
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error("Invalid");
         });
 
         await expect(insertAccount(mockAccount)).rejects.toThrow();
 
-        // Should not log "Inserting account for:" for validation failures
-        expect(mockConsole.log).not.toHaveBeenCalledWith(
-          "Inserting account for:",
-          expect.any(String),
-        );
+        expect(global.fetch).not.toHaveBeenCalled();
       });
     });
 

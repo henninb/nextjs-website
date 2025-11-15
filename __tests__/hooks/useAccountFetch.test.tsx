@@ -124,8 +124,6 @@ describe("useAccountFetch", () => {
       }),
     );
 
-    const consoleSpy = jest.spyOn(console, "error");
-
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),
     });
@@ -138,13 +136,9 @@ describe("useAccountFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("Failed to fetch");
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching account data:",
-      expect.anything(),
-    );
+    expect(result.current.error?.message).toContain("Internal server error");
+    // Logging tested in logger.test.ts
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 
@@ -176,8 +170,6 @@ describe("useAccountFetch", () => {
     const originalFetch = global.fetch;
     global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
 
-    const consoleSpy = jest.spyOn(console, "error");
-
     const { result } = renderHook(() => useAccountFetch(), {
       wrapper: createWrapper(queryClient),
     });
@@ -190,12 +182,9 @@ describe("useAccountFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Error fetching account data:",
-      expect.anything(),
-    );
+    expect(result.current.error?.message).toContain("Network failure");
+    // Logging tested in logger.test.ts
 
-    consoleSpy.mockRestore();
     global.fetch = originalFetch;
   });
 

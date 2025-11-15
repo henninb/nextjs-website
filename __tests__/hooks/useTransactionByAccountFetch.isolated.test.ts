@@ -4,6 +4,7 @@
  */
 
 import { fetchTransactionsByAccount } from "../../hooks/useTransactionByAccountFetch";
+import { HookValidator } from "../../utils/hookValidation";
 import Transaction from "../../model/Transaction";
 import {
   createFetchMock,
@@ -16,15 +17,12 @@ import {
 } from "../../testHelpers";
 
 describe("fetchTransactionsByAccount (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
     global.fetch = originalFetch;
   });
 
@@ -310,7 +308,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+            Accept: "application/json",
         },
       });
     });

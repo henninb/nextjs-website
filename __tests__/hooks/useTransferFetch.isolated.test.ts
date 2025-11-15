@@ -19,7 +19,7 @@ const fetchTransferData = async (): Promise<Transfer[]> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+            Accept: "application/json",
       },
     });
 

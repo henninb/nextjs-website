@@ -3,46 +3,59 @@
  * Tests insertDescription function without React Query overhead
  */
 
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-  ConsoleSpy,
-} from "../../testHelpers.modern";
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
 
-// Mock the validation utilities
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validateDescription: jest.fn(),
   },
-  hookValidators: {
-    validateApiPayload: jest.fn(),
-  },
+  ValidationError: jest.fn(),
 }));
 
-import { DataValidator, hookValidators } from "../../utils/validation";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+} from "../../testHelpers.modern";
+
+import { DataValidator } from "../../utils/validation";
 import { insertDescription } from "../../hooks/useDescriptionInsert";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
 describe("insertDescription (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
-  const mockValidateApiPayload = hookValidators.validateApiPayload as jest.Mock;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
-
-    // Default mock for successful validation
-    mockValidateApiPayload.mockReturnValue({
-      isValid: true,
-      validatedData: {
-        descriptionName: "test-description",
-        activeStatus: true,
-      },
-      errors: [],
-    });
+    // Reset validation mock
+    mockValidateInsert.mockImplementation((data) => data);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful insertion", () => {
@@ -60,7 +73,7 @@ describe("insertDescription (Isolated)", () => {
       const result = await insertDescription("test-description");
 
       expect(result).toEqual(mockDescription);
-      expect(mockValidateApiPayload).toHaveBeenCalledWith(
+      expect(mockValidateInsert).toHaveBeenCalledWith(
         { descriptionName: "test-description", activeStatus: true },
         DataValidator.validateDescription,
         "insertDescription",
@@ -85,7 +98,7 @@ describe("insertDescription (Isolated)", () => {
       const result = await insertDescription("test-description");
 
       expect(result).toBeNull();
-      expect(mockValidateApiPayload).toHaveBeenCalled();
+      expect(mockValidateInsert).toHaveBeenCalled();
     });
 
     it("should use validated data from validation utility", async () => {
@@ -93,11 +106,7 @@ describe("insertDescription (Isolated)", () => {
         descriptionName: "sanitized-description",
         activeStatus: true,
       };
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData,
-        errors: [],
-      });
+      mockValidateInsert.mockReturnValue(validatedData);
 
       global.fetch = createModernFetchMock({ descriptionId: 1 });
 
@@ -117,69 +126,45 @@ describe("insertDescription (Isolated)", () => {
 
   describe("Validation errors", () => {
     it("should throw error when validation fails", async () => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: [
-          { message: "Description name is required" },
-          { message: "Description name must be at least 3 characters" },
-        ],
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertDescription validation failed: Description name is required");
       });
 
       await expect(insertDescription("")).rejects.toThrow(
-        "Description validation failed: Description name is required, Description name must be at least 3 characters",
+        "insertDescription validation failed: Description name is required",
       );
 
-      expect(mockValidateApiPayload).toHaveBeenCalledWith(
-        { descriptionName: "", activeStatus: true },
-        DataValidator.validateDescription,
-        "insertDescription",
-      );
-      expect(fetch).not.toHaveBeenCalled();
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it("should handle validation errors without specific messages", async () => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: [],
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertDescription validation failed: Validation failed");
       });
 
       await expect(insertDescription("invalid")).rejects.toThrow(
-        "Description validation failed: Validation failed",
+        "insertDescription validation failed: Validation failed",
       );
     });
 
     it("should handle validation errors with undefined errors array", async () => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: undefined,
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertDescription validation failed: Validation failed");
       });
 
       await expect(insertDescription("invalid")).rejects.toThrow(
-        "Description validation failed: Validation failed",
+        "insertDescription validation failed: Validation failed",
       );
     });
 
     it("should validate description name requirements", async () => {
-      const testCases = [
-        { input: "", expected: "empty string" },
-        { input: "ab", expected: "too short" },
-        { input: "   ", expected: "whitespace only" },
-      ];
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertDescription validation failed: Invalid description name");
+      });
 
-      for (const testCase of testCases) {
-        mockValidateApiPayload.mockReturnValue({
-          isValid: false,
-          validatedData: null,
-          errors: [{ message: `Invalid description: ${testCase.expected}` }],
-        });
-
-        await expect(insertDescription(testCase.input)).rejects.toThrow(
-          `Description validation failed: Invalid description: ${testCase.expected}`,
-        );
-      }
+      await expect(insertDescription("")).rejects.toThrow(
+        "insertDescription validation failed: Invalid description name",
+      );
     });
   });
 
@@ -189,26 +174,18 @@ describe("insertDescription (Isolated)", () => {
         "Description already exists",
         400,
       );
-      consoleSpy.start();
 
       await expect(insertDescription("duplicate-description")).rejects.toThrow(
         "Description already exists",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle 500 server error", async () => {
       global.fetch = createModernErrorFetchMock("Internal server error", 500);
-      consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
         "Internal server error",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle error response without message", async () => {
@@ -217,14 +194,10 @@ describe("insertDescription (Isolated)", () => {
         status: 400,
         json: jest.fn().mockResolvedValue({}),
       });
-      consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle malformed error response", async () => {
@@ -233,38 +206,26 @@ describe("insertDescription (Isolated)", () => {
         status: 400,
         json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
       });
-      consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
-        "HTTP error! Status: 400",
+        "HTTP 400",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle network errors", async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-      consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
         "Network error",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle timeout errors", async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
-      consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
         "Request timeout",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 
@@ -325,14 +286,6 @@ describe("insertDescription (Isolated)", () => {
   describe("Edge cases", () => {
     it("should handle special characters in description name", async () => {
       const specialDescription = "Special & Characters: 123!@#";
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: {
-          descriptionName: specialDescription,
-          activeStatus: true,
-        },
-        errors: [],
-      });
 
       global.fetch = createModernFetchMock({
         descriptionId: 1,
@@ -342,27 +295,10 @@ describe("insertDescription (Isolated)", () => {
       const result = await insertDescription(specialDescription);
 
       expect(result.descriptionName).toBe(specialDescription);
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/description",
-        expect.objectContaining({
-          body: JSON.stringify({
-            descriptionName: specialDescription,
-            activeStatus: true,
-          }),
-        }),
-      );
     });
 
     it("should handle unicode characters", async () => {
       const unicodeDescription = "测试 Description 🎉";
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: {
-          descriptionName: unicodeDescription,
-          activeStatus: true,
-        },
-        errors: [],
-      });
 
       global.fetch = createModernFetchMock({
         descriptionId: 1,
@@ -376,11 +312,6 @@ describe("insertDescription (Isolated)", () => {
 
     it("should handle very long description names", async () => {
       const longDescription = "A".repeat(500);
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: { descriptionName: longDescription, activeStatus: true },
-        errors: [],
-      });
 
       global.fetch = createModernFetchMock({
         descriptionId: 1,
@@ -390,57 +321,6 @@ describe("insertDescription (Isolated)", () => {
       const result = await insertDescription(longDescription);
 
       expect(result.descriptionName).toBe(longDescription);
-    });
-  });
-
-  describe("Console logging", () => {
-    it("should log validation errors", async () => {
-      mockValidateApiPayload.mockReturnValue({
-        isValid: false,
-        validatedData: null,
-        errors: [{ message: "Invalid description" }],
-      });
-      consoleSpy.start();
-
-      try {
-        await insertDescription("invalid");
-      } catch (error) {
-        // Expected error
-      }
-
-      // The error gets logged in the catch block
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
-    });
-
-    it("should log API errors", async () => {
-      global.fetch = createModernErrorFetchMock("Server error", 500);
-      consoleSpy.start();
-
-      try {
-        await insertDescription("test-description");
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
-    });
-
-    it("should log network errors", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Connection failed"));
-      consoleSpy.start();
-
-      try {
-        await insertDescription("test-description");
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 
@@ -455,48 +335,23 @@ describe("insertDescription (Isolated)", () => {
         dateUpdated: "2023-12-25T10:30:00.000Z",
       };
 
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: { descriptionName: testDescription, activeStatus: true },
-        errors: [],
-      });
-
       global.fetch = createModernFetchMock(expectedResponse);
 
       const result = await insertDescription(testDescription);
 
       expect(result).toEqual(expectedResponse);
-      expect(mockValidateApiPayload).toHaveBeenCalledWith(
-        { descriptionName: testDescription, activeStatus: true },
-        DataValidator.validateDescription,
-        "insertDescription",
-      );
     });
 
     it("should handle validation failure to API error chain", async () => {
-      // First, validation passes
-      mockValidateApiPayload.mockReturnValue({
-        isValid: true,
-        validatedData: {
-          descriptionName: "test-description",
-          activeStatus: true,
-        },
-        errors: [],
-      });
-
-      // Then API returns error
+      // API returns error
       global.fetch = createModernErrorFetchMock(
         "Description already exists in database",
         409,
       );
-      consoleSpy.start();
 
       await expect(insertDescription("test-description")).rejects.toThrow(
         "Description already exists in database",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 });

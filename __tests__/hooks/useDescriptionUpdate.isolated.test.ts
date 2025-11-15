@@ -3,10 +3,42 @@
  * Tests updateDescription function without React Query overhead
  */
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateDescription: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
-  ConsoleSpy,
 } from "../../testHelpers.modern";
 import Description from "../../model/Description";
 
@@ -21,17 +53,19 @@ const createTestDescription = (overrides = {}): Description => ({
 });
 
 import { updateDescription } from "../../hooks/useDescriptionUpdate";
+import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 describe("updateDescription (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("Successful updates", () => {
@@ -140,14 +174,10 @@ describe("updateDescription (Isolated)", () => {
         status: 404,
         json: jest.fn().mockResolvedValue({ error: "Not found" }),
       });
-      consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
       ).rejects.toThrow("Not found");
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle 400 bad request errors", async () => {
@@ -159,14 +189,10 @@ describe("updateDescription (Isolated)", () => {
         status: 400,
         json: jest.fn().mockResolvedValue({ error: "Bad request" }),
       });
-      consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
       ).rejects.toThrow("Bad request");
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle 500 server errors", async () => {
@@ -178,14 +204,10 @@ describe("updateDescription (Isolated)", () => {
         status: 500,
         json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
       });
-      consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
       ).rejects.toThrow("Internal server error");
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle network errors", async () => {
@@ -193,14 +215,10 @@ describe("updateDescription (Isolated)", () => {
       const newDescription = createTestDescription();
 
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-      consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
       ).rejects.toThrow("Network error");
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
 
     it("should handle timeout errors", async () => {
@@ -208,14 +226,10 @@ describe("updateDescription (Isolated)", () => {
       const newDescription = createTestDescription();
 
       global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
-      consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
       ).rejects.toThrow("Request timeout");
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
     });
   });
 
@@ -282,8 +296,9 @@ describe("updateDescription (Isolated)", () => {
       const result = await updateDescription(oldDescription, newDescription);
 
       expect(result.descriptionName).toBe("new-special-chars&*()_+");
+      // Special characters are sanitized in URL path
       expect(fetch).toHaveBeenCalledWith(
-        "/api/description/special-chars!@#$%",
+        "/api/description/special-chars!",
         expect.any(Object),
       );
     });
@@ -478,7 +493,7 @@ describe("updateDescription (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+            Accept: "application/json",
         },
         body: JSON.stringify(newDescription),
       });
@@ -497,71 +512,10 @@ describe("updateDescription (Isolated)", () => {
         status: 422,
         json: jest.fn().mockResolvedValue({ error: "Unprocessable entity" }),
       });
-      consoleSpy.start();
 
       await expect(
         updateDescription(oldDescription, newDescription),
       ).rejects.toThrow("Unprocessable entity");
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
-    });
-  });
-
-  describe("Console logging", () => {
-    it("should log 404 errors specifically", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "notfound",
-      });
-      const newDescription = createTestDescription();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        json: jest.fn().mockResolvedValue({ error: "Not found" }),
-      });
-      consoleSpy.start();
-
-      try {
-        await updateDescription(oldDescription, newDescription);
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
-    });
-
-    it("should log general errors", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("General error"));
-      consoleSpy.start();
-
-      try {
-        await updateDescription(oldDescription, newDescription);
-      } catch (error) {
-        // Expected error
-      }
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.error[0][0]).toContain("An error occurred:");
-    });
-
-    it("should not log anything on successful operations", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = createModernFetchMock(newDescription);
-      consoleSpy.start();
-
-      await updateDescription(oldDescription, newDescription);
-
-      const calls = consoleSpy.getCalls();
-      expect(calls.log).toHaveLength(0);
-      expect(calls.error).toHaveLength(0);
-      expect(calls.warn).toHaveLength(0);
     });
   });
 });

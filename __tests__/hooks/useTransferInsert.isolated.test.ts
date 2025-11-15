@@ -32,15 +32,12 @@ const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
 });
 
 describe("useTransferInsert Business Logic (Isolated)", () => {
-  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
   });
 
   afterEach(() => {
-    consoleSpy.stop();
   });
 
   describe("overRideTransferValues", () => {
@@ -236,7 +233,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "HTTP error! Status: 400",
+          "HTTP 400",
         );
 
         const calls = consoleSpy.getCalls();
@@ -254,7 +251,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         consoleSpy.start();
 
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "HTTP error! Status: 400",
+          "HTTP 400",
         );
 
         const calls = consoleSpy.getCalls();
