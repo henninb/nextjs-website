@@ -4,6 +4,54 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import usePaymentFetch from "../../hooks/usePaymentFetch";
 import Payment from "../../model/Payment";
+import { createModernErrorFetchMock } from "../../testHelpers.modern";
+
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
+
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value) => value),
+  },
+}));
+
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
 
 jest.mock("next/router", () => ({
   useRouter: () => ({
@@ -14,6 +62,7 @@ jest.mock("next/router", () => ({
     query: {},
   }),
 }));
+
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -68,10 +117,6 @@ describe("Payment Update Integration Test", () => {
     await waitFor(() => expect(fetchResult.current.isSuccess).toBe(true));
 
     const payments = fetchResult.current.data || [];
-    console.log(
-      "Available payments:",
-      payments.map((p) => ({ id: p.paymentId, amount: p.amount })),
-    );
 
     // Test updating a payment that exists (ID 1)
     const existingPayment: Payment = {
@@ -124,11 +169,7 @@ describe("Payment Update Integration Test", () => {
     };
 
     // Mock 404 response for non-existent payment
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response("Payment not found", { status: 404 }),
-      );
+    global.fetch = createModernErrorFetchMock("Payment not found", 404);
 
     const { result: updateNonExistentResult } = renderHook(
       () => usePaymentUpdate(),
@@ -137,17 +178,11 @@ describe("Payment Update Integration Test", () => {
       },
     );
 
-    updateNonExistentResult.current.mutate({
-      oldPayment: nonExistentPayment,
-      newPayment: updatedNonExistentPayment,
-    });
-
-    // Modern version should error on 404, not return fallback
-    await waitFor(() =>
-      expect(updateNonExistentResult.current.isError).toBe(true),
-    );
-
-    // Should have an error message about not found
-    expect(updateNonExistentResult.current.error?.message).toContain("404");
+    await expect(
+      updateNonExistentResult.current.mutateAsync({
+        oldPayment: nonExistentPayment,
+        newPayment: updatedNonExistentPayment,
+      }),
+    ).rejects.toThrow("Payment not found");
   });
 });

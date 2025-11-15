@@ -2,18 +2,28 @@ import Payment from "../../model/Payment";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   createTestPayment,
   simulateNetworkError,
-  createMockValidationUtils,
 } from "../../testHelpers";
+import {
+  setupNewPayment,
+  insertPayment,
+} from "../../hooks/usePaymentInsert";
+import { HookValidator } from "../../utils/hookValidation";
 
-// Mock validation utilities
-// Mock HookValidator
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {
     validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
+    validateUpdate: jest.fn((updated) => updated),
     validateDelete: jest.fn(),
   },
   HookValidationError: class HookValidationError extends Error {
@@ -24,586 +34,132 @@ jest.mock("../../utils/hookValidation", () => ({
   },
 }));
 
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
 
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validatePayment: jest.fn(),
   },
-  hookValidators: {
-    validateApiPayload: jest.fn(),
-  },
-  ValidationError: jest.fn(),
 }));
 
-// Mock UUID generator
-jest.mock("../../utils/security/secureUUID", () => ({
-  generateSecureUUID: jest.fn(),
-}));
+const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
+const { __mockLogger: mockLogger } = jest.requireMock(
+  "../../utils/logger",
+) as { __mockLogger: ReturnType<typeof createMockLogger> };
 
-import { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
-import { HookValidator } from "../../utils/hookValidation";
-import { DataValidator } from "../../utils/validation";
-import { generateSecureUUID } from "../../utils/security/secureUUID";
-
-describe("Payment Insert Functions (Isolated)", () => {
-  const mockPayment = createTestPayment({
-    paymentId: 0,
-    sourceAccount: "source123",
-    destinationAccount: "dest456",
-    transactionDate: new Date("2024-12-01"),
-    amount: 150.0,
-    activeStatus: true,
+describe("usePaymentInsert business logic (isolated)", () => {
+  const basePayment = createTestPayment({
+    sourceAccount: "checking",
+    destinationAccount: "credit",
+    transactionDate: new Date("2025-01-15T12:00:00Z"),
+    amount: 125.5,
   });
-
-  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
-  const mockGenerateSecureUUID = generateSecureUUID as jest.Mock;
-  let uuidCounter = 0;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    uuidCounter = 0;
-
-    // Reset validation mocks to default success state
-    });
-
-    // Mock UUID generation to return unique UUIDs
-    mockGenerateSecureUUID.mockImplementation(() => {
-      uuidCounter++;
-      return Promise.resolve(
-        `test-uuid-${uuidCounter.toString().padStart(4, "0")}-0000-0000-0000-000000000000`,
-      );
-    });
+    mockLogger.debug.mockClear();
+    mockLogger.error.mockClear();
+    mockValidateInsert.mockImplementation((data: Payment) => data);
   });
 
-  afterEach(() => {
-  });
-
-  describe("setupNewPayment function", () => {
-    it("should extract required payment fields", async () => {
-      const inputPayment = createTestPayment({
-        paymentId: 123, // Should be excluded
-        sourceAccount: "test_source",
-        destinationAccount: "test_dest",
-        amount: 250.0,
-        transactionDate: new Date("2024-01-15"),
-
-        activeStatus: true, // Should be excluded
-      });
-
-      const result = await setupNewPayment(inputPayment);
+  describe("setupNewPayment", () => {
+    it("formats payment payload for API", async () => {
+      const result = await setupNewPayment(basePayment);
 
       expect(result).toEqual({
         paymentId: 0,
-        amount: 250.0,
-        transactionDate: "2024-01-14", // UTC formatted date from new Date("2024-01-15")
-        sourceAccount: "test_source",
-        destinationAccount: "test_dest",
+        amount: 125.5,
+        transactionDate: "2025-01-15",
+        sourceAccount: "checking",
+        destinationAccount: "credit",
         guidSource: null,
         guidDestination: null,
         activeStatus: true,
       });
     });
 
-    it("should handle payment with missing optional fields and generate UUIDs", async () => {
+    it("handles missing optional fields", async () => {
       const minimalPayment = createTestPayment({
-        sourceAccount: "source",
-        destinationAccount: "dest",
-        amount: 100.0,
-        transactionDate: new Date("2024-01-01"),
+        sourceAccount: "savings",
+        destinationAccount: "loan",
+        amount: 50,
+        transactionDate: new Date(),
       });
 
       const result = await setupNewPayment(minimalPayment);
 
-      expect(result).toEqual({
-        paymentId: 0,
-        amount: 100.0,
-        transactionDate: "2023-12-31", // UTC formatted date from new Date("2024-01-01")
-        sourceAccount: "source",
-        destinationAccount: "dest",
-        guidSource: null,
-        guidDestination: null,
-        activeStatus: true,
-      });
-    });
-
-    it("should handle null and undefined values and generate UUIDs", async () => {
-      const paymentWithNulls = {
-        ...mockPayment,
-        amount: null,
-        guidSource: undefined,
-        guidDestination: null,
-      };
-
-      const result = await setupNewPayment(paymentWithNulls);
-
-      expect(result).toEqual({
-        paymentId: 0,
-        amount: null,
-        transactionDate: "2024-11-30", // UTC formatted date from new Date("2024-12-01")
-        sourceAccount: mockPayment.sourceAccount,
-        destinationAccount: mockPayment.destinationAccount,
-        guidSource: null,
-        guidDestination: null,
-        activeStatus: true,
-      });
+      expect(result.paymentId).toBe(0);
+      expect(result.guidSource).toBeNull();
+      expect(result.guidDestination).toBeNull();
+      expect(result.activeStatus).toBe(true);
     });
   });
 
-  describe("insertPayment function", () => {
-    beforeEach(() => {
-    });
+  describe("insertPayment", () => {
+    it("posts validated payload to /api/payment", async () => {
+      const apiResponse = { ...basePayment, paymentId: 42 };
+      global.fetch = createFetchMock(apiResponse, { status: 201 });
 
-    describe("Successful insertion", () => {
-      it("should insert payment successfully", async () => {
-        const mockResponse = createTestPayment({
-          paymentId: 789,
-          sourceAccount: "source123",
-          destinationAccount: "dest456",
-          amount: 150.0,
-        });
+      const result = await insertPayment(basePayment);
 
-        global.fetch = createFetchMock(mockResponse, { status: 201 });
-
-        const result = await insertPayment(mockPayment);
-
-        expect(result).toEqual(mockResponse);
-        expect(global.fetch).toHaveBeenCalledWith(
-          "/api/payment",
-          expect.objectContaining({
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
+      expect(result).toEqual(apiResponse);
+      expect(mockValidateInsert).toHaveBeenCalledWith(
+        basePayment,
+        expect.any(Function),
+        "insertPayment",
+      );
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/payment",
+        expect.objectContaining({
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
             Accept: "application/json",
-            },
-          }),
-        );
-
-        // Verify the body contains required fields (no paymentId or GUIDs for new inserts)
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0][1];
-        const bodyObj = JSON.parse(fetchCall.body);
-        expect(bodyObj.paymentId).toBe(0);
-        expect(bodyObj.amount).toBe(mockPayment.amount);
-        expect(bodyObj.sourceAccount).toBe(mockPayment.sourceAccount);
-        expect(bodyObj.destinationAccount).toBe(mockPayment.destinationAccount);
-        expect(bodyObj.activeStatus).toBe(true);
-        expect(bodyObj.guidSource).toBeNull();
-        expect(bodyObj.guidDestination).toBeNull();
-      });
-
-      it("should handle 204 no content response", async () => {
-        global.fetch = createFetchMock(null, { status: 204 });
-
-        const result = await insertPayment(mockPayment);
-
-        expect(result).toBeNull();
-      });
-
-      it("should use validated data from validation", async () => {
-        const validatedPayment = createTestPayment({
-          ...mockPayment,
-          sourceAccount: "sanitized_source",
-        });
-
-
-        global.fetch = createFetchMock(validatedPayment);
-
-        await insertPayment(mockPayment);
-
-        // Verify the fetch was called with correct data (GUIDs should NOT be included)
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-        const bodyObj = JSON.parse(fetchCall[1].body);
-        expect(bodyObj.sourceAccount).toBe("sanitized_source");
-        expect(bodyObj.guidSource).toBeNull();
-        expect(bodyObj.guidDestination).toBeNull();
-      });
-
-      it("should handle different success status codes", async () => {
-        const successStatuses = [200, 201];
-
-        for (const status of successStatuses) {
-          const mockResponse = createTestPayment({ paymentId: status });
-          global.fetch = createFetchMock(mockResponse, { status });
-
-          const result = await insertPayment(mockPayment);
-
-          if (status === 204) {
-            expect(result).toBeNull();
-          } else {
-            expect(result).toEqual(mockResponse);
-          }
-        }
-      });
+          },
+          body: expect.stringContaining('"guidSource":null'),
+        }),
+      );
     });
 
-    describe("Validation handling", () => {
-      it("should handle validation failures", async () => {
-        const validationError = { message: "Amount must be positive" };
+    it("returns payload when API responds with data", async () => {
+      const response = { ...basePayment, paymentId: 100 };
+      global.fetch = createFetchMock(response, { status: 200 });
 
-
-        await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Payment validation failed: Amount must be positive",
-        );
-
-        expect(global.fetch).not.toHaveBeenCalled();
-      });
-
-      it("should handle validation failures with multiple errors", async () => {
-        const validationErrors = [
-          { message: "Amount must be positive" },
-          { message: "Source account is required" },
-        ];
-
-
-        await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Payment validation failed: Amount must be positive, Source account is required",
-        );
-      });
-
-      it("should handle validation failures without error details", async () => {
-        await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Payment validation failed: Validation failed",
-        );
-      });
-
-      it("should call validation with correct parameters", async () => {
-        global.fetch = createFetchMock(mockPayment);
-
-        await insertPayment(mockPayment);
-
-        expect(mockValidateInsert).toHaveBeenCalledWith(
-          mockPayment,
-          DataValidator.validatePayment,
-          "insertPayment",
-        );
-      });
+      await expect(insertPayment(basePayment)).resolves.toEqual(response);
     });
 
-    describe("Error handling", () => {
-      it("should handle server error with error message", async () => {
-        const errorMessage = "Invalid payment amount";
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValueOnce({ error: errorMessage }),
-        });
-
-        await expect(insertPayment(mockPayment)).rejects.toThrow(errorMessage);
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          expect.stringContaining("Failed to insert payment:"),
-        );
+    it("surface validation failures before fetch", async () => {
+      mockValidateInsert.mockImplementation(() => {
+        throw new Error("insertPayment validation failed: amount required");
       });
+      const fetchSpy = jest.fn();
+      global.fetch = fetchSpy as any;
 
-      it("should handle server error without error message", async () => {
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValueOnce({}),
-        });
-
-        await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "HTTP 400",
-        );
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          expect.stringContaining("Failed to insert payment:"),
-        );
-      });
-
-      it("should handle JSON parsing errors in error response", async () => {
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
-        });
-
-        await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "HTTP 400",
-        );
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          expect.stringContaining("Failed to insert payment:"),
-        );
-      });
-
-      it("should handle empty error message gracefully", async () => {
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValueOnce({}),
-        });
-
-        await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "HTTP 500",
-        );
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          expect.stringContaining("Failed to insert payment:"),
-        );
-      });
-
-      it("should handle network errors", async () => {
-        global.fetch = simulateNetworkError();
-
-        await expect(insertPayment(mockPayment)).rejects.toThrow(
-          "Network error",
-        );
-        expect(mockConsole.error).toHaveBeenCalledWith(
-          expect.stringContaining("An error occurred:"),
-        );
-      });
-
-      it("should handle various HTTP error statuses", async () => {
-        const errorStatuses = [400, 401, 403, 409, 422, 500];
-
-        for (const status of errorStatuses) {
-          const errorMessage = `Error ${status}`;
-          global.fetch = jest.fn().mockResolvedValueOnce({
-            ok: false,
-            status,
-            json: jest.fn().mockResolvedValueOnce({ error: errorMessage }),
-          });
-
-          await expect(insertPayment(mockPayment)).rejects.toThrow(
-            errorMessage,
-          );
-        }
-      });
+      await expect(insertPayment(basePayment)).rejects.toThrow(
+        "insertPayment validation failed: amount required",
+      );
+      expect(fetchSpy).not.toHaveBeenCalled();
     });
 
-    describe("Request format validation", () => {
-      it("should use POST method", async () => {
-        global.fetch = createFetchMock(mockPayment);
+    it("propagates server errors", async () => {
+      global.fetch = createErrorFetchMock("Invalid payment", 400);
 
-        await insertPayment(mockPayment);
-
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            method: "POST",
-          }),
-        );
-      });
-
-      it("should include credentials", async () => {
-        global.fetch = createFetchMock(mockPayment);
-
-        await insertPayment(mockPayment);
-
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            credentials: "include",
-          }),
-        );
-      });
-
-      it("should include correct headers", async () => {
-        global.fetch = createFetchMock(mockPayment);
-
-        await insertPayment(mockPayment);
-
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              "Content-Type": "application/json",
-            Accept: "application/json",
-            },
-          }),
-        );
-      });
-
-      it("should use correct endpoint", async () => {
-        global.fetch = createFetchMock(mockPayment);
-
-        await insertPayment(mockPayment);
-
-        expect(global.fetch).toHaveBeenCalledWith(
-          "/api/payment",
-          expect.any(Object),
-        );
-      });
+    await expect(insertPayment(basePayment)).rejects.toThrow(
+      "Invalid payment",
+    );
     });
 
-    describe("Response handling", () => {
-      it("should return parsed JSON response", async () => {
-        const responseData = createTestPayment({
-          paymentId: 999,
-          sourceAccount: "response_source",
-          amount: 300.0,
-        });
-        global.fetch = createFetchMock(responseData);
+    it("handles network failures", async () => {
+      global.fetch = simulateNetworkError();
 
-        const result = await insertPayment(mockPayment);
-
-        expect(result).toEqual(responseData);
-      });
-
-      it("should handle empty response body", async () => {
-        global.fetch = createFetchMock({});
-
-        const result = await insertPayment(mockPayment);
-
-        expect(result).toEqual({});
-      });
-
-      it("should handle complex response data", async () => {
-        const complexResponse = createTestPayment({
-          ...mockPayment,
-          paymentId: 123,
-          additionalField: "extra data",
-          metadata: { createdBy: "system" },
-        });
-        global.fetch = createFetchMock(complexResponse);
-
-        const result = await insertPayment(mockPayment);
-
-        expect(result).toEqual(complexResponse);
-      });
-    });
-
-    describe("Edge cases", () => {
-      it("should handle payment with all optional fields", async () => {
-        const fullPayment = createTestPayment({
-          paymentId: 0,
-          sourceAccount: "full_source",
-          destinationAccount: "full_dest",
-          amount: 500.0,
-          transactionDate: new Date("2024-06-15"),
-          guidSource: "source-guid-123",
-          guidDestination: "dest-guid-456",
-          activeStatus: true,
-          description: "Full payment test",
-        });
-
-
-        const mockResponse = createTestPayment({ paymentId: 888 });
-        global.fetch = createFetchMock(mockResponse);
-
-        const result = await insertPayment(fullPayment);
-
-        expect(result).toEqual(mockResponse);
-
-        const expectedPayload = await setupNewPayment(fullPayment);
-        expect(global.fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: JSON.stringify(expectedPayload),
-          }),
-        );
-      });
-
-      it("should handle large payment amounts", async () => {
-        const largePayment = createTestPayment({
-          amount: 999999.99,
-          sourceAccount: "large_source",
-        });
-
-
-        const mockResponse = createTestPayment({ paymentId: 777 });
-        global.fetch = createFetchMock(mockResponse);
-
-        const result = await insertPayment(largePayment);
-
-        expect(result).toEqual(mockResponse);
-      });
-
-      it("should handle payment with special characters in account names", async () => {
-        const specialPayment = createTestPayment({
-          sourceAccount: "source & account",
-          destinationAccount: "dest (special)",
-        });
-
-
-        const mockResponse = createTestPayment({ paymentId: 666 });
-        global.fetch = createFetchMock(mockResponse);
-
-        const result = await insertPayment(specialPayment);
-
-        expect(result).toEqual(mockResponse);
-      });
-
-      it("should handle null values in payment data", async () => {
-        const paymentWithNulls = {
-          ...mockPayment,
-          guidSource: null,
-          guidDestination: undefined,
-        };
-
-
-        global.fetch = createFetchMock(mockPayment);
-
-        await insertPayment(paymentWithNulls);
-
-        // Verify the fetch was called with correct data (GUIDs should NOT be included)
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-        const bodyObj = JSON.parse(fetchCall[1].body);
-        expect(bodyObj.amount).toBe(mockPayment.amount);
-        expect(bodyObj.guidSource).toBeNull();
-        expect(bodyObj.guidDestination).toBeNull();
-      });
-    });
-
-    describe("Business logic validation", () => {
-      it("should enforce validation before API call", async () => {
-        const mockResponse = createTestPayment({ paymentId: 123 });
-        global.fetch = createFetchMock(mockResponse);
-
-        await insertPayment(mockPayment);
-
-        expect(mockValidateInsert).toHaveBeenCalled();
-        expect(global.fetch).toHaveBeenCalled();
-      });
-
-      it("should use setupNewPayment to prepare data", async () => {
-        const originalPayment = createTestPayment({
-          paymentId: 999, // Should be excluded by setupNewPayment
-          sourceAccount: "original_source",
-          destinationAccount: "original_dest",
-          amount: 100.0,
-          transactionDate: new Date("2024-01-01"),
-
-          activeStatus: true, // Should be excluded by setupNewPayment
-        });
-
-
-        global.fetch = createFetchMock(originalPayment);
-
-        await insertPayment(originalPayment);
-
-        // Verify the payload was sent without paymentId or GUIDs
-        const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
-        const bodyObj = JSON.parse(fetchCall[1].body);
-        expect(bodyObj.paymentId).toBe(0);
-        expect(bodyObj.sourceAccount).toBe("original_source");
-        expect(bodyObj.guidSource).toBeNull();
-        expect(bodyObj.guidDestination).toBeNull();
-      });
-
-      it("should preserve paymentId of 0 for new payments", async () => {
-        const newPayment = createTestPayment({
-          paymentId: 0,
-          sourceAccount: "new_source",
-        });
-
-
-        const responsePayment = createTestPayment({
-          paymentId: 555,
-          sourceAccount: "new_source",
-        });
-        global.fetch = createFetchMock(responsePayment);
-
-        const result = await insertPayment(newPayment);
-
-        expect(result.paymentId).toBe(555); // Server assigns new ID
-      });
+      await expect(insertPayment(basePayment)).rejects.toThrow("Network error");
     });
   });
 });

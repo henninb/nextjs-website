@@ -5,6 +5,47 @@ import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import Payment from "../../model/Payment";
 import Transaction from "../../model/Transaction";
 
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
+
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value) => value),
+  },
+}));
+
+const { __mockLogger: mockLogger } = jest.requireMock(
+  "../../utils/logger",
+) as { __mockLogger: ReturnType<typeof createMockLogger> };
+
 // This is a TDD test describing desired behavior that does not exist yet.
 // When a payment is updated (amount or date), the corresponding transactions
 // in the source and destination accounts should be updated as well.

@@ -9,7 +9,6 @@
  */
 
 import React from "react";
-import { ConsoleSpy } from "../../testHelpers";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
@@ -17,10 +16,51 @@ import {
 } from "../../testHelpers.modern";
 import Transfer from "../../model/Transfer";
 
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
 // Import the actual implementation
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useTransferUpdate from "../../hooks/useTransferUpdate";
+
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
+
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value) => value),
+  },
+}));
+
+const { __mockLogger: mockLogger } = jest.requireMock(
+  "../../utils/logger",
+) as { __mockLogger: ReturnType<typeof createMockLogger> };
 
 // Helper to create wrapper for React Query
 const createWrapper = () => {
@@ -43,16 +83,10 @@ const createWrapper = () => {
 };
 
 describe("useTransferUpdate Modern Endpoint (TDD)", () => {
-  let consoleSpy: ConsoleSpy;
-
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    consoleSpy.start();
     jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    consoleSpy.stop();
+    mockLogger.debug.mockClear();
+    mockLogger.error.mockClear();
   });
 
   describe("Modern endpoint behavior", () => {
@@ -159,20 +193,13 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Invalid transfer data");
-      expect(
-        consoleSpy
-          .getCalls()
-          .error.some((call) =>
-            call.some((arg: any) =>
-              String(arg).includes("Failed to update transfer:"),
-            ),
-          ),
-      ).toBe(true);
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("Invalid transfer data");
+      expect(mockLogger.error).toHaveBeenCalledWith(
+      "Update failed",
+        expect.any(Error),
+      );
     });
 
     it("should handle 401 Unauthorized error", async () => {
@@ -185,11 +212,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Unauthorized");
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("Unauthorized");
     });
 
     it("should handle 403 Forbidden error", async () => {
@@ -202,11 +227,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Forbidden");
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("Forbidden");
     });
 
     it("should handle 404 Not Found error (transfer doesn't exist)", async () => {
@@ -219,11 +242,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 999 });
       const newTransfer = createTestTransfer({ transferId: 999 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Transfer not found");
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("Transfer not found");
     });
 
     it("should handle 409 Conflict error", async () => {
@@ -239,11 +260,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Conflict updating transfer");
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("Conflict updating transfer");
     });
 
     it("should handle 500 Internal Server Error", async () => {
@@ -256,11 +275,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Internal server error");
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("Internal server error");
     });
 
     it("should handle network errors", async () => {
@@ -273,11 +290,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toContain("Network error");
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("Network error");
     });
 
     it("should handle error response without error field", async () => {
@@ -297,13 +312,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toContain(
-        "HTTP error! Status: 500",
-      );
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("HTTP 500: Internal Server Error");
     });
 
     it("should handle JSON parse error in error response", async () => {
@@ -323,56 +334,9 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       const oldTransfer = createTestTransfer({ transferId: 1 });
       const newTransfer = createTestTransfer({ transferId: 1 });
 
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toContain(
-        "HTTP error! Status: 500",
-      );
-    });
-  });
-
-  describe("Error logging", () => {
-    it("should log errors to console.error (not console.log)", async () => {
-      global.fetch = createModernErrorFetchMock("Test error", 500);
-
-      const { result } = renderHook(() => useTransferUpdate(), {
-        wrapper: createWrapper(),
-      });
-
-      const oldTransfer = createTestTransfer({ transferId: 1 });
-      const newTransfer = createTestTransfer({ transferId: 1 });
-
-      result.current.mutate({ oldTransfer, newTransfer });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(
-        consoleSpy
-          .getCalls()
-          .error.some((call) =>
-            call.some((arg: any) =>
-              String(arg).includes("Failed to update transfer:"),
-            ),
-          ),
-      ).toBe(true);
-      expect(
-        consoleSpy
-          .getCalls()
-          .error.some((call) =>
-            call.some((arg: any) => String(arg).includes("An error occurred:")),
-          ),
-      ).toBe(true);
-      expect(
-        consoleSpy
-          .getCalls()
-          .error.some((call) =>
-            call.some((arg: any) =>
-              String(arg).includes("Error occurred during mutation:"),
-            ),
-          ),
-      ).toBe(true);
+      await expect(
+        result.current.mutateAsync({ oldTransfer, newTransfer }),
+      ).rejects.toThrow("HTTP 500: Internal Server Error");
     });
   });
 

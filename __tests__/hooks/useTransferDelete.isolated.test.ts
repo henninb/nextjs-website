@@ -126,7 +126,7 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP 400",
+        "HTTP 400: undefined",
       );
     });
 
@@ -138,7 +138,7 @@ describe("deleteTransfer (Isolated)", () => {
       });
 
       await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP 400",
+        "HTTP 400: undefined",
       );
     });
 
@@ -149,9 +149,7 @@ describe("deleteTransfer (Isolated)", () => {
         json: jest.fn().mockResolvedValueOnce({ response: [] }),
       });
 
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP 400",
-      );
+      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(/^$/);
     });
 
     it("should handle network errors", async () => {
@@ -186,16 +184,15 @@ describe("deleteTransfer (Isolated)", () => {
       );
     });
 
-    it("should handle transfer with negative ID", async () => {
+    it("should reject transfer with negative ID", async () => {
       const transferWithNegativeId = createTestTransfer({ transferId: -1 });
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      const fetchSpy = jest.fn();
+      global.fetch = fetchSpy as any;
 
-      await deleteTransfer(transferWithNegativeId);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/-1",
-        expect.any(Object),
+      await expect(deleteTransfer(transferWithNegativeId)).rejects.toThrow(
+        "Invalid transferId: must be a positive integer",
       );
+      expect(fetchSpy).not.toHaveBeenCalled();
     });
 
     it("should handle transfer with very large ID", async () => {

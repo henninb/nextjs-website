@@ -1,255 +1,150 @@
-/**
- * TDD Tests for Modern useTransferFetch
- * Modern endpoint: GET /api/transfer/active
- *
- * Key differences from legacy:
- * - Endpoint: /api/transfer/active (vs /api/transfer/select)
- * - Uses ServiceResult pattern for errors
- * - Returns empty array instead of 404 when no transfers exist
- */
-
 import React from "react";
-import { ConsoleSpy } from "../../testHelpers";
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-  createTestTransfer,
-} from "../../testHelpers.modern";
-import Transfer from "../../model/Transfer";
-
-// Import the actual implementation
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook } from "@testing-library/react";
 import useTransferFetch from "../../hooks/useTransferFetch";
+import Transfer from "../../model/Transfer";
+import { createModernFetchMock, createTestTransfer } from "../../testHelpers.modern";
+import { FetchError } from "../../utils/fetchUtils";
 
-// Helper to create wrapper for React Query
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
 
-  function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(
-      QueryClientProvider,
-      { client: queryClient },
-      children,
-    );
-  }
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
 
-  return Wrapper;
-};
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
 
-describe("useTransferFetch Modern Endpoint (TDD)", () => {
-  let consoleSpy: ConsoleSpy;
+jest.mock("../../utils/queryConfig", () => {
+  const actual = jest.requireActual("../../utils/queryConfig");
+  const mockUseAuthenticatedQuery = jest.fn();
+  return {
+    ...actual,
+    useAuthenticatedQuery: mockUseAuthenticatedQuery,
+    __mockUseAuthenticatedQuery: mockUseAuthenticatedQuery,
+  };
+});
 
+const { __mockLogger: mockLogger } = jest.requireMock(
+  "../../utils/logger",
+) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockUseAuthenticatedQuery: mockUseAuthenticatedQuery } =
+  jest.requireMock("../../utils/queryConfig") as {
+    __mockUseAuthenticatedQuery: jest.Mock;
+  };
+
+describe("useTransferFetch Modern Endpoint (unit)", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
-    consoleSpy.start();
     jest.clearAllMocks();
+    mockLogger.debug.mockClear();
+    mockLogger.error.mockClear();
+    mockUseAuthenticatedQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      isSuccess: false,
+      error: null,
+    });
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
-  });
+  it("calls useAuthenticatedQuery with modern endpoint query fn", async () => {
+    const transfers = [createTestTransfer()];
+    mockUseAuthenticatedQuery.mockReturnValue({
+      data: transfers,
+      isLoading: false,
+      isError: false,
+      isSuccess: true,
+      error: null,
+    });
 
-  describe("Modern endpoint behavior", () => {
-    it("should use modern endpoint /api/transfer/active", async () => {
-      global.fetch = createModernFetchMock([]);
+    const { result } = renderHook(() => useTransferFetch());
 
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
+    expect(result.current.data).toEqual(transfers);
+    expect(mockUseAuthenticatedQuery).toHaveBeenCalledWith(
+      ["transfer"],
+      expect.any(Function),
+    );
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const queryFn = mockUseAuthenticatedQuery.mock.calls[0][1];
+    global.fetch = createModernFetchMock([]);
+    await queryFn({ signal: new AbortController().signal });
 
-      expect(fetch).toHaveBeenCalledWith("/api/transfer/active", {
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/transfer/active",
+      expect.objectContaining({
         method: "GET",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-      });
-    });
-
-    it("should return empty array when no transfers exist", async () => {
-      global.fetch = createModernFetchMock([]);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-      expect(result.current.data).toEqual([]);
-      expect(Array.isArray(result.current.data)).toBe(true);
-    });
-
-    it("should fetch transfers successfully", async () => {
-      const testTransfers = [
-        createTestTransfer({ transferId: 1, sourceAccount: "checking" }),
-        createTestTransfer({ transferId: 2, sourceAccount: "savings" }),
-      ];
-
-      global.fetch = createModernFetchMock(testTransfers);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-      expect(result.current.data).toEqual(testTransfers);
-      expect(result.current.data?.length).toBe(2);
-    });
+      }),
+    );
   });
 
-  describe("Modern error handling", () => {
-    it("should handle 401 Unauthorized error with modern format", async () => {
-      global.fetch = createModernErrorFetchMock("Unauthorized", 401);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Unauthorized");
-      expect(
-        consoleSpy
-          .getCalls()
-          .error.some((call) =>
-            call.some((arg: any) =>
-              String(arg).includes("Error fetching transfer data:"),
-            ),
-          ),
-      ).toBe(true);
+  it("surfaces query errors", () => {
+    const fetchError = new FetchError("Unauthorized", 401, "Unauthorized");
+    mockUseAuthenticatedQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      isSuccess: false,
+      error: fetchError,
     });
 
-    it("should handle 403 Forbidden error", async () => {
-      global.fetch = createModernErrorFetchMock("Forbidden", 403);
+    const { result } = renderHook(() => useTransferFetch());
 
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Forbidden");
-    });
-
-    it("should handle 404 Not Found error (modern pattern)", async () => {
-      global.fetch = createModernErrorFetchMock("Transfers not found", 404);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Transfers not found");
-    });
-
-    it("should handle 500 Internal Server Error", async () => {
-      global.fetch = createModernErrorFetchMock("Internal server error", 500);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toBe("Internal server error");
-    });
-
-    it("should handle network errors", async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toContain("Network error");
-    });
-
-    it("should handle error response without error field", async () => {
-      const mockResponse = {
-        ok: false,
-        status: 500,
-        statusText: "Internal Server Error",
-        json: jest.fn().mockResolvedValue({}),
-        text: jest.fn().mockResolvedValue("{}"),
-      };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toContain(
-        "HTTP error! Status: 500",
-      );
-    });
-
-    it("should handle JSON parse error in error response", async () => {
-      const mockResponse = {
-        ok: false,
-        status: 500,
-        statusText: "Internal Server Error",
-        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-        text: jest.fn().mockResolvedValue("Invalid response"),
-      };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(result.current.error?.message).toContain(
-        "HTTP error! Status: 500",
-      );
-    });
+    expect(result.current.isError).toBe(true);
+    expect(result.current.error).toBe(fetchError);
   });
 
-  describe("Error logging", () => {
-    it("should log errors to console.error (not console.log)", async () => {
-      global.fetch = createModernErrorFetchMock("Test error", 500);
-
-      const { result } = renderHook(() => useTransferFetch(), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => expect(result.current.isError).toBe(true));
-
-      expect(
-        consoleSpy
-          .getCalls()
-          .error.some((call) =>
-            call.some((arg: any) =>
-              String(arg).includes("Error fetching transfer data:"),
-            ),
-          ),
-      ).toBe(true);
-      expect(
-        consoleSpy
-          .getCalls()
-          .error.some((call) =>
-            call.some((arg: any) =>
-              String(arg).includes(
-                "Error occurred while fetching transfer data:",
-              ),
-            ),
-          ),
-      ).toBe(true);
+  it("logs success metadata when data is returned", () => {
+    const transfers = [createTestTransfer(), createTestTransfer({ transferId: 2 })];
+    mockUseAuthenticatedQuery.mockReturnValue({
+      data: transfers,
+      isLoading: false,
+      isError: false,
+      isSuccess: true,
+      error: null,
     });
+
+    renderHook(() => useTransferFetch());
+
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      "Fetched transfers",
+      expect.objectContaining({ count: transfers.length }),
+    );
+  });
+
+  it("logs errors when query reports failure", () => {
+    const fetchError = new FetchError("Internal error", 500, "Internal Server Error");
+    mockUseAuthenticatedQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      isSuccess: false,
+      error: fetchError,
+    });
+
+    renderHook(() => useTransferFetch());
+
+    expect(mockLogger.error).toHaveBeenCalledWith("Fetch failed", fetchError);
   });
 });

@@ -371,19 +371,17 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         );
       });
 
-      it("should handle negative transfer IDs", async () => {
+      it("should reject negative transfer IDs", async () => {
         const negativeId = -1;
         const oldTransfer = createTestTransfer({ transferId: negativeId });
         const newTransfer = createTestTransfer({ transferId: negativeId });
+        const fetchMock = jest.fn();
+        global.fetch = fetchMock as any;
 
-        global.fetch = createModernFetchMock({ transferId: negativeId });
-
-        await updateTransfer(oldTransfer, newTransfer);
-
-        expect(fetch).toHaveBeenCalledWith(
-          `/api/transfer/${negativeId}`,
-          expect.any(Object),
+        await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
+          "Invalid transferId: must be a positive integer",
         );
+        expect(fetchMock).not.toHaveBeenCalled();
       });
 
       it("should handle transfer reconciliation scenarios", async () => {

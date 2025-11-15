@@ -349,7 +349,7 @@ describe("useMedicalExpenseInsert", () => {
       }
     });
 
-    expect(error?.message).toBe("Invalid JSON");
+    expect(error?.message).toBe("Response parsing failed: Invalid JSON");
   });
 
   it("should handle unauthorized errors (401)", async () => {

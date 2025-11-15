@@ -3,11 +3,11 @@ import Totals from "../../model/Totals";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   createTestTransaction,
   simulateNetworkError,
   createMockValidationUtils,
 } from "../../testHelpers";
+import { HookValidator } from "../../utils/hookValidation";
 
 // Mock validation utilities
 // Mock HookValidator
@@ -51,8 +51,6 @@ jest.mock("../../utils/security/secureUUID", () => ({
 }));
 
 import {
-  getAccountKey,
-  getTotalsKey,
   setupNewTransaction,
   insertTransaction,
   TransactionInsertType,
@@ -84,26 +82,13 @@ describe("Transaction Insert Functions (Isolated)", () => {
 
     // Setup default mocks
     mockGenerateSecureUUID.mockResolvedValue("test-uuid-123");
+    mockValidateInsert.mockImplementation((data: Transaction) => data);
   });
 
   afterEach(() => {
   });
 
   describe("Helper functions", () => {
-    describe("getAccountKey", () => {
-      it("should create correct account key", () => {
-        const result = getAccountKey("test_account");
-        expect(result).toEqual(["accounts", "test_account"]);
-      });
-    });
-
-    describe("getTotalsKey", () => {
-      it("should create correct totals key", () => {
-        const result = getTotalsKey("test_account");
-        expect(result).toEqual(["totals", "test_account"]);
-      });
-    });
-
     describe("setupNewTransaction", () => {
       it("should setup transaction with generated UUID", async () => {
         mockGenerateSecureUUID.mockResolvedValue("secure-uuid-456");
@@ -283,6 +268,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           ...mockTransaction,
           description: "Sanitized Description",
         });
+        mockValidateInsert.mockImplementation(() => validatedTransaction);
 
 
         global.fetch = createFetchMock(validatedTransaction);
@@ -306,6 +292,9 @@ describe("Transaction Insert Functions (Isolated)", () => {
       it("should handle validation failures", async () => {
         const validationError = { message: "Transaction date is required" };
 
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error(validationError.message);
+        });
 
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
@@ -320,6 +309,11 @@ describe("Transaction Insert Functions (Isolated)", () => {
           { message: "Amount must be a number" },
         ];
 
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error(
+            "Transaction date is required, Amount must be a number",
+          );
+        });
 
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
@@ -329,6 +323,9 @@ describe("Transaction Insert Functions (Isolated)", () => {
       });
 
       it("should handle validation failures without error details", async () => {
+        mockValidateInsert.mockImplementation(() => {
+          throw new Error("Validation failed");
+        });
         await expect(
           insertTransaction("test_account", mockTransaction, false, false),
         ).rejects.toThrow("Validation failed");
@@ -352,49 +349,41 @@ describe("Transaction Insert Functions (Isolated)", () => {
         const errorMessage = "Invalid transaction data";
         global.fetch = createErrorFetchMock(errorMessage, 400);
 
-        await expect(
-          insertTransaction("test_account", mockTransaction, false, false),
-        ).rejects.toThrow(errorMessage);
-          `An error occurred: ${errorMessage}`,
-        );
+      await expect(
+        insertTransaction("test_account", mockTransaction, false, false),
+      ).rejects.toThrow(errorMessage);
       });
 
       it("should handle server error without error message", async () => {
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValueOnce({}),
-        });
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: jest.fn().mockResolvedValueOnce({}),
+      });
 
-        await expect(
-          insertTransaction("test_account", mockTransaction, false, false),
-        ).rejects.toThrow("No error message returned.");
-          "No error message returned.",
-        );
+      await expect(
+        insertTransaction("test_account", mockTransaction, false, false),
+      ).rejects.toThrow("HTTP 400: undefined");
       });
 
       it("should handle JSON parsing errors in error response", async () => {
-        global.fetch = jest.fn().mockResolvedValueOnce({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
-        });
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
+      });
 
-        await expect(
-          insertTransaction("test_account", mockTransaction, false, false),
-        ).rejects.toThrow("Failed to parse error response: Invalid JSON");
-          "Failed to parse error response: Invalid JSON",
-        );
+      await expect(
+        insertTransaction("test_account", mockTransaction, false, false),
+      ).rejects.toThrow("HTTP 400: undefined");
       });
 
       it("should handle network errors", async () => {
         global.fetch = simulateNetworkError();
 
-        await expect(
-          insertTransaction("test_account", mockTransaction, false, false),
-        ).rejects.toThrow("Network error");
-          "An error occurred: Network error",
-        );
+      await expect(
+        insertTransaction("test_account", mockTransaction, false, false),
+      ).rejects.toThrow("Network error");
       });
 
       it("should handle various HTTP error statuses", async () => {

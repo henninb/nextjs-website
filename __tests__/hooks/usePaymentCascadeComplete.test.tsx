@@ -5,6 +5,47 @@ import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import Payment from "../../model/Payment";
 import Transaction from "../../model/Transaction";
 
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
+
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value) => value),
+  },
+}));
+
+const { __mockLogger: mockLogger } = jest.requireMock(
+  "../../utils/logger",
+) as { __mockLogger: ReturnType<typeof createMockLogger> };
+
 jest.mock("next/router", () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -334,8 +375,6 @@ describe("Payment Update Cascade Functionality", () => {
     it("should continue payment update even if cascade fails", async () => {
       const queryClient = createTestQueryClient();
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
       const mockGetQueryData = jest.fn().mockImplementation((key) => {
         if (key[0] === "accounts") {
           throw new Error("Cascade failure");
@@ -377,13 +416,10 @@ describe("Payment Update Cascade Functionality", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Payment cascade to transactions failed (non-fatal)",
-        ),
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Payment cascade to transactions failed (non-fatal)",
+        expect.any(Error),
       );
-
-      consoleSpy.mockRestore();
     });
   });
 });

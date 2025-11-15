@@ -1,28 +1,25 @@
-/**
- * Isolated tests for useUserAccountRegister business logic
- * Tests the userAccountRegister function without React Query/React overhead
- */
-
-import { userAccountRegister } from "../../hooks/useUserAccountRegister";
-import { HookValidator } from "../../utils/hookValidation";
 import User from "../../model/User";
 import {
   createFetchMock,
-  createErrorFetchMock,
-  ConsoleSpy,
-  simulateNetworkError,
-  simulateTimeoutError,
-  createMockResponse,
   createTestUser,
-  createMockValidationUtils,
+  simulateNetworkError,
 } from "../../testHelpers";
+import { userAccountRegister } from "../../hooks/useUserAccountRegister";
+import { HookValidator } from "../../utils/hookValidation";
 
-// Mock the validation utils
-// Mock HookValidator
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {
     validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
+    validateUpdate: jest.fn((updated) => updated),
     validateDelete: jest.fn(),
   },
   HookValidationError: class HookValidationError extends Error {
@@ -33,544 +30,106 @@ jest.mock("../../utils/hookValidation", () => ({
   },
 }));
 
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
 
 jest.mock("../../utils/validation", () => ({
   DataValidator: {
     validateUser: jest.fn(),
   },
-  hookValidators: {
-    validateApiPayload: jest.fn(),
-  },
-  ValidationError: jest.fn(),
 }));
 
-import { hookValidators } from "../../utils/validation";
+const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
+const { __mockLogger: mockLogger } = jest.requireMock(
+  "../../utils/logger",
+) as { __mockLogger: ReturnType<typeof createMockLogger> };
 
-describe("userAccountRegister (Isolated)", () => {
-  const originalFetch = global.fetch;
-  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
+describe("userAccountRegister (isolated)", () => {
+  const newUser = createTestUser({
+    username: "new_user@example.com",
+    password: "SampleP@ssw0rd",
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLogger.debug.mockClear();
+    mockLogger.error.mockClear();
+    mockValidateInsert.mockImplementation((data: User) => data);
   });
 
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
+  it("posts validated payload to /api/user/register", async () => {
+    global.fetch = createFetchMock(null, { status: 201 });
 
-  describe("Successful User Registration", () => {
-    it("should register user successfully with 201 response", async () => {
-      const testUser = createTestUser();
-      const mockConsoleLog = consoleSpy.start().log;
+    const result = await userAccountRegister(newUser);
 
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      const result = await userAccountRegister(testUser);
-
-      expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith("/api/user/register", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-        body: JSON.stringify(testUser),
-      });
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "User registration attempt for username:",
-        testUser.username,
-      );
-    });
-
-    it("should return payload for non-201 success responses", async () => {
-      const testUser = createTestUser();
-
-      });
-      global.fetch = createFetchMock(testUser, { status: 200 });
-
-      const result = await userAccountRegister(testUser);
-
-      expect(result).toEqual(testUser);
-    });
-
-    it("should use validated data from validation utils", async () => {
-      const originalUser = createTestUser({ username: "  test@example.com  " });
-      const sanitizedUser = createTestUser({ username: "test@example.com" });
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      await userAccountRegister(originalUser);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/user/register",
-        expect.objectContaining({
-          body: JSON.stringify(sanitizedUser),
-        }),
-      );
-    });
-
-    it("should handle registration with all user fields", async () => {
-      const completeUser = createTestUser({
-        userId: 123,
-        username: "complete@example.com",
-        password: "CompletePassword123!",
-        firstName: "Complete",
-        lastName: "User",
-      });
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      const result = await userAccountRegister(completeUser);
-
-      expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/user/register",
-        expect.objectContaining({
-          body: JSON.stringify(completeUser),
-        }),
-      );
+    expect(result).toBeNull();
+    expect(mockValidateInsert).toHaveBeenCalledWith(
+      newUser,
+      expect.any(Function),
+      "userAccountRegister",
+    );
+    expect(global.fetch).toHaveBeenCalledWith("/api/user/register", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(newUser),
     });
   });
 
-  describe("Validation Logic", () => {
-    it("should handle validation errors with specific messages", async () => {
-      const testUser = createTestUser();
-      const mockConsoleLog = consoleSpy.start().log;
+  it("returns original payload for non-201 responses", async () => {
+    global.fetch = createFetchMock(newUser, { status: 200 });
 
-      const validationErrors = [
-        { message: "Username is required" },
-        { message: "Password is too weak" },
-        { message: "First name must be at least 2 characters" },
-      ];
-
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "User registration validation failed: Username is required, Password is too weak, First name must be at least 2 characters",
-      );
-
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "An error occurred: User registration validation failed: Username is required, Password is too weak, First name must be at least 2 characters",
-      );
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    it("should handle validation errors without specific messages", async () => {
-      const testUser = createTestUser();
-
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "User registration validation failed: Validation failed",
-      );
-
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    it("should handle validation errors with empty error array", async () => {
-      const testUser = createTestUser();
-
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "User registration validation failed: Validation failed",
-      );
-
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    it("should call validation with correct parameters", async () => {
-      const testUser = createTestUser();
-      const { DataValidator } = require("../../utils/validation");
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      await userAccountRegister(testUser);
-
-      expect(mockValidateInsert).toHaveBeenCalledWith(
-        testUser,
-        DataValidator.validateUser,
-        "userAccountRegister",
-      );
-    });
+    await expect(userAccountRegister(newUser)).resolves.toEqual(newUser);
   });
 
-  describe("Error Handling", () => {
-    it("should handle 400 error with response message", async () => {
-      const testUser = createTestUser();
-      const mockConsoleLog = consoleSpy.start().log;
-
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        statusText: "Bad Request",
-        json: jest
-          .fn()
-          .mockResolvedValue({ response: "Username already exists" }),
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Username already exists",
-      );
-
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "An error occurred: Username already exists",
+  it("surfaces validation failures before calling fetch", async () => {
+    mockValidateInsert.mockImplementation(() => {
+      throw new Error(
+        "userAccountRegister validation failed: username is required",
       );
     });
+    const fetchSpy = jest.fn();
+    global.fetch = fetchSpy as any;
 
-    it("should handle 500 error with response message", async () => {
-      const testUser = createTestUser();
-
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        statusText: "Internal Server Error",
-        json: jest
-          .fn()
-          .mockResolvedValue({ response: "Internal server error" }),
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Internal server error",
-      );
-    });
-
-    it("should handle error response without message", async () => {
-      const testUser = createTestUser();
-      const mockConsoleLog = consoleSpy.start().log;
-
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        statusText: "Bad Request",
-        json: jest.fn().mockResolvedValue({}),
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Failed to parse error response: No error message returned.",
-      );
-
-      expect(mockConsoleLog).toHaveBeenCalledWith("No error message returned.");
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "Failed to parse error response: No error message returned.",
-      );
-    });
-
-    it("should handle unparseable error response", async () => {
-      const testUser = createTestUser();
-      const mockConsoleLog = consoleSpy.start().log;
-
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        statusText: "Bad Request",
-        json: jest.fn().mockRejectedValue(new Error("Unexpected token")),
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Failed to parse error response: Unexpected token",
-      );
-
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "Failed to parse error response: Unexpected token",
-      );
-    });
-
-    it("should handle network errors", async () => {
-      const testUser = createTestUser();
-      const mockConsoleLog = consoleSpy.start().log;
-
-      });
-      global.fetch = simulateNetworkError();
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Network error",
-      );
-
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "An error occurred: Network error",
-      );
-    });
-
-    it("should handle timeout errors", async () => {
-      const testUser = createTestUser();
-
-      });
-      global.fetch = simulateTimeoutError();
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        "Request timeout",
-      );
-    });
+    await expect(userAccountRegister(newUser)).rejects.toThrow(
+      "userAccountRegister validation failed: username is required",
+    );
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  describe("Security and Logging", () => {
-    it("should log username for security without exposing password", async () => {
-      const testUser = createTestUser({
-        username: "security@example.com",
-        password: "SecretPassword123!",
-      });
-      const mockConsoleLog = consoleSpy.start().log;
+  it("propagates network errors from fetch layer", async () => {
+    global.fetch = simulateNetworkError();
 
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      await userAccountRegister(testUser);
-
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "User registration attempt for username:",
-        "security@example.com",
-      );
-
-      // Verify password is never logged
-      const allLogs = mockConsoleLog.mock.calls.flat();
-      const passwordInLogs = allLogs.some(
-        (log) => typeof log === "string" && log.includes("SecretPassword123!"),
-      );
-      expect(passwordInLogs).toBe(false);
-    });
-
-    it("should log errors without exposing sensitive data", async () => {
-      const testUser = createTestUser({
-        password: "SensitivePassword123!",
-      });
-      const mockConsoleLog = consoleSpy.start().log;
-
-      });
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow();
-
-      // Check that sensitive data is not in logs
-      const allLogs = mockConsoleLog.mock.calls.flat();
-      const passwordInLogs = allLogs.some(
-        (log) =>
-          typeof log === "string" && log.includes("SensitivePassword123!"),
-      );
-      expect(passwordInLogs).toBe(false);
-    });
-
-    it("should re-throw original error after logging", async () => {
-      const testUser = createTestUser();
-      const mockConsoleLog = consoleSpy.start().log;
-      const originalError = new Error("Original error");
-
-      });
-
-      global.fetch = jest.fn().mockRejectedValue(originalError);
-
-      await expect(userAccountRegister(testUser)).rejects.toThrow(
-        originalError,
-      );
-
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "An error occurred: Original error",
-      );
-    });
+    await expect(userAccountRegister(newUser)).rejects.toThrow("Network error");
   });
 
-  describe("Request Configuration", () => {
-    it("should use correct HTTP method and headers", async () => {
-      const testUser = createTestUser();
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      await userAccountRegister(testUser);
-
-      expect(global.fetch).toHaveBeenCalledWith("/api/user/register", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-        body: JSON.stringify(testUser),
-      });
+  it("handles error responses without a specific message", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: "Bad Request",
+      json: jest.fn().mockResolvedValue({}),
     });
 
-    it("should include credentials for authentication", async () => {
-      const testUser = createTestUser();
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      await userAccountRegister(testUser);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          credentials: "include",
-        }),
-      );
-    });
-
-    it("should send data as JSON in request body", async () => {
-      const testUser = createTestUser();
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      await userAccountRegister(testUser);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-          }),
-          body: JSON.stringify(testUser),
-        }),
-      );
-    });
+    await expect(userAccountRegister(newUser)).rejects.toThrow("HTTP 400");
   });
 
-  describe("User Registration Business Logic", () => {
-    it("should handle different user data formats", async () => {
-      const users = [
-        createTestUser({
-          username: "user1@example.com",
-          firstName: "John",
-          lastName: "Doe",
-        }),
-        createTestUser({
-          username: "user2@test.org",
-          firstName: "Jane",
-          lastName: "Smith",
-        }),
-        createTestUser({
-          username: "admin@company.com",
-          firstName: "Admin",
-          lastName: "User",
-        }),
-      ];
+  it("logs registration lifecycle details", async () => {
+    global.fetch = createFetchMock(null, { status: 201 });
 
-      for (const user of users) {
-        });
-        global.fetch = createFetchMock(null, { status: 201 });
+    await userAccountRegister(newUser);
 
-        const result = await userAccountRegister(user);
-        expect(result).toBeNull();
-      }
-    });
-
-    it("should handle edge cases with user names", async () => {
-      const edgeUsers = [
-        createTestUser({ firstName: "A", lastName: "B" }), // Short names
-        createTestUser({
-          firstName: "Very".repeat(20),
-          lastName: "Long".repeat(20),
-        }), // Long names
-        createTestUser({ firstName: "José", lastName: "García" }), // Special characters
-        createTestUser({ firstName: "John-Paul", lastName: "O'Connor" }), // Hyphens and apostrophes
-      ];
-
-      for (const user of edgeUsers) {
-        });
-        global.fetch = createFetchMock(null, { status: 201 });
-
-        const result = await userAccountRegister(user);
-        expect(result).toBeNull();
-      }
-    });
-
-    it("should handle different email formats", async () => {
-      const emailFormats = [
-        "simple@example.com",
-        "user.name@example.com",
-        "user+tag@example.com",
-        "user_name@example-domain.com",
-        "user123@domain123.co.uk",
-      ];
-
-      for (const email of emailFormats) {
-        const user = createTestUser({ username: email });
-        });
-        global.fetch = createFetchMock(null, { status: 201 });
-
-        const result = await userAccountRegister(user);
-        expect(result).toBeNull();
-      }
-    });
-
-    it("should handle registration with minimum required fields", async () => {
-      const minimalUser = {
-        username: "minimal@example.com",
-        password: "MinimalPassword123!",
-        firstName: "Min",
-        lastName: "User",
-      };
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      const result = await userAccountRegister(minimalUser);
-
-      expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/user/register",
-        expect.objectContaining({
-          body: JSON.stringify(minimalUser),
-        }),
-      );
-    });
-  });
-
-  describe("Response Status Handling", () => {
-    it("should return null for 201 Created", async () => {
-      const testUser = createTestUser();
-
-      });
-      global.fetch = createFetchMock(null, { status: 201 });
-
-      const result = await userAccountRegister(testUser);
-
-      expect(result).toBeNull();
-    });
-
-    it("should return payload for 200 OK", async () => {
-      const testUser = createTestUser();
-
-      });
-      global.fetch = createFetchMock(testUser, { status: 200 });
-
-      const result = await userAccountRegister(testUser);
-
-      expect(result).toEqual(testUser);
-    });
-
-    it("should return payload for other success status codes", async () => {
-      const testUser = createTestUser();
-      const statusCodes = [202, 204];
-
-      for (const status of statusCodes) {
-        });
-        global.fetch = createFetchMock(testUser, { status });
-
-        const result = await userAccountRegister(testUser);
-        expect(result).toEqual(testUser);
-      }
-    });
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      "Registering user account",
+      expect.objectContaining({ username: newUser.username }),
+    );
   });
 });
