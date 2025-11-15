@@ -132,8 +132,7 @@ describe("useFamilyMemberFetch", () => {
   });
 
   it("should handle fetch error", async () => {
-    const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    (fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
@@ -153,14 +152,11 @@ describe("useFamilyMemberFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error?.message).toContain(
-      "Failed to fetch family members",
-    );
+    expect(result.current.error?.message).toContain("HTTP error! Status: 500");
   });
 
   it("should handle network error", async () => {
-    const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    (fetch as jest.Mock).mockRejectedValue(new Error("Network error"));
 
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useFamilyMemberFetch(), { wrapper });
@@ -175,9 +171,7 @@ describe("useFamilyMemberFetch", () => {
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error?.message).toContain(
-      "Failed to fetch family members",
-    );
+    expect(result.current.error?.message).toBe("Network error");
   });
 
   it("should have correct query key", async () => {
@@ -197,8 +191,7 @@ describe("useFamilyMemberFetch", () => {
   });
 
   it("should handle 401 unauthorized error", async () => {
-    const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    (fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 401,
       statusText: "Unauthorized",
@@ -215,18 +208,14 @@ describe("useFamilyMemberFetch", () => {
       { timeout: 5000 },
     );
 
-    expect(result.current.error?.message).toContain(
-      "Failed to fetch family members",
-    );
+    expect(result.current.error?.message).toContain("HTTP error! Status: 401");
   });
 
   it("should handle malformed JSON response", async () => {
-    const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    (fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: async () => {
-        throw new Error("Invalid JSON");
-      },
+      status: 200,
+      json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
@@ -239,9 +228,7 @@ describe("useFamilyMemberFetch", () => {
       { timeout: 5000 },
     );
 
-    expect(result.current.error?.message).toContain(
-      "Failed to fetch family members",
-    );
+    expect(result.current.error?.message).toBe("Invalid JSON");
   });
 
   it("should cache data correctly", async () => {

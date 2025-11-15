@@ -8,6 +8,17 @@ import {
   ClaimStatus,
 } from "../../model/MedicalExpense";
 
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Mock fetch globally
 global.fetch = jest.fn();
 
@@ -16,6 +27,10 @@ const createTestQueryClient = () =>
     defaultOptions: {
       queries: {
         retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
       },
       mutations: {
         retry: false,
@@ -90,13 +105,16 @@ describe("useMedicalExpenseInsert", () => {
     expect(result.current.isError).toBe(false);
     expect(result.current.isPending).toBe(false);
 
-    expect(mockFetch).toHaveBeenCalledWith("/api/medical-expenses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mockCreateRequest),
-    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/medical-expenses",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(mockCreateRequest),
+      }),
+    );
   });
 
   it("should create minimal medical expense successfully", async () => {
@@ -136,13 +154,16 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(createdExpense).toEqual(minimalExpense);
-    expect(mockFetch).toHaveBeenCalledWith("/api/medical-expenses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(minimalRequest),
-    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/medical-expenses",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify(minimalRequest),
+      }),
+    );
   });
 
   it("should handle validation errors (400)", async () => {

@@ -21,6 +21,10 @@ const createTestQueryClient = () =>
     defaultOptions: {
       queries: {
         retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
       },
       mutations: {
         retry: false,
@@ -35,6 +39,7 @@ const createWrapper =
   );
 
 describe("useCategoryFetch", () => {
+
   it("should fetch categories successfully", async () => {
     const queryClient = createTestQueryClient();
 
@@ -60,7 +65,6 @@ describe("useCategoryFetch", () => {
     ];
 
     // Mock the global fetch function
-    const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(
@@ -76,9 +80,6 @@ describe("useCategoryFetch", () => {
     expect(result.current.data).toEqual(mockCategories);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isError).toBe(false);
-
-    // Restore original fetch
-    global.fetch = originalFetch;
   });
 
   it("should handle 404 errors properly", async () => {
@@ -86,23 +87,23 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 404
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: "Not found" }), { status: 404 }),
-      );
+    global.fetch = jest.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Not found" }), { status: 404 }),
+    );
 
-    const { result} = renderHook(() => useCategoryFetch(), {
+    const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
 
     // Modern error handling - 404 is an error, not empty success
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("HTTP 404");
+    expect(result.current.error?.message).toContain("Not found");
     // Logging tested in logger.test.ts
 
     global.fetch = originalFetch;
@@ -113,25 +114,25 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 500 error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
+    global.fetch = jest.fn().mockResolvedValue(
       new Response(JSON.stringify({ message: "Internal server error" }), {
         status: 500,
       }),
     );
 
-    const consoleSpy = jest.spyOn(console, "error");
-
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
 
     // Should be in error state
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("HTTP 500");
+    expect(result.current.error?.message).toContain("Internal server error");
     // Logging tested in logger.test.ts
 
     global.fetch = originalFetch;
@@ -142,15 +143,15 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to throw network error
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockRejectedValueOnce(new Error("Network failure"));
+    global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
 
     // Should be in error state
     expect(result.current.data).toBeUndefined();
@@ -167,15 +168,15 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to throw persistent error
     const originalFetch = global.fetch;
-    global.fetch = jest
-      .fn()
-      .mockRejectedValueOnce(new Error("Persistent network error"));
+    global.fetch = jest.fn().mockRejectedValue(new Error("Persistent network error"));
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
 
     // Should be in error state
     expect(result.current.data).toBeUndefined();
@@ -202,7 +203,6 @@ describe("useCategoryFetch", () => {
     let capturedHeaders: any;
 
     // Mock the global fetch function and capture headers
-    const originalFetch = global.fetch;
     global.fetch = jest.fn().mockImplementation((url, options) => {
       capturedHeaders = options?.headers || {};
       return Promise.resolve(
@@ -220,7 +220,6 @@ describe("useCategoryFetch", () => {
     expect(capturedHeaders["Content-Type"]).toBe("application/json");
     expect(capturedHeaders["Accept"]).toBe("application/json");
 
-    global.fetch = originalFetch;
   });
 
   it("should handle 401 unauthorized errors properly", async () => {
@@ -228,7 +227,7 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 401 error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValueOnce(
+    global.fetch = jest.fn().mockResolvedValue(
       new Response(JSON.stringify({ message: "Unauthorized" }), {
         status: 401,
       }),
@@ -238,13 +237,15 @@ describe("useCategoryFetch", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
 
     // Should be in error state
     expect(result.current.data).toBeUndefined();
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toBeDefined();
-    expect(result.current.error?.message).toContain("HTTP 401");
+    expect(result.current.error?.message).toContain("Unauthorized");
     // Logging tested in logger.test.ts
 
     global.fetch = originalFetch;
@@ -262,7 +263,6 @@ describe("useCategoryFetch", () => {
       },
     ];
 
-    const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(
@@ -278,6 +278,5 @@ describe("useCategoryFetch", () => {
     expect(result.current.refetch).toBeDefined();
     expect(typeof result.current.refetch).toBe("function");
 
-    global.fetch = originalFetch;
   });
 });

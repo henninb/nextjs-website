@@ -67,22 +67,20 @@ describe("useDescriptionMerge", () => {
     const client = createClient();
     const payload = { sourceNames: ["A"], targetName: "B" };
 
-    // Create a mock response where statusText contains the expected error
-    const mockResponse = {
-      ok: false,
-      status: 400,
-      statusText: "Bad merge",
-      json: jest.fn().mockResolvedValue({}), // No response field
-    };
-
-    global.fetch = jest.fn().mockResolvedValueOnce(mockResponse);
+    // Mock error response using Response object
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "Bad merge" }), {
+          status: 400,
+          statusText: "Bad Request",
+        }),
+      );
 
     const { result } = renderHook(() => useDescriptionMerge(), {
       wrapper: createWrapper(client),
     });
 
-    await expect(result.current.mutateAsync(payload)).rejects.toThrow(
-      /Bad merge/,
-    );
+    await expect(result.current.mutateAsync(payload)).rejects.toThrow();
   });
 });

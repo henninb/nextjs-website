@@ -55,7 +55,9 @@ describe("Login Network Error - TDD", () => {
       expect.objectContaining({
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+        }),
         body: JSON.stringify(mockUser),
       }),
     );

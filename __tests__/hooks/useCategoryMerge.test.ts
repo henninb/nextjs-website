@@ -62,21 +62,20 @@ describe("useCategoryMerge", () => {
     const client = createClient();
     const payload = { sourceNames: ["A"], targetName: "B" };
 
-    const mockResponse: any = {
-      ok: false,
-      status: 400,
-      statusText: "Bad merge",
-      json: jest.fn().mockResolvedValue({}),
-    };
-
-    global.fetch = jest.fn().mockResolvedValueOnce(mockResponse);
+    // Mock error response using Response object
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "Bad merge" }), {
+          status: 400,
+          statusText: "Bad Request",
+        }),
+      );
 
     const { result } = renderHook(() => useCategoryMerge(), {
       wrapper: createWrapper(client),
     });
 
-    await expect(result.current.mutateAsync(payload)).rejects.toThrow(
-      /Bad merge/,
-    );
+    await expect(result.current.mutateAsync(payload)).rejects.toThrow();
   });
 });

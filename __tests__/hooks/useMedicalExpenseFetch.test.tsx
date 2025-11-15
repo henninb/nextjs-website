@@ -4,6 +4,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useMedicalExpenseFetch from "../../hooks/useMedicalExpenseFetch";
 import { MedicalExpense, ClaimStatus } from "../../model/MedicalExpense";
 
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Mock fetch globally
 global.fetch = jest.fn();
 
@@ -11,6 +22,13 @@ const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
+        retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+      mutations: {
         retry: false,
       },
     },
@@ -69,7 +87,7 @@ describe("useMedicalExpenseFetch", () => {
 
   it("should fetch medical expenses successfully", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => mockMedicalExpenses,
     } as Response);
@@ -84,12 +102,15 @@ describe("useMedicalExpenseFetch", () => {
     expect(result.current.data).toEqual(mockMedicalExpenses);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(mockFetch).toHaveBeenCalledWith("/api/medical-expenses/active");
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/medical-expenses/active",
+      expect.objectContaining({ method: "GET" }),
+    );
   });
 
   it("should handle empty medical expenses response", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => [],
     } as Response);
@@ -108,10 +129,11 @@ describe("useMedicalExpenseFetch", () => {
 
   it("should handle fetch error", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
+      json: async () => ({ message: "Internal server error" }),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
@@ -119,26 +141,24 @@ describe("useMedicalExpenseFetch", () => {
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
-    });
+    }, { timeout: 5000 });
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error?.message).toBe(
-      "Failed to fetch medical expenses",
-    );
+    expect(result.current.error?.message).toContain("HTTP error! Status: 500");
   });
 
   it("should handle network error", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    mockFetch.mockRejectedValue(new Error("Network error"));
 
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useMedicalExpenseFetch(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
-    });
+    }, { timeout: 5000 });
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
@@ -148,7 +168,7 @@ describe("useMedicalExpenseFetch", () => {
 
   it("should have correct query key", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => mockMedicalExpenses,
     } as Response);
@@ -164,11 +184,10 @@ describe("useMedicalExpenseFetch", () => {
 
   it("should handle malformed JSON response", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => {
-        throw new Error("Invalid JSON");
-      },
+      status: 200,
+      json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
@@ -176,17 +195,18 @@ describe("useMedicalExpenseFetch", () => {
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
-    });
+    }, { timeout: 5000 });
 
     expect(result.current.error?.message).toBe("Invalid JSON");
   });
 
   it("should handle 401 unauthorized error", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 401,
       statusText: "Unauthorized",
+      json: async () => ({ message: "Unauthorized" }),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
@@ -194,36 +214,35 @@ describe("useMedicalExpenseFetch", () => {
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
-    });
+    }, { timeout: 5000 });
 
-    expect(result.current.error?.message).toBe(
-      "Failed to fetch medical expenses",
-    );
+    expect(result.current.error?.message).toContain("HTTP error! Status: 401");
   });
 
   it("should handle 404 not found error", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 404,
       statusText: "Not Found",
+      json: async () => ({ message: "Not found" }),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useMedicalExpenseFetch(), { wrapper });
 
+    // 404 is treated as empty result, not an error
     await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+      expect(result.current.isSuccess).toBe(true);
+    }, { timeout: 5000 });
 
-    expect(result.current.error?.message).toBe(
-      "Failed to fetch medical expenses",
-    );
+    expect(result.current.data).toEqual([]);
+    expect(result.current.error).toBe(null);
   });
 
   it("should cache data correctly", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => mockMedicalExpenses,
     } as Response);

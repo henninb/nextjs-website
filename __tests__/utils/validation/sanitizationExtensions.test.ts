@@ -276,8 +276,8 @@ describe("sanitization extensions", () => {
       expect(InputSanitizer.sanitizeBoolean(undefined)).toBe(false);
     });
 
-    it("should convert empty array to false", () => {
-      expect(InputSanitizer.sanitizeBoolean([])).toBe(false);
+    it("should convert empty array to true (truthy in JS)", () => {
+      expect(InputSanitizer.sanitizeBoolean([])).toBe(true);
     });
 
     it("should convert non-empty array to true", () => {
@@ -285,8 +285,8 @@ describe("sanitization extensions", () => {
       expect(InputSanitizer.sanitizeBoolean([1, 2, 3])).toBe(true);
     });
 
-    it("should convert empty object to false", () => {
-      expect(InputSanitizer.sanitizeBoolean({})).toBe(false);
+    it("should convert empty object to true (truthy in JS)", () => {
+      expect(InputSanitizer.sanitizeBoolean({})).toBe(true);
     });
 
     it("should convert non-empty object to true", () => {

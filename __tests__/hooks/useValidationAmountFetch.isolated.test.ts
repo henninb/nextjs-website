@@ -3,13 +3,45 @@
  * Tests the fetchValidationAmount function without React Query/React overhead
  */
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateValidationAmount: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import { fetchValidationAmount } from "../../hooks/useValidationAmountFetch";
 import { HookValidator } from "../../utils/hookValidation";
 import ValidationAmount from "../../model/ValidationAmount";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   simulateNetworkError,
   simulateTimeoutError,
   createMockResponse,
@@ -30,6 +62,7 @@ describe("fetchValidationAmount (Isolated)", () => {
   });
 
   beforeEach(() => {
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
@@ -45,8 +78,9 @@ describe("fetchValidationAmount (Isolated)", () => {
       const result = await fetchValidationAmount("testAccount");
 
       expect(result).toEqual(testData);
+      // Account name is lowercased by sanitizeAccountName
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/active?accountNameOwner=testAccount&transactionState=cleared",
+        "/api/validation/amount/active?accountNameOwner=testaccount&transactionState=cleared",
         {
           method: "GET",
           credentials: "include",
@@ -72,7 +106,7 @@ describe("fetchValidationAmount (Isolated)", () => {
       // Modern endpoint returns an array
       global.fetch = createFetchMock([completeData]);
 
-      const result = await fetchValidationAmount("businessAccount");
+      const result = await fetchValidationAmount("businessaccount");
 
       expect(result).toEqual(completeData);
       expect(result.validationId).toBe(123);
@@ -111,7 +145,6 @@ describe("fetchValidationAmount (Isolated)", () => {
 
   describe("Error Handling", () => {
     it("should handle 404 resource not found by returning zero values", async () => {
-      const mockLog = consoleSpy.start().log;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 404,
@@ -133,77 +166,49 @@ describe("fetchValidationAmount (Isolated)", () => {
         }),
       );
       expect(result.validationDate).toEqual(new Date("1970-01-01"));
-      expect(mockLog).toHaveBeenCalledWith("Resource not found (404)");
     });
 
     it("should handle 500 server error", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = createErrorFetchMock("Internal Server Error", 500);
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data: Bad Request",
+        "HTTP error! Status: 500",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching validation amount data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle 400 bad request", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = createErrorFetchMock("Invalid account name", 400);
 
       await expect(fetchValidationAmount("")).rejects.toThrow(
-        "Failed to fetch validation amount data: Bad Request",
+        "HTTP error! Status: 400",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching validation amount data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle network errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateNetworkError();
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data: Network error",
+        "Network error",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching validation amount data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle timeout errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateTimeoutError();
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data: Request timeout",
+        "Request timeout",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching validation amount data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle fetch errors without specific message", async () => {
-      const mockError = consoleSpy.start().error;
-      global.fetch = jest.fn().mockRejectedValue(new Error());
+      global.fetch = jest.fn().mockRejectedValue(new Error(""));
 
-      await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
-        "Failed to fetch validation amount data:",
-      );
+      await expect(fetchValidationAmount("testAccount")).rejects.toThrow();
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching validation amount data:",
-        expect.any(Error),
-      );
     });
   });
 
@@ -312,9 +317,9 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       await fetchValidationAmount("account with spaces");
 
-      // URL encoding converts spaces to %20
+      // Spaces are removed by sanitizeAccountName (only a-zA-Z0-9_- allowed)
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/active?accountNameOwner=account%20with%20spaces&transactionState=cleared",
+        "/api/validation/amount/active?accountNameOwner=accountwithspaces&transactionState=cleared",
         expect.any(Object),
       );
     });

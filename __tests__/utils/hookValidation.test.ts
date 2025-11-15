@@ -414,10 +414,11 @@ describe("hookValidation", () => {
     });
 
     it("should accept date strings", () => {
-      const dateString = "2024-01-15";
+      // Use a date within the last year (default pastYears: 1)
+      const dateString = "2025-06-15";
       const result = HookValidator.validateDateRange(dateString, "testOp");
       expect(result).toBeInstanceOf(Date);
-      expect(result.toISOString()).toContain("2024-01-15");
+      expect(result.toISOString()).toContain("2025-06-15");
     });
 
     it("should throw on invalid date strings", () => {

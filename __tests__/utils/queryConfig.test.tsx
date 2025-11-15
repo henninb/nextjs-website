@@ -1,6 +1,6 @@
+import React, { ReactNode } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
 import {
   DEFAULT_QUERY_CONFIG,
   DEFAULT_MUTATION_CONFIG,
@@ -20,6 +20,8 @@ describe("queryConfig", () => {
         staleTime: 5 * 60 * 1000, // 5 minutes
         retry: 1,
         refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: true,
       });
     });
 
@@ -265,7 +267,11 @@ describe("queryConfig", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(mockMutationFn).toHaveBeenCalledWith({ name: "test" });
+      // React Query v5 passes additional context as second parameter
+      expect(mockMutationFn).toHaveBeenCalledWith(
+        { name: "test" },
+        expect.any(Object)
+      );
       expect(result.current.data).toEqual(mockData);
     });
 
@@ -280,7 +286,9 @@ describe("queryConfig", () => {
 
       result.current.mutate({ name: "test" });
 
-      await waitFor(() => expect(result.current.isError).toBe(true));
+      await waitFor(() => expect(result.current.isError).toBe(true), {
+        timeout: 5000,
+      });
 
       expect(result.current.error).toEqual(mockError);
     });
@@ -299,10 +307,12 @@ describe("queryConfig", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
+      // React Query v5 passes context object as third parameter
       expect(onSuccess).toHaveBeenCalledWith(
         mockData,
         { name: "test" },
-        undefined
+        undefined,
+        expect.any(Object)
       );
     });
 
@@ -318,9 +328,17 @@ describe("queryConfig", () => {
 
       result.current.mutate({ name: "test" });
 
-      await waitFor(() => expect(result.current.isError).toBe(true));
+      await waitFor(() => expect(result.current.isError).toBe(true), {
+        timeout: 5000,
+      });
 
-      expect(onError).toHaveBeenCalledWith(mockError, { name: "test" }, undefined);
+      // React Query v5 passes context object as fourth parameter
+      expect(onError).toHaveBeenCalledWith(
+        mockError,
+        { name: "test" },
+        undefined,
+        expect.any(Object)
+      );
     });
 
     it("should apply custom mutationKey", async () => {

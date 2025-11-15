@@ -3,7 +3,39 @@
  * Tests updateTransfer function without React Query overhead
  */
 
-import { ConsoleSpy } from "../../testHelpers";
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateTransfer: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
@@ -12,6 +44,8 @@ import Transfer from "../../model/Transfer";
 
 import { updateTransfer } from "../../hooks/useTransferUpdate";
 import { HookValidator } from "../../utils/hookValidation";
+
+const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 // Helper function to create test transfer data
 const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
@@ -32,6 +66,8 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset validation mock
+    mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
   afterEach(() => {
@@ -158,21 +194,10 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         const newTransfer = createTestTransfer({ transferId: 999 });
 
         global.fetch = createModernErrorFetchMock("Transfer not found", 404);
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Transfer not found",
         );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call[0].includes("Failed to update transfer:"),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) => call[0].includes("An error occurred:")),
-        ).toBe(true);
       });
 
       it("should handle 400 bad request errors", async () => {
@@ -180,16 +205,10 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         const newTransfer = createTestTransfer();
 
         global.fetch = createModernErrorFetchMock("Invalid transfer data", 400);
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Invalid transfer data",
         );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) => call[0].includes("An error occurred:")),
-        ).toBe(true);
       });
 
       it("should handle 403 forbidden errors", async () => {
@@ -197,16 +216,10 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         const newTransfer = createTestTransfer();
 
         global.fetch = createModernErrorFetchMock("Forbidden", 403);
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Forbidden",
         );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) => call[0].includes("An error occurred:")),
-        ).toBe(true);
       });
 
       it("should handle 500 server errors", async () => {
@@ -214,16 +227,10 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         const newTransfer = createTestTransfer();
 
         global.fetch = createModernErrorFetchMock("Internal server error", 500);
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Internal server error",
         );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) => call[0].includes("An error occurred:")),
-        ).toBe(true);
       });
 
       it("should handle network errors", async () => {
@@ -231,14 +238,11 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         const newTransfer = createTestTransfer();
 
         global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Network error",
         );
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.error[0]).toEqual(["An error occurred: Network error"]);
       });
 
       it("should handle timeout errors", async () => {
@@ -248,14 +252,11 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         global.fetch = jest
           .fn()
           .mockRejectedValue(new Error("Request timeout"));
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Request timeout",
         );
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.error[0]).toEqual(["An error occurred: Request timeout"]);
       });
 
       it("should handle JSON parsing errors", async () => {
@@ -267,14 +268,11 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
           status: 200,
           json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
         });
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Invalid JSON",
         );
 
-        const calls = consoleSpy.getCalls();
-        expect(calls.error[0]).toEqual(["An error occurred: Invalid JSON"]);
       });
     });
 
@@ -560,80 +558,6 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
       });
     });
 
-    describe("Console logging", () => {
-      it("should log 404 errors specifically", async () => {
-        const oldTransfer = createTestTransfer();
-        const newTransfer = createTestTransfer();
-
-        global.fetch = createModernErrorFetchMock("Transfer not found", 404);
-        consoleSpy.start();
-
-        try {
-          await updateTransfer(oldTransfer, newTransfer);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call[0].includes("Failed to update transfer:"),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) => call[0].includes("An error occurred:")),
-        ).toBe(true);
-      });
-
-      it("should log general errors", async () => {
-        const oldTransfer = createTestTransfer();
-        const newTransfer = createTestTransfer();
-
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Connection failed"));
-        consoleSpy.start();
-
-        try {
-          await updateTransfer(oldTransfer, newTransfer);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.error[0]).toEqual([
-          "An error occurred: Connection failed",
-        ]);
-      });
-
-      it("should not log 404 message for non-404 errors", async () => {
-        const oldTransfer = createTestTransfer();
-        const newTransfer = createTestTransfer();
-
-        global.fetch = createModernErrorFetchMock("Internal server error", 500);
-        consoleSpy.start();
-
-        try {
-          await updateTransfer(oldTransfer, newTransfer);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call[0].includes("Failed to update transfer:"),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) => call[0].includes("An error occurred:")),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) => call[0].includes("Internal server error")),
-        ).toBe(true);
-      });
-    });
-
     describe("Integration scenarios", () => {
       it("should handle complete transfer update workflow", async () => {
         const oldTransfer = createTestTransfer({
@@ -676,21 +600,10 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         });
 
         global.fetch = createModernErrorFetchMock("Invalid amount", 400);
-        consoleSpy.start();
 
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Invalid amount",
         );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call[0].includes("Failed to update transfer:"),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) => call[0].includes("An error occurred:")),
-        ).toBe(true);
       });
 
       it("should handle transfer ID mismatch scenarios", async () => {

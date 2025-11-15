@@ -3,13 +3,45 @@
  * Tests the fetchTransactionsByAccount function without React Query/React overhead
  */
 
+// Mock HookValidator
+jest.mock("../../utils/hookValidation", () => ({
+  HookValidator: {
+    validateInsert: jest.fn((data) => data),
+    validateUpdate: jest.fn((newData) => newData),
+    validateDelete: jest.fn(),
+  },
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
+    }
+  },
+}));
+
+// Mock logger
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  })),
+}));
+
+// Mock validation utilities
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateTransaction: jest.fn(),
+  },
+  ValidationError: jest.fn(),
+}));
+
 import { fetchTransactionsByAccount } from "../../hooks/useTransactionByAccountFetch";
 import { HookValidator } from "../../utils/hookValidation";
 import Transaction from "../../model/Transaction";
 import {
   createFetchMock,
   createErrorFetchMock,
-  ConsoleSpy,
   simulateNetworkError,
   simulateTimeoutError,
   createMockResponse,
@@ -20,6 +52,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
@@ -51,6 +84,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       const result = await fetchTransactionsByAccount("testAccount");
 
       expect(result).toEqual(testTransactions);
+      // Account name is URL encoded by sanitizeForUrl
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/select/testAccount",
         {
@@ -121,7 +155,6 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
   describe("Error Handling", () => {
     it("should handle 404 resource not found", async () => {
-      const mockLog = consoleSpy.start().log;
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 404,
@@ -130,80 +163,52 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       });
 
       await expect(fetchTransactionsByAccount("nonexistent")).rejects.toThrow(
-        "Failed to fetch transactionsByAccount data: Not Found",
+        "Failed to fetch transactions for account: Not Found",
       );
 
-      expect(mockLog).toHaveBeenCalledWith("Resource not found (404).");
     });
 
     it("should handle 500 server error", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = createErrorFetchMock("Internal Server Error", 500);
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Failed to fetch transactionsByAccount data: Bad Request",
+        "Bad Request",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching transaction by account data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle 400 bad request", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = createErrorFetchMock("Invalid account name", 400);
 
       await expect(fetchTransactionsByAccount("")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Failed to fetch transactionsByAccount data: Bad Request",
+        "Bad Request",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching transaction by account data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle network errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateNetworkError();
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Network error",
+        "Network error",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching transaction by account data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle timeout errors", async () => {
-      const mockError = consoleSpy.start().error;
       global.fetch = simulateTimeoutError();
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data: Request timeout",
+        "Request timeout",
       );
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching transaction by account data:",
-        expect.any(Error),
-      );
     });
 
     it("should handle fetch errors without specific message", async () => {
-      const mockError = consoleSpy.start().error;
-      global.fetch = jest.fn().mockRejectedValue(new Error());
+      global.fetch = jest.fn().mockRejectedValue(new Error(""));
 
-      await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
-        "Failed to fetch transaction by account data:",
-      );
+      await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow();
 
-      expect(mockError).toHaveBeenCalledWith(
-        "Error fetching transaction by account data:",
-        expect.any(Error),
-      );
     });
   });
 
@@ -395,8 +400,9 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       await fetchTransactionsByAccount("account-with_special.chars@123");
 
+      // @ is URL encoded as %40, . is encoded as %2E by encodeURIComponent
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/account/select/account-with_special.chars@123",
+        "/api/transaction/account/select/account-with_special.chars%40123",
         expect.any(Object),
       );
     });

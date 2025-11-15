@@ -473,8 +473,15 @@ describe("cacheUtils", () => {
     });
 
     it("should provide validation amount keys", () => {
-      expect(QueryKeys.validationAmount()).toEqual(["validationAmount"]);
-      expect(QueryKeys.validationAmounts()).toEqual(["validationAmounts"]);
+      expect(QueryKeys.validationAmount("testAccount")).toEqual([
+        "validationAmount",
+        "testAccount",
+      ]);
+      expect(QueryKeys.validationAmountAll("testAccount")).toEqual([
+        "validationAmount",
+        "testAccount",
+        "all",
+      ]);
     });
 
     it("should provide totals keys with parameters", () => {
