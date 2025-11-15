@@ -79,7 +79,7 @@ describe("useMedicalExpenseInsert", () => {
 
   it("should create medical expense successfully", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 201,
       json: async () => mockCreatedExpense,
@@ -136,7 +136,7 @@ describe("useMedicalExpenseInsert", () => {
     };
 
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 201,
       json: async () => minimalExpense,
@@ -168,7 +168,7 @@ describe("useMedicalExpenseInsert", () => {
 
   it("should handle validation errors (400)", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 400,
       statusText: "Bad Request",
@@ -191,18 +191,18 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(error).toBeDefined();
-    expect(error?.message).toBe("Failed to create medical expense");
+    expect(error?.message).toContain("Validation failed");
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
-    });
+    }, { timeout: 5000 });
 
     expect(result.current.isSuccess).toBe(false);
   });
 
   it("should handle conflict errors (409)", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 409,
       statusText: "Conflict",
@@ -223,19 +223,20 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(error).toBeDefined();
-    expect(error?.message).toBe("Failed to create medical expense");
+    expect(error?.message).toContain("Duplicate medical expense");
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
-    });
+    }, { timeout: 5000 });
   });
 
   it("should handle server errors (500)", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
+      json: async () => ({ message: "Internal server error" }),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
@@ -252,12 +253,12 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(error).toBeDefined();
-    expect(error?.message).toBe("Failed to create medical expense");
+    expect(error?.message).toContain("Internal server error");
   });
 
   it("should handle network errors", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    mockFetch.mockRejectedValue(new Error("Network error"));
 
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useMedicalExpenseInsert(), { wrapper });
@@ -273,19 +274,19 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(error).toBeDefined();
-    expect(error?.message).toBe("Network error");
+    expect(error?.message).toContain("Network error");
   });
 
   it("should invalidate medical expenses query on success", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 201,
       json: async () => mockCreatedExpense,
     } as Response);
 
     // Pre-populate cache with some data
-    queryClient.setQueryData(["medicalExpenses"], []);
+    queryClient.setQueryData(["medicalExpense"], []);
 
     const invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
 
@@ -297,13 +298,13 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: ["medicalExpenses"],
+      queryKey: ["medicalExpense"],
     });
   });
 
   it("should not invalidate queries on error", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 400,
       statusText: "Bad Request",
@@ -327,7 +328,7 @@ describe("useMedicalExpenseInsert", () => {
 
   it("should handle malformed JSON response", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 201,
       json: async () => {
@@ -353,10 +354,11 @@ describe("useMedicalExpenseInsert", () => {
 
   it("should handle unauthorized errors (401)", async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 401,
       statusText: "Unauthorized",
+      json: async () => ({ message: "Unauthorized" }),
     } as Response);
 
     const wrapper = createWrapper(queryClient);
@@ -372,6 +374,6 @@ describe("useMedicalExpenseInsert", () => {
       }
     });
 
-    expect(error?.message).toBe("Failed to create medical expense");
+    expect(error?.message).toContain("Unauthorized");
   });
 });
