@@ -310,22 +310,25 @@ describe("fetchUtils", () => {
       expect(response).toBe(mockResponse);
     });
 
-    // Skip this test - fetchWithTimeout uses AbortController which doesn't work well with fake timers
-    it.skip("should timeout if request takes too long", async () => {
-      (global.fetch as jest.Mock).mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            setTimeout(() => resolve({ ok: true } as Response), 60000);
-          }),
-      );
+    it("should timeout if request takes too long", async () => {
+      jest.useRealTimers();
 
-      const promise = fetchWithTimeout("/api/test", { timeout: 1000 });
+      (global.fetch as jest.Mock).mockImplementation((_url, options) => {
+        return new Promise((_resolve, reject) => {
+          options?.signal?.addEventListener("abort", () => {
+            const abortError = new Error("Aborted");
+            abortError.name = "AbortError";
+            reject(abortError);
+          });
+        });
+      });
 
-      // Run only pending timers to trigger timeout
-      jest.runOnlyPendingTimers();
+      await expect(
+        fetchWithTimeout("/api/test", { timeout: 5 }),
+      ).rejects.toThrow("Request timeout");
 
-      await expect(promise).rejects.toThrow(FetchError);
-      await expect(promise).rejects.toThrow("Request timeout");
+      (global.fetch as jest.Mock).mockReset();
+      jest.useFakeTimers();
     });
 
     it("should use default timeout of 30 seconds", async () => {
