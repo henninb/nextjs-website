@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Account from "../model/Account";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useAccountFetchGql");
 
 type AccountsQueryResult = {
   accounts: {
@@ -40,88 +42,70 @@ const ACCOUNTS_QUERY = /* GraphQL */ `
 `;
 
 export default function useAccountFetchGql() {
-  const { isAuthenticated, loading } = useAuth();
-
-  console.log("[useAccountFetchGql] Hook state:", {
-    isAuthenticated,
-    loading,
-    enabled: !loading && isAuthenticated,
-  });
-
-  return useQuery<Account[], Error>({
-    queryKey: ["accountsGQL"],
-    queryFn: async () => {
-      console.log("[useAccountFetchGql] Starting GraphQL query");
-      try {
-        const data = await graphqlRequest<AccountsQueryResult>({
-          query: ACCOUNTS_QUERY,
-        });
-
-        const uniqueAccountTypes = [
-          ...new Set(data.accounts?.map((a) => a.accountType) || []),
-        ];
-        console.log("[useAccountFetchGql] Raw GraphQL response:", {
-          data,
-          accountsArray: data.accounts,
-          accountsLength: data.accounts?.length,
-          firstThreeAccounts: data.accounts?.slice(0, 3),
-          allAccountTypes: data.accounts?.map((a) => a.accountType),
-          uniqueTypes: uniqueAccountTypes,
-        });
-
-        console.log("[useAccountFetchGql] ACCOUNT TYPE ANALYSIS:");
-        console.log("Unique account types found:", uniqueAccountTypes);
-        uniqueAccountTypes.forEach((type) => {
-          const count =
-            data.accounts?.filter((a) => a.accountType === type).length || 0;
-          console.log(`- Account type "${type}": ${count} accounts`);
-        });
-
-        const mapped: Account[] = (data.accounts || []).map((a) => {
-          const mappedAccount = {
-            accountId: a.accountId,
-            accountNameOwner: a.accountNameOwner,
-            accountType: (a.accountType as any) ?? "undefined",
-            activeStatus: !!a.activeStatus,
-            moniker: a.moniker,
-            outstanding: a.outstanding,
-            future: a.future,
-            cleared: a.cleared,
-            dateClosed: a.dateClosed ? new Date(a.dateClosed) : undefined,
-            validationDate: a.validationDate
-              ? new Date(a.validationDate)
-              : undefined,
-            dateAdded: a.dateAdded ? new Date(a.dateAdded) : undefined,
-            dateUpdated: a.dateUpdated ? new Date(a.dateUpdated) : undefined,
-          };
-          console.log("[useAccountFetchGql] Mapped account:", mappedAccount);
-          return mappedAccount;
-        });
-
-        console.log("[useAccountFetchGql] Final mapped accounts:", {
-          mappedLength: mapped.length,
-          mapped,
-        });
-
-        return mapped;
-      } catch (error) {
-        console.error("[useAccountFetchGql] Query function error:", {
-          error,
-          message: error.message,
-          stack: error.stack,
-        });
-        throw error;
-      }
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: (failureCount, error) => {
-      console.log("[useAccountFetchGql] Retry info:", {
-        failureCount,
-        error: error.message,
-        willRetry: failureCount < 1,
+  const queryResult = useAuthenticatedQuery(
+    ["accountsGQL"],
+    async () => {
+      log.debug("Starting GraphQL query");
+      const data = await graphqlRequest<AccountsQueryResult>({
+        query: ACCOUNTS_QUERY,
       });
-      return failureCount < 1;
+
+      const uniqueAccountTypes = [
+        ...new Set(data.accounts?.map((a) => a.accountType) || []),
+      ];
+      log.debug("Raw GraphQL response", {
+        accountsLength: data.accounts?.length,
+        uniqueTypes: uniqueAccountTypes,
+      });
+
+      log.debug("Account type analysis", {
+        uniqueTypes: uniqueAccountTypes,
+        typeCounts: uniqueAccountTypes.map((type) => ({
+          type,
+          count:
+            data.accounts?.filter((a) => a.accountType === type).length || 0,
+        })),
+      });
+
+      const mapped: Account[] = (data.accounts || []).map((a) => ({
+        accountId: a.accountId,
+        accountNameOwner: a.accountNameOwner,
+        accountType: (a.accountType as any) ?? "undefined",
+        activeStatus: !!a.activeStatus,
+        moniker: a.moniker,
+        outstanding: a.outstanding,
+        future: a.future,
+        cleared: a.cleared,
+        dateClosed: a.dateClosed ? new Date(a.dateClosed) : undefined,
+        validationDate: a.validationDate
+          ? new Date(a.validationDate)
+          : undefined,
+        dateAdded: a.dateAdded ? new Date(a.dateAdded) : undefined,
+        dateUpdated: a.dateUpdated ? new Date(a.dateUpdated) : undefined,
+      }));
+
+      log.debug("Final mapped accounts", {
+        mappedLength: mapped.length,
+      });
+
+      return mapped;
     },
-    enabled: !loading && isAuthenticated,
-  });
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: (failureCount, error) => {
+        log.debug("Retry info", {
+          failureCount,
+          error: error.message,
+          willRetry: failureCount < 1,
+        });
+        return failureCount < 1;
+      },
+    },
+  );
+
+  if (queryResult.isError) {
+    log.error("Query failed", queryResult.error);
+  }
+
+  return queryResult;
 }

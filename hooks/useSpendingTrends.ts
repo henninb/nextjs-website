@@ -21,6 +21,9 @@ import {
   MonthlySpending,
   MonthOverMonthComparison,
 } from "../utils/trendAnalysis";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useSpendingTrends");
 
 export interface SpendingTrendsData {
   monthlySpending: MonthlySpending[];
@@ -88,7 +91,7 @@ export const fetchAllTransactionsForTrends = async (
 
       if (!response.ok) {
         if (response.status === 404) {
-          console.log("No transactions found for trends analysis");
+          log.debug("No transactions found for trends analysis");
           return [];
         }
         throw new Error(
@@ -120,9 +123,10 @@ export const fetchAllTransactionsForTrends = async (
     }
 
     return allTransactions;
-  } catch (error: any) {
-    console.error("Error fetching transactions for trends:", error);
-    throw new Error(`Failed to fetch trends data: ${error.message}`);
+  } catch (error: unknown) {
+    log.error("Fetching transactions for trends", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Failed to fetch trends data: ${message}`);
   }
 };
 

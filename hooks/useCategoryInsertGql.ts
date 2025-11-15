@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Category from "../model/Category";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useCategoryInsertGql");
 
 type CreateCategoryResult = {
   createCategory: {
@@ -41,6 +44,7 @@ export default function useCategoryInsertGql() {
         .toLowerCase()
         .trim();
 
+      log.debug("Starting mutation", { categoryName: normalizedName });
       const category = {
         categoryName: normalizedName,
         activeStatus: c.activeStatus,
@@ -58,12 +62,17 @@ export default function useCategoryInsertGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { categoryId: mapped.categoryId });
       return mapped;
     },
     onSuccess: (newCategory) => {
+      log.debug("Insert successful", { categoryId: newCategory.categoryId });
       const key = ["categoryGQL"];
       const old = queryClient.getQueryData<Category[]>(key) || [];
       queryClient.setQueryData(key, [newCategory, ...old]);
+    },
+    onError: (error) => {
+      log.error("Insert failed", error);
     },
   });
 }

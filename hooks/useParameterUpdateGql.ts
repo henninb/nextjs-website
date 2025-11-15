@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Parameter from "../model/Parameter";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useParameterUpdateGql");
 
 type UpdateParameterResult = {
   updateParameter: {
@@ -38,6 +41,7 @@ export default function useParameterUpdateGql() {
       oldParameter: Parameter;
       newParameter: Parameter;
     }) => {
+      log.debug("Starting mutation", { parameterId: oldParameter.parameterId });
       const parameter = {
         parameterId: oldParameter.parameterId,
         parameterName: newParameter.parameterName,
@@ -57,9 +61,11 @@ export default function useParameterUpdateGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { parameterId: mapped.parameterId });
       return mapped;
     },
     onSuccess: (updatedParameter) => {
+      log.debug("Update successful", { parameterId: updatedParameter.parameterId });
       const key = ["parameterGQL"];
       const old = queryClient.getQueryData<Parameter[]>(key);
       if (old) {
@@ -72,6 +78,9 @@ export default function useParameterUpdateGql() {
           ),
         );
       }
+    },
+    onError: (error) => {
+      log.error("Update failed", error);
     },
   });
 }

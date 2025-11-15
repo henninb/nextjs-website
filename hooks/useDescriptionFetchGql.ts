@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Description from "../model/Description";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useDescriptionFetchGql");
 
 type DescriptionsQueryResult = {
   descriptions: {
@@ -28,11 +30,10 @@ const DESCRIPTIONS_QUERY = /* GraphQL */ `
 `;
 
 export default function useDescriptionFetchGql() {
-  const { isAuthenticated, loading } = useAuth();
-
-  return useQuery<Description[], Error>({
-    queryKey: ["descriptionGQL"],
-    queryFn: async () => {
+  const queryResult = useAuthenticatedQuery(
+    ["descriptionGQL"],
+    async () => {
+      log.debug("Starting GraphQL query");
       const data = await graphqlRequest<DescriptionsQueryResult>({
         query: DESCRIPTIONS_QUERY,
       });
@@ -44,8 +45,14 @@ export default function useDescriptionFetchGql() {
         dateAdded: d.dateAdded ? new Date(d.dateAdded) : undefined,
         dateUpdated: d.dateUpdated ? new Date(d.dateUpdated) : undefined,
       }));
+      log.debug("Query successful", { count: mapped.length });
       return mapped;
     },
-    enabled: !loading && isAuthenticated,
-  });
+  );
+
+  if (queryResult.isError) {
+    log.error("Query failed", queryResult.error);
+  }
+
+  return queryResult;
 }

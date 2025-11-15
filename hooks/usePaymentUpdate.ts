@@ -95,7 +95,7 @@ export default function usePaymentUpdate() {
           const paymentId = updatedPayment?.paymentId;
           const src = updatedPayment?.sourceAccount;
           const dst = updatedPayment?.destinationAccount;
-          const txDate = updatedPayment?.transactionDate as any;
+          const txDate = updatedPayment?.transactionDate;
 
           const updateLinkedTxns = (
             accountNameOwner: string | undefined,
@@ -128,8 +128,11 @@ export default function usePaymentUpdate() {
           updateLinkedTxns(dst, 1);
 
           log.debug("Payment cascade to transactions completed");
-        } catch (e: any) {
-          log.warn("Payment cascade to transactions failed (non-fatal)", e);
+        } catch (e: unknown) {
+          const errorMsg = e instanceof Error ? e.message : "Unknown error";
+          log.warn("Payment cascade to transactions failed (non-fatal)", {
+            error: errorMsg,
+          });
         }
       },
       onError: (error) => {

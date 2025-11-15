@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Transfer from "../model/Transfer";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useTransferInsertGql");
 
 type CreateTransferResult = {
   createTransfer: {
@@ -41,6 +44,11 @@ export default function useTransferInsertGql() {
     mutationKey: ["insertTransferGQL"],
     mutationFn: async (variables: { payload: Transfer }) => {
       const p = variables.payload;
+      log.debug("Starting mutation", {
+        sourceAccount: p.sourceAccount,
+        destinationAccount: p.destinationAccount,
+        amount: p.amount,
+      });
       const transfer = {
         sourceAccount: p.sourceAccount,
         destinationAccount: p.destinationAccount,
@@ -68,13 +76,18 @@ export default function useTransferInsertGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { transferId: mapped.transferId });
       return mapped;
     },
     onSuccess: (newTransfer) => {
+      log.debug("Insert successful", { transferId: newTransfer.transferId });
       // Keep GraphQL list in sync
       const key = ["transferGQL"];
       const old = queryClient.getQueryData<Transfer[]>(key) || [];
       queryClient.setQueryData(key, [newTransfer, ...old]);
+    },
+    onError: (error) => {
+      log.error("Insert failed", error);
     },
   });
 }

@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Category from "../model/Category";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useCategoryUpdateGql");
 
 type UpdateCategoryResult = {
   updateCategory: {
@@ -54,6 +57,11 @@ export default function useCategoryUpdateGql() {
       // Check if this is a rename operation
       const isRename = normalizedOldName !== normalizedName;
 
+      log.debug("Starting mutation", {
+        categoryId: oldCategory.categoryId,
+        isRename,
+      });
+
       const category = {
         categoryId: newCategory.categoryId || oldCategory.categoryId,
         categoryName: normalizedName,
@@ -76,9 +84,11 @@ export default function useCategoryUpdateGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { categoryId: mapped.categoryId });
       return mapped;
     },
     onSuccess: (updatedCategory) => {
+      log.debug("Update successful", { categoryId: updatedCategory.categoryId });
       const key = ["categoryGQL"];
       const old = queryClient.getQueryData<Category[]>(key);
       if (old) {
@@ -91,6 +101,9 @@ export default function useCategoryUpdateGql() {
           ),
         );
       }
+    },
+    onError: (error) => {
+      log.error("Update failed", error);
     },
   });
 }

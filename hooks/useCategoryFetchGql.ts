@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Category from "../model/Category";
-import { useAuth } from "../components/AuthProvider";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useCategoryFetchGql");
 
 type CategoriesQueryResult = {
   categories: {
@@ -28,11 +30,10 @@ const CATEGORIES_QUERY = /* GraphQL */ `
 `;
 
 export default function useCategoryFetchGql() {
-  const { isAuthenticated, loading } = useAuth();
-
-  return useQuery<Category[], Error>({
-    queryKey: ["categoryGQL"],
-    queryFn: async () => {
+  const queryResult = useAuthenticatedQuery(
+    ["categoryGQL"],
+    async () => {
+      log.debug("Starting GraphQL query");
       const data = await graphqlRequest<CategoriesQueryResult>({
         query: CATEGORIES_QUERY,
       });
@@ -44,8 +45,14 @@ export default function useCategoryFetchGql() {
         dateAdded: c.dateAdded ? new Date(c.dateAdded) : undefined,
         dateUpdated: c.dateUpdated ? new Date(c.dateUpdated) : undefined,
       }));
+      log.debug("Query successful", { count: mapped.length });
       return mapped;
     },
-    enabled: !loading && isAuthenticated,
-  });
+  );
+
+  if (queryResult.isError) {
+    log.error("Query failed", queryResult.error);
+  }
+
+  return queryResult;
 }

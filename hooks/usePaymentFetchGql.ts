@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Payment from "../model/Payment";
+import { usePublicQuery } from "../utils/queryConfig";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("usePaymentFetchGql");
 
 type PaymentsQueryResult = {
   payments: {
@@ -35,9 +38,10 @@ const PAYMENTS_QUERY = /* GraphQL */ `
 `;
 
 export default function usePaymentFetchGql() {
-  return useQuery<Payment[], Error>({
-    queryKey: ["paymentGQL"],
-    queryFn: async () => {
+  const queryResult = usePublicQuery(
+    ["paymentGQL"],
+    async () => {
+      log.debug("Starting GraphQL query");
       const data = await graphqlRequest<PaymentsQueryResult>({
         query: PAYMENTS_QUERY,
       });
@@ -53,7 +57,14 @@ export default function usePaymentFetchGql() {
         dateAdded: p.dateAdded ? new Date(p.dateAdded) : undefined,
         dateUpdated: p.dateUpdated ? new Date(p.dateUpdated) : undefined,
       }));
+      log.debug("Query successful", { count: mapped.length });
       return mapped;
     },
-  });
+  );
+
+  if (queryResult.isError) {
+    log.error("Query failed", queryResult.error);
+  }
+
+  return queryResult;
 }

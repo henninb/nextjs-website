@@ -63,13 +63,15 @@ async function fetchSportsData(apiEndpoint: string): Promise<any[]> {
     const data = await res.json();
     log.debug("Fetched sports data", { count: data?.length || 0 });
     return data;
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeoutId);
 
-    const isAbort = err?.name === "AbortError";
+    const isAbort = err instanceof Error && err.name === "AbortError";
     const message = isAbort
       ? "Connection timeout. Please check your internet connection."
-      : err?.message || "Failed to fetch sports data";
+      : err instanceof Error
+        ? err.message
+        : "Failed to fetch sports data";
 
     log.error("Fetch error", { error: message, isAbort });
     throw new Error(message);

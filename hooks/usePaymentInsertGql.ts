@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Payment from "../model/Payment";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("usePaymentInsertGql");
 
 type CreatePaymentResult = {
   createPayment: {
@@ -41,6 +44,11 @@ export default function usePaymentInsertGql() {
     mutationKey: ["insertPaymentGQL"],
     mutationFn: async (variables: { payload: Payment }) => {
       const p = variables.payload;
+      log.debug("Starting mutation", {
+        sourceAccount: p.sourceAccount,
+        destinationAccount: p.destinationAccount,
+        amount: p.amount,
+      });
       const payment = {
         sourceAccount: p.sourceAccount,
         destinationAccount: p.destinationAccount,
@@ -68,12 +76,17 @@ export default function usePaymentInsertGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { paymentId: mapped.paymentId });
       return mapped;
     },
     onSuccess: (newPayment) => {
+      log.debug("Insert successful", { paymentId: newPayment.paymentId });
       const key = ["paymentGQL"];
       const old = queryClient.getQueryData<Payment[]>(key) || [];
       queryClient.setQueryData(key, [newPayment, ...old]);
+    },
+    onError: (error) => {
+      log.error("Insert failed", error);
     },
   });
 }

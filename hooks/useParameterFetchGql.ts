@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Parameter from "../model/Parameter";
+import { usePublicQuery } from "../utils/queryConfig";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useParameterFetchGql");
 
 type ParametersQueryResult = {
   parameters: {
@@ -27,9 +30,10 @@ const PARAMETERS_QUERY = /* GraphQL */ `
 `;
 
 export default function useParameterFetchGql() {
-  return useQuery<Parameter[], Error>({
-    queryKey: ["parameterGQL"],
-    queryFn: async () => {
+  const queryResult = usePublicQuery(
+    ["parameterGQL"],
+    async () => {
+      log.debug("Starting GraphQL query");
       const data = await graphqlRequest<ParametersQueryResult>({
         query: PARAMETERS_QUERY,
       });
@@ -41,7 +45,14 @@ export default function useParameterFetchGql() {
         dateAdded: p.dateAdded ? new Date(p.dateAdded) : undefined,
         dateUpdated: p.dateUpdated ? new Date(p.dateUpdated) : undefined,
       }));
+      log.debug("Query successful", { count: mapped.length });
       return mapped;
     },
-  });
+  );
+
+  if (queryResult.isError) {
+    log.error("Query failed", queryResult.error);
+  }
+
+  return queryResult;
 }

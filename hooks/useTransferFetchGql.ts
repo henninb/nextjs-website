@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Transfer from "../model/Transfer";
+import { useAuthenticatedQuery } from "../utils/queryConfig";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useTransferFetchGql");
 
 type TransfersQueryResult = {
   transfers: {
@@ -35,9 +38,10 @@ const TRANSFERS_QUERY = /* GraphQL */ `
 `;
 
 export default function useTransferFetchGql() {
-  return useQuery<Transfer[], Error>({
-    queryKey: ["transferGQL"],
-    queryFn: async () => {
+  const queryResult = useAuthenticatedQuery(
+    ["transferGQL"],
+    async () => {
+      log.debug("Starting GraphQL query");
       const data = await graphqlRequest<TransfersQueryResult>({
         query: TRANSFERS_QUERY,
       });
@@ -53,7 +57,14 @@ export default function useTransferFetchGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       }));
+      log.debug("Query successful", { count: mapped.length });
       return mapped;
     },
-  });
+  );
+
+  if (queryResult.isError) {
+    log.error("Query failed", queryResult.error);
+  }
+
+  return queryResult;
 }

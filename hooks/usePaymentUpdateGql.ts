@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Payment from "../model/Payment";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("usePaymentUpdateGql");
 
 type UpdatePaymentResult = {
   updatePayment: {
@@ -46,6 +49,7 @@ export default function usePaymentUpdateGql() {
       oldPayment: Payment;
       newPayment: Payment;
     }) => {
+      log.debug("Starting mutation", { paymentId: oldPayment.paymentId });
       const input = {
         sourceAccount: newPayment.sourceAccount,
         destinationAccount: newPayment.destinationAccount,
@@ -73,9 +77,11 @@ export default function usePaymentUpdateGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { paymentId: mapped.paymentId });
       return mapped;
     },
     onSuccess: (updatedPayment) => {
+      log.debug("Update successful", { paymentId: updatedPayment.paymentId });
       const key = ["paymentGQL"];
       const old = queryClient.getQueryData<Payment[]>(key);
       if (old) {
@@ -88,6 +94,9 @@ export default function usePaymentUpdateGql() {
           ),
         );
       }
+    },
+    onError: (error) => {
+      log.error("Update failed", error);
     },
   });
 }

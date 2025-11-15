@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Parameter from "../model/Parameter";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useParameterInsertGql");
 
 type CreateParameterResult = {
   createParameter: {
@@ -33,6 +36,7 @@ export default function useParameterInsertGql() {
     mutationKey: ["insertParameterGQL"],
     mutationFn: async (variables: { payload: Parameter }) => {
       const p = variables.payload;
+      log.debug("Starting mutation", { parameterName: p.parameterName });
       const parameter = {
         parameterName: p.parameterName,
         parameterValue: p.parameterValue,
@@ -51,12 +55,17 @@ export default function useParameterInsertGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { parameterId: mapped.parameterId });
       return mapped;
     },
     onSuccess: (newParameter) => {
+      log.debug("Insert successful", { parameterId: newParameter.parameterId });
       const key = ["parameterGQL"];
       const old = queryClient.getQueryData<Parameter[]>(key) || [];
       queryClient.setQueryData(key, [newParameter, ...old]);
+    },
+    onError: (error) => {
+      log.error("Insert failed", error);
     },
   });
 }

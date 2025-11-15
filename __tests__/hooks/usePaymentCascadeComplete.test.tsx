@@ -418,7 +418,9 @@ describe("Payment Update Cascade Functionality", () => {
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         "Payment cascade to transactions failed (non-fatal)",
-        expect.any(Error),
+        expect.objectContaining({
+          error: expect.any(String),
+        }),
       );
     });
   });

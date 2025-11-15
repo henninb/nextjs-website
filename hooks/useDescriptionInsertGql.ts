@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Description from "../model/Description";
+import { createHookLogger } from "../utils/logger";
+
+const log = createHookLogger("useDescriptionInsertGql");
 
 type CreateDescriptionResult = {
   createDescription: {
@@ -41,6 +44,7 @@ export default function useDescriptionInsertGql() {
         .toLowerCase()
         .trim();
 
+      log.debug("Starting mutation", { descriptionName: normalizedName });
       const description = {
         descriptionName: normalizedName,
         activeStatus: d.activeStatus,
@@ -58,12 +62,19 @@ export default function useDescriptionInsertGql() {
         dateAdded: t.dateAdded ? new Date(t.dateAdded) : undefined,
         dateUpdated: t.dateUpdated ? new Date(t.dateUpdated) : undefined,
       };
+      log.debug("Mutation successful", { descriptionId: mapped.descriptionId });
       return mapped;
     },
     onSuccess: (newDescription) => {
+      log.debug("Insert successful", {
+        descriptionId: newDescription.descriptionId,
+      });
       const key = ["descriptionGQL"];
       const old = queryClient.getQueryData<Description[]>(key) || [];
       queryClient.setQueryData(key, [newDescription, ...old]);
+    },
+    onError: (error) => {
+      log.error("Insert failed", error);
     },
   });
 }

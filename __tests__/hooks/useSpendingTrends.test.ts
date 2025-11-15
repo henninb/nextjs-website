@@ -149,7 +149,7 @@ describe("useSpendingTrends", () => {
 
         expect(result).toEqual([]);
         expect(mockLog).toHaveBeenCalledWith(
-          "No transactions found for trends analysis",
+          expect.stringContaining("No transactions found for trends analysis"),
         );
       });
 
@@ -162,8 +162,7 @@ describe("useSpendingTrends", () => {
         );
 
         expect(mockError).toHaveBeenCalledWith(
-          "Error fetching transactions for trends:",
-          expect.any(Error),
+          expect.stringContaining("Fetching transactions for trends"),
         );
       });
 
