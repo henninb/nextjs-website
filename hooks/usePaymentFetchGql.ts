@@ -38,29 +38,26 @@ const PAYMENTS_QUERY = /* GraphQL */ `
 `;
 
 export default function usePaymentFetchGql() {
-  const queryResult = usePublicQuery(
-    ["paymentGQL"],
-    async () => {
-      log.debug("Starting GraphQL query");
-      const data = await graphqlRequest<PaymentsQueryResult>({
-        query: PAYMENTS_QUERY,
-      });
-      const mapped: Payment[] = (data.payments || []).map((p) => ({
-        paymentId: p.paymentId,
-        sourceAccount: p.sourceAccount,
-        destinationAccount: p.destinationAccount,
-        transactionDate: new Date(p.transactionDate),
-        amount: p.amount,
-        guidSource: p.guidSource ?? undefined,
-        guidDestination: p.guidDestination ?? undefined,
-        activeStatus: !!p.activeStatus,
-        dateAdded: p.dateAdded ? new Date(p.dateAdded) : undefined,
-        dateUpdated: p.dateUpdated ? new Date(p.dateUpdated) : undefined,
-      }));
-      log.debug("Query successful", { count: mapped.length });
-      return mapped;
-    },
-  );
+  const queryResult = usePublicQuery(["paymentGQL"], async () => {
+    log.debug("Starting GraphQL query");
+    const data = await graphqlRequest<PaymentsQueryResult>({
+      query: PAYMENTS_QUERY,
+    });
+    const mapped: Payment[] = (data.payments || []).map((p) => ({
+      paymentId: p.paymentId,
+      sourceAccount: p.sourceAccount,
+      destinationAccount: p.destinationAccount,
+      transactionDate: new Date(p.transactionDate),
+      amount: p.amount,
+      guidSource: p.guidSource ?? undefined,
+      guidDestination: p.guidDestination ?? undefined,
+      activeStatus: !!p.activeStatus,
+      dateAdded: p.dateAdded ? new Date(p.dateAdded) : undefined,
+      dateUpdated: p.dateUpdated ? new Date(p.dateUpdated) : undefined,
+    }));
+    log.debug("Query successful", { count: mapped.length });
+    return mapped;
+  });
 
   if (queryResult.isError) {
     log.error("Query failed", queryResult.error);

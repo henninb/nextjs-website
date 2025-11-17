@@ -267,7 +267,7 @@ describe("logger", () => {
       timer.end("Custom message");
 
       expect(consoleSpy.log).toHaveBeenCalledWith(
-        expect.stringContaining("Custom message")
+        expect.stringContaining("Custom message"),
       );
     });
   });

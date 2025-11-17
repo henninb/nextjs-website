@@ -117,9 +117,7 @@ describe("updateTransaction (isolated)", () => {
 
     await updateTransaction(transactionWithReceipt, oldTransaction);
 
-    const body = JSON.parse(
-      (global.fetch as jest.Mock).mock.calls[0][1].body,
-    );
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
     expect(body.receiptImage.image).toBe("iVBORw0KGgoAAAANSUhEUgAAA...");
   });
 
@@ -130,25 +128,25 @@ describe("updateTransaction (isolated)", () => {
     const fetchSpy = jest.fn();
     global.fetch = fetchSpy as any;
 
-    await expect(updateTransaction(newTransaction, oldTransaction)).rejects.toThrow(
-      "updateTransaction validation failed: amount required",
-    );
+    await expect(
+      updateTransaction(newTransaction, oldTransaction),
+    ).rejects.toThrow("updateTransaction validation failed: amount required");
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("handles server errors with message", async () => {
     global.fetch = createErrorFetchMock("Cannot update transaction", 400);
 
-    await expect(updateTransaction(newTransaction, oldTransaction)).rejects.toThrow(
-      "Cannot update transaction",
-    );
+    await expect(
+      updateTransaction(newTransaction, oldTransaction),
+    ).rejects.toThrow("Cannot update transaction");
   });
 
   it("handles network failures", async () => {
     global.fetch = simulateNetworkError();
 
-    await expect(updateTransaction(newTransaction, oldTransaction)).rejects.toThrow(
-      "Network error",
-    );
+    await expect(
+      updateTransaction(newTransaction, oldTransaction),
+    ).rejects.toThrow("Network error");
   });
 });

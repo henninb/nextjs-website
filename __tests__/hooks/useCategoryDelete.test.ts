@@ -74,7 +74,7 @@ describe("deleteCategory (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
       },
     );
@@ -112,9 +112,7 @@ describe("deleteCategory (Isolated)", () => {
       json: jest.fn().mockResolvedValueOnce({}),
     });
 
-    await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "HTTP 400",
-    );
+    await expect(deleteCategory(mockCategory)).rejects.toThrow("HTTP 400");
   });
 
   it("should handle JSON parsing errors", async () => {
@@ -124,9 +122,7 @@ describe("deleteCategory (Isolated)", () => {
       json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
     });
 
-    await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "HTTP 400",
-    );
+    await expect(deleteCategory(mockCategory)).rejects.toThrow("HTTP 400");
   });
 
   it("should handle network errors", async () => {
@@ -173,9 +169,7 @@ describe("deleteCategory (Isolated)", () => {
       json: jest.fn().mockResolvedValueOnce({}),
     });
 
-    await expect(deleteCategory(mockCategory)).rejects.toThrow(
-      "HTTP 500",
-    );
+    await expect(deleteCategory(mockCategory)).rejects.toThrow("HTTP 500");
   });
 
   it("should use correct HTTP method and headers", async () => {
@@ -194,7 +188,7 @@ describe("deleteCategory (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
       }),
     );

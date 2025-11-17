@@ -42,9 +42,9 @@ jest.mock("../../utils/validation/sanitization", () => ({
   },
 }));
 
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 
 // This is a TDD test describing desired behavior that does not exist yet.
 // When a payment is updated (amount or date), the corresponding transactions

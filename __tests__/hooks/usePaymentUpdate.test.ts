@@ -53,7 +53,6 @@ const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 };
 
 describe("updatePayment (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock

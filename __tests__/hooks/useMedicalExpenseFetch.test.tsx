@@ -139,9 +139,12 @@ describe("useMedicalExpenseFetch", () => {
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useMedicalExpenseFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
@@ -156,9 +159,12 @@ describe("useMedicalExpenseFetch", () => {
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useMedicalExpenseFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
@@ -193,9 +199,12 @@ describe("useMedicalExpenseFetch", () => {
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useMedicalExpenseFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.error?.message).toBe("Invalid JSON");
   });
@@ -212,9 +221,12 @@ describe("useMedicalExpenseFetch", () => {
     const wrapper = createWrapper(queryClient);
     const { result } = renderHook(() => useMedicalExpenseFetch(), { wrapper });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.error?.message).toContain("HTTP error! Status: 401");
   });
@@ -232,9 +244,12 @@ describe("useMedicalExpenseFetch", () => {
     const { result } = renderHook(() => useMedicalExpenseFetch(), { wrapper });
 
     // 404 is treated as empty result, not an error
-    await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.isSuccess).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.data).toEqual([]);
     expect(result.current.error).toBe(null);

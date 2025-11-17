@@ -15,7 +15,7 @@ const fetchParameterData = async (): Promise<Parameter[]> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-            Accept: "application/json",
+        Accept: "application/json",
       },
     });
 

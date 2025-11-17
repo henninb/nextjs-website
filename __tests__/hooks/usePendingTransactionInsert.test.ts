@@ -36,10 +36,7 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
-import {
-  createFetchMock,
-  createErrorFetchMock,
-} from "../../testHelpers";
+import { createFetchMock, createErrorFetchMock } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
 import { insertPendingTransaction } from "../../hooks/usePendingTransactionInsert";
@@ -61,15 +58,13 @@ const createTestPendingTransaction = (
 });
 
 describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateInsert.mockImplementation((data) => data);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("insertPendingTransaction", () => {
     describe("Successful pending transaction creation", () => {
@@ -94,7 +89,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
           },
           body: JSON.stringify(testPendingTransaction),
         });
-
       });
 
       it("should log the data being sent before API call", async () => {
@@ -106,7 +100,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         global.fetch = createFetchMock({ pendingTransactionId: 1 });
 
         await insertPendingTransaction(testPendingTransaction);
-
       });
 
       it("should handle different review statuses", async () => {
@@ -171,7 +164,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Invalid pending transaction data");
-
       });
 
       it("should handle 409 conflict error", async () => {
@@ -184,7 +176,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Pending transaction already exists");
-
       });
 
       it("should handle 500 server error", async () => {
@@ -194,7 +185,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Internal server error");
-
       });
 
       it("should handle error response without message", async () => {
@@ -208,7 +198,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("HTTP 400");
-
       });
 
       it("should handle malformed error response", async () => {
@@ -222,7 +211,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("HTTP 400");
-
       });
 
       it("should handle network errors", async () => {
@@ -232,7 +220,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Network error");
-
       });
 
       it("should handle timeout errors", async () => {
@@ -244,7 +231,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Request timeout");
-
       });
 
       it("should handle unknown error fallback", async () => {
@@ -258,7 +244,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("HTTP 400");
-
       });
     });
 
@@ -601,7 +586,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         expect(result).toEqual(expectedResponse);
         expect(result.pendingTransactionId).toBe(555);
         expect(result.amount).toBe(15000.0);
-
       });
 
       it("should handle validation to API error chain", async () => {
@@ -617,7 +601,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Amount exceeds allowed negative limit");
-
       });
 
       it("should handle duplicate pending transaction detection", async () => {
@@ -631,7 +614,6 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
         await expect(
           insertPendingTransaction(testPendingTransaction),
         ).rejects.toThrow("Duplicate pending transaction detected");
-
       });
     });
   });

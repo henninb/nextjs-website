@@ -65,7 +65,9 @@ export default function useParameterUpdateGql() {
       return mapped;
     },
     onSuccess: (updatedParameter) => {
-      log.debug("Update successful", { parameterId: updatedParameter.parameterId });
+      log.debug("Update successful", {
+        parameterId: updatedParameter.parameterId,
+      });
       const key = ["parameterGQL"];
       const old = queryClient.getQueryData<Parameter[]>(key);
       if (old) {

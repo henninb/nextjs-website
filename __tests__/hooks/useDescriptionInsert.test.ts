@@ -48,15 +48,13 @@ import { HookValidator } from "../../utils/hookValidation";
 const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
 describe("insertDescription (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateInsert.mockImplementation((data) => data);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Successful insertion", () => {
     it("should insert description successfully with 200 response", async () => {
@@ -127,7 +125,9 @@ describe("insertDescription (Isolated)", () => {
   describe("Validation errors", () => {
     it("should throw error when validation fails", async () => {
       mockValidateInsert.mockImplementation(() => {
-        throw new Error("insertDescription validation failed: Description name is required");
+        throw new Error(
+          "insertDescription validation failed: Description name is required",
+        );
       });
 
       await expect(insertDescription("")).rejects.toThrow(
@@ -139,7 +139,9 @@ describe("insertDescription (Isolated)", () => {
 
     it("should handle validation errors without specific messages", async () => {
       mockValidateInsert.mockImplementation(() => {
-        throw new Error("insertDescription validation failed: Validation failed");
+        throw new Error(
+          "insertDescription validation failed: Validation failed",
+        );
       });
 
       await expect(insertDescription("invalid")).rejects.toThrow(
@@ -149,7 +151,9 @@ describe("insertDescription (Isolated)", () => {
 
     it("should handle validation errors with undefined errors array", async () => {
       mockValidateInsert.mockImplementation(() => {
-        throw new Error("insertDescription validation failed: Validation failed");
+        throw new Error(
+          "insertDescription validation failed: Validation failed",
+        );
       });
 
       await expect(insertDescription("invalid")).rejects.toThrow(
@@ -159,7 +163,9 @@ describe("insertDescription (Isolated)", () => {
 
     it("should validate description name requirements", async () => {
       mockValidateInsert.mockImplementation(() => {
-        throw new Error("insertDescription validation failed: Invalid description name");
+        throw new Error(
+          "insertDescription validation failed: Invalid description name",
+        );
       });
 
       await expect(insertDescription("")).rejects.toThrow(

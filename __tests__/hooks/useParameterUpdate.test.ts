@@ -49,15 +49,13 @@ import { HookValidator } from "../../utils/hookValidation";
 const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 describe("updateParameter (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Successful updates", () => {
     it("should update parameter successfully", async () => {
@@ -209,7 +207,8 @@ describe("updateParameter (Isolated)", () => {
       });
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "HTTP 404",
-      );    });
+      );
+    });
 
     it("should handle 400 bad request errors", async () => {
       const oldParameter = createTestParameter();
@@ -223,7 +222,8 @@ describe("updateParameter (Isolated)", () => {
       });
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "HTTP 400",
-      );    });
+      );
+    });
 
     it("should handle 403 forbidden errors for restricted parameters", async () => {
       const oldParameter = createTestParameter({
@@ -239,7 +239,8 @@ describe("updateParameter (Isolated)", () => {
       });
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "HTTP 403",
-      );    });
+      );
+    });
 
     it("should handle 500 server errors", async () => {
       const oldParameter = createTestParameter();
@@ -253,7 +254,8 @@ describe("updateParameter (Isolated)", () => {
       });
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "HTTP 500",
-      );    });
+      );
+    });
 
     it("should handle network errors", async () => {
       const oldParameter = createTestParameter();
@@ -262,7 +264,8 @@ describe("updateParameter (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "Network error",
-      );    });
+      );
+    });
 
     it("should handle timeout errors", async () => {
       const oldParameter = createTestParameter();
@@ -271,7 +274,8 @@ describe("updateParameter (Isolated)", () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
       await expect(updateParameter(oldParameter, newParameter)).rejects.toThrow(
         "Request timeout",
-      );    });
+      );
+    });
   });
 
   describe("Request format validation", () => {

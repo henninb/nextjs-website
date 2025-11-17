@@ -72,7 +72,7 @@ export default function useTotalsPerAccountFetch(accountNameOwner: string) {
       gcTime: 10 * 60 * 1000, // 10 minutes
       retry: 1,
       enabled: !!accountNameOwner,
-    }
+    },
   );
 
   if (queryResult.isError) {

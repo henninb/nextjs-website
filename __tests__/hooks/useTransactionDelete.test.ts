@@ -46,9 +46,9 @@ jest.mock("../../utils/validation/sanitization", () => ({
 }));
 
 const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 const { InputSanitizer } = jest.requireMock(
   "../../utils/validation/sanitization",
 ) as {

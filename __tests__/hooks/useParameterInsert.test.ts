@@ -49,15 +49,13 @@ import { HookValidator } from "../../utils/hookValidation";
 const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
 describe("insertParameter (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateInsert.mockImplementation((data) => data);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Successful insertion", () => {
     it("should insert parameter successfully with 200 response", async () => {
@@ -127,14 +125,16 @@ describe("insertParameter (Isolated)", () => {
       );
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Parameter name already exists",
-      );    });
+      );
+    });
 
     it("should handle 500 server error", async () => {
       const testParameter = createTestParameter();
       global.fetch = createModernErrorFetchMock("Internal server error", 500);
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Internal server error",
-      );    });
+      );
+    });
 
     it("should handle 409 conflict error for duplicate parameters", async () => {
       const duplicateParameter = createTestParameter({
@@ -147,7 +147,8 @@ describe("insertParameter (Isolated)", () => {
       );
       await expect(insertParameter(duplicateParameter)).rejects.toThrow(
         "Parameter already exists with this name",
-      );    });
+      );
+    });
 
     it("should handle error response without message", async () => {
       const testParameter = createTestParameter();
@@ -156,9 +157,8 @@ describe("insertParameter (Isolated)", () => {
         status: 400,
         json: jest.fn().mockResolvedValue({}),
       });
-      await expect(insertParameter(testParameter)).rejects.toThrow(
-        "HTTP 400",
-      );    });
+      await expect(insertParameter(testParameter)).rejects.toThrow("HTTP 400");
+    });
 
     it("should handle malformed error response", async () => {
       const testParameter = createTestParameter();
@@ -167,23 +167,24 @@ describe("insertParameter (Isolated)", () => {
         status: 400,
         json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
       });
-      await expect(insertParameter(testParameter)).rejects.toThrow(
-        "HTTP 400",
-      );    });
+      await expect(insertParameter(testParameter)).rejects.toThrow("HTTP 400");
+    });
 
     it("should handle network errors", async () => {
       const testParameter = createTestParameter();
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Network error",
-      );    });
+      );
+    });
 
     it("should handle timeout errors", async () => {
       const testParameter = createTestParameter();
       global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Request timeout",
-      );    });
+      );
+    });
   });
 
   describe("Request format validation", () => {
@@ -421,7 +422,6 @@ describe("insertParameter (Isolated)", () => {
     });
   });
 
-
   describe("Integration scenarios", () => {
     it("should handle complete successful parameter creation flow", async () => {
       const newParameter = createTestParameter({
@@ -468,7 +468,8 @@ describe("insertParameter (Isolated)", () => {
       );
       await expect(insertParameter(invalidParameter)).rejects.toThrow(
         "Parameter name cannot be empty and must be unique",
-      );    });
+      );
+    });
 
     it("should handle server errors gracefully", async () => {
       const testParameter = createTestParameter();
@@ -478,7 +479,8 @@ describe("insertParameter (Isolated)", () => {
       );
       await expect(insertParameter(testParameter)).rejects.toThrow(
         "Database connection failed",
-      );    });
+      );
+    });
   });
 
   describe("Parameter-specific business logic", () => {

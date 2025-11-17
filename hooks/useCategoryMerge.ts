@@ -51,19 +51,22 @@ export const mergeCategories = async (payload: MergePayload): Promise<any> => {
 export default function useCategoryMerge() {
   const queryClient = useQueryClient();
 
-  return useStandardMutation((payload: MergePayload) => mergeCategories(payload), {
-    mutationKey: ["categoryMerge"],
-    onSuccess: (_response, variables) => {
-      log.debug("Categories merged successfully", {
-        sourceNames: variables.sourceNames,
-        targetName: variables.targetName,
-      });
+  return useStandardMutation(
+    (payload: MergePayload) => mergeCategories(payload),
+    {
+      mutationKey: ["categoryMerge"],
+      onSuccess: (_response, variables) => {
+        log.debug("Categories merged successfully", {
+          sourceNames: variables.sourceNames,
+          targetName: variables.targetName,
+        });
 
-      // Invalidate categories to refresh the list
-      queryClient.invalidateQueries({ queryKey: QueryKeys.category() });
+        // Invalidate categories to refresh the list
+        queryClient.invalidateQueries({ queryKey: QueryKeys.category() });
+      },
+      onError: (error) => {
+        log.error("Merge failed", error);
+      },
     },
-    onError: (error) => {
-      log.error("Merge failed", error);
-    },
-  });
+  );
 }

@@ -2,7 +2,10 @@ import React from "react";
 import { renderHook } from "@testing-library/react";
 import useTransferFetch from "../../hooks/useTransferFetch";
 import Transfer from "../../model/Transfer";
-import { createModernFetchMock, createTestTransfer } from "../../testHelpers.modern";
+import {
+  createModernFetchMock,
+  createTestTransfer,
+} from "../../testHelpers.modern";
 import { FetchError } from "../../utils/fetchUtils";
 
 function createMockLogger() {
@@ -42,9 +45,9 @@ jest.mock("../../utils/queryConfig", () => {
   };
 });
 
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 const { __mockUseAuthenticatedQuery: mockUseAuthenticatedQuery } =
   jest.requireMock("../../utils/queryConfig") as {
     __mockUseAuthenticatedQuery: jest.Mock;
@@ -116,7 +119,10 @@ describe("useTransferFetch Modern Endpoint (unit)", () => {
   });
 
   it("logs success metadata when data is returned", () => {
-    const transfers = [createTestTransfer(), createTestTransfer({ transferId: 2 })];
+    const transfers = [
+      createTestTransfer(),
+      createTestTransfer({ transferId: 2 }),
+    ];
     mockUseAuthenticatedQuery.mockReturnValue({
       data: transfers,
       isLoading: false,
@@ -134,7 +140,11 @@ describe("useTransferFetch Modern Endpoint (unit)", () => {
   });
 
   it("logs errors when query reports failure", () => {
-    const fetchError = new FetchError("Internal error", 500, "Internal Server Error");
+    const fetchError = new FetchError(
+      "Internal error",
+      500,
+      "Internal Server Error",
+    );
     mockUseAuthenticatedQuery.mockReturnValue({
       data: undefined,
       isLoading: false,

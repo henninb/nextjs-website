@@ -30,25 +30,22 @@ const CATEGORIES_QUERY = /* GraphQL */ `
 `;
 
 export default function useCategoryFetchGql() {
-  const queryResult = useAuthenticatedQuery(
-    ["categoryGQL"],
-    async () => {
-      log.debug("Starting GraphQL query");
-      const data = await graphqlRequest<CategoriesQueryResult>({
-        query: CATEGORIES_QUERY,
-      });
-      const mapped: Category[] = (data.categories || []).map((c) => ({
-        categoryId: c.categoryId,
-        categoryName: c.categoryName,
-        activeStatus: !!c.activeStatus,
-        categoryCount: c.categoryCount ?? undefined,
-        dateAdded: c.dateAdded ? new Date(c.dateAdded) : undefined,
-        dateUpdated: c.dateUpdated ? new Date(c.dateUpdated) : undefined,
-      }));
-      log.debug("Query successful", { count: mapped.length });
-      return mapped;
-    },
-  );
+  const queryResult = useAuthenticatedQuery(["categoryGQL"], async () => {
+    log.debug("Starting GraphQL query");
+    const data = await graphqlRequest<CategoriesQueryResult>({
+      query: CATEGORIES_QUERY,
+    });
+    const mapped: Category[] = (data.categories || []).map((c) => ({
+      categoryId: c.categoryId,
+      categoryName: c.categoryName,
+      activeStatus: !!c.activeStatus,
+      categoryCount: c.categoryCount ?? undefined,
+      dateAdded: c.dateAdded ? new Date(c.dateAdded) : undefined,
+      dateUpdated: c.dateUpdated ? new Date(c.dateUpdated) : undefined,
+    }));
+    log.debug("Query successful", { count: mapped.length });
+    return mapped;
+  });
 
   if (queryResult.isError) {
     log.error("Query failed", queryResult.error);

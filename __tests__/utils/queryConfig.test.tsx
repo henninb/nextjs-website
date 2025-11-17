@@ -68,7 +68,7 @@ describe("queryConfig", () => {
 
       const { result } = renderHook(
         () => useAuthenticatedQuery(["test"], mockQueryFn),
-        { wrapper }
+        { wrapper },
       );
 
       // Query should be disabled while loading
@@ -88,7 +88,7 @@ describe("queryConfig", () => {
 
       const { result } = renderHook(
         () => useAuthenticatedQuery(["test"], mockQueryFn),
-        { wrapper }
+        { wrapper },
       );
 
       // Query should be disabled when not authenticated
@@ -109,7 +109,7 @@ describe("queryConfig", () => {
 
       const { result } = renderHook(
         () => useAuthenticatedQuery(["test"], mockQueryFn),
-        { wrapper }
+        { wrapper },
       );
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -128,10 +128,9 @@ describe("queryConfig", () => {
 
       const mockQueryFn = jest.fn().mockResolvedValue({ data: "test" });
 
-      renderHook(
-        () => useAuthenticatedQuery(["test"], mockQueryFn),
-        { wrapper }
-      );
+      renderHook(() => useAuthenticatedQuery(["test"], mockQueryFn), {
+        wrapper,
+      });
 
       await waitFor(() => expect(mockQueryFn).toHaveBeenCalled());
 
@@ -157,7 +156,7 @@ describe("queryConfig", () => {
             staleTime: 10000,
             retry: 3,
           }),
-        { wrapper }
+        { wrapper },
       );
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -183,7 +182,7 @@ describe("queryConfig", () => {
           useAuthenticatedQuery(["test"], mockQueryFn, {
             enabled: false, // Explicitly disabled
           }),
-        { wrapper }
+        { wrapper },
       );
 
       // Query should not execute even when authenticated
@@ -214,7 +213,7 @@ describe("queryConfig", () => {
 
       const { result } = renderHook(
         () => usePublicQuery(["public"], mockQueryFn),
-        { wrapper }
+        { wrapper },
       );
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -228,7 +227,7 @@ describe("queryConfig", () => {
 
       const { result } = renderHook(
         () => usePublicQuery(["test"], mockQueryFn),
-        { wrapper }
+        { wrapper },
       );
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -258,10 +257,9 @@ describe("queryConfig", () => {
       const mockData = { id: 1, name: "test" };
       const mockMutationFn = jest.fn().mockResolvedValue(mockData);
 
-      const { result } = renderHook(
-        () => useStandardMutation(mockMutationFn),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useStandardMutation(mockMutationFn), {
+        wrapper,
+      });
 
       result.current.mutate({ name: "test" });
 
@@ -270,7 +268,7 @@ describe("queryConfig", () => {
       // React Query v5 passes additional context as second parameter
       expect(mockMutationFn).toHaveBeenCalledWith(
         { name: "test" },
-        expect.any(Object)
+        expect.any(Object),
       );
       expect(result.current.data).toEqual(mockData);
     });
@@ -279,10 +277,9 @@ describe("queryConfig", () => {
       const mockError = new Error("Mutation failed");
       const mockMutationFn = jest.fn().mockRejectedValue(mockError);
 
-      const { result } = renderHook(
-        () => useStandardMutation(mockMutationFn),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useStandardMutation(mockMutationFn), {
+        wrapper,
+      });
 
       result.current.mutate({ name: "test" });
 
@@ -300,7 +297,7 @@ describe("queryConfig", () => {
 
       const { result } = renderHook(
         () => useStandardMutation(mockMutationFn, { onSuccess }),
-        { wrapper }
+        { wrapper },
       );
 
       result.current.mutate({ name: "test" });
@@ -312,7 +309,7 @@ describe("queryConfig", () => {
         mockData,
         { name: "test" },
         undefined,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -323,7 +320,7 @@ describe("queryConfig", () => {
 
       const { result } = renderHook(
         () => useStandardMutation(mockMutationFn, { onError }),
-        { wrapper }
+        { wrapper },
       );
 
       result.current.mutate({ name: "test" });
@@ -337,7 +334,7 @@ describe("queryConfig", () => {
         mockError,
         { name: "test" },
         undefined,
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -349,7 +346,7 @@ describe("queryConfig", () => {
           useStandardMutation(mockMutationFn, {
             mutationKey: ["customKey"],
           }),
-        { wrapper }
+        { wrapper },
       );
 
       result.current.mutate({ name: "test" });

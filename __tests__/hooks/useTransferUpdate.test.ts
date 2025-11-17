@@ -63,15 +63,13 @@ const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
 });
 
 describe("useTransferUpdate Business Logic (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("updateTransfer", () => {
     describe("Successful updates", () => {
@@ -242,7 +240,6 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Network error",
         );
-
       });
 
       it("should handle timeout errors", async () => {
@@ -256,7 +253,6 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Request timeout",
         );
-
       });
 
       it("should handle JSON parsing errors", async () => {
@@ -272,7 +268,6 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
         await expect(updateTransfer(oldTransfer, newTransfer)).rejects.toThrow(
           "Invalid JSON",
         );
-
       });
     });
 
@@ -318,7 +313,7 @@ describe("useTransferUpdate Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
           }),
         );

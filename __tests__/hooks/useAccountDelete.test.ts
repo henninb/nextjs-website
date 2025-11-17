@@ -35,7 +35,10 @@ jest.mock("../../utils/validation/sanitization", () => ({
 
 import Account from "../../model/Account";
 import { deleteAccount } from "../../hooks/useAccountDelete";
-import { InputSanitizer, SecurityLogger } from "../../utils/validation/sanitization";
+import {
+  InputSanitizer,
+  SecurityLogger,
+} from "../../utils/validation/sanitization";
 import { HookValidator } from "../../utils/hookValidation";
 
 describe("deleteAccount (Isolated)", () => {
@@ -84,7 +87,7 @@ describe("deleteAccount (Isolated)", () => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-            Accept: "application/json",
+        Accept: "application/json",
       },
     });
     expect(result).toBeNull();
@@ -160,9 +163,7 @@ describe("deleteAccount (Isolated)", () => {
       json: jest.fn().mockResolvedValueOnce({}),
     });
 
-    await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "HTTP 400",
-    );
+    await expect(deleteAccount(mockAccount)).rejects.toThrow("HTTP 400");
   });
 
   it("should handle JSON parsing errors", async () => {
@@ -172,9 +173,7 @@ describe("deleteAccount (Isolated)", () => {
       json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
     });
 
-    await expect(deleteAccount(mockAccount)).rejects.toThrow(
-      "HTTP 400",
-    );
+    await expect(deleteAccount(mockAccount)).rejects.toThrow("HTTP 400");
   });
 
   it("should handle network errors", async () => {
@@ -223,5 +222,4 @@ describe("deleteAccount (Isolated)", () => {
       expect.any(Object),
     );
   });
-
 });

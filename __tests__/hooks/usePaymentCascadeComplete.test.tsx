@@ -42,9 +42,9 @@ jest.mock("../../utils/validation/sanitization", () => ({
   },
 }));
 
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 
 jest.mock("next/router", () => ({
   useRouter: () => ({

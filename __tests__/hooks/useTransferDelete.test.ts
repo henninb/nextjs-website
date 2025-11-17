@@ -32,10 +32,7 @@ jest.mock("../../utils/validation", () => ({
 }));
 
 import Transfer from "../../model/Transfer";
-import {
-  createTestTransfer,
-  simulateNetworkError,
-} from "../../testHelpers";
+import { createTestTransfer, simulateNetworkError } from "../../testHelpers";
 import {
   createModernFetchMock,
   createModernErrorFetchMock,
@@ -58,15 +55,13 @@ describe("deleteTransfer (Isolated)", () => {
     activeStatus: true,
   });
 
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateDelete.mockImplementation(() => {});
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Successful deletion", () => {
     it("should delete transfer successfully and return transfer data", async () => {
@@ -324,7 +319,6 @@ describe("deleteTransfer (Isolated)", () => {
       global.fetch = createModernFetchMock(null, { status: 204 });
 
       await deleteTransfer(mockTransfer);
-
     });
 
     it("should log different transfer-specific error types", async () => {

@@ -81,7 +81,9 @@ export default function useTransferUpdateGql() {
       return mapped;
     },
     onSuccess: (updatedTransfer) => {
-      log.debug("Update successful", { transferId: updatedTransfer.transferId });
+      log.debug("Update successful", {
+        transferId: updatedTransfer.transferId,
+      });
       const key = ["transferGQL"];
       const old = queryClient.getQueryData<Transfer[]>(key);
       if (old) {

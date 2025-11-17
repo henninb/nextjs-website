@@ -67,8 +67,7 @@ describe("updateCategory (Isolated)", () => {
     mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Successful updates", () => {
     it("should update category successfully", async () => {

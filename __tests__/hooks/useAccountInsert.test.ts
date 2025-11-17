@@ -172,7 +172,7 @@ describe("Account Insert Functions (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
             body: expect.stringContaining('"activeStatus":true'),
           }),
@@ -281,9 +281,7 @@ describe("Account Insert Functions (Isolated)", () => {
           json: jest.fn().mockResolvedValueOnce({}),
         });
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "HTTP 400",
-        );
+        await expect(insertAccount(mockAccount)).rejects.toThrow("HTTP 400");
       });
 
       it("should handle malformed error response", async () => {
@@ -293,9 +291,7 @@ describe("Account Insert Functions (Isolated)", () => {
           json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
         });
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "HTTP 400",
-        );
+        await expect(insertAccount(mockAccount)).rejects.toThrow("HTTP 400");
       });
 
       it("should handle non-JSON error responses", async () => {
@@ -305,9 +301,7 @@ describe("Account Insert Functions (Isolated)", () => {
           json: jest.fn().mockRejectedValueOnce(new Error("Unexpected token")),
         });
 
-        await expect(insertAccount(mockAccount)).rejects.toThrow(
-          "HTTP 500",
-        );
+        await expect(insertAccount(mockAccount)).rejects.toThrow("HTTP 500");
       });
     });
 
@@ -342,7 +336,7 @@ describe("Account Insert Functions (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
           }),
         );

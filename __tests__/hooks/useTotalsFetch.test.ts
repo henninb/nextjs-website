@@ -58,8 +58,7 @@ describe("fetchTotals (Isolated)", () => {
     ...overrides,
   });
 
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   afterEach(() => {
     global.fetch = originalFetch;
@@ -78,7 +77,7 @@ describe("fetchTotals (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
       });
     });
@@ -161,9 +160,7 @@ describe("fetchTotals (Isolated)", () => {
         json: jest.fn().mockResolvedValue({ message: "Totals not found" }),
       });
 
-      await expect(fetchTotals()).rejects.toThrow(
-        "HTTP error! Status: 404",
-      );
+      await expect(fetchTotals()).rejects.toThrow("HTTP error! Status: 404");
     });
 
     it("should handle 500 server error", async () => {
@@ -174,9 +171,7 @@ describe("fetchTotals (Isolated)", () => {
         json: jest.fn().mockResolvedValue({ message: "Internal server error" }),
       });
 
-      await expect(fetchTotals()).rejects.toThrow(
-        "HTTP error! Status: 500",
-      );
+      await expect(fetchTotals()).rejects.toThrow("HTTP error! Status: 500");
     });
 
     it("should handle 401 unauthorized error", async () => {
@@ -187,9 +182,7 @@ describe("fetchTotals (Isolated)", () => {
         json: jest.fn().mockResolvedValue({ message: "Unauthorized access" }),
       });
 
-      await expect(fetchTotals()).rejects.toThrow(
-        "HTTP error! Status: 401",
-      );
+      await expect(fetchTotals()).rejects.toThrow("HTTP error! Status: 401");
     });
 
     it("should handle 400 bad request", async () => {
@@ -200,25 +193,19 @@ describe("fetchTotals (Isolated)", () => {
         json: jest.fn().mockResolvedValue({ message: "Bad request" }),
       });
 
-      await expect(fetchTotals()).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
+      await expect(fetchTotals()).rejects.toThrow("HTTP error! Status: 400");
     });
 
     it("should handle network errors", async () => {
       global.fetch = simulateNetworkError();
 
-      await expect(fetchTotals()).rejects.toThrow(
-        "Network error",
-      );
+      await expect(fetchTotals()).rejects.toThrow("Network error");
     });
 
     it("should handle timeout errors", async () => {
       global.fetch = simulateTimeoutError();
 
-      await expect(fetchTotals()).rejects.toThrow(
-        "Request timeout",
-      );
+      await expect(fetchTotals()).rejects.toThrow("Request timeout");
     });
 
     it("should handle fetch errors without specific message", async () => {
@@ -240,7 +227,7 @@ describe("fetchTotals (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
       });
     });

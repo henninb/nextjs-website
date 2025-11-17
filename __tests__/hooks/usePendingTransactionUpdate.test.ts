@@ -36,10 +36,7 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
-import {
-  createFetchMock,
-  createErrorFetchMock,
-} from "../../testHelpers";
+import { createFetchMock, createErrorFetchMock } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
 import { updatePendingTransaction } from "../../hooks/usePendingTransactionUpdate";
@@ -61,15 +58,13 @@ const createTestPendingTransaction = (
 });
 
 describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("updatePendingTransaction", () => {
     describe("Successful updates", () => {
@@ -258,7 +253,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow("HTTP 404: Not Found");
-
       });
 
       it("should handle 400 bad request errors", async () => {
@@ -278,7 +272,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow("HTTP 400: Bad Request");
-
       });
 
       it("should handle 403 forbidden errors", async () => {
@@ -298,7 +291,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow("HTTP 403: Forbidden");
-
       });
 
       it("should handle 500 server errors", async () => {
@@ -317,10 +309,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             oldPendingTransaction,
             newPendingTransaction,
           ),
-        ).rejects.toThrow(
-          "HTTP 500: Internal Server Error",
-        );
-
+        ).rejects.toThrow("HTTP 500: Internal Server Error");
       });
 
       it("should handle network errors", async () => {
@@ -335,7 +324,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow("Network error");
-
       });
 
       it("should handle timeout errors", async () => {
@@ -352,7 +340,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow("Request timeout");
-
       });
 
       it("should handle JSON parsing errors", async () => {
@@ -371,7 +358,6 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             newPendingTransaction,
           ),
         ).rejects.toThrow("Invalid JSON");
-
       });
     });
 
@@ -426,7 +412,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
           }),
         );
@@ -865,10 +851,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
             oldPendingTransaction,
             newPendingTransaction,
           ),
-        ).rejects.toThrow(
-          "HTTP 400: Bad Request - Invalid review status",
-        );
-
+        ).rejects.toThrow("HTTP 400: Bad Request - Invalid review status");
       });
 
       it("should handle pending transaction ID mismatch scenarios", async () => {

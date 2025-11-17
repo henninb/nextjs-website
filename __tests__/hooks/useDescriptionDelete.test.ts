@@ -56,15 +56,13 @@ describe("deleteDescription (Isolated)", () => {
     dateUpdated: new Date("2024-01-01"),
   });
 
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateDelete.mockImplementation(() => {});
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Successful deletion", () => {
     it("should delete description successfully with 204 status", async () => {

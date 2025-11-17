@@ -45,9 +45,9 @@ jest.mock("../../utils/validation", () => ({
 }));
 
 const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 
 describe("userAccountRegister (isolated)", () => {
   const newUser = createTestUser({

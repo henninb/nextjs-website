@@ -23,7 +23,7 @@ const updateValidationAmount = async (
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-            Accept: "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(newValidationAmount),
     });
@@ -96,7 +96,7 @@ describe("useValidationAmountUpdate Business Logic (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
             body: JSON.stringify(newValidationAmount),
           },
@@ -302,7 +302,7 @@ describe("useValidationAmountUpdate Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
           }),
         );

@@ -174,7 +174,6 @@ describe("fetchValidationAmount (Isolated)", () => {
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
         "HTTP error! Status: 500",
       );
-
     });
 
     it("should handle 400 bad request", async () => {
@@ -183,7 +182,6 @@ describe("fetchValidationAmount (Isolated)", () => {
       await expect(fetchValidationAmount("")).rejects.toThrow(
         "HTTP error! Status: 400",
       );
-
     });
 
     it("should handle network errors", async () => {
@@ -192,7 +190,6 @@ describe("fetchValidationAmount (Isolated)", () => {
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
         "Network error",
       );
-
     });
 
     it("should handle timeout errors", async () => {
@@ -201,14 +198,12 @@ describe("fetchValidationAmount (Isolated)", () => {
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow(
         "Request timeout",
       );
-
     });
 
     it("should handle fetch errors without specific message", async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error(""));
 
       await expect(fetchValidationAmount("testAccount")).rejects.toThrow();
-
     });
   });
 
@@ -225,7 +220,7 @@ describe("fetchValidationAmount (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
       });
     });

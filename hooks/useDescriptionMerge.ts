@@ -21,7 +21,9 @@ export type MergePayload = {
  * @param payload - Source description names and target description name
  * @returns Merge operation result
  */
-export const mergeDescriptions = async (payload: MergePayload): Promise<any> => {
+export const mergeDescriptions = async (
+  payload: MergePayload,
+): Promise<any> => {
   log.debug("Merging descriptions", {
     sourceCount: payload.sourceNames.length,
     targetName: payload.targetName,

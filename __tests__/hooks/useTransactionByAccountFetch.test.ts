@@ -165,7 +165,6 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       await expect(fetchTransactionsByAccount("nonexistent")).rejects.toThrow(
         "Failed to fetch transactions for account: Not Found",
       );
-
     });
 
     it("should handle 500 server error", async () => {
@@ -174,7 +173,6 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
         "Bad Request",
       );
-
     });
 
     it("should handle 400 bad request", async () => {
@@ -183,7 +181,6 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       await expect(fetchTransactionsByAccount("")).rejects.toThrow(
         "Bad Request",
       );
-
     });
 
     it("should handle network errors", async () => {
@@ -192,7 +189,6 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
         "Network error",
       );
-
     });
 
     it("should handle timeout errors", async () => {
@@ -201,14 +197,12 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow(
         "Request timeout",
       );
-
     });
 
     it("should handle fetch errors without specific message", async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error(""));
 
       await expect(fetchTransactionsByAccount("testAccount")).rejects.toThrow();
-
     });
   });
 
@@ -313,7 +307,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
       });
     });

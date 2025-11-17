@@ -85,8 +85,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
     mockValidateInsert.mockImplementation((data: Transaction) => data);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Helper functions", () => {
     describe("setupNewTransaction", () => {
@@ -199,7 +198,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
             body: JSON.stringify({
               guid: "test-uuid-123",
@@ -227,7 +226,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           amount: 200.0,
           transactionState: "future",
         });
-
 
         const mockResponse = createTestTransaction({
           guid: "future-uuid-123",
@@ -269,7 +267,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Sanitized Description",
         });
         mockValidateInsert.mockImplementation(() => validatedTransaction);
-
 
         global.fetch = createFetchMock(validatedTransaction);
 
@@ -349,41 +346,41 @@ describe("Transaction Insert Functions (Isolated)", () => {
         const errorMessage = "Invalid transaction data";
         global.fetch = createErrorFetchMock(errorMessage, 400);
 
-      await expect(
-        insertTransaction("test_account", mockTransaction, false, false),
-      ).rejects.toThrow(errorMessage);
+        await expect(
+          insertTransaction("test_account", mockTransaction, false, false),
+        ).rejects.toThrow(errorMessage);
       });
 
       it("should handle server error without error message", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValueOnce({}),
-      });
+        global.fetch = jest.fn().mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          json: jest.fn().mockResolvedValueOnce({}),
+        });
 
-      await expect(
-        insertTransaction("test_account", mockTransaction, false, false),
-      ).rejects.toThrow("HTTP 400: undefined");
+        await expect(
+          insertTransaction("test_account", mockTransaction, false, false),
+        ).rejects.toThrow("HTTP 400: undefined");
       });
 
       it("should handle JSON parsing errors in error response", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
-      });
+        global.fetch = jest.fn().mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
+        });
 
-      await expect(
-        insertTransaction("test_account", mockTransaction, false, false),
-      ).rejects.toThrow("HTTP 400: undefined");
+        await expect(
+          insertTransaction("test_account", mockTransaction, false, false),
+        ).rejects.toThrow("HTTP 400: undefined");
       });
 
       it("should handle network errors", async () => {
         global.fetch = simulateNetworkError();
 
-      await expect(
-        insertTransaction("test_account", mockTransaction, false, false),
-      ).rejects.toThrow("Network error");
+        await expect(
+          insertTransaction("test_account", mockTransaction, false, false),
+        ).rejects.toThrow("Network error");
       });
 
       it("should handle various HTTP error statuses", async () => {
@@ -447,7 +444,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
           }),
         );
@@ -536,7 +533,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           amount: 25.0,
         });
 
-
         const mockResponse = createTestTransaction({ guid: "minimal-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
@@ -564,7 +560,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           reoccurringType: "monthly",
         });
 
-
         const mockResponse = createTestTransaction({ guid: "full-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
@@ -583,7 +578,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           amount: 999999.99,
           description: "Large Amount",
         });
-
 
         const mockResponse = createTestTransaction({ guid: "large-uuid" });
         global.fetch = createFetchMock(mockResponse);
@@ -604,7 +598,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           description: "Refund",
         });
 
-
         const mockResponse = createTestTransaction({ guid: "negative-uuid" });
         global.fetch = createFetchMock(mockResponse);
 
@@ -624,7 +617,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           category: "food & dining",
           notes: "Notes with 'quotes' and symbols @#$",
         });
-
 
         const mockResponse = createTestTransaction({ guid: "special-uuid" });
         global.fetch = createFetchMock(mockResponse);
@@ -660,7 +652,6 @@ describe("Transaction Insert Functions (Isolated)", () => {
           amount: 75.0,
           activeStatus: false, // Should be overridden to true
         });
-
 
         mockGenerateSecureUUID.mockResolvedValue("new-secure-uuid");
         global.fetch = createFetchMock(originalTransaction);

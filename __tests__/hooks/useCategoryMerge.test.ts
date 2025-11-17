@@ -63,14 +63,12 @@ describe("useCategoryMerge", () => {
     const payload = { sourceNames: ["A"], targetName: "B" };
 
     // Mock error response using Response object
-    global.fetch = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: "Bad merge" }), {
-          status: 400,
-          statusText: "Bad Request",
-        }),
-      );
+    global.fetch = jest.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "Bad merge" }), {
+        status: 400,
+        statusText: "Bad Request",
+      }),
+    );
 
     const { result } = renderHook(() => useCategoryMerge(), {
       wrapper: createWrapper(client),

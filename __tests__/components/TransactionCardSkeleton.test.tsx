@@ -130,7 +130,7 @@ describe("TransactionCardSkeleton", () => {
       const cardContent = container.querySelector(".MuiCardContent-root");
       expect(cardContent).toBeInTheDocument();
       expect(cardContent).toHaveStyle({
-        padding: "24px",
+        padding: "24px 24px 24px 24px",
         flex: "1",
       });
     });
@@ -148,7 +148,7 @@ describe("TransactionCardSkeleton", () => {
       const { container } = renderWithTheme(<TransactionCardSkeleton />);
 
       const cardContent = container.querySelector(".MuiCardContent-root");
-      expect(cardContent).toHaveStyle({ padding: "24px" });
+      expect(cardContent).toHaveStyle({ padding: "24px 24px 24px 24px" });
     });
   });
 

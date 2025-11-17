@@ -67,15 +67,13 @@ const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
 });
 
 describe("useTransferInsert Business Logic (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateInsert.mockImplementation((data) => data);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("overRideTransferValues", () => {
     it("should preserve amount and transactionDate properties", () => {
@@ -216,7 +214,6 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
           "Invalid transfer data",
         );
-
       });
 
       it("should handle 409 conflict error for duplicate transfer", async () => {
@@ -229,7 +226,6 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
           "Transfer already exists",
         );
-
       });
 
       it("should handle 500 server error", async () => {
@@ -239,7 +235,6 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
           "Internal server error",
         );
-
       });
 
       it("should handle error response without message", async () => {
@@ -250,10 +245,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           json: jest.fn().mockResolvedValue({}),
         });
 
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "HTTP 400",
-        );
-
+        await expect(insertTransfer(testTransfer)).rejects.toThrow("HTTP 400");
       });
 
       it("should handle malformed error response", async () => {
@@ -264,10 +256,7 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
           json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
         });
 
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "HTTP 400",
-        );
-
+        await expect(insertTransfer(testTransfer)).rejects.toThrow("HTTP 400");
       });
 
       it("should handle network errors", async () => {
@@ -277,7 +266,6 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
           "Network error",
         );
-
       });
 
       it("should handle timeout errors", async () => {
@@ -289,7 +277,6 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
           "Request timeout",
         );
-
       });
     });
 
@@ -575,7 +562,6 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
           "Insufficient funds in source account",
         );
-
       });
 
       it("should handle duplicate transfer detection", async () => {
@@ -590,7 +576,6 @@ describe("useTransferInsert Business Logic (Isolated)", () => {
         await expect(insertTransfer(testTransfer)).rejects.toThrow(
           "Transfer with same details already exists",
         );
-
       });
     });
   });

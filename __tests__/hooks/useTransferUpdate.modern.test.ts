@@ -58,9 +58,9 @@ jest.mock("../../utils/validation/sanitization", () => ({
   },
 }));
 
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 
 // Helper to create wrapper for React Query
 const createWrapper = () => {
@@ -197,7 +197,7 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
         result.current.mutateAsync({ oldTransfer, newTransfer }),
       ).rejects.toThrow("Invalid transfer data");
       expect(mockLogger.error).toHaveBeenCalledWith(
-      "Update failed",
+        "Update failed",
         expect.any(Error),
       );
     });

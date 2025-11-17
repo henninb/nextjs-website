@@ -31,7 +31,9 @@ export default function useParameterDeleteGql() {
       return { ok: data.deleteParameter, id: p.parameterId };
     },
     onSuccess: (_res, variables) => {
-      log.debug("Delete successful", { parameterId: variables.oldRow.parameterId });
+      log.debug("Delete successful", {
+        parameterId: variables.oldRow.parameterId,
+      });
       const key = ["parameterGQL"];
       const old = queryClient.getQueryData<Parameter[]>(key) || [];
       queryClient.setQueryData(

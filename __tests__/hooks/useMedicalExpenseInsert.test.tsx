@@ -193,9 +193,12 @@ describe("useMedicalExpenseInsert", () => {
     expect(error).toBeDefined();
     expect(error?.message).toContain("Validation failed");
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
 
     expect(result.current.isSuccess).toBe(false);
   });
@@ -225,9 +228,12 @@ describe("useMedicalExpenseInsert", () => {
     expect(error).toBeDefined();
     expect(error?.message).toContain("Duplicate medical expense");
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 },
+    );
   });
 
   it("should handle server errors (500)", async () => {

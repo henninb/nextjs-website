@@ -39,7 +39,6 @@ const createWrapper =
   );
 
 describe("useCategoryFetch", () => {
-
   it("should fetch categories successfully", async () => {
     const queryClient = createTestQueryClient();
 
@@ -87,9 +86,11 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to return 404
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockResolvedValue(
-      new Response(JSON.stringify({ error: "Not found" }), { status: 404 }),
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ error: "Not found" }), { status: 404 }),
+      );
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
@@ -168,7 +169,9 @@ describe("useCategoryFetch", () => {
 
     // Mock the global fetch function to throw persistent error
     const originalFetch = global.fetch;
-    global.fetch = jest.fn().mockRejectedValue(new Error("Persistent network error"));
+    global.fetch = jest
+      .fn()
+      .mockRejectedValue(new Error("Persistent network error"));
 
     const { result } = renderHook(() => useCategoryFetch(), {
       wrapper: createWrapper(queryClient),
@@ -219,7 +222,6 @@ describe("useCategoryFetch", () => {
     // Verify correct headers were sent (case-sensitive)
     expect(capturedHeaders["Content-Type"]).toBe("application/json");
     expect(capturedHeaders["Accept"]).toBe("application/json");
-
   });
 
   it("should handle 401 unauthorized errors properly", async () => {
@@ -277,6 +279,5 @@ describe("useCategoryFetch", () => {
 
     expect(result.current.refetch).toBeDefined();
     expect(typeof result.current.refetch).toBe("function");
-
   });
 });

@@ -52,9 +52,9 @@ jest.mock("../../utils/logger", () => {
   };
 });
 
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 
 // Helper to create wrapper for React Query
 const createWrapper = () => {

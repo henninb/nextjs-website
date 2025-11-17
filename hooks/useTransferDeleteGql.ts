@@ -31,7 +31,9 @@ export default function useTransferDeleteGql() {
       return { ok: data.deleteTransfer ?? true, id: t.transferId };
     },
     onSuccess: (_res, variables) => {
-      log.debug("Delete successful", { transferId: variables.oldRow.transferId });
+      log.debug("Delete successful", {
+        transferId: variables.oldRow.transferId,
+      });
       const key = ["transferGQL"];
       const old = queryClient.getQueryData<Transfer[]>(key) || [];
       queryClient.setQueryData(

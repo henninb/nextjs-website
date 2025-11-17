@@ -58,8 +58,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
     ...overrides,
   });
 
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   afterEach(() => {
     global.fetch = originalFetch;
@@ -396,7 +395,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
       });
     });
@@ -532,7 +531,10 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
         { input: "savings_emergency", sanitized: "savings_emergency" },
         { input: "credit.card.visa", sanitized: "creditcardvisa" }, // . removed
         { input: "investment@portfolio", sanitized: "investmentportfolio" }, // @ removed
-        { input: "business-operating-2024", sanitized: "business-operating-2024" },
+        {
+          input: "business-operating-2024",
+          sanitized: "business-operating-2024",
+        },
       ];
       const testTotals = createTestTotals();
 

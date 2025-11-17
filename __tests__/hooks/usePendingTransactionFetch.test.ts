@@ -19,7 +19,7 @@ const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-            Accept: "application/json",
+        Accept: "application/json",
       },
     });
 

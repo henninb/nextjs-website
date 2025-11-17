@@ -88,7 +88,9 @@ export default function useCategoryUpdateGql() {
       return mapped;
     },
     onSuccess: (updatedCategory) => {
-      log.debug("Update successful", { categoryId: updatedCategory.categoryId });
+      log.debug("Update successful", {
+        categoryId: updatedCategory.categoryId,
+      });
       const key = ["categoryGQL"];
       const old = queryClient.getQueryData<Category[]>(key);
       if (old) {

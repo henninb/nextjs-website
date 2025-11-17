@@ -482,7 +482,9 @@ describe("fetchUtils", () => {
     it("should extract message from FetchError", () => {
       const error = new FetchError("Fetch failed", 500);
       // getUserMessage() returns friendly message for server errors
-      expect(getErrorMessage(error)).toBe("Server error. Please try again later.");
+      expect(getErrorMessage(error)).toBe(
+        "Server error. Please try again later.",
+      );
     });
 
     it("should return string as-is", () => {

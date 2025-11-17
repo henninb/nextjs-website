@@ -5,10 +5,7 @@ import {
   createTestPayment,
   simulateNetworkError,
 } from "../../testHelpers";
-import {
-  setupNewPayment,
-  insertPayment,
-} from "../../hooks/usePaymentInsert";
+import { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
 import { HookValidator } from "../../utils/hookValidation";
 
 function createMockLogger() {
@@ -49,9 +46,9 @@ jest.mock("../../utils/validation", () => ({
 }));
 
 const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 
 describe("usePaymentInsert business logic (isolated)", () => {
   const basePayment = createTestPayment({
@@ -151,9 +148,9 @@ describe("usePaymentInsert business logic (isolated)", () => {
     it("propagates server errors", async () => {
       global.fetch = createErrorFetchMock("Invalid payment", 400);
 
-    await expect(insertPayment(basePayment)).rejects.toThrow(
-      "Invalid payment",
-    );
+      await expect(insertPayment(basePayment)).rejects.toThrow(
+        "Invalid payment",
+      );
     });
 
     it("handles network failures", async () => {

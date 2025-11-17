@@ -25,7 +25,7 @@ const insertValidationAmount = async (
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-            Accept: "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(payload),
     });
@@ -346,7 +346,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           expect.objectContaining({
             headers: {
               "Content-Type": "application/json",
-            Accept: "application/json",
+              Accept: "application/json",
             },
           }),
         );

@@ -58,15 +58,13 @@ import { HookValidator } from "../../utils/hookValidation";
 const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 describe("updateDescription (Isolated)", () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
     mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe("Successful updates", () => {
     it("should update description successfully", async () => {
@@ -493,7 +491,7 @@ describe("updateDescription (Isolated)", () => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-            Accept: "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(newDescription),
       });

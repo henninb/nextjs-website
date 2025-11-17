@@ -30,25 +30,22 @@ const DESCRIPTIONS_QUERY = /* GraphQL */ `
 `;
 
 export default function useDescriptionFetchGql() {
-  const queryResult = useAuthenticatedQuery(
-    ["descriptionGQL"],
-    async () => {
-      log.debug("Starting GraphQL query");
-      const data = await graphqlRequest<DescriptionsQueryResult>({
-        query: DESCRIPTIONS_QUERY,
-      });
-      const mapped: Description[] = (data.descriptions || []).map((d) => ({
-        descriptionId: d.descriptionId,
-        descriptionName: d.descriptionName,
-        activeStatus: !!d.activeStatus,
-        descriptionCount: d.descriptionCount ?? undefined,
-        dateAdded: d.dateAdded ? new Date(d.dateAdded) : undefined,
-        dateUpdated: d.dateUpdated ? new Date(d.dateUpdated) : undefined,
-      }));
-      log.debug("Query successful", { count: mapped.length });
-      return mapped;
-    },
-  );
+  const queryResult = useAuthenticatedQuery(["descriptionGQL"], async () => {
+    log.debug("Starting GraphQL query");
+    const data = await graphqlRequest<DescriptionsQueryResult>({
+      query: DESCRIPTIONS_QUERY,
+    });
+    const mapped: Description[] = (data.descriptions || []).map((d) => ({
+      descriptionId: d.descriptionId,
+      descriptionName: d.descriptionName,
+      activeStatus: !!d.activeStatus,
+      descriptionCount: d.descriptionCount ?? undefined,
+      dateAdded: d.dateAdded ? new Date(d.dateAdded) : undefined,
+      dateUpdated: d.dateUpdated ? new Date(d.dateUpdated) : undefined,
+    }));
+    log.debug("Query successful", { count: mapped.length });
+    return mapped;
+  });
 
   if (queryResult.isError) {
     log.error("Query failed", queryResult.error);

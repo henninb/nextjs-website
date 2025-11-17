@@ -51,9 +51,9 @@ jest.mock("../../utils/validation/sanitization", () => ({
 }));
 
 const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
-const { __mockLogger: mockLogger } = jest.requireMock(
-  "../../utils/logger",
-) as { __mockLogger: ReturnType<typeof createMockLogger> };
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 const { InputSanitizer } = jest.requireMock(
   "../../utils/validation/sanitization",
 ) as {
@@ -70,8 +70,8 @@ describe("processLogin (isolated)", () => {
     jest.clearAllMocks();
     mockLogger.debug.mockClear();
     mockLogger.error.mockClear();
-    InputSanitizer.sanitizeUsername.mockImplementation(
-      (username: string) => username.trim(),
+    InputSanitizer.sanitizeUsername.mockImplementation((username: string) =>
+      username.trim(),
     );
     mockValidateInsert.mockImplementation((data: User) => data);
   });
@@ -138,9 +138,7 @@ describe("processLogin (isolated)", () => {
       json: jest.fn().mockResolvedValue({ error: "Invalid credentials" }),
     });
 
-    await expect(processLogin(baseUser)).rejects.toThrow(
-      "Invalid credentials",
-    );
+    await expect(processLogin(baseUser)).rejects.toThrow("Invalid credentials");
   });
 
   it("handles non-JSON error responses gracefully", async () => {
@@ -149,9 +147,7 @@ describe("processLogin (isolated)", () => {
       json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
     });
 
-    await expect(processLogin(baseUser)).rejects.toThrow(
-      "HTTP 500: undefined",
-    );
+    await expect(processLogin(baseUser)).rejects.toThrow("HTTP 500: undefined");
   });
 
   it("handles unexpected success statuses by parsing response body", async () => {
@@ -178,8 +174,6 @@ describe("processLogin (isolated)", () => {
       json: jest.fn().mockResolvedValue({}),
     });
 
-    await expect(processLogin(baseUser)).rejects.toThrow(
-      "HTTP 500: undefined",
-    );
+    await expect(processLogin(baseUser)).rejects.toThrow("HTTP 500: undefined");
   });
 });

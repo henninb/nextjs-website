@@ -63,7 +63,6 @@ jest.mock("next/router", () => ({
   }),
 }));
 
-
 const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {

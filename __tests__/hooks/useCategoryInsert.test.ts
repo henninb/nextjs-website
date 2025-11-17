@@ -122,7 +122,6 @@ describe("insertCategory (Isolated)", () => {
       const successStatuses = [200, 201];
 
       for (const status of successStatuses) {
-
         const mockResponse = createTestCategory({ categoryId: status });
         global.fetch = createModernFetchMock(mockResponse, { status });
 
@@ -136,7 +135,9 @@ describe("insertCategory (Isolated)", () => {
   describe("Validation handling", () => {
     it("should handle validation failures", async () => {
       mockValidateInsert.mockImplementation(() => {
-        throw new Error("insertCategory validation failed: Category name is required");
+        throw new Error(
+          "insertCategory validation failed: Category name is required",
+        );
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
@@ -148,7 +149,9 @@ describe("insertCategory (Isolated)", () => {
 
     it("should handle validation failures with multiple errors", async () => {
       mockValidateInsert.mockImplementation(() => {
-        throw new Error("insertCategory validation failed: Category name is required, Active status must be boolean");
+        throw new Error(
+          "insertCategory validation failed: Category name is required, Active status must be boolean",
+        );
       });
 
       await expect(insertCategory(mockCategory)).rejects.toThrow(
@@ -180,8 +183,7 @@ describe("insertCategory (Isolated)", () => {
   });
 
   describe("Error handling", () => {
-    beforeEach(() => {
-    });
+    beforeEach(() => {});
 
     it("should handle server error with error message", async () => {
       const errorMessage = "Category name already exists";
@@ -197,9 +199,7 @@ describe("insertCategory (Isolated)", () => {
         json: jest.fn().mockResolvedValueOnce({}),
       });
 
-      await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "HTTP 400",
-      );
+      await expect(insertCategory(mockCategory)).rejects.toThrow("HTTP 400");
     });
 
     it("should handle JSON parsing errors in error response", async () => {
@@ -209,9 +209,7 @@ describe("insertCategory (Isolated)", () => {
         json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
       });
 
-      await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "HTTP 400",
-      );
+      await expect(insertCategory(mockCategory)).rejects.toThrow("HTTP 400");
     });
 
     it("should handle empty error message gracefully", async () => {
@@ -221,9 +219,7 @@ describe("insertCategory (Isolated)", () => {
         json: jest.fn().mockResolvedValueOnce({}),
       });
 
-      await expect(insertCategory(mockCategory)).rejects.toThrow(
-        "HTTP 500",
-      );
+      await expect(insertCategory(mockCategory)).rejects.toThrow("HTTP 500");
     });
 
     it("should handle network errors", async () => {
@@ -249,8 +245,7 @@ describe("insertCategory (Isolated)", () => {
   });
 
   describe("Request format validation", () => {
-    beforeEach(() => {
-    });
+    beforeEach(() => {});
 
     it("should use POST method", async () => {
       global.fetch = createModernFetchMock(mockCategory);
@@ -307,8 +302,7 @@ describe("insertCategory (Isolated)", () => {
   });
 
   describe("Response handling", () => {
-    beforeEach(() => {
-    });
+    beforeEach(() => {});
 
     it("should return parsed JSON response", async () => {
       const responseData = createTestCategory({
@@ -347,8 +341,7 @@ describe("insertCategory (Isolated)", () => {
   });
 
   describe("Edge cases", () => {
-    beforeEach(() => {
-    });
+    beforeEach(() => {});
 
     it("should handle minimal category data", async () => {
       const minimalCategory = createTestCategory({
@@ -356,7 +349,6 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "minimal",
         activeStatus: true,
       });
-
 
       const mockResponse = createTestCategory({ categoryId: 111 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -376,7 +368,6 @@ describe("insertCategory (Isolated)", () => {
         dateUpdated: new Date("2024-01-15"),
       });
 
-
       const mockResponse = createTestCategory({ categoryId: 555 });
       global.fetch = createModernFetchMock(mockResponse);
 
@@ -390,7 +381,6 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "Health & Wellness (2024)",
         activeStatus: true,
       });
-
 
       const mockResponse = createTestCategory({ categoryId: 777 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -407,7 +397,6 @@ describe("insertCategory (Isolated)", () => {
         activeStatus: true,
       });
 
-
       const mockResponse = createTestCategory({ categoryId: 888 });
       global.fetch = createModernFetchMock(mockResponse);
 
@@ -421,7 +410,6 @@ describe("insertCategory (Isolated)", () => {
         categoryName: "inactive_category",
         activeStatus: false,
       });
-
 
       const mockResponse = createTestCategory({ categoryId: 444 });
       global.fetch = createModernFetchMock(mockResponse);
@@ -438,7 +426,6 @@ describe("insertCategory (Isolated)", () => {
         dateAdded: null as any,
       };
 
-
       global.fetch = createModernFetchMock(mockCategory);
 
       await insertCategory(categoryWithNulls);
@@ -453,8 +440,7 @@ describe("insertCategory (Isolated)", () => {
   });
 
   describe("Business logic validation", () => {
-    beforeEach(() => {
-    });
+    beforeEach(() => {});
 
     it("should enforce validation before API call", async () => {
       const mockResponse = createTestCategory({ categoryId: 123 });
@@ -492,7 +478,6 @@ describe("insertCategory (Isolated)", () => {
         categoryId: 0,
         categoryName: "new_category",
       });
-
 
       const responseCategory = createTestCategory({
         categoryId: 999,
