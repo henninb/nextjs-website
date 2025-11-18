@@ -50,16 +50,22 @@ export default function useTransferUpdateGql() {
       newTransfer: Transfer;
     }) => {
       log.debug("Starting mutation", { transferId: oldTransfer.transferId });
+
+      // Convert date to LocalDate format (YYYY-MM-DD) for backend compatibility
+      const dateToLocalDate = (date: Date | string): string => {
+        const d = date instanceof Date ? date : new Date(date);
+        return d.toISOString().split("T")[0];
+      };
+
       const input = {
         sourceAccount: newTransfer.sourceAccount,
         destinationAccount: newTransfer.destinationAccount,
-        transactionDate:
-          newTransfer.transactionDate instanceof Date
-            ? newTransfer.transactionDate.toISOString()
-            : new Date(newTransfer.transactionDate).toISOString(),
+        transactionDate: dateToLocalDate(newTransfer.transactionDate),
         amount: newTransfer.amount,
         activeStatus: newTransfer.activeStatus,
       };
+
+      console.log("[useTransferUpdateGql] GraphQL transfer update payload:", JSON.stringify(input));
       const data = await graphqlRequest<UpdateTransferResult>({
         query: UPDATE_TRANSFER_MUTATION,
         variables: { id: oldTransfer.transferId, transfer: input },

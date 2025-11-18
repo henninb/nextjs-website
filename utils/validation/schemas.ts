@@ -174,6 +174,8 @@ export const PaymentSchema = z.object({
   destinationAccount: accountNameOwner,
   transactionDate: dateString,
   amount: financialAmount,
+  guidSource: z.string().uuid("Invalid GUID format").optional(),
+  guidDestination: z.string().uuid("Invalid GUID format").optional(),
   activeStatus: z.boolean().default(true),
   dateAdded: dateString.optional(),
   dateUpdated: dateString.optional(),
@@ -181,13 +183,16 @@ export const PaymentSchema = z.object({
 
 // Transfer validation schema (if needed)
 export const TransferSchema = z.object({
-  transferId: z.number().int().positive().optional(),
+  transferId: z.number().int().min(0).optional(),
   sourceAccount: accountNameOwner,
   destinationAccount: accountNameOwner,
   amount: financialAmount,
-  transferDate: dateString,
-  description,
+  transactionDate: dateString, // Fixed: changed from transferDate to transactionDate to match Transfer model
+  guidSource: z.string().uuid("Invalid GUID format").optional(),
+  guidDestination: z.string().uuid("Invalid GUID format").optional(),
   activeStatus: z.boolean().default(true),
+  dateAdded: dateString.optional(),
+  dateUpdated: dateString.optional(),
 });
 
 // Validation result types
@@ -244,9 +249,11 @@ export function validateSchema<T>(
   errors?: ValidationError[];
 } {
   try {
+    console.log("[schemas.ts] validateSchema INPUT:", JSON.stringify(data));
     const result = schema.safeParse(data);
 
     if (result.success) {
+      console.log("[schemas.ts] validateSchema SUCCESS");
       return {
         success: true,
         data: result.data,
@@ -256,6 +263,7 @@ export function validateSchema<T>(
     // Handle ZodError structure (uses 'issues' instead of 'errors')
     const zodError = result.error as any;
     if (zodError && zodError.issues) {
+      console.log("[schemas.ts] Zod issues:", JSON.stringify(zodError.issues, null, 2));
       const errors: ValidationError[] = zodError.issues.map((issue: any) => ({
         field: issue.path?.join(".") || "unknown",
         message: issue.message || "Validation failed",
@@ -281,6 +289,7 @@ export function validateSchema<T>(
       errors,
     };
   } catch (error) {
+    console.error("[schemas.ts] validateSchema EXCEPTION:", error);
     return {
       success: false,
       errors: [

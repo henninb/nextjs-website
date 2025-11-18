@@ -49,16 +49,21 @@ export default function useTransferInsertGql() {
         destinationAccount: p.destinationAccount,
         amount: p.amount,
       });
+      // Convert date to LocalDate format (YYYY-MM-DD) for backend compatibility
+      const dateToLocalDate = (date: Date | string): string => {
+        const d = date instanceof Date ? date : new Date(date);
+        return d.toISOString().split("T")[0];
+      };
+
       const transfer = {
         sourceAccount: p.sourceAccount,
         destinationAccount: p.destinationAccount,
-        transactionDate:
-          p.transactionDate instanceof Date
-            ? p.transactionDate.toISOString()
-            : new Date(p.transactionDate).toISOString(),
+        transactionDate: dateToLocalDate(p.transactionDate),
         amount: p.amount,
         activeStatus: p.activeStatus,
       };
+
+      console.log("[useTransferInsertGql] GraphQL transfer payload:", JSON.stringify(transfer));
       const data = await graphqlRequest<CreateTransferResult>({
         query: CREATE_TRANSFER_MUTATION,
         variables: { transfer },

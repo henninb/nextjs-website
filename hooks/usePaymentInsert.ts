@@ -39,12 +39,16 @@ export const setupNewPayment = async (payload: Payment) => {
  * @returns Newly created payment
  */
 export const insertPayment = async (payload: Payment): Promise<Payment> => {
+  console.log("[usePaymentInsert] insertPayment PAYLOAD INPUT:", JSON.stringify(payload));
+
   // Validate payment data
   const validatedData = HookValidator.validateInsert(
     payload,
     DataValidator.validatePayment,
     "insertPayment",
   );
+
+  console.log("[usePaymentInsert] VALIDATED DATA:", JSON.stringify(validatedData));
 
   log.debug("Inserting payment", {
     sourceAccount: validatedData.sourceAccount,
@@ -54,6 +58,8 @@ export const insertPayment = async (payload: Payment): Promise<Payment> => {
 
   const endpoint = "/api/payment";
   const newPayload = await setupNewPayment(validatedData);
+
+  console.log("[usePaymentInsert] FINAL PAYLOAD TO API:", JSON.stringify(newPayload));
 
   const response = await fetchWithErrorHandling(endpoint, {
     method: "POST",

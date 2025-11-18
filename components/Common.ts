@@ -14,10 +14,11 @@ export const normalizeTransactionDate = (date: Date | string): Date => {
   let dateObj: Date;
 
   if (date instanceof Date) {
-    // If date is a Date object, extract its year, month, and day
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
+    // If date is a Date object, extract its year, month, and day using UTC methods
+    // to avoid timezone shifts
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const day = date.getUTCDate();
 
     // Create a new Date object with the time set to noon UTC
     dateObj = new Date(Date.UTC(year, month, day, 12, 0, 0));
@@ -35,9 +36,9 @@ export const normalizeTransactionDate = (date: Date | string): Date => {
       const tempDate = new Date(date);
       dateObj = new Date(
         Date.UTC(
-          tempDate.getFullYear(),
-          tempDate.getMonth(),
-          tempDate.getDate(),
+          tempDate.getUTCFullYear(),
+          tempDate.getUTCMonth(),
+          tempDate.getUTCDate(),
           12,
           0,
           0,

@@ -65,8 +65,6 @@ export default function Transfers() {
     destinationAccount: "",
     transactionDate: new Date(),
     amount: 0.0,
-    guidSource: "",
-    guidDestination: "",
     activeStatus: true,
   });
 
@@ -295,8 +293,6 @@ export default function Transfers() {
         destinationAccount: newData.destinationAccount,
         transactionDate: newData.transactionDate,
         amount: 0.0,
-        guidSource: "",
-        guidDestination: "",
         activeStatus: true,
       });
       setFormErrors({});

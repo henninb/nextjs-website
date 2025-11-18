@@ -175,6 +175,29 @@ export class InputSanitizer {
   }
 
   /**
+   * Sanitize date to LocalDate format (YYYY-MM-DD)
+   * Used for backend APIs that expect LocalDate instead of full timestamps
+   */
+  static sanitizeLocalDate(input: string | Date): string {
+    if (input instanceof Date) {
+      return input.toISOString().split("T")[0];
+    }
+
+    if (typeof input !== "string") return "";
+
+    // Remove any non-date characters and validate
+    const cleaned = input.replace(/[^0-9T:.-]/g, "");
+    const date = new Date(cleaned);
+
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date format");
+    }
+
+    // Return only the date portion (YYYY-MM-DD) for LocalDate compatibility
+    return date.toISOString().split("T")[0];
+  }
+
+  /**
    * Sanitize GUID/UUID
    */
   static sanitizeGuid(input: string): string {
@@ -307,46 +330,64 @@ export const sanitize = {
       : undefined,
   }),
 
-  payment: (data: any) => ({
-    paymentId: data.paymentId ? parseInt(data.paymentId) : undefined,
-    accountNameOwner: InputSanitizer.sanitizeAccountName(data.accountNameOwner),
-    sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
-    destinationAccount: InputSanitizer.sanitizeAccountName(
-      data.destinationAccount,
-    ),
-    transactionDate: InputSanitizer.sanitizeDate(data.transactionDate),
-    amount: InputSanitizer.sanitizeAmount(data.amount),
-    activeStatus: Boolean(data.activeStatus),
-    dateAdded: data.dateAdded
-      ? InputSanitizer.sanitizeDate(data.dateAdded)
-      : undefined,
-    dateUpdated: data.dateUpdated
-      ? InputSanitizer.sanitizeDate(data.dateUpdated)
-      : undefined,
-  }),
+  payment: (data: any) => {
+    console.log("[sanitization.ts] Payment BEFORE sanitization:", JSON.stringify(data));
+    const sanitized = {
+      paymentId: data.paymentId ? parseInt(data.paymentId) : undefined,
+      accountNameOwner: data.accountNameOwner
+        ? InputSanitizer.sanitizeAccountName(data.accountNameOwner)
+        : undefined,
+      sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
+      destinationAccount: InputSanitizer.sanitizeAccountName(
+        data.destinationAccount,
+      ),
+      transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate), // Use LocalDate format for backend compatibility
+      amount: InputSanitizer.sanitizeAmount(data.amount),
+      guidSource: data.guidSource
+        ? InputSanitizer.sanitizeGuid(data.guidSource)
+        : undefined,
+      guidDestination: data.guidDestination
+        ? InputSanitizer.sanitizeGuid(data.guidDestination)
+        : undefined,
+      activeStatus: Boolean(data.activeStatus),
+      dateAdded: data.dateAdded
+        ? InputSanitizer.sanitizeDate(data.dateAdded)
+        : undefined,
+      dateUpdated: data.dateUpdated
+        ? InputSanitizer.sanitizeDate(data.dateUpdated)
+        : undefined,
+    };
+    console.log("[sanitization.ts] Payment AFTER sanitization:", JSON.stringify(sanitized));
+    return sanitized;
+  },
 
-  transfer: (data: any) => ({
-    transferId: data.transferId ? parseInt(data.transferId) : undefined,
-    sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
-    destinationAccount: InputSanitizer.sanitizeAccountName(
-      data.destinationAccount,
-    ),
-    transactionDate: InputSanitizer.sanitizeDate(data.transactionDate),
-    amount: InputSanitizer.sanitizeAmount(data.amount),
-    guidSource: data.guidSource
-      ? InputSanitizer.sanitizeGuid(data.guidSource)
-      : undefined,
-    guidDestination: data.guidDestination
-      ? InputSanitizer.sanitizeGuid(data.guidDestination)
-      : undefined,
-    activeStatus: Boolean(data.activeStatus),
-    dateAdded: data.dateAdded
-      ? InputSanitizer.sanitizeDate(data.dateAdded)
-      : undefined,
-    dateUpdated: data.dateUpdated
-      ? InputSanitizer.sanitizeDate(data.dateUpdated)
-      : undefined,
-  }),
+  transfer: (data: any) => {
+    console.log("[sanitization.ts] Transfer BEFORE sanitization:", JSON.stringify(data));
+    const sanitized = {
+      transferId: data.transferId ? parseInt(data.transferId) : undefined,
+      sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
+      destinationAccount: InputSanitizer.sanitizeAccountName(
+        data.destinationAccount,
+      ),
+      transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate), // Use LocalDate format for backend compatibility
+      amount: InputSanitizer.sanitizeAmount(data.amount),
+      guidSource: data.guidSource
+        ? InputSanitizer.sanitizeGuid(data.guidSource)
+        : undefined,
+      guidDestination: data.guidDestination
+        ? InputSanitizer.sanitizeGuid(data.guidDestination)
+        : undefined,
+      activeStatus: Boolean(data.activeStatus),
+      dateAdded: data.dateAdded
+        ? InputSanitizer.sanitizeDate(data.dateAdded)
+        : undefined,
+      dateUpdated: data.dateUpdated
+        ? InputSanitizer.sanitizeDate(data.dateUpdated)
+        : undefined,
+    };
+    console.log("[sanitization.ts] Transfer AFTER sanitization:", JSON.stringify(sanitized));
+    return sanitized;
+  },
 
   category: (data: any) => ({
     categoryId: data.categoryId ? parseInt(data.categoryId) : undefined,

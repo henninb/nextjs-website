@@ -50,16 +50,22 @@ export default function usePaymentUpdateGql() {
       newPayment: Payment;
     }) => {
       log.debug("Starting mutation", { paymentId: oldPayment.paymentId });
+
+      // Convert date to LocalDate format (YYYY-MM-DD) for backend compatibility
+      const dateToLocalDate = (date: Date | string): string => {
+        const d = date instanceof Date ? date : new Date(date);
+        return d.toISOString().split("T")[0];
+      };
+
       const input = {
         sourceAccount: newPayment.sourceAccount,
         destinationAccount: newPayment.destinationAccount,
-        transactionDate:
-          newPayment.transactionDate instanceof Date
-            ? newPayment.transactionDate.toISOString()
-            : new Date(newPayment.transactionDate).toISOString(),
+        transactionDate: dateToLocalDate(newPayment.transactionDate),
         amount: newPayment.amount,
         activeStatus: newPayment.activeStatus,
       };
+
+      console.log("[usePaymentUpdateGql] GraphQL payment update payload:", JSON.stringify(input));
       const data = await graphqlRequest<UpdatePaymentResult>({
         query: UPDATE_PAYMENT_MUTATION,
         variables: { id: oldPayment.paymentId, payment: input },
