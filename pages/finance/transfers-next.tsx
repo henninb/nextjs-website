@@ -39,6 +39,46 @@ import useTransferDeleteGql from "../../hooks/useTransferDeleteGql";
 import useTransferUpdateGql from "../../hooks/useTransferUpdateGql";
 import useAccountFetchGql from "../../hooks/useAccountFetchGql";
 
+const LAST_TRANSFER_STORAGE_KEY = "finance_last_transfer_next";
+
+const initialTransferData: Transfer = {
+  transferId: 0,
+  sourceAccount: "",
+  destinationAccount: "",
+  transactionDate: new Date(),
+  amount: 0,
+  guidSource: "",
+  guidDestination: "",
+  activeStatus: true,
+};
+
+// Helper functions for localStorage operations
+const getLastTransferFromStorage = (): Transfer | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(LAST_TRANSFER_STORAGE_KEY);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    // Convert stored date string back to Date object
+    if (parsed.transactionDate) {
+      parsed.transactionDate = new Date(parsed.transactionDate);
+    }
+    return parsed;
+  } catch (error) {
+    console.error("Error reading last transfer from localStorage:", error);
+    return null;
+  }
+};
+
+const saveLastTransferToStorage = (transfer: Transfer): void => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LAST_TRANSFER_STORAGE_KEY, JSON.stringify(transfer));
+  } catch (error) {
+    console.error("Error saving last transfer to localStorage:", error);
+  }
+};
+
 export default function TransfersNextGen() {
   console.log("🔧 TRANSFERS NEXT-GEN COMPONENT LOADED - DEBUG VERSION");
   const router = useRouter();
@@ -54,20 +94,23 @@ export default function TransfersNextGen() {
     page: 0,
   });
 
-  const [transferData, setTransferData] = useState<Transfer>({
-    transferId: 0,
-    sourceAccount: "",
-    destinationAccount: "",
-    transactionDate: new Date(),
-    amount: 0,
-    guidSource: "",
-    guidDestination: "",
-    activeStatus: true,
-  });
+  const [transferData, setTransferData] =
+    useState<Transfer>(initialTransferData);
 
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null,
   );
+
+  const [lastSubmittedTransfer, setLastSubmittedTransfer] =
+    useState<Transfer | null>(null);
+
+  // Initialize last transfer from localStorage on mount
+  useEffect(() => {
+    const storedTransfer = getLastTransferFromStorage();
+    if (storedTransfer) {
+      setLastSubmittedTransfer(storedTransfer);
+    }
+  }, []);
   const [availableSourceAccounts, setAvailableSourceAccounts] = useState<
     Account[]
   >([]);
@@ -274,6 +317,8 @@ export default function TransfersNextGen() {
   const handleAddRow = async (newData: Transfer) => {
     try {
       await insertTransfer({ payload: newData });
+      setLastSubmittedTransfer(newData);
+      saveLastTransferToStorage(newData);
       const when = formatDateForDisplay(newData.transactionDate);
       setMessage(
         `Transferred ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
@@ -281,16 +326,6 @@ export default function TransfersNextGen() {
       setShowSnackbar(true);
       setShowSpinner(false);
       setShowModalAdd(false);
-      setTransferData({
-        transferId: 0,
-        sourceAccount: newData.sourceAccount,
-        destinationAccount: newData.destinationAccount,
-        transactionDate: newData.transactionDate,
-        amount: 0,
-        guidSource: "",
-        guidDestination: "",
-        activeStatus: true,
-      });
     } catch (error: any) {
       handleError(error, `Add Transfer error: ${error}`, false);
     }
@@ -391,7 +426,12 @@ export default function TransfersNextGen() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => {
+                setTransferData(lastSubmittedTransfer || initialTransferData);
+                setSelectedSourceAccount(null);
+                setSelectedDestinationAccount(null);
+                setShowModalAdd(true);
+              }}
             >
               Add Transfer
             </Button>
@@ -460,7 +500,12 @@ export default function TransfersNextGen() {
             title="No Transfers Found"
             message="Create your first transfer to move funds between accounts."
             actionLabel="Add Transfer"
-            onAction={() => setShowModalAdd(true)}
+            onAction={() => {
+              setTransferData(lastSubmittedTransfer || initialTransferData);
+              setSelectedSourceAccount(null);
+              setSelectedDestinationAccount(null);
+              setShowModalAdd(true);
+            }}
             variant="create"
             dataType="transfers"
           />

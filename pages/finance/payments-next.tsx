@@ -39,6 +39,46 @@ import usePaymentDeleteGql from "../../hooks/usePaymentDeleteGql";
 import usePaymentUpdateGql from "../../hooks/usePaymentUpdateGql";
 import useAccountFetchGql from "../../hooks/useAccountFetchGql";
 
+const LAST_PAYMENT_STORAGE_KEY = "finance_last_payment_next";
+
+const initialPaymentData: Payment = {
+  paymentId: 0,
+  transactionDate: new Date(),
+  destinationAccount: "",
+  sourceAccount: "",
+  activeStatus: true,
+  amount: 0.0,
+  guidSource: "",
+  guidDestination: "",
+};
+
+// Helper functions for localStorage operations
+const getLastPaymentFromStorage = (): Payment | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(LAST_PAYMENT_STORAGE_KEY);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    // Convert stored date string back to Date object
+    if (parsed.transactionDate) {
+      parsed.transactionDate = new Date(parsed.transactionDate);
+    }
+    return parsed;
+  } catch (error) {
+    console.error("Error reading last payment from localStorage:", error);
+    return null;
+  }
+};
+
+const saveLastPaymentToStorage = (payment: Payment): void => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LAST_PAYMENT_STORAGE_KEY, JSON.stringify(payment));
+  } catch (error) {
+    console.error("Error saving last payment to localStorage:", error);
+  }
+};
+
 export default function PaymentsNextGen() {
   const router = useRouter();
   const { isAuthenticated, loading } = useAuth();
@@ -53,17 +93,18 @@ export default function PaymentsNextGen() {
     page: 0,
   });
 
-  const [paymentData, setPaymentData] = useState<Payment>({
-    paymentId: 0,
-    sourceAccount: "",
-    destinationAccount: "",
-    transactionDate: new Date(),
-    amount: 0,
-    guidSource: "",
-    guidDestination: "",
-    activeStatus: true,
-  });
+  const [paymentData, setPaymentData] = useState<Payment>(initialPaymentData);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [lastSubmittedPayment, setLastSubmittedPayment] =
+    useState<Payment | null>(null);
+
+  // Initialize last payment from localStorage on mount
+  useEffect(() => {
+    const storedPayment = getLastPaymentFromStorage();
+    if (storedPayment) {
+      setLastSubmittedPayment(storedPayment);
+    }
+  }, []);
 
   const {
     data: fetchedAccounts,
@@ -149,6 +190,8 @@ export default function PaymentsNextGen() {
   const handleAddRow = async (newData: Payment) => {
     try {
       await insertPayment({ payload: newData });
+      setLastSubmittedPayment(newData);
+      saveLastPaymentToStorage(newData);
       const when = formatDateForDisplay(newData.transactionDate);
       setMessage(
         `Payment added: ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
@@ -156,16 +199,6 @@ export default function PaymentsNextGen() {
       setShowSnackbar(true);
       setShowSpinner(false);
       setShowModalAdd(false);
-      setPaymentData({
-        paymentId: 0,
-        sourceAccount: newData.sourceAccount,
-        destinationAccount: newData.destinationAccount,
-        transactionDate: newData.transactionDate,
-        amount: 0,
-        guidSource: "",
-        guidDestination: "",
-        activeStatus: true,
-      });
     } catch (error: any) {
       handleError(error, `Add Payment error: ${error}`, false);
     }
@@ -266,7 +299,10 @@ export default function PaymentsNextGen() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => {
+                setPaymentData(lastSubmittedPayment || initialPaymentData);
+                setShowModalAdd(true);
+              }}
             >
               Add Payment
             </Button>
@@ -331,7 +367,10 @@ export default function PaymentsNextGen() {
             title="No Payments Found"
             message="No payments have been recorded yet. Create your first payment to get started."
             actionLabel="Add Payment"
-            onAction={() => setShowModalAdd(true)}
+            onAction={() => {
+              setPaymentData(lastSubmittedPayment || initialPaymentData);
+              setShowModalAdd(true);
+            }}
             variant="create"
             dataType="payments"
           />

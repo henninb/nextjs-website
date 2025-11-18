@@ -41,6 +41,44 @@ import {
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
+const LAST_TRANSFER_STORAGE_KEY = "finance_last_transfer";
+
+const initialTransferData: Transfer = {
+  transferId: 0,
+  sourceAccount: "",
+  destinationAccount: "",
+  transactionDate: new Date(),
+  amount: 0.0,
+  activeStatus: true,
+};
+
+// Helper functions for localStorage operations
+const getLastTransferFromStorage = (): Transfer | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(LAST_TRANSFER_STORAGE_KEY);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    // Convert stored date string back to Date object
+    if (parsed.transactionDate) {
+      parsed.transactionDate = new Date(parsed.transactionDate);
+    }
+    return parsed;
+  } catch (error) {
+    console.error("Error reading last transfer from localStorage:", error);
+    return null;
+  }
+};
+
+const saveLastTransferToStorage = (transfer: Transfer): void => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LAST_TRANSFER_STORAGE_KEY, JSON.stringify(transfer));
+  } catch (error) {
+    console.error("Error saving last transfer to localStorage:", error);
+  }
+};
+
 export default function Transfers() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -59,18 +97,23 @@ export default function Transfers() {
     page: 0,
   });
 
-  const [transferData, setTransferData] = useState<Transfer>({
-    transferId: 0,
-    sourceAccount: "",
-    destinationAccount: "",
-    transactionDate: new Date(),
-    amount: 0.0,
-    activeStatus: true,
-  });
+  const [transferData, setTransferData] =
+    useState<Transfer>(initialTransferData);
 
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
     null,
   );
+
+  const [lastSubmittedTransfer, setLastSubmittedTransfer] =
+    useState<Transfer | null>(null);
+
+  // Initialize last transfer from localStorage on mount
+  useEffect(() => {
+    const storedTransfer = getLastTransferFromStorage();
+    if (storedTransfer) {
+      setLastSubmittedTransfer(storedTransfer);
+    }
+  }, []);
 
   const [availableSourceAccounts, setAvailableSourceAccounts] = useState<
     Account[]
@@ -281,20 +324,14 @@ export default function Transfers() {
       };
       console.log(`Transfer Insert: ${JSON.stringify(insertThisValue)}`);
       await insertTransfer({ payload: insertThisValue });
+      setLastSubmittedTransfer(newData);
+      saveLastTransferToStorage(newData);
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
       handleSuccess(
         `Transferred ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
       );
       setShowSpinner(false);
-      setTransferData({
-        transferId: 0,
-        sourceAccount: newData.sourceAccount,
-        destinationAccount: newData.destinationAccount,
-        transactionDate: newData.transactionDate,
-        amount: 0.0,
-        activeStatus: true,
-      });
       setFormErrors({});
     } catch (error) {
       handleError(error, `Add Transfer error: ${error}`, false);
@@ -410,7 +447,13 @@ export default function Transfers() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => {
+                setTransferData(lastSubmittedTransfer || initialTransferData);
+                setFormErrors({});
+                setSelectedSourceAccount(null);
+                setSelectedDestinationAccount(null);
+                setShowModalAdd(true);
+              }}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Transfer
@@ -488,7 +531,13 @@ export default function Transfers() {
                     dataType="transfers"
                     variant="create"
                     actionLabel="Add Transfer"
-                    onAction={() => setShowModalAdd(true)}
+                    onAction={() => {
+                      setTransferData(lastSubmittedTransfer || initialTransferData);
+                      setFormErrors({});
+                      setSelectedSourceAccount(null);
+                      setSelectedDestinationAccount(null);
+                      setShowModalAdd(true);
+                    }}
                     onRefresh={() => {
                       refetchTransfers();
                       refetchAccounts();
