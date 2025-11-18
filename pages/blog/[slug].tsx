@@ -5,7 +5,7 @@ import { serialize } from "next-mdx-remote/serialize";
 import Head from "next/head";
 import Link from "next/link";
 import { ParsedUrlQuery } from "querystring";
-import { getAllPostSlugs, getPostBySlug } from "../../components/blog";
+import { getAllPostSlugs, getPostBySlug } from "../../utils/blog";
 import { format } from "date-fns";
 import { ThemeProvider } from "@mui/material/styles";
 import { blogTheme } from "../../themes/blogTheme";

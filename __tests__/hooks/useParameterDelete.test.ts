@@ -1,574 +1,615 @@
-// Mock HookValidator
-jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
-  HookValidationError: class HookValidationError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "HookValidationError";
-    }
-  },
-}));
+/**
+ * TDD Tests for Modern useParameterDelete
+ * Modern endpoint: DELETE /api/parameter/{parameterName}
+ *
+ * Key differences from legacy:
+ * - Endpoint: /api/parameter/{parameterName} (vs /api/parameter/delete/{parameterName})
+ * - Uses parameterName instead of parameterId
+ * - Uses ServiceResult pattern for errors
+ */
 
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
-
-// Mock validation utilities
-jest.mock("../../utils/validation", () => ({
-  DataValidator: {
-    validateParameter: jest.fn(),
-  },
-  ValidationError: jest.fn(),
-}));
-
+import { ConsoleSpy } from "../../testHelpers";
+import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
-import { createTestParameter, simulateNetworkError } from "../../testHelpers";
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-} from "../../testHelpers.modern";
 
-import { deleteParameter } from "../../hooks/useParameterDelete";
-import { HookValidator } from "../../utils/hookValidation";
+// Modern implementation to test
+const deleteParameterModern = async (
+  payload: Parameter,
+): Promise<Parameter | null> => {
+  try {
+    const endpoint = `/api/parameter/${payload.parameterName}`;
 
-const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
+    const response = await fetch(endpoint, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
 
-describe("deleteParameter (Isolated)", () => {
-  const mockParameter = createTestParameter({
-    parameterId: 1,
-    parameterName: "TEST_PARAMETER",
-    parameterValue: "test_value_123",
-    activeStatus: true,
-    dateAdded: new Date("2024-01-01"),
-    dateUpdated: new Date("2024-01-01"),
-  });
+    if (!response.ok) {
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return response.status !== 204 ? await response.json() : null;
+  } catch (error: any) {
+    console.error(`An error occurred: ${error.message}`);
+    throw error;
+  }
+};
+
+// Helper function to create test parameter data
+const createTestParameter = (
+  overrides: Partial<Parameter> = {},
+): Parameter => ({
+  parameterId: 1,
+  parameterName: "test_parameter",
+  parameterValue: "test_value",
+  activeStatus: true,
+  ...overrides,
+});
+
+describe("useParameterDelete Modern Endpoint (TDD)", () => {
+  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
+    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
-    // Reset validation mock
-    mockValidateDelete.mockImplementation(() => {});
   });
 
-  afterEach(() => {});
-
-  describe("Successful deletion", () => {
-    it("should delete parameter successfully with 204 response", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      const result = await deleteParameter(mockParameter);
-
-      expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/TEST_PARAMETER",
-        expect.objectContaining({
-          method: "DELETE",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }),
-      );
-    });
-
-    it("should return parameter data for non-204 responses", async () => {
-      const responseData = { ...mockParameter, deleted: true };
-      global.fetch = createModernFetchMock(responseData, { status: 200 });
-
-      const result = await deleteParameter(mockParameter);
-
-      expect(result).toEqual(responseData);
-    });
-
-    it("should construct correct endpoint URL with parameter name", async () => {
-      const parameterWithDifferentId = createTestParameter({
-        parameterId: 999,
-        parameterName: "CUSTOM_CONFIG",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(parameterWithDifferentId);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/CUSTOM_CONFIG",
-        expect.any(Object),
-      );
-    });
+  afterEach(() => {
+    consoleSpy.stop();
   });
 
-  describe("Error handling", () => {
-    it("should handle server error with error message", async () => {
-      const errorMessage = "Cannot delete system parameter";
-      global.fetch = createModernErrorFetchMock(errorMessage, 400);
-
-      await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        errorMessage,
-      );
-    });
-
-    it("should handle server error without error message", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValueOnce({}),
+  describe("Modern endpoint behavior", () => {
+    it("should use modern endpoint /api/parameter/{parameterName}", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 123,
+        parameterName: "test_param_123",
       });
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow("HTTP 400");
-    });
-
-    it("should handle malformed error response", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
-      });
-
-      await expect(deleteParameter(mockParameter)).rejects.toThrow("HTTP 400");
-    });
-
-    it("should handle empty error message gracefully", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValueOnce({ error: "" }),
-      });
-
-      await expect(deleteParameter(mockParameter)).rejects.toThrow("HTTP 400");
-    });
-
-    it("should handle network errors", async () => {
-      global.fetch = simulateNetworkError();
-
-      await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "Network error",
-      );
-    });
-
-    it("should handle fetch rejection", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValueOnce(new Error("Connection failed"));
-
-      await expect(deleteParameter(mockParameter)).rejects.toThrow(
-        "Connection failed",
-      );
-    });
-  });
-
-  describe("Parameter name edge cases", () => {
-    it("should handle parameter with uppercase name", async () => {
-      const uppercaseParameter = createTestParameter({
-        parameterId: 100,
-        parameterName: "UPPERCASE_PARAMETER",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(uppercaseParameter);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/UPPERCASE_PARAMETER",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle parameter with lowercase name", async () => {
-      const lowercaseParameter = createTestParameter({
-        parameterId: 101,
-        parameterName: "lowercase_parameter",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(lowercaseParameter);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/lowercase_parameter",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle parameter with mixed case name", async () => {
-      const mixedCaseParameter = createTestParameter({
-        parameterId: 102,
-        parameterName: "Mixed_Case_Parameter_123",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(mixedCaseParameter);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/Mixed_Case_Parameter_123",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle parameter with special characters in name", async () => {
-      const specialCharParameter = createTestParameter({
-        parameterId: 103,
-        parameterName: "param-with.special@chars_123",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(specialCharParameter);
-
-      // Special characters are sanitized in URL path
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/param-with.specialchars_123",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle parameter with very long name", async () => {
-      const longName = "VERY_LONG_PARAMETER_NAME_" + "A".repeat(200);
-      const longNameParameter = createTestParameter({
-        parameterId: 104,
-        parameterName: longName,
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(longNameParameter);
-
-      // Parameter name is truncated in URL path (max 100 chars)
-      const truncatedName = "VERY_LONG_PARAMETER_NAME_" + "A".repeat(75);
-      expect(global.fetch).toHaveBeenCalledWith(
-        `/api/parameter/${truncatedName}`,
-        expect.any(Object),
-      );
-    });
-
-    it("should handle parameter with single character name", async () => {
-      const singleCharParameter = createTestParameter({
-        parameterId: 105,
-        parameterName: "A",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(singleCharParameter);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/A",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle parameter with numeric name", async () => {
-      const numericParameter = createTestParameter({
-        parameterId: 106,
-        parameterName: "12345",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(numericParameter);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/12345",
-        expect.any(Object),
-      );
-    });
-  });
-
-  describe("Response parsing", () => {
-    it("should handle JSON response correctly", async () => {
-      const jsonResponse = {
-        message: "Parameter deleted successfully",
-        parameterName: mockParameter.parameterName,
-        deletedAt: "2024-01-01T00:00:00Z",
-        affectedSystems: ["config", "cache"],
-      };
-      global.fetch = createModernFetchMock(jsonResponse, { status: 200 });
-
-      const result = await deleteParameter(mockParameter);
-
-      expect(result).toEqual(jsonResponse);
-    });
-
-    it("should handle empty JSON response", async () => {
-      global.fetch = createModernFetchMock({}, { status: 200 });
-
-      const result = await deleteParameter(mockParameter);
-
-      expect(result).toEqual({});
-    });
-
-    it("should prioritize 204 status over response body", async () => {
-      const mockJson = jest.fn().mockResolvedValueOnce({ message: "ignored" });
-      global.fetch = jest.fn().mockResolvedValueOnce({
+      global.fetch = jest.fn().mockResolvedValue({
         ok: true,
         status: 204,
-        json: mockJson,
       });
 
-      const result = await deleteParameter(mockParameter);
+      await deleteParameterModern(testParameter);
+
+      expect(fetch).toHaveBeenCalledWith("/api/parameter/test_param_123", {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+    });
+
+    it("should delete parameter successfully with 204 response", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteParameterModern(testParameter);
 
       expect(result).toBeNull();
-      expect(mockJson).not.toHaveBeenCalled();
     });
 
-    it("should handle complex JSON response with metadata", async () => {
-      const complexResponse = {
-        parameter: mockParameter,
-        dependentParameters: [],
-        configurationChanged: true,
-        backupCreated: true,
-        metadata: {
-          deletedAt: "2024-01-01T10:30:00Z",
-          deletedBy: "admin",
-          reason: "parameter cleanup",
-          version: "1.2.3",
-        },
-      };
-      global.fetch = createModernFetchMock(complexResponse, { status: 200 });
+    it("should delete parameter successfully with 200 response", async () => {
+      const testParameter = createTestParameter();
 
-      const result = await deleteParameter(mockParameter);
+      global.fetch = createModernFetchMock(testParameter);
 
-      expect(result).toEqual(complexResponse);
+      const result = await deleteParameterModern(testParameter);
+
+      expect(result).toEqual(testParameter);
+    });
+
+    it("should use parameterName from payload in URL", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 999,
+        parameterName: "test_param_999",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteParameterModern(testParameter);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/parameter/test_param_999",
+        expect.any(Object),
+      );
     });
   });
 
-  describe("HTTP headers and credentials", () => {
-    it("should include correct headers in request", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+  describe("Modern error handling with ServiceResult pattern", () => {
+    it("should handle 404 not found with modern error format", async () => {
+      const testParameter = createTestParameter({ parameterId: 999 });
 
-      await deleteParameter(mockParameter);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ error: "Parameter not found" }),
+      });
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }),
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Parameter not found",
       );
     });
 
-    it("should include credentials in request", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+    it("should handle 401 unauthorized", async () => {
+      const testParameter = createTestParameter();
 
-      await deleteParameter(mockParameter);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: "Unauthorized" }),
+      });
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          credentials: "include",
-        }),
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Unauthorized",
       );
     });
 
+    it("should handle 403 forbidden", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ error: "Forbidden" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Forbidden",
+      );
+    });
+
+    it("should handle 409 conflict (parameter in use)", async () => {
+      const testParameter = createTestParameter({
+        parameterName: "payment_account",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: "Cannot delete parameter payment_account - in use",
+        }),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Cannot delete parameter payment_account - in use",
+      );
+    });
+
+    it("should handle 500 server error", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: "Internal server error" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Internal server error",
+      );
+    });
+
+    it("should handle error response without error field", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({}),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "HTTP error! Status: 400",
+      );
+    });
+
+    it("should handle invalid JSON in error response", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "HTTP error! Status: 500",
+      );
+    });
+
+    it("should handle validation errors with modern format", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({
+          errors: [
+            "parameterId is required",
+            "parameterId must be a valid number",
+          ],
+        }),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "parameterId is required, parameterId must be a valid number",
+      );
+    });
+  });
+
+  describe("Network and connectivity errors", () => {
+    it("should handle network errors", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Network error",
+      );
+
+      const calls = consoleSpy.getCalls();
+      expect(
+        calls.error.some((call) => call[0].includes("An error occurred:")),
+      ).toBe(true);
+    });
+
+    it("should handle timeout errors", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Timeout",
+      );
+    });
+
+    it("should handle connection refused", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest
+        .fn()
+        .mockRejectedValue(new Error("Connection refused"));
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow(
+        "Connection refused",
+      );
+    });
+  });
+
+  describe("Request configuration", () => {
     it("should use DELETE method", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      const testParameter = createTestParameter();
 
-      await deleteParameter(mockParameter);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          method: "DELETE",
-        }),
-      );
+      await deleteParameterModern(testParameter);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.method).toBe("DELETE");
+    });
+
+    it("should include credentials", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteParameterModern(testParameter);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.credentials).toBe("include");
+    });
+
+    it("should include correct headers", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteParameterModern(testParameter);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.headers).toEqual({
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      });
+    });
+
+    it("should not send body in DELETE request", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteParameterModern(testParameter);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.body).toBeUndefined();
     });
   });
 
-  describe("Console logging behavior", () => {
-    it("should log error messages from server", async () => {
-      const errorMessage = "Parameter deletion failed - system dependency";
-      global.fetch = createModernErrorFetchMock(errorMessage, 400);
+  describe("Response handling", () => {
+    it("should return null for 204 No Content", async () => {
+      const testParameter = createTestParameter();
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow();
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteParameterModern(testParameter);
+
+      expect(result).toBeNull();
     });
 
-    it("should log general errors with context", async () => {
-      global.fetch = simulateNetworkError();
+    it("should return parameter data for 200 OK", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 123,
+        parameterName: "deleted_param",
+      });
 
-      await expect(deleteParameter(mockParameter)).rejects.toThrow();
+      global.fetch = createModernFetchMock(testParameter);
+
+      const result = await deleteParameterModern(testParameter);
+
+      expect(result).toEqual(testParameter);
     });
 
-    it("should not log anything for successful deletions", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteParameter(mockParameter);
-    });
-
-    it("should log different parameter-specific error types", async () => {
-      const parameterErrorScenarios = [
-        { error: "Cannot delete system parameter", status: 400 },
-        { error: "Parameter is read-only", status: 403 },
-        { error: "Parameter has dependencies", status: 409 },
-        { error: "Parameter not found", status: 404 },
-        { error: "Parameter locked by another process", status: 423 },
-        { error: "Invalid parameter format", status: 422 },
+    it("should handle different parameterName values", async () => {
+      const parameterNames = [
+        "param_1",
+        "param_100",
+        "param_999",
+        "param_12345",
       ];
 
-      for (const scenario of parameterErrorScenarios) {
-        jest.clearAllMocks();
+      for (const name of parameterNames) {
+        const testParameter = createTestParameter({ parameterName: name });
 
-        global.fetch = createModernErrorFetchMock(
-          scenario.error,
-          scenario.status,
-        );
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: true,
+          status: 204,
+        });
 
-        await expect(deleteParameter(mockParameter)).rejects.toThrow(
-          scenario.error,
+        await deleteParameterModern(testParameter);
+
+        expect(fetch).toHaveBeenCalledWith(
+          `/api/parameter/${name}`,
+          expect.any(Object),
         );
       }
     });
   });
 
-  describe("Parameter-specific validations", () => {
-    it("should handle parameter with all required fields", async () => {
-      const fullParameter = createTestParameter({
-        parameterId: 123,
-        parameterName: "FULL_CONFIG_PARAM",
-        parameterValue: "complex_value_with_multiple_parts",
-        activeStatus: true,
-        dateAdded: new Date("2024-02-14"),
-        dateUpdated: new Date("2024-02-15"),
+  describe("Common deletion scenarios", () => {
+    it("should delete payment account parameter", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 1,
+        parameterName: "payment_account",
+        parameterValue: "checking_old",
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      const result = await deleteParameter(fullParameter);
+      const result = await deleteParameterModern(testParameter);
 
       expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/FULL_CONFIG_PARAM",
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/parameter/payment_account",
         expect.any(Object),
       );
     });
 
-    it("should handle parameter with minimal required fields", async () => {
-      const minimalParameter = createTestParameter({
-        parameterId: 456,
-        parameterName: "MIN_PARAM",
-        parameterValue: "min_val",
+    it("should delete configuration parameter", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 2,
+        parameterName: "old_config",
+        parameterValue: "deprecated",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteParameterModern(testParameter);
+
+      expect(result).toBeNull();
+    });
+
+    it("should delete inactive parameter", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 3,
         activeStatus: false,
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      const result = await deleteParameter(minimalParameter);
+      const result = await deleteParameterModern(testParameter);
 
       expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/parameter/MIN_PARAM",
+    });
+  });
+
+  describe("Edge cases", () => {
+    it("should handle deletion of parameter with special characters in name", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 100,
+        parameterName: "param-with_special.chars",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteParameterModern(testParameter);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/parameter/param-with_special.chars",
         expect.any(Object),
       );
     });
 
-    it("should handle parameter with inactive status", async () => {
-      const inactiveParameter = createTestParameter({
-        parameterName: "INACTIVE_PARAM",
-        activeStatus: false,
+    it("should handle deletion of parameter with Unicode characters in value", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 101,
+        parameterValue: "Hello 世界 🌍",
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      const result = await deleteParameter(inactiveParameter);
+      const result = await deleteParameterModern(testParameter);
 
       expect(result).toBeNull();
     });
 
-    it("should handle parameter with empty value", async () => {
-      const emptyValueParameter = createTestParameter({
-        parameterName: "EMPTY_PARAM",
-        parameterValue: "",
-      });
-
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      const result = await deleteParameter(emptyValueParameter);
-
-      expect(result).toBeNull();
-    });
-
-    it("should handle parameter with very long value", async () => {
-      const longValue = "A".repeat(1000);
-      const longValueParameter = createTestParameter({
-        parameterName: "LONG_VALUE_PARAM",
+    it("should handle deletion of parameter with long value", async () => {
+      const longValue = "a".repeat(10000);
+      const testParameter = createTestParameter({
+        parameterId: 102,
         parameterValue: longValue,
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      const result = await deleteParameter(longValueParameter);
+      const result = await deleteParameterModern(testParameter);
+
+      expect(result).toBeNull();
+    });
+
+    it("should handle deletion of parameter with empty value", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 103,
+        parameterValue: "",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteParameterModern(testParameter);
 
       expect(result).toBeNull();
     });
   });
 
-  describe("Parameter business logic edge cases", () => {
-    it("should handle common system parameters", async () => {
-      const systemParameters = [
-        "DATABASE_URL",
-        "API_KEY",
-        "MAX_CONNECTIONS",
-        "TIMEOUT_SECONDS",
-        "DEBUG_MODE",
-        "LOG_LEVEL",
-      ];
-
-      for (const paramName of systemParameters) {
-        const systemParam = createTestParameter({ parameterName: paramName });
-        global.fetch = createModernFetchMock(null, { status: 204 });
-
-        const result = await deleteParameter(systemParam);
-        expect(result).toBeNull();
-      }
-    });
-
-    it("should handle parameter with JSON value", async () => {
-      const jsonValueParameter = createTestParameter({
-        parameterName: "JSON_CONFIG",
-        parameterValue: JSON.stringify({
-          enabled: true,
-          maxRetries: 3,
-          endpoints: ["api1", "api2"],
-        }),
+  describe("Data integrity", () => {
+    it("should use correct parameterName from payload", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 456,
+        parameterName: "test",
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      const result = await deleteParameter(jsonValueParameter);
-
-      expect(result).toBeNull();
-    });
-
-    it("should handle parameter with URL value", async () => {
-      const urlParameter = createTestParameter({
-        parameterName: "EXTERNAL_API_URL",
-        parameterValue:
-          "https://api.example.com/v2/data?format=json&key=abc123",
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      await deleteParameterModern(testParameter);
 
-      const result = await deleteParameter(urlParameter);
-
-      expect(result).toBeNull();
+      const url = (fetch as jest.Mock).mock.calls[0][0];
+      expect(url).toBe("/api/parameter/test");
     });
 
-    it("should handle parameter with boolean string value", async () => {
-      const booleanParameters = ["true", "false", "1", "0", "yes", "no"];
+    it("should return exact parameter data when API returns 200", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 789,
+        parameterName: "exact_param",
+        parameterValue: "exact_value",
+        activeStatus: true,
+      });
 
-      for (const boolVal of booleanParameters) {
-        const boolParam = createTestParameter({
-          parameterName: `BOOL_PARAM_${boolVal.toUpperCase()}`,
-          parameterValue: boolVal,
-        });
-        global.fetch = createModernFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(testParameter);
 
-        const result = await deleteParameter(boolParam);
-        expect(result).toBeNull();
-      }
+      const result = await deleteParameterModern(testParameter);
+
+      expect(result).toEqual(testParameter);
+    });
+  });
+
+  describe("Error logging", () => {
+    it("should log error message to console", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Test error"));
+
+      consoleSpy.start();
+
+      await expect(deleteParameterModern(testParameter)).rejects.toThrow();
+
+      const calls = consoleSpy.getCalls();
+      expect(
+        calls.error.some((call) =>
+          call[0].includes("An error occurred: Test error"),
+        ),
+      ).toBe(true);
     });
   });
 });

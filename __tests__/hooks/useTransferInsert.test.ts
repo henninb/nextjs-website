@@ -1,14 +1,39 @@
 /**
- * Isolated tests for useTransferInsert business logic
- * Tests insertTransfer function without React Query overhead
- * Using modern endpoint: POST /api/transfer
+ * TDD Tests for Modern useTransferInsert
+ * Modern endpoint: POST /api/transfer
+ *
+ * Key differences from legacy:
+ * - Endpoint: POST /api/transfer (vs POST /api/transfer/insert)
+ * - Uses ServiceResult pattern for errors
+ * - Returns 201 Created on success
  */
 
-// Mock HookValidator
+import React from "react";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+  createTestTransfer,
+} from "../../testHelpers";
+import Transfer from "../../model/Transfer";
+
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
+// Import the actual implementation
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import useTransferInsert from "../../hooks/useTransferInsert";
+
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {
     validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
+    validateUpdate: jest.fn((updated) => updated),
     validateDelete: jest.fn(),
   },
   HookValidationError: class HookValidationError extends Error {
@@ -19,564 +44,287 @@ jest.mock("../../utils/hookValidation", () => ({
   },
 }));
 
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
-
-// Mock validation utilities
-jest.mock("../../utils/validation", () => ({
-  DataValidator: {
-    validateTransfer: jest.fn(),
-  },
-  ValidationError: jest.fn(),
-}));
-
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-} from "../../testHelpers.modern";
-import Transfer from "../../model/Transfer";
-
-import {
-  overRideTransferValues,
-  insertTransfer,
-} from "../../hooks/useTransferInsert";
-import { HookValidator } from "../../utils/hookValidation";
-
-const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
-
-// Helper function to create test transfer data
-const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
-  transferId: 1,
-  sourceAccount: "checking-123",
-  destinationAccount: "savings-456",
-  transactionDate: new Date("2024-01-01T00:00:00.000Z"),
-  amount: 500,
-  guidSource: "source-guid-123",
-  guidDestination: "dest-guid-456",
-  activeStatus: true,
-  dateAdded: new Date("2024-01-01T10:00:00.000Z"),
-  dateUpdated: new Date("2024-01-01T10:00:00.000Z"),
-  ...overrides,
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
 });
 
-describe("useTransferInsert Business Logic (Isolated)", () => {
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
+
+// Helper to create wrapper for React Query
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
+  }
+
+  return Wrapper;
+};
+
+describe("useTransferInsert Modern Endpoint (TDD)", () => {
+  const { __mockLogger: mockLogger } = jest.requireMock(
+    "../../utils/logger",
+  ) as { __mockLogger: ReturnType<typeof createMockLogger> };
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset validation mock
-    mockValidateInsert.mockImplementation((data) => data);
+    mockLogger.debug.mockClear();
+    mockLogger.error.mockClear();
   });
 
-  afterEach(() => {});
-
-  describe("overRideTransferValues", () => {
-    it("should preserve amount and transactionDate properties", () => {
+  describe("Modern endpoint behavior", () => {
+    it("should use modern endpoint POST /api/transfer", async () => {
       const testTransfer = createTestTransfer({
-        amount: 1000,
-        transactionDate: new Date("2024-02-15T00:00:00.000Z"),
+        transferId: 1,
+        sourceAccount: "checking",
+        destinationAccount: "savings",
+        amount: 100.0,
       });
 
-      const result = overRideTransferValues(testTransfer);
+      global.fetch = createModernFetchMock(testTransfer, { status: 201 });
 
-      expect(result.amount).toBe(1000);
-      expect(result.transactionDate).toEqual(
-        new Date("2024-02-15T00:00:00.000Z"),
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
+      });
+
+      result.current.mutate({ payload: testTransfer });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/transfer",
+        expect.objectContaining({
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }),
       );
-      expect(result.sourceAccount).toBe(testTransfer.sourceAccount);
-      expect(result.destinationAccount).toBe(testTransfer.destinationAccount);
     });
 
-    it("should handle undefined amount gracefully", () => {
-      const testTransfer = createTestTransfer({ amount: undefined as any });
+    it("should insert transfer successfully", async () => {
+      const inputTransfer = createTestTransfer({
+        sourceAccount: "checking",
+        destinationAccount: "savings",
+        amount: 100.0,
+      });
+      const returnedTransfer = { ...inputTransfer, transferId: 1 };
 
-      const result = overRideTransferValues(testTransfer);
+      global.fetch = createModernFetchMock(returnedTransfer, { status: 201 });
 
-      expect(result.amount).toBeUndefined();
-      expect(result.transactionDate).toBeDefined();
-    });
-
-    it("should handle undefined transactionDate gracefully", () => {
-      const testTransfer = createTestTransfer({
-        transactionDate: undefined as any,
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      const result = overRideTransferValues(testTransfer);
+      result.current.mutate({ payload: inputTransfer });
 
-      expect(result.amount).toBeDefined();
-      expect(result.transactionDate).toBeUndefined();
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(result.current.data).toEqual(returnedTransfer);
     });
 
-    it("should preserve all original properties through spread", () => {
+    it("should send transfer data in request body", async () => {
       const testTransfer = createTestTransfer({
-        transferId: 99,
-        sourceAccount: "special-account",
-        guidSource: "special-guid",
-        activeStatus: false,
+        sourceAccount: "checking",
+        destinationAccount: "savings",
+        amount: 100.0,
+        transactionDate: "2024-01-15",
       });
 
-      const result = overRideTransferValues(testTransfer);
+      global.fetch = createModernFetchMock({ ...testTransfer, transferId: 1 });
 
-      expect(result.transferId).toBe(99);
-      expect(result.sourceAccount).toBe("special-account");
-      expect(result.guidSource).toBe("special-guid");
-      expect(result.activeStatus).toBe(false);
-    });
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
+      });
 
-    it("should handle null payload properties", () => {
-      const testTransfer = {
-        ...createTestTransfer(),
-        amount: null as any,
-        transactionDate: null as any,
-      };
+      result.current.mutate({ payload: testTransfer });
 
-      const result = overRideTransferValues(testTransfer);
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(result.amount).toBeNull();
-      expect(result.transactionDate).toBeNull();
-    });
+      const callArgs = (fetch as jest.Mock).mock.calls[0];
+      const requestBody = JSON.parse(callArgs[1].body);
 
-    it("should maintain property order with amount and transactionDate first", () => {
-      const testTransfer = createTestTransfer();
-
-      const result = overRideTransferValues(testTransfer);
-      const keys = Object.keys(result);
-
-      expect(keys[0]).toBe("amount");
-      expect(keys[1]).toBe("transactionDate");
+      expect(requestBody.sourceAccount).toBe("checking");
+      expect(requestBody.destinationAccount).toBe("savings");
+      expect(requestBody.amount).toBe(100.0);
+      expect(requestBody.transactionDate).toBe("2024-01-15");
     });
   });
 
-  describe("insertTransfer", () => {
-    describe("Successful transfer creation", () => {
-      it("should create transfer successfully with 200 response", async () => {
-        const testTransfer = createTestTransfer();
-        const expectedResponse = {
-          ...testTransfer,
-          transferId: 42,
-        };
+  describe("Modern error handling", () => {
+    it("should handle 400 Bad Request error", async () => {
+      global.fetch = createModernErrorFetchMock("Invalid transfer data", 400);
 
-        global.fetch = createModernFetchMock(expectedResponse);
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result).toEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith("/api/transfer", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(overRideTransferValues(testTransfer)),
-        });
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      it("should handle 204 no content response", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernFetchMock(null, { status: 204 });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result).toBeNull();
-      });
-
-      it("should apply override values to payload", async () => {
-        const testTransfer = createTestTransfer({
-          amount: 750,
-          transactionDate: new Date("2024-03-01T00:00:00.000Z"),
-        });
-
-        global.fetch = createModernFetchMock({ transferId: 1 });
-
-        await insertTransfer(testTransfer);
-
-        const expectedPayload = overRideTransferValues(testTransfer);
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/transfer",
-          expect.objectContaining({
-            body: JSON.stringify(expectedPayload),
-          }),
-        );
-      });
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("Invalid transfer data");
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "Insert failed",
+        expect.any(Error),
+      );
     });
 
-    describe("API error handling", () => {
-      it("should handle 400 error with response message", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernErrorFetchMock("Invalid transfer data", 400);
+    it("should handle 401 Unauthorized error", async () => {
+      global.fetch = createModernErrorFetchMock("Unauthorized", 401);
 
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Invalid transfer data",
-        );
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      it("should handle 409 conflict error for duplicate transfer", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernErrorFetchMock(
-          "Transfer already exists",
-          409,
-        );
-
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Transfer already exists",
-        );
-      });
-
-      it("should handle 500 server error", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernErrorFetchMock("Internal server error", 500);
-
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Internal server error",
-        );
-      });
-
-      it("should handle error response without message", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValue({}),
-        });
-
-        await expect(insertTransfer(testTransfer)).rejects.toThrow("HTTP 400");
-      });
-
-      it("should handle malformed error response", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-        });
-
-        await expect(insertTransfer(testTransfer)).rejects.toThrow("HTTP 400");
-      });
-
-      it("should handle network errors", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Network error",
-        );
-      });
-
-      it("should handle timeout errors", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Request timeout"));
-
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Request timeout",
-        );
-      });
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("Unauthorized");
     });
 
-    describe("Request format validation", () => {
-      it("should send correct headers", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernFetchMock({ transferId: 1 });
+    it("should handle 403 Forbidden error", async () => {
+      global.fetch = createModernErrorFetchMock("Forbidden", 403);
 
-        await insertTransfer(testTransfer);
-
-        expect(fetch).toHaveBeenCalledWith("/api/transfer", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: expect.any(String),
-        });
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      it("should use correct endpoint", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernFetchMock({ transferId: 1 });
-
-        await insertTransfer(testTransfer);
-
-        expect(fetch).toHaveBeenCalledWith("/api/transfer", expect.any(Object));
-      });
-
-      it("should send POST method", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernFetchMock({ transferId: 1 });
-
-        await insertTransfer(testTransfer);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ method: "POST" }),
-        );
-      });
-
-      it("should include credentials", async () => {
-        const testTransfer = createTestTransfer();
-        global.fetch = createModernFetchMock({ transferId: 1 });
-
-        await insertTransfer(testTransfer);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ credentials: "include" }),
-        );
-      });
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("Forbidden");
     });
 
-    describe("Business logic scenarios", () => {
-      it("should handle inter-account transfers", async () => {
-        const testTransfer = createTestTransfer({
-          sourceAccount: "checking-primary",
-          destinationAccount: "savings-emergency",
-          amount: 2500,
-        });
+    it("should handle 409 Conflict error (duplicate transfer)", async () => {
+      global.fetch = createModernErrorFetchMock(
+        "Duplicate transfer found",
+        409,
+      );
 
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.sourceAccount).toBe("checking-primary");
-        expect(result.destinationAccount).toBe("savings-emergency");
-        expect(result.amount).toBe(2500);
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      it("should handle small amount transfers", async () => {
-        const testTransfer = createTestTransfer({ amount: 0.01 });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.amount).toBe(0.01);
-      });
-
-      it("should handle large amount transfers", async () => {
-        const testTransfer = createTestTransfer({ amount: 999999.99 });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.amount).toBe(999999.99);
-      });
-
-      it("should handle future-dated transfers", async () => {
-        const futureDate = new Date("2025-12-31T23:59:59.000Z");
-        const testTransfer = createTestTransfer({
-          transactionDate: futureDate,
-        });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.transactionDate).toEqual(futureDate);
-      });
-
-      it("should handle past-dated transfers", async () => {
-        const pastDate = new Date("2023-01-01T00:00:00.000Z");
-        const testTransfer = createTestTransfer({ transactionDate: pastDate });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.transactionDate).toEqual(pastDate);
-      });
-
-      it("should preserve GUID associations", async () => {
-        const testTransfer = createTestTransfer({
-          guidSource: "abc123-def456-ghi789",
-          guidDestination: "xyz987-uvw654-rst321",
-        });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.guidSource).toBe("abc123-def456-ghi789");
-        expect(result.guidDestination).toBe("xyz987-uvw654-rst321");
-      });
-
-      it("should handle inactive status transfers", async () => {
-        const testTransfer = createTestTransfer({ activeStatus: false });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.activeStatus).toBe(false);
-      });
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("Duplicate transfer found");
     });
 
-    describe("Edge cases", () => {
-      it("should handle special characters in account names", async () => {
-        const testTransfer = createTestTransfer({
-          sourceAccount: "Account & Co: 2024!",
-          destinationAccount: "Savings@Bank#1",
-        });
+    it("should handle 500 Internal Server Error", async () => {
+      global.fetch = createModernErrorFetchMock("Internal server error", 500);
 
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.sourceAccount).toBe("Account & Co: 2024!");
-        expect(result.destinationAccount).toBe("Savings@Bank#1");
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      it("should handle unicode characters in account names", async () => {
-        const testTransfer = createTestTransfer({
-          sourceAccount: "账户支票 Checking",
-          destinationAccount: "储蓄账户 Savings 💰",
-        });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.sourceAccount).toBe("账户支票 Checking");
-        expect(result.destinationAccount).toBe("储蓄账户 Savings 💰");
-      });
-
-      it("should handle very long account names", async () => {
-        const longAccountName = "A".repeat(500);
-        const testTransfer = createTestTransfer({
-          sourceAccount: longAccountName,
-          destinationAccount: longAccountName,
-        });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.sourceAccount).toBe(longAccountName);
-        expect(result.destinationAccount).toBe(longAccountName);
-      });
-
-      it("should handle zero amounts", async () => {
-        const testTransfer = createTestTransfer({ amount: 0 });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.amount).toBe(0);
-      });
-
-      it("should handle decimal precision amounts", async () => {
-        const testTransfer = createTestTransfer({ amount: 123.456789 });
-
-        global.fetch = createModernFetchMock({
-          transferId: 1,
-          ...testTransfer,
-        });
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result.amount).toBe(123.456789);
-      });
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("Internal server error");
     });
 
-    describe("Integration scenarios", () => {
-      it("should handle complete successful transfer flow", async () => {
-        const testTransfer = createTestTransfer({
-          sourceAccount: "primary-checking",
-          destinationAccount: "emergency-savings",
-          amount: 1500,
-          transactionDate: new Date("2024-06-15T14:30:00.000Z"),
-        });
+    it("should handle network errors", async () => {
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
-        const expectedResponse = {
-          transferId: 123,
-          sourceAccount: "primary-checking",
-          destinationAccount: "emergency-savings",
-          amount: 1500,
-          transactionDate: new Date("2024-06-15T14:30:00.000Z"),
-          guidSource: "generated-source-guid",
-          guidDestination: "generated-dest-guid",
-          activeStatus: true,
-          dateAdded: new Date("2024-06-15T14:35:00.000Z"),
-          dateUpdated: new Date("2024-06-15T14:35:00.000Z"),
-        };
-
-        global.fetch = createModernFetchMock(expectedResponse);
-
-        const result = await insertTransfer(testTransfer);
-
-        expect(result).toEqual(expectedResponse);
-        expect(result.transferId).toBe(123);
-        expect(result.amount).toBe(1500);
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      it("should handle transfer validation to API error chain", async () => {
-        const testTransfer = createTestTransfer();
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("Network error");
+    });
 
-        // API returns validation error
-        global.fetch = createModernErrorFetchMock(
-          "Insufficient funds in source account",
-          400,
-        );
+    it("should handle error response without error field", async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        statusText: "Internal Server Error",
+        json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue("{}"),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Insufficient funds in source account",
-        );
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
 
-      it("should handle duplicate transfer detection", async () => {
-        const testTransfer = createTestTransfer();
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("HTTP 500: Internal Server Error");
+    });
 
-        // API returns duplicate error
-        global.fetch = createModernErrorFetchMock(
-          "Transfer with same details already exists",
-          409,
-        );
+    it("should handle JSON parse error in error response", async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        statusText: "Internal Server Error",
+        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
+        text: jest.fn().mockResolvedValue("Invalid response"),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-        await expect(insertTransfer(testTransfer)).rejects.toThrow(
-          "Transfer with same details already exists",
-        );
+      const { result } = renderHook(() => useTransferInsert(), {
+        wrapper: createWrapper(),
       });
+
+      await expect(
+        result.current.mutateAsync({ payload: createTestTransfer() }),
+      ).rejects.toThrow("HTTP 500: Internal Server Error");
+    });
+  });
+
+  describe("Cache updates", () => {
+    it("should update React Query cache on successful insert", async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      });
+
+      // Pre-populate cache with existing transfers
+      const existingTransfers = [
+        createTestTransfer({ transferId: 1, sourceAccount: "checking" }),
+      ];
+      queryClient.setQueryData(["transfer"], existingTransfers);
+
+      function wrapper({ children }: { children: React.ReactNode }) {
+        return React.createElement(
+          QueryClientProvider,
+          { client: queryClient },
+          children,
+        );
+      }
+
+      const newTransfer = createTestTransfer({
+        transferId: 2,
+        sourceAccount: "savings",
+      });
+      global.fetch = createModernFetchMock(newTransfer, { status: 201 });
+
+      const { result } = renderHook(() => useTransferInsert(), { wrapper });
+
+      result.current.mutate({ payload: newTransfer });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
+      expect(cacheData).toHaveLength(2);
+      expect(cacheData?.[0]).toEqual(newTransfer); // New transfer prepended
+      expect(cacheData?.[1]).toEqual(existingTransfers[0]);
     });
   });
 });

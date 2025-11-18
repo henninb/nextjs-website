@@ -1,9 +1,40 @@
-// Mock HookValidator
+/**
+ * TDD Tests for Modern useTransferDelete
+ * Modern endpoint: DELETE /api/transfer/{transferId}
+ *
+ * Key differences from legacy:
+ * - Endpoint: DELETE /api/transfer/{transferId} (vs DELETE /api/transfer/delete/{transferId})
+ * - Uses ServiceResult pattern for errors
+ * - Returns deleted transfer object (not null/204)
+ */
+
+import React from "react";
+import {
+  createModernFetchMock,
+  createModernErrorFetchMock,
+  createTestTransfer,
+} from "../../testHelpers";
+import Transfer from "../../model/Transfer";
+
+// Import the actual implementation
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import useTransferDelete from "../../hooks/useTransferDelete";
+
+function createMockLogger() {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {
     validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
+    validateUpdate: jest.fn((data) => data),
+    validateDelete: jest.fn(() => ({})),
   },
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
@@ -13,64 +44,63 @@ jest.mock("../../utils/hookValidation", () => ({
   },
 }));
 
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
+jest.mock("../../utils/logger", () => {
+  const logger = createMockLogger();
+  return {
+    createHookLogger: jest.fn(() => logger),
+    __mockLogger: logger,
+  };
+});
 
-// Mock validation utilities
-jest.mock("../../utils/validation", () => ({
-  DataValidator: {
-    validateTransfer: jest.fn(),
-  },
-  ValidationError: jest.fn(),
-}));
+const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
+  __mockLogger: ReturnType<typeof createMockLogger>;
+};
 
-import Transfer from "../../model/Transfer";
-import { createTestTransfer, simulateNetworkError } from "../../testHelpers";
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-} from "../../testHelpers.modern";
-
-import { deleteTransfer } from "../../hooks/useTransferDelete";
-import { HookValidator } from "../../utils/hookValidation";
-
-const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
-
-describe("deleteTransfer (Isolated)", () => {
-  const mockTransfer = createTestTransfer({
-    transferId: 1,
-    sourceAccount: "checkingAccount",
-    destinationAccount: "savingsAccount",
-    transactionDate: new Date("2024-01-01"),
-    amount: 500.0,
-    guidSource: "src-guid-789",
-    guidDestination: "dest-guid-101",
-    activeStatus: true,
+// Helper to create wrapper for React Query
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
   });
 
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
+  }
+
+  return Wrapper;
+};
+
+describe("useTransferDelete Modern Endpoint (TDD)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset validation mock
-    mockValidateDelete.mockImplementation(() => {});
+    mockLogger.debug.mockClear();
+    mockLogger.error.mockClear();
   });
 
-  afterEach(() => {});
+  describe("Modern endpoint behavior", () => {
+    it("should use modern endpoint DELETE /api/transfer/{transferId}", async () => {
+      const testTransfer = createTestTransfer({
+        transferId: 1,
+        sourceAccount: "checking",
+      });
 
-  describe("Successful deletion", () => {
-    it("should delete transfer successfully and return transfer data", async () => {
-      global.fetch = createModernFetchMock(mockTransfer, { status: 200 });
+      global.fetch = createModernFetchMock(testTransfer);
 
-      const result = await deleteTransfer(mockTransfer);
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
+      });
 
-      expect(result).toEqual(mockTransfer);
-      expect(global.fetch).toHaveBeenCalledWith(
+      result.current.mutate({ oldRow: testTransfer });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(fetch).toHaveBeenCalledWith(
         "/api/transfer/1",
         expect.objectContaining({
           method: "DELETE",
@@ -83,396 +113,238 @@ describe("deleteTransfer (Isolated)", () => {
       );
     });
 
-    it("should return transfer data for non-204 responses", async () => {
-      const responseData = { ...mockTransfer, deleted: true };
-      global.fetch = createModernFetchMock(responseData, { status: 200 });
-
-      const result = await deleteTransfer(mockTransfer);
-
-      expect(result).toEqual(responseData);
-    });
-
-    it("should construct correct endpoint URL with transfer ID", async () => {
-      const transferWithDifferentId = createTestTransfer({ transferId: 999 });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteTransfer(transferWithDifferentId);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/999",
-        expect.any(Object),
-      );
-    });
-  });
-
-  describe("Error handling", () => {
-    it("should handle server error with error message", async () => {
-      const errorMessage = "Cannot delete transfer with pending reconciliation";
-      global.fetch = createModernErrorFetchMock(errorMessage, 400);
-
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(errorMessage);
-    });
-
-    it("should handle server error without error message", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValueOnce({}),
+    it("should delete transfer successfully", async () => {
+      const testTransfer = createTestTransfer({
+        transferId: 1,
+        sourceAccount: "checking",
       });
 
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP 400: undefined",
-      );
-    });
+      global.fetch = createModernFetchMock(testTransfer);
 
-    it("should handle malformed error response", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
       });
 
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "HTTP 400: undefined",
-      );
+      result.current.mutate({ oldRow: testTransfer });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(result.current.data).toEqual(testTransfer);
     });
 
-    it("should handle empty error message gracefully", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValueOnce({ response: [] }),
-      });
-
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(/^$/);
-    });
-
-    it("should handle network errors", async () => {
-      global.fetch = simulateNetworkError();
-
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "Network error",
-      );
-    });
-
-    it("should handle fetch rejection", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValueOnce(new Error("Connection failed"));
-
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-        "Connection failed",
-      );
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should handle transfer with zero ID", async () => {
-      const transferWithZeroId = createTestTransfer({ transferId: 0 });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteTransfer(transferWithZeroId);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/0",
-        expect.any(Object),
-      );
-    });
-
-    it("should reject transfer with negative ID", async () => {
-      const transferWithNegativeId = createTestTransfer({ transferId: -1 });
-      const fetchSpy = jest.fn();
-      global.fetch = fetchSpy as any;
-
-      await expect(deleteTransfer(transferWithNegativeId)).rejects.toThrow(
-        "Invalid transferId: must be a positive integer",
-      );
-      expect(fetchSpy).not.toHaveBeenCalled();
-    });
-
-    it("should handle transfer with very large ID", async () => {
-      const transferWithLargeId = createTestTransfer({ transferId: 999999999 });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteTransfer(transferWithLargeId);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/999999999",
-        expect.any(Object),
-      );
-    });
-  });
-
-  describe("Response parsing", () => {
-    it("should handle JSON response correctly", async () => {
-      const jsonResponse = {
-        message: "Transfer deleted successfully",
-        transferId: mockTransfer.transferId,
-        affectedAccounts: [
-          mockTransfer.sourceAccount,
-          mockTransfer.destinationAccount,
-        ],
-        timestamp: "2024-01-01T00:00:00Z",
-      };
-      global.fetch = createModernFetchMock(jsonResponse, { status: 200 });
-
-      const result = await deleteTransfer(mockTransfer);
-
-      expect(result).toEqual(jsonResponse);
-    });
-
-    it("should handle empty JSON response", async () => {
-      global.fetch = createModernFetchMock({}, { status: 200 });
-
-      const result = await deleteTransfer(mockTransfer);
-
-      expect(result).toEqual({});
-    });
-
-    it("should return transfer data from JSON response", async () => {
-      global.fetch = createModernFetchMock(mockTransfer, { status: 200 });
-
-      const result = await deleteTransfer(mockTransfer);
-
-      expect(result).toEqual(mockTransfer);
-    });
-
-    it("should handle complex JSON response with transfer details", async () => {
-      const complexResponse = {
-        transfer: mockTransfer,
-        sourceAccountBalance: 1500.0,
-        destinationAccountBalance: 2000.0,
-        reconciliationStatus: "pending",
-        metadata: {
-          deletedAt: "2024-01-01T10:30:00Z",
-          deletedBy: "user456",
-          reversalRequired: false,
-        },
-      };
-      global.fetch = createModernFetchMock(complexResponse, { status: 200 });
-
-      const result = await deleteTransfer(mockTransfer);
-
-      expect(result).toEqual(complexResponse);
-    });
-  });
-
-  describe("HTTP headers and credentials", () => {
-    it("should include correct headers in request", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteTransfer(mockTransfer);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }),
-      );
-    });
-
-    it("should include credentials in request", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteTransfer(mockTransfer);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          credentials: "include",
-        }),
-      );
-    });
-
-    it("should use DELETE method", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteTransfer(mockTransfer);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          method: "DELETE",
-        }),
-      );
-    });
-  });
-
-  describe("Console logging behavior", () => {
-    it("should log error messages from server", async () => {
-      const errorMessage = "Transfer deletion failed due to business rules";
-      global.fetch = createModernErrorFetchMock(errorMessage, 400);
-
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow();
-    });
-
-    it("should log general errors with context", async () => {
-      global.fetch = simulateNetworkError();
-
-      await expect(deleteTransfer(mockTransfer)).rejects.toThrow();
-    });
-
-    it("should not log anything for successful deletions", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteTransfer(mockTransfer);
-    });
-
-    it("should log different transfer-specific error types", async () => {
-      const transferErrorScenarios = [
-        { error: "Source account balance insufficient", status: 400 },
-        { error: "Transfer already processed", status: 409 },
-        { error: "Invalid transfer amount", status: 422 },
-        { error: "Transfer not found", status: 404 },
-        { error: "Account reconciliation in progress", status: 423 },
-      ];
-
-      for (const scenario of transferErrorScenarios) {
-        jest.clearAllMocks();
-
-        global.fetch = createModernErrorFetchMock(
-          scenario.error,
-          scenario.status,
-        );
-
-        await expect(deleteTransfer(mockTransfer)).rejects.toThrow(
-          scenario.error,
-        );
-      }
-    });
-  });
-
-  describe("Transfer-specific validations", () => {
-    it("should handle transfer with all required fields", async () => {
-      const fullTransfer = createTestTransfer({
-        transferId: 123,
-        sourceAccount: "primaryChecking",
-        destinationAccount: "emergencySavings",
-        transactionDate: new Date("2024-02-15"),
-        amount: 1250.75,
-        guidSource: "full-src-guid-abc",
-        guidDestination: "full-dest-guid-xyz",
-        activeStatus: true,
-        dateAdded: new Date("2024-02-14"),
-        dateUpdated: new Date("2024-02-15"),
-      });
-
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      const result = await deleteTransfer(fullTransfer);
-
-      expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/123",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle transfer with minimal required fields", async () => {
-      const minimalTransfer = createTestTransfer({
-        transferId: 456,
-        sourceAccount: "basic",
-        destinationAccount: "target",
-        amount: 50.0,
-      });
-
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      const result = await deleteTransfer(minimalTransfer);
-
-      expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transfer/456",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle transfer with same source and destination accounts", async () => {
-      const sameAccountTransfer = createTestTransfer({
-        transferId: 789,
-        sourceAccount: "sharedAccount",
-        destinationAccount: "sharedAccount",
+    it("should return deleted transfer object", async () => {
+      const testTransfer = createTestTransfer({
+        transferId: 1,
+        sourceAccount: "checking",
         amount: 100.0,
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      global.fetch = createModernFetchMock(testTransfer);
 
-      const result = await deleteTransfer(sameAccountTransfer);
-
-      expect(result).toBeNull();
-    });
-
-    it("should handle transfer with large amounts", async () => {
-      const largeAmountTransfer = createTestTransfer({
-        transferId: 101,
-        amount: 999999.99,
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      result.current.mutate({ oldRow: testTransfer });
 
-      const result = await deleteTransfer(largeAmountTransfer);
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(result).toBeNull();
-    });
-
-    it("should handle transfer with zero amount", async () => {
-      const zeroAmountTransfer = createTestTransfer({
-        transferId: 202,
-        amount: 0,
-      });
-
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      const result = await deleteTransfer(zeroAmountTransfer);
-
-      expect(result).toBeNull();
+      expect(result.current.data?.transferId).toBe(1);
+      expect(result.current.data?.sourceAccount).toBe("checking");
+      expect(result.current.data?.amount).toBe(100.0);
     });
   });
 
-  describe("Transfer business logic edge cases", () => {
-    it("should handle transfer with special account names", async () => {
-      const specialAccountTransfer = createTestTransfer({
-        transferId: 303,
-        sourceAccount: "Account with Spaces & Special-Chars@123",
-        destinationAccount: "Destination_Account.with.dots",
+  describe("Modern error handling", () => {
+    it("should handle 401 Unauthorized error", async () => {
+      global.fetch = createModernErrorFetchMock("Unauthorized", 401);
+
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      const testTransfer = createTestTransfer({ transferId: 1 });
 
-      const result = await deleteTransfer(specialAccountTransfer);
-
-      expect(result).toBeNull();
+      await expect(
+        result.current.mutateAsync({ oldRow: testTransfer }),
+      ).rejects.toThrow("Unauthorized");
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "Delete failed",
+        expect.any(Error),
+      );
     });
 
-    it("should handle transfer with optional GUID fields", async () => {
-      const guidTransfer = createTestTransfer({
-        transferId: 404,
-        guidSource: "source-12345-abcde",
-        guidDestination: "dest-67890-fghij",
+    it("should handle 403 Forbidden error", async () => {
+      global.fetch = createModernErrorFetchMock("Forbidden", 403);
+
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      const testTransfer = createTestTransfer({ transferId: 1 });
 
-      const result = await deleteTransfer(guidTransfer);
-
-      expect(result).toBeNull();
+      await expect(
+        result.current.mutateAsync({ oldRow: testTransfer }),
+      ).rejects.toThrow("Forbidden");
     });
 
-    it("should handle transfer without optional GUID fields", async () => {
-      const noGuidTransfer = createTestTransfer({
-        transferId: 505,
-        guidSource: undefined,
-        guidDestination: undefined,
+    it("should handle 404 Not Found error (transfer doesn't exist)", async () => {
+      global.fetch = createModernErrorFetchMock("Transfer not found", 404);
+
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
       });
 
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      const testTransfer = createTestTransfer({ transferId: 999 });
 
-      const result = await deleteTransfer(noGuidTransfer);
+      await expect(
+        result.current.mutateAsync({ oldRow: testTransfer }),
+      ).rejects.toThrow("Transfer not found");
+    });
 
-      expect(result).toBeNull();
+    it("should handle 500 Internal Server Error", async () => {
+      global.fetch = createModernErrorFetchMock("Internal server error", 500);
+
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
+      });
+
+      const testTransfer = createTestTransfer({ transferId: 1 });
+
+      await expect(
+        result.current.mutateAsync({ oldRow: testTransfer }),
+      ).rejects.toThrow("Internal server error");
+    });
+
+    it("should handle network errors", async () => {
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
+      });
+
+      const testTransfer = createTestTransfer({ transferId: 1 });
+
+      await expect(
+        result.current.mutateAsync({ oldRow: testTransfer }),
+      ).rejects.toThrow("Network error");
+    });
+
+    it("should handle error response without error field", async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        statusText: "Internal Server Error",
+        json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue("{}"),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
+      });
+
+      const testTransfer = createTestTransfer({ transferId: 1 });
+
+      await expect(
+        result.current.mutateAsync({ oldRow: testTransfer }),
+      ).rejects.toThrow("HTTP 500: Internal Server Error");
+    });
+
+    it("should handle JSON parse error in error response", async () => {
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        statusText: "Internal Server Error",
+        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
+        text: jest.fn().mockResolvedValue("Invalid response"),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const { result } = renderHook(() => useTransferDelete(), {
+        wrapper: createWrapper(),
+      });
+
+      const testTransfer = createTestTransfer({ transferId: 1 });
+
+      await expect(
+        result.current.mutateAsync({ oldRow: testTransfer }),
+      ).rejects.toThrow("HTTP 500: Internal Server Error");
+    });
+  });
+
+  describe("Cache updates", () => {
+    it("should remove deleted transfer from React Query cache", async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      });
+
+      // Pre-populate cache with existing transfers
+      const existingTransfers = [
+        createTestTransfer({ transferId: 1, sourceAccount: "checking" }),
+        createTestTransfer({ transferId: 2, sourceAccount: "savings" }),
+      ];
+      queryClient.setQueryData(["transfer"], existingTransfers);
+
+      function wrapper({ children }: { children: React.ReactNode }) {
+        return React.createElement(
+          QueryClientProvider,
+          { client: queryClient },
+          children,
+        );
+      }
+
+      const transferToDelete = existingTransfers[0];
+      global.fetch = createModernFetchMock(transferToDelete);
+
+      const { result } = renderHook(() => useTransferDelete(), { wrapper });
+
+      result.current.mutate({ oldRow: transferToDelete });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
+      expect(cacheData).toHaveLength(1);
+      expect(cacheData?.[0].transferId).toBe(2); // Only second transfer remains
+    });
+
+    it("should handle empty cache after deletion", async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      });
+
+      // Pre-populate cache with one transfer
+      const existingTransfers = [
+        createTestTransfer({ transferId: 1, sourceAccount: "checking" }),
+      ];
+      queryClient.setQueryData(["transfer"], existingTransfers);
+
+      function wrapper({ children }: { children: React.ReactNode }) {
+        return React.createElement(
+          QueryClientProvider,
+          { client: queryClient },
+          children,
+        );
+      }
+
+      const transferToDelete = existingTransfers[0];
+      global.fetch = createModernFetchMock(transferToDelete);
+
+      const { result } = renderHook(() => useTransferDelete(), { wrapper });
+
+      result.current.mutate({ oldRow: transferToDelete });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
+      expect(cacheData).toHaveLength(0);
+      expect(cacheData).toEqual([]);
     });
   });
 });

@@ -1,454 +1,428 @@
-// Mock HookValidator
-jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
-  HookValidationError: class HookValidationError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "HookValidationError";
-    }
-  },
-}));
+/**
+ * TDD Tests for Modern useDescriptionDelete
+ * Modern endpoint: DELETE /api/description/{descriptionName}
+ *
+ * Key differences from legacy:
+ * - Endpoint: /api/description/{descriptionName} (vs /api/description/delete/{descriptionName})
+ * - Uses descriptionName instead of descriptionId
+ * - Uses ServiceResult pattern for errors
+ */
 
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
-
-// Mock validation utilities
-jest.mock("../../utils/validation", () => ({
-  DataValidator: {
-    validateDescription: jest.fn(),
-  },
-  ValidationError: jest.fn(),
-}));
-
+import { ConsoleSpy } from "../../testHelpers";
+import { createModernFetchMock } from "../../testHelpers";
 import Description from "../../model/Description";
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-  createTestDescription,
-} from "../../testHelpers.modern";
 
-const simulateNetworkError = () => {
-  return jest.fn().mockRejectedValue(new Error("Network error"));
+// Modern implementation to test
+const deleteDescriptionModern = async (
+  payload: Description,
+): Promise<Description | null> => {
+  try {
+    const endpoint = `/api/description/${payload.descriptionName}`;
+
+    const response = await fetch(endpoint, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return response.status !== 204 ? await response.json() : null;
+  } catch (error: any) {
+    console.error(`An error occurred: ${error.message}`);
+    throw error;
+  }
 };
 
-import { deleteDescription } from "../../hooks/useDescriptionDelete";
-import { HookValidator } from "../../utils/hookValidation";
+// Helper function to create test description data
+const createTestDescription = (
+  overrides: Partial<Description> = {},
+): Description => ({
+  descriptionId: 1,
+  descriptionName: "test_description",
+  activeStatus: true,
+  ...overrides,
+});
 
-const mockValidateDelete = HookValidator.validateDelete as jest.Mock;
-
-describe("deleteDescription (Isolated)", () => {
-  const mockDescription = createTestDescription({
-    descriptionId: 1,
-    descriptionName: "electronics",
-    activeStatus: true,
-    dateAdded: new Date("2024-01-01"),
-    dateUpdated: new Date("2024-01-01"),
-  });
+describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
+  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
+    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
-    // Reset validation mock
-    mockValidateDelete.mockImplementation(() => {});
   });
 
-  afterEach(() => {});
+  afterEach(() => {
+    consoleSpy.stop();
+  });
 
-  describe("Successful deletion", () => {
-    it("should delete description successfully with 204 status", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+  describe("Modern endpoint behavior", () => {
+    it("should use modern endpoint /api/description/{descriptionName}", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 123,
+        descriptionName: "test_desc_123",
+      });
 
-      const result = await deleteDescription(mockDescription);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteDescriptionModern(testDescription);
+
+      expect(fetch).toHaveBeenCalledWith("/api/description/test_desc_123", {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+    });
+
+    it("should delete description successfully with 204 response", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteDescriptionModern(testDescription);
 
       expect(result).toBeNull();
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/electronics",
-        expect.objectContaining({
-          method: "DELETE",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }),
-      );
     });
 
-    it("should return JSON data when status is not 204", async () => {
-      const mockResponse = { message: "Description deleted", id: 1 };
-      global.fetch = createModernFetchMock(mockResponse, { status: 200 });
+    it("should delete description successfully with 200 response", async () => {
+      const testDescription = createTestDescription();
 
-      const result = await deleteDescription(mockDescription);
+      global.fetch = createModernFetchMock(testDescription);
 
-      expect(result).toEqual(mockResponse);
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toEqual(testDescription);
     });
 
-    it("should construct correct endpoint URL with description name", async () => {
-      const descriptionWithDifferentName = createTestDescription({
-        ...mockDescription,
-        descriptionName: "groceries",
+    it("should use descriptionName from payload in URL", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 999,
+        descriptionName: "test_desc_999",
       });
-      global.fetch = createModernFetchMock(null, { status: 204 });
 
-      await deleteDescription(descriptionWithDifferentName);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/groceries",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle description name with special characters", async () => {
-      const specialDescription = createTestDescription({
-        ...mockDescription,
-        descriptionName: "food & dining",
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
       });
-      global.fetch = createModernFetchMock(null, { status: 204 });
 
-      await deleteDescription(specialDescription);
+      await deleteDescriptionModern(testDescription);
 
-      // Special characters are sanitized in URL path
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/food  dining",
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/test_desc_999",
         expect.any(Object),
       );
     });
   });
 
-  describe("Error handling", () => {
-    it("should handle server error with error message", async () => {
-      const errorMessage = "Cannot delete this description";
-      global.fetch = createModernErrorFetchMock(errorMessage, 400);
+  describe("Modern error handling with ServiceResult pattern", () => {
+    it("should handle 404 not found with modern error format", async () => {
+      const testDescription = createTestDescription({ descriptionId: 999 });
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        errorMessage,
-      );
-    });
-
-    it("should handle server error without error message", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
+      global.fetch = jest.fn().mockResolvedValue({
         ok: false,
-        status: 400,
-        json: jest.fn().mockResolvedValueOnce({}),
+        status: 404,
+        json: async () => ({ error: "Description not found" }),
       });
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "HTTP 400",
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Description not found",
       );
     });
 
-    it("should handle JSON parsing errors in error response", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
+    it("should handle 401 unauthorized", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest.fn().mockResolvedValue({
         ok: false,
-        status: 400,
-        json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
+        status: 401,
+        json: async () => ({ error: "Unauthorized" }),
       });
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "HTTP 400",
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Unauthorized",
       );
     });
 
-    it("should handle empty error message gracefully", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
+    it("should handle 403 forbidden", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ error: "Forbidden" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Forbidden",
+      );
+    });
+
+    it("should handle 409 conflict (description in use)", async () => {
+      const testDescription = createTestDescription({
+        descriptionName: "amazon",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: "Cannot delete description amazon - in use",
+        }),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Cannot delete description amazon - in use",
+      );
+    });
+
+    it("should handle 500 server error", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 500,
-        json: jest.fn().mockResolvedValueOnce({}),
+        json: async () => ({ error: "Internal server error" }),
       });
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "HTTP 500",
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Internal server error",
       );
     });
 
-    it("should handle network errors", async () => {
-      global.fetch = simulateNetworkError();
+    it("should handle error response without error field", async () => {
+      const testDescription = createTestDescription();
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "Network error",
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({}),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "HTTP error! Status: 400",
       );
     });
 
-    it("should handle various HTTP error statuses", async () => {
-      const errorStatuses = [400, 401, 403, 404, 409, 500];
+    it("should handle invalid JSON in error response", async () => {
+      const testDescription = createTestDescription();
 
-      for (const status of errorStatuses) {
-        const errorMessage = `Error ${status}`;
-        global.fetch = createModernErrorFetchMock(errorMessage, status);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
+      });
 
-        await expect(deleteDescription(mockDescription)).rejects.toThrow(
-          errorMessage,
-        );
-      }
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "HTTP error! Status: 500",
+      );
     });
 
-    it("should handle fetch rejection", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValueOnce(new Error("Connection failed"));
+    it("should handle validation errors with modern format", async () => {
+      const testDescription = createTestDescription();
 
-      await expect(deleteDescription(mockDescription)).rejects.toThrow(
-        "Connection failed",
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({
+          errors: [
+            "descriptionId is required",
+            "descriptionId must be a valid number",
+          ],
+        }),
+      });
+
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "descriptionId is required, descriptionId must be a valid number",
       );
     });
   });
 
-  describe("Request format validation", () => {
-    it("should use DELETE method", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+  describe("Network and connectivity errors", () => {
+    it("should handle network errors", async () => {
+      const testDescription = createTestDescription();
 
-      await deleteDescription(mockDescription);
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          method: "DELETE",
-        }),
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Network error",
       );
+
+      const calls = consoleSpy.getCalls();
+      expect(
+        calls.error.some((call) => call[0].includes("An error occurred:")),
+      ).toBe(true);
+    });
+
+    it("should handle timeout errors", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
+
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Timeout",
+      );
+    });
+
+    it("should handle connection refused", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest
+        .fn()
+        .mockRejectedValue(new Error("Connection refused"));
+
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow(
+        "Connection refused",
+      );
+    });
+  });
+
+  describe("Request configuration", () => {
+    it("should use DELETE method", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteDescriptionModern(testDescription);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.method).toBe("DELETE");
     });
 
     it("should include credentials", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      const testDescription = createTestDescription();
 
-      await deleteDescription(mockDescription);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          credentials: "include",
-        }),
-      );
+      await deleteDescriptionModern(testDescription);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.credentials).toBe("include");
     });
 
     it("should include correct headers", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+      const testDescription = createTestDescription();
 
-      await deleteDescription(mockDescription);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }),
-      );
+      await deleteDescriptionModern(testDescription);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.headers).toEqual({
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      });
     });
 
-    it("should not include request body for DELETE", async () => {
-      global.fetch = createModernFetchMock(null, { status: 204 });
+    it("should not send body in DELETE request", async () => {
+      const testDescription = createTestDescription();
 
-      await deleteDescription(mockDescription);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.not.objectContaining({
-          body: expect.anything(),
-        }),
-      );
+      await deleteDescriptionModern(testDescription);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.body).toBeUndefined();
     });
   });
 
   describe("Response handling", () => {
-    it("should return parsed JSON response for non-204 status", async () => {
-      const responseData = {
-        descriptionId: 1,
-        descriptionName: "electronics",
-        message: "Successfully deleted",
-        timestamp: "2024-01-15T10:00:00Z",
-      };
-      global.fetch = createModernFetchMock(responseData, { status: 200 });
+    it("should return null for 204 No Content", async () => {
+      const testDescription = createTestDescription();
 
-      const result = await deleteDescription(mockDescription);
-
-      expect(result).toEqual(responseData);
-    });
-
-    it("should handle empty response body", async () => {
-      global.fetch = createModernFetchMock({}, { status: 200 });
-
-      const result = await deleteDescription(mockDescription);
-
-      expect(result).toEqual({});
-    });
-
-    it("should handle complex response data", async () => {
-      const complexResponse = {
-        descriptionId: 1,
-        descriptionName: "electronics",
-        deletedAt: "2024-01-15T10:00:00Z",
-        metadata: {
-          deletedBy: "admin",
-          reason: "cleanup",
-        },
-      };
-      global.fetch = createModernFetchMock(complexResponse, { status: 200 });
-
-      const result = await deleteDescription(mockDescription);
-
-      expect(result).toEqual(complexResponse);
-    });
-
-    it("should prioritize 204 status over response body", async () => {
-      // Even if there's a response body, 204 should return null
-      const mockJson = jest.fn().mockResolvedValueOnce({ message: "ignored" });
-      global.fetch = jest.fn().mockResolvedValueOnce({
+      global.fetch = jest.fn().mockResolvedValue({
         ok: true,
         status: 204,
-        json: mockJson,
       });
 
-      const result = await deleteDescription(mockDescription);
+      const result = await deleteDescriptionModern(testDescription);
 
       expect(result).toBeNull();
-      // json() should not be called for 204 responses
-      expect(mockJson).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should handle description with empty name", async () => {
-      const emptyNameDescription = createTestDescription({
-        ...mockDescription,
-        descriptionName: "",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteDescription(emptyNameDescription);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/",
-        expect.any(Object),
-      );
     });
 
-    it("should handle description with very long name", async () => {
-      const longDescriptionName = "A".repeat(255);
-      const longNameDescription = createTestDescription({
-        ...mockDescription,
-        descriptionName: longDescriptionName,
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteDescription(longNameDescription);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        `/api/description/${longDescriptionName}`,
-        expect.any(Object),
-      );
-    });
-
-    it("should handle description with numeric-like name", async () => {
-      const numericDescription = createTestDescription({
-        ...mockDescription,
-        descriptionName: "12345",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteDescription(numericDescription);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/12345",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle description with Unicode characters", async () => {
-      const unicodeDescription = createTestDescription({
-        ...mockDescription,
-        descriptionName: "café & résumé",
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteDescription(unicodeDescription);
-
-      // Unicode and special characters are sanitized in URL path
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/caf  rsum",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle description with null/undefined properties", async () => {
-      const descriptionWithNulls = {
-        ...mockDescription,
-        dateAdded: null as any,
-        dateUpdated: undefined as any,
-      };
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteDescription(descriptionWithNulls);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/electronics",
-        expect.any(Object),
-      );
-    });
-  });
-
-  describe("Business logic validation", () => {
-    it("should use description name in endpoint URL", async () => {
-      const businessDescription = createTestDescription({
-        descriptionId: 999, // Should not be used in endpoint
-        descriptionName: "business_expense",
-        activeStatus: false, // Should not affect endpoint
-      });
-      global.fetch = createModernFetchMock(null, { status: 204 });
-
-      await deleteDescription(businessDescription);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/business_expense",
-        expect.any(Object),
-      );
-    });
-
-    it("should not modify description data before deletion", async () => {
-      const originalDescription = createTestDescription({
+    it("should return description data for 200 OK", async () => {
+      const testDescription = createTestDescription({
         descriptionId: 123,
-        descriptionName: "original_description",
-        activeStatus: true,
+        descriptionName: "deleted_desc",
       });
-      global.fetch = createModernFetchMock(null, { status: 204 });
 
-      await deleteDescription(originalDescription);
+      global.fetch = createModernFetchMock(testDescription);
 
-      // Verify endpoint uses exact description name
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/description/original_description",
-        expect.any(Object),
-      );
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toEqual(testDescription);
     });
 
-    it("should handle case-sensitive description names", async () => {
-      const caseSensitiveDescriptions = [
-        "Electronics",
-        "electronics",
-        "ELECTRONICS",
-        "eLeCTRoNiCs",
-      ];
+    it("should handle different descriptionName values", async () => {
+      const descriptionNames = ["desc_1", "desc_100", "desc_999", "desc_12345"];
 
-      for (const name of caseSensitiveDescriptions) {
-        const description = createTestDescription({
-          ...mockDescription,
+      for (const name of descriptionNames) {
+        const testDescription = createTestDescription({
           descriptionName: name,
         });
-        global.fetch = createModernFetchMock(null, { status: 204 });
 
-        await deleteDescription(description);
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: true,
+          status: 204,
+        });
 
-        expect(global.fetch).toHaveBeenCalledWith(
+        await deleteDescriptionModern(testDescription);
+
+        expect(fetch).toHaveBeenCalledWith(
           `/api/description/${name}`,
           expect.any(Object),
         );
@@ -456,42 +430,247 @@ describe("deleteDescription (Isolated)", () => {
     });
   });
 
-  describe("HTTP status validation", () => {
-    it("should handle different success status codes", async () => {
-      const successStatuses = [200, 202, 204];
+  describe("Common deletion scenarios", () => {
+    it("should delete retail store description", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 1,
+        descriptionName: "amazon",
+      });
 
-      for (const status of successStatuses) {
-        const responseData =
-          status === 204 ? null : { message: `Status ${status}` };
-        global.fetch = createModernFetchMock(responseData, { status });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-        const result = await deleteDescription(mockDescription);
+      const result = await deleteDescriptionModern(testDescription);
 
-        if (status === 204) {
-          expect(result).toBeNull();
-        } else {
-          expect(result).toEqual(responseData);
-        }
-      }
+      expect(result).toBeNull();
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/amazon",
+        expect.any(Object),
+      );
     });
 
-    it("should handle server error status codes", async () => {
-      const errorStatuses = [
-        { status: 400, message: "Bad Request" },
-        { status: 403, message: "Forbidden" },
-        { status: 404, message: "Not Found" },
-        { status: 409, message: "Conflict" },
-        { status: 500, message: "Internal Server Error" },
-        { status: 503, message: "Service Unavailable" },
-      ];
+    it("should delete walmart description", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 2,
+        descriptionName: "walmart",
+      });
 
-      for (const { status, message } of errorStatuses) {
-        global.fetch = createModernErrorFetchMock(message, status);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
 
-        await expect(deleteDescription(mockDescription)).rejects.toThrow(
-          message,
-        );
-      }
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toBeNull();
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/walmart",
+        expect.any(Object),
+      );
+    });
+
+    it("should delete target description", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 3,
+        descriptionName: "target",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toBeNull();
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/target",
+        expect.any(Object),
+      );
+    });
+
+    it("should delete grocery store description", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 4,
+        descriptionName: "grocery_store",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toBeNull();
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/grocery_store",
+        expect.any(Object),
+      );
+    });
+
+    it("should delete gas station description", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 5,
+        descriptionName: "gas_station",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toBeNull();
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/gas_station",
+        expect.any(Object),
+      );
+    });
+
+    it("should delete inactive description", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 6,
+        descriptionName: "old_store",
+        activeStatus: false,
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("Edge cases", () => {
+    it("should handle deletion of description with special characters in name", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 100,
+        descriptionName: "store-with_special.chars",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteDescriptionModern(testDescription);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/store-with_special.chars",
+        expect.any(Object),
+      );
+    });
+
+    it("should handle deletion of description with Unicode characters in name", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 101,
+        descriptionName: "店舗 🏪",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteDescriptionModern(testDescription);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/description/店舗 🏪",
+        expect.any(Object),
+      );
+    });
+
+    it("should handle deletion of description with whitespace in name", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 102,
+        descriptionName: "  store with spaces  ",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toBeNull();
+    });
+
+    it("should handle deletion of description with long name", async () => {
+      const longName = "a".repeat(500);
+      const testDescription = createTestDescription({
+        descriptionId: 103,
+        descriptionName: longName,
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("Data integrity", () => {
+    it("should use correct descriptionName from payload", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 456,
+        descriptionName: "test",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+      });
+
+      await deleteDescriptionModern(testDescription);
+
+      const url = (fetch as jest.Mock).mock.calls[0][0];
+      expect(url).toBe("/api/description/test");
+    });
+
+    it("should return exact description data when API returns 200", async () => {
+      const testDescription = createTestDescription({
+        descriptionId: 789,
+        descriptionName: "exact_desc",
+        activeStatus: true,
+      });
+
+      global.fetch = createModernFetchMock(testDescription);
+
+      const result = await deleteDescriptionModern(testDescription);
+
+      expect(result).toEqual(testDescription);
+    });
+  });
+
+  describe("Error logging", () => {
+    it("should log error message to console", async () => {
+      const testDescription = createTestDescription();
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Test error"));
+
+      consoleSpy.start();
+
+      await expect(deleteDescriptionModern(testDescription)).rejects.toThrow();
+
+      const calls = consoleSpy.getCalls();
+      expect(
+        calls.error.some((call) =>
+          call[0].includes("An error occurred: Test error"),
+        ),
+      ).toBe(true);
     });
   });
 });

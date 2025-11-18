@@ -9,7 +9,7 @@
  */
 
 import { ConsoleSpy } from "../../testHelpers";
-import { createModernFetchMock } from "../../testHelpers.modern";
+import { createModernFetchMock } from "../../testHelpers";
 import Category from "../../model/Category";
 
 // Modern implementation to test

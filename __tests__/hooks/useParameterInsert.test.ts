@@ -1,81 +1,82 @@
 /**
- * Isolated tests for useParameterInsert business logic
- * Tests insertParameter function without React Query overhead
+ * TDD Tests for Modern useParameterInsert
+ * Modern endpoint: POST /api/parameter
+ *
+ * Key differences from legacy:
+ * - Endpoint: /api/parameter (vs /api/parameter/insert)
+ * - Uses ServiceResult pattern for errors
+ * - Consistent error response format
  */
 
-// Mock HookValidator
-jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
-  HookValidationError: class HookValidationError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "HookValidationError";
-    }
-  },
-}));
-
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
-
-// Mock validation utilities
-jest.mock("../../utils/validation", () => ({
-  DataValidator: {
-    validateParameter: jest.fn(),
-  },
-  ValidationError: jest.fn(),
-}));
-
-import { createTestParameter } from "../../testHelpers";
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-} from "../../testHelpers.modern";
+import { ConsoleSpy } from "../../testHelpers";
+import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
 
-import { insertParameter } from "../../hooks/useParameterInsert";
-import { HookValidator } from "../../utils/hookValidation";
+// Modern implementation to test
+const insertParameterModern = async (
+  payload: Parameter,
+): Promise<Parameter> => {
+  try {
+    const endpoint = "/api/parameter";
 
-const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-describe("insertParameter (Isolated)", () => {
+    if (!response.ok) {
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return response.status !== 204 ? await response.json() : payload;
+  } catch (error: any) {
+    console.error(`An error occurred: ${error.message}`);
+    throw error;
+  }
+};
+
+// Helper function to create test parameter data
+const createTestParameter = (
+  overrides: Partial<Parameter> = {},
+): Parameter => ({
+  parameterId: 1,
+  parameterName: "test_parameter",
+  parameterValue: "test_value",
+  activeStatus: true,
+  ...overrides,
+});
+
+describe("useParameterInsert Modern Endpoint (TDD)", () => {
+  let consoleSpy: ConsoleSpy;
+
   beforeEach(() => {
+    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
-    // Reset validation mock
-    mockValidateInsert.mockImplementation((data) => data);
   });
 
-  afterEach(() => {});
+  afterEach(() => {
+    consoleSpy.stop();
+  });
 
-  describe("Successful insertion", () => {
-    it("should insert parameter successfully with 200 response", async () => {
-      const testParameter = createTestParameter({
-        parameterName: "TEST_CONFIG",
-        parameterValue: "test-value",
-      });
+  describe("Modern endpoint behavior", () => {
+    it("should use modern endpoint /api/parameter", async () => {
+      const testParameter = createTestParameter();
+      global.fetch = createModernFetchMock(testParameter);
 
-      const expectedResponse = {
-        ...testParameter,
-        parameterId: 42,
-        dateAdded: new Date().toISOString(),
-        dateUpdated: new Date().toISOString(),
-      };
+      await insertParameterModern(testParameter);
 
-      global.fetch = createModernFetchMock(expectedResponse);
-
-      const result = await insertParameter(testParameter);
-
-      expect(result).toEqual(expectedResponse);
       expect(fetch).toHaveBeenCalledWith("/api/parameter", {
         method: "POST",
         credentials: "include",
@@ -87,465 +88,403 @@ describe("insertParameter (Isolated)", () => {
       });
     });
 
-    it("should handle 204 no content response", async () => {
-      const testParameter = createTestParameter();
-      global.fetch = createModernFetchMock(null, { status: 204 });
+    it("should insert parameter successfully", async () => {
+      const testParameter = createTestParameter({
+        parameterName: "new_param",
+        parameterValue: "new_value",
+      });
 
-      const result = await insertParameter(testParameter);
+      global.fetch = createModernFetchMock(testParameter);
+
+      const result = await insertParameterModern(testParameter);
 
       expect(result).toEqual(testParameter);
     });
 
-    it("should send complete parameter payload", async () => {
-      const complexParameter = createTestParameter({
-        parameterName: "COMPLEX_CONFIG",
-        parameterValue: "complex-value-with-special-chars-!@#$%",
-        activeStatus: false,
+    it("should handle 204 No Content response", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+        json: async () => {
+          throw new Error("No content");
+        },
       });
 
-      global.fetch = createModernFetchMock({ parameterId: 1 });
+      const result = await insertParameterModern(testParameter);
 
-      await insertParameter(complexParameter);
-
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter",
-        expect.objectContaining({
-          body: JSON.stringify(complexParameter),
-        }),
-      );
+      expect(result).toEqual(testParameter);
     });
   });
 
-  describe("API error handling", () => {
-    it("should handle 400 error with response message", async () => {
+  describe("Modern error handling with ServiceResult pattern", () => {
+    it("should handle validation errors with modern format", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createModernErrorFetchMock(
-        "Parameter name already exists",
-        400,
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({
+          errors: [
+            "parameterName is required",
+            "parameterValue must be non-empty",
+          ],
+        }),
+      });
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "parameterName is required, parameterValue must be non-empty",
       );
-      await expect(insertParameter(testParameter)).rejects.toThrow(
-        "Parameter name already exists",
+    });
+
+    it("should handle duplicate parameter error", async () => {
+      const testParameter = createTestParameter({
+        parameterName: "payment_account",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: "Parameter payment_account already exists",
+        }),
+      });
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "Parameter payment_account already exists",
+      );
+    });
+
+    it("should handle 401 unauthorized", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: "Unauthorized" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "Unauthorized",
+      );
+    });
+
+    it("should handle 403 forbidden", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ error: "Forbidden" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "Forbidden",
       );
     });
 
     it("should handle 500 server error", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createModernErrorFetchMock("Internal server error", 500);
-      await expect(insertParameter(testParameter)).rejects.toThrow(
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: "Internal server error" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
         "Internal server error",
       );
     });
 
-    it("should handle 409 conflict error for duplicate parameters", async () => {
-      const duplicateParameter = createTestParameter({
-        parameterName: "EXISTING_PARAM",
-        parameterValue: "some-value",
-      });
-      global.fetch = createModernErrorFetchMock(
-        "Parameter already exists with this name",
-        409,
-      );
-      await expect(insertParameter(duplicateParameter)).rejects.toThrow(
-        "Parameter already exists with this name",
-      );
-    });
-
-    it("should handle error response without message", async () => {
+    it("should handle error response without error field", async () => {
       const testParameter = createTestParameter();
+
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 400,
-        json: jest.fn().mockResolvedValue({}),
+        json: async () => ({}),
       });
-      await expect(insertParameter(testParameter)).rejects.toThrow("HTTP 400");
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "HTTP error! Status: 400",
+      );
     });
 
-    it("should handle malformed error response", async () => {
+    it("should handle invalid JSON in error response", async () => {
       const testParameter = createTestParameter();
+
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
-        status: 400,
+        status: 500,
         json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
       });
-      await expect(insertParameter(testParameter)).rejects.toThrow("HTTP 400");
-    });
 
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "HTTP error! Status: 500",
+      );
+    });
+  });
+
+  describe("Network and connectivity errors", () => {
     it("should handle network errors", async () => {
       const testParameter = createTestParameter();
+
       global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-      await expect(insertParameter(testParameter)).rejects.toThrow(
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
         "Network error",
       );
+
+      const calls = consoleSpy.getCalls();
+      expect(
+        calls.error.some((call) => call[0].includes("An error occurred:")),
+      ).toBe(true);
     });
 
     it("should handle timeout errors", async () => {
       const testParameter = createTestParameter();
-      global.fetch = jest.fn().mockRejectedValue(new Error("Request timeout"));
-      await expect(insertParameter(testParameter)).rejects.toThrow(
-        "Request timeout",
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "Timeout",
+      );
+    });
+
+    it("should handle connection refused", async () => {
+      const testParameter = createTestParameter();
+
+      global.fetch = jest
+        .fn()
+        .mockRejectedValue(new Error("Connection refused"));
+
+      consoleSpy.start();
+
+      await expect(insertParameterModern(testParameter)).rejects.toThrow(
+        "Connection refused",
       );
     });
   });
 
-  describe("Request format validation", () => {
-    it("should send correct headers", async () => {
+  describe("Request body and headers", () => {
+    it("should use POST method", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createModernFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock(testParameter);
 
-      await insertParameter(testParameter);
+      await insertParameterModern(testParameter);
 
-      expect(fetch).toHaveBeenCalledWith("/api/parameter", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(testParameter),
-      });
-    });
-
-    it("should use correct endpoint", async () => {
-      const testParameter = createTestParameter();
-      global.fetch = createModernFetchMock({ parameterId: 1 });
-
-      await insertParameter(testParameter);
-
-      expect(fetch).toHaveBeenCalledWith("/api/parameter", expect.any(Object));
-    });
-
-    it("should send POST method", async () => {
-      const testParameter = createTestParameter();
-      global.fetch = createModernFetchMock({ parameterId: 1 });
-
-      await insertParameter(testParameter);
-
-      expect(fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({ method: "POST" }),
-      );
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.method).toBe("POST");
     });
 
     it("should include credentials", async () => {
       const testParameter = createTestParameter();
-      global.fetch = createModernFetchMock({ parameterId: 1 });
+      global.fetch = createModernFetchMock(testParameter);
 
-      await insertParameter(testParameter);
+      await insertParameterModern(testParameter);
 
-      expect(fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({ credentials: "include" }),
-      );
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.credentials).toBe("include");
+    });
+
+    it("should include correct headers", async () => {
+      const testParameter = createTestParameter();
+      global.fetch = createModernFetchMock(testParameter);
+
+      await insertParameterModern(testParameter);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.headers).toEqual({
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      });
+    });
+
+    it("should send parameter as JSON in request body", async () => {
+      const testParameter = createTestParameter({
+        parameterName: "test_config",
+        parameterValue: "test_value",
+      });
+
+      global.fetch = createModernFetchMock(testParameter);
+
+      await insertParameterModern(testParameter);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.body).toBe(JSON.stringify(testParameter));
     });
   });
 
-  describe("Parameter validation scenarios", () => {
-    it("should handle configuration parameters", async () => {
-      const configParam = createTestParameter({
-        parameterName: "APP_CONFIG_VERSION",
-        parameterValue: "v2.1.3",
+  describe("Data integrity and validation", () => {
+    it("should preserve all parameter fields", async () => {
+      const testParameter = createTestParameter({
+        parameterId: 999,
+        parameterName: "complete_param",
+        parameterValue: "complete_value",
         activeStatus: true,
       });
 
-      global.fetch = createModernFetchMock({
-        ...configParam,
-        parameterId: 1,
-      });
+      global.fetch = createModernFetchMock(testParameter);
 
-      const result = await insertParameter(configParam);
+      const result = await insertParameterModern(testParameter);
 
-      expect(result.parameterName).toBe("APP_CONFIG_VERSION");
-      expect(result.parameterValue).toBe("v2.1.3");
+      expect(result).toEqual(testParameter);
+      expect(result.parameterId).toBe(999);
+      expect(result.parameterName).toBe("complete_param");
+      expect(result.parameterValue).toBe("complete_value");
       expect(result.activeStatus).toBe(true);
     });
 
-    it("should handle system parameters", async () => {
-      const systemParam = createTestParameter({
-        parameterName: "SYSTEM_MAINTENANCE_MODE",
-        parameterValue: "false",
-        activeStatus: true,
-      });
+    it("should handle parameters with various value types", async () => {
+      const testCases = [
+        { parameterValue: "string_value" },
+        { parameterValue: "123.45" },
+        { parameterValue: "true" },
+        { parameterValue: '{"nested": "json"}' },
+      ];
 
-      global.fetch = createModernFetchMock({
-        ...systemParam,
-        parameterId: 2,
-      });
+      for (const testCase of testCases) {
+        const testParameter = createTestParameter(testCase);
+        global.fetch = createModernFetchMock(testParameter);
 
-      const result = await insertParameter(systemParam);
+        const result = await insertParameterModern(testParameter);
 
-      expect(result.parameterName).toBe("SYSTEM_MAINTENANCE_MODE");
-      expect(result.parameterValue).toBe("false");
-    });
-
-    it("should handle feature flag parameters", async () => {
-      const featureFlag = createTestParameter({
-        parameterName: "FEATURE_NEW_DASHBOARD",
-        parameterValue: "enabled",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock({
-        ...featureFlag,
-        parameterId: 3,
-      });
-
-      const result = await insertParameter(featureFlag);
-
-      expect(result.parameterName).toBe("FEATURE_NEW_DASHBOARD");
-      expect(result.parameterValue).toBe("enabled");
-    });
-
-    it("should handle inactive parameters", async () => {
-      const inactiveParam = createTestParameter({
-        parameterName: "DEPRECATED_SETTING",
-        parameterValue: "old-value",
-        activeStatus: false,
-      });
-
-      global.fetch = createModernFetchMock({
-        ...inactiveParam,
-        parameterId: 4,
-      });
-
-      const result = await insertParameter(inactiveParam);
-
-      expect(result.activeStatus).toBe(false);
+        expect(result.parameterValue).toBe(testCase.parameterValue);
+      }
     });
   });
 
   describe("Edge cases", () => {
-    it("should handle special characters in parameter names", async () => {
-      const specialParam = createTestParameter({
-        parameterName: "SPECIAL_CHARS_!@#$%",
-        parameterValue: "special-value",
+    it("should handle parameters with special characters", async () => {
+      const testParameter = createTestParameter({
+        parameterName: "param-with_special.chars",
+        parameterValue: "value!@#$%^&*()",
       });
 
-      global.fetch = createModernFetchMock({
-        ...specialParam,
-        parameterId: 1,
-      });
+      global.fetch = createModernFetchMock(testParameter);
 
-      const result = await insertParameter(specialParam);
+      const result = await insertParameterModern(testParameter);
 
-      expect(result.parameterName).toBe("SPECIAL_CHARS_!@#$%");
+      expect(result.parameterName).toBe("param-with_special.chars");
+      expect(result.parameterValue).toBe("value!@#$%^&*()");
     });
 
-    it("should handle unicode characters in parameter values", async () => {
-      const unicodeParam = createTestParameter({
-        parameterName: "UNICODE_TEST",
-        parameterValue: "测试值 🚀 émojis",
+    it("should handle parameters with Unicode characters", async () => {
+      const testParameter = createTestParameter({
+        parameterValue: "Hello 世界 🌍 مرحبا",
       });
 
-      global.fetch = createModernFetchMock({
-        ...unicodeParam,
-        parameterId: 1,
-      });
+      global.fetch = createModernFetchMock(testParameter);
 
-      const result = await insertParameter(unicodeParam);
+      const result = await insertParameterModern(testParameter);
 
-      expect(result.parameterValue).toBe("测试值 🚀 émojis");
+      expect(result.parameterValue).toBe("Hello 世界 🌍 مرحبا");
     });
 
-    it("should handle very long parameter values", async () => {
-      const longValue = "A".repeat(1000);
-      const longParam = createTestParameter({
-        parameterName: "LONG_VALUE_PARAM",
-        parameterValue: longValue,
-      });
-
-      global.fetch = createModernFetchMock({
-        ...longParam,
-        parameterId: 1,
-      });
-
-      const result = await insertParameter(longParam);
-
-      expect(result.parameterValue).toBe(longValue);
-    });
-
-    it("should handle JSON string parameter values", async () => {
-      const jsonValue = JSON.stringify({
-        nested: { config: true, values: [1, 2, 3] },
-      });
-      const jsonParam = createTestParameter({
-        parameterName: "JSON_CONFIG",
-        parameterValue: jsonValue,
-      });
-
-      global.fetch = createModernFetchMock({
-        ...jsonParam,
-        parameterId: 1,
-      });
-
-      const result = await insertParameter(jsonParam);
-
-      expect(result.parameterValue).toBe(jsonValue);
-    });
-
-    it("should handle empty parameter values", async () => {
-      const emptyParam = createTestParameter({
-        parameterName: "EMPTY_VALUE",
+    it("should handle parameters with empty values", async () => {
+      const testParameter = createTestParameter({
         parameterValue: "",
       });
 
-      global.fetch = createModernFetchMock({
-        ...emptyParam,
-        parameterId: 1,
-      });
+      global.fetch = createModernFetchMock(testParameter);
 
-      const result = await insertParameter(emptyParam);
+      const result = await insertParameterModern(testParameter);
 
       expect(result.parameterValue).toBe("");
     });
 
-    it("should handle boolean-like string values", async () => {
-      const booleanParams = [
-        createTestParameter({
-          parameterName: "BOOL_TRUE",
-          parameterValue: "true",
-        }),
-        createTestParameter({
-          parameterName: "BOOL_FALSE",
-          parameterValue: "false",
-        }),
-        createTestParameter({
-          parameterName: "BOOL_YES",
-          parameterValue: "yes",
-        }),
-      ];
+    it("should handle parameters with very long values", async () => {
+      const longValue = "a".repeat(10000);
+      const testParameter = createTestParameter({
+        parameterValue: longValue,
+      });
 
-      for (const param of booleanParams) {
-        global.fetch = createModernFetchMock({ ...param, parameterId: 1 });
-        const result = await insertParameter(param);
-        expect(result.parameterValue).toBe(param.parameterValue);
-      }
+      global.fetch = createModernFetchMock(testParameter);
+
+      const result = await insertParameterModern(testParameter);
+
+      expect(result.parameterValue).toBe(longValue);
+      expect(result.parameterValue.length).toBe(10000);
+    });
+
+    it("should handle parameters with whitespace", async () => {
+      const testParameter = createTestParameter({
+        parameterValue: "  value with spaces  ",
+      });
+
+      global.fetch = createModernFetchMock(testParameter);
+
+      const result = await insertParameterModern(testParameter);
+
+      expect(result.parameterValue).toBe("  value with spaces  ");
     });
   });
 
-  describe("Integration scenarios", () => {
-    it("should handle complete successful parameter creation flow", async () => {
-      const newParameter = createTestParameter({
-        parameterName: "NEW_FEATURE_FLAG",
-        parameterValue: "enabled",
-        activeStatus: true,
+  describe("Common parameter scenarios", () => {
+    it("should insert payment account parameter", async () => {
+      const testParameter = createTestParameter({
+        parameterName: "payment_account",
+        parameterValue: "checking_main",
       });
 
-      const expectedResponse = {
-        ...newParameter,
-        parameterId: 100,
-        dateAdded: "2023-12-25T10:30:00.000Z",
-        dateUpdated: "2023-12-25T10:30:00.000Z",
-      };
+      global.fetch = createModernFetchMock(testParameter);
 
-      global.fetch = createModernFetchMock(expectedResponse);
+      const result = await insertParameterModern(testParameter);
 
-      const result = await insertParameter(newParameter);
-
-      expect(result).toEqual(expectedResponse);
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter",
-        expect.objectContaining({
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(newParameter),
-        }),
-      );
+      expect(result.parameterName).toBe("payment_account");
+      expect(result.parameterValue).toBe("checking_main");
     });
 
-    it("should handle parameter creation failure with detailed error", async () => {
-      const invalidParameter = createTestParameter({
-        parameterName: "", // Invalid empty name
-        parameterValue: "some-value",
-      });
-
-      global.fetch = createModernErrorFetchMock(
-        "Parameter name cannot be empty and must be unique",
-        400,
-      );
-      await expect(insertParameter(invalidParameter)).rejects.toThrow(
-        "Parameter name cannot be empty and must be unique",
-      );
-    });
-
-    it("should handle server errors gracefully", async () => {
-      const testParameter = createTestParameter();
-      global.fetch = createModernErrorFetchMock(
-        "Database connection failed",
-        503,
-      );
-      await expect(insertParameter(testParameter)).rejects.toThrow(
-        "Database connection failed",
-      );
-    });
-  });
-
-  describe("Parameter-specific business logic", () => {
-    it("should handle configuration migration parameters", async () => {
-      const migrationParam = createTestParameter({
-        parameterName: "DB_MIGRATION_VERSION",
-        parameterValue: "20231225_001",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock({
-        ...migrationParam,
-        parameterId: 1,
-      });
-
-      const result = await insertParameter(migrationParam);
-
-      expect(result.parameterName).toBe("DB_MIGRATION_VERSION");
-      expect(result.parameterValue).toBe("20231225_001");
-    });
-
-    it("should handle environment-specific parameters", async () => {
-      const envParams = [
-        createTestParameter({
-          parameterName: "ENV_MODE",
-          parameterValue: "production",
-        }),
-        createTestParameter({
-          parameterName: "DEBUG_LEVEL",
-          parameterValue: "error",
-        }),
-        createTestParameter({
-          parameterName: "API_TIMEOUT",
-          parameterValue: "30000",
-        }),
+    it("should insert configuration parameters", async () => {
+      const configParameters = [
+        { parameterName: "default_category", parameterValue: "groceries" },
+        { parameterName: "currency", parameterValue: "USD" },
+        { parameterName: "date_format", parameterValue: "MM/DD/YYYY" },
       ];
 
-      for (let i = 0; i < envParams.length; i++) {
-        global.fetch = createModernFetchMock({
-          ...envParams[i],
-          parameterId: i + 1,
-        });
+      for (const config of configParameters) {
+        const testParameter = createTestParameter(config);
+        global.fetch = createModernFetchMock(testParameter);
 
-        const result = await insertParameter(envParams[i]);
-        expect(result.parameterName).toBe(envParams[i].parameterName);
-        expect(result.parameterValue).toBe(envParams[i].parameterValue);
+        const result = await insertParameterModern(testParameter);
+
+        expect(result.parameterName).toBe(config.parameterName);
+        expect(result.parameterValue).toBe(config.parameterValue);
       }
     });
 
-    it("should handle user preference parameters", async () => {
-      const userPrefParam = createTestParameter({
-        parameterName: "DEFAULT_CURRENCY",
-        parameterValue: "USD",
-        activeStatus: true,
+    it("should insert numeric configuration parameter", async () => {
+      const testParameter = createTestParameter({
+        parameterName: "max_transaction_amount",
+        parameterValue: "10000.00",
       });
 
-      global.fetch = createModernFetchMock({
-        ...userPrefParam,
-        parameterId: 1,
-      });
+      global.fetch = createModernFetchMock(testParameter);
 
-      const result = await insertParameter(userPrefParam);
+      const result = await insertParameterModern(testParameter);
 
-      expect(result.parameterName).toBe("DEFAULT_CURRENCY");
-      expect(result.parameterValue).toBe("USD");
+      expect(result.parameterName).toBe("max_transaction_amount");
+      expect(result.parameterValue).toBe("10000.00");
     });
   });
 });

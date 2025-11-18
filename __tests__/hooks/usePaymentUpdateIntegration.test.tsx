@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import usePaymentFetch from "../../hooks/usePaymentFetch";
 import Payment from "../../model/Payment";
-import { createModernErrorFetchMock } from "../../testHelpers.modern";
+import { createModernErrorFetchMock } from "../../testHelpers";
 
 function createMockLogger() {
   return {

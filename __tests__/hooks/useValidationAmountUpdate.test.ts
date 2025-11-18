@@ -7,7 +7,7 @@ import {
   createModernFetchMock as createFetchMock,
   createModernErrorFetchMock as createErrorFetchMock,
   ConsoleSpy,
-} from "../../testHelpers.modern";
+} from "../../testHelpers";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 

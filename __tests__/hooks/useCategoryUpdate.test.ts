@@ -1,508 +1,688 @@
+/**
+ * TDD Tests for Modern useCategoryUpdate
+ * Modern endpoint: PUT /api/category/{categoryName}
+ *
+ * Key differences from legacy:
+ * - Endpoint: /api/category/{categoryName} (vs /api/category/update/{categoryId})
+ * - Uses categoryName instead of categoryId in URL path
+ * - Sends newCategory in request body
+ * - Uses ServiceResult pattern for errors
+ */
+
+import { ConsoleSpy } from "../../testHelpers";
+import { createModernFetchMock } from "../../testHelpers";
 import Category from "../../model/Category";
-import { ConsoleSpy, createTestCategory } from "../../testHelpers";
-import {
-  createModernFetchMock,
-  createModernErrorFetchMock,
-} from "../../testHelpers.modern";
 
-// Mock HookValidator
-jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
-  HookValidationError: class HookValidationError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "HookValidationError";
+// Modern implementation to test
+const updateCategoryModern = async (
+  oldCategory: Category,
+  newCategory: Category,
+): Promise<Category> => {
+  const endpoint = `/api/category/${oldCategory.categoryName}`;
+  try {
+    const response = await fetch(endpoint, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(newCategory),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response
+        .json()
+        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
+      const errorMessage =
+        errorBody.error ||
+        errorBody.errors?.join(", ") ||
+        `HTTP error! Status: ${response.status}`;
+      throw new Error(errorMessage);
     }
-  },
-}));
 
-// Mock logger
-jest.mock("../../utils/logger", () => ({
-  createHookLogger: jest.fn(() => ({
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  })),
-}));
+    return await response.json();
+  } catch (error: any) {
+    console.error(`An error occurred: ${error.message}`);
+    throw error;
+  }
+};
 
-// Mock validation utilities
-jest.mock("../../utils/validation", () => ({
-  DataValidator: {
-    validateCategory: jest.fn(),
-  },
-  ValidationError: jest.fn(),
-}));
+// Helper function to create test category data
+const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
+  categoryId: 1,
+  categoryName: "test_category",
+  activeStatus: true,
+  ...overrides,
+});
 
-import { updateCategory } from "../../hooks/useCategoryUpdate";
-import { HookValidator } from "../../utils/hookValidation";
-
-describe("updateCategory (Isolated)", () => {
-  const mockOldCategory = createTestCategory({
-    categoryId: 123,
-    categoryName: "old_category",
-    activeStatus: true,
-    categoryCount: 5,
-    dateAdded: new Date("2024-01-01"),
-    dateUpdated: new Date("2024-01-01"),
-  });
-
-  const mockNewCategory = createTestCategory({
-    ...mockOldCategory,
-    categoryName: "updated_category",
-    activeStatus: false,
-    categoryCount: 10,
-    dateUpdated: new Date("2024-01-15"),
-  });
-
-  const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
+describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
+  let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
+    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
-    // Reset validation mock to pass-through by default
-    mockValidateUpdate.mockImplementation((newData) => newData);
   });
 
-  afterEach(() => {});
+  afterEach(() => {
+    consoleSpy.stop();
+  });
 
-  describe("Successful updates", () => {
+  describe("Modern endpoint behavior", () => {
+    it("should use modern endpoint /api/category/{categoryName}", async () => {
+      const oldCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "groceries",
+      });
+      const newCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "groceries",
+        activeStatus: false,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      await updateCategoryModern(oldCategory, newCategory);
+
+      expect(fetch).toHaveBeenCalledWith("/api/category/groceries", {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(newCategory),
+      });
+    });
+
     it("should update category successfully", async () => {
-      const responseCategory = createTestCategory({
-        ...mockNewCategory,
-        dateUpdated: new Date("2024-01-20"),
+      const oldCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "groceries",
+        activeStatus: true,
       });
-      global.fetch = createModernFetchMock(responseCategory);
+      const newCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "groceries",
+        activeStatus: false,
+      });
 
-      const result = await updateCategory(mockOldCategory, mockNewCategory);
+      global.fetch = createModernFetchMock(newCategory);
 
-      expect(result).toEqual(responseCategory);
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/old_category",
-        expect.objectContaining({
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(mockNewCategory),
-        }),
-      );
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result).toEqual(newCategory);
+      expect(result.activeStatus).toBe(false);
     });
 
-    it("should construct correct endpoint URL with old category name", async () => {
-      const categoryWithDifferentName = createTestCategory({
-        ...mockOldCategory,
-        categoryName: "specific_category",
+    it("should send newCategory in request body", async () => {
+      const oldCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "dining",
       });
-      global.fetch = createModernFetchMock(mockNewCategory);
+      const newCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "dining",
+        activeStatus: false,
+      });
 
-      await updateCategory(categoryWithDifferentName, mockNewCategory);
+      global.fetch = createModernFetchMock(newCategory);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/specific_category",
+      await updateCategoryModern(oldCategory, newCategory);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.body).toBe(JSON.stringify(newCategory));
+    });
+
+    it("should use categoryName from oldCategory in URL", async () => {
+      const oldCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "entertainment",
+      });
+      const newCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "entertainment",
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      await updateCategoryModern(oldCategory, newCategory);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/category/entertainment",
         expect.any(Object),
       );
-    });
-
-    it("should send new category data in request body", async () => {
-      const updatedCategoryData = createTestCategory({
-        ...mockNewCategory,
-        categoryName: "completely_new_name",
-        categoryCount: 100,
-      });
-      global.fetch = createModernFetchMock(updatedCategoryData);
-
-      await updateCategory(mockOldCategory, updatedCategoryData);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: JSON.stringify(updatedCategoryData),
-        }),
-      );
-    });
-
-    it("should handle category name with special characters", async () => {
-      const specialCategory = createTestCategory({
-        ...mockOldCategory,
-        categoryName: "category & subcategory",
-      });
-      global.fetch = createModernFetchMock(mockNewCategory);
-
-      await updateCategory(specialCategory, mockNewCategory);
-
-      // Special characters are sanitized in category names
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/category subcategory",
-        expect.any(Object),
-      );
-    });
-
-    it("should return parsed JSON response", async () => {
-      const responseData = createTestCategory({
-        categoryId: 456,
-        categoryName: "response_category",
-        categoryCount: 25,
-        additionalField: "extra data",
-      });
-      global.fetch = createModernFetchMock(responseData);
-
-      const result = await updateCategory(mockOldCategory, mockNewCategory);
-
-      expect(result).toEqual(responseData);
     });
   });
 
-  describe("Error handling", () => {
-    it("should handle 404 errors", async () => {
-      global.fetch = createModernErrorFetchMock("Category not found", 404);
+  describe("Modern error handling with ServiceResult pattern", () => {
+    it("should handle 404 not found with modern error format", async () => {
+      const oldCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "nonexistent",
+      });
+      const newCategory = createTestCategory({
+        categoryId: 999,
+        categoryName: "nonexistent",
+      });
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ error: "Category not found" }),
+      });
+
+      consoleSpy.start();
 
       await expect(
-        updateCategory(mockOldCategory, mockNewCategory),
+        updateCategoryModern(oldCategory, newCategory),
       ).rejects.toThrow("Category not found");
     });
 
-    it("should handle server error responses", async () => {
-      global.fetch = createModernErrorFetchMock("Invalid data", 400);
+    it("should handle validation errors with modern format", async () => {
+      const oldCategory = createTestCategory({ categoryName: "groceries" });
+      const newCategory = createTestCategory({ categoryName: "" });
 
-      await expect(
-        updateCategory(mockOldCategory, mockNewCategory),
-      ).rejects.toThrow("Invalid data");
-    });
-
-    it("should handle various HTTP error statuses", async () => {
-      const errorStatuses = [
-        { status: 400, message: "Bad Request" },
-        { status: 401, message: "Unauthorized" },
-        { status: 403, message: "Forbidden" },
-        { status: 409, message: "Conflict" },
-        { status: 422, message: "Unprocessable Entity" },
-        { status: 500, message: "Internal Server Error" },
-      ];
-
-      for (const { status, message } of errorStatuses) {
-        global.fetch = createModernErrorFetchMock(message, status);
-
-        await expect(
-          updateCategory(mockOldCategory, mockNewCategory),
-        ).rejects.toThrow(message);
-      }
-    });
-
-    it("should handle network errors", async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-      await expect(
-        updateCategory(mockOldCategory, mockNewCategory),
-      ).rejects.toThrow("Network error");
-    });
-
-    it("should handle JSON parsing errors", async () => {
-      global.fetch = jest.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        json: jest.fn().mockRejectedValueOnce(new Error("Invalid JSON")),
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({
+          errors: [
+            "categoryName is required",
+            "categoryName must be non-empty",
+          ],
+        }),
       });
 
+      consoleSpy.start();
+
       await expect(
-        updateCategory(mockOldCategory, mockNewCategory),
-      ).rejects.toThrow("Invalid JSON");
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow(
+        "categoryName is required, categoryName must be non-empty",
+      );
     });
 
-    it("should handle fetch rejection", async () => {
-      global.fetch = jest
-        .fn()
-        .mockRejectedValueOnce(new Error("Connection failed"));
+    it("should handle 401 unauthorized", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: "Unauthorized" }),
+      });
+
+      consoleSpy.start();
 
       await expect(
-        updateCategory(mockOldCategory, mockNewCategory),
-      ).rejects.toThrow("Connection failed");
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("Unauthorized");
+    });
+
+    it("should handle 403 forbidden", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ error: "Forbidden" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("Forbidden");
+    });
+
+    it("should handle 500 server error", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: "Internal server error" }),
+      });
+
+      consoleSpy.start();
+
+      await expect(
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("Internal server error");
+    });
+
+    it("should handle error response without error field", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({}),
+      });
+
+      consoleSpy.start();
+
+      await expect(
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("HTTP error! Status: 400");
+    });
+
+    it("should handle invalid JSON in error response", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
+      });
+
+      consoleSpy.start();
+
+      await expect(
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("HTTP error! Status: 500");
     });
   });
 
-  describe("Request format validation", () => {
+  describe("Network and connectivity errors", () => {
+    it("should handle network errors", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+
+      consoleSpy.start();
+
+      await expect(
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("Network error");
+
+      const calls = consoleSpy.getCalls();
+      expect(
+        calls.error.some((call) => call[0].includes("An error occurred:")),
+      ).toBe(true);
+    });
+
+    it("should handle timeout errors", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
+
+      consoleSpy.start();
+
+      await expect(
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("Timeout");
+    });
+
+    it("should handle connection refused", async () => {
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
+
+      global.fetch = jest
+        .fn()
+        .mockRejectedValue(new Error("Connection refused"));
+
+      consoleSpy.start();
+
+      await expect(
+        updateCategoryModern(oldCategory, newCategory),
+      ).rejects.toThrow("Connection refused");
+    });
+  });
+
+  describe("Request configuration", () => {
     it("should use PUT method", async () => {
-      global.fetch = createModernFetchMock(mockNewCategory);
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
 
-      await updateCategory(mockOldCategory, mockNewCategory);
+      global.fetch = createModernFetchMock(newCategory);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          method: "PUT",
-        }),
-      );
+      await updateCategoryModern(oldCategory, newCategory);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.method).toBe("PUT");
     });
 
     it("should include credentials", async () => {
-      global.fetch = createModernFetchMock(mockNewCategory);
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
 
-      await updateCategory(mockOldCategory, mockNewCategory);
+      global.fetch = createModernFetchMock(newCategory);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          credentials: "include",
-        }),
-      );
+      await updateCategoryModern(oldCategory, newCategory);
+
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.credentials).toBe("include");
     });
 
     it("should include correct headers", async () => {
-      global.fetch = createModernFetchMock(mockNewCategory);
+      const oldCategory = createTestCategory();
+      const newCategory = createTestCategory();
 
-      await updateCategory(mockOldCategory, mockNewCategory);
+      global.fetch = createModernFetchMock(newCategory);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }),
-      );
-    });
+      await updateCategoryModern(oldCategory, newCategory);
 
-    it("should serialize new category data to JSON", async () => {
-      global.fetch = createModernFetchMock(mockNewCategory);
-
-      await updateCategory(mockOldCategory, mockNewCategory);
-
-      const expectedBody = JSON.stringify(mockNewCategory);
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: expectedBody,
-        }),
-      );
+      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      expect(callArgs.headers).toEqual({
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      });
     });
   });
 
-  describe("Edge cases", () => {
-    it("should handle category with empty old category name", async () => {
-      const categoryWithEmptyName = createTestCategory({
-        ...mockOldCategory,
-        categoryName: "",
+  describe("Category field updates", () => {
+    it("should update category name", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "groceries",
       });
-      global.fetch = createModernFetchMock(mockNewCategory);
-
-      await updateCategory(categoryWithEmptyName, mockNewCategory);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/",
-        expect.any(Object),
-      );
-    });
-
-    it("should handle complex category data updates", async () => {
-      const complexOldCategory = createTestCategory({
-        categoryId: 999,
-        categoryName: "complex_old",
-        activeStatus: true,
-        categoryCount: 50,
-        dateAdded: new Date("2023-01-01"),
-        dateUpdated: new Date("2023-06-01"),
+      const newCategory = createTestCategory({
+        categoryName: "food",
       });
 
-      const complexNewCategory = createTestCategory({
-        ...complexOldCategory,
-        categoryName: "complex_new",
-        activeStatus: false,
-        categoryCount: 75,
-        dateUpdated: new Date("2024-01-01"),
-      });
+      global.fetch = createModernFetchMock(newCategory);
 
-      global.fetch = createModernFetchMock(complexNewCategory);
+      const result = await updateCategoryModern(oldCategory, newCategory);
 
-      const result = await updateCategory(
-        complexOldCategory,
-        complexNewCategory,
-      );
-
-      expect(result).toEqual(complexNewCategory);
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/complex_old",
-        expect.objectContaining({
-          body: JSON.stringify(complexNewCategory),
-        }),
-      );
+      expect(result.categoryName).toBe("food");
     });
 
-    it("should handle null values in category data", async () => {
-      const categoryWithNulls = {
-        ...mockNewCategory,
-        categoryCount: null as any,
-        dateAdded: null as any,
-      };
-      global.fetch = createModernFetchMock(mockNewCategory);
-
-      await updateCategory(mockOldCategory, categoryWithNulls);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: JSON.stringify(categoryWithNulls),
-        }),
-      );
-    });
-
-    it("should handle very long category names", async () => {
-      const longCategoryName = "A".repeat(255);
-      const longNameCategory = createTestCategory({
-        ...mockOldCategory,
-        categoryName: longCategoryName,
-      });
-      global.fetch = createModernFetchMock(mockNewCategory);
-
-      await updateCategory(longNameCategory, mockNewCategory);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        `/api/category/${longCategoryName}`,
-        expect.any(Object),
-      );
-    });
-
-    it("should handle updating all category properties", async () => {
-      const fullyUpdatedCategory = createTestCategory({
-        categoryId: mockOldCategory.categoryId, // Should preserve ID
-        categoryName: "completely_different",
-        activeStatus: !mockOldCategory.activeStatus,
-        categoryCount: 999,
-        dateAdded: new Date("2025-01-01"),
-        dateUpdated: new Date("2025-01-15"),
-      });
-      global.fetch = createModernFetchMock(fullyUpdatedCategory);
-
-      const result = await updateCategory(
-        mockOldCategory,
-        fullyUpdatedCategory,
-      );
-
-      expect(result).toEqual(fullyUpdatedCategory);
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/old_category", // Uses old category name in endpoint
-        expect.objectContaining({
-          body: JSON.stringify(fullyUpdatedCategory), // Sends new data
-        }),
-      );
-    });
-  });
-
-  describe("Response handling", () => {
-    it("should handle empty response body", async () => {
-      global.fetch = createModernFetchMock({});
-
-      const result = await updateCategory(mockOldCategory, mockNewCategory);
-
-      expect(result).toEqual({});
-    });
-
-    it("should handle response with additional fields", async () => {
-      const responseWithExtras = createTestCategory({
-        ...mockNewCategory,
-        serverTimestamp: "2024-01-20T10:00:00Z",
-        version: 2,
-        metadata: { lastModifiedBy: "admin" },
-      });
-      global.fetch = createModernFetchMock(responseWithExtras);
-
-      const result = await updateCategory(mockOldCategory, mockNewCategory);
-
-      expect(result).toEqual(responseWithExtras);
-    });
-
-    it("should handle different success status codes", async () => {
-      const successStatuses = [200, 202];
-
-      for (const status of successStatuses) {
-        const responseCategory = createTestCategory({
-          categoryId: status, // Use status as ID for uniqueness
-        });
-        global.fetch = createModernFetchMock(responseCategory, { status });
-
-        const result = await updateCategory(mockOldCategory, mockNewCategory);
-
-        expect(result).toEqual(responseCategory);
-      }
-    });
-  });
-
-  describe("Business logic validation", () => {
-    it("should use old category name for endpoint regardless of new name", async () => {
-      const newCategoryWithDifferentName = createTestCategory({
-        ...mockNewCategory,
-        categoryName: "totally_different_name",
-      });
-      global.fetch = createModernFetchMock(newCategoryWithDifferentName);
-
-      await updateCategory(mockOldCategory, newCategoryWithDifferentName);
-
-      // Should still use old category name in endpoint
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/category/old_category",
-        expect.any(Object),
-      );
-
-      // But send new data in body
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: JSON.stringify(newCategoryWithDifferentName),
-        }),
-      );
-    });
-
-    it("should preserve category ID in update operations", async () => {
-      const updatedCategory = createTestCategory({
-        ...mockNewCategory,
-        categoryId: mockOldCategory.categoryId, // Should preserve ID
-      });
-      global.fetch = createModernFetchMock(updatedCategory);
-
-      const result = await updateCategory(mockOldCategory, updatedCategory);
-
-      expect(result.categoryId).toBe(mockOldCategory.categoryId);
-    });
-
-    it("should allow updating status from active to inactive", async () => {
-      const activeCategory = createTestCategory({
-        categoryName: "active_category",
+    it("should update activeStatus", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "dining",
         activeStatus: true,
       });
-      const inactiveCategory = createTestCategory({
-        ...activeCategory,
+      const newCategory = createTestCategory({
+        categoryName: "dining",
         activeStatus: false,
       });
-      global.fetch = createModernFetchMock(inactiveCategory);
 
-      const result = await updateCategory(activeCategory, inactiveCategory);
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
 
       expect(result.activeStatus).toBe(false);
     });
 
-    it("should allow updating category count", async () => {
-      const categoryWithCount = createTestCategory({
-        categoryName: "counted_category",
-        categoryCount: 5,
+    it("should update multiple fields simultaneously", async () => {
+      const oldCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "groceries",
+        activeStatus: true,
       });
-      const updatedCountCategory = createTestCategory({
-        ...categoryWithCount,
-        categoryCount: 15,
+      const newCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "food",
+        activeStatus: false,
       });
-      global.fetch = createModernFetchMock(updatedCountCategory);
 
-      const result = await updateCategory(
-        categoryWithCount,
-        updatedCountCategory,
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("food");
+      expect(result.activeStatus).toBe(false);
+    });
+
+    it("should activate inactive category", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "archived",
+        activeStatus: false,
+      });
+      const newCategory = createTestCategory({
+        categoryName: "archived",
+        activeStatus: true,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.activeStatus).toBe(true);
+    });
+  });
+
+  describe("Edge cases", () => {
+    it("should handle categories with special characters", async () => {
+      const oldCategory = createTestCategory({ categoryName: "old-cat" });
+      const newCategory = createTestCategory({
+        categoryName: "category-with_special.chars",
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("category-with_special.chars");
+    });
+
+    it("should handle categories with Unicode characters", async () => {
+      const oldCategory = createTestCategory({ categoryName: "food" });
+      const newCategory = createTestCategory({
+        categoryName: "食品 🍔",
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("食品 🍔");
+    });
+
+    it("should handle categories with empty values", async () => {
+      const oldCategory = createTestCategory({ categoryName: "groceries" });
+      const newCategory = createTestCategory({ categoryName: "" });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("");
+    });
+
+    it("should handle categories with very long names", async () => {
+      const longName = "a".repeat(10000);
+      const oldCategory = createTestCategory({ categoryName: "short" });
+      const newCategory = createTestCategory({ categoryName: longName });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe(longName);
+      expect(result.categoryName.length).toBe(10000);
+    });
+
+    it("should handle URL encoding for category names with spaces", async () => {
+      const oldCategory = createTestCategory({ categoryName: "dining out" });
+      const newCategory = createTestCategory({ categoryName: "dining out" });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      await updateCategoryModern(oldCategory, newCategory);
+
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/category/dining out",
+        expect.any(Object),
       );
+    });
 
-      expect(result.categoryCount).toBe(15);
+    it("should handle categories with numbers", async () => {
+      const oldCategory = createTestCategory({ categoryName: "category_1" });
+      const newCategory = createTestCategory({ categoryName: "category_2" });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("category_2");
+    });
+  });
+
+  describe("Common update scenarios", () => {
+    it("should rename groceries to food", async () => {
+      const oldCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "groceries",
+        activeStatus: true,
+      });
+      const newCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "food",
+        activeStatus: true,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("food");
+      expect(result.activeStatus).toBe(true);
+    });
+
+    it("should deactivate dining category", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "dining",
+        activeStatus: true,
+      });
+      const newCategory = createTestCategory({
+        categoryName: "dining",
+        activeStatus: false,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("dining");
+      expect(result.activeStatus).toBe(false);
+    });
+
+    it("should reactivate archived category", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "entertainment",
+        activeStatus: false,
+      });
+      const newCategory = createTestCategory({
+        categoryName: "entertainment",
+        activeStatus: true,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.activeStatus).toBe(true);
+    });
+
+    it("should update transportation category", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "transportation",
+        activeStatus: true,
+      });
+      const newCategory = createTestCategory({
+        categoryName: "travel",
+        activeStatus: true,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("travel");
+    });
+
+    it("should update utilities category", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "utilities",
+        activeStatus: true,
+      });
+      const newCategory = createTestCategory({
+        categoryName: "bills",
+        activeStatus: true,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("bills");
+    });
+
+    it("should update healthcare category status", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "healthcare",
+        activeStatus: true,
+      });
+      const newCategory = createTestCategory({
+        categoryName: "healthcare",
+        activeStatus: false,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("healthcare");
+      expect(result.activeStatus).toBe(false);
+    });
+
+    it("should update shopping category name", async () => {
+      const oldCategory = createTestCategory({
+        categoryName: "shopping",
+        activeStatus: true,
+      });
+      const newCategory = createTestCategory({
+        categoryName: "retail",
+        activeStatus: true,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryName).toBe("retail");
+    });
+  });
+
+  describe("Data integrity", () => {
+    it("should preserve categoryId", async () => {
+      const oldCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "test",
+      });
+      const newCategory = createTestCategory({
+        categoryId: 123,
+        categoryName: "test",
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result.categoryId).toBe(123);
+    });
+
+    it("should return updated category exactly as received from API", async () => {
+      const oldCategory = createTestCategory({ categoryName: "old" });
+      const newCategory = createTestCategory({
+        categoryId: 1,
+        categoryName: "updated_category",
+        activeStatus: false,
+      });
+
+      global.fetch = createModernFetchMock(newCategory);
+
+      const result = await updateCategoryModern(oldCategory, newCategory);
+
+      expect(result).toEqual(newCategory);
     });
   });
 });

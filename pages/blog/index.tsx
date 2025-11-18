@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { GetStaticProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { getAllPosts } from "../../components/blog";
+import { getAllPosts } from "../../utils/blog";
 import { format } from "date-fns";
 import { BlogPost } from "../../model/BlogPost";
 import { ThemeProvider } from "@mui/material/styles";
