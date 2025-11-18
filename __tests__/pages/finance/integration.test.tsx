@@ -521,8 +521,8 @@ describe("Finance Pages - Integration Tests", () => {
       expect(screen.getByText("Chase Checking")).toBeInTheDocument();
       expect(screen.getByText("Credit Card")).toBeInTheDocument();
 
-      // Check for the date which should be displayed
-      expect(screen.getByText("1/14/2024")).toBeInTheDocument();
+      // Check for the date which should be displayed (correctly shows 1/15/2024 after timezone fix)
+      expect(screen.getByText("1/15/2024")).toBeInTheDocument();
     });
   });
 

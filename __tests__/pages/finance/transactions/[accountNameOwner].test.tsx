@@ -546,7 +546,8 @@ describe("AccountTransactions Component", () => {
   it("displays transaction date in correct format", () => {
     render(<AccountTransactions />, { wrapper: createWrapper() });
 
-    expect(screen.getByText("12/31/2023")).toBeInTheDocument();
+    // After timezone fix, 2024-01-01 correctly displays as 1/1/2024 instead of 12/31/2023
+    expect(screen.getByText("1/1/2024")).toBeInTheDocument();
   });
 
   it("tracks account visit when component loads", () => {
