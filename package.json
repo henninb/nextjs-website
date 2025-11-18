@@ -4,6 +4,7 @@
     "build": "next build",
     "dev": "NODE_OPTIONS='--no-deprecation' next dev",
     "dev:turbo": "NODE_OPTIONS='--no-deprecation' next dev --turbo",
+    "dev:local": "NODE_TLS_REJECT_UNAUTHORIZED=0 NODE_OPTIONS='--no-deprecation' next dev",
     "start": "next start",
     "test": "jest",
     "prettier": "prettier --write .",

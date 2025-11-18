@@ -40,3 +40,5 @@ tsconfig.tsbuildinfo
 jest-results.json
 .open-next/
 .wrangler/
+*.bak
+.env.local.backup
