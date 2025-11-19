@@ -270,21 +270,23 @@ describe("PaymentsPage - Extended Test Coverage", () => {
       });
     });
 
-    it("validates amount must be greater than zero", async () => {
+    it("allows zero amount values", async () => {
       render(<PaymentsPage />);
       fireEvent.click(screen.getByRole("button", { name: /add payment/i }));
 
       const amountInput = screen.getByTestId("usd-amount-input");
       fireEvent.change(amountInput, { target: { value: "0" } });
 
-      const saveButton = screen.getByRole("button", { name: /add payment/i });
+      // After entering 0, button text changes to "Pay $0.00"
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /pay \$0\.00/i })).toBeInTheDocument();
+      });
+
+      const saveButton = screen.getByRole("button", { name: /pay \$0\.00/i });
       fireEvent.click(saveButton);
 
-      expect(insertPaymentMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        expect(screen.getByTestId("amount-error")).toHaveTextContent(
-          "Amount must be greater than zero",
-        );
+        expect(insertPaymentMock).toHaveBeenCalled();
       });
     });
 
@@ -423,8 +425,9 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       // Check that the payment modal opens successfully
       // The parameter pre-selection would happen in the actual component via useEffect
+      // With initial amount of 0, button shows "Pay $0.00"
       expect(
-        screen.getByRole("button", { name: /add payment/i }),
+        screen.getByRole("button", { name: /pay \$0\.00/i }),
       ).toBeInTheDocument();
 
       // Check that autocomplete components are available

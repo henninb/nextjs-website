@@ -249,11 +249,11 @@ export default function Payments() {
   };
 
   const handleAddRow = async (newData: Payment) => {
-    // UI validations: amount > 0 and source != destination
+    // UI validations: amount >= 0 and source != destination
     const errs: { amount?: string; accounts?: string } = {};
     const amt = parseFloat(String(newData?.amount ?? 0));
-    if (isNaN(amt) || amt <= 0) {
-      errs.amount = "Amount must be greater than zero";
+    if (isNaN(amt) || amt < 0) {
+      errs.amount = "Amount cannot be negative";
     }
     if (
       newData?.sourceAccount &&
@@ -568,7 +568,7 @@ export default function Payments() {
           onSubmit={() => paymentData && handleAddRow(paymentData)}
           title={modalTitles.addNew("payment")}
           submitText={
-            paymentData?.amount && parseFloat(String(paymentData.amount)) > 0
+            paymentData?.amount !== null && paymentData?.amount !== undefined && parseFloat(String(paymentData.amount)) >= 0
               ? `Pay ${currencyFormat(paymentData.amount)}`
               : "Add Payment"
           }

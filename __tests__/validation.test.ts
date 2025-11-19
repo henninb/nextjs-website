@@ -90,7 +90,7 @@ describe("Input Validation and Sanitization", () => {
       expect(result.errors?.some((err) => err.field === "amount")).toBe(true);
     });
 
-    it("should reject transaction with zero amount", () => {
+    it("should allow transaction with zero amount", () => {
       const zeroAmountTransaction = {
         accountType: "debit" as const,
         accountNameOwner: "test_account",
@@ -106,8 +106,8 @@ describe("Input Validation and Sanitization", () => {
       };
 
       const result = DataValidator.validateTransaction(zeroAmountTransaction);
-      expect(result.success).toBe(false);
-      expect(result.errors?.some((err) => err.field === "amount")).toBe(true);
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
     });
 
     it("should validate transaction with undefined transactionType", () => {

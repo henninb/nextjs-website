@@ -398,12 +398,12 @@ export default function PaymentsNextGen() {
           onClose={() => setShowModalAdd(false)}
           onSubmit={() => handleAddRow(paymentData)}
           title={
-            paymentData?.amount && parseFloat(String(paymentData.amount)) > 0
+            paymentData?.amount !== null && paymentData?.amount !== undefined && parseFloat(String(paymentData.amount)) >= 0
               ? `Pay ${currencyFormat(paymentData.amount)}`
               : "Add Payment"
           }
           submitText={
-            paymentData?.amount && parseFloat(String(paymentData.amount)) > 0
+            paymentData?.amount !== null && paymentData?.amount !== undefined && parseFloat(String(paymentData.amount)) >= 0
               ? `Pay ${currencyFormat(paymentData.amount)}`
               : "Add Payment"
           }

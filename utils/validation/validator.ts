@@ -330,15 +330,7 @@ export class DataValidator {
   } {
     const errors: ValidationError[] = [];
 
-    // Amount checks
-    if (data.amount === 0) {
-      errors.push({
-        field: "amount",
-        message: "Amount cannot be zero",
-        code: "ZERO_AMOUNT_ERROR",
-      });
-    }
-
+    // Amount checks - allow zero values, only check upper limit
     if (Math.abs(data.amount) > FINANCIAL_LIMITS.MAX_AMOUNT) {
       errors.push({
         field: "amount",

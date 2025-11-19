@@ -288,11 +288,11 @@ export default function Transfers() {
   };
 
   const handleAddRow = async (newData: Transfer) => {
-    // UI validations: amount > 0 and source != destination
+    // UI validations: amount >= 0 and source != destination
     const errs: { amount?: string; accounts?: string } = {};
     const amt = parseFloat(String(newData?.amount ?? 0));
-    if (isNaN(amt) || amt <= 0) {
-      errs.amount = "Amount must be greater than zero";
+    if (isNaN(amt) || amt < 0) {
+      errs.amount = "Amount cannot be negative";
     }
     if (
       newData?.sourceAccount &&
@@ -577,7 +577,7 @@ export default function Transfers() {
           onSubmit={() => transferData && handleAddRow(transferData)}
           title={modalTitles.addNew("transfer")}
           submitText={
-            transferData?.amount && parseFloat(String(transferData.amount)) > 0
+            transferData?.amount !== null && transferData?.amount !== undefined && parseFloat(String(transferData.amount)) >= 0
               ? `Transfer ${currencyFormat(transferData.amount)}`
               : "Add Transfer"
           }

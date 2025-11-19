@@ -533,12 +533,12 @@ export default function TransfersNextGen() {
           onClose={() => setShowModalAdd(false)}
           onSubmit={() => handleAddRow(transferData)}
           title={
-            transferData?.amount && parseFloat(String(transferData.amount)) > 0
+            transferData?.amount !== null && transferData?.amount !== undefined && parseFloat(String(transferData.amount)) >= 0
               ? `Transfer ${currencyFormat(transferData.amount)}`
               : "Add Transfer"
           }
           submitText={
-            transferData?.amount && parseFloat(String(transferData.amount)) > 0
+            transferData?.amount !== null && transferData?.amount !== undefined && parseFloat(String(transferData.amount)) >= 0
               ? `Transfer ${currencyFormat(transferData.amount)}`
               : "Add Transfer"
           }
