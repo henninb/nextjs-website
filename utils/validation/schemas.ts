@@ -11,32 +11,64 @@ export const FINANCIAL_LIMITS = {
 } as const;
 
 // Date validation helpers
-const isValidDate = (date: string | Date) => {
+const isValidDate = (date: string | Date): boolean => {
   const d = new Date(date);
   return d instanceof Date && !isNaN(d.getTime());
 };
 
+// More specific date validation that checks for YYYY-MM-DD format
+const isValidYYYYMMDDFormat = (dateString: string): boolean => {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
+};
+
 const dateString = z
   .string()
-  .refine(isValidDate, { message: "Invalid date format" })
+  .refine(isValidDate, {
+    message:
+      "Date must be valid and parseable. Use YYYY-MM-DD format (e.g., 2025-01-15)",
+  })
+  .or(z.date());
+
+// Strict date validation for LocalDate fields (backend expects YYYY-MM-DD only)
+const localDateString = z
+  .string()
+  .refine(
+    (val) => {
+      // Check if it has time component (which is invalid for LocalDate)
+      if (val.includes("T") || val.includes(":")) {
+        return false;
+      }
+      return isValidYYYYMMDDFormat(val) && isValidDate(val);
+    },
+    {
+      message:
+        "Date must be in YYYY-MM-DD format without time (e.g., 2025-01-15). Do not include time component.",
+    },
+  )
   .or(z.date());
 
 // Common field validations
 const accountNameOwner = z
   .string()
   .min(1, "Account name is required")
-  .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, "Account name too long")
-  .regex(/^[a-zA-Z0-9_-]+$/, "Account name contains invalid characters");
+  .max(
+    FINANCIAL_LIMITS.MAX_STRING_LENGTH,
+    `Account name cannot exceed ${FINANCIAL_LIMITS.MAX_STRING_LENGTH} characters`,
+  )
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    "Account name can only contain letters, numbers, underscores, and hyphens",
+  );
 
 const financialAmount = z
   .number()
   .min(
     FINANCIAL_LIMITS.MIN_AMOUNT,
-    `Amount cannot be less than ${FINANCIAL_LIMITS.MIN_AMOUNT}`,
+    `Amount cannot be less than $${FINANCIAL_LIMITS.MIN_AMOUNT.toLocaleString()}`,
   )
   .max(
     FINANCIAL_LIMITS.MAX_AMOUNT,
-    `Amount cannot exceed ${FINANCIAL_LIMITS.MAX_AMOUNT}`,
+    `Amount cannot exceed $${FINANCIAL_LIMITS.MAX_AMOUNT.toLocaleString()}`,
   )
   .refine(
     (val) => {
@@ -44,25 +76,34 @@ const financialAmount = z
       return decimalPlaces <= FINANCIAL_LIMITS.MAX_DECIMAL_PLACES;
     },
     {
-      message: `Amount cannot have more than ${FINANCIAL_LIMITS.MAX_DECIMAL_PLACES} decimal places`,
+      message: `Amount must have at most ${FINANCIAL_LIMITS.MAX_DECIMAL_PLACES} decimal places (e.g., 123.45)`,
     },
   );
 
 const description = z
   .string()
   .min(1, "Description is required")
-  .max(FINANCIAL_LIMITS.MAX_DESCRIPTION_LENGTH, "Description too long")
+  .max(
+    FINANCIAL_LIMITS.MAX_DESCRIPTION_LENGTH,
+    `Description cannot exceed ${FINANCIAL_LIMITS.MAX_DESCRIPTION_LENGTH} characters`,
+  )
   .trim();
 
 const category = z
   .string()
   .min(1, "Category is required")
-  .max(FINANCIAL_LIMITS.MAX_STRING_LENGTH, "Category name too long")
+  .max(
+    FINANCIAL_LIMITS.MAX_STRING_LENGTH,
+    `Category name cannot exceed ${FINANCIAL_LIMITS.MAX_STRING_LENGTH} characters`,
+  )
   .trim();
 
 const notes = z
   .string()
-  .max(FINANCIAL_LIMITS.MAX_NOTES_LENGTH, "Notes too long")
+  .max(
+    FINANCIAL_LIMITS.MAX_NOTES_LENGTH,
+    `Notes cannot exceed ${FINANCIAL_LIMITS.MAX_NOTES_LENGTH} characters`,
+  )
   .optional()
   .default("");
 
@@ -151,7 +192,10 @@ export const AccountSchema = z.object({
 // Transaction validation schema
 export const TransactionSchema = z.object({
   transactionId: z.number().int().positive().optional(),
-  guid: z.string().uuid("Invalid GUID format").optional(), // Will be generated server-side
+  guid: z
+    .string()
+    .uuid("ID must be a valid UUID format (e.g., 123e4567-e89b-12d3-a456-426614174000)")
+    .optional(), // Will be generated server-side
   accountId: z.number().int().positive().optional(),
   accountType: accountTypeEnum,
   accountNameOwner,
@@ -172,10 +216,16 @@ export const PaymentSchema = z.object({
   paymentId: z.number().int().min(0).optional(),
   sourceAccount: accountNameOwner,
   destinationAccount: accountNameOwner,
-  transactionDate: dateString,
+  transactionDate: localDateString, // Backend expects YYYY-MM-DD format (LocalDate)
   amount: financialAmount,
-  guidSource: z.string().uuid("Invalid GUID format").optional(),
-  guidDestination: z.string().uuid("Invalid GUID format").optional(),
+  guidSource: z
+    .string()
+    .uuid("Source ID must be a valid UUID format")
+    .optional(),
+  guidDestination: z
+    .string()
+    .uuid("Destination ID must be a valid UUID format")
+    .optional(),
   activeStatus: z.boolean().default(true),
   dateAdded: dateString.optional(),
   dateUpdated: dateString.optional(),
@@ -187,9 +237,15 @@ export const TransferSchema = z.object({
   sourceAccount: accountNameOwner,
   destinationAccount: accountNameOwner,
   amount: financialAmount,
-  transactionDate: dateString, // Fixed: changed from transferDate to transactionDate to match Transfer model
-  guidSource: z.string().uuid("Invalid GUID format").optional(),
-  guidDestination: z.string().uuid("Invalid GUID format").optional(),
+  transactionDate: localDateString, // Backend expects YYYY-MM-DD format (LocalDate)
+  guidSource: z
+    .string()
+    .uuid("Source ID must be a valid UUID format")
+    .optional(),
+  guidDestination: z
+    .string()
+    .uuid("Destination ID must be a valid UUID format")
+    .optional(),
   activeStatus: z.boolean().default(true),
   dateAdded: dateString.optional(),
   dateUpdated: dateString.optional(),

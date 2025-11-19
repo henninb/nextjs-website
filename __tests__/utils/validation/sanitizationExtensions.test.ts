@@ -88,52 +88,52 @@ describe("sanitization extensions", () => {
 
     it("should throw on negative numbers", () => {
       expect(() => InputSanitizer.sanitizeNumericId(-1)).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a positive number",
       );
       expect(() => InputSanitizer.sanitizeNumericId("-5")).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a positive number",
       );
     });
 
     it("should throw on non-integer numbers", () => {
       expect(() => InputSanitizer.sanitizeNumericId(12.5)).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a whole number",
       );
       expect(() => InputSanitizer.sanitizeNumericId(3.14159)).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a whole number",
       );
     });
 
     it("should throw on NaN", () => {
       expect(() => InputSanitizer.sanitizeNumericId(NaN)).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a valid number",
       );
       expect(() => InputSanitizer.sanitizeNumericId("not-a-number")).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a valid number",
       );
     });
 
     it("should use custom field name in error message", () => {
       expect(() => InputSanitizer.sanitizeNumericId(-1, "userId")).toThrow(
-        "Invalid userId: must be a positive integer",
+        "userId must be a positive number",
       );
       expect(() =>
         InputSanitizer.sanitizeNumericId("abc", "accountId"),
-      ).toThrow("Invalid accountId: must be a positive integer");
+      ).toThrow("accountId must be a valid number");
     });
 
     it("should use default field name when not provided", () => {
       expect(() => InputSanitizer.sanitizeNumericId(-1)).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a positive number",
       );
     });
 
     it("should handle Infinity", () => {
       expect(() => InputSanitizer.sanitizeNumericId(Infinity)).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a whole number",
       );
       expect(() => InputSanitizer.sanitizeNumericId(-Infinity)).toThrow(
-        "Invalid ID: must be a positive integer",
+        "ID must be a whole number",
       );
     });
   });

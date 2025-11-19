@@ -117,15 +117,37 @@ export class InputSanitizer {
    * Validate and sanitize email
    */
   static sanitizeEmail(input: string): string {
-    if (typeof input !== "string") return "";
+    if (typeof input !== "string") {
+      throw new Error(
+        `Email must be a string. Received: ${typeof input}`
+      );
+    }
+
+    if (input.trim() === "") {
+      throw new Error("Email cannot be empty");
+    }
 
     const trimmed = input.trim().toLowerCase();
+
     // Basic email validation (RFC5322-lite)
     const emailRegex =
       /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
+
     if (!emailRegex.test(trimmed)) {
-      throw new Error("Invalid email format");
+      let hint = "";
+      if (!trimmed.includes("@")) {
+        hint = " (Missing @ symbol)";
+      } else if (trimmed.split("@").length > 2) {
+        hint = " (Multiple @ symbols found)";
+      } else if (!trimmed.includes(".")) {
+        hint = " (Missing domain extension like .com)";
+      }
+
+      throw new Error(
+        `Invalid email format${hint}. You provided: "${input}". Example: user@example.com`
+      );
     }
+
     // Simple normalization: lowercase, trim
     return trimmed;
   }
@@ -155,20 +177,50 @@ export class InputSanitizer {
 
   /**
    * Sanitize date string
+   * Converts various date formats to ISO string format
+   * Provides detailed error messages for invalid dates
    */
   static sanitizeDate(input: string | Date): string {
     if (input instanceof Date) {
+      if (isNaN(input.getTime())) {
+        throw new Error(
+          "Invalid date object provided. Date must be a valid Date instance."
+        );
+      }
       return input.toISOString();
     }
 
-    if (typeof input !== "string") return "";
+    if (typeof input !== "string") {
+      throw new Error(
+        `Date must be a string or Date object. Received: ${typeof input}`
+      );
+    }
 
-    // Remove any non-date characters and validate
-    const cleaned = input.replace(/[^0-9T:.-]/g, "");
-    const date = new Date(cleaned);
+    if (input.trim() === "") {
+      throw new Error("Date cannot be empty");
+    }
+
+    // Try to parse the date
+    const date = new Date(input);
 
     if (isNaN(date.getTime())) {
-      throw new Error("Invalid date format");
+      // Provide specific feedback about what might be wrong
+      let hint = "";
+
+      if (input.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // Format looks correct, might be invalid date values
+        hint = " (Check if day/month values are valid, e.g., 2025-02-30 is invalid)";
+      } else if (input.includes("/")) {
+        hint = " (Use hyphens instead of slashes: YYYY-MM-DD)";
+      } else if (!input.includes("-")) {
+        hint = " (Date must be in a recognizable format like YYYY-MM-DD or ISO 8601)";
+      } else if (input.length < 10) {
+        hint = " (Date string is too short, expected at least YYYY-MM-DD)";
+      }
+
+      throw new Error(
+        `Invalid date format. Could not parse: "${input}"${hint}. Example valid date: 2025-01-15`
+      );
     }
 
     return date.toISOString();
@@ -177,38 +229,99 @@ export class InputSanitizer {
   /**
    * Sanitize date to LocalDate format (YYYY-MM-DD)
    * Used for backend APIs that expect LocalDate instead of full timestamps
+   * IMPORTANT: This format does NOT accept time components
    */
   static sanitizeLocalDate(input: string | Date): string {
     if (input instanceof Date) {
+      if (isNaN(input.getTime())) {
+        throw new Error(
+          "Invalid date object provided. Date must be a valid Date instance."
+        );
+      }
       return input.toISOString().split("T")[0];
     }
 
-    if (typeof input !== "string") return "";
-
-    // Remove any non-date characters and validate
-    const cleaned = input.replace(/[^0-9T:.-]/g, "");
-    const date = new Date(cleaned);
-
-    if (isNaN(date.getTime())) {
-      throw new Error("Invalid date format");
+    if (typeof input !== "string") {
+      throw new Error(
+        `Date must be a string or Date object. Received: ${typeof input}`
+      );
     }
 
-    // Return only the date portion (YYYY-MM-DD) for LocalDate compatibility
-    return date.toISOString().split("T")[0];
+    if (input.trim() === "") {
+      throw new Error("Date cannot be empty");
+    }
+
+    // Check if input has time component (which is invalid for LocalDate)
+    if (input.includes("T") || input.includes(":")) {
+      throw new Error(
+        `Date must be in YYYY-MM-DD format without time component. You provided: "${input}". Remove the time portion (e.g., use "2025-01-15" instead of "2025-01-15 10:30" or "2025-01-15T10:30:00")`
+      );
+    }
+
+    // Validate YYYY-MM-DD format
+    const localDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!localDatePattern.test(input)) {
+      let hint = "";
+
+      if (input.includes("/")) {
+        hint = " (Use hyphens instead of slashes)";
+      } else if (input.match(/^\d{4}\d{2}\d{2}$/)) {
+        hint = " (Add hyphens between year, month, and day)";
+      } else if (input.split("-").length !== 3) {
+        hint = " (Format should have exactly two hyphens: YYYY-MM-DD)";
+      }
+
+      throw new Error(
+        `Date must be in YYYY-MM-DD format${hint}. You provided: "${input}". Example: 2025-01-15`
+      );
+    }
+
+    // Try to parse the date to ensure it's valid
+    const date = new Date(input);
+
+    if (isNaN(date.getTime())) {
+      throw new Error(
+        `Invalid date values. "${input}" does not represent a valid calendar date. Check if day/month values are correct (e.g., February 30th doesn't exist)`
+      );
+    }
+
+    // Return the input as-is since it's already in YYYY-MM-DD format
+    return input;
   }
 
   /**
    * Sanitize GUID/UUID
    */
   static sanitizeGuid(input: string): string {
-    if (typeof input !== "string") return "";
+    if (typeof input !== "string") {
+      throw new Error(
+        `GUID must be a string. Received: ${typeof input}`
+      );
+    }
+
+    if (input.trim() === "") {
+      throw new Error("GUID cannot be empty");
+    }
 
     const cleaned = input.replace(/[^a-fA-F0-9-]/g, "").toLowerCase();
     const uuidV4Regex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
     if (!uuidV4Regex.test(cleaned)) {
-      throw new Error("Invalid GUID format");
+      let hint = "";
+      if (cleaned.length < 36) {
+        hint = " (Too short, UUID should be 36 characters with hyphens)";
+      } else if (cleaned.length > 36) {
+        hint = " (Too long, UUID should be 36 characters with hyphens)";
+      } else if (!cleaned.includes("-")) {
+        hint = " (Missing hyphens, format should be: 8-4-4-4-12 characters)";
+      }
+
+      throw new Error(
+        `Invalid GUID/UUID format${hint}. You provided: "${input}". Example: 123e4567-e89b-12d3-a456-426614174000`
+      );
     }
+
     return cleaned;
   }
 
@@ -233,10 +346,41 @@ export class InputSanitizer {
     input: number | string,
     fieldName: string = "ID",
   ): number {
-    const numId = typeof input === "string" ? parseInt(input, 10) : input;
+    if (input === null || input === undefined) {
+      throw new Error(`${fieldName} is required and cannot be null or undefined`);
+    }
 
-    if (isNaN(numId) || numId < 0 || !Number.isInteger(numId)) {
-      throw new Error(`Invalid ${fieldName}: must be a positive integer`);
+    let numId: number;
+
+    if (typeof input === "string") {
+      if (input.trim() === "") {
+        throw new Error(`${fieldName} cannot be empty`);
+      }
+      numId = parseInt(input, 10);
+    } else if (typeof input === "number") {
+      numId = input;
+    } else {
+      throw new Error(
+        `${fieldName} must be a number or numeric string. Received: ${typeof input}`
+      );
+    }
+
+    if (isNaN(numId)) {
+      throw new Error(
+        `${fieldName} must be a valid number. You provided: "${input}"`
+      );
+    }
+
+    if (!Number.isInteger(numId)) {
+      throw new Error(
+        `${fieldName} must be a whole number (no decimals). You provided: ${input}`
+      );
+    }
+
+    if (numId < 0) {
+      throw new Error(
+        `${fieldName} must be a positive number (0 or greater). You provided: ${input}`
+      );
     }
 
     return numId;

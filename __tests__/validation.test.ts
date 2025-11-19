@@ -162,7 +162,7 @@ describe("Input Validation and Sanitization", () => {
         accountNameOwner: "test_account",
         sourceAccount: "account1",
         destinationAccount: "account1", // Same as source
-        transactionDate: new Date().toISOString(),
+        transactionDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
         amount: 100.0,
         activeStatus: true,
       };
@@ -180,7 +180,7 @@ describe("Input Validation and Sanitization", () => {
         accountNameOwner: "test_account",
         sourceAccount: "account1",
         destinationAccount: "account2",
-        transactionDate: new Date().toISOString(),
+        transactionDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
         amount: 100.0,
         activeStatus: true,
       };

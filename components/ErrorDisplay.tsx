@@ -16,6 +16,9 @@ import {
   WifiOff,
   Warning,
 } from "@mui/icons-material";
+import { HookValidationError } from "../utils/hookValidation";
+import ValidationErrorList from "./ValidationErrorList";
+import type { ValidationError } from "../utils/validation/validator";
 
 export interface ErrorDisplayProps {
   error?: Error | string | null;
@@ -42,9 +45,16 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 }) => {
   const [showErrorDetails, setShowErrorDetails] = React.useState(false);
 
+  // Check if error is a HookValidationError with validation errors
+  const isValidationError = error instanceof HookValidationError && error.validationErrors && error.validationErrors.length > 0;
+  const validationErrors = isValidationError ? error.validationErrors : undefined;
+
   const errorMessage = error instanceof Error ? error.message : error || "";
   const displayMessage = message || getErrorMessage(errorMessage);
   const isNetworkError = isNetworkRelated(errorMessage);
+
+  // If it's a validation error, use special title
+  const validationTitle = isValidationError ? "Validation Error" : title;
 
   const getIcon = () => {
     if (isNetworkError) return <WifiOff />;
@@ -58,6 +68,29 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   };
 
   if (variant === "alert") {
+    // Show validation errors in a structured format
+    if (isValidationError && validationErrors) {
+      return (
+        <Box className={className}>
+          <ValidationErrorList
+            errors={validationErrors}
+            variant="alert"
+            title={validationTitle}
+          />
+          {showRetry && onRetry && (
+            <Button
+              size="small"
+              onClick={onRetry}
+              startIcon={<Refresh />}
+              sx={{ mt: 1 }}
+            >
+              Retry
+            </Button>
+          )}
+        </Box>
+      );
+    }
+
     return (
       <Alert
         severity={severity}
@@ -98,6 +131,20 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   }
 
   if (variant === "inline") {
+    // Show validation errors in compact format
+    if (isValidationError && validationErrors) {
+      return (
+        <Box className={className}>
+          <ValidationErrorList errors={validationErrors} variant="list" groupByField={false} />
+          {showRetry && onRetry && (
+            <Button size="small" onClick={onRetry} startIcon={<Refresh />} sx={{ mt: 1 }}>
+              Retry
+            </Button>
+          )}
+        </Box>
+      );
+    }
+
     return (
       <Box
         display="flex"
@@ -120,6 +167,42 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   }
 
   // Card variant (default)
+  // Show validation errors in a structured format
+  if (isValidationError && validationErrors) {
+    return (
+      <Box
+        sx={{
+          p: 3,
+          border: 1,
+          borderColor: "error.light",
+          borderRadius: 2,
+          bgcolor: "error.lighter",
+        }}
+        className={className}
+      >
+        <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+          <Box color="error.main" sx={{ fontSize: 48 }}>
+            <ErrorOutline />
+          </Box>
+
+          <Typography variant="h6" color="error.main">
+            {validationTitle}
+          </Typography>
+
+          <Box sx={{ width: "100%", textAlign: "left" }}>
+            <ValidationErrorList errors={validationErrors} variant="list" />
+          </Box>
+
+          {showRetry && onRetry && (
+            <Button variant="outlined" color="error" startIcon={<Refresh />} onClick={onRetry}>
+              Try Again
+            </Button>
+          )}
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{

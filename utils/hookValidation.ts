@@ -1,5 +1,12 @@
 import { DataValidator, hookValidators, ValidationError } from "./validation";
 import { FetchError } from "./fetchUtils";
+import {
+  formatValidationErrors,
+  getErrorSummary,
+  createFieldErrorMap,
+  formatFieldName,
+  getUserFriendlyErrorMessage,
+} from "./validation/errorFormatting";
 
 /**
  * Type for validation result with type-safe data
@@ -13,6 +20,7 @@ export interface ValidationResult<T> {
 /**
  * Custom validation error class
  * Extends FetchError to maintain compatibility with error handling
+ * Provides helper methods for user-friendly error display
  */
 export class HookValidationError extends FetchError {
   constructor(
@@ -21,6 +29,205 @@ export class HookValidationError extends FetchError {
   ) {
     super(message, 400, "Bad Request", { errors: validationErrors });
     this.name = "HookValidationError";
+  }
+
+  /**
+   * Gets a Map of field names to their error messages
+   * Useful for displaying field-specific errors in forms
+   *
+   * @returns Map of field names to their first error message
+   *
+   * @example
+   * ```typescript
+   * const fieldErrors = error.getFieldErrors();
+   * console.log(fieldErrors.get('transactionDate')); // "Date must be in YYYY-MM-DD format..."
+   * ```
+   */
+  getFieldErrors(): Map<string, string> {
+    const errorMap = new Map<string, string>();
+
+    if (this.validationErrors) {
+      for (const error of this.validationErrors) {
+        // Only store the first error for each field
+        if (!errorMap.has(error.field)) {
+          errorMap.set(error.field, error.message);
+        }
+      }
+    }
+
+    return errorMap;
+  }
+
+  /**
+   * Gets field errors as a plain Record object
+   * Convenient for React state management
+   *
+   * @returns Record of field names to error messages
+   *
+   * @example
+   * ```typescript
+   * const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+   * // Later in error handler:
+   * setFieldErrors(error.getFieldErrorsObject());
+   * ```
+   */
+  getFieldErrorsObject(): Record<string, string> {
+    if (!this.validationErrors) {
+      return {};
+    }
+    return createFieldErrorMap(this.validationErrors);
+  }
+
+  /**
+   * Gets the error message for a specific field
+   *
+   * @param fieldName - The field name to get the error for
+   * @returns Error message for the field, or undefined if no error
+   *
+   * @example
+   * ```typescript
+   * const dateError = error.getFieldErrorMessage('transactionDate');
+   * if (dateError) {
+   *   console.log(dateError);
+   * }
+   * ```
+   */
+  getFieldErrorMessage(fieldName: string): string | undefined {
+    if (!this.validationErrors) {
+      return undefined;
+    }
+
+    const error = this.validationErrors.find((e) => e.field === fieldName);
+    return error?.message;
+  }
+
+  /**
+   * Checks if a specific field has an error
+   *
+   * @param fieldName - The field name to check
+   * @returns True if the field has an error
+   *
+   * @example
+   * ```typescript
+   * if (error.hasFieldError('transactionDate')) {
+   *   // Handle date error
+   * }
+   * ```
+   */
+  hasFieldError(fieldName: string): boolean {
+    if (!this.validationErrors) {
+      return false;
+    }
+    return this.validationErrors.some((e) => e.field === fieldName);
+  }
+
+  /**
+   * Gets a user-friendly formatted message with all validation errors
+   * Suitable for display in alerts or notifications
+   *
+   * @param formatStyle - Format style: 'full' for detailed list, 'summary' for concise version
+   * @returns Formatted error message
+   *
+   * @example
+   * ```typescript
+   * // Full format (default)
+   * console.log(error.getUserMessage());
+   * // Output:
+   * // • Transaction Date: Date must be in YYYY-MM-DD format...
+   * // • Amount: Amount must be a positive number...
+   *
+   * // Summary format (for Snackbar)
+   * console.log(error.getUserMessage('summary'));
+   * // Output: Transaction Date: Date must be in YYYY-MM-DD format...
+   * ```
+   */
+  getUserMessage(formatStyle: "full" | "summary" = "full"): string {
+    if (!this.validationErrors || this.validationErrors.length === 0) {
+      return this.message || "Validation failed";
+    }
+
+    if (formatStyle === "summary") {
+      return getErrorSummary(this.validationErrors, 3);
+    }
+
+    return formatValidationErrors(this.validationErrors);
+  }
+
+  /**
+   * Gets the number of validation errors
+   *
+   * @returns Number of validation errors
+   *
+   * @example
+   * ```typescript
+   * console.log(`Found ${error.getErrorCount()} validation errors`);
+   * ```
+   */
+  getErrorCount(): number {
+    return this.validationErrors?.length || 0;
+  }
+
+  /**
+   * Gets the list of field names that have errors
+   *
+   * @returns Array of field names with errors
+   *
+   * @example
+   * ```typescript
+   * const fieldsWithErrors = error.getErrorFields();
+   * console.log(`Errors in: ${fieldsWithErrors.join(', ')}`);
+   * // Output: "Errors in: transactionDate, amount"
+   * ```
+   */
+  getErrorFields(): string[] {
+    if (!this.validationErrors) {
+      return [];
+    }
+
+    // Get unique field names
+    return Array.from(new Set(this.validationErrors.map((e) => e.field)));
+  }
+
+  /**
+   * Gets validation errors for a specific field
+   * (A field can have multiple errors)
+   *
+   * @param fieldName - The field name
+   * @returns Array of validation errors for that field
+   *
+   * @example
+   * ```typescript
+   * const dateErrors = error.getFieldValidationErrors('transactionDate');
+   * dateErrors.forEach(err => console.log(err.message));
+   * ```
+   */
+  getFieldValidationErrors(fieldName: string): ValidationError[] {
+    if (!this.validationErrors) {
+      return [];
+    }
+    return this.validationErrors.filter((e) => e.field === fieldName);
+  }
+
+  /**
+   * Converts error to a plain object for logging or debugging
+   *
+   * @returns Plain object representation
+   *
+   * @example
+   * ```typescript
+   * console.log('Validation error:', error.toJSON());
+   * ```
+   */
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      status: this.status,
+      statusText: this.statusText,
+      validationErrors: this.validationErrors,
+      errorCount: this.getErrorCount(),
+      errorFields: this.getErrorFields(),
+    };
   }
 }
 

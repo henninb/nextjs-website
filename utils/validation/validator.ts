@@ -10,6 +10,9 @@ import {
 } from "./schemas";
 import { sanitize, SecurityLogger } from "./sanitization";
 
+// Re-export ValidationError for external use
+export type { ValidationError };
+
 /**
  * Comprehensive validation utility that combines sanitization and schema validation
  */
