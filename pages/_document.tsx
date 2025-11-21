@@ -22,6 +22,11 @@ export default function MyDocument() {
                   // kind - "hashed" for "Hashed Score" or "binary" for "Block Decision"
                   console.log('SCORE', score);
                 });
+
+		px.Events.on('risk', function (risk, name) {
+		  // name - reported cookie name (ex: _px)
+		  console.log('DATA', risk);
+	        });
               };
             `,
           }}
