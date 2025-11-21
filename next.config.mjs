@@ -123,7 +123,7 @@ const nextConfig = {
               "default-src 'self'",
               process.env.NODE_ENV === "development"
                 ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://dev.finance.bhenning.com:3000 http: https:"
-                : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://finance.bhenning.com https://vercel.bhenning.com https://statsapi.mlb.com https://api.weather.com https://fixturedownload.com https://f5x3msep1f.execute-api.us-east-1.amazonaws.com https://client.px-cloud.net https://captcha.px-cdn.net https://henninb.github.io",
+                : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://finance.bhenning.com https://vercel.bhenning.com https://statsapi.mlb.com https://api.weather.com https://fixturedownload.com https://f5x3msep1f.execute-api.us-east-1.amazonaws.com https://client.px-cloud.net https://captcha.px-cdn.net https://henninb.github.io https://static.cloudflareinsights.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
               "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "img-src 'self' data: https:",

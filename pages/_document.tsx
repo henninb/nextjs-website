@@ -12,6 +12,21 @@ export default function MyDocument() {
   return (
     <Html>
       <Head>
+        {/* PX event handler - must be defined before PX script loads */}
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.PXjJ0cYtn9_asyncInit = function (px) {
+                px.Events.on('score', function (score, kind) {
+                  // kind - "hashed" for "Hashed Score" or "binary" for "Block Decision"
+                  console.log('SCORE', score);
+                });
+              };
+            `,
+          }}
+        />
+
         {/* PX script with identifiers for runtime diagnostics */}
         <script
           id="px-script"
