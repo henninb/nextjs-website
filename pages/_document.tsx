@@ -20,6 +20,7 @@ export default function MyDocument() {
               window.PXjJ0cYtn9_asyncInit = function (px) {
                 px.Events.on('score', function (score, kind) {
                   // kind - "hashed" for "Hashed Score" or "binary" for "Block Decision"
+                  console.log('kind', kind);
                   console.log('SCORE', score);
                 });
 
