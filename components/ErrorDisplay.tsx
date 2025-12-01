@@ -46,8 +46,13 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   const [showErrorDetails, setShowErrorDetails] = React.useState(false);
 
   // Check if error is a HookValidationError with validation errors
-  const isValidationError = error instanceof HookValidationError && error.validationErrors && error.validationErrors.length > 0;
-  const validationErrors = isValidationError ? error.validationErrors : undefined;
+  const isValidationError =
+    error instanceof HookValidationError &&
+    error.validationErrors &&
+    error.validationErrors.length > 0;
+  const validationErrors = isValidationError
+    ? error.validationErrors
+    : undefined;
 
   const errorMessage = error instanceof Error ? error.message : error || "";
   const displayMessage = message || getErrorMessage(errorMessage);
@@ -135,9 +140,18 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
     if (isValidationError && validationErrors) {
       return (
         <Box className={className}>
-          <ValidationErrorList errors={validationErrors} variant="list" groupByField={false} />
+          <ValidationErrorList
+            errors={validationErrors}
+            variant="list"
+            groupByField={false}
+          />
           {showRetry && onRetry && (
-            <Button size="small" onClick={onRetry} startIcon={<Refresh />} sx={{ mt: 1 }}>
+            <Button
+              size="small"
+              onClick={onRetry}
+              startIcon={<Refresh />}
+              sx={{ mt: 1 }}
+            >
               Retry
             </Button>
           )}
@@ -194,7 +208,12 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
           </Box>
 
           {showRetry && onRetry && (
-            <Button variant="outlined" color="error" startIcon={<Refresh />} onClick={onRetry}>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<Refresh />}
+              onClick={onRetry}
+            >
               Try Again
             </Button>
           )}

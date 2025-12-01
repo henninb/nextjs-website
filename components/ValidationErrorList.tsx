@@ -117,7 +117,11 @@ function ErrorItem({
 
   return (
     <ListItem sx={{ py: 0.5, px: 0 }}>
-      {showIcon && <ListItemIcon sx={{ minWidth: 32 }}>{getSeverityIcon(severity)}</ListItemIcon>}
+      {showIcon && (
+        <ListItemIcon sx={{ minWidth: 32 }}>
+          {getSeverityIcon(severity)}
+        </ListItemIcon>
+      )}
       <ListItemText
         primary={
           showFieldName ? (
@@ -153,7 +157,9 @@ export default function ValidationErrorList({
 }: ValidationErrorListProps) {
   // Determine if should be collapsible
   const shouldBeCollapsible =
-    collapsible !== undefined ? collapsible : errors.length > maxCollapsedErrors;
+    collapsible !== undefined
+      ? collapsible
+      : errors.length > maxCollapsedErrors;
 
   const [expanded, setExpanded] = useState(!defaultCollapsed);
 
@@ -163,13 +169,20 @@ export default function ValidationErrorList({
   }
 
   // Determine overall severity (if not provided)
-  const { errors: errorList, warnings, info } = separateErrorsBySeverity(errors);
+  const {
+    errors: errorList,
+    warnings,
+    info,
+  } = separateErrorsBySeverity(errors);
   const overallSeverity =
     severity ||
     (errorList.length > 0 ? "error" : warnings.length > 0 ? "warning" : "info");
 
   // Get displayed errors (when collapsed)
-  const displayedErrors = shouldBeCollapsible && !expanded ? errors.slice(0, maxCollapsedErrors) : errors;
+  const displayedErrors =
+    shouldBeCollapsible && !expanded
+      ? errors.slice(0, maxCollapsedErrors)
+      : errors;
   const hiddenErrorCount = errors.length - displayedErrors.length;
 
   // Render compact variant
@@ -196,7 +209,11 @@ export default function ValidationErrorList({
                 <ErrorItem error={fieldErrors[0]} showIcon={showIcons} />
               ) : (
                 <Box>
-                  <Typography variant="body2" fontWeight="bold" sx={{ mt: 1, mb: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    sx={{ mt: 1, mb: 0.5 }}
+                  >
                     {formatFieldName(field)}:
                   </Typography>
                   <List dense disablePadding sx={{ pl: 2 }}>
@@ -241,7 +258,11 @@ export default function ValidationErrorList({
           aria-label={expanded ? "Show less" : "Show more"}
           sx={{ p: 0.5 }}
         >
-          {expanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+          {expanded ? (
+            <ExpandLessIcon fontSize="small" />
+          ) : (
+            <ExpandMoreIcon fontSize="small" />
+          )}
         </IconButton>
         <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
           {expanded

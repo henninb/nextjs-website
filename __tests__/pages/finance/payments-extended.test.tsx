@@ -279,7 +279,9 @@ describe("PaymentsPage - Extended Test Coverage", () => {
 
       // After entering 0, button text changes to "Pay $0.00"
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /pay \$0\.00/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /pay \$0\.00/i }),
+        ).toBeInTheDocument();
       });
 
       const saveButton = screen.getByRole("button", { name: /pay \$0\.00/i });

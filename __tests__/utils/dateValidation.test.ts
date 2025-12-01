@@ -73,7 +73,11 @@ describe("Date Validation Utilities", () => {
     });
 
     it("should reject dates with time component when YYYY-MM-DD expected", () => {
-      const result = validateDateFormat("2025-01-15 10:30", "testDate", "YYYY-MM-DD");
+      const result = validateDateFormat(
+        "2025-01-15 10:30",
+        "testDate",
+        "YYYY-MM-DD",
+      );
 
       expect(result.isValid).toBe(false);
       expect(result.error?.code).toBe("DATE_FORMAT_INVALID");
@@ -109,7 +113,9 @@ describe("Date Validation Utilities", () => {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(now.getMonth() - 6);
 
-      const error = validateDateBoundaries(sixMonthsAgo, "testDate", { pastYears: 1 });
+      const error = validateDateBoundaries(sixMonthsAgo, "testDate", {
+        pastYears: 1,
+      });
       expect(error).toBeNull();
     });
 
@@ -117,7 +123,9 @@ describe("Date Validation Utilities", () => {
       const twoYearsAgo = new Date();
       twoYearsAgo.setFullYear(now.getFullYear() - 2);
 
-      const error = validateDateBoundaries(twoYearsAgo, "testDate", { pastYears: 1 });
+      const error = validateDateBoundaries(twoYearsAgo, "testDate", {
+        pastYears: 1,
+      });
       expect(error).not.toBeNull();
       expect(error?.code).toBe("DATE_TOO_OLD");
       expect(error?.message).toContain("cannot be more than 1 year");
@@ -127,7 +135,9 @@ describe("Date Validation Utilities", () => {
       const sixMonthsFromNow = new Date();
       sixMonthsFromNow.setMonth(now.getMonth() + 6);
 
-      const error = validateDateBoundaries(sixMonthsFromNow, "testDate", { futureYears: 1 });
+      const error = validateDateBoundaries(sixMonthsFromNow, "testDate", {
+        futureYears: 1,
+      });
       expect(error).toBeNull();
     });
 
@@ -135,7 +145,9 @@ describe("Date Validation Utilities", () => {
       const twoYearsFromNow = new Date();
       twoYearsFromNow.setFullYear(now.getFullYear() + 2);
 
-      const error = validateDateBoundaries(twoYearsFromNow, "testDate", { futureYears: 1 });
+      const error = validateDateBoundaries(twoYearsFromNow, "testDate", {
+        futureYears: 1,
+      });
       expect(error).not.toBeNull();
       expect(error?.code).toBe("DATE_TOO_FUTURE");
     });
@@ -145,7 +157,10 @@ describe("Date Validation Utilities", () => {
       const maxDate = new Date("2025-12-31");
       const testDate = new Date("2025-06-15");
 
-      const error = validateDateBoundaries(testDate, "testDate", { minDate, maxDate });
+      const error = validateDateBoundaries(testDate, "testDate", {
+        minDate,
+        maxDate,
+      });
       expect(error).toBeNull();
     });
   });
@@ -176,7 +191,7 @@ describe("Date Validation Utilities", () => {
         threeYearsAgo.toISOString().split("T")[0],
         "testDate",
         "YYYY-MM-DD",
-        { pastYears: 1 }
+        { pastYears: 1 },
       );
 
       expect(result.isValid).toBe(false);
@@ -187,8 +202,16 @@ describe("Date Validation Utilities", () => {
   describe("validateDates", () => {
     it("should validate multiple dates", () => {
       const dates = [
-        { value: "2025-01-15", fieldName: "startDate", format: "YYYY-MM-DD" as const },
-        { value: "2025-06-15", fieldName: "endDate", format: "YYYY-MM-DD" as const },
+        {
+          value: "2025-01-15",
+          fieldName: "startDate",
+          format: "YYYY-MM-DD" as const,
+        },
+        {
+          value: "2025-06-15",
+          fieldName: "endDate",
+          format: "YYYY-MM-DD" as const,
+        },
       ];
 
       const errors = validateDates(dates);
@@ -197,8 +220,16 @@ describe("Date Validation Utilities", () => {
 
     it("should collect all errors from multiple dates", () => {
       const dates = [
-        { value: "invalid-date", fieldName: "startDate", format: "YYYY-MM-DD" as const },
-        { value: "01/15/2025", fieldName: "endDate", format: "YYYY-MM-DD" as const },
+        {
+          value: "invalid-date",
+          fieldName: "startDate",
+          format: "YYYY-MM-DD" as const,
+        },
+        {
+          value: "01/15/2025",
+          fieldName: "endDate",
+          format: "YYYY-MM-DD" as const,
+        },
       ];
 
       const errors = validateDates(dates);
@@ -208,20 +239,35 @@ describe("Date Validation Utilities", () => {
 
   describe("validateDateRange", () => {
     it("should validate valid date range", () => {
-      const errors = validateDateRange("2025-01-15", "2025-06-15", "startDate", "endDate");
+      const errors = validateDateRange(
+        "2025-01-15",
+        "2025-06-15",
+        "startDate",
+        "endDate",
+      );
 
       expect(errors).toHaveLength(0);
     });
 
     it("should reject start date after end date", () => {
-      const errors = validateDateRange("2025-06-15", "2025-01-15", "startDate", "endDate");
+      const errors = validateDateRange(
+        "2025-06-15",
+        "2025-01-15",
+        "startDate",
+        "endDate",
+      );
 
       expect(errors.length).toBeGreaterThan(0);
       expect(errors.some((e) => e.code === "DATE_RANGE_INVALID")).toBe(true);
     });
 
     it("should collect errors from invalid date formats", () => {
-      const errors = validateDateRange("invalid", "2025-06-15", "startDate", "endDate");
+      const errors = validateDateRange(
+        "invalid",
+        "2025-06-15",
+        "startDate",
+        "endDate",
+      );
 
       expect(errors.length).toBeGreaterThan(0);
     });
@@ -282,7 +328,7 @@ describe("Date Validation Utilities", () => {
 
       const result = validateDateNotFuture(
         yesterday.toISOString().split("T")[0],
-        "testDate"
+        "testDate",
       );
 
       expect(result.isValid).toBe(true);
@@ -301,7 +347,7 @@ describe("Date Validation Utilities", () => {
 
       const result = validateDateNotFuture(
         tomorrow.toISOString().split("T")[0],
-        "testDate"
+        "testDate",
       );
 
       expect(result.isValid).toBe(false);

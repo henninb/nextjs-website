@@ -37,12 +37,15 @@ describe("Validation Error Flow Integration", () => {
 
       // Step 4: Verify errors contain helpful information
       // Note: Errors might be in different fields depending on validation flow
-      const hasDateError = result.errors!.some((e) =>
-        e.field.includes("Date") || e.field === "transactionDate" ||
-        e.message.toLowerCase().includes("date")
+      const hasDateError = result.errors!.some(
+        (e) =>
+          e.field.includes("Date") ||
+          e.field === "transactionDate" ||
+          e.message.toLowerCase().includes("date"),
       );
-      const hasAmountError = result.errors!.some((e) =>
-        e.field === "amount" || e.message.toLowerCase().includes("decimal")
+      const hasAmountError = result.errors!.some(
+        (e) =>
+          e.field === "amount" || e.message.toLowerCase().includes("decimal"),
       );
 
       expect(hasDateError || hasAmountError).toBe(true);
@@ -65,7 +68,7 @@ describe("Validation Error Flow Integration", () => {
       // Create HookValidationError
       const error = new HookValidationError(
         "Validation failed",
-        validationErrors
+        validationErrors,
       );
 
       // Test helper methods
@@ -74,7 +77,9 @@ describe("Validation Error Flow Integration", () => {
       expect(error.hasFieldError("description")).toBe(false);
 
       const fieldErrors = error.getFieldErrorsObject();
-      expect(fieldErrors.transactionDate).toBe("Date must be in YYYY-MM-DD format");
+      expect(fieldErrors.transactionDate).toBe(
+        "Date must be in YYYY-MM-DD format",
+      );
       expect(fieldErrors.amount).toBe("Amount must be a positive number");
 
       const userMessage = error.getUserMessage("summary");
@@ -87,7 +92,8 @@ describe("Validation Error Flow Integration", () => {
     const sampleErrors: ValidationError[] = [
       {
         field: "transactionDate",
-        message: "Date must be in YYYY-MM-DD format without time (e.g., 2025-01-15). You entered: 2025-10-01 10:30",
+        message:
+          "Date must be in YYYY-MM-DD format without time (e.g., 2025-01-15). You entered: 2025-10-01 10:30",
         code: "DATE_FORMAT_INVALID",
       },
       {
@@ -100,9 +106,13 @@ describe("Validation Error Flow Integration", () => {
     it("should render validation errors in alert variant", () => {
       render(<ValidationErrorList errors={sampleErrors} variant="alert" />);
 
-      expect(screen.getByText(/Please fix the following errors/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Please fix the following errors/i),
+      ).toBeInTheDocument();
       expect(screen.getByText(/Transaction Date:/)).toBeInTheDocument();
-      expect(screen.getByText(/Date must be in YYYY-MM-DD format/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Date must be in YYYY-MM-DD format/),
+      ).toBeInTheDocument();
     });
 
     it("should render validation errors in list variant", () => {
@@ -135,7 +145,7 @@ describe("Validation Error Flow Integration", () => {
           errors={errorsWithDuplicates}
           variant="list"
           groupByField={true}
-        />
+        />,
       );
 
       // Should show field name once
@@ -164,7 +174,7 @@ describe("Validation Error Flow Integration", () => {
 
       const error = new HookValidationError(
         "Validation failed",
-        validationErrors
+        validationErrors,
       );
 
       render(<ErrorDisplay error={error} variant="alert" />);
@@ -200,10 +210,11 @@ describe("Validation Error Flow Integration", () => {
 
       // When sanitization throws, error is on "validation" field
       // Check if any error message mentions the date/time issue
-      const hasDateError = result.errors!.some((e) =>
-        e.message.includes("without time") ||
-        e.message.includes("YYYY-MM-DD") ||
-        e.message.includes("time component")
+      const hasDateError = result.errors!.some(
+        (e) =>
+          e.message.includes("without time") ||
+          e.message.includes("YYYY-MM-DD") ||
+          e.message.includes("time component"),
       );
       expect(hasDateError).toBe(true);
     });
@@ -222,7 +233,9 @@ describe("Validation Error Flow Integration", () => {
 
       // Should pass schema validation (business logic may add other errors)
       if (!result.success) {
-        const dateError = result.errors!.find((e) => e.field === "transactionDate");
+        const dateError = result.errors!.find(
+          (e) => e.field === "transactionDate",
+        );
         // Date field specifically should not have errors
         expect(dateError).toBeUndefined();
       }
@@ -247,9 +260,11 @@ describe("Validation Error Flow Integration", () => {
       // The important thing is that the flow handles decimal precision
       // If sanitization rounds it, validation might pass
       if (!result.success) {
-        const hasAmountError = result.errors!.some((e) =>
-          e.field === "amount" &&
-          (e.message.includes("decimal") || e.message.includes("2 decimal places"))
+        const hasAmountError = result.errors!.some(
+          (e) =>
+            e.field === "amount" &&
+            (e.message.includes("decimal") ||
+              e.message.includes("2 decimal places")),
         );
         // If validation failed, at least one error should be about decimals
         expect(hasAmountError || result.errors!.length > 0).toBe(true);
@@ -327,8 +342,8 @@ describe("Validation Error Flow Integration", () => {
 
       // Check if any error message includes helpful examples
       // Error messages should contain examples like "e.g., 2025-01-15" or "Example: 2025-01-15"
-      const hasExampleInError = result.errors!.some((e) =>
-        e.message.match(/e\.g\.|example|2025-\d{2}-\d{2}/i) !== null
+      const hasExampleInError = result.errors!.some(
+        (e) => e.message.match(/e\.g\.|example|2025-\d{2}-\d{2}/i) !== null,
       );
       expect(hasExampleInError).toBe(true);
     });

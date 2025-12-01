@@ -23,8 +23,14 @@ export const updatePayment = async (
   oldPayment: Payment,
   newPayment: Payment,
 ): Promise<Payment> => {
-  console.log("[usePaymentUpdate] updatePayment OLD:", JSON.stringify(oldPayment));
-  console.log("[usePaymentUpdate] updatePayment NEW:", JSON.stringify(newPayment));
+  console.log(
+    "[usePaymentUpdate] updatePayment OLD:",
+    JSON.stringify(oldPayment),
+  );
+  console.log(
+    "[usePaymentUpdate] updatePayment NEW:",
+    JSON.stringify(newPayment),
+  );
 
   // Validate new payment data
   const validatedData = HookValidator.validateUpdate(
@@ -34,7 +40,10 @@ export const updatePayment = async (
     "updatePayment",
   );
 
-  console.log("[usePaymentUpdate] VALIDATED DATA:", JSON.stringify(validatedData));
+  console.log(
+    "[usePaymentUpdate] VALIDATED DATA:",
+    JSON.stringify(validatedData),
+  );
 
   // Validate and sanitize payment ID
   const sanitizedPaymentId = InputSanitizer.sanitizeNumericId(
@@ -50,7 +59,10 @@ export const updatePayment = async (
 
   const endpoint = `/api/payment/${sanitizedPaymentId}`;
 
-  console.log("[usePaymentUpdate] FINAL PAYLOAD TO API:", JSON.stringify(validatedData));
+  console.log(
+    "[usePaymentUpdate] FINAL PAYLOAD TO API:",
+    JSON.stringify(validatedData),
+  );
 
   const response = await fetchWithErrorHandling(endpoint, {
     method: "PUT",

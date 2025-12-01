@@ -2,10 +2,7 @@ import React from "react";
 import { renderHook } from "@testing-library/react";
 import useTransferFetch from "../../hooks/useTransferFetch";
 import Transfer from "../../model/Transfer";
-import {
-  createModernFetchMock,
-  createTestTransfer,
-} from "../../testHelpers";
+import { createModernFetchMock, createTestTransfer } from "../../testHelpers";
 import { FetchError } from "../../utils/fetchUtils";
 
 function createMockLogger() {

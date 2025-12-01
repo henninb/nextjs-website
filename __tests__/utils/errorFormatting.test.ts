@@ -128,7 +128,9 @@ describe("Error Formatting Utilities", () => {
       const errorMap = createFieldErrorMap(sampleErrors);
 
       // transactionDate has 2 errors but should only include the first
-      expect(errorMap.transactionDate).toBe("Date must be in YYYY-MM-DD format");
+      expect(errorMap.transactionDate).toBe(
+        "Date must be in YYYY-MM-DD format",
+      );
     });
 
     it("should handle empty array", () => {
@@ -156,7 +158,9 @@ describe("Error Formatting Utilities", () => {
 
       // Should show both errors for transactionDate
       expect(formatted).toContain("Date must be in YYYY-MM-DD format");
-      expect(formatted).toContain("Date cannot be more than 1 year in the past");
+      expect(formatted).toContain(
+        "Date cannot be more than 1 year in the past",
+      );
     });
 
     it("should handle empty array", () => {
@@ -183,14 +187,18 @@ describe("Error Formatting Utilities", () => {
 
     it("should handle single error", () => {
       const summary = getErrorSummary([sampleErrors[0]]);
-      expect(summary).toBe("Transaction Date: Date must be in YYYY-MM-DD format");
+      expect(summary).toBe(
+        "Transaction Date: Date must be in YYYY-MM-DD format",
+      );
     });
   });
 
   describe("formatSingleError", () => {
     it("should format error with field label", () => {
       const formatted = formatSingleError(sampleErrors[0]);
-      expect(formatted).toBe("Transaction Date: Date must be in YYYY-MM-DD format");
+      expect(formatted).toBe(
+        "Transaction Date: Date must be in YYYY-MM-DD format",
+      );
     });
   });
 

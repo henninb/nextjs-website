@@ -65,7 +65,10 @@ export default function useTransferUpdateGql() {
         activeStatus: newTransfer.activeStatus,
       };
 
-      console.log("[useTransferUpdateGql] GraphQL transfer update payload:", JSON.stringify(input));
+      console.log(
+        "[useTransferUpdateGql] GraphQL transfer update payload:",
+        JSON.stringify(input),
+      );
       const data = await graphqlRequest<UpdateTransferResult>({
         query: UPDATE_TRANSFER_MUTATION,
         variables: { id: oldTransfer.transferId, transfer: input },

@@ -65,7 +65,10 @@ export default function usePaymentUpdateGql() {
         activeStatus: newPayment.activeStatus,
       };
 
-      console.log("[usePaymentUpdateGql] GraphQL payment update payload:", JSON.stringify(input));
+      console.log(
+        "[usePaymentUpdateGql] GraphQL payment update payload:",
+        JSON.stringify(input),
+      );
       const data = await graphqlRequest<UpdatePaymentResult>({
         query: UPDATE_PAYMENT_MUTATION,
         variables: { id: oldPayment.paymentId, payment: input },

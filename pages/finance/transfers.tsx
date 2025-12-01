@@ -532,7 +532,9 @@ export default function Transfers() {
                     variant="create"
                     actionLabel="Add Transfer"
                     onAction={() => {
-                      setTransferData(lastSubmittedTransfer || initialTransferData);
+                      setTransferData(
+                        lastSubmittedTransfer || initialTransferData,
+                      );
                       setFormErrors({});
                       setSelectedSourceAccount(null);
                       setSelectedDestinationAccount(null);
@@ -577,7 +579,9 @@ export default function Transfers() {
           onSubmit={() => transferData && handleAddRow(transferData)}
           title={modalTitles.addNew("transfer")}
           submitText={
-            transferData?.amount !== null && transferData?.amount !== undefined && parseFloat(String(transferData.amount)) >= 0
+            transferData?.amount !== null &&
+            transferData?.amount !== undefined &&
+            parseFloat(String(transferData.amount)) >= 0
               ? `Transfer ${currencyFormat(transferData.amount)}`
               : "Add Transfer"
           }

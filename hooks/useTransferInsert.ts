@@ -31,7 +31,10 @@ export const overRideTransferValues = (payload: Transfer) => {
  * @returns Newly created transfer
  */
 export const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
-  console.log("[useTransferInsert] insertTransfer PAYLOAD INPUT:", JSON.stringify(payload));
+  console.log(
+    "[useTransferInsert] insertTransfer PAYLOAD INPUT:",
+    JSON.stringify(payload),
+  );
 
   // Validate transfer data
   const validatedData = HookValidator.validateInsert(
@@ -40,7 +43,10 @@ export const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
     "insertTransfer",
   );
 
-  console.log("[useTransferInsert] VALIDATED DATA:", JSON.stringify(validatedData));
+  console.log(
+    "[useTransferInsert] VALIDATED DATA:",
+    JSON.stringify(validatedData),
+  );
 
   log.debug("Inserting transfer", {
     sourceAccount: validatedData.sourceAccount,
@@ -51,7 +57,10 @@ export const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
   const endpoint = "/api/transfer";
   const newPayload = overRideTransferValues(validatedData);
 
-  console.log("[useTransferInsert] FINAL PAYLOAD TO API:", JSON.stringify(newPayload));
+  console.log(
+    "[useTransferInsert] FINAL PAYLOAD TO API:",
+    JSON.stringify(newPayload),
+  );
 
   const response = await fetchWithErrorHandling(endpoint, {
     method: "POST",

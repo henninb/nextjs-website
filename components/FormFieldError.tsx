@@ -132,7 +132,10 @@ export default function FormFieldError({
       </Typography>
       {helpText && (
         <Tooltip title={helpText} arrow>
-          <IconButton size="small" sx={{ p: 0, ml: 0.5, color: "text.secondary" }}>
+          <IconButton
+            size="small"
+            sx={{ p: 0, ml: 0.5, color: "text.secondary" }}
+          >
             <HelpOutlineIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -168,7 +171,9 @@ export default function FormFieldError({
  * ```
  */
 export function useFormFieldErrors() {
-  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
+    {},
+  );
 
   const setFieldError = React.useCallback((field: string, message: string) => {
     setFieldErrors((prev) => ({
@@ -193,14 +198,14 @@ export function useFormFieldErrors() {
     (field: string) => {
       return !!fieldErrors[field];
     },
-    [fieldErrors]
+    [fieldErrors],
   );
 
   const getError = React.useCallback(
     (field: string) => {
       return fieldErrors[field];
     },
-    [fieldErrors]
+    [fieldErrors],
   );
 
   return {

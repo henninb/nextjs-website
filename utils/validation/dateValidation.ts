@@ -4,12 +4,12 @@
  * Specialized date validators with clear error messages and format hints
  */
 
-import type { ValidationError } from './validator';
+import type { ValidationError } from "./validator";
 
 /**
  * Date format types supported by the application
  */
-export type DateFormat = 'YYYY-MM-DD' | 'ISO' | 'DATE_OBJECT';
+export type DateFormat = "YYYY-MM-DD" | "ISO" | "DATE_OBJECT";
 
 /**
  * Date validation result
@@ -64,7 +64,7 @@ export function isParseable(dateValue: string | Date): boolean {
 export function validateDateFormat(
   dateValue: unknown,
   fieldName: string,
-  expectedFormat: DateFormat = 'YYYY-MM-DD'
+  expectedFormat: DateFormat = "YYYY-MM-DD",
 ): DateValidationResult {
   // Check if value exists
   if (dateValue === null || dateValue === undefined) {
@@ -72,20 +72,20 @@ export function validateDateFormat(
       isValid: false,
       error: {
         field: fieldName,
-        message: 'Date is required',
-        code: 'DATE_REQUIRED',
+        message: "Date is required",
+        code: "DATE_REQUIRED",
       },
     };
   }
 
   // Check if it's empty string
-  if (typeof dateValue === 'string' && dateValue.trim() === '') {
+  if (typeof dateValue === "string" && dateValue.trim() === "") {
     return {
       isValid: false,
       error: {
         field: fieldName,
-        message: 'Date cannot be empty',
-        code: 'DATE_EMPTY',
+        message: "Date cannot be empty",
+        code: "DATE_EMPTY",
       },
     };
   }
@@ -97,8 +97,8 @@ export function validateDateFormat(
         isValid: false,
         error: {
           field: fieldName,
-          message: 'Invalid date value',
-          code: 'DATE_INVALID',
+          message: "Invalid date value",
+          code: "DATE_INVALID",
         },
       };
     }
@@ -109,13 +109,13 @@ export function validateDateFormat(
   }
 
   // Must be string at this point
-  if (typeof dateValue !== 'string') {
+  if (typeof dateValue !== "string") {
     return {
       isValid: false,
       error: {
         field: fieldName,
-        message: 'Date must be a string or Date object',
-        code: 'DATE_WRONG_TYPE',
+        message: "Date must be a string or Date object",
+        code: "DATE_WRONG_TYPE",
       },
     };
   }
@@ -123,16 +123,16 @@ export function validateDateFormat(
   const dateString = dateValue.trim();
 
   // Check format based on expected format
-  if (expectedFormat === 'YYYY-MM-DD') {
+  if (expectedFormat === "YYYY-MM-DD") {
     if (!isValidYYYYMMDDFormat(dateString)) {
       // Provide specific feedback about what's wrong
-      let hint = '';
-      if (dateString.includes('T') || dateString.includes(':')) {
-        hint = ' (remove time component)';
-      } else if (dateString.includes('/')) {
-        hint = ' (use hyphens, not slashes)';
-      } else if (dateString.split('-').length !== 3) {
-        hint = ' (format should be YYYY-MM-DD)';
+      let hint = "";
+      if (dateString.includes("T") || dateString.includes(":")) {
+        hint = " (remove time component)";
+      } else if (dateString.includes("/")) {
+        hint = " (use hyphens, not slashes)";
+      } else if (dateString.split("-").length !== 3) {
+        hint = " (format should be YYYY-MM-DD)";
       }
 
       return {
@@ -140,18 +140,18 @@ export function validateDateFormat(
         error: {
           field: fieldName,
           message: `Date must be in YYYY-MM-DD format without time${hint}. Example: 2025-01-15. You entered: ${dateString}`,
-          code: 'DATE_FORMAT_INVALID',
+          code: "DATE_FORMAT_INVALID",
         },
       };
     }
-  } else if (expectedFormat === 'ISO') {
+  } else if (expectedFormat === "ISO") {
     if (!isValidISOFormat(dateString)) {
       return {
         isValid: false,
         error: {
           field: fieldName,
           message: `Date must be in ISO 8601 format. Example: 2025-01-15T10:30:00Z. You entered: ${dateString}`,
-          code: 'DATE_FORMAT_INVALID',
+          code: "DATE_FORMAT_INVALID",
         },
       };
     }
@@ -164,7 +164,7 @@ export function validateDateFormat(
       error: {
         field: fieldName,
         message: `Date is not valid. Example: 2025-01-15. You entered: ${dateString}`,
-        code: 'DATE_NOT_PARSEABLE',
+        code: "DATE_NOT_PARSEABLE",
       },
     };
   }
@@ -172,8 +172,8 @@ export function validateDateFormat(
   // Parse YYYY-MM-DD as local date to avoid timezone issues
   // new Date("2025-11-20") treats it as UTC, which shifts in negative offset timezones
   let parsedDate: Date;
-  if (expectedFormat === 'YYYY-MM-DD' && isValidYYYYMMDDFormat(dateString)) {
-    const [year, month, day] = dateString.split('-').map(Number);
+  if (expectedFormat === "YYYY-MM-DD" && isValidYYYYMMDDFormat(dateString)) {
+    const [year, month, day] = dateString.split("-").map(Number);
     parsedDate = new Date(year, month - 1, day); // month is 0-indexed
   } else {
     parsedDate = new Date(dateString);
@@ -191,7 +191,7 @@ export function validateDateFormat(
 export function validateDateBoundaries(
   date: Date,
   fieldName: string,
-  options: DateBoundaryOptions = {}
+  options: DateBoundaryOptions = {},
 ): ValidationError | null {
   const now = new Date();
   now.setHours(0, 0, 0, 0); // Set to start of day for fair comparison
@@ -208,9 +208,9 @@ export function validateDateBoundaries(
       return {
         field: fieldName,
         message: `Date cannot be more than ${options.pastYears} year${
-          options.pastYears > 1 ? 's' : ''
-        } in the past. Earliest allowed: ${minDate.toISOString().split('T')[0]}`,
-        code: 'DATE_TOO_OLD',
+          options.pastYears > 1 ? "s" : ""
+        } in the past. Earliest allowed: ${minDate.toISOString().split("T")[0]}`,
+        code: "DATE_TOO_OLD",
       };
     }
   }
@@ -224,9 +224,9 @@ export function validateDateBoundaries(
       return {
         field: fieldName,
         message: `Date cannot be more than ${options.futureYears} year${
-          options.futureYears > 1 ? 's' : ''
-        } in the future. Latest allowed: ${maxDate.toISOString().split('T')[0]}`,
-        code: 'DATE_TOO_FUTURE',
+          options.futureYears > 1 ? "s" : ""
+        } in the future. Latest allowed: ${maxDate.toISOString().split("T")[0]}`,
+        code: "DATE_TOO_FUTURE",
       };
     }
   }
@@ -239,8 +239,8 @@ export function validateDateBoundaries(
     if (dateToCheck < minDate) {
       return {
         field: fieldName,
-        message: `Date must be on or after ${minDate.toISOString().split('T')[0]}`,
-        code: 'DATE_BEFORE_MIN',
+        message: `Date must be on or after ${minDate.toISOString().split("T")[0]}`,
+        code: "DATE_BEFORE_MIN",
       };
     }
   }
@@ -253,8 +253,8 @@ export function validateDateBoundaries(
     if (dateToCheck > maxDate) {
       return {
         field: fieldName,
-        message: `Date must be on or before ${maxDate.toISOString().split('T')[0]}`,
-        code: 'DATE_AFTER_MAX',
+        message: `Date must be on or before ${maxDate.toISOString().split("T")[0]}`,
+        code: "DATE_AFTER_MAX",
       };
     }
   }
@@ -268,8 +268,8 @@ export function validateDateBoundaries(
 export function validateDate(
   dateValue: unknown,
   fieldName: string,
-  expectedFormat: DateFormat = 'YYYY-MM-DD',
-  boundaryOptions?: DateBoundaryOptions
+  expectedFormat: DateFormat = "YYYY-MM-DD",
+  boundaryOptions?: DateBoundaryOptions,
 ): DateValidationResult {
   // First validate format
   const formatResult = validateDateFormat(dateValue, fieldName, expectedFormat);
@@ -283,7 +283,7 @@ export function validateDate(
     const boundaryError = validateDateBoundaries(
       formatResult.parsedDate,
       fieldName,
-      boundaryOptions
+      boundaryOptions,
     );
 
     if (boundaryError) {
@@ -307,7 +307,7 @@ export function validateDates(
     fieldName: string;
     format?: DateFormat;
     boundaries?: DateBoundaryOptions;
-  }>
+  }>,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
@@ -327,9 +327,9 @@ export function validateDates(
 export function validateDateRange(
   startDate: unknown,
   endDate: unknown,
-  startFieldName: string = 'startDate',
-  endFieldName: string = 'endDate',
-  format: DateFormat = 'YYYY-MM-DD'
+  startFieldName: string = "startDate",
+  endFieldName: string = "endDate",
+  format: DateFormat = "YYYY-MM-DD",
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
@@ -346,12 +346,17 @@ export function validateDateRange(
   }
 
   // If both valid, check that start is before end
-  if (startResult.isValid && endResult.isValid && startResult.parsedDate && endResult.parsedDate) {
+  if (
+    startResult.isValid &&
+    endResult.isValid &&
+    startResult.parsedDate &&
+    endResult.parsedDate
+  ) {
     if (startResult.parsedDate > endResult.parsedDate) {
       errors.push({
         field: startFieldName,
         message: `Start date must be before end date`,
-        code: 'DATE_RANGE_INVALID',
+        code: "DATE_RANGE_INVALID",
       });
     }
   }
@@ -362,7 +367,10 @@ export function validateDateRange(
 /**
  * Extracts date from various input formats and returns standardized format
  */
-export function normalizeDate(dateValue: unknown, targetFormat: DateFormat): string | null {
+export function normalizeDate(
+  dateValue: unknown,
+  targetFormat: DateFormat,
+): string | null {
   if (!dateValue) {
     return null;
   }
@@ -371,7 +379,7 @@ export function normalizeDate(dateValue: unknown, targetFormat: DateFormat): str
 
   if (dateValue instanceof Date) {
     date = dateValue;
-  } else if (typeof dateValue === 'string') {
+  } else if (typeof dateValue === "string") {
     date = new Date(dateValue);
   } else {
     return null;
@@ -381,9 +389,9 @@ export function normalizeDate(dateValue: unknown, targetFormat: DateFormat): str
     return null;
   }
 
-  if (targetFormat === 'YYYY-MM-DD') {
-    return date.toISOString().split('T')[0];
-  } else if (targetFormat === 'ISO') {
+  if (targetFormat === "YYYY-MM-DD") {
+    return date.toISOString().split("T")[0];
+  } else if (targetFormat === "ISO") {
     return date.toISOString();
   }
 
@@ -395,14 +403,14 @@ export function normalizeDate(dateValue: unknown, targetFormat: DateFormat): str
  */
 export function getDateFormatHint(format: DateFormat): string {
   switch (format) {
-    case 'YYYY-MM-DD':
-      return 'Use format YYYY-MM-DD (e.g., 2025-01-15)';
-    case 'ISO':
-      return 'Use ISO 8601 format (e.g., 2025-01-15T10:30:00Z)';
-    case 'DATE_OBJECT':
-      return 'Must be a valid Date object';
+    case "YYYY-MM-DD":
+      return "Use format YYYY-MM-DD (e.g., 2025-01-15)";
+    case "ISO":
+      return "Use ISO 8601 format (e.g., 2025-01-15T10:30:00Z)";
+    case "DATE_OBJECT":
+      return "Must be a valid Date object";
     default:
-      return 'Use a valid date format';
+      return "Use a valid date format";
   }
 }
 
@@ -411,11 +419,11 @@ export function getDateFormatHint(format: DateFormat): string {
  */
 export function detectDateFormat(dateString: string): DateFormat | null {
   if (isValidYYYYMMDDFormat(dateString)) {
-    return 'YYYY-MM-DD';
+    return "YYYY-MM-DD";
   }
 
   if (isValidISOFormat(dateString)) {
-    return 'ISO';
+    return "ISO";
   }
 
   return null;
@@ -427,7 +435,7 @@ export function detectDateFormat(dateString: string): DateFormat | null {
 export function validateDateNotFuture(
   dateValue: unknown,
   fieldName: string,
-  format: DateFormat = 'YYYY-MM-DD'
+  format: DateFormat = "YYYY-MM-DD",
 ): DateValidationResult {
   const formatResult = validateDateFormat(dateValue, fieldName, format);
 
@@ -448,8 +456,8 @@ export function validateDateNotFuture(
       isValid: false,
       error: {
         field: fieldName,
-        message: 'Date cannot be in the future',
-        code: 'DATE_IN_FUTURE',
+        message: "Date cannot be in the future",
+        code: "DATE_IN_FUTURE",
       },
       parsedDate: formatResult.parsedDate,
     };

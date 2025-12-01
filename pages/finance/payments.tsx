@@ -568,7 +568,9 @@ export default function Payments() {
           onSubmit={() => paymentData && handleAddRow(paymentData)}
           title={modalTitles.addNew("payment")}
           submitText={
-            paymentData?.amount !== null && paymentData?.amount !== undefined && parseFloat(String(paymentData.amount)) >= 0
+            paymentData?.amount !== null &&
+            paymentData?.amount !== undefined &&
+            parseFloat(String(paymentData.amount)) >= 0
               ? `Pay ${currencyFormat(paymentData.amount)}`
               : "Add Payment"
           }

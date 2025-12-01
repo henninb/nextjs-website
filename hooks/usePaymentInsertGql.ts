@@ -64,7 +64,10 @@ export default function usePaymentInsertGql() {
         activeStatus: p.activeStatus,
       };
 
-      console.log("[usePaymentInsertGql] GraphQL payment payload:", JSON.stringify(payment));
+      console.log(
+        "[usePaymentInsertGql] GraphQL payment payload:",
+        JSON.stringify(payment),
+      );
       const data = await graphqlRequest<CreatePaymentResult>({
         query: CREATE_PAYMENT_MUTATION,
         variables: { payment },

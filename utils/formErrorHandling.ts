@@ -68,7 +68,7 @@ export function extractFormFieldErrors(error: any): Record<string, string> {
  */
 export function getUserFriendlyErrorMessage(
   error: any,
-  fallbackMessage: string = "An error occurred"
+  fallbackMessage: string = "An error occurred",
 ): string {
   // Check if it's a HookValidationError
   if (isValidationError(error)) {
@@ -147,7 +147,9 @@ export function hasFieldValidationErrors(error: any): boolean {
 export function useFormErrorHandler(options?: {
   onError?: (message: string) => void;
 }) {
-  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
+    {},
+  );
 
   const handleFormError = React.useCallback(
     (error: any, fallbackMessage?: string) => {
@@ -162,7 +164,7 @@ export function useFormErrorHandler(options?: {
       // Get user-friendly message for Snackbar/Toast
       const message = getUserFriendlyErrorMessage(
         error,
-        fallbackMessage || "An error occurred"
+        fallbackMessage || "An error occurred",
       );
 
       // Call onError callback if provided
@@ -170,7 +172,7 @@ export function useFormErrorHandler(options?: {
         options.onError(message);
       }
     },
-    [options]
+    [options],
   );
 
   const clearFieldError = React.useCallback((field: string) => {
@@ -245,7 +247,7 @@ export function getValidationErrorsArray(error: any): ValidationError[] {
  * ```
  */
 export function formatFieldErrorsForDisplay(
-  fieldErrors: Record<string, string>
+  fieldErrors: Record<string, string>,
 ): string[] {
   return Object.entries(fieldErrors).map(([field, message]) => {
     // Convert camelCase to Title Case
@@ -277,7 +279,7 @@ export function formatFieldErrorsForDisplay(
  */
 export function combineFieldErrors(
   validationErrors: Record<string, string>,
-  customErrors: Record<string, string>
+  customErrors: Record<string, string>,
 ): Record<string, string> {
   return {
     ...validationErrors,

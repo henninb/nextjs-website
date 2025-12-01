@@ -63,7 +63,10 @@ export default function useTransferInsertGql() {
         activeStatus: p.activeStatus,
       };
 
-      console.log("[useTransferInsertGql] GraphQL transfer payload:", JSON.stringify(transfer));
+      console.log(
+        "[useTransferInsertGql] GraphQL transfer payload:",
+        JSON.stringify(transfer),
+      );
       const data = await graphqlRequest<CreateTransferResult>({
         query: CREATE_TRANSFER_MUTATION,
         variables: { transfer },

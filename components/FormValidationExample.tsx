@@ -47,7 +47,9 @@ export function BasicFormExample() {
   // State for Snackbar (toast notification)
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">("error");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">(
+    "error",
+  );
 
   const handleSubmit = async () => {
     try {
@@ -71,7 +73,10 @@ export function BasicFormExample() {
       }
 
       // Also show a Snackbar message
-      const message = getUserFriendlyErrorMessage(error, "Failed to add transaction");
+      const message = getUserFriendlyErrorMessage(
+        error,
+        "Failed to add transaction",
+      );
       setSnackbarMessage(message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -94,7 +99,9 @@ export function BasicFormExample() {
       <TextField
         label="Amount"
         value={formData.amount}
-        onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
+        onChange={(e) =>
+          setFormData((prev) => ({ ...prev, amount: e.target.value }))
+        }
         error={!!fieldErrors.amount}
         helperText={fieldErrors.amount}
         fullWidth
@@ -104,7 +111,9 @@ export function BasicFormExample() {
       <TextField
         label="Description"
         value={formData.description}
-        onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+        onChange={(e) =>
+          setFormData((prev) => ({ ...prev, description: e.target.value }))
+        }
         error={!!fieldErrors.description}
         helperText={fieldErrors.description}
         fullWidth
@@ -140,7 +149,9 @@ export function FormWithErrorListExample() {
   const [validationErrors, setValidationErrors] = useState<any[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">("error");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">(
+    "error",
+  );
 
   const handleSubmit = async () => {
     try {
@@ -161,7 +172,10 @@ export function FormWithErrorListExample() {
       }
 
       // Show Snackbar
-      const message = getUserFriendlyErrorMessage(error, "Failed to add transaction");
+      const message = getUserFriendlyErrorMessage(
+        error,
+        "Failed to add transaction",
+      );
       setSnackbarMessage(message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -207,16 +221,19 @@ export function FormWithHookExample() {
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">("error");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">(
+    "error",
+  );
 
   // Use the form error handler hook
-  const { fieldErrors, clearAllFieldErrors, handleFormError } = useFormErrorHandler({
-    onError: (message) => {
-      setSnackbarMessage(message);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    },
-  });
+  const { fieldErrors, clearAllFieldErrors, handleFormError } =
+    useFormErrorHandler({
+      onError: (message) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      },
+    });
 
   const handleSubmit = async () => {
     try {
@@ -310,7 +327,12 @@ export function ModalFormExample() {
     <>
       <Button onClick={() => setOpen(true)}>Open Form</Button>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Add Payment</DialogTitle>
         <DialogContent>
           {/* Show validation errors at top of modal if any */}
@@ -324,7 +346,10 @@ export function ModalFormExample() {
             label="Transaction Date"
             value={formData.transactionDate}
             onChange={(e) =>
-              setFormData((prev) => ({ ...prev, transactionDate: e.target.value }))
+              setFormData((prev) => ({
+                ...prev,
+                transactionDate: e.target.value,
+              }))
             }
             error={!!fieldErrors.transactionDate}
             helperText={fieldErrors.transactionDate || "Format: YYYY-MM-DD"}
@@ -335,7 +360,9 @@ export function ModalFormExample() {
           <TextField
             label="Amount"
             value={formData.amount}
-            onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, amount: e.target.value }))
+            }
             error={!!fieldErrors.amount}
             helperText={fieldErrors.amount}
             fullWidth
@@ -343,7 +370,9 @@ export function ModalFormExample() {
           />
 
           {/* Alternative: Use FormFieldError component for custom styling */}
-          {fieldErrors.amount && <FormFieldError message={fieldErrors.amount} />}
+          {fieldErrors.amount && (
+            <FormFieldError message={fieldErrors.amount} />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancel</Button>
@@ -423,7 +452,10 @@ export function MixedValidationExample() {
         label="Destination Account"
         value={formData.destinationAccount}
         onChange={(e) =>
-          setFormData((prev) => ({ ...prev, destinationAccount: e.target.value }))
+          setFormData((prev) => ({
+            ...prev,
+            destinationAccount: e.target.value,
+          }))
         }
         error={!!fieldErrors.destinationAccount}
         helperText={fieldErrors.destinationAccount}
@@ -434,7 +466,9 @@ export function MixedValidationExample() {
       <TextField
         label="Amount"
         value={formData.amount}
-        onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
+        onChange={(e) =>
+          setFormData((prev) => ({ ...prev, amount: e.target.value }))
+        }
         error={!!fieldErrors.amount}
         helperText={fieldErrors.amount}
         fullWidth

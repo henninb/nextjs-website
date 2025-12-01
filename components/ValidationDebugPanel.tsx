@@ -35,7 +35,10 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { isValidationError, HookValidationError } from "../utils/hookValidation";
+import {
+  isValidationError,
+  HookValidationError,
+} from "../utils/hookValidation";
 import type { ValidationError } from "../utils/validation/validator";
 import {
   formatFieldName,
@@ -121,7 +124,8 @@ export default function ValidationDebugPanel({
   };
 
   // Get error report
-  const errorReport = validationErrors.length > 0 ? createErrorReport(validationErrors) : null;
+  const errorReport =
+    validationErrors.length > 0 ? createErrorReport(validationErrors) : null;
 
   const positionStyles =
     position === "fixed"
@@ -147,7 +151,15 @@ export default function ValidationDebugPanel({
         color: "common.white",
       }}
     >
-      <Box sx={{ p: 2, bgcolor: "error.dark", display: "flex", alignItems: "center", gap: 1 }}>
+      <Box
+        sx={{
+          p: 2,
+          bgcolor: "error.dark",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
         <BugReportIcon />
         <Typography variant="h6" sx={{ flex: 1 }}>
           {title}
@@ -159,7 +171,11 @@ export default function ValidationDebugPanel({
           sx={{ textTransform: "uppercase" }}
         />
         <Tooltip title={copied ? "Copied!" : "Copy error to clipboard"}>
-          <IconButton size="small" onClick={handleCopyError} sx={{ color: "common.white" }}>
+          <IconButton
+            size="small"
+            onClick={handleCopyError}
+            sx={{ color: "common.white" }}
+          >
             {copied ? <CheckCircleIcon /> : <ContentCopyIcon />}
           </IconButton>
         </Tooltip>
@@ -171,7 +187,12 @@ export default function ValidationDebugPanel({
           <Typography variant="subtitle2" color="grey.400">
             Error Type:
           </Typography>
-          <Chip label={error.constructor.name} color="error" size="small" sx={{ mt: 0.5 }} />
+          <Chip
+            label={error.constructor.name}
+            color="error"
+            size="small"
+            sx={{ mt: 0.5 }}
+          />
         </Box>
 
         {/* Error Message */}
@@ -191,7 +212,11 @@ export default function ValidationDebugPanel({
               Summary:
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-              <Chip label={`${errorReport.errorCount} errors`} size="small" color="error" />
+              <Chip
+                label={`${errorReport.errorCount} errors`}
+                size="small"
+                color="error"
+              />
               <Chip
                 label={`${errorReport.fieldCount} fields`}
                 size="small"
@@ -203,9 +228,14 @@ export default function ValidationDebugPanel({
 
         {/* Validation Errors Detail */}
         {validationErrors && validationErrors.length > 0 && (
-          <Accordion defaultExpanded={defaultExpanded} sx={{ bgcolor: "grey.800", mt: 2 }}>
+          <Accordion
+            defaultExpanded={defaultExpanded}
+            sx={{ bgcolor: "grey.800", mt: 2 }}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle2">Validation Errors ({validationErrors.length})</Typography>
+              <Typography variant="subtitle2">
+                Validation Errors ({validationErrors.length})
+              </Typography>
             </AccordionSummary>
             <AccordionDetails>
               <TableContainer>
@@ -219,37 +249,51 @@ export default function ValidationDebugPanel({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {validationErrors.map((err: ValidationError, idx: number) => {
-                      const severity = getErrorSeverity(err);
-                      return (
-                        <TableRow key={idx}>
-                          <TableCell sx={{ color: "common.white", fontFamily: "monospace" }}>
-                            {err.field}
-                            <br />
-                            <Typography variant="caption" color="grey.500">
-                              ({formatFieldName(err.field)})
-                            </Typography>
-                          </TableCell>
-                          <TableCell sx={{ color: "common.white" }}>{err.message}</TableCell>
-                          <TableCell sx={{ color: "grey.400", fontFamily: "monospace" }}>
-                            {err.code}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={severity}
-                              size="small"
-                              color={
-                                severity === "error"
-                                  ? "error"
-                                  : severity === "warning"
-                                    ? "warning"
-                                    : "info"
-                              }
-                            />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {validationErrors.map(
+                      (err: ValidationError, idx: number) => {
+                        const severity = getErrorSeverity(err);
+                        return (
+                          <TableRow key={idx}>
+                            <TableCell
+                              sx={{
+                                color: "common.white",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {err.field}
+                              <br />
+                              <Typography variant="caption" color="grey.500">
+                                ({formatFieldName(err.field)})
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ color: "common.white" }}>
+                              {err.message}
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                color: "grey.400",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {err.code}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={severity}
+                                size="small"
+                                color={
+                                  severity === "error"
+                                    ? "error"
+                                    : severity === "warning"
+                                      ? "warning"
+                                      : "info"
+                                }
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      },
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -307,7 +351,7 @@ export default function ValidationDebugPanel({
                   validationErrors: error.validationErrors,
                 },
                 null,
-                2
+                2,
               )}
             </Box>
           </AccordionDetails>
@@ -346,11 +390,15 @@ export default function ValidationDebugPanel({
               Quick Fix:
             </Typography>
             <Typography variant="body2">
-              • Use <code>error.getFieldErrorsObject()</code> to set form field errors
-              <br />
-              • Use <code>error.getUserMessage('summary')</code> for Snackbar messages
+              • Use <code>error.getFieldErrorsObject()</code> to set form field
+              errors
+              <br />• Use <code>error.getUserMessage('summary')</code> for
+              Snackbar messages
               <br />• Use{" "}
-              <code>&lt;ValidationErrorList errors=&#123;error.validationErrors&#125; /&gt;</code>{" "}
+              <code>
+                &lt;ValidationErrorList
+                errors=&#123;error.validationErrors&#125; /&gt;
+              </code>{" "}
               to display all errors
             </Typography>
           </Alert>
@@ -363,6 +411,10 @@ export default function ValidationDebugPanel({
 /**
  * Lightweight version that floats in corner
  */
-export function FloatingValidationDebugPanel(props: Omit<ValidationDebugPanelProps, "position">) {
-  return <ValidationDebugPanel {...props} position="fixed" defaultExpanded={false} />;
+export function FloatingValidationDebugPanel(
+  props: Omit<ValidationDebugPanelProps, "position">,
+) {
+  return (
+    <ValidationDebugPanel {...props} position="fixed" defaultExpanded={false} />
+  );
 }

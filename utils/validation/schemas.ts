@@ -194,7 +194,9 @@ export const TransactionSchema = z.object({
   transactionId: z.number().int().positive().optional(),
   guid: z
     .string()
-    .uuid("ID must be a valid UUID format (e.g., 123e4567-e89b-12d3-a456-426614174000)")
+    .uuid(
+      "ID must be a valid UUID format (e.g., 123e4567-e89b-12d3-a456-426614174000)",
+    )
     .optional(), // Will be generated server-side
   accountId: z.number().int().positive().optional(),
   accountType: accountTypeEnum,
@@ -319,7 +321,10 @@ export function validateSchema<T>(
     // Handle ZodError structure (uses 'issues' instead of 'errors')
     const zodError = result.error as any;
     if (zodError && zodError.issues) {
-      console.log("[schemas.ts] Zod issues:", JSON.stringify(zodError.issues, null, 2));
+      console.log(
+        "[schemas.ts] Zod issues:",
+        JSON.stringify(zodError.issues, null, 2),
+      );
       const errors: ValidationError[] = zodError.issues.map((issue: any) => ({
         field: issue.path?.join(".") || "unknown",
         message: issue.message || "Validation failed",

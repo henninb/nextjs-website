@@ -118,9 +118,7 @@ export class InputSanitizer {
    */
   static sanitizeEmail(input: string): string {
     if (typeof input !== "string") {
-      throw new Error(
-        `Email must be a string. Received: ${typeof input}`
-      );
+      throw new Error(`Email must be a string. Received: ${typeof input}`);
     }
 
     if (input.trim() === "") {
@@ -144,7 +142,7 @@ export class InputSanitizer {
       }
 
       throw new Error(
-        `Invalid email format${hint}. You provided: "${input}". Example: user@example.com`
+        `Invalid email format${hint}. You provided: "${input}". Example: user@example.com`,
       );
     }
 
@@ -184,7 +182,7 @@ export class InputSanitizer {
     if (input instanceof Date) {
       if (isNaN(input.getTime())) {
         throw new Error(
-          "Invalid date object provided. Date must be a valid Date instance."
+          "Invalid date object provided. Date must be a valid Date instance.",
         );
       }
       return input.toISOString();
@@ -192,7 +190,7 @@ export class InputSanitizer {
 
     if (typeof input !== "string") {
       throw new Error(
-        `Date must be a string or Date object. Received: ${typeof input}`
+        `Date must be a string or Date object. Received: ${typeof input}`,
       );
     }
 
@@ -209,17 +207,19 @@ export class InputSanitizer {
 
       if (input.match(/^\d{4}-\d{2}-\d{2}$/)) {
         // Format looks correct, might be invalid date values
-        hint = " (Check if day/month values are valid, e.g., 2025-02-30 is invalid)";
+        hint =
+          " (Check if day/month values are valid, e.g., 2025-02-30 is invalid)";
       } else if (input.includes("/")) {
         hint = " (Use hyphens instead of slashes: YYYY-MM-DD)";
       } else if (!input.includes("-")) {
-        hint = " (Date must be in a recognizable format like YYYY-MM-DD or ISO 8601)";
+        hint =
+          " (Date must be in a recognizable format like YYYY-MM-DD or ISO 8601)";
       } else if (input.length < 10) {
         hint = " (Date string is too short, expected at least YYYY-MM-DD)";
       }
 
       throw new Error(
-        `Invalid date format. Could not parse: "${input}"${hint}. Example valid date: 2025-01-15`
+        `Invalid date format. Could not parse: "${input}"${hint}. Example valid date: 2025-01-15`,
       );
     }
 
@@ -235,7 +235,7 @@ export class InputSanitizer {
     if (input instanceof Date) {
       if (isNaN(input.getTime())) {
         throw new Error(
-          "Invalid date object provided. Date must be a valid Date instance."
+          "Invalid date object provided. Date must be a valid Date instance.",
         );
       }
       return input.toISOString().split("T")[0];
@@ -243,7 +243,7 @@ export class InputSanitizer {
 
     if (typeof input !== "string") {
       throw new Error(
-        `Date must be a string or Date object. Received: ${typeof input}`
+        `Date must be a string or Date object. Received: ${typeof input}`,
       );
     }
 
@@ -254,7 +254,7 @@ export class InputSanitizer {
     // Check if input has time component (which is invalid for LocalDate)
     if (input.includes("T") || input.includes(":")) {
       throw new Error(
-        `Date must be in YYYY-MM-DD format without time component. You provided: "${input}". Remove the time portion (e.g., use "2025-01-15" instead of "2025-01-15 10:30" or "2025-01-15T10:30:00")`
+        `Date must be in YYYY-MM-DD format without time component. You provided: "${input}". Remove the time portion (e.g., use "2025-01-15" instead of "2025-01-15 10:30" or "2025-01-15T10:30:00")`,
       );
     }
 
@@ -272,7 +272,7 @@ export class InputSanitizer {
       }
 
       throw new Error(
-        `Date must be in YYYY-MM-DD format${hint}. You provided: "${input}". Example: 2025-01-15`
+        `Date must be in YYYY-MM-DD format${hint}. You provided: "${input}". Example: 2025-01-15`,
       );
     }
 
@@ -281,7 +281,7 @@ export class InputSanitizer {
 
     if (isNaN(date.getTime())) {
       throw new Error(
-        `Invalid date values. "${input}" does not represent a valid calendar date. Check if day/month values are correct (e.g., February 30th doesn't exist)`
+        `Invalid date values. "${input}" does not represent a valid calendar date. Check if day/month values are correct (e.g., February 30th doesn't exist)`,
       );
     }
 
@@ -294,9 +294,7 @@ export class InputSanitizer {
    */
   static sanitizeGuid(input: string): string {
     if (typeof input !== "string") {
-      throw new Error(
-        `GUID must be a string. Received: ${typeof input}`
-      );
+      throw new Error(`GUID must be a string. Received: ${typeof input}`);
     }
 
     if (input.trim() === "") {
@@ -318,7 +316,7 @@ export class InputSanitizer {
       }
 
       throw new Error(
-        `Invalid GUID/UUID format${hint}. You provided: "${input}". Example: 123e4567-e89b-12d3-a456-426614174000`
+        `Invalid GUID/UUID format${hint}. You provided: "${input}". Example: 123e4567-e89b-12d3-a456-426614174000`,
       );
     }
 
@@ -347,7 +345,9 @@ export class InputSanitizer {
     fieldName: string = "ID",
   ): number {
     if (input === null || input === undefined) {
-      throw new Error(`${fieldName} is required and cannot be null or undefined`);
+      throw new Error(
+        `${fieldName} is required and cannot be null or undefined`,
+      );
     }
 
     let numId: number;
@@ -361,25 +361,25 @@ export class InputSanitizer {
       numId = input;
     } else {
       throw new Error(
-        `${fieldName} must be a number or numeric string. Received: ${typeof input}`
+        `${fieldName} must be a number or numeric string. Received: ${typeof input}`,
       );
     }
 
     if (isNaN(numId)) {
       throw new Error(
-        `${fieldName} must be a valid number. You provided: "${input}"`
+        `${fieldName} must be a valid number. You provided: "${input}"`,
       );
     }
 
     if (!Number.isInteger(numId)) {
       throw new Error(
-        `${fieldName} must be a whole number (no decimals). You provided: ${input}`
+        `${fieldName} must be a whole number (no decimals). You provided: ${input}`,
       );
     }
 
     if (numId < 0) {
       throw new Error(
-        `${fieldName} must be a positive number (0 or greater). You provided: ${input}`
+        `${fieldName} must be a positive number (0 or greater). You provided: ${input}`,
       );
     }
 
@@ -475,7 +475,10 @@ export const sanitize = {
   }),
 
   payment: (data: any) => {
-    console.log("[sanitization.ts] Payment BEFORE sanitization:", JSON.stringify(data));
+    console.log(
+      "[sanitization.ts] Payment BEFORE sanitization:",
+      JSON.stringify(data),
+    );
     const sanitized = {
       paymentId: data.paymentId ? parseInt(data.paymentId) : undefined,
       accountNameOwner: data.accountNameOwner
@@ -501,12 +504,18 @@ export const sanitize = {
         ? InputSanitizer.sanitizeDate(data.dateUpdated)
         : undefined,
     };
-    console.log("[sanitization.ts] Payment AFTER sanitization:", JSON.stringify(sanitized));
+    console.log(
+      "[sanitization.ts] Payment AFTER sanitization:",
+      JSON.stringify(sanitized),
+    );
     return sanitized;
   },
 
   transfer: (data: any) => {
-    console.log("[sanitization.ts] Transfer BEFORE sanitization:", JSON.stringify(data));
+    console.log(
+      "[sanitization.ts] Transfer BEFORE sanitization:",
+      JSON.stringify(data),
+    );
     const sanitized = {
       transferId: data.transferId ? parseInt(data.transferId) : undefined,
       sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
@@ -529,7 +538,10 @@ export const sanitize = {
         ? InputSanitizer.sanitizeDate(data.dateUpdated)
         : undefined,
     };
-    console.log("[sanitization.ts] Transfer AFTER sanitization:", JSON.stringify(sanitized));
+    console.log(
+      "[sanitization.ts] Transfer AFTER sanitization:",
+      JSON.stringify(sanitized),
+    );
     return sanitized;
   },
 

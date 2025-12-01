@@ -133,9 +133,15 @@ export class DataValidator {
     errors?: ValidationError[];
   } {
     try {
-      console.log("[validator.ts] validatePayment INPUT:", JSON.stringify(data));
+      console.log(
+        "[validator.ts] validatePayment INPUT:",
+        JSON.stringify(data),
+      );
       const sanitizedData = sanitize.payment(data);
-      console.log("[validator.ts] validatePayment SANITIZED:", JSON.stringify(sanitizedData));
+      console.log(
+        "[validator.ts] validatePayment SANITIZED:",
+        JSON.stringify(sanitizedData),
+      );
 
       // Additional checks for payments
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -144,7 +150,10 @@ export class DataValidator {
       });
 
       if (!financialValidation.success) {
-        console.log("[validator.ts] Payment financial validation FAILED:", JSON.stringify(financialValidation.errors));
+        console.log(
+          "[validator.ts] Payment financial validation FAILED:",
+          JSON.stringify(financialValidation.errors),
+        );
         return financialValidation;
       }
 
@@ -164,11 +173,14 @@ export class DataValidator {
       }
 
       const result = validateSchema(PaymentSchema, sanitizedData);
-      console.log("[validator.ts] Payment schema validation result:", JSON.stringify({
-        success: result.success,
-        errors: result.errors,
-        data: result.data
-      }));
+      console.log(
+        "[validator.ts] Payment schema validation result:",
+        JSON.stringify({
+          success: result.success,
+          errors: result.errors,
+          data: result.data,
+        }),
+      );
 
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
@@ -199,9 +211,15 @@ export class DataValidator {
     errors?: ValidationError[];
   } {
     try {
-      console.log("[validator.ts] validateTransfer INPUT:", JSON.stringify(data));
+      console.log(
+        "[validator.ts] validateTransfer INPUT:",
+        JSON.stringify(data),
+      );
       const sanitizedData = sanitize.transfer(data);
-      console.log("[validator.ts] validateTransfer SANITIZED:", JSON.stringify(sanitizedData));
+      console.log(
+        "[validator.ts] validateTransfer SANITIZED:",
+        JSON.stringify(sanitizedData),
+      );
 
       // Additional checks for transfers
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -210,7 +228,10 @@ export class DataValidator {
       });
 
       if (!financialValidation.success) {
-        console.log("[validator.ts] Financial validation FAILED:", JSON.stringify(financialValidation.errors));
+        console.log(
+          "[validator.ts] Financial validation FAILED:",
+          JSON.stringify(financialValidation.errors),
+        );
         return financialValidation;
       }
 
@@ -230,11 +251,14 @@ export class DataValidator {
       }
 
       const result = validateSchema(TransferSchema, sanitizedData);
-      console.log("[validator.ts] Schema validation result:", JSON.stringify({
-        success: result.success,
-        errors: result.errors,
-        data: result.data
-      }));
+      console.log(
+        "[validator.ts] Schema validation result:",
+        JSON.stringify({
+          success: result.success,
+          errors: result.errors,
+          data: result.data,
+        }),
+      );
 
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
