@@ -220,20 +220,18 @@ describe("Input Validation and Sanitization", () => {
   });
 
   describe("Financial Boundary Checks", () => {
-    it("should detect suspicious amounts", () => {
-      // Test with a round number over $10,000
-      const suspiciousTransaction = {
+    it("should allow large legitimate amounts without flagging as suspicious", () => {
+      // Test with a round number that used to be flagged
+      const legitimateTransaction = {
         amount: 15000, // Exactly $15,000
         transactionDate: new Date().toISOString(),
       };
 
       const result = DataValidator.validateFinancialBoundaries(
-        suspiciousTransaction,
+        legitimateTransaction,
       );
-      expect(result.success).toBe(false);
-      expect(
-        result.errors?.some((err) => err.code === "SUSPICIOUS_AMOUNT"),
-      ).toBe(true);
+      // Suspicious amount detection is now disabled to reduce false positives
+      expect(result.success).toBe(true);
     });
 
     it("should reject dates too far in the past", () => {

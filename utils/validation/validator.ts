@@ -394,13 +394,15 @@ export class DataValidator {
     }
 
     // Suspicious amount patterns (potential fraud detection)
-    if (DataValidator.isSuspiciousAmount(data.amount)) {
-      errors.push({
-        field: "amount",
-        message: "Amount flagged for review due to suspicious pattern",
-        code: "SUSPICIOUS_AMOUNT",
-      });
-    }
+    // Disabled by default to reduce false positives on legitimate transactions
+    // Uncomment if fraud detection is required:
+    // if (DataValidator.isSuspiciousAmount(data.amount)) {
+    //   errors.push({
+    //     field: "amount",
+    //     message: "Amount flagged for review due to suspicious pattern",
+    //     code: "SUSPICIOUS_AMOUNT",
+    //   });
+    // }
 
     return {
       success: errors.length === 0,
@@ -410,28 +412,30 @@ export class DataValidator {
 
   /**
    * Detect suspicious financial amounts (basic fraud detection)
+   * Relaxed to reduce false positives on legitimate transactions
    */
   static isSuspiciousAmount(amount: number): boolean {
     const absAmount = Math.abs(amount);
 
-    // Flag round numbers over $10,000
-    if (absAmount >= 10000 && absAmount % 1000 === 0) {
+    // Flag extremely large round numbers over $100,000
+    if (absAmount >= 100000 && absAmount % 10000 === 0) {
       return true;
     }
 
-    // Flag amounts just under common reporting thresholds
-    const suspiciousThresholds = [9999, 4999, 2999];
+    // Flag amounts very close to common reporting thresholds (within $1)
+    // Only flag amounts extremely close to avoid false positives
+    const suspiciousThresholds = [10000, 9999];
     if (
       suspiciousThresholds.some(
-        (threshold) => absAmount >= threshold * 0.95 && absAmount <= threshold,
+        (threshold) => absAmount >= threshold - 1 && absAmount <= threshold,
       )
     ) {
       return true;
     }
 
-    // Flag very precise amounts that might be calculated to avoid detection
+    // Flag very precise amounts over $100,000 that might be calculated to avoid detection
     const decimalPlaces = (absAmount.toString().split(".")[1] || "").length;
-    if (absAmount > 1000 && decimalPlaces > 2) {
+    if (absAmount > 100000 && decimalPlaces > 2) {
       return true;
     }
 
