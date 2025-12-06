@@ -107,74 +107,81 @@ export default function StatCard({
       <CardContent
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
-          p: 3,
+          justifyContent: "flex-start",
+          p: 2,
+          gap: 2,
           "&:last-child": {
-            pb: 3,
+            pb: 2,
           },
         }}
       >
+        {/* Icon on the left */}
         <Box
           sx={{
-            mb: 2,
             color: cardColor,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 56,
-            height: 56,
-            borderRadius: "12px",
+            width: 48,
+            height: 48,
+            borderRadius: "10px",
+            flexShrink: 0,
             background: `rgba(${parseInt(cardColor.slice(1, 3), 16)}, ${parseInt(cardColor.slice(3, 5), 16)}, ${parseInt(cardColor.slice(5, 7), 16)}, 0.1)`,
             "& > svg": {
-              fontSize: "2rem",
+              fontSize: "1.75rem",
             },
           }}
         >
           {icon}
         </Box>
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            mb: 1,
-            fontWeight: 500,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            fontSize: "0.75rem",
-          }}
-        >
-          {label}
-        </Typography>
-
-        <Typography
-          variant="h4"
-          component="div"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            mb: trend ? 1 : 0,
-          }}
-        >
-          {value}
-        </Typography>
-
-        {trend && (
+        {/* Label and Value on the right */}
+        <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0, flexGrow: 1 }}>
           <Typography
-            variant="caption"
+            variant="body2"
+            color="text.secondary"
             sx={{
-              color:
-                trend.direction === "up"
-                  ? theme.palette.success.main
-                  : theme.palette.error.main,
-              fontWeight: 600,
+              fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              fontSize: "0.7rem",
+              mb: 0.5,
             }}
           >
-            {trend.direction === "up" ? "↑" : "↓"} {Math.abs(trend.value)}%
+            {label}
           </Typography>
-        )}
+
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{
+                fontWeight: 700,
+                color: "text.primary",
+                lineHeight: 1,
+              }}
+            >
+              {value}
+            </Typography>
+
+            {trend && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color:
+                    trend.direction === "up"
+                      ? theme.palette.success.main
+                      : theme.palette.error.main,
+                  fontWeight: 600,
+                }}
+              >
+                {trend.direction === "up" ? "↑" : "↓"} {Math.abs(trend.value)}%
+              </Typography>
+            )}
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );
