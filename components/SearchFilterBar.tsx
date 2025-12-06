@@ -14,12 +14,11 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import AllInclusiveIcon from "@mui/icons-material/AllInclusive";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import PendingIcon from "@mui/icons-material/Pending";
-import ScheduleIcon from "@mui/icons-material/Schedule";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import BoltIcon from "@mui/icons-material/Bolt";
+import PaymentIcon from "@mui/icons-material/Payment";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 
 type FilterState = {
   accountType: "all" | "debit" | "credit";
@@ -58,8 +57,53 @@ export default function SearchFilterBar({
   const hasActiveFilters =
     searchTerm !== "" ||
     activeFilters.accountType !== "all" ||
-    activeFilters.activeStatus !== "all" ||
-    activeFilters.balanceStatus !== "all";
+    activeFilters.balanceStatus === "zeroBalance";
+
+  // Quick filter presets
+  const quickFilters = [
+    {
+      label: "Payment Required",
+      icon: <PaymentIcon sx={{ fontSize: "1rem" }} />,
+      filters: {
+        accountType: "credit" as const,
+        activeStatus: "active" as const,
+        balanceStatus: "hasActivity" as const,
+      },
+      color: theme.palette.error.main,
+    },
+    {
+      label: "Needs Attention",
+      icon: <NotificationsActiveIcon sx={{ fontSize: "1rem" }} />,
+      filters: {
+        accountType: "all" as const,
+        activeStatus: "active" as const,
+        balanceStatus: "hasOutstanding" as const,
+      },
+      color: theme.palette.warning.main,
+    },
+    {
+      label: "Future Scheduled",
+      icon: <ScheduleIcon sx={{ fontSize: "1rem" }} />,
+      filters: {
+        accountType: "all" as const,
+        activeStatus: "active" as const,
+        balanceStatus: "hasFuture" as const,
+      },
+      color: theme.palette.info.main,
+    },
+  ];
+
+  const isQuickFilterActive = (preset: typeof quickFilters[0]) => {
+    return (
+      activeFilters.accountType === preset.filters.accountType &&
+      activeFilters.activeStatus === preset.filters.activeStatus &&
+      activeFilters.balanceStatus === preset.filters.balanceStatus
+    );
+  };
+
+  const handleQuickFilter = (filters: FilterState) => {
+    onFilterChange(filters);
+  };
 
   const handleAccountTypeFilter = (type: "all" | "debit" | "credit") => {
     onFilterChange({
@@ -94,342 +138,205 @@ export default function SearchFilterBar({
     <Paper
       elevation={0}
       sx={{
-        p: 2,
-        mb: 3,
+        p: 1.5,
+        mb: 2,
         background: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Stack spacing={2}>
-        {/* Search Input */}
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <TextField
-            fullWidth
-            placeholder="Search accounts by name or moniker..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: theme.palette.text.secondary }} />
-                </InputAdornment>
-              ),
-              endAdornment: searchTerm && (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => onSearchChange("")}
-                    aria-label="Clear search"
-                  >
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "12px",
-              },
-            }}
-          />
-        </Box>
+      <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
+        {/* Search Input - More compact */}
+        <TextField
+          placeholder="Search accounts..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          size="small"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: theme.palette.text.secondary, fontSize: "1.1rem" }} />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm && (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={() => onSearchChange("")}
+                  aria-label="Clear search"
+                >
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            minWidth: "200px",
+            flexGrow: 1,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+            },
+          }}
+        />
 
-        {/* Filter Chips */}
-        <Box>
-          <Box
+        {/* Quick Filters Section */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <BoltIcon sx={{ fontSize: "1rem", color: theme.palette.warning.main }} />
+          <Typography
+            variant="caption"
             sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              mb: 1,
-              flexWrap: "wrap",
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
             }}
           >
-            <FilterListIcon
-              fontSize="small"
-              sx={{ color: theme.palette.text.secondary }}
-            />
-            <Typography
-              variant="caption"
+            Quick:
+          </Typography>
+        </Box>
+
+        {quickFilters.map((preset) => {
+          const active = isQuickFilterActive(preset);
+          return (
+            <Chip
+              key={preset.label}
+              icon={preset.icon}
+              label={preset.label}
+              onClick={() => handleQuickFilter(preset.filters)}
+              variant={active ? "filled" : "outlined"}
+              size="small"
               sx={{
-                color: theme.palette.text.secondary,
+                borderRadius: "6px",
                 fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
+                fontSize: "0.75rem",
+                height: "28px",
+                borderColor: preset.color,
+                color: active
+                  ? theme.palette.getContrastText(preset.color)
+                  : preset.color,
+                backgroundColor: active ? preset.color : "transparent",
+                "&:hover": {
+                  backgroundColor: active ? preset.color : `${preset.color}20`,
+                  borderColor: preset.color,
+                },
+                "& .MuiChip-icon": {
+                  color: active
+                    ? theme.palette.getContrastText(preset.color)
+                    : preset.color,
+                  fontSize: "1rem",
+                },
               }}
-            >
-              Filter by:
-            </Typography>
-          </Box>
+            />
+          );
+        })}
 
-          <Stack
-            direction={isMobile ? "column" : "row"}
-            spacing={2}
-            sx={{ alignItems: isMobile ? "stretch" : "center" }}
+        {/* Filter Icon and Label - Inline */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}>
+          <FilterListIcon
+            fontSize="small"
+            sx={{ color: theme.palette.text.secondary }}
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
           >
-            {/* Account Type Filters */}
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              <Chip
-                label="All Types"
-                onClick={() => handleAccountTypeFilter("all")}
-                color={
-                  activeFilters.accountType === "all" ? "primary" : "default"
-                }
-                variant={
-                  activeFilters.accountType === "all" ? "filled" : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                label="Debit"
-                onClick={() => handleAccountTypeFilter("debit")}
-                color={
-                  activeFilters.accountType === "debit" ? "primary" : "default"
-                }
-                variant={
-                  activeFilters.accountType === "debit" ? "filled" : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                label="Credit"
-                onClick={() => handleAccountTypeFilter("credit")}
-                color={
-                  activeFilters.accountType === "credit" ? "primary" : "default"
-                }
-                variant={
-                  activeFilters.accountType === "credit" ? "filled" : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-            </Box>
-
-            {/* Active Status Filters */}
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              <Chip
-                label="All Status"
-                onClick={() => handleActiveStatusFilter("all")}
-                color={
-                  activeFilters.activeStatus === "all" ? "success" : "default"
-                }
-                variant={
-                  activeFilters.activeStatus === "all" ? "filled" : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                label="Active"
-                onClick={() => handleActiveStatusFilter("active")}
-                color={
-                  activeFilters.activeStatus === "active"
-                    ? "success"
-                    : "default"
-                }
-                variant={
-                  activeFilters.activeStatus === "active"
-                    ? "filled"
-                    : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                label="Inactive"
-                onClick={() => handleActiveStatusFilter("inactive")}
-                color={
-                  activeFilters.activeStatus === "inactive"
-                    ? "success"
-                    : "default"
-                }
-                variant={
-                  activeFilters.activeStatus === "inactive"
-                    ? "filled"
-                    : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-            </Box>
-
-            {/* Balance Status Filters */}
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              <Chip
-                icon={<AllInclusiveIcon />}
-                label="All Balances"
-                onClick={() => handleBalanceStatusFilter("all")}
-                color={
-                  activeFilters.balanceStatus === "all" ? "info" : "default"
-                }
-                variant={
-                  activeFilters.balanceStatus === "all" ? "filled" : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                icon={<TrendingUpIcon />}
-                label="Has Activity"
-                onClick={() => handleBalanceStatusFilter("hasActivity")}
-                color={
-                  activeFilters.balanceStatus === "hasActivity"
-                    ? "info"
-                    : "default"
-                }
-                variant={
-                  activeFilters.balanceStatus === "hasActivity"
-                    ? "filled"
-                    : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                icon={<PendingIcon />}
-                label="Has Outstanding"
-                onClick={() => handleBalanceStatusFilter("hasOutstanding")}
-                color={
-                  activeFilters.balanceStatus === "hasOutstanding"
-                    ? "info"
-                    : "default"
-                }
-                variant={
-                  activeFilters.balanceStatus === "hasOutstanding"
-                    ? "filled"
-                    : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                icon={<ScheduleIcon />}
-                label="Has Future"
-                onClick={() => handleBalanceStatusFilter("hasFuture")}
-                color={
-                  activeFilters.balanceStatus === "hasFuture"
-                    ? "info"
-                    : "default"
-                }
-                variant={
-                  activeFilters.balanceStatus === "hasFuture"
-                    ? "filled"
-                    : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                icon={<CheckCircleIcon />}
-                label="Has Cleared"
-                onClick={() => handleBalanceStatusFilter("hasCleared")}
-                color={
-                  activeFilters.balanceStatus === "hasCleared"
-                    ? "info"
-                    : "default"
-                }
-                variant={
-                  activeFilters.balanceStatus === "hasCleared"
-                    ? "filled"
-                    : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
-                icon={<RemoveCircleOutlineIcon />}
-                label="Zero Balance"
-                onClick={() => handleBalanceStatusFilter("zeroBalance")}
-                color={
-                  activeFilters.balanceStatus === "zeroBalance"
-                    ? "info"
-                    : "default"
-                }
-                variant={
-                  activeFilters.balanceStatus === "zeroBalance"
-                    ? "filled"
-                    : "outlined"
-                }
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                }}
-              />
-            </Box>
-
-            {/* Clear Filters Button */}
-            {hasActiveFilters && (
-              <Chip
-                label="Clear All"
-                onClick={onClearFilters}
-                onDelete={onClearFilters}
-                deleteIcon={<ClearIcon />}
-                variant="outlined"
-                size={isMobile ? "medium" : "small"}
-                sx={{
-                  borderRadius: "8px",
-                  fontWeight: 500,
-                  borderColor: theme.palette.error.main,
-                  color: theme.palette.error.main,
-                  "&:hover": {
-                    backgroundColor: `${theme.palette.error.main}20`,
-                  },
-                }}
-              />
-            )}
-          </Stack>
+            Filters:
+          </Typography>
         </Box>
 
-        {/* Result Count */}
+        {/* Account Type Filters */}
+        <Chip
+          label="Debit"
+          onClick={() => handleAccountTypeFilter("debit")}
+          color={
+            activeFilters.accountType === "debit" ? "primary" : "default"
+          }
+          variant={
+            activeFilters.accountType === "debit" ? "filled" : "outlined"
+          }
+          size="small"
+          sx={{
+            borderRadius: "6px",
+            fontWeight: 500,
+            height: "28px",
+          }}
+        />
+        <Chip
+          label="Credit"
+          onClick={() => handleAccountTypeFilter("credit")}
+          color={
+            activeFilters.accountType === "credit" ? "primary" : "default"
+          }
+          variant={
+            activeFilters.accountType === "credit" ? "filled" : "outlined"
+          }
+          size="small"
+          sx={{
+            borderRadius: "6px",
+            fontWeight: 500,
+            height: "28px",
+          }}
+        />
+
+        {/* Zero Balance Filter */}
+        <Chip
+          icon={<RemoveCircleOutlineIcon sx={{ fontSize: "1rem" }} />}
+          label="Zero Balance"
+          onClick={() => handleBalanceStatusFilter("zeroBalance")}
+          color={
+            activeFilters.balanceStatus === "zeroBalance"
+              ? "info"
+              : "default"
+          }
+          variant={
+            activeFilters.balanceStatus === "zeroBalance"
+              ? "filled"
+              : "outlined"
+          }
+          size="small"
+          sx={{
+            borderRadius: "6px",
+            fontWeight: 500,
+            height: "28px",
+          }}
+        />
+
+        {/* Clear Filters Button - Always visible */}
+        <Chip
+          label="Clear All"
+          onClick={onClearFilters}
+          onDelete={onClearFilters}
+          deleteIcon={<ClearIcon />}
+          variant="outlined"
+          size="small"
+          sx={{
+            borderRadius: "6px",
+            fontWeight: 500,
+            height: "28px",
+            borderColor: theme.palette.error.main,
+            color: theme.palette.error.main,
+            "&:hover": {
+              backgroundColor: `${theme.palette.error.main}20`,
+            },
+          }}
+        />
+
+        {/* Result Count - Inline at the end */}
         {resultCount !== undefined && totalCount !== undefined && (
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Typography variant="body2" color="text.secondary">
-              Showing{" "}
-              <strong style={{ color: theme.palette.primary.main }}>
-                {resultCount}
-              </strong>{" "}
-              of <strong>{totalCount}</strong> accounts
-              {hasActiveFilters && " (filtered)"}
-            </Typography>
-          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
+            <strong style={{ color: theme.palette.primary.main }}>
+              {resultCount}
+            </strong>
+            {" / "}
+            <strong>{totalCount}</strong>
+            {hasActiveFilters && " (filtered)"}
+          </Typography>
         )}
-      </Stack>
+      </Box>
     </Paper>
   );
 }

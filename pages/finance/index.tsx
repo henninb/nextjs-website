@@ -44,7 +44,6 @@ import ViewToggle from "../../components/ViewToggle";
 import AccountCard from "../../components/AccountCard";
 import StatCardSkeleton from "../../components/StatCardSkeleton";
 import AccountCardSkeleton from "../../components/AccountCardSkeleton";
-import PresetFilters from "../../components/PresetFilters";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
@@ -476,7 +475,7 @@ export default function Accounts() {
           </div>
         ) : (
           <div>
-            {/* Search and Filter Bar */}
+            {/* Search and Filter Bar - Now includes Quick Filters */}
             <Fade in={true} timeout={500}>
               <Box>
                 <SearchFilterBar
@@ -487,19 +486,6 @@ export default function Accounts() {
                   onClearFilters={handleClearFilters}
                   resultCount={filteredAccounts.length}
                   totalCount={fetchedAccounts?.length || 0}
-                />
-              </Box>
-            </Fade>
-
-            {/* Preset Filters */}
-            <Fade in={true} timeout={550}>
-              <Box>
-                <PresetFilters
-                  onPresetClick={(filters) => {
-                    setSearchTerm("");
-                    setActiveFilters(filters);
-                  }}
-                  currentFilters={activeFilters}
                 />
               </Box>
             </Fade>

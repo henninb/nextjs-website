@@ -76,33 +76,27 @@ export default function PresetFilters({
     <Box
       sx={{
         mb: 2,
-        p: 2,
+        p: 1.5,
         background: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: "8px",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-        <BoltIcon fontSize="small" sx={{ color: theme.palette.warning.main }} />
-        <Typography
-          variant="caption"
-          sx={{
-            color: theme.palette.text.secondary,
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-          }}
-        >
-          Quick Filters:
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          gap: 1,
-          flexWrap: "wrap",
-        }}
-      >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <BoltIcon sx={{ fontSize: "1rem", color: theme.palette.warning.main }} />
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Quick Filters:
+          </Typography>
+        </Box>
         {presets.map((preset) => {
           const active = isPresetActive(preset);
           return (
@@ -112,11 +106,12 @@ export default function PresetFilters({
               label={preset.label}
               onClick={() => onPresetClick(preset.filters)}
               variant={active ? "filled" : "outlined"}
+              size="small"
               sx={{
-                borderRadius: "8px",
+                borderRadius: "6px",
                 fontWeight: 600,
-                fontSize: "0.8rem",
-                height: "32px",
+                fontSize: "0.75rem",
+                height: "28px",
                 borderColor: preset.color,
                 color: active
                   ? theme.palette.getContrastText(preset.color)
@@ -130,6 +125,7 @@ export default function PresetFilters({
                   color: active
                     ? theme.palette.getContrastText(preset.color)
                     : preset.color,
+                  fontSize: "1rem",
                 },
               }}
             />
