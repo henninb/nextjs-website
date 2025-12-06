@@ -19,6 +19,7 @@ import {
   ListItem,
   ListItemText,
   Collapse,
+  Tooltip,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -396,28 +397,32 @@ export default function TransactionImporter() {
       width: 120,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton
-            color="primary"
-            size="small"
-            onClick={async () => {
-              console.log(params.row);
-              await handleInsertTransaction(params.row);
-              await handleDeletePendingTransaction(
-                params.row.pendingTransactionId,
-              );
-            }}
-          >
-            <CheckIcon />
-          </IconButton>
-          <IconButton
-            color="error"
-            size="small"
-            onClick={() => {
-              handleDeletePendingTransaction(params.row.pendingTransactionId);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
+          <Tooltip title="Accept Transaction" enterDelay={0}>
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={async () => {
+                console.log(params.row);
+                await handleInsertTransaction(params.row);
+                await handleDeletePendingTransaction(
+                  params.row.pendingTransactionId,
+                );
+              }}
+            >
+              <CheckIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Remove from List" enterDelay={0}>
+            <IconButton
+              color="error"
+              size="small"
+              onClick={() => {
+                handleDeletePendingTransaction(params.row.pendingTransactionId);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
       ),
     },
