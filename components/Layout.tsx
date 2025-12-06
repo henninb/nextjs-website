@@ -17,6 +17,7 @@ import {
   Chip,
   useTheme,
   alpha,
+  Tooltip,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -244,6 +245,30 @@ export default function Layout({ children }: LayoutProps) {
               }}
             />
           </IconButton>
+
+          {isFinancePage && (
+            <Tooltip title="Finance Home" arrow>
+              <IconButton
+                href="/finance"
+                aria-label="finance home"
+                sx={{
+                  borderRadius: 2,
+                  p: 1.5,
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    transform: "scale(1.05)",
+                  },
+                }}
+              >
+                <HomeIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                  }}
+                />
+              </IconButton>
+            </Tooltip>
+          )}
 
           <Box sx={{ flexGrow: 1 }} />
           {isAuthenticated ? (
