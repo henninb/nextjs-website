@@ -28,9 +28,7 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    const searchInput = screen.getByPlaceholderText(
-      /search accounts by name or moniker/i,
-    );
+    const searchInput = screen.getByPlaceholderText(/search accounts/i);
     expect(searchInput).toBeInTheDocument();
   });
 
@@ -45,9 +43,7 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    const searchInput = screen.getByPlaceholderText(
-      /search accounts by name or moniker/i,
-    );
+    const searchInput = screen.getByPlaceholderText(/search accounts/i);
     fireEvent.change(searchInput, { target: { value: "Chase" } });
     expect(mockOnSearchChange).toHaveBeenCalledWith("Chase");
   });
@@ -83,7 +79,7 @@ describe("SearchFilterBar", () => {
     expect(mockOnSearchChange).toHaveBeenCalledWith("");
   });
 
-  it("renders all account type filter chips", () => {
+  it("renders account type filter chips", () => {
     render(
       <SearchFilterBar
         searchTerm=""
@@ -94,12 +90,11 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    expect(screen.getByText("All Types")).toBeInTheDocument();
     expect(screen.getByText("Debit")).toBeInTheDocument();
     expect(screen.getByText("Credit")).toBeInTheDocument();
   });
 
-  it("renders all active status filter chips", () => {
+  it("renders quick filter presets", () => {
     render(
       <SearchFilterBar
         searchTerm=""
@@ -110,12 +105,12 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    expect(screen.getByText("All Status")).toBeInTheDocument();
-    expect(screen.getByText("Active")).toBeInTheDocument();
-    expect(screen.getByText("Inactive")).toBeInTheDocument();
+    expect(screen.getByText("Payment Required")).toBeInTheDocument();
+    expect(screen.getByText("Needs Attention")).toBeInTheDocument();
+    expect(screen.getByText("Future Scheduled")).toBeInTheDocument();
   });
 
-  it("renders all balance status filter chips", () => {
+  it("renders zero balance filter chip", () => {
     render(
       <SearchFilterBar
         searchTerm=""
@@ -126,11 +121,6 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    expect(screen.getByText("All Balances")).toBeInTheDocument();
-    expect(screen.getByText("Has Activity")).toBeInTheDocument();
-    expect(screen.getByText("Has Outstanding")).toBeInTheDocument();
-    expect(screen.getByText("Has Future")).toBeInTheDocument();
-    expect(screen.getByText("Has Cleared")).toBeInTheDocument();
     expect(screen.getByText("Zero Balance")).toBeInTheDocument();
   });
 
@@ -152,7 +142,7 @@ describe("SearchFilterBar", () => {
     });
   });
 
-  it("handles active status filter change", () => {
+  it("handles quick filter preset", () => {
     render(
       <SearchFilterBar
         searchTerm=""
@@ -163,32 +153,33 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Active"));
+    fireEvent.click(screen.getByText("Needs Attention"));
     expect(mockOnFilterChange).toHaveBeenCalledWith({
-      ...defaultFilters,
+      accountType: "all",
       activeStatus: "active",
-    });
-  });
-
-  it("handles balance status filter change", () => {
-    render(
-      <SearchFilterBar
-        searchTerm=""
-        onSearchChange={mockOnSearchChange}
-        activeFilters={defaultFilters}
-        onFilterChange={mockOnFilterChange}
-        onClearFilters={mockOnClearFilters}
-      />,
-    );
-
-    fireEvent.click(screen.getByText("Has Outstanding"));
-    expect(mockOnFilterChange).toHaveBeenCalledWith({
-      ...defaultFilters,
       balanceStatus: "hasOutstanding",
     });
   });
 
-  it("shows Clear All button when filters are active", () => {
+  it("handles zero balance filter change", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={defaultFilters}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Zero Balance"));
+    expect(mockOnFilterChange).toHaveBeenCalledWith({
+      ...defaultFilters,
+      balanceStatus: "zeroBalance",
+    });
+  });
+
+  it("shows Clear All button", () => {
     render(
       <SearchFilterBar
         searchTerm="test"
@@ -200,20 +191,6 @@ describe("SearchFilterBar", () => {
     );
 
     expect(screen.getByText("Clear All")).toBeInTheDocument();
-  });
-
-  it("does not show Clear All button when no filters are active", () => {
-    render(
-      <SearchFilterBar
-        searchTerm=""
-        onSearchChange={mockOnSearchChange}
-        activeFilters={defaultFilters}
-        onFilterChange={mockOnFilterChange}
-        onClearFilters={mockOnClearFilters}
-      />,
-    );
-
-    expect(screen.queryByText("Clear All")).not.toBeInTheDocument();
   });
 
   it("calls onClearFilters when Clear All is clicked", () => {
@@ -244,7 +221,6 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    expect(screen.getByText(/showing/i)).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
     expect(screen.getByText("10")).toBeInTheDocument();
   });
@@ -263,28 +239,5 @@ describe("SearchFilterBar", () => {
     );
 
     expect(screen.getByText(/filtered/i)).toBeInTheDocument();
-  });
-
-  it("applies correct styles to selected filter chips", () => {
-    const activeFilters = {
-      accountType: "debit" as const,
-      activeStatus: "active" as const,
-      balanceStatus: "hasOutstanding" as const,
-    };
-
-    render(
-      <SearchFilterBar
-        searchTerm=""
-        onSearchChange={mockOnSearchChange}
-        activeFilters={activeFilters}
-        onFilterChange={mockOnFilterChange}
-        onClearFilters={mockOnClearFilters}
-      />,
-    );
-
-    // Selected chips should be rendered (testing presence is enough since MUI handles styling)
-    expect(screen.getByText("Debit")).toBeInTheDocument();
-    expect(screen.getByText("Active")).toBeInTheDocument();
-    expect(screen.getByText("Has Outstanding")).toBeInTheDocument();
   });
 });

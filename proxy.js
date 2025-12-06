@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isLocalhost, isVercelHost } from "./utils/security/hostValidation";
 
 export const config = {
   matcher: [
@@ -87,14 +88,13 @@ export default async function proxy(request) {
   // SECURITY: Additional safeguards (only for non-local APIs)
   const host =
     request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  const isLocalhost =
-    host?.includes("localhost") || host?.includes("127.0.0.1");
-  const isVercelProxy = host?.includes("vercel.bhenning.com");
+  const isLocalhostHost = isLocalhost(host);
+  const isVercelProxy = isVercelHost(host);
 
   // DEBUG: Always log host detection in production for vercel.bhenning.com
   if (isProduction || isDev) {
     console.log(
-      `[MW${isProduction ? " PROD" : ""}] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhost}, isVercelProxy: ${isVercelProxy}`,
+      `[MW${isProduction ? " PROD" : ""}] Host: ${host}, isProduction: ${isProduction}, isLocalhost: ${isLocalhostHost}, isVercelProxy: ${isVercelProxy}`,
     );
   }
 
@@ -102,9 +102,9 @@ export default async function proxy(request) {
   // (no logging of headers/cookies)
 
   // SECURITY: Only allow proxy for approved hosts (local APIs already bypassed above)
-  if (!isProduction && !isLocalhost && !isVercelProxy) {
+  if (!isProduction && !isLocalhostHost && !isVercelProxy) {
     console.log(
-      `[MW${isProduction ? " PROD" : ""}] blocked unauthorized host: ${host} (isProduction: ${isProduction}, isLocalhost: ${isLocalhost}, isVercelProxy: ${isVercelProxy})`,
+      `[MW${isProduction ? " PROD" : ""}] blocked unauthorized host: ${host} (isProduction: ${isProduction}, isLocalhost: ${isLocalhostHost}, isVercelProxy: ${isVercelProxy})`,
     );
     return new NextResponse("Forbidden", { status: 403 });
   }
@@ -132,12 +132,12 @@ export default async function proxy(request) {
         console.log("[MW PROD] upstream origin:", upstreamOrigin);
       }
 
-      const isVercel = host?.includes("vercel.bhenning.com");
+      const isVercel = isVercelProxy; // Use secure validation from earlier
 
       // Map specific API routes for production backend compatibility
       let upstreamPath;
       if (
-        (isProduction || isLocalhost || isVercelProxy) &&
+        (isProduction || isLocalhostHost || isVercelProxy) &&
         (url.pathname === "/api/graphql" || url.pathname === "/graphql")
       ) {
         // In production, both /api/graphql and /graphql map to /graphql on backend
@@ -202,15 +202,16 @@ export default async function proxy(request) {
             // SECURITY: Only rewrite specific authentication cookies in development
             const isAuthCookie = /^(token|session|auth)=/i.test(value);
             const isDevelopment = process.env.NODE_ENV === "development";
-            const isLocalhost = request.headers
-              .get("host")
-              ?.includes("localhost");
+            const cookieHost = request.headers.get("host");
+            const isLocalhostCookie = isLocalhost(cookieHost);
+            const isVercelCookie = isVercelHost(cookieHost);
 
-            const isVercel = request.headers
-              .get("host")
-              ?.includes("vercel.bhenning.com");
-
-            if (isAuthCookie && isDevelopment && isLocalhost && !isVercel) {
+            if (
+              isAuthCookie &&
+              isDevelopment &&
+              isLocalhostCookie &&
+              !isVercelCookie
+            ) {
               // Secure rewriting: only remove problematic attributes for auth cookies
               const modifiedCookie = value
                 // Remove domain for any bhenning.com domain

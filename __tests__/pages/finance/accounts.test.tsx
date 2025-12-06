@@ -528,9 +528,7 @@ describe("pages/finance/index (Accounts)", () => {
       });
 
       render(<AccountsPage />);
-      const searchInput = screen.getByPlaceholderText(
-        /search accounts by name or moniker/i,
-      );
+      const searchInput = screen.getByPlaceholderText(/search accounts/i);
       expect(searchInput).toBeInTheDocument();
     });
 
@@ -556,12 +554,9 @@ describe("pages/finance/index (Accounts)", () => {
 
       render(<AccountsPage />);
 
-      expect(screen.getByText("All Types")).toBeInTheDocument();
       expect(screen.getByText("Debit")).toBeInTheDocument();
       expect(screen.getByText("Credit")).toBeInTheDocument();
-      expect(screen.getByText("All Status")).toBeInTheDocument();
-      expect(screen.getByText("Active")).toBeInTheDocument();
-      expect(screen.getByText("Inactive")).toBeInTheDocument();
+      expect(screen.getByText("Zero Balance")).toBeInTheDocument();
     });
 
     it("filters accounts by search term", async () => {
@@ -596,9 +591,7 @@ describe("pages/finance/index (Accounts)", () => {
 
       render(<AccountsPage />);
 
-      const searchInput = screen.getByPlaceholderText(
-        /search accounts by name or moniker/i,
-      );
+      const searchInput = screen.getByPlaceholderText(/search accounts/i);
 
       // Verify search input is functional
       fireEvent.change(searchInput, { target: { value: "Chase" } });

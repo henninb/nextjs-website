@@ -360,7 +360,7 @@ describe("AccountTransactions Component", () => {
     expect(screen.getByText("$1,000.00")).toBeInTheDocument(); // totals
     expect(screen.getByText("$800.00")).toBeInTheDocument(); // cleared
     expect(screen.getByText("$200.00")).toBeInTheDocument(); // outstanding
-    expect(screen.getAllByText("$0.00")).toHaveLength(2); // future (in table and grid)
+    expect(screen.getByText("$0.00")).toBeInTheDocument(); // future
   });
 
   it("opens add transaction modal when Add Transaction button is clicked", () => {

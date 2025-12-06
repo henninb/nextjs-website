@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { isLocalhostOrigin } from "./hostValidation";
 
 // CORS configuration for different environments and routes
 interface CORSConfig {
@@ -100,8 +101,8 @@ export function createCORSMiddleware(
         res.setHeader("Access-Control-Allow-Origin", origin);
         res.setHeader("Vary", "Origin");
       } else if (process.env.NODE_ENV === "development") {
-        // Allow localhost in development
-        if (origin?.includes("localhost") || origin?.includes("127.0.0.1")) {
+        // Allow localhost in development using secure validation
+        if (isLocalhostOrigin(origin)) {
           res.setHeader("Access-Control-Allow-Origin", origin);
         }
       }

@@ -42,3 +42,4 @@ jest-results.json
 .wrangler/
 *.bak
 .env.local.backup
+test-output.log

@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server";
 import proxy from "../proxy.js";
+import { isLocalhost, isVercelHost } from "../utils/security/hostValidation";
 
 // Enhanced NextResponse mock to support constructor usage and headers
 jest.mock("next/server", () => {
@@ -873,17 +874,15 @@ describe("Proxy (middleware replacement)", () => {
           // Simulate the middleware's host detection logic
           const detectedHost =
             headers.get("x-forwarded-host") ?? headers.get("host");
-          const isLocalhost =
-            detectedHost?.includes("localhost") ||
-            detectedHost?.includes("127.0.0.1");
-          const isVercelProxy = detectedHost?.includes("vercel.bhenning.com");
+          const isLocalhostHost = isLocalhost(detectedHost);
+          const isVercelProxy = isVercelHost(detectedHost);
 
           console.log(`${testCase.name}:`);
           console.log(`  Detected host: ${detectedHost}`);
-          console.log(`  isLocalhost: ${isLocalhost}`);
+          console.log(`  isLocalhost: ${isLocalhostHost}`);
           console.log(`  isVercelProxy: ${isVercelProxy}`);
           console.log(
-            `  Should be blocked: ${!true && !isLocalhost && !isVercelProxy}`,
+            `  Should be blocked: ${!true && !isLocalhostHost && !isVercelProxy}`,
           ); // isProduction = true
 
           expect(detectedHost).toBe(testCase.expectedHost);
@@ -921,16 +920,15 @@ describe("Proxy (middleware replacement)", () => {
           const host =
             mockRequest.headers.get("x-forwarded-host") ??
             mockRequest.headers.get("host");
-          const isLocalhost =
-            host?.includes("localhost") || host?.includes("127.0.0.1");
-          const isVercelProxy = host?.includes("vercel.bhenning.com");
+          const isLocalhostHost = isLocalhost(host);
+          const isVercelProxy = isVercelHost(host);
 
           const wouldBeBlocked =
-            !isProduction && !isLocalhost && !isVercelProxy;
+            !isProduction && !isLocalhostHost && !isVercelProxy;
 
           console.log(`${scenario.name}:`);
           console.log(`  isProduction: ${isProduction}`);
-          console.log(`  isLocalhost: ${isLocalhost}`);
+          console.log(`  isLocalhost: ${isLocalhostHost}`);
           console.log(`  isVercelProxy: ${isVercelProxy}`);
           console.log(`  Would be blocked (403): ${wouldBeBlocked}`);
 
