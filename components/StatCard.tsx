@@ -138,7 +138,14 @@ export default function StatCard({
         </Box>
 
         {/* Label and Value on the right */}
-        <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0, flexGrow: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+            flexGrow: 1,
+          }}
+        >
           <Typography
             variant="body2"
             color="text.secondary"

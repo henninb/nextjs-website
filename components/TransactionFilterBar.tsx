@@ -75,7 +75,14 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1.5,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
         {/* Search Input - Compact */}
         <TextField
           placeholder="Search by description, category, notes, date, or amount..."
@@ -85,7 +92,12 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: theme.palette.text.secondary, fontSize: "1.1rem" }} />
+                <SearchIcon
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontSize: "1.1rem",
+                  }}
+                />
               </InputAdornment>
             ),
             endAdornment: searchTerm && (
@@ -133,7 +145,11 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
 
         {/* Result Count - Inline at the end */}
         {resultCount !== undefined && totalCount !== undefined && (
-          <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ ml: "auto" }}
+          >
             <strong style={{ color: theme.palette.primary.main }}>
               {resultCount}
             </strong>

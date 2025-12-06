@@ -47,8 +47,7 @@ export interface MedicalExpenseCreateRequest {
   claimStatus?: ClaimStatus;
 }
 
-export interface MedicalExpenseUpdateRequest
-  extends Partial<MedicalExpenseCreateRequest> {
+export interface MedicalExpenseUpdateRequest extends Partial<MedicalExpenseCreateRequest> {
   medicalExpenseId: number;
 }
 

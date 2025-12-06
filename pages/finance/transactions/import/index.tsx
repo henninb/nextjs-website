@@ -104,15 +104,16 @@ export default function TransactionImporter() {
     }
     // Don't set isLoadingTable to false here - let the GUID generation useEffect handle it
     // Otherwise we'll hide the spinner before the async GUID generation completes
-  }, [
-    isFetchingPendingTransactions,
-    isLoadingAccounts,
-  ]);
+  }, [isFetchingPendingTransactions, isLoadingAccounts]);
 
   useEffect(() => {
     // Only sync from fetchedPendingTransactions on initial load
     // After that, we manage transactions state locally to avoid refreshes
-    if (isPendingTransactionsLoaded && fetchedPendingTransactions && isInitialLoad) {
+    if (
+      isPendingTransactionsLoaded &&
+      fetchedPendingTransactions &&
+      isInitialLoad
+    ) {
       if (fetchedPendingTransactions.length === 0) {
         setTransactions([]);
         setIsLoadingTable(false);
@@ -541,297 +542,291 @@ export default function TransactionImporter() {
         </Box>
 
         <>
-            {/* Input Section */}
-            <Card
-              sx={{ mb: 4, border: "2px solid", borderColor: "primary.main" }}
-            >
-              <CardHeader
-                title={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography variant="h6">Paste Transaction Data</Typography>
-                    <IconButton
-                      onClick={() => setShowFormatHelp(!showFormatHelp)}
-                      size="small"
-                      sx={{ ml: 1 }}
-                    >
-                      <HelpIcon />
-                    </IconButton>
-                  </Box>
-                }
-                action={
-                  <Button
+          {/* Input Section */}
+          <Card
+            sx={{ mb: 4, border: "2px solid", borderColor: "primary.main" }}
+          >
+            <CardHeader
+              title={
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="h6">Paste Transaction Data</Typography>
+                  <IconButton
                     onClick={() => setShowFormatHelp(!showFormatHelp)}
-                    startIcon={
-                      showFormatHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />
-                    }
                     size="small"
+                    sx={{ ml: 1 }}
                   >
-                    {showFormatHelp ? "Hide" : "Show"} Format Guide
-                  </Button>
-                }
-              />
-              <Collapse in={showFormatHelp}>
-                <CardContent sx={{ pt: 0 }}>
-                  <Alert severity="info" sx={{ mb: 2 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ mb: 1, fontWeight: "bold" }}
-                    >
-                      Required Format: YYYY-MM-DD Description Amount
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      Each transaction must be on a separate line with exactly
-                      this format:
-                    </Typography>
-                    <List dense sx={{ pl: 2 }}>
-                      <ListItem sx={{ py: 0 }}>
-                        <ListItemText
-                          primary="Date: YYYY-MM-DD (e.g., 2024-02-25)"
-                          primaryTypographyProps={{ variant: "body2" }}
-                        />
-                      </ListItem>
-                      <ListItem sx={{ py: 0 }}>
-                        <ListItemText
-                          primary="Description: Any text (e.g., Coffee Shop, Salary Payment)"
-                          primaryTypographyProps={{ variant: "body2" }}
-                        />
-                      </ListItem>
-                      <ListItem sx={{ py: 0 }}>
-                        <ListItemText
-                          primary="Amount: Number with 2 decimal places (e.g., -4.50, 2000.00)"
-                          primaryTypographyProps={{ variant: "body2" }}
-                        />
-                      </ListItem>
-                    </List>
-                    <Typography
-                      variant="body2"
-                      sx={{ mt: 1, fontWeight: "bold" }}
-                    >
-                      Examples:
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      component="pre"
-                      sx={{
-                        fontFamily: "monospace",
-                        bgcolor: "grey.100",
-                        p: 1,
-                        borderRadius: 1,
-                        mt: 1,
-                      }}
-                    >
-                      {`2024-02-25 Coffee Shop -4.50
+                    <HelpIcon />
+                  </IconButton>
+                </Box>
+              }
+              action={
+                <Button
+                  onClick={() => setShowFormatHelp(!showFormatHelp)}
+                  startIcon={
+                    showFormatHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />
+                  }
+                  size="small"
+                >
+                  {showFormatHelp ? "Hide" : "Show"} Format Guide
+                </Button>
+              }
+            />
+            <Collapse in={showFormatHelp}>
+              <CardContent sx={{ pt: 0 }}>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ mb: 1, fontWeight: "bold" }}
+                  >
+                    Required Format: YYYY-MM-DD Description Amount
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    Each transaction must be on a separate line with exactly
+                    this format:
+                  </Typography>
+                  <List dense sx={{ pl: 2 }}>
+                    <ListItem sx={{ py: 0 }}>
+                      <ListItemText
+                        primary="Date: YYYY-MM-DD (e.g., 2024-02-25)"
+                        primaryTypographyProps={{ variant: "body2" }}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ py: 0 }}>
+                      <ListItemText
+                        primary="Description: Any text (e.g., Coffee Shop, Salary Payment)"
+                        primaryTypographyProps={{ variant: "body2" }}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ py: 0 }}>
+                      <ListItemText
+                        primary="Amount: Number with 2 decimal places (e.g., -4.50, 2000.00)"
+                        primaryTypographyProps={{ variant: "body2" }}
+                      />
+                    </ListItem>
+                  </List>
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 1, fontWeight: "bold" }}
+                  >
+                    Examples:
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    component="pre"
+                    sx={{
+                      fontFamily: "monospace",
+                      bgcolor: "grey.100",
+                      p: 1,
+                      borderRadius: 1,
+                      mt: 1,
+                    }}
+                  >
+                    {`2024-02-25 Coffee Shop -4.50
 2024-02-26 Salary Payment 2000.00
 2024-02-27 Grocery Store -45.67`}
-                    </Typography>
-                  </Alert>
-                </CardContent>
-              </Collapse>
-              <CardContent>
-                <TextField
-                  multiline
-                  fullWidth
-                  rows={8}
-                  value={inputText}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  placeholder="Paste your transaction data here...\n\nExample:\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary Payment 2000.00\n2024-02-27 Grocery Store -45.67"
-                  variant="outlined"
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      fontFamily: "monospace",
-                      fontSize: "0.9rem",
-                    },
-                    "& .MuiInputBase-input": {
-                      lineHeight: 1.6,
-                    },
-                  }}
-                  helperText={`${inputText.split("\n").filter((line) => line.trim()).length} lines entered`}
-                />
+                  </Typography>
+                </Alert>
+              </CardContent>
+            </Collapse>
+            <CardContent>
+              <TextField
+                multiline
+                fullWidth
+                rows={8}
+                value={inputText}
+                onChange={(e) => handleInputChange(e.target.value)}
+                placeholder="Paste your transaction data here...\n\nExample:\n2024-02-25 Coffee Shop -4.50\n2024-02-26 Salary Payment 2000.00\n2024-02-27 Grocery Store -45.67"
+                variant="outlined"
+                sx={{
+                  "& .MuiInputBase-root": {
+                    fontFamily: "monospace",
+                    fontSize: "0.9rem",
+                  },
+                  "& .MuiInputBase-input": {
+                    lineHeight: 1.6,
+                  },
+                }}
+                helperText={`${inputText.split("\n").filter((line) => line.trim()).length} lines entered`}
+              />
 
-                {/* Format Validation Feedback */}
-                {formatErrors.length > 0 && (
-                  <Alert severity="error" sx={{ mt: 2 }}>
+              {/* Format Validation Feedback */}
+              {formatErrors.length > 0 && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: "bold", mb: 1 }}
+                  >
+                    Format errors found in {formatErrors.length} line(s):
+                  </Typography>
+                  {formatErrors.slice(0, 5).map((error, index) => (
+                    <Typography
+                      key={index}
+                      variant="body2"
+                      sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}
+                    >
+                      {error}
+                    </Typography>
+                  ))}
+                  {formatErrors.length > 5 && (
                     <Typography
                       variant="body2"
-                      sx={{ fontWeight: "bold", mb: 1 }}
+                      sx={{ mt: 1, fontStyle: "italic" }}
                     >
-                      Format errors found in {formatErrors.length} line(s):
+                      ... and {formatErrors.length - 5} more errors
                     </Typography>
-                    {formatErrors.slice(0, 5).map((error, index) => (
-                      <Typography
-                        key={index}
-                        variant="body2"
-                        sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}
-                      >
-                        {error}
-                      </Typography>
-                    ))}
-                    {formatErrors.length > 5 && (
-                      <Typography
-                        variant="body2"
-                        sx={{ mt: 1, fontStyle: "italic" }}
-                      >
-                        ... and {formatErrors.length - 5} more errors
-                      </Typography>
-                    )}
+                  )}
+                </Alert>
+              )}
+
+              {inputText.trim() &&
+                formatErrors.length === 0 &&
+                !isValidating && (
+                  <Alert severity="success" sx={{ mt: 2 }}>
+                    All lines appear to be in the correct format!
                   </Alert>
                 )}
 
-                {inputText.trim() &&
-                  formatErrors.length === 0 &&
-                  !isValidating && (
-                    <Alert severity="success" sx={{ mt: 2 }}>
-                      All lines appear to be in the correct format!
-                    </Alert>
-                  )}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  mt: 3,
+                  justifyContent: "center",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  onClick={parseTransactions}
+                  disabled={!inputText.trim() || formatErrors.length > 0}
+                  size="large"
+                >
+                  Parse & Import Transactions
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    setInputText("");
+                    setFormatErrors([]);
+                  }}
+                >
+                  Clear
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
 
+          <Divider sx={{ my: 4 }} />
+
+          {/* Results Section */}
+          <Card>
+            <CardHeader
+              title={
+                <Typography variant="h6">
+                  {transactions.length > 0
+                    ? `Parsed Transactions (${transactions.length} total)`
+                    : "Transactions"}
+                </Typography>
+              }
+              action={
+                transactions.length > 0 && (
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => setShowDeleteAllDialog(true)}
+                    size="small"
+                    disabled={isDeletingAll}
+                    startIcon={
+                      isDeletingAll ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : null
+                    }
+                  >
+                    {isDeletingAll ? "Deleting..." : "Delete All Pending"}
+                  </Button>
+                )
+              }
+            />
+            <CardContent>
+              <div>
+                {/* Account Filter Controls */}
                 <Box
                   sx={{
+                    mb: 3,
                     display: "flex",
                     gap: 2,
-                    mt: 3,
+                    flexWrap: "wrap",
+                    alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Button
-                    variant="contained"
-                    onClick={parseTransactions}
-                    disabled={!inputText.trim() || formatErrors.length > 0}
-                    size="large"
-                  >
-                    Parse & Import Transactions
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setInputText("");
-                      setFormatErrors([]);
-                    }}
-                  >
-                    Clear
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-
-            <Divider sx={{ my: 4 }} />
-
-            {/* Results Section */}
-            <Card>
-              <CardHeader
-                title={
-                  <Typography variant="h6">
-                    {transactions.length > 0
-                      ? `Parsed Transactions (${transactions.length} total)`
-                      : "Transactions"}
-                  </Typography>
-                }
-                action={
-                  transactions.length > 0 && (
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={() => setShowDeleteAllDialog(true)}
-                      size="small"
-                      disabled={isDeletingAll}
-                      startIcon={
-                        isDeletingAll ? (
-                          <CircularProgress size={20} color="inherit" />
-                        ) : null
-                      }
-                    >
-                      {isDeletingAll
-                        ? "Deleting..."
-                        : "Delete All Pending"}
-                    </Button>
-                  )
-                }
-              />
-              <CardContent>
-                <div>
-                  {/* Account Filter Controls */}
-                  <Box
-                    sx={{
-                      mb: 3,
-                      display: "flex",
-                      gap: 2,
-                      flexWrap: "wrap",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Autocomplete
-                      options={uniqueAccounts}
-                      value={accountFilter || null}
-                      onChange={(_, newValue) =>
-                        setAccountFilter(newValue || "")
-                      }
-                      sx={{ minWidth: 250 }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Filter by Account"
-                          placeholder="All accounts"
-                          variant="outlined"
-                          size="small"
-                        />
-                      )}
-                    />
-                    {accountFilter && (
-                      <Button
+                  <Autocomplete
+                    options={uniqueAccounts}
+                    value={accountFilter || null}
+                    onChange={(_, newValue) => setAccountFilter(newValue || "")}
+                    sx={{ minWidth: 250 }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Filter by Account"
+                        placeholder="All accounts"
                         variant="outlined"
                         size="small"
-                        onClick={() => setAccountFilter("")}
-                      >
-                        Clear Filter
-                      </Button>
-                    )}
-                    {/* Quick filter chips for common accounts */}
-                    {uniqueAccounts.slice(0, 3).map((account) => (
-                      <Chip
-                        key={account}
-                        label={account}
-                        onClick={() => setAccountFilter(account)}
-                        variant={
-                          accountFilter === account ? "filled" : "outlined"
-                        }
-                        color={
-                          accountFilter === account ? "primary" : "default"
-                        }
-                        size="small"
                       />
-                    ))}
-                  </Box>
+                    )}
+                  />
+                  {accountFilter && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setAccountFilter("")}
+                    >
+                      Clear Filter
+                    </Button>
+                  )}
+                  {/* Quick filter chips for common accounts */}
+                  {uniqueAccounts.slice(0, 3).map((account) => (
+                    <Chip
+                      key={account}
+                      label={account}
+                      onClick={() => setAccountFilter(account)}
+                      variant={
+                        accountFilter === account ? "filled" : "outlined"
+                      }
+                      color={accountFilter === account ? "primary" : "default"}
+                      size="small"
+                    />
+                  ))}
+                </Box>
 
-                  {/* Transaction count display */}
-                  <Box sx={{ mb: 2, textAlign: "center" }}>
+                {/* Transaction count display */}
+                <Box sx={{ mb: 2, textAlign: "center" }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Showing {filteredTransactions.length} of{" "}
+                    {transactions.length} transactions
+                    {accountFilter && ` (filtered by: ${accountFilter})`}
+                  </Typography>
+                </Box>
+
+                {/* Loading state for table */}
+                {isLoadingTable ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      minHeight: 400,
+                      flexDirection: "column",
+                      gap: 2,
+                    }}
+                  >
+                    <CircularProgress size={48} />
                     <Typography variant="body2" color="text.secondary">
-                      Showing {filteredTransactions.length} of{" "}
-                      {transactions.length} transactions
-                      {accountFilter && ` (filtered by: ${accountFilter})`}
+                      Loading transactions...
                     </Typography>
                   </Box>
-
-                  {/* Loading state for table */}
-                  {isLoadingTable ? (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        minHeight: 400,
-                        flexDirection: "column",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size={48} />
-                      <Typography variant="body2" color="text.secondary">
-                        Loading transactions...
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Box sx={{ width: "100%", overflowX: "auto" }}>
-                      <DataGrid
+                ) : (
+                  <Box sx={{ width: "100%", overflowX: "auto" }}>
+                    <DataGrid
                       rows={filteredTransactions}
                       columns={columns}
                       processRowUpdate={async (
@@ -881,12 +876,12 @@ export default function TransactionImporter() {
                         },
                       }}
                     />
-                    </Box>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </>
+                  </Box>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </>
         <SnackbarBaseline
           message={message}
           state={showSnackbar}

@@ -82,9 +82,13 @@ export default function PresetFilters({
         borderRadius: "8px",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+      <Box
+        sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <BoltIcon sx={{ fontSize: "1rem", color: theme.palette.warning.main }} />
+          <BoltIcon
+            sx={{ fontSize: "1rem", color: theme.palette.warning.main }}
+          />
           <Typography
             variant="caption"
             sx={{

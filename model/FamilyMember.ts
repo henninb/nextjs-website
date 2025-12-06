@@ -30,8 +30,7 @@ export interface FamilyMemberCreateRequest {
   activeStatus?: boolean;
 }
 
-export interface FamilyMemberUpdateRequest
-  extends Partial<FamilyMemberCreateRequest> {
+export interface FamilyMemberUpdateRequest extends Partial<FamilyMemberCreateRequest> {
   familyMemberId: number;
 }
 

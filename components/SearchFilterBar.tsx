@@ -93,7 +93,7 @@ export default function SearchFilterBar({
     },
   ];
 
-  const isQuickFilterActive = (preset: typeof quickFilters[0]) => {
+  const isQuickFilterActive = (preset: (typeof quickFilters)[0]) => {
     return (
       activeFilters.accountType === preset.filters.accountType &&
       activeFilters.activeStatus === preset.filters.activeStatus &&
@@ -144,7 +144,14 @@ export default function SearchFilterBar({
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1.5,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
         {/* Search Input - More compact */}
         <TextField
           placeholder="Search accounts..."
@@ -154,7 +161,12 @@ export default function SearchFilterBar({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: theme.palette.text.secondary, fontSize: "1.1rem" }} />
+                <SearchIcon
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontSize: "1.1rem",
+                  }}
+                />
               </InputAdornment>
             ),
             endAdornment: searchTerm && (
@@ -180,7 +192,9 @@ export default function SearchFilterBar({
 
         {/* Quick Filters Section */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <BoltIcon sx={{ fontSize: "1rem", color: theme.palette.warning.main }} />
+          <BoltIcon
+            sx={{ fontSize: "1rem", color: theme.palette.warning.main }}
+          />
           <Typography
             variant="caption"
             sx={{
@@ -252,9 +266,7 @@ export default function SearchFilterBar({
         <Chip
           label="Debit"
           onClick={() => handleAccountTypeFilter("debit")}
-          color={
-            activeFilters.accountType === "debit" ? "primary" : "default"
-          }
+          color={activeFilters.accountType === "debit" ? "primary" : "default"}
           variant={
             activeFilters.accountType === "debit" ? "filled" : "outlined"
           }
@@ -268,9 +280,7 @@ export default function SearchFilterBar({
         <Chip
           label="Credit"
           onClick={() => handleAccountTypeFilter("credit")}
-          color={
-            activeFilters.accountType === "credit" ? "primary" : "default"
-          }
+          color={activeFilters.accountType === "credit" ? "primary" : "default"}
           variant={
             activeFilters.accountType === "credit" ? "filled" : "outlined"
           }
@@ -288,9 +298,7 @@ export default function SearchFilterBar({
           label="Zero Balance"
           onClick={() => handleBalanceStatusFilter("zeroBalance")}
           color={
-            activeFilters.balanceStatus === "zeroBalance"
-              ? "info"
-              : "default"
+            activeFilters.balanceStatus === "zeroBalance" ? "info" : "default"
           }
           variant={
             activeFilters.balanceStatus === "zeroBalance"
@@ -327,7 +335,11 @@ export default function SearchFilterBar({
 
         {/* Result Count - Inline at the end */}
         {resultCount !== undefined && totalCount !== undefined && (
-          <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ ml: "auto" }}
+          >
             <strong style={{ color: theme.palette.primary.main }}>
               {resultCount}
             </strong>

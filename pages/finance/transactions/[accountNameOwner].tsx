@@ -845,7 +845,12 @@ export default function TransactionsByAccount() {
           title={validAccountNameOwner || "Account Transactions"}
           subtitle="View and manage all transactions for this account. Track balances, edit transactions, and monitor account activity."
           actions={
-            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              flexWrap="wrap"
+            >
               <Fade in={true} timeout={600}>
                 <Box>
                   <ViewToggle view={view} onChange={setView} />
@@ -867,11 +872,11 @@ export default function TransactionsByAccount() {
                     ? currencyFormat(fetchedValidationData.amount)
                     : "$0.00"}
                   {" - "}
-                  {
-                    fetchedValidationData?.validationDate
-                      ? formatDateTimeForDisplay(fetchedValidationData.validationDate)
-                      : "No Date"
-                  }
+                  {fetchedValidationData?.validationDate
+                    ? formatDateTimeForDisplay(
+                        fetchedValidationData.validationDate,
+                      )
+                    : "No Date"}
                 </Button>
               </Fade>
               <Fade in={true} timeout={700}>
