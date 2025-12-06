@@ -897,10 +897,9 @@ export default function TransactionImporter() {
           title="Delete All Pending Transactions"
           message={`Are you sure you want to delete all ${transactions.length} pending transaction(s)? This action cannot be undone.`}
           onConfirm={handleDeleteAllPendingTransactions}
-          onCancel={() => setShowDeleteAllDialog(false)}
+          onClose={() => setShowDeleteAllDialog(false)}
           confirmText="Delete All"
           cancelText="Cancel"
-          severity="error"
         />
       </FinanceLayout>
     </div>
