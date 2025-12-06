@@ -39,6 +39,7 @@ import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../../components/ErrorDisplay";
 import LoadingState from "../../../../components/LoadingState";
+import ConfirmDialog from "../../../../components/ConfirmDialog";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import { currencyFormat } from "../../../../components/Common";
 import usePendingTransactionDeleteAll from "../../../../hooks/usePendingTransactionDeleteAll";
@@ -62,6 +63,8 @@ export default function TransactionImporter() {
   const [isValidating, setIsValidating] = useState(false);
   const [loadingRows, setLoadingRows] = useState<Set<string>>(new Set()); // Track loading rows by guid
   const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if this is the first load
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   const {
     data: fetchedPendingTransactions,
@@ -211,14 +214,26 @@ export default function TransactionImporter() {
   };
 
   const handleDeleteAllPendingTransactions = async () => {
+    setShowDeleteAllDialog(false);
+    setIsDeletingAll(true);
+    setIsLoadingTable(true);
+
     try {
       await deleteAllPendingTransactions();
+
+      // Reset state and trigger full refresh from server
+      setTransactions([]);
+      setIsInitialLoad(true);
+      await refetchPendingTransactions();
+
       setMessage("All pending transactions have been deleted.");
       setShowSnackbar(true);
     } catch (error: any) {
       console.error("Error deleting pending transactions: ", error);
       setMessage(`Error deleting pending transactions: ${error.message}`);
       setShowSnackbar(true);
+    } finally {
+      setIsDeletingAll(false);
     }
   };
 
@@ -716,10 +731,18 @@ export default function TransactionImporter() {
                     <Button
                       variant="contained"
                       color="error"
-                      onClick={handleDeleteAllPendingTransactions}
+                      onClick={() => setShowDeleteAllDialog(true)}
                       size="small"
+                      disabled={isDeletingAll}
+                      startIcon={
+                        isDeletingAll ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : null
+                      }
                     >
-                      Delete All Pending
+                      {isDeletingAll
+                        ? "Deleting..."
+                        : "Delete All Pending"}
                     </Button>
                   )
                 }
@@ -868,6 +891,16 @@ export default function TransactionImporter() {
           message={message}
           state={showSnackbar}
           handleSnackbarClose={handleSnackbarClose}
+        />
+        <ConfirmDialog
+          open={showDeleteAllDialog}
+          title="Delete All Pending Transactions"
+          message={`Are you sure you want to delete all ${transactions.length} pending transaction(s)? This action cannot be undone.`}
+          onConfirm={handleDeleteAllPendingTransactions}
+          onCancel={() => setShowDeleteAllDialog(false)}
+          confirmText="Delete All"
+          cancelText="Cancel"
+          severity="error"
         />
       </FinanceLayout>
     </div>
