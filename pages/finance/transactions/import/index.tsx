@@ -20,6 +20,7 @@ import {
   ListItemText,
   Collapse,
   Tooltip,
+  Link,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -354,7 +355,13 @@ export default function TransactionImporter() {
       headerName: "Account",
       width: 200,
       editable: true,
-      renderCell: (params) => <div>{params.value}</div>,
+      renderCell: (params) => {
+        return (
+          <Link href={`/finance/transactions/${params.value}`}>
+            {params.value}
+          </Link>
+        );
+      },
     },
     {
       field: "description",
