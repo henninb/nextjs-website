@@ -88,6 +88,31 @@ export const formatDateForDisplay = (date: Date | string): string => {
   return dateObj.toLocaleDateString("en-US", options);
 };
 
+/**
+ * Format date and time for display in local timezone
+ * Returns format like: "12/6/2025, 12:00:00 PM"
+ * Note: This function uses local timezone and should only be used in client-side contexts
+ * to avoid hydration mismatches. Use suppressHydrationWarning on the element if needed.
+ */
+export const formatDateTimeForDisplay = (date: Date | string): string => {
+  if (!date) return "";
+
+  const dateObj = date instanceof Date ? date : new Date(date);
+
+  // Format in local timezone
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  };
+
+  return dateObj.toLocaleString("en-US", options);
+};
+
 // Legacy functions maintained for backward compatibility
 export const convertUTCDateToLocalDate = (date: Date) => {
   console.warn(

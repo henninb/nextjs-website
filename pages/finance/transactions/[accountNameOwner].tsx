@@ -48,6 +48,7 @@ import {
   normalizeTransactionDate,
   formatDateForInput,
   formatDateForDisplay,
+  formatDateTimeForDisplay,
 } from "../../../components/Common";
 import FinanceLayout from "../../../layouts/FinanceLayout";
 import PageHeader from "../../../components/PageHeader";
@@ -844,11 +845,34 @@ export default function TransactionsByAccount() {
           title={validAccountNameOwner || "Account Transactions"}
           subtitle="View and manage all transactions for this account. Track balances, edit transactions, and monitor account activity."
           actions={
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
               <Fade in={true} timeout={600}>
                 <Box>
                   <ViewToggle view={view} onChange={setView} />
                 </Box>
+              </Fade>
+              <Fade in={true} timeout={650}>
+                <Button
+                  onClick={() =>
+                    handleInsertNewValidationData(
+                      validAccountNameOwner,
+                      "cleared",
+                    )
+                  }
+                  variant="contained"
+                  sx={{ backgroundColor: "primary.main" }}
+                  suppressHydrationWarning
+                >
+                  {fetchedValidationData?.amount
+                    ? currencyFormat(fetchedValidationData.amount)
+                    : "$0.00"}
+                  {" - "}
+                  {
+                    fetchedValidationData?.validationDate
+                      ? formatDateTimeForDisplay(fetchedValidationData.validationDate)
+                      : "No Date"
+                  }
+                </Button>
               </Fade>
               <Fade in={true} timeout={700}>
                 <Button
@@ -1020,63 +1044,6 @@ export default function TransactionsByAccount() {
             </Fade>
 
             <div>
-              <div>
-                <Fade in={true} timeout={800}>
-                  <Box display="flex" justifyContent="center" mt={2}>
-                    <Button
-                      onClick={() =>
-                        handleInsertNewValidationData(
-                          validAccountNameOwner,
-                          "cleared",
-                        )
-                      }
-                      variant="contained"
-                      sx={{
-                        backgroundColor: "secondary.main",
-                        animation:
-                          fetchedValidationData?.validationDate &&
-                          new Date().getTime() -
-                            new Date(
-                              fetchedValidationData.validationDate,
-                            ).getTime() >
-                            7 * 24 * 60 * 60 * 1000 // 7 days
-                            ? "pulse 2s ease-in-out infinite"
-                            : "none",
-                        "@keyframes pulse": {
-                          "0%, 100%": {
-                            transform: "scale(1)",
-                            boxShadow: "0 0 0 0 rgba(156, 39, 176, 0.7)",
-                          },
-                          "50%": {
-                            transform: "scale(1.05)",
-                            boxShadow: "0 0 0 10px rgba(156, 39, 176, 0)",
-                          },
-                        },
-                      }}
-                    >
-                      {fetchedValidationData?.amount
-                        ? fetchedValidationData?.amount.toLocaleString(
-                            "en-US",
-                            {
-                              style: "currency",
-                              currency: "USD",
-                            },
-                          )
-                        : "$0.00"}
-                      {" - "}
-                      {
-                        fetchedValidationData?.validationDate // Check if validationDate exists
-                          ? new Date(
-                              fetchedValidationData?.validationDate,
-                            ).toLocaleString("en-US")
-                          : "No Date" // Or handle the absence of a date as needed
-                      }
-                    </Button>
-                  </Box>
-                </Fade>
-                {/* Add button moved to PageHeader actions; avoid duplicate here */}
-              </div>
-
               <Box display="flex" justifyContent="center">
                 <Box sx={{ width: "100%", maxWidth: "1400px" }}>
                   {filteredTransactions && filteredTransactions.length > 0 ? (
