@@ -26,6 +26,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import HelpIcon from "@mui/icons-material/Help";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CircularProgress from "@mui/material/CircularProgress";
 import Transaction from "../../../../model/Transaction";
 import { ReoccurringType } from "../../../../model/ReoccurringType";
 import { TransactionState } from "../../../../model/TransactionState";
@@ -58,6 +59,8 @@ export default function TransactionImporter() {
   const [showFormatHelp, setShowFormatHelp] = useState(false);
   const [formatErrors, setFormatErrors] = useState<string[]>([]);
   const [isValidating, setIsValidating] = useState(false);
+  const [loadingRows, setLoadingRows] = useState<Set<string>>(new Set()); // Track loading rows by guid
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if this is the first load
 
   const {
     data: fetchedPendingTransactions,
@@ -109,10 +112,13 @@ export default function TransactionImporter() {
   ]);
 
   useEffect(() => {
-    if (isPendingTransactionsLoaded && fetchedPendingTransactions) {
+    // Only sync from fetchedPendingTransactions on initial load
+    // After that, we manage transactions state locally to avoid refreshes
+    if (isPendingTransactionsLoaded && fetchedPendingTransactions && isInitialLoad) {
       if (fetchedPendingTransactions.length === 0) {
         setTransactions([]);
         setShowSpinner(false);
+        setIsInitialLoad(false);
         return;
       }
 
@@ -133,11 +139,12 @@ export default function TransactionImporter() {
         );
         setTransactions(transactionsWithGUID);
         setShowSpinner(false);
+        setIsInitialLoad(false); // Mark initial load as complete
       };
 
       generateTransactionsWithGUID();
     }
-  }, [isPendingTransactionsLoaded, fetchedPendingTransactions]);
+  }, [isPendingTransactionsLoaded, fetchedPendingTransactions, isInitialLoad]);
 
   if (loading || (!loading && !isAuthenticated)) {
     return null;
@@ -166,7 +173,7 @@ export default function TransactionImporter() {
         isImportTransaction: true,
       });
 
-      setMessage(`Transaction added successfully: ${JSON.stringify(result)}`);
+      setMessage(`Transaction added successfully`);
       setShowSnackbar(true);
 
       return result;
@@ -182,11 +189,23 @@ export default function TransactionImporter() {
     }
   };
 
-  const handleDeletePendingTransaction = async (pendingTransactionId: any) => {
+  const handleDeletePendingTransaction = async (
+    pendingTransactionId: any,
+    guid: string,
+  ) => {
     try {
-      deletePendingTransaction(pendingTransactionId);
+      // Optimistically remove from local state
+      setTransactions((prev) => prev.filter((t) => t.guid !== guid));
+
+      await deletePendingTransaction(pendingTransactionId);
+
+      setMessage("Transaction removed successfully");
+      setShowSnackbar(true);
     } catch (error) {
       handleError(error, "handleDeleteRow", false);
+      // On error, refetch to restore correct state
+      setIsInitialLoad(true); // Allow resync from server
+      refetchPendingTransactions();
       if (
         !navigator.onLine ||
         (error.message && error.message.includes("Failed to fetch"))
@@ -395,36 +414,82 @@ export default function TransactionImporter() {
       field: "actions",
       headerName: "Actions",
       width: 120,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Tooltip title="Accept Transaction" enterDelay={0}>
-            <IconButton
-              color="primary"
-              size="small"
-              onClick={async () => {
-                console.log(params.row);
-                await handleInsertTransaction(params.row);
-                await handleDeletePendingTransaction(
-                  params.row.pendingTransactionId,
-                );
-              }}
-            >
-              <CheckIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Remove from List" enterDelay={0}>
-            <IconButton
-              color="error"
-              size="small"
-              onClick={() => {
-                handleDeletePendingTransaction(params.row.pendingTransactionId);
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
+      renderCell: (params) => {
+        const isLoading = loadingRows.has(params.row.guid);
+        return (
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            {isLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              <>
+                <Tooltip title="Accept Transaction" enterDelay={0}>
+                  <span>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={async () => {
+                        const guid = params.row.guid;
+                        setLoadingRows((prev) => new Set(prev).add(guid));
+                        try {
+                          await handleInsertTransaction(params.row);
+                          // Optimistically remove from local state
+                          setTransactions((prev) =>
+                            prev.filter((t) => t.guid !== guid),
+                          );
+                          await deletePendingTransaction(
+                            params.row.pendingTransactionId,
+                          );
+                        } catch (error) {
+                          console.error("Error accepting transaction:", error);
+                          // On error, refetch to restore correct state
+                          setIsInitialLoad(true); // Allow resync from server
+                          refetchPendingTransactions();
+                        } finally {
+                          setLoadingRows((prev) => {
+                            const next = new Set(prev);
+                            next.delete(guid);
+                            return next;
+                          });
+                        }
+                      }}
+                    >
+                      <CheckIcon />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Tooltip title="Remove from List" enterDelay={0}>
+                  <span>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      onClick={async () => {
+                        const guid = params.row.guid;
+                        setLoadingRows((prev) => new Set(prev).add(guid));
+                        try {
+                          await handleDeletePendingTransaction(
+                            params.row.pendingTransactionId,
+                            guid,
+                          );
+                        } catch (error) {
+                          console.error("Error deleting transaction:", error);
+                        } finally {
+                          setLoadingRows((prev) => {
+                            const next = new Set(prev);
+                            next.delete(guid);
+                            return next;
+                          });
+                        }
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </>
+            )}
+          </Box>
+        );
+      },
     },
   ];
 
