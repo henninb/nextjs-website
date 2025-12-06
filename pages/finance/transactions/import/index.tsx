@@ -52,7 +52,7 @@ import { getCategoryFromDescription } from "../../../../utils/categoryMapping";
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [showSpinner, setShowSpinner] = useState(true);
+  const [isLoadingTable, setIsLoadingTable] = useState(true); // Loading state for table only
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
   const [accountFilter, setAccountFilter] = useState<string>(""); // For filtering by account
@@ -88,9 +88,6 @@ export default function TransactionImporter() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
     if (!loading && !isAuthenticated) {
       router.replace("/login");
     }
@@ -98,16 +95,13 @@ export default function TransactionImporter() {
 
   useEffect(() => {
     if (isFetchingPendingTransactions || isLoadingAccounts) {
-      setShowSpinner(true);
+      setIsLoadingTable(true);
       return;
     }
-    if (isPendingTransactionsLoaded && isSuccessAccounts) {
-      setShowSpinner(false);
-    }
+    // Don't set isLoadingTable to false here - let the GUID generation useEffect handle it
+    // Otherwise we'll hide the spinner before the async GUID generation completes
   }, [
-    isPendingTransactionsLoaded,
     isFetchingPendingTransactions,
-    isSuccessAccounts,
     isLoadingAccounts,
   ]);
 
@@ -117,13 +111,13 @@ export default function TransactionImporter() {
     if (isPendingTransactionsLoaded && fetchedPendingTransactions && isInitialLoad) {
       if (fetchedPendingTransactions.length === 0) {
         setTransactions([]);
-        setShowSpinner(false);
+        setIsLoadingTable(false);
         setIsInitialLoad(false);
         return;
       }
 
       const generateTransactionsWithGUID = async () => {
-        setShowSpinner(true);
+        setIsLoadingTable(true);
         const transactionsWithGUID = await Promise.all(
           fetchedPendingTransactions.map(async (transaction) => ({
             ...transaction,
@@ -138,7 +132,7 @@ export default function TransactionImporter() {
           })),
         );
         setTransactions(transactionsWithGUID);
-        setShowSpinner(false);
+        setIsLoadingTable(false);
         setIsInitialLoad(false); // Mark initial load as complete
       };
 
@@ -524,13 +518,7 @@ export default function TransactionImporter() {
           </Typography>
         </Box>
 
-        {showSpinner ? (
-          <LoadingState
-            variant="card"
-            message="Loading pending transactions and accounts..."
-          />
-        ) : (
-          <>
+        <>
             {/* Input Section */}
             <Card
               sx={{ mb: 4, border: "2px solid", borderColor: "primary.main" }}
@@ -794,8 +782,26 @@ export default function TransactionImporter() {
                     </Typography>
                   </Box>
 
-                  <Box sx={{ width: "100%", overflowX: "auto" }}>
-                    <DataGrid
+                  {/* Loading state for table */}
+                  {isLoadingTable ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minHeight: 400,
+                        flexDirection: "column",
+                        gap: 2,
+                      }}
+                    >
+                      <CircularProgress size={48} />
+                      <Typography variant="body2" color="text.secondary">
+                        Loading transactions...
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Box sx={{ width: "100%", overflowX: "auto" }}>
+                      <DataGrid
                       rows={filteredTransactions}
                       columns={columns}
                       processRowUpdate={async (
@@ -845,12 +851,12 @@ export default function TransactionImporter() {
                         },
                       }}
                     />
-                  </Box>
+                    </Box>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </>
-        )}
         <SnackbarBaseline
           message={message}
           state={showSnackbar}
