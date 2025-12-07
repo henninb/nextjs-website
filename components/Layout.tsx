@@ -247,27 +247,50 @@ export default function Layout({ children }: LayoutProps) {
           </IconButton>
 
           {isFinancePage && (
-            <Tooltip title="Finance Home" arrow>
-              <IconButton
-                href="/finance"
-                aria-label="finance home"
-                sx={{
-                  borderRadius: 2,
-                  p: 1.5,
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    transform: "scale(1.05)",
-                  },
-                }}
-              >
-                <HomeIcon
+            <>
+              <Tooltip title="Finance Home" arrow>
+                <IconButton
+                  href="/finance"
+                  aria-label="finance home"
                   sx={{
-                    color: theme.palette.primary.main,
+                    borderRadius: 2,
+                    p: 1.5,
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      transform: "scale(1.05)",
+                    },
                   }}
-                />
-              </IconButton>
-            </Tooltip>
+                >
+                  <HomeIcon
+                    sx={{
+                      color: theme.palette.primary.main,
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Import Transactions" arrow>
+                <IconButton
+                  href="/finance/transactions/import"
+                  aria-label="import transactions"
+                  sx={{
+                    borderRadius: 2,
+                    p: 1.5,
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      transform: "scale(1.05)",
+                    },
+                  }}
+                >
+                  <ImportExportIcon
+                    sx={{
+                      color: theme.palette.primary.main,
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+            </>
           )}
 
           <Box sx={{ flexGrow: 1 }} />

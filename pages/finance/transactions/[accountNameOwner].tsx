@@ -20,7 +20,7 @@ import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
 import LoadingState from "../../../components/LoadingState";
 import USDAmountInput from "../../../components/USDAmountInput";
-import useTransactionByAccountFetch from "../../../hooks/useTransactionByAccountFetch";
+import useTransactionByAccountFetchPaged from "../../../hooks/useTransactionByAccountFetchPaged";
 import useTransactionUpdate from "../../../hooks/useTransactionUpdate";
 import useTransactionInsert from "../../../hooks/useTransactionInsert";
 import useTransactionDelete from "../../../hooks/useTransactionDelete";
@@ -139,13 +139,23 @@ export default function TransactionsByAccount() {
     typeof accountNameOwner === "string" ? accountNameOwner : "";
 
   const {
-    data: fetchedTransactions,
+    data: transactionPage,
     isSuccess: isSuccessTransactions,
     isLoading: isFetchingTransactions,
     isError: isErrorTransactions,
     error: errorTransactions,
     refetch: refetchTransactions,
-  } = useTransactionByAccountFetch(validAccountNameOwner);
+  } = useTransactionByAccountFetchPaged(
+    validAccountNameOwner,
+    paginationModel.page,
+    paginationModel.pageSize,
+  );
+
+  // Extract transactions from paginated response - memoize to avoid infinite re-renders
+  const fetchedTransactions = useMemo(
+    () => transactionPage?.content || [],
+    [transactionPage],
+  );
   const {
     data: fetchedTotals,
     isSuccess: isSuccessTotals,
@@ -742,7 +752,8 @@ export default function TransactionsByAccount() {
     }));
   }, [amountBounds]);
 
-  // Apply client-side filters and search
+  // Apply client-side filters and search on the current page
+  // Note: With server-side pagination, this only filters the current page of results
   const filteredTransactions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
@@ -1032,7 +1043,7 @@ export default function TransactionsByAccount() {
               )}
             </Box>
 
-            {/* Transaction Filter Bar with fade-in animation */}
+            {/* Transaction Filter Bar - Filters current page only with server-side pagination */}
             <Fade in={true} timeout={500}>
               <Box>
                 <TransactionFilterBar
@@ -1062,7 +1073,8 @@ export default function TransactionsByAccount() {
                           checkboxSelection={true}
                           rowSelection={true}
                           paginationModel={paginationModel}
-                          hideFooter={filteredTransactions?.length < 25}
+                          paginationMode="server"
+                          rowCount={transactionPage?.totalElements || 0}
                           onPaginationModelChange={(newModel) => {
                             setPaginationModel(newModel);
                           }}
@@ -1079,6 +1091,7 @@ export default function TransactionsByAccount() {
                               textOverflow: "ellipsis",
                             },
                           }}
+                          // Server-side sorting is handled by the API
                           // initialState={{
                           //   sorting: {
                           //     sortModel: [{ field: "transactionDate", sort: "desc" }],
