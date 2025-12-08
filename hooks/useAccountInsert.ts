@@ -15,14 +15,14 @@ const log = createHookLogger("useAccountInsert");
  */
 export const setupNewAccount = (payload: Account): Account => {
   return {
-    cleared: 0.0,
-    future: 0.0,
-    outstanding: 0.0,
-    dateClosed: new Date(0), // January 1, 1970 to indicate "not closed"
-    dateAdded: new Date(),
-    dateUpdated: new Date(),
-    validationDate: new Date(0),
     ...payload,
+    cleared: payload.cleared ?? 0.0,
+    future: payload.future ?? 0.0,
+    outstanding: payload.outstanding ?? 0.0,
+    dateClosed: payload.dateClosed ?? new Date(0), // January 1, 1970 to indicate "not closed"
+    dateAdded: payload.dateAdded ?? new Date(),
+    dateUpdated: payload.dateUpdated ?? new Date(),
+    validationDate: payload.validationDate ?? new Date(0),
     activeStatus: true, // Always force activeStatus to true for new accounts
   };
 };

@@ -151,7 +151,7 @@ export default function paymentrequired() {
                     fetchedPaymentsRequired?.filter((row) => row != null) || []
                   }
                   paginationModel={{
-                    pageSize: fetchedPaymentsRequired?.length,
+                    pageSize: fetchedPaymentsRequired?.length ?? 10,
                     page: 0,
                   }}
                   hideFooterPagination={true}

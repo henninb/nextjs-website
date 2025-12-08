@@ -765,10 +765,14 @@ export default function Accounts() {
             error={!!formErrors.accountNameOwner}
             helperText={formErrors.accountNameOwner}
             onChange={(e) =>
-              setAccountData((prev) => ({
-                ...prev,
-                accountNameOwner: e.target.value,
-              }))
+              setAccountData((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      accountNameOwner: e.target.value,
+                    }
+                  : null,
+              )
             }
           />
           <Autocomplete

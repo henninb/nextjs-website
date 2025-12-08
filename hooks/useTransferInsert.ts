@@ -17,9 +17,8 @@ const log = createHookLogger("useTransferInsert");
  */
 export const overRideTransferValues = (payload: Transfer) => {
   return {
-    amount: payload?.amount,
-    transactionDate: payload?.transactionDate,
     ...payload,
+    activeStatus: true,
   };
 };
 

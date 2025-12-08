@@ -516,10 +516,14 @@ export default function Categories() {
             error={!!formErrors.categoryName}
             helperText={formErrors.categoryName}
             onChange={(e) =>
-              setCategoryData((prev) => ({
-                ...prev,
-                categoryName: e.target.value,
-              }))
+              setCategoryData((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      categoryName: e.target.value,
+                    }
+                  : null,
+              )
             }
           />
           <Box mt={1}>

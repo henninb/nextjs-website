@@ -947,7 +947,7 @@ const WatchPage: NextPage = () => {
             <button
               onClick={async () => {
                 console.log("🧪 TEST: API flooding started");
-                const promises = [];
+                const promises: Promise<void | Response>[] = [];
                 for (let i = 0; i < 10; i++) {
                   promises.push(
                     fetch("/api/player-heartbeat", {

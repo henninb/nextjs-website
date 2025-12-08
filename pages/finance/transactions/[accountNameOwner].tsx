@@ -194,7 +194,7 @@ export default function TransactionsByAccount() {
       reoccurringType: "onetime" as ReoccurringType,
       amount: 0.0,
       transactionState: "outstanding" as TransactionState,
-      transactionType: undefined as TransactionType, // Default to undefined - will be set intentionally by user
+      transactionType: undefined as unknown as TransactionType, // Default to undefined - will be set intentionally by user
       guid: "pending-uuid", // Will be replaced with server-generated UUID
       description: "",
       category: "",
@@ -484,7 +484,7 @@ export default function TransactionsByAccount() {
           ...selectedTransaction,
           accountNameOwner: validAccountNameOwner,
           guid: uuid, // Use the server-generated UUID
-        },
+        } as Transaction,
         isFutureTransaction: true,
         isImportTransaction: false,
       });
@@ -496,7 +496,7 @@ export default function TransactionsByAccount() {
     }
   };
 
-  const handleAddRow = async (newData: Transaction): Promise<Transaction> => {
+  const handleAddRow = async (newData: Transaction): Promise<Transaction | null> => {
     try {
       // Generate a secure UUID from the server before inserting
       const uuidResponse = await fetch("/api/uuid/generate", {
@@ -1528,11 +1528,15 @@ export default function TransactionsByAccount() {
                 : null
             }
             onChange={(event, newValue) =>
-              setSelectedTransaction((prev) => ({
-                ...prev,
-                accountNameOwner: newValue ? newValue.accountNameOwner : "",
-                accountId: newValue ? newValue.accountId : 0,
-              }))
+              setSelectedTransaction((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      accountNameOwner: newValue ? newValue.accountNameOwner : "",
+                      accountId: newValue ? newValue.accountId : 0,
+                    }
+                  : null,
+              )
             }
             renderInput={(params) => (
               <TextField

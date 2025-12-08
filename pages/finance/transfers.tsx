@@ -196,7 +196,7 @@ export default function Transfers() {
   useEffect(() => {
     if (selectedSourceAccount) {
       setAvailableDestinationAccounts(
-        fetchedAccounts.filter(
+        (fetchedAccounts || []).filter(
           (account) =>
             account.accountType === "debit" &&
             account.accountNameOwner !== selectedSourceAccount.accountNameOwner,
@@ -204,7 +204,7 @@ export default function Transfers() {
       );
     } else if (isSuccessAccounts) {
       setAvailableDestinationAccounts(
-        fetchedAccounts.filter((account) => account.accountType === "debit"),
+        (fetchedAccounts || []).filter((account) => account.accountType === "debit"),
       );
     }
   }, [selectedSourceAccount, isSuccessAccounts, fetchedAccounts]);
@@ -212,7 +212,7 @@ export default function Transfers() {
   useEffect(() => {
     if (selectedDestinationAccount) {
       setAvailableSourceAccounts(
-        fetchedAccounts.filter(
+        (fetchedAccounts || []).filter(
           (account) =>
             account.accountType === "debit" &&
             account.accountNameOwner !==
@@ -221,7 +221,7 @@ export default function Transfers() {
       );
     } else if (isSuccessAccounts) {
       setAvailableSourceAccounts(
-        fetchedAccounts.filter((account) => account.accountType === "debit"),
+        (fetchedAccounts || []).filter((account) => account.accountType === "debit"),
       );
     }
   }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);

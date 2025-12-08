@@ -102,7 +102,7 @@ export function createCORSMiddleware(
         res.setHeader("Vary", "Origin");
       } else if (process.env.NODE_ENV === "development") {
         // Allow localhost in development using secure validation
-        if (isLocalhostOrigin(origin)) {
+        if (origin && isLocalhostOrigin(origin)) {
           res.setHeader("Access-Control-Allow-Origin", origin);
         }
       }

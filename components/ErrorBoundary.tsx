@@ -1,3 +1,5 @@
+"use client";
+
 import React, { Component, ReactNode } from "react";
 import { Box, Typography, Button, Paper } from "@mui/material";
 import { ErrorOutline, Refresh } from "@mui/icons-material";

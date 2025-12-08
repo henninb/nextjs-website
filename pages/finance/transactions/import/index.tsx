@@ -129,7 +129,7 @@ export default function TransactionImporter() {
             guid: await generateSecureUUID(),
             reoccurringType: "onetime" as ReoccurringType,
             transactionState: "outstanding" as TransactionState,
-            transactionType: undefined as TransactionType,
+            transactionType: undefined as unknown as TransactionType,
             category: getCategoryFromDescription(transaction.description || ""),
             accountType: "debit" as AccountType,
             activeStatus: true,
@@ -312,7 +312,7 @@ export default function TransactionImporter() {
           reoccurringType: "onetime",
           amount: parseFloat(parts[3]),
           transactionState: "outstanding",
-          transactionType: undefined,
+          transactionType: undefined as unknown as TransactionType,
           guid: "pending-uuid", // Will be replaced with server-generated UUID during insertion
           description: parts[2],
           category: category,

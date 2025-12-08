@@ -22,7 +22,7 @@ export const updatePendingTransaction = async (
 ): Promise<PendingTransaction> => {
   // Sanitize pending transaction ID
   const sanitizedId = InputSanitizer.sanitizeNumericId(
-    oldPendingTransaction.pendingTransactionId,
+    oldPendingTransaction.pendingTransactionId!,
     "pendingTransactionId",
   );
 

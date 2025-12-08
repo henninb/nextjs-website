@@ -39,7 +39,7 @@ export default function MedicalExpenseForm({
   isEdit = false,
 }: MedicalExpenseFormProps) {
   const [formData, setFormData] = useState<Partial<MedicalExpense>>({
-    serviceDate: initialData?.serviceDate || null,
+    serviceDate: initialData?.serviceDate || undefined,
     transactionId: initialData?.transactionId || undefined, // Allow undefined for no transaction
     billedAmount: initialData?.billedAmount || 0,
     insuranceDiscount: initialData?.insuranceDiscount || 0,

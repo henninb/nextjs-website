@@ -434,10 +434,14 @@ export default function Configuration() {
             error={!!formErrors.parameterValue}
             helperText={formErrors.parameterValue}
             onChange={(e) =>
-              setParameterData((prev) => ({
-                ...prev,
-                parameterValue: e.target.value,
-              }))
+              setParameterData((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      parameterValue: e.target.value,
+                    }
+                  : null,
+              )
             }
           />
         </FormDialog>

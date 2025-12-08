@@ -195,8 +195,8 @@ export default function Descriptions() {
   };
 
   const isAllSelected =
-    fetchedDescrptions?.length > 0 &&
-    rowSelection.length === fetchedDescrptions?.length;
+    (fetchedDescrptions?.length ?? 0) > 0 &&
+    rowSelection.length === (fetchedDescrptions?.length ?? 0);
   const isIndeterminate =
     rowSelection.length > 0 &&
     rowSelection.length < (fetchedDescrptions?.length || 0);
@@ -454,10 +454,14 @@ export default function Descriptions() {
             error={!!formErrors.descriptionName}
             helperText={formErrors.descriptionName}
             onChange={(e) =>
-              setDescriptionData((prev) => ({
-                ...prev,
-                descriptionName: e.target.value,
-              }))
+              setDescriptionData((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      descriptionName: e.target.value,
+                    }
+                  : null,
+              )
             }
           />
           <Box mt={1}>

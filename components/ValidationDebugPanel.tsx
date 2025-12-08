@@ -125,7 +125,9 @@ export default function ValidationDebugPanel({
 
   // Get error report
   const errorReport =
-    validationErrors.length > 0 ? createErrorReport(validationErrors) : null;
+    validationErrors && validationErrors.length > 0
+      ? createErrorReport(validationErrors)
+      : null;
 
   const positionStyles =
     position === "fixed"

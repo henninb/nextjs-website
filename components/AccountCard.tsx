@@ -319,7 +319,10 @@ export default function AccountCard({
               fontSize: "0.7rem",
             }}
           >
-            Last validated: {formatDate(account.validationDate)}
+            Last validated:{" "}
+            {account.validationDate
+              ? formatDate(account.validationDate)
+              : "Never"}
           </Typography>
         </Box>
       </CardContent>
