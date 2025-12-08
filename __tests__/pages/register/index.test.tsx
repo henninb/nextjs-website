@@ -1,9 +1,9 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Register from "../../../pages/register/index";
+import RegisterPage from "../../../app/register/page";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
   }),
@@ -72,7 +72,7 @@ describe("Register Page", () => {
   });
 
   it("renders register form with all required fields", () => {
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     expect(
       screen.getByRole("heading", { name: "Register" }),
@@ -93,7 +93,7 @@ describe("Register Page", () => {
       ok: true,
     });
 
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     const firstNameInput = document.getElementById(
       "firstName",
@@ -136,7 +136,7 @@ describe("Register Page", () => {
   });
 
   it("prevents submission with invalid password", async () => {
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     const firstNameInput = document.getElementById(
       "firstName",
@@ -171,7 +171,7 @@ describe("Register Page", () => {
   });
 
   it("prevents submission when passwords do not match", async () => {
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     const firstNameInput = document.getElementById(
       "firstName",
@@ -211,7 +211,7 @@ describe("Register Page", () => {
       ok: false,
     });
 
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     const firstNameInput = document.getElementById(
       "firstName",
@@ -250,7 +250,7 @@ describe("Register Page", () => {
       new Error("Network error"),
     );
 
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     const firstNameInput = document.getElementById(
       "firstName",
@@ -291,7 +291,7 @@ describe("Register Page", () => {
       json: jest.fn().mockResolvedValue({ error: "User exists" }),
     });
 
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     fireEvent.change(document.getElementById("firstName") as HTMLInputElement, {
       target: { value: "John" },
@@ -323,7 +323,7 @@ describe("Register Page", () => {
   });
 
   it("updates form fields correctly", () => {
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     const firstNameInput = document.getElementById(
       "firstName",
@@ -355,7 +355,7 @@ describe("Register Page", () => {
   });
 
   it("shows password requirements when password field has value", () => {
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     const passwordInput = document.getElementById(
       "password",
@@ -390,7 +390,7 @@ describe("Register Page", () => {
   });
 
   it("renders without errors", () => {
-    render(<Register />, { wrapper: createWrapper() });
+    render(<RegisterPage />, { wrapper: createWrapper() });
 
     // Basic smoke test to ensure component renders
     expect(

@@ -1,6 +1,7 @@
+"use client";
+
 import React, { useState, FormEvent } from "react";
-import Head from "next/head";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import {
   Container,
   Paper,
@@ -22,7 +23,7 @@ import { useAuth } from "../../components/AuthProvider";
 import ErrorDisplay from "../../components/ErrorDisplay";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -152,109 +153,103 @@ export default function Login() {
   };
 
   return (
-    <>
-      <Head>
-        <title>Login</title>
-        <meta name="description" content="Login to your account" />
-      </Head>
-      <Container maxWidth="sm" sx={{ py: 6 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Login
-          </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-            Enter your credentials to access your account.
-          </Typography>
+    <Container maxWidth="sm" sx={{ py: 6 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Login
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+          Enter your credentials to access your account.
+        </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="password"
-              label="Password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-              FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleTogglePassword}
-                      disabled={isLoading}
-                      edge="end"
-                      size="small"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            {errorMessage && (
-              <Box sx={{ mt: 2 }}>
-                <ErrorDisplay
-                  variant="alert"
-                  severity="error"
-                  title="Sign-in failed"
-                  // Provide only the friendly message to avoid exposing details
-                  message={errorMessage}
-                  showRetry={false}
-                />
-              </Box>
-            )}
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+            FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="password"
+            label="Password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+            FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleTogglePassword}
+                    disabled={isLoading}
+                    edge="end"
+                    size="small"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+          {errorMessage && (
+            <Box sx={{ mt: 2 }}>
+              <ErrorDisplay
+                variant="alert"
+                severity="error"
+                title="Sign-in failed"
+                // Provide only the friendly message to avoid exposing details
+                message={errorMessage}
+                showRetry={false}
+              />
+            </Box>
+          )}
 
-            <Button
-              id="submit"
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={isLoading || !email || !password}
-              sx={{ mt: 3, mb: 2 }}
-            >
-              {isLoading ? "Signing In..." : "Sign In"}
-            </Button>
-          </Box>
-        </Paper>
-        {/* Snackbar feedback consistent with finance pages */}
-        <SnackbarBaseline
-          message={errorMessage}
-          state={showSnackbar}
-          severity="error"
-          handleSnackbarClose={() => setShowSnackbar(false)}
-        />
-      </Container>
-    </>
+          <Button
+            id="submit"
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isLoading || !email || !password}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {isLoading ? "Signing In..." : "Sign In"}
+          </Button>
+        </Box>
+      </Paper>
+      {/* Snackbar feedback consistent with finance pages */}
+      <SnackbarBaseline
+        message={errorMessage}
+        state={showSnackbar}
+        severity="error"
+        handleSnackbarClose={() => setShowSnackbar(false)}
+      />
+    </Container>
   );
 }

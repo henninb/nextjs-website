@@ -1,10 +1,10 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Login from "../../../pages/login/index";
+import LoginPage from "../../../app/login/page";
 
 // Router mock with shared push spy
 const pushMock = jest.fn();
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: pushMock,
   }),
@@ -58,7 +58,7 @@ describe("Login Page", () => {
   });
 
   it("renders login form with required fields", () => {
-    render(<Login />);
+    render(<LoginPage />);
 
     expect(screen.getByRole("heading", { name: "Login" })).toBeInTheDocument();
     expect(document.getElementById("email")).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("Login Page", () => {
   });
 
   it("disables submit until fields are filled", () => {
-    render(<Login />);
+    render(<LoginPage />);
 
     const submit = screen.getByRole("button", { name: "Sign In" });
     expect(submit).toBeDisabled();
@@ -84,7 +84,7 @@ describe("Login Page", () => {
   });
 
   it("toggles password visibility", () => {
-    render(<Login />);
+    render(<LoginPage />);
 
     const passwordInput = document.getElementById(
       "password",
@@ -115,7 +115,7 @@ describe("Login Page", () => {
       }),
     });
 
-    render(<Login />);
+    render(<LoginPage />);
 
     fireEvent.change(document.getElementById("email") as HTMLInputElement, {
       target: { value: "john@example.com" },
@@ -152,7 +152,7 @@ describe("Login Page", () => {
       json: jest.fn().mockResolvedValue({ error: "Unauthorized" }),
     });
 
-    render(<Login />);
+    render(<LoginPage />);
 
     fireEvent.change(document.getElementById("email") as HTMLInputElement, {
       target: { value: "john@example.com" },
@@ -179,7 +179,7 @@ describe("Login Page", () => {
       json: jest.fn().mockResolvedValue({ error: "Forbidden" }),
     });
 
-    render(<Login />);
+    render(<LoginPage />);
 
     fireEvent.change(document.getElementById("email") as HTMLInputElement, {
       target: { value: "john@example.com" },
@@ -203,7 +203,7 @@ describe("Login Page", () => {
       new Error("Network error"),
     );
 
-    render(<Login />);
+    render(<LoginPage />);
 
     fireEvent.change(document.getElementById("email") as HTMLInputElement, {
       target: { value: "john@example.com" },

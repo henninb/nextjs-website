@@ -1,10 +1,38 @@
 import React from "react";
+import type { Metadata } from "next";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "Brian Henning - Solutions Engineer",
+  description:
+    "Solutions engineer based in Minneapolis specializing in software development, technical sales, and cybersecurity.",
+  keywords: [
+    "solutions engineer",
+    "software development",
+    "technical sales",
+    "cybersecurity",
+    "Minneapolis",
+    "Brian Henning",
+  ],
+  openGraph: {
+    title: "Brian Henning - Solutions Engineer",
+    description:
+      "Solutions engineer based in Minneapolis specializing in software development, technical sales, and cybersecurity.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Brian Henning - Solutions Engineer",
+    description:
+      "Solutions engineer based in Minneapolis specializing in software development, technical sales, and cybersecurity.",
+  },
+};
+
+export default function HomePage() {
   return (
     <div>
       <main>
         <div>
+          {/* Intro Section */}
           <section className="intro" id="home">
             <h1 className="section__title section__title--intro">
               Hi, I am <strong>Brian Henning</strong>
@@ -19,6 +47,7 @@ export default function Home() {
             />
           </section>
 
+          {/* Services Section */}
           <section className="my-services" id="services">
             <h2 className="section__title section__title--services">
               What I do
@@ -76,6 +105,7 @@ export default function Home() {
             </a>
           </section>
 
+          {/* About Section */}
           <section className="about-me" id="about">
             <h2 className="section__title section__title--about">Who I am</h2>
             <p className="section__subtitle section__subtitle--about">
@@ -108,6 +138,7 @@ export default function Home() {
             />
           </section>
 
+          {/* Portfolio Section */}
           <section className="my-work" id="work">
             <h2 className="section__title section__title--work">My work</h2>
             <p className="section__subtitle section__subtitle--work">
@@ -181,6 +212,7 @@ export default function Home() {
             </div>
           </section>
 
+          {/* Footer */}
           <footer className="footer">
             <a href="mailto:henninb@gmail.com" className="footer__link">
               henninb@gmail.com
@@ -190,6 +222,8 @@ export default function Home() {
                 <a
                   className="social-list__link"
                   href="https://codepen.io/henninb/projects"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <i className="fab fa-codepen"></i>
                 </a>
@@ -198,6 +232,8 @@ export default function Home() {
                 <a
                   className="social-list__link"
                   href="https://dribbble.com/henninb"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <i className="fab fa-dribbble"></i>
                 </a>
@@ -206,6 +242,8 @@ export default function Home() {
                 <a
                   className="social-list__link"
                   href="https://www.linkedin.com/in/brian-henning-9213bb5/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <i className="fab fa-linkedin"></i>
                 </a>
@@ -214,6 +252,8 @@ export default function Home() {
                 <a
                   className="social-list__link"
                   href="https://twitter.com/henninb"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <i className="fab fa-twitter"></i>
                 </a>
@@ -222,6 +262,8 @@ export default function Home() {
                 <a
                   className="social-list__link"
                   href="https://github.com/henninb"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <i className="fab fa-github"></i>
                 </a>
@@ -230,6 +272,8 @@ export default function Home() {
                 <a
                   className="social-list__link"
                   href="https://gitlab.com/henninb"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <i className="fab fa-gitlab"></i>
                 </a>
@@ -238,6 +282,8 @@ export default function Home() {
                 <a
                   className="social-list__link"
                   href="https://reddit.com/user/z037640"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <i className="fab fa-reddit"></i>
                 </a>
