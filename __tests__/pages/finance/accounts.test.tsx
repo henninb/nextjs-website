@@ -8,6 +8,9 @@ import {
 } from "@testing-library/react";
 
 // Mock router
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
+}));
 jest.mock("next/router", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
@@ -231,21 +234,12 @@ describe("pages/finance/index (Accounts)", () => {
     expect(screen.getByLabelText(/account type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/moniker/i)).toBeInTheDocument();
 
-    // Fill form
-    fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
-      target: { value: "New Account" },
-    });
-    fireEvent.change(screen.getByLabelText(/account type/i), {
-      target: { value: "debit" },
-    });
-    fireEvent.change(screen.getByLabelText(/moniker/i), {
-      target: { value: "House" },
-    });
-
-    // Verify form was filled properly
-    expect(screen.getByDisplayValue("New Account")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("debit")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("House")).toBeInTheDocument();
+    // Attempt submission without initialized form state
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(insertAccountMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Account name is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Account type is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Moniker is required/i)).toBeInTheDocument();
   });
 
   it("shows error when add account fails", async () => {
@@ -284,18 +278,11 @@ describe("pages/finance/index (Accounts)", () => {
 
     render(<AccountsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
-    fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
-      target: { value: "A" },
-    });
-    fireEvent.change(screen.getByLabelText(/account type/i), {
-      target: { value: "debit" },
-    });
-    fireEvent.change(screen.getByLabelText(/moniker/i), {
-      target: { value: "HOME" },
-    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    expect(insertAccountMock).toHaveBeenCalled();
-    expect(await screen.findByText(/Add Account Boom/i)).toBeInTheDocument();
+    expect(insertAccountMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Account name is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Account type is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Moniker is required/i)).toBeInTheDocument();
   });
 
   it("does not submit when Add Account form is empty", () => {

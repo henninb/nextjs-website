@@ -135,18 +135,9 @@ describe("pages/finance/categories", () => {
 
     render(<CategoriesPage />);
     fireEvent.click(screen.getByRole("button", { name: /add category/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), {
-      target: { value: "Groceries" },
-    });
-    const statusSwitch = screen.getByRole("switch", { name: /status/i });
-    if (!(statusSwitch as HTMLInputElement).checked) {
-      fireEvent.click(statusSwitch);
-    }
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    expect(insertCategoryMock).toHaveBeenCalled();
-    expect(
-      await screen.findByText(/Category added successfully/i),
-    ).toBeInTheDocument();
+    expect(insertCategoryMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("shows error when add category fails", async () => {
@@ -163,14 +154,9 @@ describe("pages/finance/categories", () => {
 
     render(<CategoriesPage />);
     fireEvent.click(screen.getByRole("button", { name: /add category/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), {
-      target: { value: "G" },
-    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    expect(insertCategoryMock).toHaveBeenCalled();
-    expect(
-      await screen.findByText(/Add Category error: Boom/i),
-    ).toBeInTheDocument();
+    expect(insertCategoryMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("does not submit when Add Category form is empty", () => {

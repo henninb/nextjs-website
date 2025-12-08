@@ -11,6 +11,17 @@ import { getAccountKey, getTotalsKey } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useTransactionUpdate");
+type TransactionCache =
+  | Transaction[]
+  | {
+      content: Transaction[];
+    };
+
+const isPagedTransactionData = (data: unknown): data is { content: Transaction[] } =>
+  !!data &&
+  typeof data === "object" &&
+  Object.prototype.hasOwnProperty.call(data, "content") &&
+  Array.isArray((data as { content: Transaction[] }).content);
 
 /**
  * Update an existing transaction via API
@@ -82,6 +93,34 @@ export const updateTransaction = async (
 export default function useTransactionUpdate() {
   const queryClient = useQueryClient();
 
+  const updateAccountCaches = (
+    accountNameOwner: string,
+    updater: (rows: Transaction[]) => Transaction[],
+  ): void => {
+    const baseKey = getAccountKey(accountNameOwner);
+    const queries = queryClient.getQueriesData<TransactionCache>({
+      queryKey: baseKey,
+    });
+
+    queries.forEach(([queryKey, data]) => {
+      if (!data) {
+        return;
+      }
+
+      if (Array.isArray(data)) {
+        queryClient.setQueryData(queryKey, updater(data));
+        return;
+      }
+
+      if (isPagedTransactionData(data)) {
+        queryClient.setQueryData(queryKey, {
+          ...data,
+          content: updater(data.content || []),
+        });
+      }
+    });
+  };
+
   return useStandardMutation(
     (variables: {
       newRow: Transaction;
@@ -97,15 +136,11 @@ export default function useTransactionUpdate() {
           transactionId: response.transactionId,
         });
 
-        const oldAccountKey = getAccountKey(variables.oldRow.accountNameOwner);
         const newAccountKey = getAccountKey(variables.newRow.accountNameOwner);
         const oldTotalsKey = getTotalsKey(variables.oldRow.accountNameOwner);
         const newTotalsKey = getTotalsKey(variables.newRow.accountNameOwner);
 
         const updatedRow = variables.newRow;
-        const oldData = queryClient.getQueryData(
-          oldAccountKey,
-        ) as Transaction[];
 
         if (
           variables.oldRow.accountNameOwner ===
@@ -115,8 +150,10 @@ export default function useTransactionUpdate() {
           log.debug("Handling same-account update");
 
           // Update transaction in cache
-          const newData = oldData.map((row: Transaction) =>
-            row.guid === updatedRow.guid ? updatedRow : row,
+          updateAccountCaches(variables.oldRow.accountNameOwner, (rows) =>
+            rows.map((row: Transaction) =>
+              row.guid === updatedRow.guid ? updatedRow : row,
+            ),
           );
 
           // Clone existing totals or create defaults
@@ -183,7 +220,6 @@ export default function useTransactionUpdate() {
           }
 
           queryClient.setQueryData(oldTotalsKey, totals);
-          queryClient.setQueryData(oldAccountKey, newData);
 
           log.debug("Same-account update complete", {
             accountNameOwner: variables.oldRow.accountNameOwner,
@@ -197,8 +233,10 @@ export default function useTransactionUpdate() {
           });
 
           // Remove from old account
-          const newData = oldData.filter(
-            (row: Transaction) => row.guid !== variables.oldRow.guid,
+          updateAccountCaches(variables.oldRow.accountNameOwner, (rows) =>
+            rows.filter(
+              (row: Transaction) => row.guid !== variables.oldRow.guid,
+            ),
           );
 
           // Update old account totals
@@ -236,8 +274,6 @@ export default function useTransactionUpdate() {
           // We don't have complete state to calculate accurately
           queryClient.invalidateQueries({ queryKey: newAccountKey });
           queryClient.invalidateQueries({ queryKey: newTotalsKey });
-
-          queryClient.setQueryData(oldAccountKey, newData);
 
           log.debug("Cross-account transfer complete", {
             oldAccount: variables.oldRow.accountNameOwner,

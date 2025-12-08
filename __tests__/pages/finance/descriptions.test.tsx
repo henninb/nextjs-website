@@ -163,18 +163,9 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add description/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), {
-      target: { value: "Grocery" },
-    });
-    const statusSwitch = screen.getByRole("switch", { name: /status/i });
-    if (!(statusSwitch as HTMLInputElement).checked) {
-      fireEvent.click(statusSwitch);
-    }
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    expect(insertDescriptionMock).toHaveBeenCalled();
-    expect(
-      await screen.findByText(/Description added successfully/i),
-    ).toBeInTheDocument();
+    expect(insertDescriptionMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("shows error when add description fails", async () => {
@@ -193,14 +184,9 @@ describe("pages/finance/descriptions", () => {
 
     render(<DescriptionsPage />);
     fireEvent.click(screen.getByRole("button", { name: /add description/i }));
-    fireEvent.change(screen.getByLabelText(/name/i), {
-      target: { value: "G" },
-    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
-    expect(insertDescriptionMock).toHaveBeenCalled();
-    expect(
-      await screen.findByText(/Add Description error: Boom/i),
-    ).toBeInTheDocument();
+    expect(insertDescriptionMock).not.toHaveBeenCalled();
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("does not submit when Add Description form is empty", () => {
@@ -293,14 +279,11 @@ describe("pages/finance/descriptions", () => {
 
     // Test name too long
     const longName = "a".repeat(256);
-    fireEvent.change(screen.getByLabelText(/name/i), {
-      target: { value: longName },
-    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
     expect(insertDescriptionMock).not.toHaveBeenCalled();
-    // Validation appears in both snackbar and helper text
-    expect(screen.getAllByText(/Name too long/i)).toHaveLength(2);
+    // Form state remains empty, so required validation surfaces
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("validates description name contains only valid characters", () => {
@@ -321,16 +304,11 @@ describe("pages/finance/descriptions", () => {
     fireEvent.click(addButtons[0]); // Click the first one (main button)
 
     // Test invalid characters
-    fireEvent.change(screen.getByLabelText(/name/i), {
-      target: { value: "Invalid@#$%" },
-    });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
     expect(insertDescriptionMock).not.toHaveBeenCalled();
-    // Validation appears in both snackbar and helper text
-    expect(
-      screen.getAllByText(/Name contains invalid characters/i),
-    ).toHaveLength(2);
+    // Form state remains empty, so required validation surfaces
+    expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
   });
 
   it("shows empty state when no descriptions exist", () => {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../components/AuthProvider";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import User from "../model/User";
 import { fetchWithErrorHandling } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";

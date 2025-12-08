@@ -12,7 +12,7 @@ import {
 import ErrorDisplay from "./ErrorDisplay";
 import LoadingState from "./LoadingState";
 import { Close as CloseIcon } from "@mui/icons-material";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import useFetchAccount from "../hooks/useAccountFetch";
 import useAccountUsageTracking from "../hooks/useAccountUsageTracking";
 import Account from "../model/Account";

@@ -3,9 +3,9 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AccountCard from "../../components/AccountCard";
 import Account from "../../model/Account";
 
-// Mock next/router
+// Mock next/navigation
 const mockPush = jest.fn();
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
   }),

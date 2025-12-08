@@ -14,13 +14,8 @@ let mockUser = {
   username: "johndoe",
 };
 
-jest.mock("next/router", () => ({
-  useRouter: () => ({
-    push: mockPush,
-    pathname: mockRouterPathname,
-    query: {},
-    asPath: mockRouterPathname,
-  }),
+jest.mock("next/navigation", () => ({
+  usePathname: () => mockRouterPathname,
 }));
 
 jest.mock("../../components/AuthProvider", () => ({
@@ -104,7 +99,7 @@ describe("Layout Component", () => {
         </Layout>,
       );
 
-      expect(screen.getByTestId("finance-layout")).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
   });
 

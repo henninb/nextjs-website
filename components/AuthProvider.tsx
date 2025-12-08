@@ -7,7 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import User from "../model/User";
 import useLogout from "../hooks/useLogoutProcess";
 

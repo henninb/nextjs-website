@@ -15,7 +15,7 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Account from "../model/Account";
 
 type AccountCardProps = {

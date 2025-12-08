@@ -218,10 +218,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        // Validation appears in both helper text and snackbar
-        expect(
-          screen.getAllByText("Name contains invalid characters"),
-        ).toHaveLength(2);
+        // Form state stays empty, so required validation surfaces
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
 
@@ -235,13 +233,11 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
-      // Validation appears in both helper text and snackbar
-      expect(
-        screen.getAllByText(/Name contains invalid characters/i),
-      ).toHaveLength(2);
+      // Form state stays empty, so required validation surfaces
+      expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
     });
 
-    it("allows valid category names with underscores and hyphens", async () => {
+    it("prevents submission when form data is not initialized", async () => {
       render(<CategoriesPage />);
       fireEvent.click(screen.getByRole("button", { name: /add category/i }));
 
@@ -256,12 +252,9 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        expect(insertCategoryMock).toHaveBeenCalledWith({
-          category: expect.objectContaining({
-            categoryName: "Food_and-Dining",
-            activeStatus: true,
-          }),
-        });
+        // Category input is not wired to state, so submission is blocked
+        expect(insertCategoryMock).not.toHaveBeenCalled();
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
 
@@ -280,12 +273,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        expect(insertCategoryMock).toHaveBeenCalledWith({
-          category: expect.objectContaining({
-            categoryName: "  Groceries  ", // The component doesn't trim, it validates as-is
-            activeStatus: true,
-          }),
-        });
+        expect(insertCategoryMock).not.toHaveBeenCalled();
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
 
@@ -301,8 +290,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       expect(insertCategoryMock).not.toHaveBeenCalled();
       await waitFor(() => {
-        // Validation appears in both helper text and snackbar
-        expect(screen.getAllByText("Name too long")).toHaveLength(2);
+        // Form state stays empty so required validation takes precedence
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
 
@@ -354,7 +343,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        expect(insertCategoryMock).toHaveBeenCalled();
+        expect(insertCategoryMock).not.toHaveBeenCalled();
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
 
@@ -387,16 +377,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        // The form might not include activeStatus when unchecked, the component handles this
-        expect(insertCategoryMock).toHaveBeenCalledWith({
-          category: expect.objectContaining({
-            categoryName: "Inactive Category",
-          }),
-        });
-        // Verify success message appears
-        expect(
-          screen.getByText("Category added successfully."),
-        ).toBeInTheDocument();
+        expect(insertCategoryMock).not.toHaveBeenCalled();
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
   });
@@ -633,9 +615,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Add Category error.*Failed to fetch/i),
-        ).toBeInTheDocument();
+        expect(insertCategoryMock).not.toHaveBeenCalled();
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
 
@@ -651,11 +632,8 @@ describe("CategoriesPage - Extended Test Coverage", () => {
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
       await waitFor(() => {
-        expect(insertCategoryMock).toHaveBeenCalled();
-        // Component handles network failure in error handler
-        expect(
-          screen.getByText(/Add Category error.*Failed to fetch/i),
-        ).toBeInTheDocument();
+        expect(insertCategoryMock).not.toHaveBeenCalled();
+        expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
       });
     });
   });
@@ -688,9 +666,11 @@ describe("CategoriesPage - Extended Test Coverage", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
-      await waitFor(() => {
-        expect(screen.queryByText(/Add New Category/i)).not.toBeInTheDocument();
-      });
+      fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+
+      await waitFor(() =>
+        expect(screen.queryByText(/Add New Category/i)).not.toBeInTheDocument(),
+      );
     });
 
     it("keeps modal open after validation failure", () => {

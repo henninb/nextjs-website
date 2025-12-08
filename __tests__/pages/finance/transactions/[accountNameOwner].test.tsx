@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UIProvider } from "../../../../contexts/UIContext";
 import AccountTransactions from "../../../../pages/finance/transactions/[accountNameOwner]";
-import * as useTransactionByAccountFetch from "../../../../hooks/useTransactionByAccountFetch";
+import * as useTransactionByAccountFetchPaged from "../../../../hooks/useTransactionByAccountFetchPaged";
 import * as useTotalsPerAccountFetch from "../../../../hooks/useTotalsPerAccountFetch";
 import * as useValidationAmountFetch from "../../../../hooks/useValidationAmountFetch";
 import * as useAccountFetch from "../../../../hooks/useAccountFetch";
@@ -18,7 +18,7 @@ jest.mock("next/router", () => ({
   }),
 }));
 
-jest.mock("../../../../hooks/useTransactionByAccountFetch");
+jest.mock("../../../../hooks/useTransactionByAccountFetchPaged");
 jest.mock("../../../../hooks/useTotalsPerAccountFetch");
 jest.mock("../../../../hooks/useValidationAmountFetch");
 jest.mock("../../../../hooks/useAccountFetch");
@@ -262,8 +262,11 @@ describe("AccountTransactions Component", () => {
       loading: false,
     });
 
-    (useTransactionByAccountFetch.default as jest.Mock).mockReturnValue({
-      data: mockTransactionData,
+    (useTransactionByAccountFetchPaged.default as jest.Mock).mockReturnValue({
+      data: {
+        content: mockTransactionData,
+        totalElements: mockTransactionData.length,
+      },
       isSuccess: true,
       isLoading: false,
       isFetching: false,
@@ -335,13 +338,15 @@ describe("AccountTransactions Component", () => {
   });
 
   it("shows spinner while loading", () => {
-    (useTransactionByAccountFetch.default as jest.Mock).mockReturnValue({
-      data: null,
-      isSuccess: false,
-      isLoading: true,
-      isFetching: true,
-      error: null,
-    });
+    (useTransactionByAccountFetchPaged.default as jest.Mock).mockReturnValue(
+      {
+        data: null,
+        isSuccess: false,
+        isLoading: true,
+        isFetching: true,
+        error: null,
+      },
+    );
 
     render(<AccountTransactions />, { wrapper: createWrapper() });
 
@@ -366,7 +371,7 @@ describe("AccountTransactions Component", () => {
   it("opens add transaction modal when Add Transaction button is clicked", () => {
     render(<AccountTransactions />, { wrapper: createWrapper() });
 
-    const addButton = screen.getByText("Add Transaction");
+    const addButton = screen.getAllByText("Add Transaction")[0];
     fireEvent.click(addButton);
 
     expect(screen.getByText("Add New Transaction")).toBeInTheDocument();
@@ -381,7 +386,7 @@ describe("AccountTransactions Component", () => {
     render(<AccountTransactions />, { wrapper: createWrapper() });
 
     // Open modal
-    const addButton = screen.getByText("Add Transaction");
+    const addButton = screen.getAllByText("Add Transaction")[0];
     fireEvent.click(addButton);
 
     // Verify modal opened

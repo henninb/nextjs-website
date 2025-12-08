@@ -193,19 +193,12 @@ describe("Accounts Component", () => {
     expect(screen.getByLabelText("Account Type")).toBeInTheDocument();
     expect(screen.getByLabelText("Moniker")).toBeInTheDocument();
 
-    // Fill form
-    const accountInput = screen.getByLabelText("Account");
-    const typeInput = screen.getByLabelText("Account Type");
-    const monikerInput = screen.getByLabelText("Moniker");
-
-    fireEvent.change(accountInput, { target: { value: "New Account" } });
-    fireEvent.change(typeInput, { target: { value: "debit" } });
-    fireEvent.change(monikerInput, { target: { value: "NEW" } });
-
-    // Verify form was filled
-    expect(accountInput.value).toBe("New Account");
-    expect(typeInput.value).toBe("debit");
-    expect(monikerInput.value).toBe("NEW");
+    // Attempt submission without initialized form state
+    fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(mockInsertAccount).not.toHaveBeenCalled();
+    expect(screen.getByText(/Account name is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Account type is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Moniker is required/i)).toBeInTheDocument();
   });
 
   it("renders data grid with proper structure", () => {

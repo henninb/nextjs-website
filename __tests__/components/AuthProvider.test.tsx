@@ -1,10 +1,10 @@
 import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import AuthProvider, { useAuth } from "../../components/AuthProvider";
 import * as useLogoutProcess from "../../hooks/useLogoutProcess";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 

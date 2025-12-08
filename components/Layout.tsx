@@ -2,7 +2,7 @@
 
 import React, { useState, ReactNode } from "react";
 import { useAuth } from "./AuthProvider";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import {
   AppBar,
   Toolbar,
@@ -149,14 +149,13 @@ const generalLinks = [
 
 export default function Layout({ children }: LayoutProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const router = useRouter();
-  const { pathname } = router;
+  const pathname = usePathname();
   const globalTheme = useTheme();
   const { uiMode } = useUI();
 
   const { isAuthenticated, user, logout } = useAuth();
 
-  const isFinancePage = pathname.startsWith("/finance");
+  const isFinancePage = pathname?.startsWith("/finance") || false;
 
   // Helper function to safely get user display name with security best practices
   const getUserDisplayName = (): string => {
