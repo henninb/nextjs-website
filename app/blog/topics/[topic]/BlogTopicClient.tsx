@@ -1,12 +1,9 @@
+"use client";
+
 import React from "react";
-import { GetStaticProps, GetStaticPaths } from "next";
-import Head from "next/head";
 import Link from "next/link";
-import { getAllPosts } from "../../../utils/blog";
 import { format } from "date-fns";
-import { BlogPost } from "../../../model/BlogPost";
-import { ThemeProvider } from "@mui/material/styles";
-import { blogTheme } from "../../../themes/blogTheme";
+import { BlogPost } from "../../../../model/BlogPost";
 
 import {
   Container,
@@ -17,7 +14,6 @@ import {
   CardContent,
   Chip,
   Button,
-  Stack,
   alpha,
   useTheme,
   CardMedia,
@@ -35,7 +31,7 @@ import {
   Psychology,
 } from "@mui/icons-material";
 
-interface TopicPageProps {
+interface BlogTopicClientProps {
   posts: BlogPost[];
   topic: string;
 }
@@ -83,7 +79,10 @@ const TOPIC_CONFIG = {
   },
 };
 
-export default function TopicPage({ posts, topic }: TopicPageProps) {
+export default function BlogTopicClient({
+  posts,
+  topic,
+}: BlogTopicClientProps) {
   const theme = useTheme();
   const config = TOPIC_CONFIG[topic as keyof typeof TOPIC_CONFIG];
 
@@ -111,19 +110,7 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
   const Icon = config.icon;
 
   return (
-    <ThemeProvider theme={blogTheme}>
-      <Head>
-        <title>{`${config.title} Articles | Professional Development Blog`}</title>
-        <meta
-          name="description"
-          content={`${config.description} Browse our collection of ${config.title.toLowerCase()} articles and tutorials.`}
-        />
-        <meta
-          name="keywords"
-          content={`${topic}, ${config.title.toLowerCase()}, web development, programming, tutorials`}
-        />
-      </Head>
-
+    <>
       {/* Hero Section */}
       <Box
         sx={{
@@ -424,35 +411,6 @@ export default function TopicPage({ posts, topic }: TopicPageProps) {
           </Button>
         </Box>
       </Container>
-    </ThemeProvider>
+    </>
   );
 }
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  const topics = ["nextjs", "typescript", "webdev", "docker", "ai"];
-
-  return {
-    paths: topics.map((topic) => ({
-      params: { topic },
-    })),
-    fallback: false,
-  };
-};
-
-export const getStaticProps: GetStaticProps<TopicPageProps> = async ({
-  params,
-}) => {
-  const topic = params?.topic as string;
-  const allPosts = getAllPosts();
-
-  // Filter posts by topic
-  const posts = allPosts.filter((post) => post.tags?.includes(topic));
-
-  return {
-    props: {
-      posts,
-      topic,
-    },
-    revalidate: 3600, // Revalidate every hour
-  };
-};

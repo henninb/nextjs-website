@@ -1,12 +1,9 @@
+"use client";
+
 import React, { useState, useMemo } from "react";
-import { GetStaticProps } from "next";
-import Head from "next/head";
 import Link from "next/link";
-import { getAllPosts } from "../../utils/blog";
 import { format } from "date-fns";
 import { BlogPost } from "../../model/BlogPost";
-import { ThemeProvider } from "@mui/material/styles";
-import { blogTheme } from "../../themes/blogTheme";
 
 import {
   Container,
@@ -17,7 +14,6 @@ import {
   CardContent,
   Chip,
   Button,
-  Avatar,
   Stack,
   alpha,
   useTheme,
@@ -33,7 +29,7 @@ import {
   Share,
 } from "@mui/icons-material";
 
-interface BlogIndexProps {
+interface BlogIndexClientProps {
   posts: BlogPost[];
 }
 
@@ -46,7 +42,7 @@ const TOPICS = [
   { label: "AI", value: "ai" },
 ];
 
-export default function BlogIndex({ posts }: BlogIndexProps) {
+export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
   const [selectedTopic, setSelectedTopic] = useState("all");
   const theme = useTheme();
 
@@ -58,19 +54,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
   const featuredPost = posts[0]; // Most recent post as featured
 
   return (
-    <ThemeProvider theme={blogTheme}>
-      <Head>
-        <title>Blog | Professional Development Insights</title>
-        <meta
-          name="description"
-          content="Explore cutting-edge articles on Next.js, TypeScript, and modern web development. Stay updated with the latest trends and best practices."
-        />
-        <meta
-          name="keywords"
-          content="nextjs, typescript, web development, react, javascript, programming"
-        />
-      </Head>
-
+    <>
       {/* Hero Section */}
       <Box
         sx={{
@@ -520,17 +504,6 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
           </Box>
         )}
       </Container>
-    </ThemeProvider>
+    </>
   );
 }
-
-export const getStaticProps: GetStaticProps<BlogIndexProps> = async () => {
-  const posts = getAllPosts();
-
-  return {
-    props: {
-      posts,
-    },
-    revalidate: 3600, // Revalidate every hour
-  };
-};

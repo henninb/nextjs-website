@@ -1,14 +1,9 @@
+"use client";
+
 import React from "react";
-import { GetStaticProps, GetStaticPaths } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
-import { serialize } from "next-mdx-remote/serialize";
-import Head from "next/head";
 import Link from "next/link";
-import { ParsedUrlQuery } from "querystring";
-import { getAllPostSlugs, getPostBySlug } from "../../utils/blog";
 import { format } from "date-fns";
-import { ThemeProvider } from "@mui/material/styles";
-import { blogTheme } from "../../themes/blogTheme";
 
 import {
   Container,
@@ -26,7 +21,6 @@ import {
 } from "@mui/material";
 import {
   CalendarToday,
-  Person,
   Schedule,
   ArrowBack,
   Share,
@@ -36,7 +30,7 @@ import {
   Facebook,
 } from "@mui/icons-material";
 
-interface BlogPostProps {
+interface BlogPostClientProps {
   post: {
     slug: string;
     title: string;
@@ -49,32 +43,44 @@ interface BlogPostProps {
   };
 }
 
-interface Params extends ParsedUrlQuery {
-  slug: string;
-}
-
-export default function BlogPost({ post }: BlogPostProps) {
+export default function BlogPostClient({ post }: BlogPostClientProps) {
   const theme = useTheme();
   const estimatedReadTime = Math.ceil(
     post.content.compiledSource.length / 5000,
   ); // Rough estimate
 
-  return (
-    <ThemeProvider theme={blogTheme}>
-      <Head>
-        <title>{`${post.title} | Professional Development Blog`}</title>
-        <meta name="description" content={post.excerpt} />
-        <meta name="keywords" content={post.tags?.join(", ")} />
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.excerpt} />
-        <meta property="og:image" content={post.coverImage} />
-        <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.title} />
-        <meta name="twitter:description" content={post.excerpt} />
-        <meta name="twitter:image" content={post.coverImage} />
-      </Head>
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        url: window.location.href,
+      });
+    }
+  };
 
+  const handleTwitterShare = () => {
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(window.location.href)}`,
+      "_blank",
+    );
+  };
+
+  const handleLinkedInShare = () => {
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`,
+      "_blank",
+    );
+  };
+
+  const handleFacebookShare = () => {
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
+      "_blank",
+    );
+  };
+
+  return (
+    <>
       {/* Hero Section */}
       <Box
         sx={{
@@ -217,12 +223,7 @@ export default function BlogPost({ post }: BlogPostProps) {
             <IconButton
               size="small"
               sx={{ color: "text.secondary" }}
-              onClick={() =>
-                navigator.share?.({
-                  title: post.title,
-                  url: window.location.href,
-                })
-              }
+              onClick={handleShare}
             >
               <Share fontSize="small" />
             </IconButton>
@@ -232,24 +233,14 @@ export default function BlogPost({ post }: BlogPostProps) {
             <IconButton
               size="small"
               sx={{ color: "#1da1f2" }}
-              onClick={() =>
-                window.open(
-                  `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(window.location.href)}`,
-                  "_blank",
-                )
-              }
+              onClick={handleTwitterShare}
             >
               <Twitter fontSize="small" />
             </IconButton>
             <IconButton
               size="small"
               sx={{ color: "#0077b5" }}
-              onClick={() =>
-                window.open(
-                  `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`,
-                  "_blank",
-                )
-              }
+              onClick={handleLinkedInShare}
             >
               <LinkedIn fontSize="small" />
             </IconButton>
@@ -332,34 +323,19 @@ export default function BlogPost({ post }: BlogPostProps) {
               <Stack direction="row" spacing={1}>
                 <IconButton
                   sx={{ color: "#1da1f2" }}
-                  onClick={() =>
-                    window.open(
-                      `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(window.location.href)}`,
-                      "_blank",
-                    )
-                  }
+                  onClick={handleTwitterShare}
                 >
                   <Twitter />
                 </IconButton>
                 <IconButton
                   sx={{ color: "#0077b5" }}
-                  onClick={() =>
-                    window.open(
-                      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`,
-                      "_blank",
-                    )
-                  }
+                  onClick={handleLinkedInShare}
                 >
                   <LinkedIn />
                 </IconButton>
                 <IconButton
                   sx={{ color: "#1877f2" }}
-                  onClick={() =>
-                    window.open(
-                      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
-                      "_blank",
-                    )
-                  }
+                  onClick={handleFacebookShare}
                 >
                   <Facebook />
                 </IconButton>
@@ -385,30 +361,6 @@ export default function BlogPost({ post }: BlogPostProps) {
           </Stack>
         </Box>
       </Container>
-    </ThemeProvider>
+    </>
   );
 }
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = getAllPostSlugs();
-  return {
-    paths,
-    fallback: false,
-  };
-};
-
-export const getStaticProps: GetStaticProps<BlogPostProps, Params> = async ({
-  params,
-}) => {
-  const post = getPostBySlug(params!.slug);
-  const mdxSource = await serialize(post.content);
-
-  return {
-    props: {
-      post: {
-        ...post,
-        content: mdxSource,
-      },
-    },
-  };
-};
