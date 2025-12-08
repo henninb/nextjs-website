@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Box, CircularProgress } from "@mui/material";
@@ -19,7 +21,7 @@ const columns = [
     field: "gameDate",
     headerName: "Game Date",
     width: 200,
-    renderCell: (params) => {
+    renderCell: (params: any) => {
       const date = new Date(params.value);
       return (
         <Box sx={{ fontWeight: 600, color: "#2e7d32" }}>
@@ -36,7 +38,7 @@ const columns = [
     field: "venueName",
     headerName: "Venue",
     width: 180,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box sx={{ fontSize: "0.9rem", color: "#666" }}>⚾ {params.value}</Box>
     ),
   },
@@ -44,7 +46,7 @@ const columns = [
     field: "awayTeamName",
     headerName: "Away Team",
     width: 180,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -56,8 +58,8 @@ const columns = [
     field: "awayTeamScore",
     headerName: "Score",
     width: 80,
-    align: "center",
-    renderCell: (params) => (
+    align: "center" as const,
+    renderCell: (params: any) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -74,7 +76,7 @@ const columns = [
     field: "homeTeamName",
     headerName: "Home Team",
     width: 180,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -86,8 +88,8 @@ const columns = [
     field: "homeTeamScore",
     headerName: "Score",
     width: 80,
-    align: "center",
-    renderCell: (params) => (
+    align: "center" as const,
+    renderCell: (params: any) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -104,7 +106,7 @@ const columns = [
     field: "gameStatus",
     headerName: "Status",
     width: 120,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box
         sx={{
           fontSize: "0.85rem",
@@ -124,10 +126,10 @@ const columns = [
   },
 ];
 
-export default function Baseball() {
-  const [data, setData] = useState(null);
+export default function BaseballPage() {
+  const [data, setData] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -146,8 +148,8 @@ export default function Baseball() {
 
         // Remove duplicates based on gamePk
         const uniqueGames = result.filter(
-          (game, index, arr) =>
-            arr.findIndex((g) => g.gamePk === game.gamePk) === index,
+          (game: any, index: number, arr: any[]) =>
+            arr.findIndex((g: any) => g.gamePk === game.gamePk) === index,
         );
         console.log(
           "Original length:",
@@ -157,7 +159,7 @@ export default function Baseball() {
         );
 
         // Transform data to flatten nested properties for easier DataGrid access
-        const transformedData = uniqueGames.map((game) => ({
+        const transformedData = uniqueGames.map((game: any) => ({
           ...game,
           venueName: game.venue?.name || "TBD",
           awayTeamName: game.teams?.away?.team?.name || "TBD",
@@ -169,7 +171,7 @@ export default function Baseball() {
 
         console.log("Transformed first game:", transformedData[0]);
         setData(transformedData);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Fetch error:", err);
         setError(err.message);
       } finally {
@@ -233,10 +235,10 @@ export default function Baseball() {
       data={data}
       columns={columns}
       title="Twins Baseball Scores"
-      getRowId={(row, index) => {
-        if (!row) return `row-${index}`;
-        // Use gamePk as primary key, with index fallback
-        return row.gamePk ? `game-${row.gamePk}` : `row-${index}`;
+      getRowId={(row: any) => {
+        if (!row) return crypto.randomUUID();
+        // Use gamePk as primary key, with UUID fallback
+        return row.gamePk ? `game-${row.gamePk}` : crypto.randomUUID();
       }}
       sport="baseball"
     />

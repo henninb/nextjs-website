@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import dynamic from "next/dynamic";
 import { Box, CircularProgress } from "@mui/material";
@@ -20,7 +22,7 @@ const columns = [
     field: "DateUtc",
     headerName: "Game Date",
     width: 200,
-    renderCell: (params) => {
+    renderCell: (params: any) => {
       const date = new Date(params.value);
       return (
         <Box sx={{ fontWeight: 600, color: "#d32f2f" }}>
@@ -37,7 +39,7 @@ const columns = [
     field: "Location",
     headerName: "Venue",
     width: 180,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box sx={{ fontSize: "0.9rem", color: "#666" }}>🏒 {params.value}</Box>
     ),
   },
@@ -45,7 +47,7 @@ const columns = [
     field: "AwayTeam",
     headerName: "Away Team",
     width: 180,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -57,8 +59,8 @@ const columns = [
     field: "AwayTeamScore",
     headerName: "Score",
     width: 80,
-    align: "center",
-    renderCell: (params) => (
+    align: "center" as const,
+    renderCell: (params: any) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -75,7 +77,7 @@ const columns = [
     field: "HomeTeam",
     headerName: "Home Team",
     width: 180,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -87,8 +89,8 @@ const columns = [
     field: "HomeTeamScore",
     headerName: "Score",
     width: 80,
-    align: "center",
-    renderCell: (params) => (
+    align: "center" as const,
+    renderCell: (params: any) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -103,7 +105,7 @@ const columns = [
   },
 ];
 
-export default function Hockey() {
+export default function HockeyPage() {
   const { data, loading, error, retry } = useSportsData("/api/nhl");
 
   if (loading) {

@@ -10,7 +10,7 @@ export default async function handler(req) {
 
   try {
     const apiUrl =
-      "https://fixturedownload.com/feed/json/nba-2024/minnesota-timberwolves";
+      "https://fixturedownload.com/feed/json/nba-2025/minnesota-timberwolves";
 
     const apiResponse = await fetch(apiUrl, {
       method: "GET",

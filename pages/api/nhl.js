@@ -10,7 +10,7 @@ export default async function handler(req) {
 
   try {
     const apiUrl =
-      "https://fixturedownload.com/feed/json/nhl-2024/minnesota-wild";
+      "https://fixturedownload.com/feed/json/nhl-2025/minnesota-wild";
 
     const apiResponse = await fetch(apiUrl, {
       method: "GET",
