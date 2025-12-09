@@ -1,11 +1,11 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import PaymentRequired from "../../../pages/finance/paymentrequired";
+import PaymentRequired from "../../../app/finance/paymentrequired/page";
 import * as useFetchPaymentRequired from "../../../hooks/usePaymentRequiredFetch";
 import * as AuthProvider from "../../../components/AuthProvider";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: jest.fn(),
   }),
@@ -117,7 +117,7 @@ describe("PaymentRequired Component", () => {
     const mockReplace = jest.fn();
 
     // Mock useRouter for this test
-    const mockUseRouter = jest.spyOn(require("next/router"), "useRouter");
+    const mockUseRouter = jest.spyOn(require("next/navigation"), "useRouter");
     mockUseRouter.mockReturnValue({
       replace: mockReplace,
     });

@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -95,7 +95,7 @@ jest.mock("../../../components/ErrorDisplay", () => ({
   ),
 }));
 
-import ValidationAmountsPage from "../../../pages/finance/validation-amounts";
+import ValidationAmountsPage from "../../../app/finance/validation-amounts/page";
 import useValidationAmountsFetchAllMock from "../../../hooks/useValidationAmountsFetchAll";
 import useAccountFetchMock from "../../../hooks/useAccountFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";

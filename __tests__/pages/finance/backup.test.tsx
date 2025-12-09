@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import BackupPage from "../../../pages/finance/backup";
+import BackupPage from "../../../app/finance/backup/page";
 import * as AuthProvider from "../../../components/AuthProvider";
 
 jest.mock("next/router", () => ({

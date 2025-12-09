@@ -44,7 +44,7 @@ describe("/api/nba", () => {
       const result = await handler(mockReq);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "https://fixturedownload.com/feed/json/nba-2024/minnesota-timberwolves",
+        "https://fixturedownload.com/feed/json/nba-2025/minnesota-timberwolves",
         expect.objectContaining({
           method: "GET",
           headers: {

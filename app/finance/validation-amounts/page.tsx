@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -17,25 +19,25 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SnackbarBaseline from "../../components/SnackbarBaseline";
-import ErrorDisplay from "../../components/ErrorDisplay";
-import EmptyState from "../../components/EmptyState";
-import LoadingState from "../../components/LoadingState";
-import ValidationAmount from "../../model/ValidationAmount";
-import { TransactionState } from "../../model/TransactionState";
-import useValidationAmountsFetchAll from "../../hooks/useValidationAmountsFetchAll";
-import useValidationAmountInsert from "../../hooks/useValidationAmountInsert";
-import useValidationAmountUpdate from "../../hooks/useValidationAmountUpdate";
-import useValidationAmountDelete from "../../hooks/useValidationAmountDelete";
-import useAccountFetch from "../../hooks/useAccountFetch";
-import FinanceLayout from "../../layouts/FinanceLayout";
-import PageHeader from "../../components/PageHeader";
-import DataGridBase from "../../components/DataGridBase";
-import ConfirmDialog from "../../components/ConfirmDialog";
-import FormDialog from "../../components/FormDialog";
-import { useAuth } from "../../components/AuthProvider";
-import { modalTitles, modalBodies } from "../../utils/modalMessages";
-import { currencyFormat } from "../../components/Common";
+import SnackbarBaseline from "../../../components/SnackbarBaseline";
+import ErrorDisplay from "../../../components/ErrorDisplay";
+import EmptyState from "../../../components/EmptyState";
+import LoadingState from "../../../components/LoadingState";
+import ValidationAmount from "../../../model/ValidationAmount";
+import { TransactionState } from "../../../model/TransactionState";
+import useValidationAmountsFetchAll from "../../../hooks/useValidationAmountsFetchAll";
+import useValidationAmountInsert from "../../../hooks/useValidationAmountInsert";
+import useValidationAmountUpdate from "../../../hooks/useValidationAmountUpdate";
+import useValidationAmountDelete from "../../../hooks/useValidationAmountDelete";
+import useAccountFetch from "../../../hooks/useAccountFetch";
+
+import PageHeader from "../../../components/PageHeader";
+import DataGridBase from "../../../components/DataGridBase";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import FormDialog from "../../../components/FormDialog";
+import { useAuth } from "../../../components/AuthProvider";
+import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { currencyFormat } from "../../../components/Common";
 
 export default function ValidationAmounts() {
   const [message, setMessage] = useState("");
@@ -316,7 +318,7 @@ export default function ValidationAmounts() {
   // Handle error states first
   if (isErrorValidationAmounts && selectedAccount) {
     return (
-      <FinanceLayout>
+      <>
         <PageHeader
           title="Validation Amounts"
           subtitle="Manage validation amounts for account reconciliation"
@@ -338,13 +340,13 @@ export default function ValidationAmounts() {
           showRetry={true}
           onRetry={() => refetch()}
         />
-      </FinanceLayout>
+      </>
     );
   }
 
   return (
     <div>
-      <FinanceLayout>
+      <>
         <PageHeader
           title="Validation Amounts"
           subtitle="Manage validation amounts for account reconciliation"
@@ -571,7 +573,7 @@ export default function ValidationAmounts() {
             />
           </Box>
         </FormDialog>
-      </FinanceLayout>
+      </>
     </div>
   );
 }

@@ -1,12 +1,12 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useRouter } from "next/router";
-import MedicalExpenses from "../../../pages/finance/medical-expenses";
+import { useRouter } from "next/navigation";
+import MedicalExpenses from "../../../app/finance/medical-expenses/page";
 import { MedicalExpense, ClaimStatus } from "../../../model/MedicalExpense";
 
 // Mock Next.js router
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 

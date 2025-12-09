@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { FinanceThemeProvider } from "../components/FinanceThemeProvider";
 import { UIProvider } from "../contexts/UIContext";

@@ -1,10 +1,12 @@
+"use client";
+
 /**
  * Monthly Spending Trends Page
  * Modern, accessible UI for visualizing spending patterns and insights
  */
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Button,
@@ -42,19 +44,19 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import CategoryIcon from "@mui/icons-material/Category";
 import TransactionIcon from "@mui/icons-material/Receipt";
 
-import FinanceLayout from "../../layouts/FinanceLayout";
-import PageHeader from "../../components/PageHeader";
-import LoadingState from "../../components/LoadingState";
-import ErrorDisplay from "../../components/ErrorDisplay";
-import EmptyState from "../../components/EmptyState";
-import { currencyFormat } from "../../components/Common";
+
+import PageHeader from "../../../components/PageHeader";
+import LoadingState from "../../../components/LoadingState";
+import ErrorDisplay from "../../../components/ErrorDisplay";
+import EmptyState from "../../../components/EmptyState";
+import { currencyFormat } from "../../../components/Common";
 
 import useSpendingTrends, {
   TrendsFilters,
-} from "../../hooks/useSpendingTrends";
-import useAccountFetch from "../../hooks/useAccountFetch";
-import useCategoryFetch from "../../hooks/useCategoryFetch";
-import { useAuth } from "../../components/AuthProvider";
+} from "../../../hooks/useSpendingTrends";
+import useAccountFetch from "../../../hooks/useAccountFetch";
+import useCategoryFetch from "../../../hooks/useCategoryFetch";
+import { useAuth } from "../../../components/AuthProvider";
 
 const TrendsPage = () => {
   const router = useRouter();
@@ -138,16 +140,16 @@ const TrendsPage = () => {
   // Render loading state
   if (isLoading) {
     return (
-      <FinanceLayout>
+      <>
         <LoadingState variant="card" message="Loading spending trends..." />
-      </FinanceLayout>
+      </>
     );
   }
 
   // Render error state
   if (isError) {
     return (
-      <FinanceLayout>
+      <>
         <PageHeader
           title="Monthly Spending Trends"
           subtitle="Analyze your spending patterns and track month-over-month changes."
@@ -159,14 +161,14 @@ const TrendsPage = () => {
           showRetry={true}
           onRetry={refetchTrends}
         />
-      </FinanceLayout>
+      </>
     );
   }
 
   // Render empty state
   if (!trendsData || trendsData.monthlySpending.length === 0) {
     return (
-      <FinanceLayout>
+      <>
         <PageHeader
           title="Monthly Spending Trends"
           subtitle="Analyze your spending patterns and track month-over-month changes."
@@ -177,7 +179,7 @@ const TrendsPage = () => {
           dataType="generic"
           variant="data"
         />
-      </FinanceLayout>
+      </>
     );
   }
 
@@ -198,7 +200,7 @@ const TrendsPage = () => {
   };
 
   return (
-    <FinanceLayout>
+    <>
       <PageHeader
         title="Monthly Spending Trends"
         subtitle="Analyze your spending patterns and track month-over-month changes."
@@ -560,7 +562,7 @@ const TrendsPage = () => {
           </Card>
         </Grid>
       </Grid>
-    </FinanceLayout>
+    </>
   );
 };
 

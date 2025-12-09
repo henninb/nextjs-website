@@ -1,30 +1,32 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { GridColDef } from "@mui/x-data-grid";
 import { Box, Button, IconButton, Tooltip, Chip, Dialog } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 
-import SnackbarBaseline from "../../components/SnackbarBaseline";
-import ErrorDisplay from "../../components/ErrorDisplay";
-import EmptyState from "../../components/EmptyState";
-import LoadingState from "../../components/LoadingState";
-import FinanceLayout from "../../layouts/FinanceLayout";
-import ConfirmDialog from "../../components/ConfirmDialog";
-import FormDialog from "../../components/FormDialog";
-import PageHeader from "../../components/PageHeader";
-import DataGridBase from "../../components/DataGridBase";
-import SummaryBar from "../../components/SummaryBar";
-import MedicalExpenseForm from "../../components/MedicalExpenseForm";
-import { useAuth } from "../../components/AuthProvider";
+import SnackbarBaseline from "../../../components/SnackbarBaseline";
+import ErrorDisplay from "../../../components/ErrorDisplay";
+import EmptyState from "../../../components/EmptyState";
+import LoadingState from "../../../components/LoadingState";
 
-import useMedicalExpenseFetch from "../../hooks/useMedicalExpenseFetch";
-import useMedicalExpenseDelete from "../../hooks/useMedicalExpenseDelete";
-import useMedicalExpenseInsert from "../../hooks/useMedicalExpenseInsert";
-import useMedicalExpenseUpdate from "../../hooks/useMedicalExpenseUpdate";
-import { MedicalExpense, ClaimStatus } from "../../model/MedicalExpense";
-import { currencyFormat } from "../../components/Common";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import FormDialog from "../../../components/FormDialog";
+import PageHeader from "../../../components/PageHeader";
+import DataGridBase from "../../../components/DataGridBase";
+import SummaryBar from "../../../components/SummaryBar";
+import MedicalExpenseForm from "../../../components/MedicalExpenseForm";
+import { useAuth } from "../../../components/AuthProvider";
+
+import useMedicalExpenseFetch from "../../../hooks/useMedicalExpenseFetch";
+import useMedicalExpenseDelete from "../../../hooks/useMedicalExpenseDelete";
+import useMedicalExpenseInsert from "../../../hooks/useMedicalExpenseInsert";
+import useMedicalExpenseUpdate from "../../../hooks/useMedicalExpenseUpdate";
+import { MedicalExpense, ClaimStatus } from "../../../model/MedicalExpense";
+import { currencyFormat } from "../../../components/Common";
 
 export default function MedicalExpenses() {
   const [message, setMessage] = useState("");
@@ -281,7 +283,7 @@ export default function MedicalExpenses() {
   // Handle error states first
   if (error) {
     return (
-      <FinanceLayout>
+      <>
         <PageHeader
           title="Medical Expenses"
           subtitle="Track and manage your healthcare expenses and insurance claims"
@@ -292,12 +294,12 @@ export default function MedicalExpenses() {
           showRetry={true}
           onRetry={() => refetch()}
         />
-      </FinanceLayout>
+      </>
     );
   }
 
   return (
-    <FinanceLayout>
+    <>
       <PageHeader
         title="Medical Expenses"
         subtitle="Track and manage your healthcare expenses and insurance claims"
@@ -390,6 +392,6 @@ export default function MedicalExpenses() {
         state={showSnackbar}
         handleSnackbarClose={handleSnackbarClose}
       />
-    </FinanceLayout>
+    </>
   );
 }

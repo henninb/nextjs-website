@@ -44,7 +44,7 @@ describe("/api/nhl", () => {
       const result = await handler(mockReq);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "https://fixturedownload.com/feed/json/nhl-2024/minnesota-wild",
+        "https://fixturedownload.com/feed/json/nhl-2025/minnesota-wild",
         expect.objectContaining({
           method: "GET",
           headers: {

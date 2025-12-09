@@ -1,14 +1,15 @@
+"use client";
+
 import React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import Spinner from "../../components/Spinner";
-import useFetchPaymentRequired from "../../hooks/usePaymentRequiredFetch";
+import Spinner from "../../../components/Spinner";
+import useFetchPaymentRequired from "../../../hooks/usePaymentRequiredFetch";
 import { Link, Box, Typography } from "@mui/material";
-import FinanceLayout from "../../layouts/FinanceLayout";
-import { useAuth } from "../../components/AuthProvider";
+import { useAuth } from "../../../components/AuthProvider";
 
-export default function paymentrequired() {
+export default function PaymentRequiredPage() {
   const [showSpinner, setShowSpinner] = useState(true);
   const {
     data: fetchedPaymentsRequired,
@@ -125,46 +126,44 @@ export default function paymentrequired() {
 
   return (
     <div>
-      <FinanceLayout>
-        <Box sx={{ mb: 3, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ mb: 1, fontWeight: 600 }}
-          >
-            Account Balances
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Monitor account balances and track validation amounts across all
-            your accounts
-          </Typography>
-        </Box>
-        {showSpinner ? (
-          <Spinner />
-        ) : (
-          <div data-testid="payment-required-table">
-            <Box display="flex" justifyContent="center">
-              <Box sx={{ width: "100%", maxWidth: 1200 }}>
-                <DataGrid
-                  columns={columns}
-                  rows={
-                    fetchedPaymentsRequired?.filter((row) => row != null) || []
-                  }
-                  paginationModel={{
-                    pageSize: fetchedPaymentsRequired?.length ?? 10,
-                    page: 0,
-                  }}
-                  hideFooterPagination={true}
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  getRowId={(row) => row.accountNameOwner}
-                  autoHeight
-                />
-              </Box>
+      <Box sx={{ mb: 3, textAlign: "center" }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{ mb: 1, fontWeight: 600 }}
+        >
+          Account Balances
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Monitor account balances and track validation amounts across all
+          your accounts
+        </Typography>
+      </Box>
+      {showSpinner ? (
+        <Spinner />
+      ) : (
+        <div data-testid="payment-required-table">
+          <Box display="flex" justifyContent="center">
+            <Box sx={{ width: "100%", maxWidth: 1200 }}>
+              <DataGrid
+                columns={columns}
+                rows={
+                  fetchedPaymentsRequired?.filter((row) => row != null) || []
+                }
+                paginationModel={{
+                  pageSize: fetchedPaymentsRequired?.length ?? 10,
+                  page: 0,
+                }}
+                hideFooterPagination={true}
+                checkboxSelection={false}
+                rowSelection={false}
+                getRowId={(row) => row.accountNameOwner}
+                autoHeight
+              />
             </Box>
-          </div>
-        )}
-      </FinanceLayout>
+          </Box>
+        </div>
+      )}
     </div>
   );
 }

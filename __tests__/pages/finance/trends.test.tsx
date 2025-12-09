@@ -7,7 +7,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UIProvider } from "../../../contexts/UIContext";
-import TrendsPage from "../../../pages/finance/trends";
+import TrendsPage from "../../../app/finance/trends/page";
 import * as useSpendingTrends from "../../../hooks/useSpendingTrends";
 import * as useAccountFetch from "../../../hooks/useAccountFetch";
 import * as useCategoryFetch from "../../../hooks/useCategoryFetch";
@@ -19,9 +19,9 @@ jest.mock("../../../hooks/useAccountFetch");
 jest.mock("../../../hooks/useCategoryFetch");
 jest.mock("../../../components/AuthProvider");
 
-// Mock next/router
+// Mock next/navigation
 const mockReplace = jest.fn();
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: mockReplace,
   }),
