@@ -123,7 +123,7 @@ jest.mock("../../../hooks/useParameterFetch", () => ({
   default: jest.fn(),
 }));
 
-import AccountsPage from "../../../pages/finance/index";
+import AccountsPage from "../../../app/finance/page";
 import CategoriesPage from "../../../app/finance/categories/page";
 import PaymentsPage from "../../../app/finance/payments/page";
 

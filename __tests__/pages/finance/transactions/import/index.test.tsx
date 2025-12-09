@@ -7,7 +7,7 @@ import {
   act,
 } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import TransactionImporter from "../../../../../pages/finance/transactions/import/index";
+import TransactionImporter from "../../../../../app/finance/transactions/import/page";
 import * as usePendingTransactions from "../../../../../hooks/usePendingTransactionFetch";
 import * as useTransactionInsert from "../../../../../hooks/useTransactionInsert";
 import * as usePendingTransactionDeleteAll from "../../../../../hooks/usePendingTransactionDeleteAll";
@@ -17,10 +17,16 @@ import * as useAccountFetch from "../../../../../hooks/useAccountFetch";
 import * as AuthProvider from "../../../../../components/AuthProvider";
 import { getCategoryFromDescription } from "../../../../../utils/categoryMapping";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: jest.fn(),
+    push: jest.fn(),
+    pathname: "/finance/transactions/import",
   }),
+  useSearchParams: () => ({
+    get: jest.fn(),
+  }),
+  usePathname: () => "/finance/transactions/import",
 }));
 
 jest.mock("../../../../../hooks/usePendingTransactionFetch");
@@ -299,9 +305,11 @@ describe("TransactionImporter Component", () => {
     const mockReplace = jest.fn();
 
     // Mock useRouter for this test
-    const mockUseRouter = jest.spyOn(require("next/router"), "useRouter");
+    const mockUseRouter = jest.spyOn(require("next/navigation"), "useRouter");
     mockUseRouter.mockReturnValue({
       replace: mockReplace,
+      push: jest.fn(),
+      pathname: "/finance/transactions/import",
     });
 
     (AuthProvider.useAuth as jest.Mock).mockReturnValue({

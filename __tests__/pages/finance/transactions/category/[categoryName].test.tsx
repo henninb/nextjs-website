@@ -1,17 +1,22 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import TransactionsByCategory from "../../../../../pages/finance/transactions/category/[categoryName]";
+import TransactionsByCategory from "../../../../../app/finance/transactions/category/[categoryName]/page";
 import * as AuthProvider from "../../../../../components/AuthProvider";
 import * as useTransactionByCategory from "../../../../../hooks/useTransactionByCategoryFetch";
 
 // Router mock to supply the dynamic route param and capture redirects
 const replaceMock = jest.fn();
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
-    query: { categoryName: "Food" },
     replace: replaceMock,
+    push: jest.fn(),
+    pathname: "/finance/transactions/category/Food",
   }),
+  useSearchParams: () => ({
+    get: jest.fn(),
+  }),
+  usePathname: () => "/finance/transactions/category/Food",
 }));
 
 // Mock Spinner and FinanceLayout to keep DOM minimal and stable
@@ -94,7 +99,7 @@ describe("TransactionsByCategory page", () => {
   });
 
   it("renders the heading with the category name", () => {
-    render(<TransactionsByCategory />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
     expect(screen.getByText("Food")).toBeInTheDocument();
   });
 
@@ -106,12 +111,12 @@ describe("TransactionsByCategory page", () => {
       error: null,
     });
 
-    render(<TransactionsByCategory />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
   it("renders the data grid with transaction rows", () => {
-    render(<TransactionsByCategory />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
 
     // DataGrid is globally mocked in __mocks__/@mui/x-data-grid.ts
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
@@ -128,7 +133,7 @@ describe("TransactionsByCategory page", () => {
       loading: false,
     });
 
-    render(<TransactionsByCategory />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
 
     // Component renders nothing and triggers a redirect
     expect(replaceMock).toHaveBeenCalledWith("/login");
@@ -144,7 +149,7 @@ describe("TransactionsByCategory page", () => {
       refetch: refetchMock,
     });
 
-    render(<TransactionsByCategory />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
     expect(screen.getByTestId("error-display")).toBeInTheDocument();
     const btn = screen.getByTestId("retry-button");
     btn.click();
@@ -162,12 +167,12 @@ describe("TransactionsByCategory page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByCategory />, {
+      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" }} />, {
         wrapper: createWrapper(),
       });
 
       // Component should return null but not crash due to hook order violations
-      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+      expect(screen.queryByText("Food")).not.toBeInTheDocument();
 
       // Second render: loading = false (should call same hooks in same order)
       (AuthProvider.useAuth as jest.Mock).mockReturnValue({
@@ -175,10 +180,10 @@ describe("TransactionsByCategory page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByCategory />);
+      rerender(<TransactionsByCategory params={{ categoryName: "Food" }} />);
 
       // Should render successfully without Rules of Hooks error
-      expect(screen.getByTestId("finance-layout")).toBeInTheDocument();
+      expect(screen.getByText("Food")).toBeInTheDocument();
     });
 
     it("calls hooks consistently during authentication state transitions", () => {
@@ -188,12 +193,12 @@ describe("TransactionsByCategory page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByCategory />, {
+      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" }} />, {
         wrapper: createWrapper(),
       });
 
       // Should return null without hook violations
-      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+      expect(screen.queryByText("Food")).not.toBeInTheDocument();
 
       // Change to not authenticated, not loading
       (AuthProvider.useAuth as jest.Mock).mockReturnValue({
@@ -201,10 +206,10 @@ describe("TransactionsByCategory page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByCategory />);
+      rerender(<TransactionsByCategory params={{ categoryName: "Food" }} />);
 
       // Should still return null and trigger redirect
-      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+      expect(screen.queryByText("Food")).not.toBeInTheDocument();
       expect(replaceMock).toHaveBeenCalledWith("/login");
     });
 
@@ -217,7 +222,7 @@ describe("TransactionsByCategory page", () => {
         error: null,
       });
 
-      const { rerender } = render(<TransactionsByCategory />, {
+      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" }} />, {
         wrapper: createWrapper(),
       });
       expect(screen.getByTestId("spinner")).toBeInTheDocument();
@@ -230,7 +235,7 @@ describe("TransactionsByCategory page", () => {
         error: null,
       });
 
-      rerender(<TransactionsByCategory />);
+      rerender(<TransactionsByCategory params={{ categoryName: "Food" }} />);
 
       // Should render data grid without hook order errors
       expect(screen.getByTestId("data-grid")).toBeInTheDocument();

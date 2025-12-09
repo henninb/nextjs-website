@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState } from "react";
-import Head from "next/head";
+
 import {
   Box,
   Container,
@@ -149,13 +151,6 @@ export default function Payment() {
 
   return (
     <>
-      <Head>
-        <title>Secure Payment Processing</title>
-        <meta
-          name="description"
-          content="Secure payment processing with multiple payment options"
-        />
-      </Head>
 
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Box sx={{ textAlign: "center", mb: 4 }}>

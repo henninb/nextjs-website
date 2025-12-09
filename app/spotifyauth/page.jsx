@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const SpotifyAuth = () => {
   const authorize_endpoint = "https://accounts.spotify.com/authorize";
@@ -12,7 +14,8 @@ const SpotifyAuth = () => {
 
   const [accessToken, setAccessToken] = useState(null);
   const router = useRouter();
-  const { code } = router.query;
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code");
 
   useEffect(() => {
     if (code) {

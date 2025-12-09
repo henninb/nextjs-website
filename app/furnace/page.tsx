@@ -1,6 +1,8 @@
+"use client";
+
 // pages/furnace.tsx
 import { NextPage } from "next";
-import Head from "next/head";
+
 import {
   Container,
   Typography,
@@ -27,15 +29,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 const FurnacePage: NextPage = () => {
   return (
     <>
-      <Head>
-        <title>
-          Armstrong Furnace G1D93AU090D16C-1A | Maintenance & Reference
-        </title>
-        <meta
-          name="description"
-          content="Complete reference guide for Armstrong G1D93AU090D16C-1A furnace including specifications, maintenance, troubleshooting, and parts"
-        />
-      </Head>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}

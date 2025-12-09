@@ -1,8 +1,9 @@
+"use client";
+
 // pages/watch/index.tsx
 import { NextPage } from "next";
 import { useEffect, useRef, useState } from "react";
 import { Snackbar, Alert } from "@mui/material";
-import Head from "next/head";
 
 interface VideoMetadata {
   videoId: string;
@@ -497,13 +498,6 @@ const WatchPage: NextPage = () => {
 
   return (
     <>
-      <Head>
-        <title>{videoData?.title || "Video Player"} - Watch</title>
-        <meta
-          name="description"
-          content={videoData?.description || "Video streaming platform"}
-        />
-      </Head>
 
       <div
         style={{

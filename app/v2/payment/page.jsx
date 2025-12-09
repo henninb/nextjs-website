@@ -1,5 +1,6 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import Head from "next/head";
 
 export default function Payment() {
   const [cardName, setCardName] = useState("");
@@ -70,61 +71,7 @@ export default function Payment() {
 
   return (
     <div>
-      <Head>
-        <script
-          async=""
-          src="https://connect.facebook.net/en_US/sdk.js"
-        ></script>
-
-        <script
-          async=""
-          src="https://prod.api.firstdata.com/ucom/v2/static/v2/js/ucom-sdk.js"
-        ></script>
-        <script async="" src="https://track.sv.rkdms.com/js/sv.js"></script>
-        <script async="" src="https://bat.bing.com/bat.js"></script>
-        <script
-          async=""
-          src="https://cdn.amplitude.com/libs/amplitude-8.16.1-min.gz.js"
-        ></script>
-        <script async="" src="//acdn.adnxs.com/dmp/up/pixie.js"></script>
-        <script
-          async=""
-          src="https://sb.scorecardresearch.com/cs/6035944/beacon.js"
-        ></script>
-        <script async="" src="https://static.ads-twitter.com/uwt.js"></script>
-        <script
-          async=""
-          src="https://www.google-analytics.com/analytics.js"
-        ></script>
-        <script
-          async=""
-          src="https://tpp.isgengine.com/gtfyqkfbzv.js?id=G-7SXZSK4XTH&amp;l=ISG&amp;cx=c"
-        ></script>
-        <script
-          src="https://js.hs-analytics.net/analytics/1726079100000/8187955.js"
-          id="hs-analytics"
-        ></script>
-        <script
-          async=""
-          src="https://tpp.isgengine.com/fyqkfbzv.js?st=NVZW7XPV&amp;l=ISG"
-        ></script>
-        <script
-          async=""
-          src="https://cdn.branch.io/branch-latest.min.js"
-        ></script>
-        <script
-          type="text/javascript"
-          async=""
-          src="https://tags-cdn.clarivoy.com/common/read_from_config/clarivoy.js"
-        ></script>
-        <script
-          async=""
-          crossOrigin="anonymous"
-          type="text/plain"
-          src="https://edge.fullstory.com/s/fs.js"
-          className="optanon-category-C0002"
-        ></script>
-      </Head>
+      
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
         <div>

@@ -1,6 +1,8 @@
+"use client";
+
 // pages/me.tsx
 import { NextPage } from "next";
-import { useUser } from "../hooks/useUser";
+import { useUser } from "../../hooks/useUser";
 
 const MePage: NextPage = () => {
   const { user, isLoading, isError } = useUser();

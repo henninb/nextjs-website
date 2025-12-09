@@ -1,17 +1,22 @@
 import React from "react";
 import { render, screen, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import TransactionsByDescription from "../../../../../pages/finance/transactions/description/[descriptionName]";
+import TransactionsByDescription from "../../../../../app/finance/transactions/description/[descriptionName]/page";
 import * as AuthProvider from "../../../../../components/AuthProvider";
 import * as useTransactionByDescription from "../../../../../hooks/useTransactionByDescriptionFetch";
 
 // Router mock to supply the dynamic route param and capture redirects
 const replaceMock = jest.fn();
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
-    query: { descriptionName: "Grocery Store" },
     replace: replaceMock,
+    push: jest.fn(),
+    pathname: "/finance/transactions/description/Grocery%20Store",
   }),
+  useSearchParams: () => ({
+    get: jest.fn(),
+  }),
+  usePathname: () => "/finance/transactions/description/Grocery%20Store",
 }));
 
 // Mock Spinner and FinanceLayout to keep DOM minimal and stable
@@ -95,7 +100,7 @@ describe("TransactionsByDescription page", () => {
   });
 
   it("renders the heading with the description name", () => {
-    render(<TransactionsByDescription />, { wrapper: createWrapper() });
+    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, { wrapper: createWrapper() });
     expect(
       screen.getByRole("heading", { name: "Grocery Store" }),
     ).toBeInTheDocument();
@@ -109,12 +114,12 @@ describe("TransactionsByDescription page", () => {
       error: null,
     });
 
-    render(<TransactionsByDescription />, { wrapper: createWrapper() });
+    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, { wrapper: createWrapper() });
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
   it("renders the data grid with transaction rows", () => {
-    render(<TransactionsByDescription />, { wrapper: createWrapper() });
+    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, { wrapper: createWrapper() });
 
     // DataGrid is globally mocked in __mocks__/@mui/x-data-grid.ts
     const grid = screen.getByTestId("data-grid");
@@ -131,7 +136,7 @@ describe("TransactionsByDescription page", () => {
       loading: false,
     });
 
-    render(<TransactionsByDescription />, { wrapper: createWrapper() });
+    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, { wrapper: createWrapper() });
     expect(replaceMock).toHaveBeenCalledWith("/login");
   });
 
@@ -145,7 +150,7 @@ describe("TransactionsByDescription page", () => {
       refetch: refetchMock,
     });
 
-    render(<TransactionsByDescription />, { wrapper: createWrapper() });
+    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, { wrapper: createWrapper() });
     expect(screen.getByTestId("error-display")).toBeInTheDocument();
     const btn = screen.getByTestId("retry-button");
     btn.click();
@@ -163,12 +168,12 @@ describe("TransactionsByDescription page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByDescription />, {
+      const { rerender } = render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, {
         wrapper: createWrapper(),
       });
 
       // Component should return null but not crash due to hook order violations
-      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Grocery Store" })).not.toBeInTheDocument();
 
       // Second render: loading = false (should call same hooks in same order)
       (AuthProvider.useAuth as jest.Mock).mockReturnValue({
@@ -176,10 +181,10 @@ describe("TransactionsByDescription page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByDescription />);
+      rerender(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />);
 
       // Should render successfully without Rules of Hooks error
-      expect(screen.getByTestId("finance-layout")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Grocery Store" })).toBeInTheDocument();
     });
 
     it("calls hooks consistently during authentication state transitions", () => {
@@ -189,12 +194,12 @@ describe("TransactionsByDescription page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByDescription />, {
+      const { rerender } = render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, {
         wrapper: createWrapper(),
       });
 
       // Should return null without hook violations
-      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Grocery Store" })).not.toBeInTheDocument();
 
       // Change to not authenticated, not loading
       (AuthProvider.useAuth as jest.Mock).mockReturnValue({
@@ -202,10 +207,10 @@ describe("TransactionsByDescription page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByDescription />);
+      rerender(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />);
 
       // Should still return null and trigger redirect
-      expect(screen.queryByTestId("finance-layout")).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Grocery Store" })).not.toBeInTheDocument();
       expect(replaceMock).toHaveBeenCalledWith("/login");
     });
 
@@ -218,7 +223,7 @@ describe("TransactionsByDescription page", () => {
         error: null,
       });
 
-      const { rerender } = render(<TransactionsByDescription />, {
+      const { rerender } = render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />, {
         wrapper: createWrapper(),
       });
       expect(screen.getByTestId("spinner")).toBeInTheDocument();
@@ -231,7 +236,7 @@ describe("TransactionsByDescription page", () => {
         error: null,
       });
 
-      rerender(<TransactionsByDescription />);
+      rerender(<TransactionsByDescription params={{ descriptionName: "Grocery Store" }} />);
 
       // Should render data grid without hook order errors
       expect(screen.getByTestId("data-grid")).toBeInTheDocument();
