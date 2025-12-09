@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import handler from "../../../pages/api/nba.js";
+import { GET } from "../../../app/api/nba/route.js";
 
 // Mock global fetch for API testing
 global.fetch = jest.fn();
@@ -13,9 +13,10 @@ describe("/api/nba", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockReq = {
+    // Create a minimal Request object for App Router
+    mockReq = new Request("http://localhost:3000/api/nba", {
       method: "GET",
-    };
+    });
   });
 
   afterEach(() => {
@@ -41,7 +42,7 @@ describe("/api/nba", () => {
         json: () => Promise.resolve(mockNbaData),
       });
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(global.fetch).toHaveBeenCalledWith(
         "https://fixturedownload.com/feed/json/nba-2025/minnesota-timberwolves",
@@ -57,7 +58,7 @@ describe("/api/nba", () => {
       expect(result.status).toBe(200);
 
       // Parse the response body
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody).toEqual(mockNbaData);
 
       // Check headers
@@ -76,36 +77,24 @@ describe("/api/nba", () => {
         json: () => Promise.resolve(emptyData),
       });
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(200);
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody).toEqual(emptyData);
     });
   });
 
   describe("Error handling", () => {
-    it("should return 405 for non-GET requests", async () => {
-      mockReq.method = "POST";
-
-      const result = await handler(mockReq);
-
-      expect(result.status).toBe(405);
-      expect(result.headers.get("content-type")).toBe("application/json");
-
-      const responseBody = JSON.parse(result.body || "{}");
-      expect(responseBody.message).toBe("Method not allowed");
-    });
-
     it("should handle fetch failures gracefully", async () => {
       global.fetch.mockRejectedValueOnce(new Error("Network error"));
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(500);
       expect(result.headers.get("content-type")).toBe("application/json");
 
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody.message).toBe("Internal server error");
     });
 
@@ -115,11 +104,11 @@ describe("/api/nba", () => {
         status: 503,
       });
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(500);
 
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody.message).toBe("Internal server error");
     });
 
@@ -130,11 +119,11 @@ describe("/api/nba", () => {
         json: () => Promise.reject(new Error("Invalid JSON")),
       });
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(500);
 
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody.message).toBe("Internal server error");
     });
 
@@ -144,11 +133,11 @@ describe("/api/nba", () => {
 
       global.fetch.mockRejectedValueOnce(new Error("Specific network error"));
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(500);
 
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody.error).toBe("Specific network error");
 
       // Restore original environment
@@ -161,33 +150,15 @@ describe("/api/nba", () => {
 
       global.fetch.mockRejectedValueOnce(new Error("Specific network error"));
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(500);
 
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody.error).toBeUndefined();
 
       // Restore original environment
       process.env.NODE_ENV = originalEnv;
-    });
-  });
-
-  describe("HTTP methods", () => {
-    const invalidMethods = ["POST", "PUT", "DELETE", "PATCH"];
-
-    invalidMethods.forEach((method) => {
-      it(`should return 405 for ${method} requests`, async () => {
-        mockReq.method = method;
-
-        const result = await handler(mockReq);
-
-        expect(result.status).toBe(405);
-        expect(global.fetch).not.toHaveBeenCalled();
-
-        const responseBody = JSON.parse(result.body || "{}");
-        expect(responseBody.message).toBe("Method not allowed");
-      });
     });
   });
 
@@ -201,7 +172,7 @@ describe("/api/nba", () => {
         json: () => Promise.resolve(mockData),
       });
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.headers.get("content-type")).toBe("application/json");
       expect(result.headers.get("Cache-Control")).toBe(
@@ -215,11 +186,11 @@ describe("/api/nba", () => {
       // Simulate a timeout
       global.fetch.mockRejectedValueOnce(new Error("Fetch timeout"));
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(500);
 
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody.message).toBe("Internal server error");
     });
 
@@ -241,10 +212,10 @@ describe("/api/nba", () => {
         json: () => Promise.resolve(largeData),
       });
 
-      const result = await handler(mockReq);
+      const result = await GET(mockReq);
 
       expect(result.status).toBe(200);
-      const responseBody = JSON.parse(result.body || "{}");
+      const responseBody = await result.json();
       expect(responseBody.fixtures).toHaveLength(1000);
     });
   });
