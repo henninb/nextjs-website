@@ -28,14 +28,14 @@ jest.mock("@mui/x-data-grid", () => ({
 
 // Module paths
 import * as AuthProvider from "../../../components/AuthProvider";
-import PaymentsNextGen from "../../../pages/finance/payments-next";
+import PaymentsNextGen from "../../../app/finance/payments-next/page";
 import * as useAccountFetchGql from "../../../hooks/useAccountFetchGql";
 import * as usePaymentFetchGql from "../../../hooks/usePaymentFetchGql";
 import * as usePaymentInsertGql from "../../../hooks/usePaymentInsertGql";
 import * as usePaymentDeleteGql from "../../../hooks/usePaymentDeleteGql";
 import * as usePaymentUpdateGql from "../../../hooks/usePaymentUpdateGql";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn() }),
 }));
 

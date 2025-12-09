@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 // Mock router
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -58,7 +58,7 @@ jest.mock("../../../hooks/useParameterDelete", () => ({
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
 
-import ConfigurationPage from "../../../pages/finance/configuration";
+import ConfigurationPage from "../../../app/finance/configuration/page";
 import useParameterFetchMock from "../../../hooks/useParameterFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 

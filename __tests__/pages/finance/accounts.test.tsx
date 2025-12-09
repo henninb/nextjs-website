@@ -11,7 +11,7 @@ import {
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -76,7 +76,7 @@ jest.mock("../../../hooks/useAccountDelete", () => ({
   default: () => ({ mutateAsync: deleteAccountMock }),
 }));
 
-import AccountsPage from "../../../pages/finance/index";
+import AccountsPage from "../../../app/finance/page";
 import useAccountFetchMock from "../../../hooks/useAccountFetch";
 import useTotalsFetchMock from "../../../hooks/useTotalsFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";

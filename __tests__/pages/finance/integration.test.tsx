@@ -9,6 +9,13 @@ jest.mock("next/router", () => ({
     pathname: "/finance",
   }),
 }));
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    replace: jest.fn(),
+    push: jest.fn(),
+    pathname: "/finance",
+  }),
+}));
 
 beforeAll(() => {
   // @ts-expect-error - jsdom lacks ResizeObserver; mock for MUI
@@ -117,8 +124,8 @@ jest.mock("../../../hooks/useParameterFetch", () => ({
 }));
 
 import AccountsPage from "../../../pages/finance/index";
-import CategoriesPage from "../../../pages/finance/categories";
-import PaymentsPage from "../../../pages/finance/payments";
+import CategoriesPage from "../../../app/finance/categories/page";
+import PaymentsPage from "../../../app/finance/payments/page";
 
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 import useAccountFetchMock from "../../../hooks/useAccountFetch";

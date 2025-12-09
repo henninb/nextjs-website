@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -63,7 +63,7 @@ jest.mock("../../../hooks/useCategoryMerge", () => ({
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
 
-import CategoriesPage from "../../../pages/finance/categories";
+import CategoriesPage from "../../../app/finance/categories/page";
 import useCategoryFetchMock from "../../../hooks/useCategoryFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 
@@ -85,7 +85,7 @@ jest.mock("../../../hooks/useParameterFetch", () => ({
   default: jest.fn(),
 }));
 
-import PaymentsPage from "../../../pages/finance/payments";
+import PaymentsPage from "../../../app/finance/payments/page";
 
 describe("Finance Pages - Accessibility Tests", () => {
   const mockUseAuth = useAuthMock as unknown as jest.Mock;

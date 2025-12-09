@@ -6,7 +6,7 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -85,7 +85,7 @@ jest.mock("../../../hooks/useDescriptionMerge", () => ({
   default: () => ({ mutateAsync: jest.fn().mockResolvedValue({}) }),
 }));
 
-import DescriptionsPage from "../../../pages/finance/descriptions";
+import DescriptionsPage from "../../../app/finance/descriptions/page";
 import useDescriptionFetchMock from "../../../hooks/useDescriptionFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Accounts from "../../../pages/finance/index";
+import Accounts from "../../../app/finance/page";
 import * as useAccountFetch from "../../../hooks/useAccountFetch";
 import * as useAccountInsert from "../../../hooks/useAccountInsert";
 import * as useAccountDelete from "../../../hooks/useAccountDelete";
@@ -51,7 +51,7 @@ jest.mock("../../../components/LoadingState", () => {
   };
 });
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: jest.fn(),
   }),

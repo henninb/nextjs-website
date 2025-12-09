@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Transfers from "../../../pages/finance/transfers";
+import Transfers from "../../../app/finance/transfers/page";
 // Mock MUI DataGrid similar to payments tests to call renderCell handlers
 jest.mock("@mui/x-data-grid", () => ({
   DataGrid: ({ rows = [], columns = [] }: any) => (
@@ -30,7 +30,7 @@ import * as useTransferUpdate from "../../../hooks/useTransferUpdate";
 import * as useAccountFetch from "../../../hooks/useAccountFetch";
 import * as AuthProvider from "../../../components/AuthProvider";
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: jest.fn(),
   }),

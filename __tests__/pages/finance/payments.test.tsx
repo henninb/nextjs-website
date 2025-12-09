@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 // Mock router
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -77,7 +77,7 @@ jest.mock("../../../hooks/useParameterFetch", () => ({
   default: jest.fn(),
 }));
 
-import PaymentsPage from "../../../pages/finance/payments";
+import PaymentsPage from "../../../app/finance/payments/page";
 import usePaymentFetchMock from "../../../hooks/usePaymentFetch";
 import useAccountFetchMock from "../../../hooks/useAccountFetch";
 import useParameterFetchMock from "../../../hooks/useParameterFetch";

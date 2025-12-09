@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 
 // Mock next/router
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -87,7 +87,7 @@ jest.mock("../../../hooks/useCategoryMerge", () => ({
 }));
 
 import useCategoryFetchMock from "../../../hooks/useCategoryFetch";
-import CategoriesPage from "../../../pages/finance/categories";
+import CategoriesPage from "../../../app/finance/categories/page";
 
 describe("Categories merge UI", () => {
   beforeEach(() => {

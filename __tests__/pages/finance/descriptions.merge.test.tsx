@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 
 // Mock next/router
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
 
@@ -92,7 +92,7 @@ jest.mock("../../../hooks/useDescriptionMerge", () => ({
 }));
 
 import useDescriptionFetchMock from "../../../hooks/useDescriptionFetch";
-import DescriptionsPage from "../../../pages/finance/descriptions";
+import DescriptionsPage from "../../../app/finance/descriptions/page";
 
 describe("Descriptions merge UI", () => {
   beforeEach(() => {
