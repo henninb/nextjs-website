@@ -84,8 +84,11 @@ import { modalTitles, modalBodies } from "../../../../utils/modalMessages";
 export default function TransactionsByAccount({
   params,
 }: {
-  params: { accountNameOwner: string };
+  params: Promise<{ accountNameOwner: string }>;
 }) {
+  // Unwrap params Promise using React.use() for Next.js 15
+  const unwrappedParams = React.use(params);
+
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
@@ -140,7 +143,7 @@ export default function TransactionsByAccount({
   >([]);
 
   const router = useRouter();
-  const accountNameOwner = params.accountNameOwner;
+  const accountNameOwner = unwrappedParams.accountNameOwner;
   const validAccountNameOwner =
     typeof accountNameOwner === "string" ? accountNameOwner : "";
 
