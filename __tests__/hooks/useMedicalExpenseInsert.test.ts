@@ -38,11 +38,14 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (queryClient: QueryClient) =>
-  ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+const createWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
+  };
 
 describe("useMedicalExpenseInsert", () => {
   let queryClient: QueryClient;

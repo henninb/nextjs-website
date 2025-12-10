@@ -1,8 +1,8 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import useAccountFetchGql from "../../hooks/useAccountFetchGql";
-import Account from "../../model/Account";
+import useCategoryFetchGql from "../../hooks/useCategoryFetchGql";
+import Category from "../../model/Category";
 import * as AuthProvider from "../../components/AuthProvider";
 
 // Mock the graphqlRequest function
@@ -38,13 +38,16 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (queryClient: QueryClient) =>
-  ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+const createWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
+  };
 
-describe("useAccountFetchGql", () => {
+describe("useCategoryFetchGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -61,7 +64,7 @@ describe("useAccountFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const { result } = renderHook(() => useAccountFetchGql(), {
+    const { result } = renderHook(() => useCategoryFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -88,7 +91,7 @@ describe("useAccountFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const { result } = renderHook(() => useAccountFetchGql(), {
+    const { result } = renderHook(() => useCategoryFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -103,7 +106,7 @@ describe("useAccountFetchGql", () => {
     expect(result.current.isSuccess).toBe(false);
   });
 
-  it("should fetch accounts successfully when authenticated", async () => {
+  it("should fetch categories successfully when authenticated", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock authenticated state
@@ -115,42 +118,30 @@ describe("useAccountFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockAccountsResponse = {
-      accounts: [
+    const mockCategoriesResponse = {
+      categories: [
         {
-          accountId: 1,
-          accountNameOwner: "Checking Account",
-          accountType: "debit",
+          categoryId: 1,
+          categoryName: "groceries",
           activeStatus: true,
-          moniker: "CHK",
-          outstanding: 100,
-          future: 200,
-          cleared: 300,
-          dateClosed: null,
-          validationDate: "2024-01-01",
-          dateAdded: "2023-01-01",
-          dateUpdated: "2024-01-15",
+          categoryCount: 10,
+          dateAdded: "2023-01-01T00:00:00Z",
+          dateUpdated: "2024-01-15T00:00:00Z",
         },
         {
-          accountId: 2,
-          accountNameOwner: "Savings Account",
-          accountType: "debit",
+          categoryId: 2,
+          categoryName: "utilities",
           activeStatus: true,
-          moniker: "SAV",
-          outstanding: 50,
-          future: 150,
-          cleared: 250,
-          dateClosed: null,
-          validationDate: "2024-01-01",
-          dateAdded: "2023-01-01",
-          dateUpdated: "2024-01-15",
+          categoryCount: 5,
+          dateAdded: "2023-01-01T00:00:00Z",
+          dateUpdated: "2024-01-15T00:00:00Z",
         },
       ],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockAccountsResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockCategoriesResponse);
 
-    const { result } = renderHook(() => useAccountFetchGql(), {
+    const { result } = renderHook(() => useCategoryFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -158,20 +149,16 @@ describe("useAccountFetchGql", () => {
 
     expect(mockGraphqlRequest).toHaveBeenCalledTimes(1);
     expect(mockGraphqlRequest).toHaveBeenCalledWith({
-      query: expect.stringContaining("query Accounts"),
+      query: expect.stringContaining("query Categories"),
     });
 
     expect(result.current.data).toHaveLength(2);
     expect(result.current.data?.[0]).toEqual(
       expect.objectContaining({
-        accountId: 1,
-        accountNameOwner: "Checking Account",
-        accountType: "debit",
+        categoryId: 1,
+        categoryName: "groceries",
         activeStatus: true,
-        moniker: "CHK",
-        outstanding: 100,
-        future: 200,
-        cleared: 300,
+        categoryCount: 10,
       }),
     );
     expect(result.current.isLoading).toBe(false);
@@ -192,7 +179,7 @@ describe("useAccountFetchGql", () => {
 
     mockGraphqlRequest.mockRejectedValue(new Error("GraphQL error"));
 
-    const { result } = renderHook(() => useAccountFetchGql(), {
+    const { result } = renderHook(() => useCategoryFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -218,28 +205,22 @@ describe("useAccountFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockAccountsResponse = {
-      accounts: [
+    const mockCategoriesResponse = {
+      categories: [
         {
-          accountId: 1,
-          accountNameOwner: "Test Account",
-          accountType: "debit",
+          categoryId: 1,
+          categoryName: "test",
           activeStatus: true,
-          moniker: "TEST",
-          outstanding: 100,
-          future: 200,
-          cleared: 300,
-          dateClosed: null,
-          validationDate: null,
+          categoryCount: 1,
           dateAdded: null,
           dateUpdated: null,
         },
       ],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockAccountsResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockCategoriesResponse);
 
-    const { result } = renderHook(() => useAccountFetchGql(), {
+    const { result } = renderHook(() => useCategoryFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -249,7 +230,7 @@ describe("useAccountFetchGql", () => {
     expect(typeof result.current.refetch).toBe("function");
   });
 
-  it("should handle empty accounts response", async () => {
+  it("should handle empty categories response", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock authenticated state
@@ -261,13 +242,13 @@ describe("useAccountFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockAccountsResponse = {
-      accounts: [],
+    const mockCategoriesResponse = {
+      categories: [],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockAccountsResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockCategoriesResponse);
 
-    const { result } = renderHook(() => useAccountFetchGql(), {
+    const { result } = renderHook(() => useCategoryFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 

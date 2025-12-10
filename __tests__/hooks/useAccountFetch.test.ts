@@ -32,11 +32,14 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (queryClient: QueryClient) =>
-  ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+const createWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
+  };
 
 describe("useAccountFetch", () => {
   it("should fetch accounts successfully", async () => {

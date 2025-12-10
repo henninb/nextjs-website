@@ -1,8 +1,8 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import useDescriptionFetchGql from "../../hooks/useDescriptionFetchGql";
-import Description from "../../model/Description";
+import useAccountFetchGql from "../../hooks/useAccountFetchGql";
+import Account from "../../model/Account";
 import * as AuthProvider from "../../components/AuthProvider";
 
 // Mock the graphqlRequest function
@@ -38,13 +38,16 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (queryClient: QueryClient) =>
-  ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+const createWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
+  };
 
-describe("useDescriptionFetchGql", () => {
+describe("useAccountFetchGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -61,7 +64,7 @@ describe("useDescriptionFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const { result } = renderHook(() => useDescriptionFetchGql(), {
+    const { result } = renderHook(() => useAccountFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -88,7 +91,7 @@ describe("useDescriptionFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const { result } = renderHook(() => useDescriptionFetchGql(), {
+    const { result } = renderHook(() => useAccountFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -103,7 +106,7 @@ describe("useDescriptionFetchGql", () => {
     expect(result.current.isSuccess).toBe(false);
   });
 
-  it("should fetch descriptions successfully when authenticated", async () => {
+  it("should fetch accounts successfully when authenticated", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock authenticated state
@@ -115,30 +118,42 @@ describe("useDescriptionFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockDescriptionsResponse = {
-      descriptions: [
+    const mockAccountsResponse = {
+      accounts: [
         {
-          descriptionId: 1,
-          descriptionName: "amazon-prime",
+          accountId: 1,
+          accountNameOwner: "Checking Account",
+          accountType: "debit",
           activeStatus: true,
-          descriptionCount: 10,
-          dateAdded: "2023-01-01T00:00:00Z",
-          dateUpdated: "2024-01-15T00:00:00Z",
+          moniker: "CHK",
+          outstanding: 100,
+          future: 200,
+          cleared: 300,
+          dateClosed: null,
+          validationDate: "2024-01-01",
+          dateAdded: "2023-01-01",
+          dateUpdated: "2024-01-15",
         },
         {
-          descriptionId: 2,
-          descriptionName: "netflix",
+          accountId: 2,
+          accountNameOwner: "Savings Account",
+          accountType: "debit",
           activeStatus: true,
-          descriptionCount: 5,
-          dateAdded: "2023-01-01T00:00:00Z",
-          dateUpdated: "2024-01-15T00:00:00Z",
+          moniker: "SAV",
+          outstanding: 50,
+          future: 150,
+          cleared: 250,
+          dateClosed: null,
+          validationDate: "2024-01-01",
+          dateAdded: "2023-01-01",
+          dateUpdated: "2024-01-15",
         },
       ],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockDescriptionsResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockAccountsResponse);
 
-    const { result } = renderHook(() => useDescriptionFetchGql(), {
+    const { result } = renderHook(() => useAccountFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -146,16 +161,20 @@ describe("useDescriptionFetchGql", () => {
 
     expect(mockGraphqlRequest).toHaveBeenCalledTimes(1);
     expect(mockGraphqlRequest).toHaveBeenCalledWith({
-      query: expect.stringContaining("query Descriptions"),
+      query: expect.stringContaining("query Accounts"),
     });
 
     expect(result.current.data).toHaveLength(2);
     expect(result.current.data?.[0]).toEqual(
       expect.objectContaining({
-        descriptionId: 1,
-        descriptionName: "amazon-prime",
+        accountId: 1,
+        accountNameOwner: "Checking Account",
+        accountType: "debit",
         activeStatus: true,
-        descriptionCount: 10,
+        moniker: "CHK",
+        outstanding: 100,
+        future: 200,
+        cleared: 300,
       }),
     );
     expect(result.current.isLoading).toBe(false);
@@ -176,7 +195,7 @@ describe("useDescriptionFetchGql", () => {
 
     mockGraphqlRequest.mockRejectedValue(new Error("GraphQL error"));
 
-    const { result } = renderHook(() => useDescriptionFetchGql(), {
+    const { result } = renderHook(() => useAccountFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -202,22 +221,28 @@ describe("useDescriptionFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockDescriptionsResponse = {
-      descriptions: [
+    const mockAccountsResponse = {
+      accounts: [
         {
-          descriptionId: 1,
-          descriptionName: "test",
+          accountId: 1,
+          accountNameOwner: "Test Account",
+          accountType: "debit",
           activeStatus: true,
-          descriptionCount: 1,
+          moniker: "TEST",
+          outstanding: 100,
+          future: 200,
+          cleared: 300,
+          dateClosed: null,
+          validationDate: null,
           dateAdded: null,
           dateUpdated: null,
         },
       ],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockDescriptionsResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockAccountsResponse);
 
-    const { result } = renderHook(() => useDescriptionFetchGql(), {
+    const { result } = renderHook(() => useAccountFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -227,7 +252,7 @@ describe("useDescriptionFetchGql", () => {
     expect(typeof result.current.refetch).toBe("function");
   });
 
-  it("should handle empty descriptions response", async () => {
+  it("should handle empty accounts response", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock authenticated state
@@ -239,13 +264,13 @@ describe("useDescriptionFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockDescriptionsResponse = {
-      descriptions: [],
+    const mockAccountsResponse = {
+      accounts: [],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockDescriptionsResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockAccountsResponse);
 
-    const { result } = renderHook(() => useDescriptionFetchGql(), {
+    const { result } = renderHook(() => useAccountFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 

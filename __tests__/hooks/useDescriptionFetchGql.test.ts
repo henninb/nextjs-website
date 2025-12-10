@@ -1,8 +1,8 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import useCategoryFetchGql from "../../hooks/useCategoryFetchGql";
-import Category from "../../model/Category";
+import useDescriptionFetchGql from "../../hooks/useDescriptionFetchGql";
+import Description from "../../model/Description";
 import * as AuthProvider from "../../components/AuthProvider";
 
 // Mock the graphqlRequest function
@@ -38,13 +38,16 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper =
-  (queryClient: QueryClient) =>
-  ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+const createWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
+  };
 
-describe("useCategoryFetchGql", () => {
+describe("useDescriptionFetchGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -61,7 +64,7 @@ describe("useCategoryFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const { result } = renderHook(() => useCategoryFetchGql(), {
+    const { result } = renderHook(() => useDescriptionFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -88,7 +91,7 @@ describe("useCategoryFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const { result } = renderHook(() => useCategoryFetchGql(), {
+    const { result } = renderHook(() => useDescriptionFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -103,7 +106,7 @@ describe("useCategoryFetchGql", () => {
     expect(result.current.isSuccess).toBe(false);
   });
 
-  it("should fetch categories successfully when authenticated", async () => {
+  it("should fetch descriptions successfully when authenticated", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock authenticated state
@@ -115,30 +118,30 @@ describe("useCategoryFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockCategoriesResponse = {
-      categories: [
+    const mockDescriptionsResponse = {
+      descriptions: [
         {
-          categoryId: 1,
-          categoryName: "groceries",
+          descriptionId: 1,
+          descriptionName: "amazon-prime",
           activeStatus: true,
-          categoryCount: 10,
+          descriptionCount: 10,
           dateAdded: "2023-01-01T00:00:00Z",
           dateUpdated: "2024-01-15T00:00:00Z",
         },
         {
-          categoryId: 2,
-          categoryName: "utilities",
+          descriptionId: 2,
+          descriptionName: "netflix",
           activeStatus: true,
-          categoryCount: 5,
+          descriptionCount: 5,
           dateAdded: "2023-01-01T00:00:00Z",
           dateUpdated: "2024-01-15T00:00:00Z",
         },
       ],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockCategoriesResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockDescriptionsResponse);
 
-    const { result } = renderHook(() => useCategoryFetchGql(), {
+    const { result } = renderHook(() => useDescriptionFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -146,16 +149,16 @@ describe("useCategoryFetchGql", () => {
 
     expect(mockGraphqlRequest).toHaveBeenCalledTimes(1);
     expect(mockGraphqlRequest).toHaveBeenCalledWith({
-      query: expect.stringContaining("query Categories"),
+      query: expect.stringContaining("query Descriptions"),
     });
 
     expect(result.current.data).toHaveLength(2);
     expect(result.current.data?.[0]).toEqual(
       expect.objectContaining({
-        categoryId: 1,
-        categoryName: "groceries",
+        descriptionId: 1,
+        descriptionName: "amazon-prime",
         activeStatus: true,
-        categoryCount: 10,
+        descriptionCount: 10,
       }),
     );
     expect(result.current.isLoading).toBe(false);
@@ -176,7 +179,7 @@ describe("useCategoryFetchGql", () => {
 
     mockGraphqlRequest.mockRejectedValue(new Error("GraphQL error"));
 
-    const { result } = renderHook(() => useCategoryFetchGql(), {
+    const { result } = renderHook(() => useDescriptionFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -202,22 +205,22 @@ describe("useCategoryFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockCategoriesResponse = {
-      categories: [
+    const mockDescriptionsResponse = {
+      descriptions: [
         {
-          categoryId: 1,
-          categoryName: "test",
+          descriptionId: 1,
+          descriptionName: "test",
           activeStatus: true,
-          categoryCount: 1,
+          descriptionCount: 1,
           dateAdded: null,
           dateUpdated: null,
         },
       ],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockCategoriesResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockDescriptionsResponse);
 
-    const { result } = renderHook(() => useCategoryFetchGql(), {
+    const { result } = renderHook(() => useDescriptionFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
@@ -227,7 +230,7 @@ describe("useCategoryFetchGql", () => {
     expect(typeof result.current.refetch).toBe("function");
   });
 
-  it("should handle empty categories response", async () => {
+  it("should handle empty descriptions response", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock authenticated state
@@ -239,13 +242,13 @@ describe("useCategoryFetchGql", () => {
       logout: jest.fn(),
     });
 
-    const mockCategoriesResponse = {
-      categories: [],
+    const mockDescriptionsResponse = {
+      descriptions: [],
     };
 
-    mockGraphqlRequest.mockResolvedValueOnce(mockCategoriesResponse);
+    mockGraphqlRequest.mockResolvedValueOnce(mockDescriptionsResponse);
 
-    const { result } = renderHook(() => useCategoryFetchGql(), {
+    const { result } = renderHook(() => useDescriptionFetchGql(), {
       wrapper: createWrapper(queryClient),
     });
 
