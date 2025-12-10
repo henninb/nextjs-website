@@ -44,6 +44,12 @@ const createWrapper = (queryClient: QueryClient) =>
   };
 
 describe("useFamilyMemberFetch", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -102,7 +108,7 @@ describe("useFamilyMemberFetch", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(result.current.data).toEqual(mockFamilyMembers);
+    expect(result.current.data).toStrictEqual(mockFamilyMembers);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
     expect(mockFetch).toHaveBeenCalledWith("/api/family-members/active", {
@@ -129,7 +135,7 @@ describe("useFamilyMemberFetch", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(result.current.data).toEqual([]);
+    expect(result.current.data).toStrictEqual([]);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
   });
@@ -257,7 +263,7 @@ describe("useFamilyMemberFetch", () => {
       wrapper,
     });
 
-    expect(result2.current.data).toEqual(mockFamilyMembers);
+    expect(result2.current.data).toStrictEqual(mockFamilyMembers);
     expect(result2.current.isLoading).toBe(false);
 
     // Should only call fetch once due to caching

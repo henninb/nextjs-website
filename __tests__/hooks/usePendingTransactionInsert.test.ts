@@ -42,6 +42,18 @@ import PendingTransaction from "../../model/PendingTransaction";
 import { insertPendingTransaction } from "../../hooks/usePendingTransactionInsert";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
 
 // Helper function to create test pending transaction data
@@ -57,7 +69,13 @@ const createTestPendingTransaction = (
   ...overrides,
 });
 
-describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
+describe("usePendingTransactionInsert Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
@@ -79,7 +97,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         const result = await insertPendingTransaction(testPendingTransaction);
 
-        expect(result).toEqual(expectedResponse);
+        expect(result).toStrictEqual(expectedResponse);
         expect(fetch).toHaveBeenCalledWith("/api/pending/transaction", {
           method: "POST",
           credentials: "include",
@@ -149,7 +167,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         const result = await insertPendingTransaction(testPendingTransaction);
 
-        expect(result).toEqual(testPendingTransaction);
+        expect(result).toStrictEqual(testPendingTransaction);
       });
     });
 
@@ -367,7 +385,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
           const result = await insertPendingTransaction(testPendingTransaction);
 
-          expect(result.transactionDate).toEqual(transactionDate);
+          expect(result.transactionDate).toStrictEqual(transactionDate);
         }
       });
 
@@ -583,7 +601,7 @@ describe("usePendingTransactionInsert Business Logic (Isolated)", () => {
 
         const result = await insertPendingTransaction(testPendingTransaction);
 
-        expect(result).toEqual(expectedResponse);
+        expect(result).toStrictEqual(expectedResponse);
         expect(result.pendingTransactionId).toBe(555);
         expect(result.amount).toBe(15000.0);
       });

@@ -1,3 +1,15 @@
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Extract the validation functions for isolated testing
 const validateAmount = (
   amount: string | number,
@@ -184,108 +196,108 @@ const validateTransaction = (transaction: {
   };
 };
 
-describe("Finance Validation Functions (Isolated)", () => {
+describe("Finance Validation Functions", () => {
   describe("Amount Validation", () => {
     describe("Valid amounts", () => {
       it("should validate positive integer amounts", () => {
-        expect(validateAmount(100)).toEqual({ isValid: true });
-        expect(validateAmount(1)).toEqual({ isValid: true });
-        expect(validateAmount(999999)).toEqual({ isValid: true });
+        expect(validateAmount(100)).toStrictEqual({ isValid: true });
+        expect(validateAmount(1)).toStrictEqual({ isValid: true });
+        expect(validateAmount(999999)).toStrictEqual({ isValid: true });
       });
 
       it("should validate positive decimal amounts", () => {
-        expect(validateAmount(100.5)).toEqual({ isValid: true });
-        expect(validateAmount(100.5)).toEqual({ isValid: true });
-        expect(validateAmount(0.01)).toEqual({ isValid: true });
-        expect(validateAmount(999999.99)).toEqual({ isValid: true });
+        expect(validateAmount(100.5)).toStrictEqual({ isValid: true });
+        expect(validateAmount(100.5)).toStrictEqual({ isValid: true });
+        expect(validateAmount(0.01)).toStrictEqual({ isValid: true });
+        expect(validateAmount(999999.99)).toStrictEqual({ isValid: true });
       });
 
       it("should validate negative amounts", () => {
-        expect(validateAmount(-100)).toEqual({ isValid: true });
-        expect(validateAmount(-100.5)).toEqual({ isValid: true });
-        expect(validateAmount(-0.01)).toEqual({ isValid: true });
-        expect(validateAmount(-999999.99)).toEqual({ isValid: true });
+        expect(validateAmount(-100)).toStrictEqual({ isValid: true });
+        expect(validateAmount(-100.5)).toStrictEqual({ isValid: true });
+        expect(validateAmount(-0.01)).toStrictEqual({ isValid: true });
+        expect(validateAmount(-999999.99)).toStrictEqual({ isValid: true });
       });
 
       it("should validate zero", () => {
-        expect(validateAmount(0)).toEqual({ isValid: true });
-        expect(validateAmount(0.0)).toEqual({ isValid: true });
-        expect(validateAmount(0.0)).toEqual({ isValid: true });
+        expect(validateAmount(0)).toStrictEqual({ isValid: true });
+        expect(validateAmount(0.0)).toStrictEqual({ isValid: true });
+        expect(validateAmount(0.0)).toStrictEqual({ isValid: true });
       });
 
       it("should validate string amounts", () => {
-        expect(validateAmount("100")).toEqual({ isValid: true });
-        expect(validateAmount("100.50")).toEqual({ isValid: true });
-        expect(validateAmount("-100.50")).toEqual({ isValid: true });
-        expect(validateAmount("0")).toEqual({ isValid: true });
+        expect(validateAmount("100")).toStrictEqual({ isValid: true });
+        expect(validateAmount("100.50")).toStrictEqual({ isValid: true });
+        expect(validateAmount("-100.50")).toStrictEqual({ isValid: true });
+        expect(validateAmount("0")).toStrictEqual({ isValid: true });
       });
     });
 
     describe("Invalid amounts", () => {
       it("should reject empty or null amounts", () => {
-        expect(validateAmount("")).toEqual({
+        expect(validateAmount("")).toStrictEqual({
           isValid: false,
           error: "Amount is required",
         });
-        expect(validateAmount(null as any)).toEqual({
+        expect(validateAmount(null as any)).toStrictEqual({
           isValid: false,
           error: "Amount is required",
         });
-        expect(validateAmount(undefined as any)).toEqual({
+        expect(validateAmount(undefined as any)).toStrictEqual({
           isValid: false,
           error: "Amount is required",
         });
       });
 
       it("should reject non-numeric strings", () => {
-        expect(validateAmount("abc")).toEqual({
+        expect(validateAmount("abc")).toStrictEqual({
           isValid: false,
           error: "Amount must be a valid number",
         });
         // Note: parseFloat("100abc") returns 100, so this is valid in JS
-        expect(validateAmount("100abc")).toEqual({ isValid: true });
-        expect(validateAmount("$100")).toEqual({
+        expect(validateAmount("100abc")).toStrictEqual({ isValid: true });
+        expect(validateAmount("$100")).toStrictEqual({
           isValid: false,
           error: "Amount must be a valid number",
         });
       });
 
       it("should reject infinite values", () => {
-        expect(validateAmount(Infinity)).toEqual({
+        expect(validateAmount(Infinity)).toStrictEqual({
           isValid: false,
           error: "Amount must be finite",
         });
-        expect(validateAmount(-Infinity)).toEqual({
+        expect(validateAmount(-Infinity)).toStrictEqual({
           isValid: false,
           error: "Amount must be finite",
         });
       });
 
       it("should reject amounts exceeding limits", () => {
-        expect(validateAmount(1000000)).toEqual({
+        expect(validateAmount(1000000)).toStrictEqual({
           isValid: false,
           error: "Amount cannot exceed $999,999.99",
         });
-        expect(validateAmount(-1000000)).toEqual({
+        expect(validateAmount(-1000000)).toStrictEqual({
           isValid: false,
           error: "Amount cannot exceed $999,999.99",
         });
-        expect(validateAmount("1000000.00")).toEqual({
+        expect(validateAmount("1000000.00")).toStrictEqual({
           isValid: false,
           error: "Amount cannot exceed $999,999.99",
         });
       });
 
       it("should reject amounts with more than 2 decimal places", () => {
-        expect(validateAmount("100.123")).toEqual({
+        expect(validateAmount("100.123")).toStrictEqual({
           isValid: false,
           error: "Amount cannot have more than 2 decimal places",
         });
-        expect(validateAmount("100.1234")).toEqual({
+        expect(validateAmount("100.1234")).toStrictEqual({
           isValid: false,
           error: "Amount cannot have more than 2 decimal places",
         });
-        expect(validateAmount(100.123)).toEqual({
+        expect(validateAmount(100.123)).toStrictEqual({
           isValid: false,
           error: "Amount cannot have more than 2 decimal places",
         });
@@ -294,19 +306,19 @@ describe("Finance Validation Functions (Isolated)", () => {
 
     describe("Edge cases", () => {
       it("should handle boundary values correctly", () => {
-        expect(validateAmount(999999.99)).toEqual({ isValid: true });
-        expect(validateAmount(-999999.99)).toEqual({ isValid: true });
-        expect(validateAmount(1000000.0)).toEqual({
+        expect(validateAmount(999999.99)).toStrictEqual({ isValid: true });
+        expect(validateAmount(-999999.99)).toStrictEqual({ isValid: true });
+        expect(validateAmount(1000000.0)).toStrictEqual({
           isValid: false,
           error: "Amount cannot exceed $999,999.99",
         });
       });
 
       it("should handle scientific notation", () => {
-        expect(validateAmount("1e2")).toEqual({ isValid: true }); // 100
+        expect(validateAmount("1e2")).toStrictEqual({ isValid: true }); // 100
         // 1.5e2 = 150, but the decimal validation checks the string representation
         // which is "1.5e2" and has "5e2" after the dot (more than 2 chars)
-        expect(validateAmount(150)).toEqual({ isValid: true }); // Use numeric form instead
+        expect(validateAmount(150)).toStrictEqual({ isValid: true }); // Use numeric form instead
       });
     });
   });
@@ -314,33 +326,33 @@ describe("Finance Validation Functions (Isolated)", () => {
   describe("Category Validation", () => {
     describe("Valid categories", () => {
       it("should validate simple categories", () => {
-        expect(validateCategory("Food")).toEqual({ isValid: true });
-        expect(validateCategory("Transportation")).toEqual({ isValid: true });
-        expect(validateCategory("Entertainment")).toEqual({ isValid: true });
+        expect(validateCategory("Food")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Transportation")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Entertainment")).toStrictEqual({ isValid: true });
       });
 
       it("should validate categories with allowed special characters", () => {
-        expect(validateCategory("Food & Dining")).toEqual({ isValid: true });
-        expect(validateCategory("Gas-Station")).toEqual({ isValid: true });
-        expect(validateCategory("ATM (Withdrawal)")).toEqual({ isValid: true });
-        expect(validateCategory("Auto_Repair")).toEqual({ isValid: true });
-        expect(validateCategory("Shopping123")).toEqual({ isValid: true });
+        expect(validateCategory("Food & Dining")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Gas-Station")).toStrictEqual({ isValid: true });
+        expect(validateCategory("ATM (Withdrawal)")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Auto_Repair")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Shopping123")).toStrictEqual({ isValid: true });
       });
 
       it("should validate categories with numbers", () => {
-        expect(validateCategory("Category1")).toEqual({ isValid: true });
-        expect(validateCategory("2024 Expenses")).toEqual({ isValid: true });
-        expect(validateCategory("Tax123Form")).toEqual({ isValid: true });
+        expect(validateCategory("Category1")).toStrictEqual({ isValid: true });
+        expect(validateCategory("2024 Expenses")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Tax123Form")).toStrictEqual({ isValid: true });
       });
     });
 
     describe("Invalid categories", () => {
       it("should reject empty categories", () => {
-        expect(validateCategory("")).toEqual({
+        expect(validateCategory("")).toStrictEqual({
           isValid: false,
           error: "Category is required",
         });
-        expect(validateCategory("   ")).toEqual({
+        expect(validateCategory("   ")).toStrictEqual({
           isValid: false,
           error: "Category is required",
         });
@@ -348,22 +360,22 @@ describe("Finance Validation Functions (Isolated)", () => {
 
       it("should reject categories exceeding length limit", () => {
         const longCategory = "a".repeat(51);
-        expect(validateCategory(longCategory)).toEqual({
+        expect(validateCategory(longCategory)).toStrictEqual({
           isValid: false,
           error: "Category name cannot exceed 50 characters",
         });
       });
 
       it("should reject categories with invalid characters", () => {
-        expect(validateCategory("Food@#$%")).toEqual({
+        expect(validateCategory("Food@#$%")).toStrictEqual({
           isValid: false,
           error: "Category contains invalid characters",
         });
-        expect(validateCategory("Food/Dining")).toEqual({
+        expect(validateCategory("Food/Dining")).toStrictEqual({
           isValid: false,
           error: "Category contains invalid characters",
         });
-        expect(validateCategory("Food*Dining")).toEqual({
+        expect(validateCategory("Food*Dining")).toStrictEqual({
           isValid: false,
           error: "Category contains invalid characters",
         });
@@ -373,12 +385,12 @@ describe("Finance Validation Functions (Isolated)", () => {
     describe("Edge cases", () => {
       it("should handle exactly 50 characters", () => {
         const fiftyCharCategory = "a".repeat(50);
-        expect(validateCategory(fiftyCharCategory)).toEqual({ isValid: true });
+        expect(validateCategory(fiftyCharCategory)).toStrictEqual({ isValid: true });
       });
 
       it("should handle single character categories", () => {
-        expect(validateCategory("A")).toEqual({ isValid: true });
-        expect(validateCategory("1")).toEqual({ isValid: true });
+        expect(validateCategory("A")).toStrictEqual({ isValid: true });
+        expect(validateCategory("1")).toStrictEqual({ isValid: true });
       });
     });
   });
@@ -386,47 +398,47 @@ describe("Finance Validation Functions (Isolated)", () => {
   describe("Description Validation", () => {
     describe("Valid descriptions", () => {
       it("should validate simple descriptions", () => {
-        expect(validateDescription("Grocery shopping")).toEqual({
+        expect(validateDescription("Grocery shopping")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("ATM withdrawal at Bank")).toEqual({
+        expect(validateDescription("ATM withdrawal at Bank")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("Payment for services")).toEqual({
+        expect(validateDescription("Payment for services")).toStrictEqual({
           isValid: true,
         });
       });
 
       it("should validate descriptions with special characters", () => {
-        expect(validateDescription("Payment for services @company")).toEqual({
+        expect(validateDescription("Payment for services @company")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("Transaction #12345")).toEqual({
+        expect(validateDescription("Transaction #12345")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("Amount: $100.50")).toEqual({
+        expect(validateDescription("Amount: $100.50")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("Email: user@domain.com")).toEqual({
+        expect(validateDescription("Email: user@domain.com")).toStrictEqual({
           isValid: true,
         });
         // Note: "/" is not in the allowed character pattern
-        expect(validateDescription("Rate 5 of 5 stars!")).toEqual({
+        expect(validateDescription("Rate 5 of 5 stars!")).toStrictEqual({
           isValid: true,
         });
       });
 
       it("should validate descriptions with punctuation", () => {
-        expect(validateDescription("Payment, cash back")).toEqual({
+        expect(validateDescription("Payment, cash back")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("Withdrawal (emergency)")).toEqual({
+        expect(validateDescription("Withdrawal (emergency)")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("Purchase: groceries and supplies")).toEqual(
+        expect(validateDescription("Purchase: groceries and supplies")).toStrictEqual(
           { isValid: true },
         );
-        expect(validateDescription("Question? Answer!")).toEqual({
+        expect(validateDescription("Question? Answer!")).toStrictEqual({
           isValid: true,
         });
       });
@@ -434,11 +446,11 @@ describe("Finance Validation Functions (Isolated)", () => {
 
     describe("Invalid descriptions", () => {
       it("should reject empty descriptions", () => {
-        expect(validateDescription("")).toEqual({
+        expect(validateDescription("")).toStrictEqual({
           isValid: false,
           error: "Description is required",
         });
-        expect(validateDescription("   ")).toEqual({
+        expect(validateDescription("   ")).toStrictEqual({
           isValid: false,
           error: "Description is required",
         });
@@ -446,7 +458,7 @@ describe("Finance Validation Functions (Isolated)", () => {
 
       it("should reject descriptions exceeding length limit", () => {
         const longDescription = "a".repeat(201);
-        expect(validateDescription(longDescription)).toEqual({
+        expect(validateDescription(longDescription)).toStrictEqual({
           isValid: false,
           error: "Description cannot exceed 200 characters",
         });
@@ -454,11 +466,11 @@ describe("Finance Validation Functions (Isolated)", () => {
 
       it("should reject descriptions with invalid characters", () => {
         // Test characters not in the allowed pattern
-        expect(validateDescription("Description with ~ character")).toEqual({
+        expect(validateDescription("Description with ~ character")).toStrictEqual({
           isValid: false,
           error: "Description contains invalid characters",
         });
-        expect(validateDescription("Description with ` character")).toEqual({
+        expect(validateDescription("Description with ` character")).toStrictEqual({
           isValid: false,
           error: "Description contains invalid characters",
         });
@@ -468,13 +480,13 @@ describe("Finance Validation Functions (Isolated)", () => {
     describe("Edge cases", () => {
       it("should handle exactly 200 characters", () => {
         const maxDescription = "a".repeat(200);
-        expect(validateDescription(maxDescription)).toEqual({ isValid: true });
+        expect(validateDescription(maxDescription)).toStrictEqual({ isValid: true });
       });
 
       it("should handle complex valid descriptions", () => {
         const complexDesc =
           "Purchase at Store #123: Items A, B & C (total: $45.67) - Receipt #456";
-        expect(validateDescription(complexDesc)).toEqual({ isValid: true });
+        expect(validateDescription(complexDesc)).toStrictEqual({ isValid: true });
       });
     });
   });
@@ -482,24 +494,24 @@ describe("Finance Validation Functions (Isolated)", () => {
   describe("Account Name Validation", () => {
     describe("Valid account names", () => {
       it("should validate simple account names", () => {
-        expect(validateAccountName("Chase Checking")).toEqual({
+        expect(validateAccountName("Chase Checking")).toStrictEqual({
           isValid: true,
         });
-        expect(validateAccountName("Savings Account")).toEqual({
+        expect(validateAccountName("Savings Account")).toStrictEqual({
           isValid: true,
         });
-        expect(validateAccountName("Credit Card")).toEqual({ isValid: true });
+        expect(validateAccountName("Credit Card")).toStrictEqual({ isValid: true });
       });
 
       it("should validate account names with allowed characters", () => {
-        expect(validateAccountName("Savings-Account_1")).toEqual({
+        expect(validateAccountName("Savings-Account_1")).toStrictEqual({
           isValid: true,
         });
-        expect(validateAccountName("Credit Card (Main)")).toEqual({
+        expect(validateAccountName("Credit Card (Main)")).toStrictEqual({
           isValid: true,
         });
-        expect(validateAccountName("Account_123")).toEqual({ isValid: true });
-        expect(validateAccountName("Business & Personal")).toEqual({
+        expect(validateAccountName("Account_123")).toStrictEqual({ isValid: true });
+        expect(validateAccountName("Business & Personal")).toStrictEqual({
           isValid: true,
         });
       });
@@ -507,11 +519,11 @@ describe("Finance Validation Functions (Isolated)", () => {
 
     describe("Invalid account names", () => {
       it("should reject empty account names", () => {
-        expect(validateAccountName("")).toEqual({
+        expect(validateAccountName("")).toStrictEqual({
           isValid: false,
           error: "Account name is required",
         });
-        expect(validateAccountName("   ")).toEqual({
+        expect(validateAccountName("   ")).toStrictEqual({
           isValid: false,
           error: "Account name is required",
         });
@@ -519,18 +531,18 @@ describe("Finance Validation Functions (Isolated)", () => {
 
       it("should reject account names exceeding length limit", () => {
         const longAccountName = "a".repeat(101);
-        expect(validateAccountName(longAccountName)).toEqual({
+        expect(validateAccountName(longAccountName)).toStrictEqual({
           isValid: false,
           error: "Account name cannot exceed 100 characters",
         });
       });
 
       it("should reject account names with invalid characters", () => {
-        expect(validateAccountName("Account@#$")).toEqual({
+        expect(validateAccountName("Account@#$")).toStrictEqual({
           isValid: false,
           error: "Account name contains invalid characters",
         });
-        expect(validateAccountName("Account/Name")).toEqual({
+        expect(validateAccountName("Account/Name")).toStrictEqual({
           isValid: false,
           error: "Account name contains invalid characters",
         });
@@ -540,7 +552,7 @@ describe("Finance Validation Functions (Isolated)", () => {
     describe("Edge cases", () => {
       it("should handle exactly 100 characters", () => {
         const maxAccountName = "a".repeat(100);
-        expect(validateAccountName(maxAccountName)).toEqual({ isValid: true });
+        expect(validateAccountName(maxAccountName)).toStrictEqual({ isValid: true });
       });
     });
   });
@@ -549,73 +561,73 @@ describe("Finance Validation Functions (Isolated)", () => {
     describe("Valid dates", () => {
       it("should validate current dates", () => {
         const today = new Date().toISOString().split("T")[0];
-        expect(validateDate(today)).toEqual({ isValid: true });
+        expect(validateDate(today)).toStrictEqual({ isValid: true });
 
-        expect(validateDate("2024-01-01")).toEqual({ isValid: true });
-        expect(validateDate("2023-12-31")).toEqual({ isValid: true });
+        expect(validateDate("2024-01-01")).toStrictEqual({ isValid: true });
+        expect(validateDate("2023-12-31")).toStrictEqual({ isValid: true });
       });
 
       it("should validate recent past dates", () => {
         const lastYear = new Date();
         lastYear.setFullYear(lastYear.getFullYear() - 1);
         const lastYearStr = lastYear.toISOString().split("T")[0];
-        expect(validateDate(lastYearStr)).toEqual({ isValid: true });
+        expect(validateDate(lastYearStr)).toStrictEqual({ isValid: true });
       });
 
       it("should validate near future dates", () => {
         const nextMonth = new Date();
         nextMonth.setMonth(nextMonth.getMonth() + 1);
         const nextMonthStr = nextMonth.toISOString().split("T")[0];
-        expect(validateDate(nextMonthStr)).toEqual({ isValid: true });
+        expect(validateDate(nextMonthStr)).toStrictEqual({ isValid: true });
       });
     });
 
     describe("Invalid dates", () => {
       it("should reject empty dates", () => {
-        expect(validateDate("")).toEqual({
+        expect(validateDate("")).toStrictEqual({
           isValid: false,
           error: "Date is required",
         });
-        expect(validateDate("   ")).toEqual({
+        expect(validateDate("   ")).toStrictEqual({
           isValid: false,
           error: "Date is required",
         });
       });
 
       it("should reject invalid date formats", () => {
-        expect(validateDate("invalid-date")).toEqual({
+        expect(validateDate("invalid-date")).toStrictEqual({
           isValid: false,
           error: "Invalid date format",
         });
-        expect(validateDate("2024-13-01")).toEqual({
+        expect(validateDate("2024-13-01")).toStrictEqual({
           isValid: false,
           error: "Invalid date format",
         });
         // Note: new Date("2024-02-30") creates a valid date (March 1, 2024)
         // so we need a truly invalid format
-        expect(validateDate("2024-13-45")).toEqual({
+        expect(validateDate("2024-13-45")).toStrictEqual({
           isValid: false,
           error: "Invalid date format",
         });
       });
 
       it("should reject dates too far in the past", () => {
-        expect(validateDate("1900-01-01")).toEqual({
+        expect(validateDate("1900-01-01")).toStrictEqual({
           isValid: false,
           error: "Date cannot be more than 100 years ago",
         });
-        expect(validateDate("1920-01-01")).toEqual({
+        expect(validateDate("1920-01-01")).toStrictEqual({
           isValid: false,
           error: "Date cannot be more than 100 years ago",
         });
       });
 
       it("should reject dates too far in the future", () => {
-        expect(validateDate("2030-01-01")).toEqual({
+        expect(validateDate("2030-01-01")).toStrictEqual({
           isValid: false,
           error: "Date cannot be more than 1 year in the future",
         });
-        expect(validateDate("2050-01-01")).toEqual({
+        expect(validateDate("2050-01-01")).toStrictEqual({
           isValid: false,
           error: "Date cannot be more than 1 year in the future",
         });
@@ -644,7 +656,7 @@ describe("Finance Validation Functions (Isolated)", () => {
         const ninetyNineYearsAgoStr = ninetyNineYearsAgo
           .toISOString()
           .split("T")[0];
-        expect(validateDate(ninetyNineYearsAgoStr)).toEqual({ isValid: true });
+        expect(validateDate(ninetyNineYearsAgoStr)).toStrictEqual({ isValid: true });
 
         // Test exactly 1 year from now
         const oneYearFromNow = new Date(
@@ -653,7 +665,7 @@ describe("Finance Validation Functions (Isolated)", () => {
           now.getDate(),
         );
         const oneYearFromNowStr = oneYearFromNow.toISOString().split("T")[0];
-        expect(validateDate(oneYearFromNowStr)).toEqual({ isValid: true });
+        expect(validateDate(oneYearFromNowStr)).toStrictEqual({ isValid: true });
       });
     });
   });
@@ -669,7 +681,7 @@ describe("Finance Validation Functions (Isolated)", () => {
           transactionDate: "2024-01-01",
         };
 
-        expect(validateTransaction(validTransaction)).toEqual({
+        expect(validateTransaction(validTransaction)).toStrictEqual({
           isValid: true,
           errors: {},
         });
@@ -684,7 +696,7 @@ describe("Finance Validation Functions (Isolated)", () => {
           transactionDate: "2024-01-01",
         };
 
-        expect(validateTransaction(validTransaction)).toEqual({
+        expect(validateTransaction(validTransaction)).toStrictEqual({
           isValid: true,
           errors: {},
         });
@@ -699,7 +711,7 @@ describe("Finance Validation Functions (Isolated)", () => {
           transactionDate: "2024-01-01",
         };
 
-        expect(validateTransaction(validTransaction)).toEqual({
+        expect(validateTransaction(validTransaction)).toStrictEqual({
           isValid: true,
           errors: {},
         });
@@ -719,7 +731,7 @@ describe("Finance Validation Functions (Isolated)", () => {
         const validation = validateTransaction(invalidTransaction);
 
         expect(validation.isValid).toBe(false);
-        expect(validation.errors).toEqual({
+        expect(validation.errors).toStrictEqual({
           amount: "Amount is required",
           category: "Category is required",
           description: "Description is required",
@@ -740,7 +752,7 @@ describe("Finance Validation Functions (Isolated)", () => {
         const validation = validateTransaction(partiallyInvalidTransaction);
 
         expect(validation.isValid).toBe(false);
-        expect(validation.errors).toEqual({
+        expect(validation.errors).toStrictEqual({
           category: "Category contains invalid characters",
         });
       });
@@ -757,7 +769,7 @@ describe("Finance Validation Functions (Isolated)", () => {
         const validation = validateTransaction(multipleErrorsTransaction);
 
         expect(validation.isValid).toBe(false);
-        expect(validation.errors).toEqual({
+        expect(validation.errors).toStrictEqual({
           amount: "Amount must be a valid number",
           category: "Category name cannot exceed 50 characters",
           accountNameOwner: "Account name contains invalid characters",
@@ -776,7 +788,7 @@ describe("Finance Validation Functions (Isolated)", () => {
           transactionDate: "2024-01-01",
         };
 
-        expect(validateTransaction(boundaryTransaction)).toEqual({
+        expect(validateTransaction(boundaryTransaction)).toStrictEqual({
           isValid: true,
           errors: {},
         });
@@ -791,7 +803,7 @@ describe("Finance Validation Functions (Isolated)", () => {
           transactionDate: "2024-01-01",
         };
 
-        expect(validateTransaction(zeroAmountTransaction)).toEqual({
+        expect(validateTransaction(zeroAmountTransaction)).toStrictEqual({
           isValid: true,
           errors: {},
         });
@@ -801,61 +813,61 @@ describe("Finance Validation Functions (Isolated)", () => {
 
   describe("Comprehensive Edge Cases", () => {
     it("should handle null and undefined inputs across all validators", () => {
-      expect(validateAmount(null as any)).toEqual({
+      expect(validateAmount(null as any)).toStrictEqual({
         isValid: false,
         error: "Amount is required",
       });
-      expect(validateAmount(undefined as any)).toEqual({
+      expect(validateAmount(undefined as any)).toStrictEqual({
         isValid: false,
         error: "Amount is required",
       });
     });
 
     it("should handle whitespace-only inputs", () => {
-      expect(validateCategory("   ")).toEqual({
+      expect(validateCategory("   ")).toStrictEqual({
         isValid: false,
         error: "Category is required",
       });
-      expect(validateDescription("   ")).toEqual({
+      expect(validateDescription("   ")).toStrictEqual({
         isValid: false,
         error: "Description is required",
       });
-      expect(validateAccountName("   ")).toEqual({
+      expect(validateAccountName("   ")).toStrictEqual({
         isValid: false,
         error: "Account name is required",
       });
-      expect(validateDate("   ")).toEqual({
+      expect(validateDate("   ")).toStrictEqual({
         isValid: false,
         error: "Date is required",
       });
     });
 
     it("should handle very large and very small numbers", () => {
-      expect(validateAmount(0.01)).toEqual({ isValid: true });
-      expect(validateAmount(-0.01)).toEqual({ isValid: true });
-      expect(validateAmount(999999.99)).toEqual({ isValid: true });
-      expect(validateAmount(-999999.99)).toEqual({ isValid: true });
+      expect(validateAmount(0.01)).toStrictEqual({ isValid: true });
+      expect(validateAmount(-0.01)).toStrictEqual({ isValid: true });
+      expect(validateAmount(999999.99)).toStrictEqual({ isValid: true });
+      expect(validateAmount(-999999.99)).toStrictEqual({ isValid: true });
     });
 
     it("should handle special numeric inputs", () => {
-      expect(validateAmount(NaN)).toEqual({
+      expect(validateAmount(NaN)).toStrictEqual({
         isValid: false,
         error: "Amount must be a valid number",
       });
       // Number.MAX_VALUE is finite but exceeds our limit, so it gets the limit error
-      expect(validateAmount(Number.MAX_VALUE)).toEqual({
+      expect(validateAmount(Number.MAX_VALUE)).toStrictEqual({
         isValid: false,
         error: "Amount cannot exceed $999,999.99",
       });
-      expect(validateAmount(Number.MIN_VALUE)).toEqual({ isValid: true });
+      expect(validateAmount(Number.MIN_VALUE)).toStrictEqual({ isValid: true });
     });
 
     it("should handle empty string vs null vs undefined consistently", () => {
       const emptyStringResult = { isValid: false, error: "Amount is required" };
 
-      expect(validateAmount("")).toEqual(emptyStringResult);
-      expect(validateAmount(null as any)).toEqual(emptyStringResult);
-      expect(validateAmount(undefined as any)).toEqual(emptyStringResult);
+      expect(validateAmount("")).toStrictEqual(emptyStringResult);
+      expect(validateAmount(null as any)).toStrictEqual(emptyStringResult);
+      expect(validateAmount(undefined as any)).toStrictEqual(emptyStringResult);
     });
   });
 });

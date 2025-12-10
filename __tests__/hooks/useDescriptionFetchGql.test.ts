@@ -153,7 +153,7 @@ describe("useDescriptionFetchGql", () => {
     });
 
     expect(result.current.data).toHaveLength(2);
-    expect(result.current.data?.[0]).toEqual(
+    expect(result.current.data?.[0]).toStrictEqual(
       expect.objectContaining({
         descriptionId: 1,
         descriptionName: "amazon-prime",
@@ -254,7 +254,7 @@ describe("useDescriptionFetchGql", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data).toEqual([]);
+    expect(result.current.data).toStrictEqual([]);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isError).toBe(false);
   });

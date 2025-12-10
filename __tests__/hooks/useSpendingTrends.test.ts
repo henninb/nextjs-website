@@ -16,6 +16,18 @@ import {
   ConsoleSpy,
 } from "../../testHelpers";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 describe("useSpendingTrends", () => {
   let consoleSpy: ConsoleSpy;
   const originalFetch = global.fetch;
@@ -132,7 +144,7 @@ describe("useSpendingTrends", () => {
 
         const result = await fetchAllTransactionsForTrends();
 
-        expect(result).toEqual(mockTransactions);
+        expect(result).toStrictEqual(mockTransactions);
       });
     });
 
@@ -147,7 +159,7 @@ describe("useSpendingTrends", () => {
 
         const result = await fetchAllTransactionsForTrends();
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
         expect(mockLog).toHaveBeenCalledWith(
           expect.stringContaining("No transactions found for trends analysis"),
         );
@@ -182,7 +194,7 @@ describe("useSpendingTrends", () => {
 
         const result = await fetchAllTransactionsForTrends();
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
       });
 
       it("should return empty array for null response", async () => {
@@ -190,7 +202,7 @@ describe("useSpendingTrends", () => {
 
         const result = await fetchAllTransactionsForTrends();
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
       });
     });
   });
@@ -218,7 +230,7 @@ describe("useSpendingTrends", () => {
 
         const result = transformToTrendsData(transactions);
 
-        expect(result).toEqual(
+        expect(result).toStrictEqual(
           expect.objectContaining({
             monthlySpending: expect.arrayContaining([
               expect.objectContaining({
@@ -265,7 +277,7 @@ describe("useSpendingTrends", () => {
 
         const result = transformToTrendsData(transactions);
 
-        expect(result.monthOverMonth).toEqual({
+        expect(result.monthOverMonth).toStrictEqual({
           currentAmount: 150.0,
           previousAmount: 100.0,
           absoluteChange: 50.0,
@@ -295,7 +307,7 @@ describe("useSpendingTrends", () => {
         const result = transformToTrendsData(transactions);
 
         expect(result.topCategories).toHaveLength(3);
-        expect(result.topCategories[0]).toEqual(
+        expect(result.topCategories[0]).toStrictEqual(
           expect.objectContaining({
             category: "Food",
             amount: 200.0,
@@ -303,7 +315,7 @@ describe("useSpendingTrends", () => {
         );
         expect(result.topCategories[0].percentage).toBeCloseTo(44.44, 2);
 
-        expect(result.topCategories[1]).toEqual(
+        expect(result.topCategories[1]).toStrictEqual(
           expect.objectContaining({
             category: "Transportation",
             amount: 150.0,
@@ -311,7 +323,7 @@ describe("useSpendingTrends", () => {
         );
         expect(result.topCategories[1].percentage).toBeCloseTo(33.33, 2);
 
-        expect(result.topCategories[2]).toEqual(
+        expect(result.topCategories[2]).toStrictEqual(
           expect.objectContaining({
             category: "Entertainment",
             amount: 100.0,
@@ -408,7 +420,7 @@ describe("useSpendingTrends", () => {
 
         expect(result.currentMonth?.totalSpend).toBe(100.0);
         expect(result.currentMonth?.transactionCount).toBe(1);
-        expect(result.currentMonth?.categories).toEqual({ Food: 100.0 });
+        expect(result.currentMonth?.categories).toStrictEqual({ Food: 100.0 });
       });
 
       it("should handle category filtering", () => {
@@ -423,7 +435,7 @@ describe("useSpendingTrends", () => {
         });
 
         expect(result.currentMonth?.totalSpend).toBe(150.0);
-        expect(result.currentMonth?.categories).toEqual({
+        expect(result.currentMonth?.categories).toStrictEqual({
           Food: 100.0,
           Entertainment: 50.0,
         });
@@ -441,7 +453,7 @@ describe("useSpendingTrends", () => {
         });
 
         expect(result.currentMonth?.totalSpend).toBe(150.0);
-        expect(result.currentMonth?.categories).toEqual({
+        expect(result.currentMonth?.categories).toStrictEqual({
           Food: 100.0,
           Entertainment: 50.0,
         });
@@ -452,7 +464,7 @@ describe("useSpendingTrends", () => {
       it("should handle empty transaction array", () => {
         const result = transformToTrendsData([]);
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           monthlySpending: [],
           currentMonth: null,
           previousMonth: null,
@@ -472,7 +484,7 @@ describe("useSpendingTrends", () => {
         expect(result.currentMonth).toBeTruthy();
         expect(result.previousMonth).toBeNull();
         expect(result.monthOverMonth).toBeNull();
-        expect(result.categoryChanges).toEqual([]);
+        expect(result.categoryChanges).toStrictEqual([]);
       });
 
       it("should handle invalid/null transactions gracefully", () => {
@@ -506,14 +518,14 @@ describe("useSpendingTrends", () => {
       };
 
       // Same filters should generate same query key for proper caching
-      expect(JSON.stringify(filters1)).toEqual(JSON.stringify(filters2));
+      expect(JSON.stringify(filters1)).toStrictEqual(JSON.stringify(filters2));
     });
 
     it("should generate different query keys for different filters", () => {
       const filters1: TrendsFilters = { dateRange: { months: 12 } };
       const filters2: TrendsFilters = { dateRange: { months: 6 } };
 
-      expect(JSON.stringify(filters1)).not.toEqual(JSON.stringify(filters2));
+      expect(JSON.stringify(filters1)).not.toStrictEqual(JSON.stringify(filters2));
     });
   });
 

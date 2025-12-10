@@ -44,6 +44,12 @@ const createWrapper = (queryClient: QueryClient) =>
   };
 
 describe("useMedicalExpenseFetch", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -102,7 +108,7 @@ describe("useMedicalExpenseFetch", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(result.current.data).toEqual(mockMedicalExpenses);
+    expect(result.current.data).toStrictEqual(mockMedicalExpenses);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
     expect(mockFetch).toHaveBeenCalledWith(
@@ -125,7 +131,7 @@ describe("useMedicalExpenseFetch", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(result.current.data).toEqual([]);
+    expect(result.current.data).toStrictEqual([]);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
   });
@@ -254,7 +260,7 @@ describe("useMedicalExpenseFetch", () => {
       { timeout: 5000 },
     );
 
-    expect(result.current.data).toEqual([]);
+    expect(result.current.data).toStrictEqual([]);
     expect(result.current.error).toBe(null);
   });
 
@@ -281,7 +287,7 @@ describe("useMedicalExpenseFetch", () => {
       wrapper,
     });
 
-    expect(result2.current.data).toEqual(mockMedicalExpenses);
+    expect(result2.current.data).toStrictEqual(mockMedicalExpenses);
     expect(result2.current.isLoading).toBe(false);
 
     // Should only call fetch once due to caching

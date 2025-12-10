@@ -5,6 +5,18 @@
 
 import { ConsoleSpy } from "../../testHelpers";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Copy the function to test
 const deleteAllPendingTransactions = async (): Promise<void> => {
   try {
@@ -39,7 +51,13 @@ const deleteAllPendingTransactions = async (): Promise<void> => {
   }
 };
 
-describe("usePendingTransactionDeleteAll Business Logic (Isolated)", () => {
+describe("usePendingTransactionDeleteAll Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -86,7 +104,7 @@ describe("usePendingTransactionDeleteAll Business Logic (Isolated)", () => {
         await deleteAllPendingTransactions();
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual(["Deleting all pending transactions"]);
+        expect(calls.log[0]).toStrictEqual(["Deleting all pending transactions"]);
       });
 
       it("should call the delete endpoint only once", async () => {

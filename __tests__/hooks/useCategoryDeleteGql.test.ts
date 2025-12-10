@@ -10,6 +10,18 @@ jest.mock("../../utils/graphqlClient", () => ({
 }));
 
 import { graphqlRequest } from "../../utils/graphqlClient";
+
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
 const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
   typeof graphqlRequest
 >;
@@ -72,7 +84,7 @@ describe("useCategoryDeleteGql", () => {
       },
     });
 
-    expect(result.current.data).toEqual({
+    expect(result.current.data).toStrictEqual({
       ok: true,
       categoryName: "groceries",
     });
@@ -176,7 +188,7 @@ describe("useCategoryDeleteGql", () => {
 
     // Cache should still be empty
     const updatedCache = queryClient.getQueryData<Category[]>(["categoryGQL"]);
-    expect(updatedCache).toEqual([]);
+    expect(updatedCache).toStrictEqual([]);
   });
 
   it("should handle delete with null cache", async () => {
@@ -230,7 +242,7 @@ describe("useCategoryDeleteGql", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data).toEqual({
+    expect(result.current.data).toStrictEqual({
       ok: false,
       categoryName: "groceries",
     });

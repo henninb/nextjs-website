@@ -21,6 +21,18 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useTransferDelete from "../../hooks/useTransferDelete";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -77,6 +89,12 @@ const createWrapper = () => {
 };
 
 describe("useTransferDelete Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockLogger.debug.mockClear();
@@ -129,7 +147,7 @@ describe("useTransferDelete Modern Endpoint (TDD)", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(result.current.data).toEqual(testTransfer);
+      expect(result.current.data).toStrictEqual(testTransfer);
     });
 
     it("should return deleted transfer object", async () => {
@@ -344,7 +362,7 @@ describe("useTransferDelete Modern Endpoint (TDD)", () => {
 
       const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
       expect(cacheData).toHaveLength(0);
-      expect(cacheData).toEqual([]);
+      expect(cacheData).toStrictEqual([]);
     });
   });
 });

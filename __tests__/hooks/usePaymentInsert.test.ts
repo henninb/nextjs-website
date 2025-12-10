@@ -8,6 +8,18 @@ import {
 import { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -50,7 +62,13 @@ const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
   __mockLogger: ReturnType<typeof createMockLogger>;
 };
 
-describe("usePaymentInsert business logic (isolated)", () => {
+describe("usePaymentInsert business logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const basePayment = createTestPayment({
     sourceAccount: "checking",
     destinationAccount: "credit",
@@ -69,7 +87,7 @@ describe("usePaymentInsert business logic (isolated)", () => {
     it("formats payment payload for API", async () => {
       const result = await setupNewPayment(basePayment);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         paymentId: 0,
         amount: 125.5,
         transactionDate: "2025-01-15",
@@ -105,7 +123,7 @@ describe("usePaymentInsert business logic (isolated)", () => {
 
       const result = await insertPayment(basePayment);
 
-      expect(result).toEqual(apiResponse);
+      expect(result).toStrictEqual(apiResponse);
       expect(mockValidateInsert).toHaveBeenCalledWith(
         basePayment,
         expect.any(Function),
@@ -129,7 +147,7 @@ describe("usePaymentInsert business logic (isolated)", () => {
       const response = { ...basePayment, paymentId: 100 };
       global.fetch = createFetchMock(response, { status: 200 });
 
-      await expect(insertPayment(basePayment)).resolves.toEqual(response);
+      await expect(insertPayment(basePayment)).resolves.toStrictEqual(response);
     });
 
     it("surface validation failures before fetch", async () => {

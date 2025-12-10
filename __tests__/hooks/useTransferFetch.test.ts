@@ -51,6 +51,12 @@ const { __mockUseAuthenticatedQuery: mockUseAuthenticatedQuery } =
   };
 
 describe("useTransferFetch Modern Endpoint (unit)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockLogger.debug.mockClear();
@@ -76,7 +82,7 @@ describe("useTransferFetch Modern Endpoint (unit)", () => {
 
     const { result } = renderHook(() => useTransferFetch());
 
-    expect(result.current.data).toEqual(transfers);
+    expect(result.current.data).toStrictEqual(transfers);
     expect(mockUseAuthenticatedQuery).toHaveBeenCalledWith(
       ["transfer"],
       expect.any(Function),

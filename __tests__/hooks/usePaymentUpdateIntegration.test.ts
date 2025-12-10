@@ -53,7 +53,7 @@ jest.mock("../../components/AuthProvider", () => ({
   }),
 }));
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     pathname: "/",
@@ -81,6 +81,12 @@ const createWrapper = (queryClient: QueryClient) =>
   };
 
 describe("Payment Update Integration Test", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   it("should identify the 404 issue with payment ID 9", async () => {
     const queryClient = createTestQueryClient();
 

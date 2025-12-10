@@ -12,6 +12,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const deleteParameterModern = async (
   payload: Parameter,
@@ -58,6 +70,12 @@ const createTestParameter = (
 });
 
 describe("useParameterDelete Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -113,7 +131,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteParameterModern(testParameter);
 
-      expect(result).toEqual(testParameter);
+      expect(result).toStrictEqual(testParameter);
     });
 
     it("should use parameterName from payload in URL", async () => {
@@ -360,7 +378,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
       await deleteParameterModern(testParameter);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -405,7 +423,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteParameterModern(testParameter);
 
-      expect(result).toEqual(testParameter);
+      expect(result).toStrictEqual(testParameter);
     });
 
     it("should handle different parameterName values", async () => {
@@ -590,7 +608,7 @@ describe("useParameterDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteParameterModern(testParameter);
 
-      expect(result).toEqual(testParameter);
+      expect(result).toStrictEqual(testParameter);
     });
   });
 

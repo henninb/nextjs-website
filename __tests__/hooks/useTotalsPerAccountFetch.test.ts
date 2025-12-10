@@ -47,7 +47,19 @@ import {
   createMockResponse,
 } from "../../testHelpers";
 
-describe("fetchTotalsPerAccount (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("fetchTotalsPerAccount", () => {
   const originalFetch = global.fetch;
 
   const createTestTotals = (overrides = {}): Totals => ({
@@ -71,7 +83,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount("testAccount");
 
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
       // Account name is lowercased by sanitization
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/testaccount",
@@ -149,7 +161,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount("checking-main");
 
-      expect(result).toEqual(checkingTotals);
+      expect(result).toStrictEqual(checkingTotals);
       expect(result.totals).toBe(2500.0);
       expect(result.totalsCleared).toBe(1800.0);
     });
@@ -165,7 +177,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount("savings-emergency");
 
-      expect(result).toEqual(savingsTotals);
+      expect(result).toStrictEqual(savingsTotals);
       expect(result.totals).toBe(10000.0);
       expect(result.totalsOutstanding).toBe(0.0);
     });
@@ -181,7 +193,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount("credit-card-visa");
 
-      expect(result).toEqual(creditCardTotals);
+      expect(result).toStrictEqual(creditCardTotals);
       expect(result.totals).toBe(-1500.75);
       expect(result.totalsFuture).toBe(-300.25);
     });
@@ -455,7 +467,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       const result = await fetchTotalsPerAccount("testAccount");
 
       expect(mockResponse.json).toHaveBeenCalled();
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
     });
 
     it("should handle response with all totals fields", async () => {
@@ -490,7 +502,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
       expect(typeof result.totalsFuture).toBe("number");
       expect(typeof result.totalsCleared).toBe("number");
       expect(typeof result.totalsOutstanding).toBe("number");
-      expect(result).toEqual(integerTotals);
+      expect(result).toStrictEqual(integerTotals);
     });
   });
 
@@ -543,7 +555,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
         const result = await fetchTotalsPerAccount(accountTest.input);
 
-        expect(result).toEqual(testTotals);
+        expect(result).toStrictEqual(testTotals);
         expect(global.fetch).toHaveBeenCalledWith(
           `/api/transaction/account/totals/${accountTest.sanitized}`,
           expect.any(Object),
@@ -560,7 +572,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount(longAccountName);
 
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
       // Account names are sanitized but not truncated in this hook
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/totals/${longAccountName}`,
@@ -575,7 +587,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount(numericAccount);
 
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/totals/12345",
         expect.any(Object),
@@ -589,7 +601,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount(unicodeAccount);
 
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
       // Unicode characters are removed by sanitization
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/totals/compte-pargne-oo`,
@@ -604,7 +616,7 @@ describe("fetchTotalsPerAccount (Isolated)", () => {
 
       const result = await fetchTotalsPerAccount(specialAccount);
 
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
       // All special URL characters are removed by sanitization
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/transaction/account/totals/accountwithspecialcharstest`,

@@ -7,6 +7,18 @@ import {
 import { userAccountRegister } from "../../hooks/useUserAccountRegister";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -49,7 +61,13 @@ const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
   __mockLogger: ReturnType<typeof createMockLogger>;
 };
 
-describe("userAccountRegister (isolated)", () => {
+describe("userAccountRegister", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const newUser = createTestUser({
     username: "new_user@example.com",
     password: "SampleP@ssw0rd",
@@ -87,7 +105,7 @@ describe("userAccountRegister (isolated)", () => {
   it("returns original payload for non-201 responses", async () => {
     global.fetch = createFetchMock(newUser, { status: 200 });
 
-    await expect(userAccountRegister(newUser)).resolves.toEqual(newUser);
+    await expect(userAccountRegister(newUser)).resolves.toStrictEqual(newUser);
   });
 
   it("surfaces validation failures before calling fetch", async () => {

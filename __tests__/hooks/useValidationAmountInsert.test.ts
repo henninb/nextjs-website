@@ -12,6 +12,18 @@ import { simulateNetworkError, simulateTimeoutError } from "../../testHelpers";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Extract the business logic function from useValidationAmountInsert
 const insertValidationAmount = async (
   accountNameOwner: string,
@@ -62,7 +74,13 @@ const createTestValidationAmount = (
   ...overrides,
 });
 
-describe("useValidationAmountInsert Business Logic (Isolated)", () => {
+describe("useValidationAmountInsert Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -91,7 +109,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           testPayload,
         );
 
-        expect(result).toEqual(expectedResponse);
+        expect(result).toStrictEqual(expectedResponse);
         expect(fetch).toHaveBeenCalledWith("/api/validation/amount", {
           method: "POST",
           credentials: "include",
@@ -157,7 +175,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           testPayload,
         );
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
       });
     });
 
@@ -429,7 +447,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         expect(result!.amount).toBe(5000.0);
         expect(result!.transactionState).toBe("cleared");
-        expect(result!.validationDate).toEqual(
+        expect(result!.validationDate).toStrictEqual(
           new Date("2024-01-31T23:59:59.000Z"),
         );
       });
@@ -472,7 +490,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
 
         expect(result!.amount).toBe(1000.0);
         expect(result!.transactionState).toBe("future");
-        expect(result!.validationDate).toEqual(futureDate);
+        expect(result!.validationDate).toStrictEqual(futureDate);
       });
 
       it("should handle validation for different account types", async () => {
@@ -578,7 +596,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           testPayload,
         );
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
           "/api/validation/amount",
           expect.any(Object),
@@ -596,7 +614,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           testPayload,
         );
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
           "/api/validation/amount",
           expect.any(Object),
@@ -614,7 +632,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           testPayload,
         );
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
           `/api/validation/amount`,
           expect.any(Object),
@@ -833,7 +851,7 @@ describe("useValidationAmountInsert Business Logic (Isolated)", () => {
           testPayload,
         );
 
-        expect(result).toEqual(expectedResponse);
+        expect(result).toStrictEqual(expectedResponse);
         expect(result!.validationId).toBe(555555);
         expect(result!.amount).toBe(15750.25);
       });

@@ -11,6 +11,18 @@ import {
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Extract the business logic function from useValidationAmountDelete
 const deleteValidationAmount = async (
   payload: ValidationAmount,
@@ -60,7 +72,13 @@ const createTestValidationAmount = (
   ...overrides,
 });
 
-describe("useValidationAmountDelete Business Logic (Isolated)", () => {
+describe("useValidationAmountDelete Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -81,7 +99,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
 
         const result = await deleteValidationAmount(testPayload);
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
         expect(fetch).toHaveBeenCalledWith(
           `/api/validation/amount/${testPayload.validationId}`,
           {
@@ -343,7 +361,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
 
         const result = await deleteValidationAmount(testPayload);
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
       });
 
       it("should handle deletion of outstanding validation amount", async () => {
@@ -355,7 +373,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
 
         const result = await deleteValidationAmount(testPayload);
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
       });
 
       it("should handle deletion of inactive validation amount", async () => {
@@ -367,7 +385,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
 
         const result = await deleteValidationAmount(testPayload);
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
       });
 
       it("should handle deletion of old validation amounts", async () => {
@@ -380,7 +398,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
 
         const result = await deleteValidationAmount(testPayload);
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
       });
     });
 
@@ -396,7 +414,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
         });
 
         let result = await deleteValidationAmount(testPayload);
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
 
         // Test 204 No Content
         global.fetch = jest.fn().mockResolvedValue({
@@ -430,7 +448,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
 
         const result = await deleteValidationAmount(testPayload);
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
       });
 
       it("should handle deletion of validation amount with negative amount", async () => {
@@ -440,7 +458,7 @@ describe("useValidationAmountDelete Business Logic (Isolated)", () => {
 
         const result = await deleteValidationAmount(testPayload);
 
-        expect(result).toEqual(testPayload);
+        expect(result).toStrictEqual(testPayload);
       });
     });
 

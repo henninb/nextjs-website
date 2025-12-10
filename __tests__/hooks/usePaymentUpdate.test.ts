@@ -43,6 +43,18 @@ import {
 import { updatePayment } from "../../hooks/usePaymentUpdate";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 // Mock window globally for isolated testing
@@ -52,7 +64,13 @@ const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
   },
 };
 
-describe("updatePayment (Isolated)", () => {
+describe("updatePayment", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
@@ -90,7 +108,7 @@ describe("updatePayment (Isolated)", () => {
 
       const result = await updatePayment(oldPayment, newPayment);
 
-      expect(result).toEqual(responsePayment);
+      expect(result).toStrictEqual(responsePayment);
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/payment/${oldPayment.paymentId}`,
         expect.objectContaining({
@@ -325,7 +343,7 @@ describe("updatePayment (Isolated)", () => {
 
       const result = await updatePayment(oldPayment, newPayment);
 
-      expect(result).toEqual(newPayment);
+      expect(result).toStrictEqual(newPayment);
       expect(global.fetch).toHaveBeenCalledWith(
         `/api/payment/123`,
         expect.objectContaining({
@@ -412,7 +430,7 @@ describe("updatePayment (Isolated)", () => {
 
       const result = await updatePayment(oldPayment, newPayment);
 
-      expect(result).toEqual(newPayment);
+      expect(result).toStrictEqual(newPayment);
     });
 
     it("should handle very small payment amounts", async () => {
@@ -430,7 +448,7 @@ describe("updatePayment (Isolated)", () => {
 
       const result = await updatePayment(oldPayment, newPayment);
 
-      expect(result).toEqual(newPayment);
+      expect(result).toStrictEqual(newPayment);
     });
 
     it("should handle dates at year boundaries", async () => {
@@ -490,7 +508,7 @@ describe("updatePayment (Isolated)", () => {
 
       const result = await updatePayment(oldPayment, newPayment);
 
-      expect(result).toEqual(responseData);
+      expect(result).toStrictEqual(responseData);
     });
 
     it("should handle responses with additional server fields", async () => {
@@ -508,7 +526,7 @@ describe("updatePayment (Isolated)", () => {
 
       const result = await updatePayment(oldPayment, newPayment);
 
-      expect(result).toEqual(responseData);
+      expect(result).toStrictEqual(responseData);
       expect(result.serverVersion).toBe("1.2.3");
       expect(result.processingTime).toBe(150);
     });

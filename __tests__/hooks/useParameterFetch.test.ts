@@ -12,6 +12,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const fetchParameterDataModern = async (): Promise<Parameter[]> => {
   try {
@@ -53,6 +65,12 @@ const createTestParameter = (
 });
 
 describe("useParameterFetch Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -86,7 +104,7 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
 
       const result = await fetchParameterDataModern();
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
       expect(Array.isArray(result)).toBe(true);
     });
 
@@ -100,7 +118,7 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
 
       const result = await fetchParameterDataModern();
 
-      expect(result).toEqual(testParameters);
+      expect(result).toStrictEqual(testParameters);
       expect(result).toHaveLength(2);
     });
   });
@@ -271,7 +289,7 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
 
       const result = await fetchParameterDataModern();
 
-      expect(result).toEqual(testParameters);
+      expect(result).toStrictEqual(testParameters);
     });
 
     it("should handle parameters with various value types", async () => {
@@ -390,7 +408,7 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
       await fetchParameterDataModern();
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });

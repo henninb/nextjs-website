@@ -8,6 +8,18 @@ import {
 import { deleteTransaction } from "../../hooks/useTransactionDelete";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -55,7 +67,13 @@ const { InputSanitizer } = jest.requireMock(
   InputSanitizer: { sanitizeGuid: jest.Mock };
 };
 
-describe("deleteTransaction (isolated)", () => {
+describe("deleteTransaction", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const baseTransaction = createTestTransaction({
     guid: "test-guid-123",
     accountNameOwner: "checking",
@@ -74,7 +92,7 @@ describe("deleteTransaction (isolated)", () => {
 
     const result = await deleteTransaction(baseTransaction as Transaction);
 
-    expect(result).toEqual(baseTransaction);
+    expect(result).toStrictEqual(baseTransaction);
     expect(mockValidateDelete).toHaveBeenCalledWith(
       baseTransaction,
       "guid",

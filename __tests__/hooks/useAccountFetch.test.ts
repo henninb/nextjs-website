@@ -42,6 +42,12 @@ const createWrapper = (queryClient: QueryClient) =>
   };
 
 describe("useAccountFetch", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   it("should fetch accounts successfully", async () => {
     const queryClient = createTestQueryClient();
 
@@ -69,7 +75,6 @@ describe("useAccountFetch", () => {
     ];
 
     // Mock the global fetch function
-    const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(
@@ -82,19 +87,17 @@ describe("useAccountFetch", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data).toEqual(mockAccounts);
+    expect(result.current.data).toStrictEqual(mockAccounts);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isError).toBe(false);
 
     // Restore original fetch
-    global.fetch = originalFetch;
   });
 
   it("should handle empty array when no accounts found (modern endpoint)", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to return 200 with empty array (modern behavior)
-    const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }));
@@ -109,18 +112,15 @@ describe("useAccountFetch", () => {
     });
 
     // Modern endpoint returns 200 OK with empty array (not 404)
-    expect(result.current.data).toEqual([]);
+    expect(result.current.data).toStrictEqual([]);
     expect(result.current.isSuccess).toBe(true);
     expect(result.current.isError).toBe(false);
-
-    global.fetch = originalFetch;
   });
 
   it("should handle network errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to return 500 error for all calls
-    const originalFetch = global.fetch;
     global.fetch = jest.fn().mockResolvedValue(
       new Response(JSON.stringify({ message: "Internal server error" }), {
         status: 500,
@@ -141,15 +141,12 @@ describe("useAccountFetch", () => {
     expect(result.current.error).toBeDefined();
     expect(result.current.error?.message).toContain("Internal server error");
     // Logging tested in logger.test.ts
-
-    global.fetch = originalFetch;
   });
 
   it("should handle 204 no content response", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to return 204
-    const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
@@ -162,15 +159,12 @@ describe("useAccountFetch", () => {
 
     expect(result.current.data).toBeNull();
     expect(result.current.isLoading).toBe(false);
-
-    global.fetch = originalFetch;
   });
 
   it("should handle fetch rejection errors properly", async () => {
     const queryClient = createTestQueryClient();
 
     // Mock the global fetch function to throw an error for all calls
-    const originalFetch = global.fetch;
     global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
 
     const { result } = renderHook(() => useAccountFetch(), {
@@ -187,8 +181,6 @@ describe("useAccountFetch", () => {
     expect(result.current.error).toBeDefined();
     expect(result.current.error?.message).toContain("Network failure");
     // Logging tested in logger.test.ts
-
-    global.fetch = originalFetch;
   });
 
   it("should provide refetch capability", async () => {
@@ -206,8 +198,6 @@ describe("useAccountFetch", () => {
         cleared: 200,
       },
     ];
-
-    const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(
@@ -222,7 +212,5 @@ describe("useAccountFetch", () => {
 
     expect(result.current.refetch).toBeDefined();
     expect(typeof result.current.refetch).toBe("function");
-
-    global.fetch = originalFetch;
   });
 });

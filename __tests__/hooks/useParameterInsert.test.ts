@@ -12,6 +12,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const insertParameterModern = async (
   payload: Parameter,
@@ -59,6 +71,12 @@ const createTestParameter = (
 });
 
 describe("useParameterInsert Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -98,7 +116,7 @@ describe("useParameterInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertParameterModern(testParameter);
 
-      expect(result).toEqual(testParameter);
+      expect(result).toStrictEqual(testParameter);
     });
 
     it("should handle 204 No Content response", async () => {
@@ -114,7 +132,7 @@ describe("useParameterInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertParameterModern(testParameter);
 
-      expect(result).toEqual(testParameter);
+      expect(result).toStrictEqual(testParameter);
     });
   });
 
@@ -314,7 +332,7 @@ describe("useParameterInsert Modern Endpoint (TDD)", () => {
       await insertParameterModern(testParameter);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -348,7 +366,7 @@ describe("useParameterInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertParameterModern(testParameter);
 
-      expect(result).toEqual(testParameter);
+      expect(result).toStrictEqual(testParameter);
       expect(result.parameterId).toBe(999);
       expect(result.parameterName).toBe("complete_param");
       expect(result.parameterValue).toBe("complete_value");

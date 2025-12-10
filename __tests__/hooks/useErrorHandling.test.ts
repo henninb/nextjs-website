@@ -2,6 +2,18 @@ import { renderHook, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 const useErrorHandling = () => {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = React.useState(false);
@@ -306,7 +318,7 @@ describe("useErrorHandling Hook", () => {
         expect(isValid).toBe(false);
       });
 
-      expect(result.current.errors).toEqual({
+      expect(result.current.errors).toStrictEqual({
         amount: "Amount is required",
         category: "Category is invalid",
       });
@@ -334,7 +346,7 @@ describe("useErrorHandling Hook", () => {
         expect(isValid).toBe(true);
       });
 
-      expect(result.current.errors).toEqual({});
+      expect(result.current.errors).toStrictEqual({});
       expect(result.current.hasErrors()).toBe(false);
     });
   });
@@ -360,7 +372,7 @@ describe("useErrorHandling Hook", () => {
         result.current.clearError("field2");
       });
 
-      expect(result.current.errors).toEqual({
+      expect(result.current.errors).toStrictEqual({
         field1: "Error 1",
         field3: "Error 3",
       });
@@ -386,7 +398,7 @@ describe("useErrorHandling Hook", () => {
         result.current.clearAllErrors();
       });
 
-      expect(result.current.errors).toEqual({});
+      expect(result.current.errors).toStrictEqual({});
       expect(result.current.hasErrors()).toBe(false);
     });
 

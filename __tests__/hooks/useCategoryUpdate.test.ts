@@ -13,6 +13,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Category from "../../model/Category";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const updateCategoryModern = async (
   oldCategory: Category,
@@ -57,6 +69,12 @@ const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
 });
 
 describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -111,7 +129,7 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
 
       const result = await updateCategoryModern(oldCategory, newCategory);
 
-      expect(result).toEqual(newCategory);
+      expect(result).toStrictEqual(newCategory);
       expect(result.activeStatus).toBe(false);
     });
 
@@ -371,7 +389,7 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
       await updateCategoryModern(oldCategory, newCategory);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -682,7 +700,7 @@ describe("useCategoryUpdate Modern Endpoint (TDD)", () => {
 
       const result = await updateCategoryModern(oldCategory, newCategory);
 
-      expect(result).toEqual(newCategory);
+      expect(result).toStrictEqual(newCategory);
     });
   });
 });

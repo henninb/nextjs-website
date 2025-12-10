@@ -10,6 +10,18 @@ import {
 } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Import the function we need to test
 // We need to export it from the hook file
 const fetchPendingTransactions = async (): Promise<PendingTransaction[]> => {
@@ -49,7 +61,13 @@ const createTestPendingTransaction = (
   ...overrides,
 });
 
-describe("usePendingTransactionFetch Business Logic (Isolated)", () => {
+describe("usePendingTransactionFetch Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -73,7 +91,7 @@ describe("usePendingTransactionFetch Business Logic (Isolated)", () => {
 
         const result = await fetchPendingTransactions();
 
-        expect(result).toEqual(testTransactions);
+        expect(result).toStrictEqual(testTransactions);
         expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/active", {
           method: "GET",
           credentials: "include",
@@ -89,7 +107,7 @@ describe("usePendingTransactionFetch Business Logic (Isolated)", () => {
 
         const result = await fetchPendingTransactions();
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
         expect(Array.isArray(result)).toBe(true);
       });
 
@@ -132,7 +150,7 @@ describe("usePendingTransactionFetch Business Logic (Isolated)", () => {
 
         const result = await fetchPendingTransactions();
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
         expect(Array.isArray(result)).toBe(true);
       });
     });

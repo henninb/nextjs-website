@@ -12,6 +12,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Category from "../../model/Category";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const insertCategoryModern = async (payload: Category): Promise<Category> => {
   try {
@@ -54,6 +66,12 @@ const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
 });
 
 describe("useCategoryInsert Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -93,7 +111,7 @@ describe("useCategoryInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertCategoryModern(testCategory);
 
-      expect(result).toEqual(testCategory);
+      expect(result).toStrictEqual(testCategory);
     });
 
     it("should handle 204 No Content response", async () => {
@@ -109,7 +127,7 @@ describe("useCategoryInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertCategoryModern(testCategory);
 
-      expect(result).toEqual(testCategory);
+      expect(result).toStrictEqual(testCategory);
     });
 
     it("should return category with 201 Created status", async () => {
@@ -126,7 +144,7 @@ describe("useCategoryInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertCategoryModern(testCategory);
 
-      expect(result).toEqual(testCategory);
+      expect(result).toStrictEqual(testCategory);
     });
   });
 
@@ -326,7 +344,7 @@ describe("useCategoryInsert Modern Endpoint (TDD)", () => {
       await insertCategoryModern(testCategory);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -359,7 +377,7 @@ describe("useCategoryInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertCategoryModern(testCategory);
 
-      expect(result).toEqual(testCategory);
+      expect(result).toStrictEqual(testCategory);
       expect(result.categoryId).toBe(999);
       expect(result.categoryName).toBe("complete_category");
       expect(result.activeStatus).toBe(true);

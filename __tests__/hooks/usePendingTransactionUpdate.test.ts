@@ -42,6 +42,18 @@ import PendingTransaction from "../../model/PendingTransaction";
 import { updatePendingTransaction } from "../../hooks/usePendingTransactionUpdate";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
 
 // Helper function to create test pending transaction data
@@ -57,7 +69,13 @@ const createTestPendingTransaction = (
   ...overrides,
 });
 
-describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
+describe("usePendingTransactionUpdate Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset validation mock
@@ -90,7 +108,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           newPendingTransaction,
         );
 
-        expect(result).toEqual(expectedResponse);
+        expect(result).toStrictEqual(expectedResponse);
         expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/42", {
           method: "PUT",
           credentials: "include",
@@ -208,7 +226,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           newPendingTransaction,
         );
 
-        expect(result.transactionDate).toEqual(newDate);
+        expect(result.transactionDate).toStrictEqual(newDate);
       });
 
       it("should handle account owner changes", async () => {
@@ -772,7 +790,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           oldPendingTransaction,
           newPendingTransactionFuture,
         );
-        expect(resultFuture.transactionDate).toEqual(futureDate);
+        expect(resultFuture.transactionDate).toStrictEqual(futureDate);
 
         // Test past date
         const pastDate = new Date("2020-01-01T00:00:00.000Z");
@@ -786,7 +804,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           oldPendingTransaction,
           newPendingTransactionPast,
         );
-        expect(resultPast.transactionDate).toEqual(pastDate);
+        expect(resultPast.transactionDate).toStrictEqual(pastDate);
       });
     });
 
@@ -821,7 +839,7 @@ describe("usePendingTransactionUpdate Business Logic (Isolated)", () => {
           newPendingTransaction,
         );
 
-        expect(result).toEqual(expectedResponse);
+        expect(result).toStrictEqual(expectedResponse);
         expect(result.pendingTransactionId).toBe(777);
         expect(result.amount).toBe(10500.0);
         expect(result.reviewStatus).toBe("approved");

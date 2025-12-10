@@ -5,6 +5,18 @@
 
 import { createFetchMock, ConsoleSpy } from "../../testHelpers";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Copy the function to test
 const deletePendingTransaction = async (id: number): Promise<void> => {
   try {
@@ -39,7 +51,13 @@ const deletePendingTransaction = async (id: number): Promise<void> => {
   }
 };
 
-describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
+describe("usePendingTransactionDelete Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -104,7 +122,7 @@ describe("usePendingTransactionDelete Business Logic (Isolated)", () => {
         await deletePendingTransaction(123);
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toEqual([
+        expect(calls.log[0]).toStrictEqual([
           "Deleting pending transaction with id: 123",
         ]);
       });

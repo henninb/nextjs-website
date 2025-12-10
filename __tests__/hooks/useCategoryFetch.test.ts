@@ -115,7 +115,7 @@ describe("useCategoryFetch", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data).toEqual(mockCategories);
+    expect(result.current.data).toStrictEqual(mockCategories);
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isError).toBe(false);
   });
@@ -354,7 +354,7 @@ describe("useCategoryFetch Modern Endpoint (TDD)", () => {
 
       const result = await fetchCategoryDataModern();
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
       expect(Array.isArray(result)).toBe(true);
     });
 
@@ -368,7 +368,7 @@ describe("useCategoryFetch Modern Endpoint (TDD)", () => {
 
       const result = await fetchCategoryDataModern();
 
-      expect(result).toEqual(testCategories);
+      expect(result).toStrictEqual(testCategories);
       expect(result).toHaveLength(2);
     });
   });
@@ -532,7 +532,7 @@ describe("useCategoryFetch Modern Endpoint (TDD)", () => {
 
       const result = await fetchCategoryDataModern();
 
-      expect(result).toEqual(testCategories);
+      expect(result).toStrictEqual(testCategories);
     });
   });
 
@@ -606,7 +606,7 @@ describe("useCategoryFetch Modern Endpoint (TDD)", () => {
       await fetchCategoryDataModern();
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });

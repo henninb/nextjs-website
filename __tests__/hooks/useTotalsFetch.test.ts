@@ -47,7 +47,19 @@ import {
   createMockResponse,
 } from "../../testHelpers";
 
-describe("fetchTotals (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("fetchTotals", () => {
   const originalFetch = global.fetch;
 
   const createTestTotals = (overrides = {}): Totals => ({
@@ -71,7 +83,7 @@ describe("fetchTotals (Isolated)", () => {
 
       const result = await fetchTotals();
 
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
       expect(global.fetch).toHaveBeenCalledWith("/api/account/totals", {
         method: "GET",
         credentials: "include",
@@ -93,7 +105,7 @@ describe("fetchTotals (Isolated)", () => {
 
       const result = await fetchTotals();
 
-      expect(result).toEqual(preciseTotals);
+      expect(result).toStrictEqual(preciseTotals);
       expect(result.totals).toBe(12345.67);
       expect(result.totalsFuture).toBe(0.01);
       expect(result.totalsCleared).toBe(999999.99);
@@ -111,7 +123,7 @@ describe("fetchTotals (Isolated)", () => {
 
       const result = await fetchTotals();
 
-      expect(result).toEqual(negativeTotals);
+      expect(result).toStrictEqual(negativeTotals);
       expect(result.totals).toBe(-500.25);
       expect(result.totalsOutstanding).toBe(-700.25);
     });
@@ -127,7 +139,7 @@ describe("fetchTotals (Isolated)", () => {
 
       const result = await fetchTotals();
 
-      expect(result).toEqual(zeroTotals);
+      expect(result).toStrictEqual(zeroTotals);
       expect(result.totals).toBe(0.0);
       expect(result.totalsFuture).toBe(0.0);
       expect(result.totalsCleared).toBe(0.0);
@@ -145,7 +157,7 @@ describe("fetchTotals (Isolated)", () => {
 
       const result = await fetchTotals();
 
-      expect(result).toEqual(largeTotals);
+      expect(result).toStrictEqual(largeTotals);
       expect(result.totals).toBe(1000000.5);
       expect(result.totalsFuture).toBe(500000.75);
     });
@@ -287,7 +299,7 @@ describe("fetchTotals (Isolated)", () => {
       const result = await fetchTotals();
 
       expect(mockResponse.json).toHaveBeenCalled();
-      expect(result).toEqual(testTotals);
+      expect(result).toStrictEqual(testTotals);
     });
 
     it("should handle response with decimal precision", async () => {
@@ -322,7 +334,7 @@ describe("fetchTotals (Isolated)", () => {
       expect(typeof result.totalsFuture).toBe("number");
       expect(typeof result.totalsCleared).toBe("number");
       expect(typeof result.totalsOutstanding).toBe("number");
-      expect(result).toEqual(integerTotals);
+      expect(result).toStrictEqual(integerTotals);
     });
   });
 

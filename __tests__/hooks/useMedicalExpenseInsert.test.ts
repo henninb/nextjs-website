@@ -48,6 +48,12 @@ const createWrapper = (queryClient: QueryClient) =>
   };
 
 describe("useMedicalExpenseInsert", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -99,7 +105,7 @@ describe("useMedicalExpenseInsert", () => {
       });
     });
 
-    expect(createdExpense).toEqual(mockCreatedExpense);
+    expect(createdExpense).toStrictEqual(mockCreatedExpense);
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
@@ -156,7 +162,7 @@ describe("useMedicalExpenseInsert", () => {
       });
     });
 
-    expect(createdExpense).toEqual(minimalExpense);
+    expect(createdExpense).toStrictEqual(minimalExpense);
     expect(mockFetch).toHaveBeenCalledWith(
       "/api/medical-expenses",
       expect.objectContaining({

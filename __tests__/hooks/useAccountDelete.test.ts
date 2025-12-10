@@ -41,7 +41,25 @@ import {
 } from "../../utils/validation/sanitization";
 import { HookValidator } from "../../utils/hookValidation";
 
-describe("deleteAccount (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("deleteAccount", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const mockAccount: Account = {
     accountId: 123,
     accountNameOwner: "test_account",
@@ -103,7 +121,7 @@ describe("deleteAccount (Isolated)", () => {
 
     const result = await deleteAccount(mockAccount);
 
-    expect(result).toEqual(mockResponse);
+    expect(result).toStrictEqual(mockResponse);
   });
 
   it("should throw error when accountNameOwner is missing", async () => {

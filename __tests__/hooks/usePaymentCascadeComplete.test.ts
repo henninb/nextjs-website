@@ -5,6 +5,18 @@ import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import Payment from "../../model/Payment";
 import Transaction from "../../model/Transaction";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -46,7 +58,7 @@ const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
   __mockLogger: ReturnType<typeof createMockLogger>;
 };
 
-jest.mock("next/router", () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     pathname: "/",
@@ -74,6 +86,12 @@ const createWrapper = (queryClient: QueryClient) =>
   };
 
 describe("Payment Update Cascade Functionality", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   describe("when payment amount and date are updated", () => {
     it("should cascade changes to linked transactions in both source and destination accounts", async () => {
       const queryClient = createTestQueryClient();
@@ -226,8 +244,8 @@ describe("Payment Update Cascade Functionality", () => {
         new Date(destLinkedTransaction?.transactionDate as any).toDateString(),
       ).toBe(updatedPayment.transactionDate.toDateString());
 
-      expect(sourceUnlinkedTransaction).toEqual(initialSourceTransactions[1]);
-      expect(destUnlinkedTransaction).toEqual(initialDestTransactions[1]);
+      expect(sourceUnlinkedTransaction).toStrictEqual(initialSourceTransactions[1]);
+      expect(destUnlinkedTransaction).toStrictEqual(initialDestTransactions[1]);
     });
 
     it("should handle case where linked transactions don't exist", async () => {
@@ -280,8 +298,8 @@ describe("Payment Update Cascade Functionality", () => {
         destinationAccount,
       ]);
 
-      expect(updatedSourceTransactions).toEqual([]);
-      expect(updatedDestTransactions).toEqual([]);
+      expect(updatedSourceTransactions).toStrictEqual([]);
+      expect(updatedDestTransactions).toStrictEqual([]);
     });
 
     it("should only update transactions with matching paymentId in notes", async () => {

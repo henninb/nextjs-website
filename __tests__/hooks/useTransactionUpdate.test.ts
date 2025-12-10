@@ -8,6 +8,18 @@ import {
 import { updateTransaction } from "../../hooks/useTransactionUpdate";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {
     validateInsert: jest.fn(),
@@ -56,7 +68,13 @@ const { InputSanitizer } = jest.requireMock(
   InputSanitizer: { sanitizeGuid: jest.Mock };
 };
 
-describe("updateTransaction (isolated)", () => {
+describe("updateTransaction", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const oldTransaction = createTestTransaction({
     guid: "old-guid-123",
     accountNameOwner: "checking",
@@ -81,7 +99,7 @@ describe("updateTransaction (isolated)", () => {
 
     const result = await updateTransaction(newTransaction, oldTransaction);
 
-    expect(result).toEqual(apiResponse);
+    expect(result).toStrictEqual(apiResponse);
     expect(mockValidateUpdate).toHaveBeenCalledWith(
       newTransaction,
       oldTransaction,

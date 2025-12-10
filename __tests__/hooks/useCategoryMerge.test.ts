@@ -4,8 +4,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import useCategoryMerge from "../../hooks/useCategoryMerge";
 
-// Mock next/router
-jest.mock("next/router", () => ({
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+// Mock next/navigation
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     pathname: "/",
@@ -30,6 +42,12 @@ const createWrapper = (client: QueryClient) =>
   };
 
 describe("useCategoryMerge", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   afterEach(() => {
     // @ts-ignore
     global.fetch && (global.fetch as jest.Mock).mockReset?.();
@@ -55,7 +73,7 @@ describe("useCategoryMerge", () => {
       "/api/category/merge",
       expect.objectContaining({ method: "POST" }),
     );
-    expect(res).toEqual({ ok: true });
+    expect(res).toStrictEqual({ ok: true });
   });
 
   it("surfaces API error body or status text", async () => {

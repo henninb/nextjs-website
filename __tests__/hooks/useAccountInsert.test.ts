@@ -44,7 +44,25 @@ import { setupNewAccount, insertAccount } from "../../hooks/useAccountInsert";
 import { HookValidator } from "../../utils/hookValidation";
 import { DataValidator } from "../../utils/validation";
 
-describe("Account Insert Functions (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("Account Insert Functions", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const mockAccount = createTestAccount({
     accountNameOwner: "newTestAccount",
     accountType: "savings",
@@ -74,7 +92,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
       const result = setupNewAccount(inputAccount);
 
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           cleared: 0.0,
           future: 0.0,
@@ -85,10 +103,10 @@ describe("Account Insert Functions (Isolated)", () => {
           moniker: "Test",
         }),
       );
-      expect(result.dateClosed).toEqual(new Date(0));
+      expect(result.dateClosed).toStrictEqual(new Date(0));
       expect(result.dateAdded).toBeInstanceOf(Date);
       expect(result.dateUpdated).toBeInstanceOf(Date);
-      expect(result.validationDate).toEqual(new Date(0));
+      expect(result.validationDate).toStrictEqual(new Date(0));
     });
 
     it("should preserve existing values when provided", () => {
@@ -134,8 +152,8 @@ describe("Account Insert Functions (Isolated)", () => {
 
       const afterSetup = new Date();
 
-      expect(result.dateClosed).toEqual(new Date(0));
-      expect(result.validationDate).toEqual(new Date(0));
+      expect(result.dateClosed).toStrictEqual(new Date(0));
+      expect(result.validationDate).toStrictEqual(new Date(0));
       // Allow for small timing differences (within 1 second)
       expect(
         Math.abs(result.dateAdded.getTime() - beforeSetup.getTime()),
@@ -164,7 +182,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         const result = await insertAccount(mockAccount);
 
-        expect(result).toEqual(responseAccount);
+        expect(result).toStrictEqual(responseAccount);
         expect(global.fetch).toHaveBeenCalledWith(
           "/api/account",
           expect.objectContaining({
@@ -576,7 +594,7 @@ describe("Account Insert Functions (Isolated)", () => {
 
         const result = await insertAccount(mockAccount);
 
-        expect(result).toEqual(mockAccount);
+        expect(result).toStrictEqual(mockAccount);
       });
 
       it("should handle 409 Conflict", async () => {

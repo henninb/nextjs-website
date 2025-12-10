@@ -6,6 +6,18 @@
 import { createFetchMock, ConsoleSpy } from "../../testHelpers";
 import Payment from "../../model/Payment";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Copy the function to test
 const fetchPaymentData = async (): Promise<Payment[]> => {
   try {
@@ -47,7 +59,13 @@ const createTestPayment = (overrides: Partial<Payment> = {}): Payment => ({
   ...overrides,
 });
 
-describe("usePaymentFetch Business Logic (Isolated)", () => {
+describe("usePaymentFetch Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -71,7 +89,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
 
         const result = await fetchPaymentData();
 
-        expect(result).toEqual(testPayments);
+        expect(result).toStrictEqual(testPayments);
         expect(fetch).toHaveBeenCalledWith("/api/payment/active", {
           method: "GET",
           credentials: "include",
@@ -148,7 +166,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
 
         const result = await fetchPaymentData();
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
         expect(Array.isArray(result)).toBe(true);
       });
 
@@ -170,10 +188,10 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
         const result = await fetchPaymentData();
 
         expect(result).toHaveLength(3);
-        expect(new Date(result[0].transactionDate)).toEqual(
+        expect(new Date(result[0].transactionDate)).toStrictEqual(
           new Date("2024-01-01"),
         );
-        expect(new Date(result[1].transactionDate)).toEqual(
+        expect(new Date(result[1].transactionDate)).toStrictEqual(
           new Date("2024-02-15"),
         );
       });
@@ -216,7 +234,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
         await fetchPaymentData();
 
         const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-        expect(callArgs.headers).toEqual({
+        expect(callArgs.headers).toStrictEqual({
           "Content-Type": "application/json",
           Accept: "application/json",
         });
@@ -401,7 +419,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
 
         const result = await fetchPaymentData();
 
-        expect(new Date(result[0].transactionDate)).toEqual(futureDate);
+        expect(new Date(result[0].transactionDate)).toStrictEqual(futureDate);
       });
 
       it("should handle payments with past dates", async () => {
@@ -412,7 +430,7 @@ describe("usePaymentFetch Business Logic (Isolated)", () => {
 
         const result = await fetchPaymentData();
 
-        expect(new Date(result[0].transactionDate)).toEqual(pastDate);
+        expect(new Date(result[0].transactionDate)).toStrictEqual(pastDate);
       });
 
       it("should preserve payment ID in response", async () => {

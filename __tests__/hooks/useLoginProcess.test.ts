@@ -7,6 +7,18 @@ import {
 import { processLogin } from "../../hooks/useLoginProcess";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -60,7 +72,13 @@ const { InputSanitizer } = jest.requireMock(
   InputSanitizer: { sanitizeUsername: jest.Mock };
 };
 
-describe("processLogin (isolated)", () => {
+describe("processLogin", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const baseUser = createTestUser({
     username: "TestUser",
     password: "Secret123!",

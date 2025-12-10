@@ -12,6 +12,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Description from "../../model/Description";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const deleteDescriptionModern = async (
   payload: Description,
@@ -57,6 +69,12 @@ const createTestDescription = (
 });
 
 describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -112,7 +130,7 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteDescriptionModern(testDescription);
 
-      expect(result).toEqual(testDescription);
+      expect(result).toStrictEqual(testDescription);
     });
 
     it("should use descriptionName from payload in URL", async () => {
@@ -359,7 +377,7 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
       await deleteDescriptionModern(testDescription);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -404,7 +422,7 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteDescriptionModern(testDescription);
 
-      expect(result).toEqual(testDescription);
+      expect(result).toStrictEqual(testDescription);
     });
 
     it("should handle different descriptionName values", async () => {
@@ -651,7 +669,7 @@ describe("useDescriptionDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteDescriptionModern(testDescription);
 
-      expect(result).toEqual(testDescription);
+      expect(result).toStrictEqual(testDescription);
     });
   });
 

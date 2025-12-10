@@ -13,6 +13,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Description from "../../model/Description";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const updateDescriptionModern = async (
   oldDescription: Description,
@@ -59,6 +71,12 @@ const createTestDescription = (
 });
 
 describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -113,7 +131,7 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
         newDescription,
       );
 
-      expect(result).toEqual(newDescription);
+      expect(result).toStrictEqual(newDescription);
       expect(result.descriptionName).toBe("new_name");
     });
 
@@ -363,7 +381,7 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
       await updateDescriptionModern(oldDescription, newDescription);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -617,7 +635,7 @@ describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
         newDescription,
       );
 
-      expect(result).toEqual(newDescription);
+      expect(result).toStrictEqual(newDescription);
     });
   });
 });

@@ -10,6 +10,18 @@ jest.mock("../../utils/graphqlClient", () => ({
 }));
 
 import { graphqlRequest } from "../../utils/graphqlClient";
+
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
 const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
   typeof graphqlRequest
 >;
@@ -93,7 +105,7 @@ describe("useCategoryUpdateGql", () => {
       },
     });
 
-    expect(result.current.data).toEqual(
+    expect(result.current.data).toStrictEqual(
       expect.objectContaining({
         categoryId: 1,
         categoryName: "food",

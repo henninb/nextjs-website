@@ -34,7 +34,25 @@ import {
 import { updateAccount } from "../../hooks/useAccountUpdate";
 import { HookValidator } from "../../utils/hookValidation";
 
-describe("updateAccount (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("updateAccount", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const mockOldAccount = createTestAccount({
     accountId: 123,
     accountNameOwner: "test_account",
@@ -64,7 +82,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(mockOldAccount, mockNewAccount);
 
-      expect(result).toEqual(mockNewAccount);
+      expect(result).toStrictEqual(mockNewAccount);
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/account/test_account",
         expect.objectContaining({
@@ -266,7 +284,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(mockOldAccount, mockNewAccount);
 
-      expect(result).toEqual(responseData);
+      expect(result).toStrictEqual(responseData);
     });
 
     it("should handle empty response body", async () => {
@@ -274,7 +292,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(mockOldAccount, mockNewAccount);
 
-      expect(result).toEqual({});
+      expect(result).toStrictEqual({});
     });
 
     it("should handle complex response data", async () => {
@@ -287,7 +305,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(mockOldAccount, mockNewAccount);
 
-      expect(result).toEqual(complexResponse);
+      expect(result).toStrictEqual(complexResponse);
     });
   });
 
@@ -336,7 +354,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(mockOldAccount, largeAccountData);
 
-      expect(result).toEqual(largeAccountData);
+      expect(result).toStrictEqual(largeAccountData);
     });
 
     it("should handle different account types", async () => {
@@ -352,7 +370,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(creditAccount, updatedCreditAccount);
 
-      expect(result).toEqual(updatedCreditAccount);
+      expect(result).toStrictEqual(updatedCreditAccount);
     });
 
     it("should handle account status changes", async () => {
@@ -364,7 +382,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(mockOldAccount, deactivatedAccount);
 
-      expect(result).toEqual(deactivatedAccount);
+      expect(result).toStrictEqual(deactivatedAccount);
     });
   });
 
@@ -384,7 +402,7 @@ describe("updateAccount (Isolated)", () => {
 
       const result = await updateAccount(mockOldAccount, fullyUpdatedAccount);
 
-      expect(result).toEqual(fullyUpdatedAccount);
+      expect(result).toStrictEqual(fullyUpdatedAccount);
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/account/test_account", // Uses old account name in endpoint
         expect.objectContaining({

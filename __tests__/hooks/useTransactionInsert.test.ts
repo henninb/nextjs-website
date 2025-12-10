@@ -58,7 +58,25 @@ import {
 import { DataValidator } from "../../utils/validation";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
 
-describe("Transaction Insert Functions (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("Transaction Insert Functions", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const mockTransaction = createTestTransaction({
     guid: "",
     accountNameOwner: "test_account",
@@ -109,7 +127,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           "setup_account",
         );
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           guid: "secure-uuid-456",
           transactionDate: new Date("2024-02-01"),
           description: "Setup Test",
@@ -142,14 +160,13 @@ describe("Transaction Insert Functions (Isolated)", () => {
           "minimal_account",
         );
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           guid: "default-uuid-789",
           transactionDate: new Date("2024-03-01"),
           description: "Minimal Test",
           category: "",
           notes: "",
           amount: 75.0,
-          dueDate: undefined,
           transactionType: minimalTransaction.transactionType || "undefined",
           transactionState: "outstanding",
           activeStatus: true,
@@ -190,7 +207,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(mockResponse);
+        expect(result).toStrictEqual(mockResponse);
         expect(global.fetch).toHaveBeenCalledWith(
           "/api/transaction",
           expect.objectContaining({
@@ -241,7 +258,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(mockResponse);
+        expect(result).toStrictEqual(mockResponse);
         expect(global.fetch).toHaveBeenCalledWith(
           "/api/transaction/future",
           expect.any(Object),
@@ -489,7 +506,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(responseData);
+        expect(result).toStrictEqual(responseData);
       });
 
       it("should handle empty response body", async () => {
@@ -502,7 +519,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual({});
+        expect(result).toStrictEqual({});
       });
 
       it("should handle complex response data", async () => {
@@ -521,7 +538,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(complexResponse);
+        expect(result).toStrictEqual(complexResponse);
       });
     });
 
@@ -543,7 +560,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(mockResponse);
+        expect(result).toStrictEqual(mockResponse);
       });
 
       it("should handle transaction with all optional fields", async () => {
@@ -570,7 +587,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(mockResponse);
+        expect(result).toStrictEqual(mockResponse);
       });
 
       it("should handle very large transaction amounts", async () => {
@@ -589,7 +606,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(mockResponse);
+        expect(result).toStrictEqual(mockResponse);
       });
 
       it("should handle negative transaction amounts", async () => {
@@ -608,7 +625,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(mockResponse);
+        expect(result).toStrictEqual(mockResponse);
       });
 
       it("should handle special characters in transaction data", async () => {
@@ -628,7 +645,7 @@ describe("Transaction Insert Functions (Isolated)", () => {
           false,
         );
 
-        expect(result).toEqual(mockResponse);
+        expect(result).toStrictEqual(mockResponse);
       });
     });
 

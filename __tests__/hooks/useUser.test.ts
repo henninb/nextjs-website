@@ -3,6 +3,18 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useUser } from "../../hooks/useUser";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // React Query provider for testing
 const createWrapper = () => {
   const client = new QueryClient({
@@ -18,6 +30,12 @@ const createWrapper = () => {
 };
 
 describe("useUser", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   it("should fetch user data successfully", async () => {
     const mockUser = {
       id: 1,
@@ -27,7 +45,6 @@ describe("useUser", () => {
     };
 
     // Mock the global fetch function
-    const originalFetch = global.fetch;
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(
@@ -46,11 +63,10 @@ describe("useUser", () => {
     // Wait for data to load
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.user).toStrictEqual(mockUser);
     expect(result.current.isError).toBeNull();
 
     // Restore original fetch
-    global.fetch = originalFetch;
   });
 
   it("should include credentials in request", async () => {
@@ -58,7 +74,6 @@ describe("useUser", () => {
     let fetchCall: any;
 
     // Mock the global fetch function and capture the call
-    const originalFetch = global.fetch;
     global.fetch = jest.fn().mockImplementation((url, options) => {
       fetchCall = { url, options };
       return Promise.resolve(
@@ -77,6 +92,5 @@ describe("useUser", () => {
     expect(fetchCall.options.credentials).toBe("include");
 
     // Restore original fetch
-    global.fetch = originalFetch;
   });
 });

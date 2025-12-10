@@ -12,6 +12,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Description from "../../model/Description";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const insertDescriptionModern = async (
   payload: Description,
@@ -58,6 +70,12 @@ const createTestDescription = (
 });
 
 describe("useDescriptionInsert Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -96,7 +114,7 @@ describe("useDescriptionInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertDescriptionModern(testDescription);
 
-      expect(result).toEqual(testDescription);
+      expect(result).toStrictEqual(testDescription);
     });
 
     it("should handle 204 No Content response", async () => {
@@ -112,7 +130,7 @@ describe("useDescriptionInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertDescriptionModern(testDescription);
 
-      expect(result).toEqual(testDescription);
+      expect(result).toStrictEqual(testDescription);
     });
   });
 
@@ -312,7 +330,7 @@ describe("useDescriptionInsert Modern Endpoint (TDD)", () => {
       await insertDescriptionModern(testDescription);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -344,7 +362,7 @@ describe("useDescriptionInsert Modern Endpoint (TDD)", () => {
 
       const result = await insertDescriptionModern(testDescription);
 
-      expect(result).toEqual(testDescription);
+      expect(result).toStrictEqual(testDescription);
       expect(result.descriptionId).toBe(999);
       expect(result.descriptionName).toBe("complete_description");
       expect(result.activeStatus).toBe(true);

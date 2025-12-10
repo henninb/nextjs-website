@@ -11,6 +11,18 @@ import {
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Extract the business logic function from useValidationAmountUpdate
 const updateValidationAmount = async (
   oldValidationAmount: ValidationAmount,
@@ -61,7 +73,13 @@ const createTestValidationAmount = (
   ...overrides,
 });
 
-describe("useValidationAmountUpdate Business Logic (Isolated)", () => {
+describe("useValidationAmountUpdate Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -88,7 +106,7 @@ describe("useValidationAmountUpdate Business Logic (Isolated)", () => {
           newValidationAmount,
         );
 
-        expect(result).toEqual(newValidationAmount);
+        expect(result).toStrictEqual(newValidationAmount);
         expect(fetch).toHaveBeenCalledWith(
           `/api/validation/amount/${oldValidationAmount.validationId}`,
           {
@@ -192,7 +210,7 @@ describe("useValidationAmountUpdate Business Logic (Isolated)", () => {
           newValidationAmount,
         );
 
-        expect(result.validationDate).toEqual(newValidationDate);
+        expect(result.validationDate).toStrictEqual(newValidationDate);
       });
     });
 

@@ -13,6 +13,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const updateParameterModern = async (
   oldParameter: Parameter,
@@ -60,6 +72,12 @@ const createTestParameter = (
 });
 
 describe("useParameterUpdate Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -112,7 +130,7 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
 
       const result = await updateParameterModern(oldParameter, newParameter);
 
-      expect(result).toEqual(newParameter);
+      expect(result).toStrictEqual(newParameter);
       expect(result.parameterValue).toBe("new_value");
     });
 
@@ -362,7 +380,7 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
       await updateParameterModern(oldParameter, newParameter);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -593,7 +611,7 @@ describe("useParameterUpdate Modern Endpoint (TDD)", () => {
 
       const result = await updateParameterModern(oldParameter, newParameter);
 
-      expect(result).toEqual(newParameter);
+      expect(result).toStrictEqual(newParameter);
     });
   });
 });

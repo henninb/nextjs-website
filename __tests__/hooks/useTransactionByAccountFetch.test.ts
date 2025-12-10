@@ -48,7 +48,19 @@ import {
   createTestTransaction,
 } from "../../testHelpers";
 
-describe("fetchTransactionsByAccount (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("fetchTransactionsByAccount", () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
@@ -83,7 +95,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       const result = await fetchTransactionsByAccount("testAccount");
 
-      expect(result).toEqual(testTransactions);
+      expect(result).toStrictEqual(testTransactions);
       // Account name is URL encoded by sanitizeForUrl
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/transaction/account/select/testAccount",
@@ -115,7 +127,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       const result = await fetchTransactionsByAccount("singleAccount");
 
-      expect(result).toEqual(singleTransaction);
+      expect(result).toStrictEqual(singleTransaction);
       expect(result).toHaveLength(1);
       expect(result![0].transactionId).toBe(123);
       expect(result![0].amount).toBe(75.25);
@@ -126,7 +138,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
 
       const result = await fetchTransactionsByAccount("emptyAccount");
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
       expect(Array.isArray(result)).toBe(true);
     });
 
@@ -336,7 +348,7 @@ describe("fetchTransactionsByAccount (Isolated)", () => {
       const result = await fetchTransactionsByAccount("testAccount");
 
       expect(mockResponse.json).toHaveBeenCalled();
-      expect(result).toEqual(testTransactions);
+      expect(result).toStrictEqual(testTransactions);
     });
 
     it("should handle transactions with complex data types", async () => {

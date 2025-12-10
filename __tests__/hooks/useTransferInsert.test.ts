@@ -30,6 +30,18 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useTransferInsert from "../../hooks/useTransferInsert";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {
     validateInsert: jest.fn((data) => data),
@@ -77,6 +89,12 @@ const createWrapper = () => {
 };
 
 describe("useTransferInsert Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const { __mockLogger: mockLogger } = jest.requireMock(
     "../../utils/logger",
   ) as { __mockLogger: ReturnType<typeof createMockLogger> };
@@ -136,7 +154,7 @@ describe("useTransferInsert Modern Endpoint (TDD)", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(result.current.data).toEqual(returnedTransfer);
+      expect(result.current.data).toStrictEqual(returnedTransfer);
     });
 
     it("should send transfer data in request body", async () => {
@@ -323,8 +341,8 @@ describe("useTransferInsert Modern Endpoint (TDD)", () => {
 
       const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
       expect(cacheData).toHaveLength(2);
-      expect(cacheData?.[0]).toEqual(newTransfer); // New transfer prepended
-      expect(cacheData?.[1]).toEqual(existingTransfers[0]);
+      expect(cacheData?.[0]).toStrictEqual(newTransfer); // New transfer prepended
+      expect(cacheData?.[1]).toStrictEqual(existingTransfers[0]);
     });
   });
 });

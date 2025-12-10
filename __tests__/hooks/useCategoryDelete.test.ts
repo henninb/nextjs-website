@@ -13,6 +13,18 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Category from "../../model/Category";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Modern implementation to test
 const deleteCategoryModern = async (
   payload: Category,
@@ -56,6 +68,12 @@ const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
 });
 
 describe("useCategoryDelete Modern Endpoint (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -111,7 +129,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteCategoryModern(testCategory);
 
-      expect(result).toEqual(testCategory);
+      expect(result).toStrictEqual(testCategory);
     });
 
     it("should use categoryName from payload in URL", async () => {
@@ -361,7 +379,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
       await deleteCategoryModern(testCategory);
 
       const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toEqual({
+      expect(callArgs.headers).toStrictEqual({
         "Content-Type": "application/json",
         Accept: "application/json",
       });
@@ -406,7 +424,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteCategoryModern(testCategory);
 
-      expect(result).toEqual(testCategory);
+      expect(result).toStrictEqual(testCategory);
     });
 
     it("should handle different categoryName values", async () => {
@@ -716,7 +734,7 @@ describe("useCategoryDelete Modern Endpoint (TDD)", () => {
 
       const result = await deleteCategoryModern(testCategory);
 
-      expect(result).toEqual(testCategory);
+      expect(result).toStrictEqual(testCategory);
     });
   });
 

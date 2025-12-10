@@ -5,6 +5,18 @@ import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import Payment from "../../model/Payment";
 import Transaction from "../../model/Transaction";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -50,8 +62,8 @@ const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
 // When a payment is updated (amount or date), the corresponding transactions
 // in the source and destination accounts should be updated as well.
 
-// Mock next/router to keep tests isolated
-jest.mock("next/router", () => ({
+// Mock next/navigation to keep tests isolated
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     pathname: "/",
@@ -79,6 +91,12 @@ const createWrapper = (queryClient: QueryClient) =>
   };
 
 describe("usePaymentUpdate cascade behavior (TDD)", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   it("updates linked transactions in source and destination accounts when a payment changes", async () => {
     const queryClient = createTestQueryClient();
 
@@ -225,7 +243,7 @@ describe("usePaymentUpdate cascade behavior (TDD)", () => {
     );
 
     // Unrelated transactions should remain unchanged
-    expect(srcOther).toEqual(initialSourceTxns[1]);
-    expect(dstOther).toEqual(initialDestTxns[1]);
+    expect(srcOther).toStrictEqual(initialSourceTxns[1]);
+    expect(dstOther).toStrictEqual(initialDestTxns[1]);
   });
 });

@@ -7,6 +7,18 @@ import { createFetchMock, ConsoleSpy } from "../../testHelpers";
 import { TransactionState } from "../../model/TransactionState";
 import Transaction from "../../model/Transaction";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 // Copy the function to test
 const changeTransactionState = async (
   guid: string,
@@ -60,7 +72,13 @@ const createTestTransaction = (
   ...overrides,
 });
 
-describe("useTransactionStateUpdate Business Logic (Isolated)", () => {
+describe("useTransactionStateUpdate Business Logic", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   let consoleSpy: ConsoleSpy;
 
   beforeEach(() => {
@@ -83,7 +101,7 @@ describe("useTransactionStateUpdate Business Logic (Isolated)", () => {
 
         const result = await changeTransactionState("test-guid-123", "cleared");
 
-        expect(result).toEqual(testTransaction);
+        expect(result).toStrictEqual(testTransaction);
         expect(fetch).toHaveBeenCalledWith(
           "/api/transaction/state/update/test-guid-123/cleared",
           {
@@ -171,7 +189,7 @@ describe("useTransactionStateUpdate Business Logic (Isolated)", () => {
         await changeTransactionState("test-guid", "cleared");
 
         const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-        expect(callArgs.headers).toEqual({
+        expect(callArgs.headers).toStrictEqual({
           "Content-Type": "application/json",
           Accept: "application/json",
         });

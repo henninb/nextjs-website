@@ -47,7 +47,19 @@ import {
   createMockResponse,
 } from "../../testHelpers";
 
-describe("fetchValidationAmount (Isolated)", () => {
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+describe("fetchValidationAmount", () => {
   const originalFetch = global.fetch;
 
   const createTestValidationAmount = (overrides = {}): ValidationAmount => ({
@@ -77,7 +89,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       const result = await fetchValidationAmount("testAccount");
 
-      expect(result).toEqual(testData);
+      expect(result).toStrictEqual(testData);
       // Account name is lowercased by sanitizeAccountName
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/validation/amount/active?accountNameOwner=testaccount&transactionState=cleared",
@@ -108,7 +120,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       const result = await fetchValidationAmount("businessaccount");
 
-      expect(result).toEqual(completeData);
+      expect(result).toStrictEqual(completeData);
       expect(result.validationId).toBe(123);
       expect(result.accountId).toBe(456);
       expect(result.amount).toBe(250.75);
@@ -157,7 +169,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       const result = await fetchValidationAmount("nonexistent");
 
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           validationId: 0,
           amount: 0,
@@ -165,7 +177,7 @@ describe("fetchValidationAmount (Isolated)", () => {
           activeStatus: true,
         }),
       );
-      expect(result.validationDate).toEqual(new Date("1970-01-01"));
+      expect(result.validationDate).toStrictEqual(new Date("1970-01-01"));
     });
 
     it("should handle 500 server error", async () => {
@@ -251,7 +263,7 @@ describe("fetchValidationAmount (Isolated)", () => {
       const result = await fetchValidationAmount("testAccount");
 
       expect(mockResponse.json).toHaveBeenCalled();
-      expect(result).toEqual(testData);
+      expect(result).toStrictEqual(testData);
     });
 
     it("should handle empty response data", async () => {
@@ -260,7 +272,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       const result = await fetchValidationAmount("testAccount");
 
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.objectContaining({
           validationId: 0,
           amount: 0,
@@ -268,7 +280,7 @@ describe("fetchValidationAmount (Isolated)", () => {
           activeStatus: true,
         }),
       );
-      expect(result.validationDate).toEqual(new Date("1970-01-01"));
+      expect(result.validationDate).toStrictEqual(new Date("1970-01-01"));
     });
 
     it("should handle response with null values", async () => {
@@ -287,7 +299,7 @@ describe("fetchValidationAmount (Isolated)", () => {
 
       const result = await fetchValidationAmount("testAccount");
 
-      expect(result).toEqual(dataWithNulls);
+      expect(result).toStrictEqual(dataWithNulls);
     });
   });
 

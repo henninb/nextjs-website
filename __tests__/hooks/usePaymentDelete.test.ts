@@ -8,6 +8,18 @@ import {
 import { deletePayment } from "../../hooks/usePaymentDelete";
 import { HookValidator } from "../../utils/hookValidation";
 
+
+// Mock the useAuth hook
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),
@@ -55,7 +67,13 @@ const { InputSanitizer } = jest.requireMock(
   InputSanitizer: { sanitizeNumericId: jest.Mock };
 };
 
-describe("deletePayment (isolated)", () => {
+describe("deletePayment", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   const payment = createTestPayment({
     paymentId: 99,
     sourceAccount: "checking",
@@ -76,7 +94,7 @@ describe("deletePayment (isolated)", () => {
 
     const result = await deletePayment(payment as Payment);
 
-    expect(result).toEqual(response);
+    expect(result).toStrictEqual(response);
     expect(mockValidateDelete).toHaveBeenCalledWith(
       payment,
       "paymentId",
