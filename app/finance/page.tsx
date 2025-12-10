@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../types";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -227,7 +228,7 @@ export default function Accounts() {
         setMessage("Account deleted successfully.");
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, `Delete Account error: ${error.message}`, false);
+        handleError(error, `Delete Account error: ${getErrorMessage(error)}`, false);
       } finally {
         setShowModelDelete(false);
         setSelectedAccount(null);
@@ -239,10 +240,8 @@ export default function Accounts() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
     setShowSnackbar(true);
@@ -293,10 +292,10 @@ export default function Accounts() {
       setMessage("Account inserted successfully.");
       setShowSnackbar(true);
     } catch (error) {
-      handleError(error, `Add Account ${error.message}`, false);
+      handleError(error, `Add Account ${getErrorMessage(error)}`, false);
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     }
@@ -627,10 +626,10 @@ export default function Accounts() {
                           setMessage("Account updated successfully.");
                           setShowSnackbar(true);
                           return { ...newRow };
-                        } catch (error: any) {
+                        } catch (error: unknown) {
                           handleError(
                             error,
-                            `Update Account ${error.message}`,
+                            `Update Account ${getErrorMessage(error)}`,
                             false,
                           );
                           return oldRow;

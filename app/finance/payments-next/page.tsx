@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -170,7 +171,7 @@ export default function PaymentsNextGen() {
           `Payment deleted: ${amt} from ${selectedPayment.sourceAccount} to ${selectedPayment.destinationAccount} on ${when}.`,
         );
         setShowSnackbar(true);
-      } catch (error: any) {
+      } catch (error: unknown) {
         handleError(error, `Delete Payment error: ${error}`, false);
       } finally {
         setShowModalDelete(false);
@@ -179,10 +180,8 @@ export default function PaymentsNextGen() {
     }
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error?.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
     setMessage(errorMessage);
     setShowSnackbar(true);
     console.error(errorMessage);
@@ -201,7 +200,7 @@ export default function PaymentsNextGen() {
       setShowSnackbar(true);
       setShowSpinner(false);
       setShowModalAdd(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, `Add Payment error: ${error}`, false);
     }
   };
@@ -347,7 +346,7 @@ export default function PaymentsNextGen() {
                     );
                     setShowSnackbar(true);
                     return { ...newRow };
-                  } catch (error: any) {
+                  } catch (error: unknown) {
                     handleError(error, `Update Payment error: ${error}`, false);
                     return oldRow;
                   }

@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -76,8 +77,8 @@ export default function MedicalExpenses() {
         await deleteExpense({ oldRow: selectedExpense });
         setMessage("Medical expense deleted successfully.");
         setShowSnackbar(true);
-      } catch (error: any) {
-        setMessage(`Delete error: ${error.message}`);
+      } catch (error: unknown) {
+        setMessage(`Delete error: ${getErrorMessage(error)}`);
         setShowSnackbar(true);
       } finally {
         setShowModalDelete(false);
@@ -117,8 +118,8 @@ export default function MedicalExpenses() {
       setShowSnackbar(true);
       setShowModalForm(false);
       setSelectedExpense(null);
-    } catch (error: any) {
-      setMessage(`${isEditMode ? "Update" : "Create"} error: ${error.message}`);
+    } catch (error: unknown) {
+      setMessage(`${isEditMode ? "Update" : "Create"} error: ${getErrorMessage(error)}`);
       setShowSnackbar(true);
     }
   };

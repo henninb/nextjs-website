@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -182,7 +183,7 @@ export default function DescriptionsNextGen() {
       try {
         await deleteDescription(selectedDescription);
         handleSuccess("Description deleted successfully.");
-      } catch (error: any) {
+      } catch (error: unknown) {
         handleError(error, "Delete Description failure.", false);
       } finally {
         setShowModalDelete(false);
@@ -195,10 +196,8 @@ export default function DescriptionsNextGen() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
     setSnackbarSeverity("error");
@@ -250,8 +249,8 @@ export default function DescriptionsNextGen() {
       await insertDescription({ description: newData });
 
       handleSuccess("Description added successfully.");
-    } catch (error: any) {
-      handleError(error, `Add Description error: ${error.message}`, false);
+    } catch (error: unknown) {
+      handleError(error, `Add Description error: ${getErrorMessage(error)}`, false);
     } finally {
       setShowModalAdd(false);
     }
@@ -524,7 +523,7 @@ export default function DescriptionsNextGen() {
                       });
                       handleSuccess("Description updated successfully.");
                       return { ...newRow };
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                       handleError(error, "Update Description failure.", false);
                       return oldRow;
                     }

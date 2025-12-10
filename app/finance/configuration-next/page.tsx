@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -79,10 +80,8 @@ export default function ConfigurationNextGen() {
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error?.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
     setMessage(errorMessage);
     setShowSnackbar(true);
     console.error(errorMessage);
@@ -113,7 +112,7 @@ export default function ConfigurationNextGen() {
       setFormErrors({});
       setMessage("Configuration added successfully.");
       setShowSnackbar(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, "Add Configuration error", false);
     }
   };
@@ -124,7 +123,7 @@ export default function ConfigurationNextGen() {
       await deleteParameter({ oldRow: selectedParameter });
       setMessage("Parameter deleted successfully.");
       setShowSnackbar(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, "Delete Parameter error", false);
     } finally {
       setShowModalDelete(false);
@@ -229,7 +228,7 @@ export default function ConfigurationNextGen() {
                     setMessage("Parameter updated successfully.");
                     setShowSnackbar(true);
                     return { ...newRow };
-                  } catch (error: any) {
+                  } catch (error: unknown) {
                     handleError(
                       error,
                       `Parameter Update failure: ${error}`,

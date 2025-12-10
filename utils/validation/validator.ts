@@ -9,6 +9,7 @@ import {
   FINANCIAL_LIMITS,
 } from "./schemas";
 import { sanitize, SecurityLogger } from "./sanitization";
+import { toErrorResult } from "../../types";
 
 // Re-export ValidationError for external use
 export type { ValidationError };
@@ -37,14 +38,15 @@ export class DataValidator {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResult = toErrorResult(error);
       return {
         success: false,
         errors: [
           {
             field: "validation",
-            message: error.message || "User validation failed",
-            code: "VALIDATION_ERROR",
+            message: errorResult.message,
+            code: errorResult.code,
           },
         ],
       };
@@ -68,14 +70,15 @@ export class DataValidator {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResult = toErrorResult(error);
       return {
         success: false,
         errors: [
           {
             field: "validation",
-            message: error.message || "Account validation failed",
-            code: "VALIDATION_ERROR",
+            message: errorResult.message,
+            code: errorResult.code,
           },
         ],
       };
@@ -110,14 +113,15 @@ export class DataValidator {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResult = toErrorResult(error);
       return {
         success: false,
         errors: [
           {
             field: "validation",
-            message: error.message || "Transaction validation failed",
-            code: "VALIDATION_ERROR",
+            message: errorResult.message,
+            code: errorResult.code,
           },
         ],
       };
@@ -187,15 +191,16 @@ export class DataValidator {
       }
 
       return result;
-    } catch (error: any) {
-      console.error("[validator.ts] validatePayment EXCEPTION:", error);
+    } catch (error: unknown) {
+      const errorResult = toErrorResult(error);
+      console.error("[validator.ts] validatePayment EXCEPTION:", errorResult.message);
       return {
         success: false,
         errors: [
           {
             field: "validation",
-            message: error.message || "Payment validation failed",
-            code: "VALIDATION_ERROR",
+            message: errorResult.message,
+            code: errorResult.code,
           },
         ],
       };
@@ -265,15 +270,16 @@ export class DataValidator {
       }
 
       return result;
-    } catch (error: any) {
-      console.error("[validator.ts] validateTransfer EXCEPTION:", error);
+    } catch (error: unknown) {
+      const errorResult = toErrorResult(error);
+      console.error("[validator.ts] validateTransfer EXCEPTION:", errorResult.message);
       return {
         success: false,
         errors: [
           {
             field: "validation",
-            message: error.message || "Transfer validation failed",
-            code: "VALIDATION_ERROR",
+            message: errorResult.message,
+            code: errorResult.code,
           },
         ],
       };
@@ -297,14 +303,15 @@ export class DataValidator {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResult = toErrorResult(error);
       return {
         success: false,
         errors: [
           {
             field: "validation",
-            message: error.message || "Category validation failed",
-            code: "VALIDATION_ERROR",
+            message: errorResult.message,
+            code: errorResult.code,
           },
         ],
       };
@@ -328,14 +335,15 @@ export class DataValidator {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResult = toErrorResult(error);
       return {
         success: false,
         errors: [
           {
             field: "validation",
-            message: error.message || "Description validation failed",
-            code: "VALIDATION_ERROR",
+            message: errorResult.message,
+            code: errorResult.code,
           },
         ],
       };

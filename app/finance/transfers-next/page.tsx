@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -297,7 +298,7 @@ export default function TransfersNextGen() {
           `Transfer deleted: ${amt} from ${selectedTransfer.sourceAccount} to ${selectedTransfer.destinationAccount} on ${when}.`,
         );
         setShowSnackbar(true);
-      } catch (error: any) {
+      } catch (error: unknown) {
         handleError(error, `Delete Transfer error: ${error}`, false);
       } finally {
         setShowModalDelete(false);
@@ -306,10 +307,8 @@ export default function TransfersNextGen() {
     }
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error?.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
     setMessage(errorMessage);
     setShowSnackbar(true);
     console.error(errorMessage);
@@ -328,7 +327,7 @@ export default function TransfersNextGen() {
       setShowSnackbar(true);
       setShowSpinner(false);
       setShowModalAdd(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       handleError(error, `Add Transfer error: ${error}`, false);
     }
   };
@@ -476,7 +475,7 @@ export default function TransfersNextGen() {
                     );
                     setShowSnackbar(true);
                     return { ...newRow };
-                  } catch (error: any) {
+                  } catch (error: unknown) {
                     handleError(
                       error,
                       `Update Transfer error: ${error}`,

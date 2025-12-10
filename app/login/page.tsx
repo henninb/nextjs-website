@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../types";
 
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -133,9 +134,9 @@ export default function LoginPage() {
         login({ username: email, password: "", firstName: "", lastName: "" });
       }
       router.push("/finance");
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Normalize to a user-friendly message and avoid technical details
-      const raw = (error?.message || "").toString();
+      const raw = getErrorMessage(error);
       const friendly = getFriendlyErrorMessage(raw);
       setErrorMessage(friendly);
       setShowSnackbar(true);

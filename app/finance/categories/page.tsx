@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -118,10 +119,8 @@ export default function Categories() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
     setSnackbarSeverity("error");
@@ -173,10 +172,10 @@ export default function Categories() {
 
       handleSuccess("Category added successfully.");
     } catch (error) {
-      handleError(error, `Add Category error: ${error.message}`, false);
+      handleError(error, `Add Category error: ${getErrorMessage(error)}`, false);
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     } finally {
@@ -245,8 +244,8 @@ export default function Categories() {
       setMergeError(undefined);
       setRowSelection([]);
       refetch();
-    } catch (error: any) {
-      handleError(error, `Merge Categories error: ${error.message}`, false);
+    } catch (error: unknown) {
+      handleError(error, `Merge Categories error: ${getErrorMessage(error)}`, false);
     }
   };
 

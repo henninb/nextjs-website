@@ -63,7 +63,7 @@ export function BasicFormExample() {
       setSnackbarMessage("Transaction added successfully");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Extract field-specific errors
       const errors = extractFormFieldErrors(error);
 
@@ -164,7 +164,7 @@ export function FormWithErrorListExample() {
       setSnackbarMessage("Transaction added successfully");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if error has validation errors
       if (isValidationError(error) && error.validationErrors) {
         // Set validation errors for display
@@ -246,7 +246,7 @@ export function FormWithHookExample() {
       setSnackbarMessage("Transaction added successfully");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle error (automatically extracts field errors and shows Snackbar)
       handleFormError(error, "Failed to add transaction");
     }
@@ -314,7 +314,7 @@ export function ModalFormExample() {
 
       // Close modal on success
       setOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Extract and set field errors
       const errors = extractFormFieldErrors(error);
       setFieldErrors(errors);
@@ -423,7 +423,7 @@ export function MixedValidationExample() {
 
       // Success - clear errors
       setFieldErrors({});
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Step 3: Handle server validation errors
       const serverErrors = extractFormFieldErrors(error);
 

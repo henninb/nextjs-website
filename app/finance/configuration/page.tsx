@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -165,10 +166,8 @@ export default function Configuration() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
     setSnackbarSeverity("error");
@@ -220,7 +219,7 @@ export default function Configuration() {
 
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
         const offlineId = await generateSecureUUID();
         const newOfflineRow = { ...newData, parameterId: offlineId };

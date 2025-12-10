@@ -3,6 +3,8 @@
  * Replaces client-side crypto.randomUUID() with server-side generation
  */
 
+import { getErrorMessage } from "../../types";
+
 interface UUIDResponse {
   uuid: string;
   timestamp: number;
@@ -52,10 +54,10 @@ class SecureUUIDGenerator {
       }
 
       return data.uuid;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn(
         "Secure UUID generation failed, using fallback:",
-        error.message,
+        getErrorMessage(error),
       );
       return this.generateFallbackUUID();
     }

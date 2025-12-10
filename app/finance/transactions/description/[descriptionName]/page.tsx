@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../../../types";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -105,10 +106,8 @@ export default function TransactionsByDescription({
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
-  const handleError = (error: any, moduleName: string) => {
-    const errorMessage = error.response
-      ? `${moduleName}: ${error.response.status} - ${JSON.stringify(error.response.data)}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
     setMessage(errorMessage);
     setShowSnackbar(true);
   };

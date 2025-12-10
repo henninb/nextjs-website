@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -181,7 +182,7 @@ export default function TransactionImporter() {
       handleError(error, "handleAddRow", false);
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
         // offline error handling
       }
@@ -208,7 +209,7 @@ export default function TransactionImporter() {
       refetchPendingTransactions();
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
         // offline error handling
       }
@@ -230,9 +231,9 @@ export default function TransactionImporter() {
 
       setMessage("All pending transactions have been deleted.");
       setShowSnackbar(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting pending transactions: ", error);
-      setMessage(`Error deleting pending transactions: ${error.message}`);
+      setMessage(`Error deleting pending transactions: ${getErrorMessage(error)}`);
       setShowSnackbar(true);
     } finally {
       setIsDeletingAll(false);
@@ -241,10 +242,8 @@ export default function TransactionImporter() {
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
     setShowSnackbar(true);

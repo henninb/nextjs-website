@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../../types";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -330,9 +331,9 @@ export default function TransactionsByAccount({
   const handleSnackbarClose = useCallback(() => setShowSnackbar(false), []);
 
   const handleError = useCallback(
-    (error: any, moduleName: string, throwIt: boolean) => {
-      const errorMessage = error.message
-        ? `${moduleName}: ${error.message}`
+    (error: unknown, moduleName: string, throwIt: boolean) => {
+      const errorMessage = getErrorMessage(error)
+        ? `${moduleName}: ${getErrorMessage(error)}`
         : `${moduleName}: Failure`;
 
       setMessage(errorMessage);
@@ -429,7 +430,7 @@ export default function TransactionsByAccount({
     } catch (error) {
       handleError(
         error,
-        `Insert ValidationAmount failure: ${error.message}`,
+        `Insert ValidationAmount failure: ${getErrorMessage(error)}`,
         false,
       );
     }
@@ -538,7 +539,7 @@ export default function TransactionsByAccount({
       handleError(error, "Add Transaction", false);
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
         console.log("Network error detected");
       }

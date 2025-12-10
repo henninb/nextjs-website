@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { getErrorMessage } from "../../../../types";
 
 export const runtime = "edge";
 
@@ -81,15 +82,16 @@ export async function POST(req: NextRequest) {
         headers,
       },
     );
-  } catch (error: any) {
-    console.error("UUID generation error:", error.message);
+  } catch (error: unknown) {
+    const errorMessage = getErrorMessage(error);
+    console.error("UUID generation error:", errorMessage);
 
     return new Response(
       JSON.stringify({
         error:
           process.env.NODE_ENV === "production"
             ? "Internal server error"
-            : `UUID generation failed: ${error.message}`,
+            : `UUID generation failed: ${errorMessage}`,
       }),
       {
         status: 500,

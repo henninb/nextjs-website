@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -269,9 +270,9 @@ export default function Transfers() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = getErrorMessage(error)
+      ? `${moduleName}: ${getErrorMessage(error)}`
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
@@ -339,7 +340,7 @@ export default function Transfers() {
       handleError(error, `Add Transfer error: ${error}`, false);
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     }

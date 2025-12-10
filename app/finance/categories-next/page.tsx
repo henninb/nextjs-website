@@ -38,6 +38,7 @@ import CategoryFilterBar, {
   CategoryFilters,
 } from "../../../components/CategoryFilterBar";
 import CategoryCard from "../../../components/CategoryCard";
+import { getErrorMessage } from "../../../types";
 import CategoryCardSkeleton from "../../../components/CategoryCardSkeleton";
 import { useAuth } from "../../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
@@ -181,7 +182,7 @@ export default function CategoriesNextGen() {
       try {
         await deleteCategory(selectedCategory);
         handleSuccess("Category deleted successfully.");
-      } catch (error: any) {
+      } catch (error: unknown) {
         handleError(error, "Delete Category failure.", false);
       } finally {
         setShowModalDelete(false);
@@ -194,10 +195,8 @@ export default function CategoriesNextGen() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
     setSnackbarSeverity("error");
@@ -249,8 +248,8 @@ export default function CategoriesNextGen() {
       await insertCategory({ category: newData });
 
       handleSuccess("Category added successfully.");
-    } catch (error: any) {
-      handleError(error, `Add Category error: ${error.message}`, false);
+    } catch (error: unknown) {
+      handleError(error, `Add Category error: ${getErrorMessage(error)}`, false);
     } finally {
       setShowModalAdd(false);
     }
@@ -519,7 +518,7 @@ export default function CategoriesNextGen() {
                       });
                       handleSuccess("Category updated successfully.");
                       return { ...newRow };
-                    } catch (error: any) {
+                    } catch (error: unknown) {
                       handleError(error, "Update Category failure.", false);
                       return oldRow;
                     }

@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -100,7 +101,7 @@ export default function Descriptions() {
         await deleteDescription(selectedDescription);
         handleSuccess(`Description deleted successfully.`);
       } catch (error) {
-        handleError(error, `Delete Description: ${error.message}`, false);
+        handleError(error, `Delete Description: ${getErrorMessage(error)}`, false);
       } finally {
         setShowModalDelete(false);
         setSelectedDescription(null);
@@ -112,10 +113,8 @@ export default function Descriptions() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
-      : `${moduleName}: Failure`;
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
     setSnackbarSeverity("error");
@@ -165,10 +164,10 @@ export default function Descriptions() {
       handleSuccess(`Description added successfully.`);
       setFormErrors({});
     } catch (error) {
-      handleError(error, `Add Description error: ${error.message}`, false);
+      handleError(error, `Add Description error: ${getErrorMessage(error)}`, false);
       if (
         !navigator.onLine ||
-        (error.message && error.message.includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     } finally {
@@ -301,8 +300,8 @@ export default function Descriptions() {
       setMergeError(undefined);
       setRowSelection([]);
       refetchDescriptions();
-    } catch (error: any) {
-      handleError(error, `Merge Descriptions error: ${error.message}`, false);
+    } catch (error: unknown) {
+      handleError(error, `Merge Descriptions error: ${getErrorMessage(error)}`, false);
     }
   };
 
@@ -388,7 +387,7 @@ export default function Descriptions() {
                       } catch (error) {
                         handleError(
                           error,
-                          `Update Description error: ${error.message}`,
+                          `Update Description error: ${getErrorMessage(error)}`,
                           false,
                         );
                         return oldRow;

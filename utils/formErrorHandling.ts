@@ -7,6 +7,21 @@
 
 import { HookValidationError, isValidationError } from "./hookValidation";
 import type { ValidationError } from "./validation/validator";
+import { getErrorMessage } from "../types";
+
+/**
+ * Type guard to check if error has validationErrors property
+ */
+function hasValidationErrorsProperty(
+  error: unknown
+): error is { validationErrors: ValidationError[] } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "validationErrors" in error &&
+    Array.isArray((error as { validationErrors: unknown }).validationErrors)
+  );
+}
 
 /**
  * Extracts field-specific errors from various error types
@@ -26,14 +41,14 @@ import type { ValidationError } from "./validation/validator";
  * }
  * ```
  */
-export function extractFormFieldErrors(error: any): Record<string, string> {
+export function extractFormFieldErrors(error: unknown): Record<string, string> {
   // Check if it's a HookValidationError with validationErrors
   if (isValidationError(error)) {
     return error.getFieldErrorsObject();
   }
 
   // Check if error has validationErrors property
-  if (error.validationErrors && Array.isArray(error.validationErrors)) {
+  if (hasValidationErrorsProperty(error)) {
     const fieldErrors: Record<string, string> = {};
     for (const validationError of error.validationErrors) {
       if (!fieldErrors[validationError.field]) {
@@ -67,7 +82,7 @@ export function extractFormFieldErrors(error: any): Record<string, string> {
  * ```
  */
 export function getUserFriendlyErrorMessage(
-  error: any,
+  error: unknown,
   fallbackMessage: string = "An error occurred",
 ): string {
   // Check if it's a HookValidationError
@@ -76,13 +91,9 @@ export function getUserFriendlyErrorMessage(
     return error.getUserMessage("summary");
   }
 
-  // Check if it's a regular error with message
-  if (error?.message) {
-    return error.message;
-  }
-
-  // Fallback
-  return fallbackMessage;
+  // Use our utility to get error message, fallback if empty
+  const errorMsg = getErrorMessage(error);
+  return errorMsg || fallbackMessage;
 }
 
 /**
@@ -102,12 +113,12 @@ export function getUserFriendlyErrorMessage(
  * }
  * ```
  */
-export function hasFieldValidationErrors(error: any): boolean {
+export function hasFieldValidationErrors(error: unknown): boolean {
   if (isValidationError(error)) {
     return error.getErrorCount() > 0;
   }
 
-  if (error.validationErrors && Array.isArray(error.validationErrors)) {
+  if (hasValidationErrorsProperty(error)) {
     return error.validationErrors.length > 0;
   }
 
@@ -152,7 +163,7 @@ export function useFormErrorHandler(options?: {
   );
 
   const handleFormError = React.useCallback(
-    (error: any, fallbackMessage?: string) => {
+    (error: unknown, fallbackMessage?: string) => {
       // Extract field-specific errors
       const errors = extractFormFieldErrors(error);
 
@@ -202,7 +213,7 @@ import React from "react";
 /**
  * Type guard to check if error is a validation error
  */
-export function isFormValidationError(error: any): boolean {
+export function isFormValidationError(error: unknown): boolean {
   return hasFieldValidationErrors(error);
 }
 
@@ -221,12 +232,12 @@ export function isFormValidationError(error: any): boolean {
  * }
  * ```
  */
-export function getValidationErrorsArray(error: any): ValidationError[] {
+export function getValidationErrorsArray(error: unknown): ValidationError[] {
   if (isValidationError(error)) {
     return error.validationErrors || [];
   }
 
-  if (error.validationErrors && Array.isArray(error.validationErrors)) {
+  if (hasValidationErrorsProperty(error)) {
     return error.validationErrors;
   }
 

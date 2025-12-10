@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../types";
 
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -158,8 +159,8 @@ export default function RegisterPage() {
         }
         throw new Error(`HTTP_${response.status}:${errorDetail}`);
       }
-    } catch (error: any) {
-      const raw = (error?.message || "").toString();
+    } catch (error: unknown) {
+      const raw = getErrorMessage(error);
       const friendly = getFriendlyErrorMessage(raw);
       setErrorMessage(friendly);
       setShowSnackbar(true);

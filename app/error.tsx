@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { getErrorMessage } from "../types";
 
 export default function Error({
   error,
@@ -27,7 +28,7 @@ export default function Error({
     >
       <h2 style={{ marginBottom: "1rem" }}>Something went wrong!</h2>
       <p style={{ marginBottom: "1rem", color: "#666" }}>
-        {error.message || "An unexpected error occurred"}
+        {getErrorMessage(error) || "An unexpected error occurred"}
       </p>
       {error.digest && (
         <p style={{ marginBottom: "1rem", fontSize: "0.875rem", color: "#999" }}>

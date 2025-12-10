@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import AuthProvider from "../components/AuthProvider";
 import { UIProvider } from "../contexts/UIContext";
 import { setupGlobalAPIs } from "../utils/globalSetup";
+import { getErrorMessage } from "../types";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -15,15 +16,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
             staleTime: 5 * 60 * 1000, // 5 minutes
             gcTime: 10 * 60 * 1000, // 10 minutes
             refetchOnWindowFocus: false,
-            retry: (failureCount, error: any) => {
+            retry: (failureCount, error: unknown) => {
               // Don't retry on certain errors
+              const errorMsg = getErrorMessage(error);
               if (
-                error?.message?.includes("401") ||
-                error?.message?.includes("403")
+                errorMsg.includes("401") ||
+                errorMsg.includes("403")
               ) {
                 return false; // Authentication/authorization errors
               }
-              if (error?.message?.includes("404")) {
+              if (errorMsg.includes("404")) {
                 return false; // Not found errors
               }
               // Retry network errors up to 3 times with exponential backoff
@@ -34,9 +36,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
             throwOnError: false, // Let components handle errors gracefully
           },
           mutations: {
-            retry: (failureCount, error: any) => {
+            retry: (failureCount, error: unknown) => {
               // Don't retry mutations on client errors (4xx)
-              if (error?.message?.includes("4")) {
+              const errorMsg = getErrorMessage(error);
+              if (errorMsg.includes("4")) {
                 return false;
               }
               // Only retry server errors (5xx) once

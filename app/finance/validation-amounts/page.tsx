@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -130,9 +131,9 @@ export default function ValidationAmounts() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: any, moduleName: string, throwIt: boolean) => {
-    const errorMessage = error.message
-      ? `${moduleName}: ${error.message}`
+  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+    const errorMessage = getErrorMessage(error)
+      ? `${moduleName}: ${getErrorMessage(error)}`
       : `${moduleName}: Failure`;
 
     setMessage(errorMessage);
@@ -215,7 +216,7 @@ export default function ValidationAmounts() {
     } catch (error) {
       handleError(
         error,
-        `Add validation amount error: ${error.message}`,
+        `Add validation amount error: ${getErrorMessage(error)}`,
         false,
       );
     } finally {
