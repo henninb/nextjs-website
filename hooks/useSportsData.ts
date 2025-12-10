@@ -6,8 +6,8 @@ const log = createHookLogger("useSportsData");
 /**
  * Result type for sports data hook
  */
-interface SportsDataHook {
-  data: any[] | null;
+interface SportsDataHook<T> {
+  data: T[] | null;
   loading: boolean;
   error: string | null;
   retry: () => void;
@@ -20,7 +20,7 @@ interface SportsDataHook {
  * @param apiEndpoint - API endpoint URL to fetch sports data from
  * @returns Sports data array
  */
-async function fetchSportsData(apiEndpoint: string): Promise<any[]> {
+async function fetchSportsData<T>(apiEndpoint: string): Promise<T[]> {
   log.debug("Fetching sports data", { endpoint: apiEndpoint });
 
   const controller = new AbortController();
@@ -88,13 +88,13 @@ async function fetchSportsData(apiEndpoint: string): Promise<any[]> {
  *
  * @example
  * ```typescript
- * const { data, loading, error, retry } = useSportsData("/api/nfl");
+ * const { data, loading, error, retry } = useSportsData<NBAGame>("/api/nba");
  * ```
  */
-export function useSportsData(apiEndpoint: string): SportsDataHook {
+export function useSportsData<T>(apiEndpoint: string): SportsDataHook<T> {
   const queryResult = useQuery({
     queryKey: ["sportsData", apiEndpoint],
-    queryFn: () => fetchSportsData(apiEndpoint),
+    queryFn: () => fetchSportsData<T>(apiEndpoint),
     staleTime: 15 * 60 * 1000, // 15 minutes (sports data changes infrequently)
     gcTime: 30 * 60 * 1000, // 30 minutes
     retry: 1, // Retry once on failure

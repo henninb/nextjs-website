@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Box, CircularProgress } from "@mui/material";
+import { GridRenderCellParams } from "@mui/x-data-grid";
+import { MLBGame } from "../../model/SportsGame";
 
 // Dynamically import the SportsDataGrid component
 const SportsDataGrid = dynamic(
@@ -21,7 +23,7 @@ const columns = [
     field: "gameDate",
     headerName: "Game Date",
     width: 200,
-    renderCell: (params: any) => {
+    renderCell: (params: GridRenderCellParams<MLBGame>) => {
       const date = new Date(params.value);
       return (
         <Box sx={{ fontWeight: 600, color: "#2e7d32" }}>
@@ -38,7 +40,7 @@ const columns = [
     field: "venueName",
     headerName: "Venue",
     width: 180,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<MLBGame>) => (
       <Box sx={{ fontSize: "0.9rem", color: "#666" }}>⚾ {params.value}</Box>
     ),
   },
@@ -46,7 +48,7 @@ const columns = [
     field: "awayTeamName",
     headerName: "Away Team",
     width: 180,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<MLBGame>) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -59,7 +61,7 @@ const columns = [
     headerName: "Score",
     width: 80,
     align: "center" as const,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<MLBGame>) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -76,7 +78,7 @@ const columns = [
     field: "homeTeamName",
     headerName: "Home Team",
     width: 180,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<MLBGame>) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -89,7 +91,7 @@ const columns = [
     headerName: "Score",
     width: 80,
     align: "center" as const,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<MLBGame>) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -106,7 +108,7 @@ const columns = [
     field: "gameStatus",
     headerName: "Status",
     width: 120,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<MLBGame>) => (
       <Box
         sx={{
           fontSize: "0.85rem",

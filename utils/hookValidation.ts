@@ -7,15 +7,7 @@ import {
   formatFieldName,
   getUserFriendlyErrorMessage,
 } from "./validation/errorFormatting";
-
-/**
- * Type for validation result with type-safe data
- */
-export interface ValidationResult<T> {
-  success: boolean;
-  data?: T;
-  errors?: ValidationError[];
-}
+import { ValidationResult } from "../types";
 
 /**
  * Custom validation error class
@@ -255,15 +247,11 @@ export class HookValidator {
    * );
    * ```
    */
-  static validateInsert<T>(
+  static validateInsert<T, R = T>(
     data: T,
-    validator: (data: T) => {
-      success: boolean;
-      data?: any;
-      errors?: ValidationError[];
-    },
+    validator: (data: T) => ValidationResult<R>,
     operationName: string,
-  ): T {
+  ): R {
     const result = hookValidators.validateApiPayload(
       data,
       validator,
@@ -280,7 +268,8 @@ export class HookValidator {
       );
     }
 
-    return result.validatedData;
+    // TypeScript knows validatedData is R here due to our type constraints
+    return result.validatedData as R;
   }
 
   /**
@@ -304,16 +293,12 @@ export class HookValidator {
    * );
    * ```
    */
-  static validateUpdate<T>(
+  static validateUpdate<T, R = T>(
     newData: T,
     oldData: T,
-    validator: (data: T) => {
-      success: boolean;
-      data?: any;
-      errors?: ValidationError[];
-    },
+    validator: (data: T) => ValidationResult<R>,
     operationName: string,
-  ): T {
+  ): R {
     // Validate new data
     const result = hookValidators.validateApiPayload(
       newData,
@@ -331,7 +316,7 @@ export class HookValidator {
       );
     }
 
-    return result.validatedData;
+    return result.validatedData as R;
   }
 
   /**
@@ -353,7 +338,7 @@ export class HookValidator {
    * );
    * ```
    */
-  static validateDelete<T extends { [key: string]: any }>(
+  static validateDelete<T>(
     data: T,
     identifierKey: keyof T,
     operationName: string,

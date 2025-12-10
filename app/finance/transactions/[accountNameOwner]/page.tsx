@@ -3,7 +3,7 @@ import { getErrorMessage } from "../../../../types";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import TextField from "@mui/material/TextField";
 import {
   Box,
@@ -589,7 +589,7 @@ export default function TransactionsByAccount({
         minWidth: 90,
         headerAlign: "right",
         align: "right",
-        renderCell: (params: any) => currencyFormat(params.value),
+        renderCell: (params: GridRenderCellParams<Transaction>) => currencyFormat(params.value),
         editable: true,
         cellClassName: "nowrap",
       },
@@ -598,7 +598,7 @@ export default function TransactionsByAccount({
         headerName: "State",
         flex: 1.2,
         minWidth: 180,
-        renderCell: (params: any) => {
+        renderCell: (params: GridRenderCellParams<Transaction>) => {
           const handleStateChange = async (newState: TransactionState) => {
             try {
               const updatedRow = { ...params.row, transactionState: newState };
@@ -656,7 +656,7 @@ export default function TransactionsByAccount({
         headerName: "Type",
         flex: 0.8,
         minWidth: 100,
-        renderCell: (params: any) => params.value || "undefined",
+        renderCell: (params: GridRenderCellParams<Transaction>) => params.value || "undefined",
       },
       {
         field: "reoccurringType",
@@ -674,7 +674,7 @@ export default function TransactionsByAccount({
           { value: "annually", label: "Annually" },
         ],
         editable: true,
-        renderCell: (params: any) => {
+        renderCell: (params: GridRenderCellParams<Transaction>) => {
           const valueMap: Record<string, string> = {
             onetime: "One-Time",
             weekly: "Weekly",

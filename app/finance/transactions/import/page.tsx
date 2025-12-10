@@ -3,7 +3,7 @@ import { getErrorMessage } from "../../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Button,
   TextField,
@@ -397,7 +397,7 @@ export default function TransactionImporter() {
       headerName: "Amount",
       type: "number",
       width: 90,
-      renderCell: (params: any) => currencyFormat(params.value),
+      renderCell: (params: GridRenderCellParams<Transaction>) => currencyFormat(params.value),
       editable: true,
       cellClassName: "nowrap",
     },
@@ -411,14 +411,14 @@ export default function TransactionImporter() {
       field: "transactionType",
       headerName: "Type",
       width: 180,
-      renderCell: (params: any) => params.value || "undefined",
+      renderCell: (params: GridRenderCellParams<Transaction>) => params.value || "undefined",
       editable: true,
     },
     {
       field: "reoccurringType",
       headerName: "Reoccur",
       width: 150,
-      renderCell: (params: any) => params.value || "undefined",
+      renderCell: (params: GridRenderCellParams<Transaction>) => params.value || "undefined",
       editable: true,
     },
     {

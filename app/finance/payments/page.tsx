@@ -3,7 +3,7 @@ import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
   Button,
@@ -393,7 +393,7 @@ export default function Payments() {
       width: 100,
       sortable: false,
       filterable: false,
-      renderCell: (params: any) => (
+      renderCell: (params: GridRenderCellParams<Payment>) => (
         <Tooltip title="Delete this row">
           <IconButton
             aria-label="Delete this row"

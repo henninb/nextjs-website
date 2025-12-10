@@ -3,7 +3,9 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { Box, CircularProgress } from "@mui/material";
+import { GridRenderCellParams } from "@mui/x-data-grid";
 import { useSportsData } from "../../hooks/useSportsData";
+import { NBAGame } from "../../model/SportsGame";
 
 // Dynamically import the SportsDataGrid component
 const SportsDataGrid = dynamic(
@@ -22,7 +24,7 @@ const columns = [
     field: "DateUtc",
     headerName: "Game Date",
     width: 200,
-    renderCell: (params: any) => {
+    renderCell: (params: GridRenderCellParams<NBAGame>) => {
       const date = new Date(params.value);
       return (
         <Box sx={{ fontWeight: 600, color: "#1976d2" }}>
@@ -39,7 +41,7 @@ const columns = [
     field: "Location",
     headerName: "Venue",
     width: 180,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<NBAGame>) => (
       <Box sx={{ fontSize: "0.9rem", color: "#666" }}>📍 {params.value}</Box>
     ),
   },
@@ -47,7 +49,7 @@ const columns = [
     field: "AwayTeam",
     headerName: "Away Team",
     width: 180,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<NBAGame>) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -60,7 +62,7 @@ const columns = [
     headerName: "Score",
     width: 80,
     align: "center" as const,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<NBAGame>) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -77,7 +79,7 @@ const columns = [
     field: "HomeTeam",
     headerName: "Home Team",
     width: 180,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<NBAGame>) => (
       <Box
         sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}
       >
@@ -90,7 +92,7 @@ const columns = [
     headerName: "Score",
     width: 80,
     align: "center" as const,
-    renderCell: (params: any) => (
+    renderCell: (params: GridRenderCellParams<NBAGame>) => (
       <Box
         sx={{
           fontWeight: 700,
@@ -106,7 +108,7 @@ const columns = [
 ];
 
 export default function BasketballPage() {
-  const { data, loading, error, retry } = useSportsData("/api/nba");
+  const { data, loading, error, retry } = useSportsData<NBAGame>("/api/nba");
 
   if (loading) {
     return (

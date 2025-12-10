@@ -9,7 +9,14 @@ import {
   FINANCIAL_LIMITS,
 } from "./schemas";
 import { sanitize, SecurityLogger } from "./sanitization";
-import { toErrorResult } from "../../types";
+import { toErrorResult, ValidationResult, ValidatedData } from "../../types";
+import User from "../../model/User";
+import Account from "../../model/Account";
+import Transaction from "../../model/Transaction";
+import Payment from "../../model/Payment";
+import Transfer from "../../model/Transfer";
+import Category from "../../model/Category";
+import Description from "../../model/Description";
 
 // Re-export ValidationError for external use
 export type { ValidationError };
@@ -21,11 +28,7 @@ export class DataValidator {
   /**
    * Validate and sanitize user data
    */
-  static validateUser(data: any): {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  } {
+  static validateUser(data: unknown): ValidationResult<User> {
     try {
       // First sanitize the input
       const sanitizedData = sanitize.user(data);
@@ -37,7 +40,7 @@ export class DataValidator {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
 
-      return result;
+      return result as ValidationResult<User>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
       return {
@@ -56,11 +59,7 @@ export class DataValidator {
   /**
    * Validate and sanitize account data
    */
-  static validateAccount(data: any): {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  } {
+  static validateAccount(data: unknown): ValidationResult<Account> {
     try {
       const sanitizedData = sanitize.account(data);
       const result = validateSchema(AccountSchema, sanitizedData);
@@ -69,7 +68,7 @@ export class DataValidator {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
 
-      return result;
+      return result as ValidationResult<Account>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
       return {
@@ -88,11 +87,7 @@ export class DataValidator {
   /**
    * Validate and sanitize transaction data with enhanced financial checks
    */
-  static validateTransaction(data: any): {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  } {
+  static validateTransaction(data: unknown): ValidationResult<Transaction> {
     try {
       const sanitizedData = sanitize.transaction(data);
 
@@ -112,7 +107,7 @@ export class DataValidator {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
 
-      return result;
+      return result as ValidationResult<Transaction>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
       return {
@@ -131,11 +126,7 @@ export class DataValidator {
   /**
    * Validate and sanitize payment data
    */
-  static validatePayment(data: any): {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  } {
+  static validatePayment(data: unknown): ValidationResult<Payment> {
     try {
       console.log(
         "[validator.ts] validatePayment INPUT:",
@@ -190,7 +181,7 @@ export class DataValidator {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
 
-      return result;
+      return result as ValidationResult<Payment>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
       console.error("[validator.ts] validatePayment EXCEPTION:", errorResult.message);
@@ -210,11 +201,7 @@ export class DataValidator {
   /**
    * Validate and sanitize transfer data
    */
-  static validateTransfer(data: any): {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  } {
+  static validateTransfer(data: unknown): ValidationResult<Transfer> {
     try {
       console.log(
         "[validator.ts] validateTransfer INPUT:",
@@ -269,7 +256,7 @@ export class DataValidator {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
 
-      return result;
+      return result as ValidationResult<Transfer>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
       console.error("[validator.ts] validateTransfer EXCEPTION:", errorResult.message);
@@ -289,11 +276,7 @@ export class DataValidator {
   /**
    * Validate and sanitize category data
    */
-  static validateCategory(data: any): {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  } {
+  static validateCategory(data: unknown): ValidationResult<Category> {
     try {
       const sanitizedData = sanitize.category(data);
       const { validateSchema } = require("./schemas");
@@ -302,7 +285,7 @@ export class DataValidator {
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
-      return result;
+      return result as ValidationResult<Category>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
       return {
@@ -321,11 +304,7 @@ export class DataValidator {
   /**
    * Validate and sanitize description data
    */
-  static validateDescription(data: any): {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  } {
+  static validateDescription(data: unknown): ValidationResult<Description> {
     try {
       const sanitizedData = sanitize.description(data);
       const { validateSchema } = require("./schemas");
@@ -334,7 +313,7 @@ export class DataValidator {
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
       }
-      return result;
+      return result as ValidationResult<Description>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
       return {
@@ -453,19 +432,15 @@ export class DataValidator {
   /**
    * Validate array of financial data
    */
-  static validateFinancialArray<T>(
+  static validateFinancialArray<T, R>(
     data: T[],
-    validator: (item: T) => {
-      success: boolean;
-      data?: any;
-      errors?: ValidationError[];
-    },
+    validator: (item: T) => ValidationResult<R>,
   ): {
     success: boolean;
-    validItems: any[];
+    validItems: R[];
     errors: Array<{ index: number; errors: ValidationError[] }>;
   } {
-    const validItems: any[] = [];
+    const validItems: R[] = [];
     const errors: Array<{ index: number; errors: ValidationError[] }> = [];
 
     data.forEach((item, index) => {
@@ -543,15 +518,11 @@ export const hookValidators = {
   /**
    * Validate data before API calls in hooks
    */
-  validateApiPayload<T>(
+  validateApiPayload<T, R>(
     data: T,
-    validator: (item: T) => {
-      success: boolean;
-      data?: any;
-      errors?: ValidationError[];
-    },
+    validator: (item: T) => ValidationResult<R>,
     hookName: string,
-  ): { isValid: boolean; validatedData?: any; errors?: ValidationError[] } {
+  ): { isValid: boolean; validatedData?: R; errors?: ValidationError[] } {
     // Rate limiting check
     if (!DataValidator.validateRateLimit("user", hookName)) {
       return {
