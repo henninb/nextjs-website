@@ -19,6 +19,7 @@ import BoltIcon from "@mui/icons-material/Bolt";
 import PaymentIcon from "@mui/icons-material/Payment";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import ScheduleIcon from "@mui/icons-material/Schedule";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 type FilterState = {
   accountType: "all" | "debit" | "credit";
@@ -30,6 +31,7 @@ type FilterState = {
     | "hasFuture"
     | "hasCleared"
     | "zeroBalance";
+  accountNamePattern: "all" | "checking";
 };
 
 type SearchFilterBarProps = {
@@ -57,7 +59,9 @@ export default function SearchFilterBar({
   const hasActiveFilters =
     searchTerm !== "" ||
     activeFilters.accountType !== "all" ||
-    activeFilters.balanceStatus === "zeroBalance";
+    activeFilters.activeStatus !== "all" ||
+    activeFilters.balanceStatus !== "all" ||
+    activeFilters.accountNamePattern !== "all";
 
   // Quick filter presets
   const quickFilters = [
@@ -134,6 +138,13 @@ export default function SearchFilterBar({
     });
   };
 
+  const handleAccountNamePatternFilter = (pattern: "all" | "checking") => {
+    onFilterChange({
+      ...activeFilters,
+      accountNamePattern: pattern,
+    });
+  };
+
   return (
     <Paper
       elevation={0}
@@ -204,7 +215,7 @@ export default function SearchFilterBar({
               letterSpacing: "0.05em",
             }}
           >
-            Quick:
+            FILTERS:
           </Typography>
         </Box>
 
@@ -242,25 +253,6 @@ export default function SearchFilterBar({
             />
           );
         })}
-
-        {/* Filter Icon and Label - Inline */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}>
-          <FilterListIcon
-            fontSize="small"
-            sx={{ color: theme.palette.text.secondary }}
-          />
-          <Typography
-            variant="caption"
-            sx={{
-              color: theme.palette.text.secondary,
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Filters:
-          </Typography>
-        </Box>
 
         {/* Account Type Filters */}
         <Chip
@@ -313,25 +305,54 @@ export default function SearchFilterBar({
           }}
         />
 
-        {/* Clear Filters Button - Always visible */}
+        {/* Checking Accounts Filter */}
         <Chip
-          label="Clear All"
-          onClick={onClearFilters}
-          onDelete={onClearFilters}
-          deleteIcon={<ClearIcon />}
-          variant="outlined"
+          icon={<AccountBalanceIcon sx={{ fontSize: "1rem" }} />}
+          label="Checking"
+          onClick={() =>
+            handleAccountNamePatternFilter(
+              activeFilters.accountNamePattern === "checking" ? "all" : "checking"
+            )
+          }
+          color={
+            activeFilters.accountNamePattern === "checking"
+              ? "success"
+              : "default"
+          }
+          variant={
+            activeFilters.accountNamePattern === "checking"
+              ? "filled"
+              : "outlined"
+          }
           size="small"
           sx={{
             borderRadius: "6px",
             fontWeight: 500,
             height: "28px",
-            borderColor: theme.palette.error.main,
-            color: theme.palette.error.main,
-            "&:hover": {
-              backgroundColor: `${theme.palette.error.main}20`,
-            },
           }}
         />
+
+        {/* Clear Filters Button - Show only when filters are active */}
+        {hasActiveFilters && (
+          <Chip
+            label="Clear All"
+            onClick={onClearFilters}
+            onDelete={onClearFilters}
+            deleteIcon={<ClearIcon />}
+            variant="outlined"
+            size="small"
+            sx={{
+              borderRadius: "6px",
+              fontWeight: 500,
+              height: "28px",
+              borderColor: theme.palette.error.main,
+              color: theme.palette.error.main,
+              "&:hover": {
+                backgroundColor: `${theme.palette.error.main}20`,
+              },
+            }}
+          />
+        )}
 
         {/* Result Count - Inline at the end */}
         {resultCount !== undefined && totalCount !== undefined && (

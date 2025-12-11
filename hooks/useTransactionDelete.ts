@@ -79,7 +79,7 @@ export default function useTransactionDelete() {
         });
 
         // Optimistically update totals based on transaction state
-        const oldTotals = queryClient.getQueryData(totalsKey);
+        const oldTotals = queryClient.getQueryData<Totals>(totalsKey);
 
         if (oldTotals) {
           const newTotals = { ...oldTotals };

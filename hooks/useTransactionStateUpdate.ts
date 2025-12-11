@@ -73,7 +73,7 @@ export default function useTransactionStateUpdate(accountNameOwner: string) {
 
         // Update transaction state in cache
         const oldData: Transaction[] =
-          queryClient.getQueryData(accountKey) || [];
+          queryClient.getQueryData<Transaction[]>(accountKey) || [];
 
         const newData = oldData.map((element) =>
           element.guid === response.guid

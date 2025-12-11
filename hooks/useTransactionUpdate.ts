@@ -126,7 +126,7 @@ export default function useTransactionUpdate() {
 
           // Clone existing totals or create defaults
           let totals: Totals = {
-            ...(queryClient.getQueryData(oldTotalsKey) || {
+            ...(queryClient.getQueryData<Totals>(oldTotalsKey) || {
               totals: 0,
               totalsFuture: 0,
               totalsCleared: 0,
@@ -205,7 +205,7 @@ export default function useTransactionUpdate() {
 
           // Update old account totals
           let oldTotals: Totals = {
-            ...(queryClient.getQueryData(oldTotalsKey) || {
+            ...(queryClient.getQueryData<Totals>(oldTotalsKey) || {
               totals: 0,
               totalsFuture: 0,
               totalsCleared: 0,

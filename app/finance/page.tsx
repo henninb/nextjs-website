@@ -81,10 +81,12 @@ export default function Accounts() {
       | "hasFuture"
       | "hasCleared"
       | "zeroBalance";
+    accountNamePattern: "all" | "checking";
   }>({
     accountType: "all",
     activeStatus: "all",
     balanceStatus: "all",
+    accountNamePattern: "all",
   });
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
@@ -193,7 +195,13 @@ export default function Accounts() {
           account.future === 0 &&
           account.cleared === 0);
 
-      return matchesSearch && matchesType && matchesStatus && matchesBalance;
+      // Account name pattern filter (e.g., checking accounts)
+      const matchesAccountNamePattern =
+        activeFilters.accountNamePattern === "all" ||
+        (activeFilters.accountNamePattern === "checking" &&
+          account.accountNameOwner.toLowerCase().includes("checking"));
+
+      return matchesSearch && matchesType && matchesStatus && matchesBalance && matchesAccountNamePattern;
     });
   }, [fetchedAccounts, searchTerm, activeFilters]);
 
@@ -203,6 +211,7 @@ export default function Accounts() {
       accountType: "all",
       activeStatus: "all",
       balanceStatus: "all",
+      accountNamePattern: "all",
     });
   };
 
@@ -681,7 +690,8 @@ export default function Accounts() {
                       searchTerm ||
                       activeFilters.accountType !== "all" ||
                       activeFilters.activeStatus !== "all" ||
-                      activeFilters.balanceStatus !== "all"
+                      activeFilters.balanceStatus !== "all" ||
+                      activeFilters.accountNamePattern !== "all"
                         ? "No Matching Accounts"
                         : "No Accounts Found"
                     }
@@ -689,7 +699,8 @@ export default function Accounts() {
                       searchTerm ||
                       activeFilters.accountType !== "all" ||
                       activeFilters.activeStatus !== "all" ||
-                      activeFilters.balanceStatus !== "all"
+                      activeFilters.balanceStatus !== "all" ||
+                      activeFilters.accountNamePattern !== "all"
                         ? "No accounts match your current filters. Try adjusting your search or filters."
                         : "You haven't created any accounts yet. Get started by adding your first account."
                     }
@@ -699,7 +710,8 @@ export default function Accounts() {
                       searchTerm ||
                       activeFilters.accountType !== "all" ||
                       activeFilters.activeStatus !== "all" ||
-                      activeFilters.balanceStatus !== "all"
+                      activeFilters.balanceStatus !== "all" ||
+                      activeFilters.accountNamePattern !== "all"
                         ? "Clear Filters"
                         : "Add Account"
                     }
@@ -708,7 +720,8 @@ export default function Accounts() {
                         searchTerm ||
                         activeFilters.accountType !== "all" ||
                         activeFilters.activeStatus !== "all" ||
-                        activeFilters.balanceStatus !== "all"
+                        activeFilters.balanceStatus !== "all" ||
+                        activeFilters.accountNamePattern !== "all"
                       ) {
                         handleClearFilters();
                       } else {

@@ -11,6 +11,7 @@ describe("SearchFilterBar", () => {
     accountType: "all" as const,
     activeStatus: "all" as const,
     balanceStatus: "all" as const,
+    accountNamePattern: "all" as const,
   };
 
   beforeEach(() => {
@@ -179,7 +180,21 @@ describe("SearchFilterBar", () => {
     });
   });
 
-  it("shows Clear All button", () => {
+  it("hides Clear All button when no filters are active", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={defaultFilters}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    expect(screen.queryByText("Clear All")).not.toBeInTheDocument();
+  });
+
+  it("shows Clear All button when search term exists", () => {
     render(
       <SearchFilterBar
         searchTerm="test"
@@ -191,6 +206,94 @@ describe("SearchFilterBar", () => {
     );
 
     expect(screen.getByText("Clear All")).toBeInTheDocument();
+  });
+
+  it("shows Clear All button when accountType filter is active", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={{ ...defaultFilters, accountType: "debit" }}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    expect(screen.getByText("Clear All")).toBeInTheDocument();
+  });
+
+  it("shows Clear All button when activeStatus filter is active", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={{ ...defaultFilters, activeStatus: "active" }}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    expect(screen.getByText("Clear All")).toBeInTheDocument();
+  });
+
+  it("shows Clear All button when balanceStatus filter is active", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={{ ...defaultFilters, balanceStatus: "zeroBalance" }}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    expect(screen.getByText("Clear All")).toBeInTheDocument();
+  });
+
+  it("shows Clear All button when accountNamePattern filter is active", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={{ ...defaultFilters, accountNamePattern: "checking" }}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    expect(screen.getByText("Clear All")).toBeInTheDocument();
+  });
+
+  it("renders checking accounts filter chip", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={defaultFilters}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    expect(screen.getByText("Checking")).toBeInTheDocument();
+  });
+
+  it("handles checking accounts filter toggle", () => {
+    render(
+      <SearchFilterBar
+        searchTerm=""
+        onSearchChange={mockOnSearchChange}
+        activeFilters={defaultFilters}
+        onFilterChange={mockOnFilterChange}
+        onClearFilters={mockOnClearFilters}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Checking"));
+    expect(mockOnFilterChange).toHaveBeenCalledWith({
+      ...defaultFilters,
+      accountNamePattern: "checking",
+    });
   });
 
   it("calls onClearFilters when Clear All is clicked", () => {
