@@ -32,6 +32,7 @@ import useAccountInsert from "../../hooks/useAccountInsert";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
+import { AccountType } from "../../model/AccountType";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN } from "../../components/Common";
 import FinanceLayout from "../../layouts/FinanceLayout";
@@ -205,17 +206,17 @@ export default function Accounts() {
     });
   };
 
-  const handleAccountTypeKeyDown = (event: any) => {
+  const handleAccountTypeKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Tab") {
-      const inputValue = event.target.value.toLowerCase();
+      const inputValue = (event.currentTarget.value || "").toLowerCase();
       const match = accountTypeOptions.find((option) =>
         option.startsWith(inputValue),
       );
       if (match) {
         event.preventDefault(); // Prevent default tab behavior
-        setAccountData((prev: any) => ({
+        setAccountData((prev: Account) => ({
           ...prev,
-          accountType: match,
+          accountType: match as AccountType,
         }));
       }
     }
@@ -605,7 +606,7 @@ export default function Accounts() {
                     <DataGridBase
                       rows={filteredAccounts.filter((row) => row != null) || []}
                       columns={columns}
-                      getRowId={(row: any) =>
+                      getRowId={(row: Account) =>
                         row.accountId ?? row.accountNameOwner
                       }
                       pageSizeOptions={[25, 50, 100]}
@@ -781,15 +782,15 @@ export default function Accounts() {
             options={accountTypeOptions}
             value={accountData?.accountType || ""}
             onChange={(event, newValue) =>
-              setAccountData((prev: any) => ({
+              setAccountData((prev: Account) => ({
                 ...prev,
-                accountType: newValue || "",
+                accountType: (newValue || "") as AccountType,
               }))
             }
             onInputChange={(event, newInputValue) =>
-              setAccountData((prev: any) => ({
+              setAccountData((prev: Account) => ({
                 ...prev,
-                accountType: newInputValue || "",
+                accountType: (newInputValue || "") as AccountType,
               }))
             }
             renderInput={(params) => (
@@ -812,7 +813,7 @@ export default function Accounts() {
             error={!!formErrors.moniker}
             helperText={formErrors.moniker}
             onChange={(e) =>
-              setAccountData((prev: any) => ({
+              setAccountData((prev: Account) => ({
                 ...prev,
                 moniker: e.target.value,
               }))

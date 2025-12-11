@@ -263,7 +263,7 @@ export default function CategoriesNextGen() {
     });
   };
 
-  const getRowId = (row: any) =>
+  const getRowId = (row: Category) =>
     row.categoryId ?? `${row.categoryName}-${row.activeStatus}`;
 
   const columns: GridColDef[] = [
@@ -632,7 +632,7 @@ export default function CategoriesNextGen() {
                 <Switch
                   checked={!!categoryData?.activeStatus}
                   onChange={(e) =>
-                    setCategoryData((prev: any) => ({
+                    setCategoryData((prev: Category) => ({
                       ...prev,
                       categoryId: prev?.categoryId || 0,
                       categoryName: prev?.categoryName || "",

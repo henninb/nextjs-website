@@ -262,7 +262,7 @@ export default function Descriptions() {
     },
   ];
 
-  const getRowId = (row: any) =>
+  const getRowId = (row: Description) =>
     row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
 
   const validateName = (name: string): string | undefined => {
@@ -471,7 +471,7 @@ export default function Descriptions() {
                 <Switch
                   checked={!!descriptionData?.activeStatus}
                   onChange={(e) =>
-                    setDescriptionData((prev: any) => ({
+                    setDescriptionData((prev: Description) => ({
                       ...prev,
                       activeStatus: e.target.checked,
                     }))

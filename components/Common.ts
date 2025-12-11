@@ -146,12 +146,13 @@ export const epochToDate = (epoch: number): Date => {
 
 // Removed legacy auth/endpoint helpers; configuration handled via Next runtime.
 
-export const typeOf = (obj: any) => {
+export const typeOf = (obj: unknown): string => {
   return {}.toString.call(obj).split(" ")[1].slice(0, -1).toLowerCase();
 };
 
-export const noNaN = (n: any) => {
-  return isNaN(n) ? 0.0 : n;
+export const noNaN = (n: unknown): number => {
+  const num = Number(n);
+  return isNaN(num) ? 0.0 : num;
 };
 
 export const capitalizeFirstChar = (inString: string) => {

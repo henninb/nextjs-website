@@ -50,7 +50,7 @@ export interface ValidationDebugPanelProps {
   /**
    * Error to debug (can be any error type)
    */
-  error?: any;
+  error?: unknown;
 
   /**
    * Optional title for the panel
@@ -112,10 +112,10 @@ export default function ValidationDebugPanel({
   // Handle copy to clipboard
   const handleCopyError = () => {
     const errorInfo = {
-      type: error.constructor.name,
-      message: error.message,
+      type: error instanceof Error ? error.constructor.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
       validationErrors: validationErrors,
-      stack: error.stack,
+      stack: error instanceof Error ? error.stack : undefined,
     };
 
     navigator.clipboard.writeText(JSON.stringify(errorInfo, null, 2));
@@ -203,7 +203,7 @@ export default function ValidationDebugPanel({
             Message:
           </Typography>
           <Typography variant="body2" sx={{ mt: 0.5, fontFamily: "monospace" }}>
-            {error.message || "No message"}
+            {error instanceof Error ? error.message : String(error) || "No message"}
           </Typography>
         </Box>
 
@@ -346,11 +346,11 @@ export default function ValidationDebugPanel({
             >
               {JSON.stringify(
                 {
-                  name: error.name,
-                  message: error.message,
-                  status: error.status,
-                  statusText: error.statusText,
-                  validationErrors: error.validationErrors,
+                  name: error instanceof Error ? error.name : 'Unknown',
+                  message: error instanceof Error ? error.message : String(error),
+                  status: (error as any).status,
+                  statusText: (error as any).statusText,
+                  validationErrors: (error as any).validationErrors,
                 },
                 null,
                 2,
@@ -360,7 +360,7 @@ export default function ValidationDebugPanel({
         </Accordion>
 
         {/* Stack Trace */}
-        {error.stack && (
+        {error instanceof Error && error.stack && (
           <Accordion sx={{ bgcolor: "grey.800", mt: 1 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="subtitle2">Stack Trace</Typography>
@@ -379,7 +379,7 @@ export default function ValidationDebugPanel({
                   wordBreak: "break-word",
                 }}
               >
-                {error.stack}
+                {error instanceof Error ? error.stack : ''}
               </Box>
             </AccordionDetails>
           </Accordion>

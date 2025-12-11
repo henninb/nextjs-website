@@ -149,9 +149,18 @@ export default function BaseballPage() {
         );
 
         // Remove duplicates based on gamePk
-        const uniqueGames = result.filter(
-          (game: any, index: number, arr: any[]) =>
-            arr.findIndex((g: any) => g.gamePk === game.gamePk) === index,
+        interface MLBGame {
+          gamePk: number;
+          venue?: { name?: string };
+          teams?: {
+            away?: { team?: { name?: string }; score?: number };
+            home?: { team?: { name?: string }; score?: number };
+          };
+          status?: { abstractGameState?: string };
+        }
+        const uniqueGames = (result as MLBGame[]).filter(
+          (game, index, arr) =>
+            arr.findIndex((g) => g.gamePk === game.gamePk) === index,
         );
         console.log(
           "Original length:",
@@ -161,7 +170,7 @@ export default function BaseballPage() {
         );
 
         // Transform data to flatten nested properties for easier DataGrid access
-        const transformedData = uniqueGames.map((game: any) => ({
+        const transformedData = uniqueGames.map((game) => ({
           ...game,
           venueName: game.venue?.name || "TBD",
           awayTeamName: game.teams?.away?.team?.name || "TBD",
@@ -173,9 +182,9 @@ export default function BaseballPage() {
 
         console.log("Transformed first game:", transformedData[0]);
         setData(transformedData);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Fetch error:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
         setLoading(false);
       }
@@ -237,7 +246,7 @@ export default function BaseballPage() {
       data={data}
       columns={columns}
       title="Twins Baseball Scores"
-      getRowId={(row: any) => {
+      getRowId={(row: { gamePk?: number }) => {
         if (!row) return crypto.randomUUID();
         // Use gamePk as primary key, with UUID fallback
         return row.gamePk ? `game-${row.gamePk}` : crypto.randomUUID();

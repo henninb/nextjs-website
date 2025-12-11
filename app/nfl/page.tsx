@@ -151,7 +151,7 @@ export default function FootballPage() {
       data={data}
       columns={columns}
       title="Vikings Football Scores"
-      getRowId={(row: any) => row.DateUtc + row.HomeTeam + row.AwayTeam}
+      getRowId={(row: { DateUtc: string; HomeTeam: string; AwayTeam: string }) => row.DateUtc + row.HomeTeam + row.AwayTeam}
       sport="football"
     />
   );

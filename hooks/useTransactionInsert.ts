@@ -147,15 +147,21 @@ export default function useTransactionInsert() {
 
         // Skip cache updates for import transactions
         if (!variables.isImportTransaction) {
-          const accountKey = getAccountKey(response.accountNameOwner);
           const totalsKey = getTotalsKey(response.accountNameOwner);
 
-          // Add transaction to account's transaction list
-          const oldData: Transaction[] =
-            queryClient.getQueryData(accountKey) || [];
-          queryClient.setQueryData(accountKey, [response, ...oldData]);
+          // Invalidate paginated transaction queries for this account
+          // This ensures all pages are refetched with the server's sort order and business logic
+          queryClient.invalidateQueries({
+            queryKey: ["transaction", response.accountNameOwner, "paged"],
+          });
 
-          // Update totals based on transaction state
+          // Invalidate non-paginated transaction queries (used in BackupRestore)
+          queryClient.invalidateQueries({
+            queryKey: ["transaction", response.accountNameOwner],
+            exact: true,
+          });
+
+          // Optimistically update totals based on transaction state
           const oldTotals: Totals = queryClient.getQueryData(totalsKey) || {
             totals: 0,
             totalsFuture: 0,

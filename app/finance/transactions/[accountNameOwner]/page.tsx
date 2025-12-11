@@ -499,6 +499,9 @@ export default function TransactionsByAccount({
       });
 
       handleSuccess(`Transaction cloned successfully.`);
+
+      // Reset to page 0 to see the newly cloned transaction
+      setPaginationModel({ ...paginationModel, page: 0 });
     } catch (error) {
       handleError(error, `handleCloneRow error: ${error}`, false);
       throw error;
@@ -536,6 +539,9 @@ export default function TransactionsByAccount({
       });
       console.log(`Transaction added successfully: ${JSON.stringify(result)}`);
       handleSuccess(`Transaction added successfully.`);
+
+      // Reset to page 0 to see the newly inserted transaction
+      setPaginationModel({ ...paginationModel, page: 0 });
 
       return result;
     } catch (error) {
@@ -617,9 +623,9 @@ export default function TransactionsByAccount({
 
           return (
             <Box display="flex" alignItems="center">
-              {transactionStates.map((state: any) => {
-                let IconComponent: any;
-                let tooltipText: any;
+              {transactionStates.map((state: TransactionState) => {
+                let IconComponent: React.ComponentType<{ fontSize?: string }> = CheckCircleIcon;
+                let tooltipText: string = "";
 
                 // Map states to icons and tooltips
                 if (state === "cleared") {
@@ -1078,7 +1084,7 @@ export default function TransactionsByAccount({
                         <DataGridBase
                           rows={filteredTransactions}
                           columns={columns}
-                          getRowId={(row: any) => row.transactionId || 0}
+                          getRowId={(row: Transaction) => row.transactionId || 0}
                           checkboxSelection={true}
                           rowSelection={true}
                           paginationModel={paginationModel}
@@ -1305,7 +1311,7 @@ export default function TransactionsByAccount({
             )}
             onChange={(e) => {
               const normalizedDate = normalizeTransactionDate(e.target.value);
-              setTransactionData((prev: any) => ({
+              setTransactionData((prev: Transaction) => ({
                 ...prev,
                 transactionDate: normalizedDate,
               }));
@@ -1396,9 +1402,9 @@ export default function TransactionsByAccount({
             label="Amount ($)"
             value={transactionData?.amount ? transactionData.amount : ""}
             onChange={(value) => {
-              setTransactionData((prev: any) => ({
+              setTransactionData((prev: Transaction) => ({
                 ...prev,
-                amount: value,
+                amount: typeof value === 'string' ? parseFloat(value) || 0 : value,
               }));
             }}
             onBlur={() => {
@@ -1407,10 +1413,9 @@ export default function TransactionsByAccount({
                 String(transactionData?.amount || ""),
               );
               if (!isNaN(currentAmount) && currentAmount !== 0) {
-                const formattedValue = currentAmount.toFixed(2);
-                setTransactionData((prev: any) => ({
+                setTransactionData((prev: Transaction) => ({
                   ...prev,
-                  amount: formattedValue,
+                  amount: Number(currentAmount.toFixed(2)),
                 }));
               }
             }}
@@ -1427,7 +1432,7 @@ export default function TransactionsByAccount({
             label="Transaction State"
             value={transactionData?.transactionState || ""}
             onChange={(e) =>
-              setTransactionData((prev: any) => ({
+              setTransactionData((prev: Transaction) => ({
                 ...prev,
                 transactionState: e.target.value,
               }))
@@ -1445,7 +1450,7 @@ export default function TransactionsByAccount({
             label="Reoccurring Type"
             value={transactionData?.reoccurringType || "onetime"}
             onChange={(e) =>
-              setTransactionData((prev: any) => ({
+              setTransactionData((prev: Transaction) => ({
                 ...prev,
                 reoccurringType: e.target.value,
               }))
@@ -1465,7 +1470,7 @@ export default function TransactionsByAccount({
             label="Transaction Type"
             value={transactionData?.transactionType || ""}
             onChange={(e) =>
-              setTransactionData((prev: any) => ({
+              setTransactionData((prev: Transaction) => ({
                 ...prev,
                 transactionType: e.target.value,
               }))
@@ -1483,7 +1488,7 @@ export default function TransactionsByAccount({
             label="Notes"
             value={transactionData?.notes || ""}
             onChange={(e) =>
-              setTransactionData((prev: any) => ({
+              setTransactionData((prev: Transaction) => ({
                 ...prev,
                 notes: e.target.value,
               }))

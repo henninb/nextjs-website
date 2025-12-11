@@ -497,7 +497,7 @@ describe("TransfersNextGen page", () => {
         payload: expect.objectContaining({
           sourceAccount: "Checking Account",
           destinationAccount: "Savings Account",
-          amount: "100", // Amount comes through as string from input
+          amount: 100, // Amount is properly converted to number
         }),
       });
     });

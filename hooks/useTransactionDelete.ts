@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import Transaction from "../model/Transaction";
+import Totals from "../model/Totals";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";
@@ -63,36 +64,52 @@ export default function useTransactionDelete() {
           guid: variables.oldRow.guid,
         });
 
-        const accountKey = getAccountKey(variables.oldRow.accountNameOwner);
         const totalsKey = getTotalsKey(variables.oldRow.accountNameOwner);
 
-        // Remove the deleted transaction from the cache
-        const oldData: Transaction[] | undefined =
-          queryClient.getQueryData(accountKey);
+        // Invalidate paginated transaction queries for this account
+        // This ensures all pages are refetched with the server's sort order and business logic
+        queryClient.invalidateQueries({
+          queryKey: ["transaction", variables.oldRow.accountNameOwner, "paged"],
+        });
 
-        if (oldData) {
-          const newData = oldData.filter(
-            (t: Transaction) =>
-              t.transactionId !== variables.oldRow.transactionId,
-          );
-          queryClient.setQueryData(accountKey, newData);
+        // Invalidate non-paginated transaction queries (used in BackupRestore)
+        queryClient.invalidateQueries({
+          queryKey: ["transaction", variables.oldRow.accountNameOwner],
+          exact: true,
+        });
 
-          log.debug("Transaction removed from cache", {
+        // Optimistically update totals based on transaction state
+        const oldTotals = queryClient.getQueryData(totalsKey);
+
+        if (oldTotals) {
+          const newTotals = { ...oldTotals };
+          newTotals.totals -= variables.oldRow.amount;
+
+          // Adjust state-specific totals
+          if (variables.oldRow.transactionState === "cleared") {
+            newTotals.totalsCleared -= variables.oldRow.amount;
+          } else if (variables.oldRow.transactionState === "outstanding") {
+            newTotals.totalsOutstanding -= variables.oldRow.amount;
+          } else if (variables.oldRow.transactionState === "future") {
+            newTotals.totalsFuture -= variables.oldRow.amount;
+          } else {
+            log.warn("Unknown transaction state, totals may be incorrect", {
+              transactionState: variables.oldRow.transactionState,
+            });
+          }
+
+          queryClient.setQueryData(totalsKey, newTotals);
+
+          log.debug("Cache updated", {
             accountNameOwner: variables.oldRow.accountNameOwner,
-            remainingCount: newData.length,
+            newTotals,
           });
         } else {
-          log.warn("No cached data found for account", {
+          log.warn("No cached totals found, invalidating to refetch", {
             accountNameOwner: variables.oldRow.accountNameOwner,
           });
+          queryClient.invalidateQueries({ queryKey: totalsKey });
         }
-
-        // Invalidate the totals query to refetch updated totals
-        queryClient.invalidateQueries({ queryKey: totalsKey });
-
-        log.debug("Totals invalidated", {
-          accountNameOwner: variables.oldRow.accountNameOwner,
-        });
       },
       onError: (error) => {
         log.error("Delete failed", error);

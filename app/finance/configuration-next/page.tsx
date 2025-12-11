@@ -205,7 +205,7 @@ export default function ConfigurationNextGen() {
               <DataGridBase
                 rows={fetchedParameters}
                 columns={columns}
-                getRowId={(row: any) => row.parameterId}
+                getRowId={(row: Parameter) => row.parameterId}
                 checkboxSelection={false}
                 rowSelection={false}
                 paginationModel={paginationModel}

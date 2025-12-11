@@ -5,11 +5,14 @@ import {
   GridValidRowModel,
   GridRowSelectionModel as V8GridRowSelectionModel,
   GridRowId,
+  GridColDef,
+  GridCallbackDetails,
 } from "@mui/x-data-grid";
+import { SxProps, Theme } from "@mui/material";
 
 type DataGridBaseProps<R extends GridValidRowModel> = {
   rows: R[];
-  columns: any[];
+  columns: GridColDef[];
   getRowId?: (row: R) => string | number;
   paginationModel?: GridPaginationModel;
   onPaginationModelChange?: (model: GridPaginationModel) => void;
@@ -20,15 +23,20 @@ type DataGridBaseProps<R extends GridValidRowModel> = {
   rowSelectionModel?: Array<string | number>;
   onRowSelectionModelChange?: (
     model: Array<string | number>,
-    details?: any,
+    details?: GridCallbackDetails,
   ) => void;
   keepNonExistentRowsSelected?: boolean;
   processRowUpdate?: (newRow: R, oldRow: R) => Promise<R> | R;
   disableColumnResize?: boolean;
   disableRowSelectionOnClick?: boolean;
-  sx?: any;
-  // Allow passing any additional MUI DataGrid props used by callers
-  [key: string]: any;
+  sx?: SxProps<Theme>;
+  // Additional MUI DataGrid props
+  hideFooter?: boolean;
+  disableColumnFilter?: boolean;
+  disableColumnMenu?: boolean;
+  disableVirtualization?: boolean;
+  paginationMode?: 'client' | 'server';
+  rowCount?: number;
 };
 
 export default function DataGridBase<R extends GridValidRowModel>({
@@ -69,7 +77,7 @@ export default function DataGridBase<R extends GridValidRowModel>({
   // Wrap change handler to present legacy array to consumers while accepting v8 object from DataGrid
   const handleRowSelectionModelChange = (
     model: V8GridRowSelectionModel,
-    details?: any,
+    details?: GridCallbackDetails,
   ) => {
     const idsArray = Array.from(model.ids) as Array<string | number>;
     onRowSelectionModelChange?.(idsArray, details);

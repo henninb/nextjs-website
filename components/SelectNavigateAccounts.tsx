@@ -8,6 +8,7 @@ import {
   Typography,
   Chip,
   IconButton,
+  Theme,
 } from "@mui/material";
 import ErrorDisplay from "./ErrorDisplay";
 import LoadingState from "./LoadingState";
@@ -24,7 +25,7 @@ interface Option {
 
 interface SelectNavigateAccountsProps {
   onNavigate: () => void; // Accept function to close menu
-  theme?: any;
+  theme?: Theme;
 }
 
 export default function SelectNavigateAccounts({
@@ -64,7 +65,7 @@ export default function SelectNavigateAccounts({
     }
   }, [isSuccess, data]);
 
-  const handleChange = (event: any, newValue: Option | null) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: Option | null) => {
     setSelectedOption(newValue);
     if (newValue) {
       trackAccountVisit(newValue.value);

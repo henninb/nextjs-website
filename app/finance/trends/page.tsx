@@ -394,7 +394,7 @@ const TrendsPage = () => {
                     <XAxis dataKey="month" />
                     <YAxis tickFormatter={currencyFormat} />
                     <Tooltip
-                      formatter={(value: any) => [
+                      formatter={(value: number) => [
                         currencyFormat(value),
                         "Spending",
                       ]}
@@ -450,7 +450,7 @@ const TrendsPage = () => {
                     <XAxis dataKey="month" />
                     <YAxis tickFormatter={currencyFormat} />
                     <Tooltip
-                      formatter={(value: any) => [
+                      formatter={(value: number) => [
                         currencyFormat(value),
                         "Amount",
                       ]}

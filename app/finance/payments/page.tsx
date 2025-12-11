@@ -385,7 +385,7 @@ export default function Payments() {
           />
         );
       },
-      valueFormatter: (params: any) => currencyFormat(params),
+      valueFormatter: (params: number) => currencyFormat(params),
     },
     {
       field: "",
@@ -466,7 +466,7 @@ export default function Payments() {
                   <DataGridBase
                     rows={fetchedPayments?.filter((row) => row != null) || []}
                     columns={columns}
-                    getRowId={(row: any) =>
+                    getRowId={(row: Payment) =>
                       row.paymentId ??
                       `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
                     }
@@ -709,9 +709,9 @@ export default function Payments() {
             label="Amount"
             value={paymentData?.amount ? paymentData.amount : ""}
             onChange={(value) => {
-              setPaymentData((prev: any) => ({
+              setPaymentData((prev: Payment) => ({
                 ...prev,
-                amount: value,
+                amount: typeof value === 'string' ? parseFloat(value) || 0 : value,
               }));
             }}
             onBlur={() => {
@@ -720,9 +720,9 @@ export default function Payments() {
                 String(paymentData?.amount || ""),
               );
               if (!isNaN(currentValue)) {
-                setPaymentData((prev: any) => ({
+                setPaymentData((prev: Payment) => ({
                   ...prev,
-                  amount: currentValue.toFixed(2),
+                  amount: Number(currentValue.toFixed(2)),
                 }));
               }
             }}

@@ -208,7 +208,7 @@ export default function Configuration() {
     try {
       await insertParameter({ payload: newData });
       const secureId = await generateSecureUUID();
-      setParameterData((prev: any) =>
+      setParameterData((prev: Parameter) =>
         prev?.parameterId ? prev : { ...newData, parameterId: secureId },
       );
       setShowModalAdd(false);
@@ -319,7 +319,7 @@ export default function Configuration() {
                   <DataGridBase
                     rows={[...(fetchedParameters || []), ...offlineRows]}
                     columns={columns}
-                    getRowId={(row: any) =>
+                    getRowId={(row: Parameter) =>
                       row.parameterId ||
                       `fallback-${Date.now()}-${Math.random()}`
                     }

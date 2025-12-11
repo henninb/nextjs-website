@@ -229,7 +229,7 @@ export default function Transfers() {
     }
   }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);
 
-  const handleSourceAccountChange = (event: any, newValue: Account | null) => {
+  const handleSourceAccountChange = (_event: React.SyntheticEvent, newValue: Account | null) => {
     setSelectedSourceAccount(newValue);
     setTransferData((prev) => ({
       ...prev,
@@ -238,7 +238,7 @@ export default function Transfers() {
   };
 
   const handleDestinationAccountChange = (
-    event: any,
+    _event: React.SyntheticEvent,
     newValue: Account | null,
   ) => {
     setSelectedDestinationAccount(newValue);
@@ -477,7 +477,7 @@ export default function Transfers() {
                     //rows={fetchedTransfers?.filter((row) => row != null) || []}
                     rows={transfersToDisplay}
                     columns={columns}
-                    getRowId={(row: any) =>
+                    getRowId={(row: Transfer) =>
                       row.transferId ??
                       `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
                     }
@@ -599,7 +599,7 @@ export default function Transfers() {
             )}
             onChange={(e) => {
               const normalizedDate = normalizeTransactionDate(e.target.value);
-              setTransferData((prev: any) => ({
+              setTransferData((prev: Transfer) => ({
                 ...prev,
                 transactionDate: normalizedDate,
               }));
@@ -655,9 +655,9 @@ export default function Transfers() {
             label="Amount"
             value={transferData?.amount ? transferData.amount : ""}
             onChange={(value) => {
-              setTransferData((prev: any) => ({
+              setTransferData((prev: Transfer) => ({
                 ...prev,
-                amount: value,
+                amount: typeof value === 'string' ? parseFloat(value) || 0 : value,
               }));
               // Clear amount error when user starts typing
               if (formErrors.amount) {
@@ -670,9 +670,9 @@ export default function Transfers() {
                 String(transferData?.amount || ""),
               );
               if (!isNaN(currentValue)) {
-                setTransferData((prev: any) => ({
+                setTransferData((prev: Transfer) => ({
                   ...prev,
-                  amount: currentValue.toFixed(2),
+                  amount: Number(currentValue.toFixed(2)),
                 }));
               }
             }}

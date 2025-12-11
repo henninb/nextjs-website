@@ -183,7 +183,7 @@ export default function Categories() {
     }
   };
 
-  const getRowId = (row: any) =>
+  const getRowId = (row: Category) =>
     row.categoryId ?? `${row.categoryName}-${row.activeStatus}`;
 
   const isRowSelected = (rowId: string | number) =>
@@ -533,7 +533,7 @@ export default function Categories() {
                 <Switch
                   checked={!!categoryData?.activeStatus}
                   onChange={(e) =>
-                    setCategoryData((prev: any) => ({
+                    setCategoryData((prev: Category) => ({
                       ...prev,
                       activeStatus: e.target.checked,
                     }))

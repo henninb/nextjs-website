@@ -320,7 +320,7 @@ export default function PaymentsNextGen() {
               <DataGridBase
                 rows={paymentsToDisplay}
                 columns={columns}
-                getRowId={(row: any) =>
+                getRowId={(row: Payment) =>
                   row.paymentId ??
                   `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
                 }
@@ -423,7 +423,7 @@ export default function PaymentsNextGen() {
             )}
             onChange={(e) => {
               const normalizedDate = normalizeTransactionDate(e.target.value);
-              setPaymentData((prev: any) => ({
+              setPaymentData((prev: Payment) => ({
                 ...prev,
                 transactionDate: normalizedDate,
               }));
@@ -500,14 +500,17 @@ export default function PaymentsNextGen() {
             label="Amount"
             value={paymentData?.amount ? paymentData.amount : ""}
             onChange={(value) =>
-              setPaymentData((prev: any) => ({ ...prev, amount: value }))
+              setPaymentData((prev: Payment) => ({
+                ...prev,
+                amount: typeof value === 'string' ? parseFloat(value) || 0 : value
+              }))
             }
             onBlur={() => {
               const currentValue = parseFloat(
                 String(paymentData?.amount || ""),
               );
               if (!isNaN(currentValue)) {
-                setPaymentData((prev: any) => ({
+                setPaymentData((prev: Payment) => ({
                   ...prev,
                   amount: Number(currentValue.toFixed(2)),
                 }));

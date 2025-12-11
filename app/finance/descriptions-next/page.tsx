@@ -264,7 +264,7 @@ export default function DescriptionsNextGen() {
     });
   };
 
-  const getRowId = (row: any) =>
+  const getRowId = (row: Description) =>
     row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
 
   const columns: GridColDef[] = [
@@ -637,7 +637,7 @@ export default function DescriptionsNextGen() {
                 <Switch
                   checked={!!descriptionData?.activeStatus}
                   onChange={(e) =>
-                    setDescriptionData((prev: any) => ({
+                    setDescriptionData((prev: Description) => ({
                       ...prev,
                       descriptionId: prev?.descriptionId || 0,
                       descriptionName: prev?.descriptionName || "",

@@ -1,9 +1,18 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TransactionsByCategory from "../../../../../app/finance/transactions/category/[categoryName]/page";
 import * as AuthProvider from "../../../../../components/AuthProvider";
 import * as useTransactionByCategory from "../../../../../hooks/useTransactionByCategoryFetch";
+
+// Mock React.use() for testing
+const originalReactUse = React.use;
+React.use = jest.fn((promise: any) => {
+  if (promise instanceof Promise) {
+    return originalReactUse(promise);
+  }
+  return promise;
+}) as any;
 
 // Router mock to supply the dynamic route param and capture redirects
 const replaceMock = jest.fn();
@@ -65,7 +74,11 @@ const createWrapper = () => {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <React.Suspense fallback={<div>Loading...</div>}>
+        {children}
+      </React.Suspense>
+    </QueryClientProvider>
   );
 };
 
@@ -98,9 +111,11 @@ describe("TransactionsByCategory page", () => {
     replaceMock.mockReset();
   });
 
-  it("renders the heading with the category name", () => {
-    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
-    expect(screen.getByText("Food")).toBeInTheDocument();
+  it("renders the heading with the category name", async () => {
+    render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByText("Food")).toBeInTheDocument();
+    });
   });
 
   it("shows a spinner while loading data", () => {
@@ -111,12 +126,12 @@ describe("TransactionsByCategory page", () => {
       error: null,
     });
 
-    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, { wrapper: createWrapper() });
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
   it("renders the data grid with transaction rows", () => {
-    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, { wrapper: createWrapper() });
 
     // DataGrid is globally mocked in __mocks__/@mui/x-data-grid.ts
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
@@ -133,7 +148,7 @@ describe("TransactionsByCategory page", () => {
       loading: false,
     });
 
-    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, { wrapper: createWrapper() });
 
     // Component renders nothing and triggers a redirect
     expect(replaceMock).toHaveBeenCalledWith("/login");
@@ -149,7 +164,7 @@ describe("TransactionsByCategory page", () => {
       refetch: refetchMock,
     });
 
-    render(<TransactionsByCategory params={{ categoryName: "Food" }} />, { wrapper: createWrapper() });
+    render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, { wrapper: createWrapper() });
     expect(screen.getByTestId("error-display")).toBeInTheDocument();
     const btn = screen.getByTestId("retry-button");
     btn.click();
@@ -167,7 +182,7 @@ describe("TransactionsByCategory page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" }} />, {
+      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, {
         wrapper: createWrapper(),
       });
 
@@ -180,7 +195,7 @@ describe("TransactionsByCategory page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByCategory params={{ categoryName: "Food" }} />);
+      rerender(<TransactionsByCategory params={{ categoryName: "Food" } as any} />);
 
       // Should render successfully without Rules of Hooks error
       expect(screen.getByText("Food")).toBeInTheDocument();
@@ -193,7 +208,7 @@ describe("TransactionsByCategory page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" }} />, {
+      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, {
         wrapper: createWrapper(),
       });
 
@@ -206,7 +221,7 @@ describe("TransactionsByCategory page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByCategory params={{ categoryName: "Food" }} />);
+      rerender(<TransactionsByCategory params={{ categoryName: "Food" } as any} />);
 
       // Should still return null and trigger redirect
       expect(screen.queryByText("Food")).not.toBeInTheDocument();
@@ -222,7 +237,7 @@ describe("TransactionsByCategory page", () => {
         error: null,
       });
 
-      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" }} />, {
+      const { rerender } = render(<TransactionsByCategory params={{ categoryName: "Food" } as any} />, {
         wrapper: createWrapper(),
       });
       expect(screen.getByTestId("spinner")).toBeInTheDocument();
@@ -235,7 +250,7 @@ describe("TransactionsByCategory page", () => {
         error: null,
       });
 
-      rerender(<TransactionsByCategory params={{ categoryName: "Food" }} />);
+      rerender(<TransactionsByCategory params={{ categoryName: "Food" } as any} />);
 
       // Should render data grid without hook order errors
       expect(screen.getByTestId("data-grid")).toBeInTheDocument();

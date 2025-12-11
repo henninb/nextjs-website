@@ -269,7 +269,7 @@ export default function TransfersNextGen() {
     }
   }, [showModalAdd]);
 
-  const handleSourceAccountChange = (_e: any, newValue: Account | null) => {
+  const handleSourceAccountChange = (_e: React.SyntheticEvent, newValue: Account | null) => {
     setSelectedSourceAccount(newValue);
     setTransferData((prev) => ({
       ...prev,
@@ -278,7 +278,7 @@ export default function TransfersNextGen() {
   };
 
   const handleDestinationAccountChange = (
-    _e: any,
+    _e: React.SyntheticEvent,
     newValue: Account | null,
   ) => {
     setSelectedDestinationAccount(newValue);
@@ -449,7 +449,7 @@ export default function TransfersNextGen() {
               <DataGridBase
                 rows={transfersToDisplay}
                 columns={columns}
-                getRowId={(row: any) =>
+                getRowId={(row: Transfer) =>
                   row.transferId ??
                   `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
                 }
@@ -615,14 +615,17 @@ export default function TransfersNextGen() {
             label="Amount"
             value={transferData?.amount ? transferData.amount : ""}
             onChange={(value) =>
-              setTransferData((prev: any) => ({ ...prev, amount: value }))
+              setTransferData((prev: Transfer) => ({
+                ...prev,
+                amount: typeof value === 'string' ? parseFloat(value) || 0 : value
+              }))
             }
             onBlur={() => {
               const currentValue = parseFloat(
                 String(transferData?.amount || ""),
               );
               if (!isNaN(currentValue)) {
-                setTransferData((prev: any) => ({
+                setTransferData((prev: Transfer) => ({
                   ...prev,
                   amount: Number(currentValue.toFixed(2)),
                 }));

@@ -38,7 +38,7 @@ export interface FormFieldErrorProps {
   /**
    * Custom styles
    */
-  sx?: any;
+  sx?: import('@mui/material').SxProps<import('@mui/material').Theme>;
 }
 
 /**

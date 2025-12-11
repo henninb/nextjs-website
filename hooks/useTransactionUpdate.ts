@@ -7,21 +7,10 @@ import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { getAccountKey, getTotalsKey } from "../utils/cacheUtils";
+import { getTotalsKey } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useTransactionUpdate");
-type TransactionCache =
-  | Transaction[]
-  | {
-      content: Transaction[];
-    };
-
-const isPagedTransactionData = (data: unknown): data is { content: Transaction[] } =>
-  !!data &&
-  typeof data === "object" &&
-  Object.prototype.hasOwnProperty.call(data, "content") &&
-  Array.isArray((data as { content: Transaction[] }).content);
 
 /**
  * Update an existing transaction via API
@@ -93,31 +82,17 @@ export const updateTransaction = async (
 export default function useTransactionUpdate() {
   const queryClient = useQueryClient();
 
-  const updateAccountCaches = (
-    accountNameOwner: string,
-    updater: (rows: Transaction[]) => Transaction[],
-  ): void => {
-    const baseKey = getAccountKey(accountNameOwner);
-    const queries = queryClient.getQueriesData<TransactionCache>({
-      queryKey: baseKey,
+  const invalidateTransactionCaches = (accountNameOwner: string): void => {
+    // Invalidate paginated transaction queries for this account
+    // This ensures all pages are refetched with the server's sort order and business logic
+    queryClient.invalidateQueries({
+      queryKey: ["transaction", accountNameOwner, "paged"],
     });
 
-    queries.forEach(([queryKey, data]) => {
-      if (!data) {
-        return;
-      }
-
-      if (Array.isArray(data)) {
-        queryClient.setQueryData(queryKey, updater(data));
-        return;
-      }
-
-      if (isPagedTransactionData(data)) {
-        queryClient.setQueryData(queryKey, {
-          ...data,
-          content: updater(data.content || []),
-        });
-      }
+    // Invalidate non-paginated transaction queries (used in BackupRestore)
+    queryClient.invalidateQueries({
+      queryKey: ["transaction", accountNameOwner],
+      exact: true,
     });
   };
 
@@ -136,11 +111,8 @@ export default function useTransactionUpdate() {
           transactionId: response.transactionId,
         });
 
-        const newAccountKey = getAccountKey(variables.newRow.accountNameOwner);
         const oldTotalsKey = getTotalsKey(variables.oldRow.accountNameOwner);
         const newTotalsKey = getTotalsKey(variables.newRow.accountNameOwner);
-
-        const updatedRow = variables.newRow;
 
         if (
           variables.oldRow.accountNameOwner ===
@@ -149,12 +121,8 @@ export default function useTransactionUpdate() {
           // ===== SAME ACCOUNT UPDATE =====
           log.debug("Handling same-account update");
 
-          // Update transaction in cache
-          updateAccountCaches(variables.oldRow.accountNameOwner, (rows) =>
-            rows.map((row: Transaction) =>
-              row.guid === updatedRow.guid ? updatedRow : row,
-            ),
-          );
+          // Invalidate transaction caches to refetch with server's sort order
+          invalidateTransactionCaches(variables.oldRow.accountNameOwner);
 
           // Clone existing totals or create defaults
           let totals: Totals = {
@@ -232,12 +200,8 @@ export default function useTransactionUpdate() {
             to: variables.newRow.accountNameOwner,
           });
 
-          // Remove from old account
-          updateAccountCaches(variables.oldRow.accountNameOwner, (rows) =>
-            rows.filter(
-              (row: Transaction) => row.guid !== variables.oldRow.guid,
-            ),
-          );
+          // Invalidate old account transaction caches
+          invalidateTransactionCaches(variables.oldRow.accountNameOwner);
 
           // Update old account totals
           let oldTotals: Totals = {
@@ -270,9 +234,11 @@ export default function useTransactionUpdate() {
             });
           }
 
-          // For destination account, invalidate to refetch
+          // For destination account, invalidate transaction caches to refetch
+          invalidateTransactionCaches(variables.newRow.accountNameOwner);
+
+          // Invalidate destination account totals to refetch
           // We don't have complete state to calculate accurately
-          queryClient.invalidateQueries({ queryKey: newAccountKey });
           queryClient.invalidateQueries({ queryKey: newTotalsKey });
 
           log.debug("Cross-account transfer complete", {

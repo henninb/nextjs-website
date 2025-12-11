@@ -255,11 +255,11 @@ export function createTimer(operation: string) {
  * );
  * ```
  */
-export function logFunction<T extends (...args: any[]) => Promise<any>>(
+export function logFunction<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   operationName: string,
 ): T {
-  return (async (...args: any[]) => {
+  return (async (...args: unknown[]) => {
     const timer = createTimer(operationName);
     logger.debug(`Starting ${operationName}`);
 

@@ -1,6 +1,6 @@
 export type GraphQLRequestOptions = {
   query: string;
-  variables?: Record<string, any>;
+  variables?: Record<string, unknown>;
   signal?: AbortSignal;
 };
 
@@ -100,7 +100,7 @@ export async function graphqlRequest<T>({
   });
 
   if (json.errors?.length) {
-    const msg = json.errors.map((e: any) => e.message).join("; ");
+    const msg = json.errors.map((e: { message: string }) => e.message).join("; ");
     console.error(`[GQL] GraphQL error for ${opName}:`, {
       errors: json.errors,
       message: msg,

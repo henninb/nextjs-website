@@ -34,7 +34,12 @@ export default function useAccountUsageTracking() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved).map((item: any) => ({
+        interface StoredVisit {
+          accountNameOwner: string;
+          timestamp: number;
+          lastVisited: string | number;
+        }
+        const parsed = JSON.parse(saved).map((item: StoredVisit) => ({
           ...item,
           lastVisited: new Date(item.lastVisited),
         }));

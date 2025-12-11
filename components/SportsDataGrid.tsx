@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography, Paper, Chip } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import SportsIcon from "@mui/icons-material/Sports";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -27,10 +27,10 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
 }));
 
 interface SportsDataGridProps {
-  data: any[] | null;
-  columns: any[];
+  data: unknown[] | null;
+  columns: GridColDef[];
   title: string;
-  getRowId: (row: any) => string;
+  getRowId: (row: Record<string, unknown>) => string;
   teamColor?: string;
   sport?: "basketball" | "football" | "hockey" | "baseball";
 }

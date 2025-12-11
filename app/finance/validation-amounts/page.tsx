@@ -224,7 +224,7 @@ export default function ValidationAmounts() {
     }
   };
 
-  const getRowId = (row: any) =>
+  const getRowId = (row: ValidationAmount) =>
     row.validationId ?? `${row.validationDate}-${row.amount}`;
 
   const transactionStateOptions: TransactionState[] = [
