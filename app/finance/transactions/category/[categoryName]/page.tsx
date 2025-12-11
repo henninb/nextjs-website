@@ -19,8 +19,11 @@ import DataGridBase from "../../../../../components/DataGridBase";
 export default function TransactionsByCategory({
   params,
 }: {
-  params: { categoryName: string };
+  params: Promise<{ categoryName: string }>;
 }) {
+  // Unwrap params Promise using React.use() for Next.js 15
+  const unwrappedParams = React.use(params);
+
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
@@ -36,7 +39,7 @@ export default function TransactionsByCategory({
   }>({ cleared: true, outstanding: true, future: true });
 
   const router = useRouter();
-  const categoryName = params.categoryName;
+  const categoryName = unwrappedParams.categoryName;
 
   const {
     data: fetchedTransactions,
