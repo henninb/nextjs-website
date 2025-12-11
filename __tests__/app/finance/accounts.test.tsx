@@ -6,11 +6,9 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Mock router
-jest.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
-}));
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
 }));
@@ -75,11 +73,29 @@ jest.mock("../../../hooks/useAccountDelete", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: deleteAccountMock }),
 }));
+const deactivateAccountMock = jest.fn().mockResolvedValue({});
+jest.mock("../../../hooks/useAccountDeactivate", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: deactivateAccountMock }),
+}));
 
 import AccountsPage from "../../../app/finance/page";
 import useAccountFetchMock from "../../../hooks/useAccountFetch";
 import useTotalsFetchMock from "../../../hooks/useTotalsFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";
+
+// Helper to create QueryClientProvider wrapper
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
 
 describe("pages/finance/index (Accounts)", () => {
   const mockUseAuth = useAuthMock as unknown as jest.Mock;
@@ -107,7 +123,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    const { container } = render(<AccountsPage />);
+    const { container } = render(<AccountsPage />, { wrapper: createWrapper() });
     // Check for MUI Skeleton components (should have multiple skeletons during loading)
     const skeletons = container.querySelectorAll(".MuiSkeleton-root");
     expect(skeletons.length).toBeGreaterThan(0);
@@ -136,7 +152,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
 
     // ErrorDisplay in card mode renders a Try Again button
     const tryAgain = screen.getByRole("button", { name: /try again/i });
@@ -179,7 +195,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
 
     // Totals row (values may also appear in grid cells); ensure present at least once
     expect(screen.getAllByText("$175.00").length).toBeGreaterThan(0);
@@ -225,7 +241,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
 
     // Check that modal opened and form fields are present
@@ -276,7 +292,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertAccountMock).not.toHaveBeenCalled();
@@ -320,7 +336,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
     // Without typing anything, clicking Add should not call insert and should show messages
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
@@ -362,7 +378,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
     fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
       target: { value: "X" },
@@ -410,7 +426,7 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
     fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
       target: { value: "New" },
@@ -462,13 +478,17 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    render(<AccountsPage />);
+    render(<AccountsPage />, { wrapper: createWrapper() });
     const actionsCell = screen.getByTestId("cell-0-actions");
-    const delBtn = actionsCell.querySelector("button");
+    const buttons = actionsCell.querySelectorAll("button");
+    // First button is Deactivate, second button is Delete
+    const delBtn = buttons[1];
     if (!delBtn) throw new Error("Delete button not found");
     fireEvent.click(delBtn);
 
-    expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    });
     const deleteButton = await screen.findByRole("button", {
       name: /^delete$/i,
       hidden: true,
@@ -514,7 +534,7 @@ describe("pages/finance/index (Accounts)", () => {
         refetch: jest.fn(),
       });
 
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
       const searchInput = screen.getByPlaceholderText(/search accounts/i);
       expect(searchInput).toBeInTheDocument();
     });
@@ -539,7 +559,7 @@ describe("pages/finance/index (Accounts)", () => {
         refetch: jest.fn(),
       });
 
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       expect(screen.getByText("Debit")).toBeInTheDocument();
       expect(screen.getByText("Credit")).toBeInTheDocument();
@@ -576,7 +596,7 @@ describe("pages/finance/index (Accounts)", () => {
         refetch: jest.fn(),
       });
 
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       const searchInput = screen.getByPlaceholderText(/search accounts/i);
 
@@ -628,14 +648,14 @@ describe("pages/finance/index (Accounts)", () => {
     });
 
     it("renders view toggle component", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       expect(screen.getByLabelText(/table view/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/grid view/i)).toBeInTheDocument();
     });
 
     it("toggles between table and grid view", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Should start in table view (default)
       const gridViewButton = screen.getByLabelText(/grid view/i);
@@ -646,7 +666,7 @@ describe("pages/finance/index (Accounts)", () => {
     });
 
     it("renders table view by default", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Table view should be selected by default
       // Just verify both buttons are present and toggle works
@@ -703,7 +723,7 @@ describe("pages/finance/index (Accounts)", () => {
     });
 
     it("renders account cards in grid view", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Switch to grid view
       const gridViewButton = screen.getByLabelText(/grid view/i);
@@ -715,7 +735,7 @@ describe("pages/finance/index (Accounts)", () => {
     });
 
     it("displays account details in cards", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Switch to grid view
       const gridViewButton = screen.getByLabelText(/grid view/i);
@@ -729,7 +749,7 @@ describe("pages/finance/index (Accounts)", () => {
     });
 
     it("shows account type badges", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Switch to grid view
       const gridViewButton = screen.getByLabelText(/grid view/i);
@@ -777,7 +797,7 @@ describe("pages/finance/index (Accounts)", () => {
     });
 
     it("renders stat cards with totals", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Stat card labels might appear in multiple places (cards, filters, etc)
       // Just verify they are present
@@ -788,7 +808,7 @@ describe("pages/finance/index (Accounts)", () => {
     });
 
     it("displays correct total values in stat cards", () => {
-      render(<AccountsPage />);
+      render(<AccountsPage />, { wrapper: createWrapper() });
 
       // Values should appear multiple times (in stat cards and possibly in table/grid)
       expect(screen.getAllByText("$175.00").length).toBeGreaterThan(0);

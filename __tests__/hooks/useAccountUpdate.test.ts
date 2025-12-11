@@ -97,7 +97,7 @@ describe("updateAccount", () => {
       );
     });
 
-    it("should construct correct endpoint URL with account name", async () => {
+    it("should construct correct endpoint URL with account name (rename)", async () => {
       const accountWithDifferentName = createTestAccount({
         ...mockOldAccount,
         accountNameOwner: "savings_account",
@@ -106,9 +106,12 @@ describe("updateAccount", () => {
 
       await updateAccount(accountWithDifferentName, mockNewAccount);
 
+      // This is a rename from "savings_account" to "test_account"
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/savings_account",
-        expect.any(Object),
+        "/api/account/rename?old=savings_account&new=test_account",
+        expect.objectContaining({
+          method: "PUT",
+        }),
       );
     });
 
@@ -130,7 +133,7 @@ describe("updateAccount", () => {
       );
     });
 
-    it("should handle account name with special characters", async () => {
+    it("should handle account name with special characters (rename)", async () => {
       const specialAccount = createTestAccount({
         ...mockOldAccount,
         accountNameOwner: "test & account",
@@ -139,10 +142,12 @@ describe("updateAccount", () => {
 
       await updateAccount(specialAccount, mockNewAccount);
 
-      // Account name is sanitized, removing special characters
+      // This is a rename from "test & account" (sanitized to "testaccount") to "test_account"
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/testaccount",
-        expect.any(Object),
+        "/api/account/rename?old=testaccount&new=test_account",
+        expect.objectContaining({
+          method: "PUT",
+        }),
       );
     });
   });
@@ -310,7 +315,7 @@ describe("updateAccount", () => {
   });
 
   describe("Edge cases", () => {
-    it("should handle account with empty account name", async () => {
+    it("should handle account with empty account name (rename)", async () => {
       const accountWithEmptyName = createTestAccount({
         ...mockOldAccount,
         accountNameOwner: "",
@@ -319,9 +324,12 @@ describe("updateAccount", () => {
 
       await updateAccount(accountWithEmptyName, mockNewAccount);
 
+      // This is a rename operation (from "" to "test_account")
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/",
-        expect.any(Object),
+        "/api/account/rename?old=&new=test_account",
+        expect.objectContaining({
+          method: "PUT",
+        }),
       );
     });
 
@@ -386,8 +394,55 @@ describe("updateAccount", () => {
     });
   });
 
-  describe("Business logic validation", () => {
-    it("should allow updating all account fields", async () => {
+  describe("Rename vs Standard Update", () => {
+    it("should use rename endpoint when accountNameOwner changes", async () => {
+      const renamedAccount = createTestAccount({
+        ...mockOldAccount,
+        accountNameOwner: "renamed_account",
+      });
+      global.fetch = createFetchMock(renamedAccount);
+
+      const result = await updateAccount(mockOldAccount, renamedAccount);
+
+      expect(result).toStrictEqual(renamedAccount);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/account/rename?old=test_account&new=renamed_account",
+        expect.objectContaining({
+          method: "PUT",
+          credentials: "include",
+        }),
+      );
+      // Rename endpoint doesn't send a body
+      expect(global.fetch).not.toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: expect.any(String),
+        }),
+      );
+    });
+
+    it("should use standard update endpoint when accountNameOwner stays the same", async () => {
+      const updatedAccount = createTestAccount({
+        ...mockOldAccount,
+        accountNameOwner: "test_account", // Same name
+        moniker: "9999",
+        outstanding: 500,
+      });
+      global.fetch = createFetchMock(updatedAccount);
+
+      const result = await updateAccount(mockOldAccount, updatedAccount);
+
+      expect(result).toStrictEqual(updatedAccount);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/account/test_account",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify(updatedAccount),
+        }),
+      );
+    });
+
+    it("should use rename endpoint even when other fields also change", async () => {
       const fullyUpdatedAccount = createTestAccount({
         accountId: mockOldAccount.accountId,
         accountNameOwner: "new_account_name",
@@ -403,14 +458,17 @@ describe("updateAccount", () => {
       const result = await updateAccount(mockOldAccount, fullyUpdatedAccount);
 
       expect(result).toStrictEqual(fullyUpdatedAccount);
+      // Since accountNameOwner changed, should use rename endpoint
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/account/test_account", // Uses old account name in endpoint
+        "/api/account/rename?old=test_account&new=new_account_name",
         expect.objectContaining({
-          body: JSON.stringify(fullyUpdatedAccount), // Sends new data
+          method: "PUT",
         }),
       );
     });
+  });
 
+  describe("Business logic validation", () => {
     it("should preserve account ID in update operations", async () => {
       const updatedAccount = createTestAccount({
         ...mockNewAccount,
