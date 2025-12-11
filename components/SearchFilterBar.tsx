@@ -72,6 +72,7 @@ export default function SearchFilterBar({
         accountType: "credit" as const,
         activeStatus: "active" as const,
         balanceStatus: "hasActivity" as const,
+        accountNamePattern: "all" as const,
       },
       color: theme.palette.error.main,
     },
@@ -82,6 +83,7 @@ export default function SearchFilterBar({
         accountType: "all" as const,
         activeStatus: "active" as const,
         balanceStatus: "hasOutstanding" as const,
+        accountNamePattern: "all" as const,
       },
       color: theme.palette.warning.main,
     },
@@ -92,6 +94,7 @@ export default function SearchFilterBar({
         accountType: "all" as const,
         activeStatus: "active" as const,
         balanceStatus: "hasFuture" as const,
+        accountNamePattern: "all" as const,
       },
       color: theme.palette.info.main,
     },
@@ -101,7 +104,8 @@ export default function SearchFilterBar({
     return (
       activeFilters.accountType === preset.filters.accountType &&
       activeFilters.activeStatus === preset.filters.activeStatus &&
-      activeFilters.balanceStatus === preset.filters.balanceStatus
+      activeFilters.balanceStatus === preset.filters.balanceStatus &&
+      activeFilters.accountNamePattern === preset.filters.accountNamePattern
     );
   };
 

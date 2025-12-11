@@ -159,6 +159,7 @@ describe("SearchFilterBar", () => {
       accountType: "all",
       activeStatus: "active",
       balanceStatus: "hasOutstanding",
+      accountNamePattern: "all",
     });
   });
 
