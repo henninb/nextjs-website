@@ -1,3 +1,6 @@
+import React from "react";
+import { FinanceThemeProvider } from "../../components/FinanceThemeProvider";
+import { UIProvider } from "../../contexts/UIContext";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,5 +13,9 @@ export default function LoginLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <UIProvider>
+      <FinanceThemeProvider>{children}</FinanceThemeProvider>
+    </UIProvider>
+  );
 }

@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import BlockIcon from "@mui/icons-material/Block";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -30,6 +31,7 @@ import LoadingState from "../../components/LoadingState";
 import useAccountFetch from "../../hooks/useAccountFetch";
 import useAccountInsert from "../../hooks/useAccountInsert";
 import useAccountDelete from "../../hooks/useAccountDelete";
+import useAccountDeactivate from "../../hooks/useAccountDeactivate";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import { AccountType } from "../../model/AccountType";
@@ -57,6 +59,7 @@ export default function Accounts() {
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModelAdd, setShowModelAdd] = useState(false);
   const [showModelDelete, setShowModelDelete] = useState(false);
+  const [showModelDeactivate, setShowModelDeactivate] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [formErrors, setFormErrors] = useState<{
@@ -108,6 +111,7 @@ export default function Accounts() {
   const { mutateAsync: insertAccount } = useAccountInsert();
   const { mutateAsync: updateAccount } = useAccountUpdate();
   const { mutateAsync: deleteAccount } = useAccountDelete();
+  const { mutateAsync: deactivateAccount } = useAccountDeactivate();
 
   const accountTypeOptions = ["debit", "credit"];
   const { isAuthenticated, loading } = useAuth();
@@ -241,6 +245,21 @@ export default function Accounts() {
         handleError(error, `Delete Account error: ${getErrorMessage(error)}`, false);
       } finally {
         setShowModelDelete(false);
+        setSelectedAccount(null);
+      }
+    }
+  };
+
+  const handleDeactivateRow = async () => {
+    if (selectedAccount) {
+      try {
+        await deactivateAccount({ oldRow: selectedAccount });
+        setMessage("Account and all associated transactions deactivated successfully.");
+        setShowSnackbar(true);
+      } catch (error) {
+        handleError(error, `Deactivate Account error: ${getErrorMessage(error)}`, false);
+      } finally {
+        setShowModelDeactivate(false);
         setSelectedAccount(null);
       }
     }
@@ -384,9 +403,23 @@ export default function Accounts() {
     {
       field: "",
       headerName: "Actions",
-      width: 100,
+      width: 150,
       renderCell: (params) => (
         <Box>
+          <Tooltip title={params.row.activeStatus ? "Deactivate this account" : "Account is already inactive"}>
+            <span>
+              <IconButton
+                aria-label="Deactivate this account"
+                onClick={() => {
+                  setSelectedAccount(params.row);
+                  setShowModelDeactivate(true);
+                }}
+                disabled={!params.row.activeStatus}
+              >
+                <BlockIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip title="Delete this row">
             <IconButton
               aria-label="Delete this row"
@@ -394,6 +427,7 @@ export default function Accounts() {
                 setSelectedAccount(params.row);
                 setShowModelDelete(true);
               }}
+              sx={{ ml: 0.5 }}
             >
               <DeleteIcon />
             </IconButton>
@@ -755,6 +789,16 @@ export default function Accounts() {
             selectedAccount?.accountNameOwner ?? "",
           )}
           confirmText="Delete"
+          cancelText="Cancel"
+        />
+
+        <ConfirmDialog
+          open={showModelDeactivate}
+          onClose={() => setShowModelDeactivate(false)}
+          onConfirm={handleDeactivateRow}
+          title="Confirm Deactivation"
+          message={`Are you sure you want to deactivate "${selectedAccount?.accountNameOwner ?? ""}"? This will mark it as inactive.`}
+          confirmText="Deactivate"
           cancelText="Cancel"
         />
 
