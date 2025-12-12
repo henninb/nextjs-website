@@ -92,36 +92,32 @@ class SecureUUIDGenerator {
   }
 
   /**
-   * Fallback UUID generation (still more secure than client-side)
-   * Uses timestamp + random components for better entropy
+   * Fallback UUID generation using cryptographically secure random numbers
+   * Uses crypto.getRandomValues() instead of Math.random()
    */
   private static generateFallbackUUID(): string {
-    // Generate proper UUID v4 format
-    const hex = "0123456789abcdef";
-    let uuid = "";
+    // Use crypto.getRandomValues for cryptographically secure randomness
+    const array = new Uint8Array(16);
 
-    for (let i = 0; i < 36; i++) {
-      if (i === 8 || i === 13 || i === 18 || i === 23) {
-        uuid += "-";
-      } else if (i === 14) {
-        uuid += "4"; // Version 4
-      } else if (i === 19) {
-        uuid += hex[Math.floor(Math.random() * 4) + 8]; // 8, 9, a, or b
-      } else {
-        uuid += hex[Math.floor(Math.random() * 16)];
+    // Try to use crypto API if available
+    if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+      crypto.getRandomValues(array);
+    } else if (typeof globalThis !== "undefined" && (globalThis as any).crypto?.getRandomValues) {
+      (globalThis as any).crypto.getRandomValues(array);
+    } else {
+      // Last resort fallback - should rarely happen in modern environments
+      for (let i = 0; i < 16; i++) {
+        array[i] = Math.floor(Math.random() * 256);
       }
     }
 
-    return uuid;
-  }
+    // Set version (4) and variant bits according to RFC 4122
+    array[6] = (array[6] & 0x0f) | 0x40; // Version 4
+    array[8] = (array[8] & 0x3f) | 0x80; // Variant 10
 
-  /**
-   * Get random hex digit for UUID v4 format
-   */
-  private static getRandomHex(): string {
-    const hex = Math.floor(Math.random() * 16).toString(16);
-    // Ensure proper UUID v4 variant bits
-    return ["8", "9", "a", "b"][Math.floor(Math.random() * 4)];
+    // Convert to UUID string format
+    const hex = Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
   }
 
   /**

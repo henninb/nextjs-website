@@ -101,8 +101,9 @@ export function createCORSMiddleware(
         res.setHeader("Access-Control-Allow-Origin", origin);
         res.setHeader("Vary", "Origin");
       } else if (process.env.NODE_ENV === "development") {
-        // Allow localhost in development using secure validation
-        if (origin && isLocalhostOrigin(origin)) {
+        // Allow localhost in development ONLY when credentials are not required
+        // This prevents CORS misconfiguration for credentials transfer (CodeQL alert)
+        if (origin && isLocalhostOrigin(origin) && !config.credentials) {
           res.setHeader("Access-Control-Allow-Origin", origin);
         }
       }

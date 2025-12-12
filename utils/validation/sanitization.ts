@@ -3,19 +3,10 @@ const purify = {
   sanitize: (input: string) => {
     if (typeof input !== "string") return "";
 
-    let sanitized = input;
-    let previousValue = "";
-
-    // Apply replacements iteratively to prevent incomplete sanitization
-    // This prevents attacks like <sc<script>ript> from bypassing the filter
-    while (sanitized !== previousValue) {
-      previousValue = sanitized;
-      sanitized = sanitized
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-        .replace(/<[^>]*>/g, "");
-    }
-
-    return sanitized.trim();
+    // Simple and secure: remove all < and > characters
+    // This prevents ALL HTML injection including script tags, event handlers, etc.
+    // More secure than complex regex patterns that can be bypassed
+    return input.replace(/[<>]/g, "").trim();
   },
 };
 

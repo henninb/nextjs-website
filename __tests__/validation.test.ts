@@ -199,21 +199,28 @@ describe("Input Validation and Sanitization", () => {
     });
 
     it("should prevent nested script tag attacks (incomplete multi-character sanitization)", () => {
-      // This test verifies the fix for CodeQL alert #37
-      // Attackers can bypass single-pass sanitization with nested tags
+      // This test verifies the fix for CodeQL alerts #37, #60, #61
+      // New approach: simply remove all < and > characters
       const nestedScriptAttack = '<sc<script>ript>alert("xss")</sc</script>ript>';
       const sanitized = InputSanitizer.sanitizeHtml(nestedScriptAttack);
-      expect(sanitized).not.toContain("<script>");
-      expect(sanitized).not.toContain("script>");
-      expect(sanitized).not.toContain("alert");
-      expect(sanitized).toBe(""); // Should be completely stripped
+      expect(sanitized).not.toContain("<");
+      expect(sanitized).not.toContain(">");
+      // All < and > removed, leaving the text content
+      expect(sanitized).toBe('scscriptriptalert("xss")/sc/scriptript');
 
       // Test another variant
       const doubleNested = '<<script>script>alert("xss")<</script>/script>';
       const sanitized2 = InputSanitizer.sanitizeHtml(doubleNested);
-      expect(sanitized2).not.toContain("<script>");
-      expect(sanitized2).not.toContain("script");
-      expect(sanitized2).toBe("");
+      expect(sanitized2).not.toContain("<");
+      expect(sanitized2).not.toContain(">");
+      expect(sanitized2).toBe('scriptscriptalert("xss")/script/script');
+
+      // Test with space in closing tag (CodeQL alert #60)
+      const spaceInTag = '<script>alert(1)</script >';
+      const sanitized3 = InputSanitizer.sanitizeHtml(spaceInTag);
+      expect(sanitized3).not.toContain("<");
+      expect(sanitized3).not.toContain(">");
+      expect(sanitized3).toBe('scriptalert(1)/script');
     });
 
     it("should sanitize account names", () => {
