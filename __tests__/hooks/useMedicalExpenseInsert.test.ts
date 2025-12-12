@@ -114,14 +114,23 @@ describe("useMedicalExpenseInsert", () => {
     expect(result.current.isError).toBe(false);
     expect(result.current.isPending).toBe(false);
 
+    // Hook formats dates to YYYY-MM-DD and adds paidDate: null
+    const expectedBody = {
+      ...mockCreateRequest,
+      serviceDate: "2024-01-15", // Formatted to YYYY-MM-DD
+      paidDate: null, // Added by the hook
+    };
+
     expect(mockFetch).toHaveBeenCalledWith(
       "/api/medical-expenses",
       expect.objectContaining({
         method: "POST",
+        credentials: "include",
         headers: expect.objectContaining({
           "Content-Type": "application/json",
+          Accept: "application/json",
         }),
-        body: JSON.stringify(mockCreateRequest),
+        body: JSON.stringify(expectedBody),
       }),
     );
   });
@@ -163,14 +172,24 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(createdExpense).toStrictEqual(minimalExpense);
+
+    // Hook formats dates to YYYY-MM-DD and adds paidDate: null
+    const expectedBody = {
+      ...minimalRequest,
+      serviceDate: "2024-02-01", // Formatted to YYYY-MM-DD
+      paidDate: null, // Added by the hook
+    };
+
     expect(mockFetch).toHaveBeenCalledWith(
       "/api/medical-expenses",
       expect.objectContaining({
         method: "POST",
+        credentials: "include",
         headers: expect.objectContaining({
           "Content-Type": "application/json",
+          Accept: "application/json",
         }),
-        body: JSON.stringify(minimalRequest),
+        body: JSON.stringify(expectedBody),
       }),
     );
   });
