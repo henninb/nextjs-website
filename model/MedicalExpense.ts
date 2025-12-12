@@ -16,6 +16,7 @@ export interface MedicalExpense {
   claimNumber?: string;
   claimStatus: ClaimStatus;
   activeStatus: boolean;
+  paidAmount: number; // Tracks actual payments made against patient responsibility
   dateAdded?: Date;
   dateUpdated?: Date;
 }
@@ -38,6 +39,26 @@ export interface MedicalExpenseCreateRequest {
   procedureCode?: string;
   diagnosisCode?: string;
   billedAmount: number;
+  insuranceDiscount: number; // Required by backend
+  insurancePaid: number; // Required by backend
+  patientResponsibility: number; // Required by backend
+  paidDate?: Date;
+  isOutOfNetwork: boolean; // Required by backend
+  claimNumber: string; // Required by backend
+  claimStatus: ClaimStatus; // Required by backend
+  paidAmount: number; // Required by backend, tracks actual payments made
+}
+
+export interface MedicalExpenseUpdateRequest {
+  medicalExpenseId: number;
+  transactionId?: number;
+  providerId?: number;
+  familyMemberId?: number;
+  serviceDate?: Date;
+  serviceDescription?: string;
+  procedureCode?: string;
+  diagnosisCode?: string;
+  billedAmount?: number;
   insuranceDiscount?: number;
   insurancePaid?: number;
   patientResponsibility?: number;
@@ -45,10 +66,7 @@ export interface MedicalExpenseCreateRequest {
   isOutOfNetwork?: boolean;
   claimNumber?: string;
   claimStatus?: ClaimStatus;
-}
-
-export interface MedicalExpenseUpdateRequest extends Partial<MedicalExpenseCreateRequest> {
-  medicalExpenseId: number;
+  paidAmount?: number;
 }
 
 export interface MedicalExpenseTotals {

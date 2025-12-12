@@ -45,7 +45,9 @@ export default function MedicalExpenseForm({
     insuranceDiscount: initialData?.insuranceDiscount || 0,
     insurancePaid: initialData?.insurancePaid || 0,
     patientResponsibility: initialData?.patientResponsibility || 0,
+    paidAmount: initialData?.paidAmount || 0, // Required by backend
     isOutOfNetwork: initialData?.isOutOfNetwork || false,
+    claimNumber: initialData?.claimNumber || "", // Required by backend
     claimStatus: initialData?.claimStatus || ClaimStatus.Submitted,
     activeStatus:
       initialData?.activeStatus !== undefined ? initialData.activeStatus : true,

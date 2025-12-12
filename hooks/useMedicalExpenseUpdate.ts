@@ -13,6 +13,15 @@ import { createHookLogger } from "../utils/logger";
 const log = createHookLogger("useMedicalExpenseUpdate");
 
 /**
+ * Format Date to YYYY-MM-DD string for backend
+ */
+const formatDateForBackend = (date: Date | undefined | null): string | null => {
+  if (!date) return null;
+  const d = new Date(date);
+  return d.toISOString().split("T")[0];
+};
+
+/**
  * Update an existing medical expense via API
  * Validates financial consistency and sanitizes ID before sending
  *
@@ -54,7 +63,7 @@ export const updateMedicalExpense = async (
     transactionId: newRow.transactionId,
     providerId: newRow.providerId,
     familyMemberId: newRow.familyMemberId,
-    serviceDate: newRow.serviceDate,
+    serviceDate: formatDateForBackend(newRow.serviceDate) as any,
     serviceDescription: newRow.serviceDescription,
     procedureCode: newRow.procedureCode,
     diagnosisCode: newRow.diagnosisCode,
@@ -62,10 +71,11 @@ export const updateMedicalExpense = async (
     insuranceDiscount: newRow.insuranceDiscount,
     insurancePaid: newRow.insurancePaid,
     patientResponsibility: newRow.patientResponsibility,
-    paidDate: newRow.paidDate,
+    paidDate: formatDateForBackend(newRow.paidDate) as any,
     isOutOfNetwork: newRow.isOutOfNetwork,
     claimNumber: newRow.claimNumber,
     claimStatus: newRow.claimStatus,
+    paidAmount: newRow.paidAmount,
   };
 
   const endpoint = `/api/medical-expenses/${sanitizedId}`;

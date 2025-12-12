@@ -12,6 +12,15 @@ import { createHookLogger } from "../utils/logger";
 const log = createHookLogger("useMedicalExpenseInsert");
 
 /**
+ * Format Date to YYYY-MM-DD string for backend
+ */
+const formatDateForBackend = (date: Date | undefined | null): string | null => {
+  if (!date) return null;
+  const d = new Date(date);
+  return d.toISOString().split("T")[0];
+};
+
+/**
  * Insert a new medical expense via API
  * Validates financial consistency before sending
  *
@@ -39,10 +48,17 @@ export const insertMedicalExpense = async (
     serviceDate: payload.serviceDate,
   });
 
+  // Format dates for backend (YYYY-MM-DD format)
+  const formattedPayload = {
+    ...payload,
+    serviceDate: formatDateForBackend(payload.serviceDate),
+    paidDate: formatDateForBackend(payload.paidDate),
+  };
+
   const endpoint = "/api/medical-expenses";
   const response = await fetchWithErrorHandling(endpoint, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(formattedPayload),
   });
 
   return parseResponse<MedicalExpense>(response) as Promise<MedicalExpense>;
