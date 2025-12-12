@@ -198,6 +198,24 @@ describe("Input Validation and Sanitization", () => {
       expect(sanitized).toContain("Hello World");
     });
 
+    it("should prevent nested script tag attacks (incomplete multi-character sanitization)", () => {
+      // This test verifies the fix for CodeQL alert #37
+      // Attackers can bypass single-pass sanitization with nested tags
+      const nestedScriptAttack = '<sc<script>ript>alert("xss")</sc</script>ript>';
+      const sanitized = InputSanitizer.sanitizeHtml(nestedScriptAttack);
+      expect(sanitized).not.toContain("<script>");
+      expect(sanitized).not.toContain("script>");
+      expect(sanitized).not.toContain("alert");
+      expect(sanitized).toBe(""); // Should be completely stripped
+
+      // Test another variant
+      const doubleNested = '<<script>script>alert("xss")<</script>/script>';
+      const sanitized2 = InputSanitizer.sanitizeHtml(doubleNested);
+      expect(sanitized2).not.toContain("<script>");
+      expect(sanitized2).not.toContain("script");
+      expect(sanitized2).toBe("");
+    });
+
     it("should sanitize account names", () => {
       const dirtyAccountName = "test@account#name!";
       const sanitized = InputSanitizer.sanitizeAccountName(dirtyAccountName);

@@ -1,12 +1,22 @@
 // Lightweight sanitizer used both server- and client-side, no external deps
 const purify = {
-  sanitize: (input: string) =>
-    typeof input === "string"
-      ? input
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-          .replace(/<[^>]*>/g, "")
-          .trim()
-      : "",
+  sanitize: (input: string) => {
+    if (typeof input !== "string") return "";
+
+    let sanitized = input;
+    let previousValue = "";
+
+    // Apply replacements iteratively to prevent incomplete sanitization
+    // This prevents attacks like <sc<script>ript> from bypassing the filter
+    while (sanitized !== previousValue) {
+      previousValue = sanitized;
+      sanitized = sanitized
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/<[^>]*>/g, "");
+    }
+
+    return sanitized.trim();
+  },
 };
 
 /**
