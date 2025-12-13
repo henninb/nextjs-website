@@ -1,4 +1,14 @@
 // Mock HookValidator
+
+// Mock CSRF utilities
+jest.mock("../../utils/csrf", () => ({
+  getCsrfHeaders: jest.fn().mockResolvedValue({}),
+  getCsrfToken: jest.fn().mockResolvedValue(null),
+  fetchCsrfToken: jest.fn().mockResolvedValue(undefined),
+  clearCsrfToken: jest.fn(),
+  initCsrfToken: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {
     validateInsert: jest.fn((data) => data),

@@ -1,3 +1,5 @@
+import { getCsrfHeaders, clearCsrfToken } from "./csrf";
+
 export type GraphQLRequestOptions = {
   query: string;
   variables?: Record<string, unknown>;
@@ -22,6 +24,11 @@ export async function graphqlRequest<T>({
   const opName = opMatch?.[2] || "anonymous";
   const started = Date.now();
 
+  // Note: GraphQL endpoint is currently exempt from CSRF protection
+  // but we include headers for consistency and future-proofing
+  const isMutation = opType === "mutation";
+  const csrfHeaders = isMutation ? await getCsrfHeaders() : {};
+
   // Enhanced logging for debugging
   console.log(`[GQL] Starting ${opType} ${opName}`, {
     endpoint,
@@ -29,9 +36,11 @@ export async function graphqlRequest<T>({
     base,
     query: query.substring(0, 200) + (query.length > 200 ? "..." : ""),
     variables,
+    hasCsrfToken: isMutation && Object.keys(csrfHeaders).length > 0,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...csrfHeaders,
     },
   });
 
@@ -43,6 +52,7 @@ export async function graphqlRequest<T>({
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        ...csrfHeaders,
       },
       body: JSON.stringify({ query, variables }),
       signal,
@@ -68,7 +78,22 @@ export async function graphqlRequest<T>({
   );
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
+    let text = "";
+    try {
+      text =
+        typeof res.text === "function" ? await res.text() : "";
+    } catch {
+      // Ignore errors reading response text
+    }
+
+    // Handle CSRF errors for mutations (in case CSRF is enabled for GraphQL in future)
+    if (res.status === 403 && isMutation) {
+      if (text.includes("CSRF") || text.includes("Invalid CSRF token")) {
+        console.warn("[CSRF] Token invalid, clearing cache");
+        clearCsrfToken();
+      }
+    }
+
     console.error(`[GQL] HTTP error ${res.status} for ${opName}`, {
       status: res.status,
       statusText: res.statusText,

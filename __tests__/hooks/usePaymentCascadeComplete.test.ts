@@ -17,6 +17,15 @@ jest.mock("../../components/AuthProvider", () => ({
   }),
 }));
 
+// Mock CSRF utilities to return empty headers in tests
+jest.mock("../../utils/csrf", () => ({
+  getCsrfHeaders: jest.fn().mockResolvedValue({}),
+  getCsrfToken: jest.fn().mockResolvedValue(null),
+  fetchCsrfToken: jest.fn().mockResolvedValue(undefined),
+  clearCsrfToken: jest.fn(),
+  initCsrfToken: jest.fn().mockResolvedValue(undefined),
+}));
+
 function createMockLogger() {
   return {
     debug: jest.fn(),

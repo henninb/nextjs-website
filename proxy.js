@@ -148,6 +148,8 @@ export default async function proxy(request) {
       }
 
       const targetUrl = new URL(upstreamPath, upstreamOrigin).toString();
+      const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(request.method);
+
       if (isDev) {
         const hasToken = (request.headers.get("cookie") || "").includes(
           "token=",
@@ -158,22 +160,42 @@ export default async function proxy(request) {
         console.log(`[MW PROD] target URL: ${targetUrl}`);
       }
 
-      // Do not log cookies or headers
+      // Log CSRF header and cookie in development for debugging
+      const csrfToken = request.headers.get("x-csrf-token");
+      const cookieHeader = request.headers.get("cookie") || "";
+      const hasXsrfCookie = cookieHeader.includes("XSRF-TOKEN=");
+      if (isDev && isMutation) {
+        console.log(`[MW] CSRF token header: ${csrfToken ? "present" : "missing"}`);
+        console.log(`[MW] XSRF-TOKEN cookie: ${hasXsrfCookie ? "present" : "MISSING"}`);
+        if (csrfToken && hasXsrfCookie) {
+          // Extract just the cookie value to compare
+          const cookieMatch = cookieHeader.match(/XSRF-TOKEN=([^;]+)/);
+          if (cookieMatch) {
+            console.log(`[MW] Token matches cookie: ${csrfToken === cookieMatch[1]}`);
+          }
+        }
+      }
 
       // Forward the request with timeout for production reliability
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
+      const headersToForward = {
+        ...Object.fromEntries(request.headers.entries()),
+        // Ensure proper host header based on upstream target
+        host: new URL(upstreamOrigin).host,
+        // Forward the original host for CORS if needed
+        "x-forwarded-host": request.headers.get("host"),
+        "x-forwarded-proto": "https",
+      };
+
+      if (isDev) {
+        console.log("[MW] Headers being forwarded:", Object.keys(headersToForward).join(", "));
+      }
+
       const response = await fetch(targetUrl, {
         method: request.method,
-        headers: {
-          ...Object.fromEntries(request.headers.entries()),
-          // Ensure proper host header based on upstream target
-          host: new URL(upstreamOrigin).host,
-          // Forward the original host for CORS if needed
-          "x-forwarded-host": request.headers.get("host"),
-          "x-forwarded-proto": "https",
-        },
+        headers: headersToForward,
         body:
           request.method !== "GET" && request.method !== "HEAD"
             ? await request.blob()
@@ -199,31 +221,38 @@ export default async function proxy(request) {
         ) {
           // Secure Set-Cookie header rewriting for development only
           if (key.toLowerCase() === "set-cookie") {
-            // SECURITY: Only rewrite specific authentication cookies in development
+            // SECURITY: Only rewrite specific authentication and CSRF cookies in development
             const isAuthCookie = /^(token|session|auth)=/i.test(value);
+            const isCsrfCookie = /^XSRF-TOKEN=/i.test(value);
             const isDevelopment = process.env.NODE_ENV === "development";
             const cookieHost = request.headers.get("host");
             const isLocalhostCookie = isLocalhost(cookieHost);
             const isVercelCookie = isVercelHost(cookieHost);
 
             if (
-              isAuthCookie &&
+              (isAuthCookie || isCsrfCookie) &&
               isDevelopment &&
               isLocalhostCookie &&
               !isVercelCookie
             ) {
-              // Secure rewriting: only remove problematic attributes for auth cookies
+              // Secure rewriting: only remove problematic attributes for auth/CSRF cookies
               const modifiedCookie = value
                 // Remove domain for any bhenning.com domain
                 .replace(/;\s*Domain=\.?[^;]*bhenning\.com[^;]*/gi, "")
                 // Remove Secure flag only for localhost HTTP
                 .replace(/;\s*Secure(?=;|$)/gi, "")
                 // Adjust SameSite for localhost compatibility
-                .replace(/;\s*SameSite=None/gi, "; SameSite=Lax");
+                .replace(/;\s*SameSite=None/gi, "; SameSite=Lax")
+                .replace(/;\s*SameSite=Strict/gi, "; SameSite=Lax");
+
+              if (isDev && isCsrfCookie) {
+                console.log(`[MW] CSRF cookie rewrite: ${value.substring(0, 80)}...`);
+                console.log(`[MW] CSRF cookie modified: ${modifiedCookie.substring(0, 80)}...`);
+              }
 
               responseHeaders.set(key, modifiedCookie);
             } else {
-              // Non-auth cookies or production: pass through unchanged
+              // Non-auth/CSRF cookies or production: pass through unchanged
               responseHeaders.set(key, value);
             }
           } else {
@@ -245,7 +274,7 @@ export default async function proxy(request) {
         );
         responseHeaders.set(
           "Access-Control-Allow-Headers",
-          "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+          "Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN",
         );
       }
       const finalResponse = new NextResponse(response.body, {

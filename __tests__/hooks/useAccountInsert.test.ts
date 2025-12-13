@@ -7,6 +7,15 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
+// Mock CSRF utilities
+jest.mock("../../utils/csrf", () => ({
+  getCsrfHeaders: jest.fn().mockResolvedValue({}),
+  getCsrfToken: jest.fn().mockResolvedValue(null),
+  fetchCsrfToken: jest.fn().mockResolvedValue(undefined),
+  clearCsrfToken: jest.fn(),
+  initCsrfToken: jest.fn().mockResolvedValue(undefined),
+}));
+
 // Mock HookValidator
 jest.mock("../../utils/hookValidation", () => ({
   HookValidator: {

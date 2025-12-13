@@ -10,12 +10,13 @@ import {
 import { useRouter } from "next/navigation";
 import User from "../model/User";
 import useLogout from "../hooks/useLogoutProcess";
+import { initCsrfToken } from "../utils/csrf";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean; // New loading flag
-  login: (user: User) => void;
+  login: (user: User) => Promise<void>;
   logout: () => void;
 }
 
@@ -38,6 +39,8 @@ const useProvideAuth = () => {
           const data = await res.json();
           setUser(data);
           setIsAuthenticated(true);
+          // Initialize CSRF token for authenticated user
+          await initCsrfToken();
         } else {
           setIsAuthenticated(false);
           setUser(null);
@@ -52,9 +55,11 @@ const useProvideAuth = () => {
     fetchUser();
   }, []); // Empty dependency array is correct
 
-  const login = (user: User) => {
+  const login = async (user: User) => {
     setUser(user);
     setIsAuthenticated(true);
+    // Initialize CSRF token for newly logged in user
+    await initCsrfToken();
   };
 
   const logout = async () => {

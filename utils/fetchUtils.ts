@@ -1,3 +1,5 @@
+import { getCsrfHeaders, clearCsrfToken } from "./csrf";
+
 /**
  * Custom error class for fetch operations with enhanced error information
  * Provides structured error data including HTTP status codes and response body
@@ -120,6 +122,7 @@ export const DEFAULT_FETCH_OPTIONS: RequestInit = {
 /**
  * Wrapper for fetch with standardized error handling
  * Automatically includes default options and handles errors consistently
+ * Includes CSRF token protection for mutation requests (POST, PUT, DELETE, PATCH)
  *
  * @param url - URL to fetch
  * @param options - Additional fetch options (merged with defaults)
@@ -138,17 +141,46 @@ export async function fetchWithErrorHandling(
   url: string,
   options?: RequestInit,
 ): Promise<Response> {
+  // Add CSRF headers for mutation requests
+  const isMutation =
+    options?.method &&
+    ["POST", "PUT", "DELETE", "PATCH"].includes(options.method);
+  console.log(`[fetchUtils] ${options?.method || "GET"} ${url}, isMutation:${isMutation}`);
+  const csrfHeaders = isMutation ? await getCsrfHeaders() : {};
+  console.log("[fetchUtils] CSRF headers:", csrfHeaders);
+
   try {
+    const finalHeaders = {
+      ...DEFAULT_FETCH_OPTIONS.headers,
+      ...csrfHeaders,
+      ...options?.headers,
+    };
+    console.log("[fetchUtils] Final headers:", Object.keys(finalHeaders).join(", "));
     const response = await fetch(url, {
       ...DEFAULT_FETCH_OPTIONS,
       ...options,
-      headers: {
-        ...DEFAULT_FETCH_OPTIONS.headers,
-        ...options?.headers,
-      },
+      headers: finalHeaders,
     });
 
     if (!response.ok) {
+      // Handle CSRF token expiration
+      if (response.status === 403 && isMutation) {
+        try {
+          const errorText =
+            typeof response.text === "function"
+              ? await response.text()
+              : "";
+          if (
+            errorText.includes("CSRF") ||
+            errorText.includes("Invalid CSRF token")
+          ) {
+            console.warn("[CSRF] Token invalid, clearing cache");
+            clearCsrfToken();
+          }
+        } catch {
+          // Ignore errors reading response text
+        }
+      }
       await handleFetchError(response);
     }
 
