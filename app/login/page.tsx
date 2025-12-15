@@ -27,25 +27,27 @@ import ErrorDisplay from "../../components/ErrorDisplay";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState<string>("");
+  // Initialize email from localStorage immediately
+  const [email, setEmail] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("savedUsername")?.trim() || "";
+    }
+    return "";
+  });
   const [password, setPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
-  const [rememberUsername, setRememberUsername] = useState<boolean>(false);
+  const [rememberUsername, setRememberUsername] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return !!localStorage.getItem("savedUsername");
+    }
+    return false;
+  });
 
   const { login } = useAuth();
   const router = useRouter();
-
-  // Load saved username from localStorage on mount
-  useEffect(() => {
-    const savedUsername = localStorage.getItem("savedUsername");
-    if (savedUsername) {
-      setEmail(savedUsername.trim());
-      setRememberUsername(true);
-    }
-  }, []);
 
   // Map technical errors to friendly, login-specific messages
   const getFriendlyErrorMessage = (raw: string): string => {
