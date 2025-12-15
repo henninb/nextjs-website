@@ -155,7 +155,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const { isAuthenticated, user, logout } = useAuth();
 
-  const isFinancePage = pathname?.startsWith("/finance") || false;
+  const isFinancePage = pathname?.startsWith("/finance") || pathname?.startsWith("/login") || pathname?.startsWith("/register") || false;
 
   // Helper function to safely get user display name with security best practices
   const getUserDisplayName = (): string => {
