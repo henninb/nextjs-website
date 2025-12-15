@@ -42,7 +42,7 @@ export default function LoginPage() {
   useEffect(() => {
     const savedUsername = localStorage.getItem("savedUsername");
     if (savedUsername) {
-      setEmail(savedUsername);
+      setEmail(savedUsername.trim());
       setRememberUsername(true);
     }
   }, []);
@@ -123,14 +123,14 @@ export default function LoginPage() {
     event.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
-    const data = { email, password };
+    const data = { email: email.trim(), password };
 
     try {
       await userLogin(data);
 
       // Save or clear username based on checkbox state
       if (rememberUsername) {
-        localStorage.setItem("savedUsername", email);
+        localStorage.setItem("savedUsername", email.trim());
       } else {
         localStorage.removeItem("savedUsername");
       }
