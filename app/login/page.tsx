@@ -1,7 +1,7 @@
 "use client";
 import { getErrorMessage } from "../../types";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   Container,
@@ -12,6 +12,8 @@ import {
   Button,
   InputAdornment,
   IconButton,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import {
   Email as EmailIcon,
@@ -31,9 +33,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
+  const [rememberUsername, setRememberUsername] = useState<boolean>(false);
 
   const { login } = useAuth();
   const router = useRouter();
+
+  // Load saved username from localStorage on mount
+  useEffect(() => {
+    const savedUsername = localStorage.getItem("savedUsername");
+    if (savedUsername) {
+      setEmail(savedUsername);
+      setRememberUsername(true);
+    }
+  }, []);
 
   // Map technical errors to friendly, login-specific messages
   const getFriendlyErrorMessage = (raw: string): string => {
@@ -115,8 +127,15 @@ export default function LoginPage() {
 
     try {
       await userLogin(data);
-      // After successful login, fetch user data to get proper user information
 
+      // Save or clear username based on checkbox state
+      if (rememberUsername) {
+        localStorage.setItem("savedUsername", email);
+      } else {
+        localStorage.removeItem("savedUsername");
+      }
+
+      // After successful login, fetch user data to get proper user information
       try {
         const userResponse = await fetch("/api/me", {
           credentials: "include",
@@ -218,6 +237,18 @@ export default function LoginPage() {
                 </InputAdornment>
               ),
             }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rememberUsername}
+                onChange={(e) => setRememberUsername(e.target.checked)}
+                disabled={isLoading}
+                color="primary"
+              />
+            }
+            label="Remember username"
+            sx={{ mt: 1 }}
           />
           {errorMessage && (
             <Box sx={{ mt: 2 }}>
