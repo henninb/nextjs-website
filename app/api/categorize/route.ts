@@ -77,7 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // Retry logic with exponential backoff for rate limiting
         let attempt = 0;
         const maxRetries = 3;
-        let lastError = null;
+        let lastError: string | null = null;
 
         while (attempt < maxRetries) {
           try {
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               break;
             }
           } catch (fetchError) {
-            lastError = fetchError;
+            lastError = fetchError instanceof Error ? fetchError.message : String(fetchError);
             console.error('[AI Categorization] Fetch exception:', fetchError);
             break;
           }
