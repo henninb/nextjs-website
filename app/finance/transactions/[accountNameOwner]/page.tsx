@@ -34,6 +34,8 @@ import useAccountFetch from "../../../../hooks/useAccountFetch";
 import useCategoryFetch from "../../../../hooks/useCategoryFetch";
 import useDescriptionFetch from "../../../../hooks/useDescriptionFetch";
 import useAccountUsageTracking from "../../../../hooks/useAccountUsageTracking";
+import { getCategoryWithAI, createManualMetadata } from "../../../../utils/ai/categorization";
+import AICategoryBadge from "../../../../components/AICategoryBadge";
 import { AccountType } from "../../../../model/AccountType";
 import Transaction from "../../../../model/Transaction";
 import Account from "../../../../model/Account";
@@ -1335,12 +1337,35 @@ export default function TransactionsByAccount({
                 description: newValue || "",
               }))
             }
-            onBlur={() => {
+            onBlur={async () => {
               if (transactionData?.description === "") {
                 setTransactionData((prev) => ({
                   ...prev,
                   description: "", // Ensure an empty description is updated
                 }));
+              } else if (
+                transactionData?.description &&
+                !transactionData?.category
+              ) {
+                // Auto-categorize with AI when description is filled but category is empty
+                try {
+                  const availableCategories = isSuccessCategories
+                    ? fetchedCategories.map((c) => c.categoryName)
+                    : [];
+                  const result = await getCategoryWithAI(
+                    transactionData.description,
+                    transactionData.amount || 0,
+                    availableCategories,
+                    validAccountNameOwner,
+                  );
+                  setTransactionData((prev) => ({
+                    ...prev,
+                    category: result.category,
+                    categoryMetadata: result.metadata,
+                  }));
+                } catch (error) {
+                  console.error("AI categorization failed:", error);
+                }
               }
             }}
             renderInput={(params) => (
@@ -1371,6 +1396,7 @@ export default function TransactionsByAccount({
               setTransactionData((prev) => ({
                 ...prev,
                 category: newValue || "",
+                categoryMetadata: createManualMetadata(), // Mark as manual when user changes it
               }))
             }
             onBlur={() => {
@@ -1392,11 +1418,22 @@ export default function TransactionsByAccount({
                   setTransactionData((prev) => ({
                     ...prev,
                     category: newCategory,
+                    categoryMetadata: createManualMetadata(), // Mark as manual when user types
                   }));
                 }}
               />
             )}
           />
+
+          {/* Display AI category badge if metadata exists */}
+          {transactionData?.categoryMetadata && (
+            <Box sx={{ ml: 1, mb: 2 }}>
+              <AICategoryBadge
+                metadata={transactionData.categoryMetadata}
+                size="medium"
+              />
+            </Box>
+          )}
 
           <USDAmountInput
             label="Amount ($)"

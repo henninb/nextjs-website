@@ -52,6 +52,9 @@ import useAccountFetch from "../../../../hooks/useAccountFetch";
 import { useAuth } from "../../../../components/AuthProvider";
 import { generateSecureUUID } from "../../../../utils/security/secureUUID";
 import { getCategoryFromDescription } from "../../../../utils/categoryMapping";
+import { getCategoryWithAI } from "../../../../utils/ai/categorization";
+import AICategoryBadge from "../../../../components/AICategoryBadge";
+import useCategoryFetch from "../../../../hooks/useCategoryFetch";
 
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
@@ -82,6 +85,11 @@ export default function TransactionImporter() {
     isLoading: isLoadingAccounts,
     error: errorAccounts,
   } = useAccountFetch();
+
+  const {
+    data: fetchedCategories,
+    isSuccess: isSuccessCategories,
+  } = useCategoryFetch();
 
   const { mutateAsync: insertTransaction } = useTransactionInsert();
   const { mutateAsync: deleteAllPendingTransactions } =
@@ -125,19 +133,52 @@ export default function TransactionImporter() {
 
       const generateTransactionsWithGUID = async () => {
         setIsLoadingTable(true);
-        const transactionsWithGUID = await Promise.all(
-          fetchedPendingTransactions.map(async (transaction) => ({
+
+        // Get available categories for AI categorization
+        const availableCategories = isSuccessCategories
+          ? fetchedCategories.map((c) => c.categoryName)
+          : [];
+
+        // Process transactions sequentially with delays to respect Perplexity rate limits
+        // Perplexity sonar-pro: 50 RPM = ~0.83 req/sec, so delay 1.3s between requests
+        const DELAY_MS = 1300; // 1.3 seconds between requests (safe for 50 RPM)
+        const transactionsWithGUID: Transaction[] = [];
+
+        for (let i = 0; i < fetchedPendingTransactions.length; i++) {
+          const transaction = fetchedPendingTransactions[i];
+
+          // Use AI categorization with fallback to rule-based
+          const categorizationResult = await getCategoryWithAI(
+            transaction.description || "",
+            transaction.amount || 0,
+            availableCategories,
+            transaction.accountNameOwner || "",
+          );
+
+          const processedTransaction = {
             ...transaction,
             guid: await generateSecureUUID(),
             reoccurringType: "onetime" as ReoccurringType,
             transactionState: "outstanding" as TransactionState,
             transactionType: undefined as unknown as TransactionType,
-            category: getCategoryFromDescription(transaction.description || ""),
+            category: categorizationResult.category,
+            categoryMetadata: categorizationResult.metadata,
             accountType: "debit" as AccountType,
             activeStatus: true,
             notes: "imported",
-          })),
-        );
+          };
+
+          transactionsWithGUID.push(processedTransaction);
+
+          // Update progress after each transaction
+          setTransactions([...transactionsWithGUID]);
+
+          // Add delay between requests to respect rate limits (except for last item)
+          if (i < fetchedPendingTransactions.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+          }
+        }
+
         setTransactions(transactionsWithGUID);
         setIsLoadingTable(false);
         setIsInitialLoad(false); // Mark initial load as complete
@@ -145,7 +186,13 @@ export default function TransactionImporter() {
 
       generateTransactionsWithGUID();
     }
-  }, [isPendingTransactionsLoaded, fetchedPendingTransactions, isInitialLoad]);
+  }, [
+    isPendingTransactionsLoaded,
+    fetchedPendingTransactions,
+    isInitialLoad,
+    isSuccessCategories,
+    fetchedCategories,
+  ]);
 
   if (loading || (!loading && !isAuthenticated)) {
     return null;
@@ -391,6 +438,17 @@ export default function TransactionImporter() {
       headerName: "Category",
       width: 150,
       editable: true,
+    },
+    {
+      field: "categorySource",
+      headerName: "Source",
+      width: 100,
+      renderCell: (params: GridRenderCellParams<Transaction>) => (
+        <AICategoryBadge
+          metadata={params.row.categoryMetadata}
+          size="small"
+        />
+      ),
     },
     {
       field: "amount",

@@ -3,6 +3,7 @@ import { TransactionState } from "./TransactionState";
 import { ReoccurringType } from "./ReoccurringType";
 import ReceiptImage from "./ReceiptImage";
 import { TransactionType } from "./TransactionType";
+import TransactionCategoryMetadata from "./TransactionCategoryMetadata";
 
 export default interface Transaction {
   transactionId?: number;
@@ -21,4 +22,5 @@ export default interface Transaction {
   notes: string;
   receiptImage?: ReceiptImage;
   dueDate?: string;
+  categoryMetadata?: TransactionCategoryMetadata;
 }
