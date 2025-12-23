@@ -175,5 +175,25 @@ location ~ ^/api/(nhl|nba|nfl|mlb|celsius|fahrenheit|lead|player-ads|player-anal
 When adding new Next.js API routes that should bypass the finance service:
 
 1. Add the route to the nginx regex pattern in both `vercel.bhenning.com` and `www.bhenning.com` server blocks
-2. Add the route to the `localApis` array in `middleware.js`
+2. Add the route to the `localApis` array in `proxy.js`
 3. Test both development and production environments
+
+## AI Categorization
+
+The application uses Perplexity AI for transaction categorization with smart rate limiting:
+
+### Rate Limits
+- **Perplexity sonar-pro**: 50 requests per minute (RPM)
+- Server-side retry logic with exponential backoff (1s, 2s, 4s)
+- Automatic fallback to rule-based categorization
+
+### Import Page Optimization
+- **Initial load**: Fast rule-based categorization (no AI delays)
+- **On-demand AI**: Users click sparkle (✨) button in Source column to trigger AI
+- **Per-transaction**: Each transaction can be AI-categorized individually
+- **No rate limiting**: Users control when to use AI quota
+
+This design ensures:
+- Instant page loads (no waiting for AI)
+- User control over AI usage and costs
+- No rate limit errors during bulk imports

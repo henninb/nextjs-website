@@ -30,6 +30,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import HelpIcon from "@mui/icons-material/Help";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CircularProgress from "@mui/material/CircularProgress";
 import Transaction from "../../../../model/Transaction";
 import { ReoccurringType } from "../../../../model/ReoccurringType";
@@ -68,6 +69,7 @@ export default function TransactionImporter() {
   const [isValidating, setIsValidating] = useState(false);
   const [loadingRows, setLoadingRows] = useState<Set<string>>(new Set()); // Track loading rows by guid
   const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if this is the first load
+  const [aiCategorizingRows, setAiCategorizingRows] = useState<Set<string>>(new Set()); // Track rows being AI-categorized
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
 
@@ -139,45 +141,31 @@ export default function TransactionImporter() {
           ? fetchedCategories.map((c) => c.categoryName)
           : [];
 
-        // Process transactions sequentially with delays to respect Perplexity rate limits
-        // Perplexity sonar-pro: 50 RPM = ~0.83 req/sec, so delay 1.3s between requests
-        const DELAY_MS = 1300; // 1.3 seconds between requests (safe for 50 RPM)
-        const transactionsWithGUID: Transaction[] = [];
+        // FAST LOAD: Use rule-based categorization only (no AI delays)
+        // Users can trigger AI categorization on-demand by clicking the button in Source column
+        const transactionsWithGUID: Transaction[] = await Promise.all(
+          fetchedPendingTransactions.map(async (transaction) => {
+            // Use fast rule-based categorization
+            const category = getCategoryFromDescription(transaction.description || "");
 
-        for (let i = 0; i < fetchedPendingTransactions.length; i++) {
-          const transaction = fetchedPendingTransactions[i];
-
-          // Use AI categorization with fallback to rule-based
-          const categorizationResult = await getCategoryWithAI(
-            transaction.description || "",
-            transaction.amount || 0,
-            availableCategories,
-            transaction.accountNameOwner || "",
-          );
-
-          const processedTransaction = {
-            ...transaction,
-            guid: await generateSecureUUID(),
-            reoccurringType: "onetime" as ReoccurringType,
-            transactionState: "outstanding" as TransactionState,
-            transactionType: undefined as unknown as TransactionType,
-            category: categorizationResult.category,
-            categoryMetadata: categorizationResult.metadata,
-            accountType: "debit" as AccountType,
-            activeStatus: true,
-            notes: "imported",
-          };
-
-          transactionsWithGUID.push(processedTransaction);
-
-          // Update progress after each transaction
-          setTransactions([...transactionsWithGUID]);
-
-          // Add delay between requests to respect rate limits (except for last item)
-          if (i < fetchedPendingTransactions.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, DELAY_MS));
-          }
-        }
+            return {
+              ...transaction,
+              guid: await generateSecureUUID(),
+              reoccurringType: "onetime" as ReoccurringType,
+              transactionState: "outstanding" as TransactionState,
+              transactionType: undefined as unknown as TransactionType,
+              category,
+              categoryMetadata: {
+                source: "rule-based" as const,
+                timestamp: new Date(),
+                fallbackReason: "Initial load - click AI button to use AI categorization",
+              },
+              accountType: "debit" as AccountType,
+              activeStatus: true,
+              notes: "imported",
+            };
+          })
+        );
 
         setTransactions(transactionsWithGUID);
         setIsLoadingTable(false);
@@ -389,6 +377,56 @@ export default function TransactionImporter() {
     setTransactions(parsedTransactions);
   };
 
+  // Handler to trigger AI categorization on-demand for a specific transaction
+  const handleAICategorize = async (transaction: Transaction) => {
+    const guid = transaction.guid;
+    if (!guid) return;
+
+    // Mark row as being AI-categorized
+    setAiCategorizingRows((prev) => new Set(prev).add(guid));
+
+    try {
+      const availableCategories = isSuccessCategories
+        ? fetchedCategories.map((c) => c.categoryName)
+        : [];
+
+      // Call AI categorization
+      const categorizationResult = await getCategoryWithAI(
+        transaction.description || "",
+        transaction.amount || 0,
+        availableCategories,
+        transaction.accountNameOwner || "",
+      );
+
+      // Update the transaction with AI result
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.guid === guid
+            ? {
+                ...t,
+                category: categorizationResult.category,
+                categoryMetadata: categorizationResult.metadata,
+              }
+            : t
+        )
+      );
+
+      setMessage(`AI categorization completed: ${categorizationResult.category}`);
+      setShowSnackbar(true);
+    } catch (error) {
+      setMessage(`AI categorization failed: ${getErrorMessage(error)}`);
+      setShowSnackbar(true);
+      console.error("AI categorization error:", error);
+    } finally {
+      // Remove from AI-categorizing set
+      setAiCategorizingRows((prev) => {
+        const next = new Set(prev);
+        next.delete(guid);
+        return next;
+      });
+    }
+  };
+
   const columns: GridColDef[] = [
     {
       field: "pendingTransactionId",
@@ -442,13 +480,34 @@ export default function TransactionImporter() {
     {
       field: "categorySource",
       headerName: "Source",
-      width: 100,
-      renderCell: (params: GridRenderCellParams<Transaction>) => (
-        <AICategoryBadge
-          metadata={params.row.categoryMetadata}
-          size="small"
-        />
-      ),
+      width: 150,
+      renderCell: (params: GridRenderCellParams<Transaction>) => {
+        const isAICategorizing = aiCategorizingRows.has(params.row.guid || "");
+        const isRuleBased = params.row.categoryMetadata?.source === "rule-based";
+
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <AICategoryBadge
+              metadata={params.row.categoryMetadata}
+              size="small"
+            />
+            {isAICategorizing ? (
+              <CircularProgress size={16} />
+            ) : isRuleBased ? (
+              <Tooltip title="Use AI to categorize this transaction">
+                <IconButton
+                  size="small"
+                  onClick={() => handleAICategorize(params.row)}
+                  sx={{ padding: 0.5 }}
+                  color="primary"
+                >
+                  <AutoAwesomeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+          </Box>
+        );
+      },
     },
     {
       field: "amount",

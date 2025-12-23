@@ -58,6 +58,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const apiKey = process.env.PERPLEXITY_API_KEY;
     const isApiConfigured = apiKey && apiKey !== "your-perplexity-api-key-here";
 
+    console.log('[AI Categorization] API key check:', {
+      hasKey: !!apiKey,
+      keyPrefix: apiKey?.substring(0, 8),
+      isConfigured: isApiConfigured
+    });
+
     if (isApiConfigured) {
       try {
         // Build the prompt
@@ -138,7 +144,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               }
             } else {
               const errorText = await response.text();
-              console.error('[AI Categorization] API error:', response.status, errorText);
+              console.error('[AI Categorization] API error:', {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries()),
+                body: errorText.substring(0, 500)
+              });
               lastError = `API error: ${response.status}`;
               break;
             }
