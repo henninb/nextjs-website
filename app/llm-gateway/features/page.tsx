@@ -492,13 +492,46 @@ export default function FeaturesPage() {
 
           <div className="models-grid">
             <div className="model-card">
-              <h3>Nova Pro</h3>
-              <div className="provider">AWS Bedrock</div>
+              <h3>Nova Micro</h3>
+              <div className="provider">AWS Bedrock (Amazon)</div>
               <ul>
-                <li>• Best for: General reasoning</li>
+                <li>• Best for: Quick tasks</li>
+                <li>• Cost: Very low</li>
+                <li>• Speed: Very fast</li>
+                <li>• Context: 128K tokens</li>
+              </ul>
+            </div>
+
+            <div className="model-card">
+              <h3>Nova Lite</h3>
+              <div className="provider">AWS Bedrock (Amazon)</div>
+              <ul>
+                <li>• Best for: Efficient responses</li>
                 <li>• Cost: Low</li>
                 <li>• Speed: Fast</li>
                 <li>• Context: 128K tokens</li>
+              </ul>
+            </div>
+
+            <div className="model-card">
+              <h3>Nova Pro</h3>
+              <div className="provider">AWS Bedrock (Amazon)</div>
+              <ul>
+                <li>• Best for: Complex reasoning</li>
+                <li>• Cost: Medium</li>
+                <li>• Speed: Fast</li>
+                <li>• Context: 128K tokens</li>
+              </ul>
+            </div>
+
+            <div className="model-card">
+              <h3>Llama 3.2 1B</h3>
+              <div className="provider">AWS Bedrock (Meta)</div>
+              <ul>
+                <li>• Best for: Simple queries</li>
+                <li>• Cost: Very low</li>
+                <li>• Speed: Very fast</li>
+                <li>• Params: 1 billion</li>
               </ul>
             </div>
 
@@ -507,9 +540,20 @@ export default function FeaturesPage() {
               <div className="provider">AWS Bedrock (Meta)</div>
               <ul>
                 <li>• Best for: Quick responses</li>
-                <li>• Cost: Very low</li>
-                <li>• Speed: Very fast</li>
-                <li>• Context: 32K tokens</li>
+                <li>• Cost: Low</li>
+                <li>• Speed: Fast</li>
+                <li>• Params: 3 billion</li>
+              </ul>
+            </div>
+
+            <div className="model-card">
+              <h3>Perplexity Sonar</h3>
+              <div className="provider">Perplexity API</div>
+              <ul>
+                <li>• Best for: Web search, facts</li>
+                <li>• Cost: Medium</li>
+                <li>• Speed: Fast</li>
+                <li>• Features: Real-time citations</li>
               </ul>
             </div>
 
@@ -517,21 +561,10 @@ export default function FeaturesPage() {
               <h3>Perplexity Sonar Pro</h3>
               <div className="provider">Perplexity API</div>
               <ul>
-                <li>• Best for: Research & facts</li>
-                <li>• Cost: Medium</li>
-                <li>• Speed: Fast</li>
-                <li>• Features: Web search, citations</li>
-              </ul>
-            </div>
-
-            <div className="model-card">
-              <h3>Perplexity Deep Research</h3>
-              <div className="provider">Perplexity API</div>
-              <ul>
-                <li>• Best for: In-depth analysis</li>
+                <li>• Best for: Deep research</li>
                 <li>• Cost: Higher</li>
-                <li>• Speed: Slower (thorough)</li>
-                <li>• Features: Multi-source research</li>
+                <li>• Speed: Fast</li>
+                <li>• Features: Advanced analysis</li>
               </ul>
             </div>
           </div>

@@ -221,12 +221,12 @@ export default function LLMGatewayPage() {
               <span className="stat-label">Cost Savings with SPOT</span>
             </div>
             <div className="stat">
-              <span className="stat-value">Zero-Trust</span>
-              <span className="stat-label">Network Security</span>
+              <span className="stat-value">7 Models</span>
+              <span className="stat-label">AWS Bedrock + Perplexity</span>
             </div>
             <div className="stat">
-              <span className="stat-value">Multi-Cloud</span>
-              <span className="stat-label">AI Provider Support</span>
+              <span className="stat-value">Zero-Trust</span>
+              <span className="stat-label">Network Security</span>
             </div>
             <div className="stat">
               <span className="stat-value">100%</span>
