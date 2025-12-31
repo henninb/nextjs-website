@@ -1,25 +1,7 @@
-import React from "react";
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "LLM Gateway - Production AI Infrastructure on AWS EKS",
-  description:
-    "A production-ready, secure, and cost-optimized LLM gateway deployed on AWS EKS with comprehensive security controls and multi-provider AI model support.",
-  keywords: [
-    "LLM Gateway",
-    "AWS EKS",
-    "Kubernetes",
-    "AI Infrastructure",
-    "LiteLLM",
-    "OpenWebUI",
-    "AWS Bedrock",
-    "Perplexity",
-    "Zero-Trust Security",
-    "DevOps",
-    "Terraform",
-  ],
-};
+import React from "react";
+import Link from "next/link";
 
 export default function LLMGatewayPage() {
   return (

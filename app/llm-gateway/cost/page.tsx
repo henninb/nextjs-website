@@ -1,12 +1,7 @@
-import React from "react";
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Cost Optimization - LLM Gateway",
-  description:
-    "How SPOT instances, single NAT gateway, and smart resource allocation reduce AWS costs by 50-90%.",
-};
+import React from "react";
+import Link from "next/link";
 
 export default function CostPage() {
   return (
@@ -310,7 +305,7 @@ export default function CostPage() {
                 <td>$0.20</td>
               </tr>
               <tr className="total-row">
-                <td colSpan="2">
+                <td colSpan={2}>
                   <strong>Total Monthly Cost</strong>
                 </td>
                 <td>

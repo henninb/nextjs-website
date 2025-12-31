@@ -1,12 +1,7 @@
-import React from "react";
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Features & Demo - LLM Gateway",
-  description:
-    "Explore Arena Mode, multi-provider AI access, and real-world use cases for the LLM Gateway.",
-};
+import React from "react";
+import Link from "next/link";
 
 export default function FeaturesPage() {
   return (

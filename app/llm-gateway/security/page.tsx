@@ -1,12 +1,7 @@
-import React from "react";
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Security Features - LLM Gateway",
-  description:
-    "Zero-trust networking, Kubernetes NetworkPolicies, IRSA authentication, and defense-in-depth security controls.",
-};
+import React from "react";
+import Link from "next/link";
 
 export default function SecurityPage() {
   return (

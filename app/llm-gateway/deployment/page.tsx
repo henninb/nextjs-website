@@ -1,12 +1,7 @@
-import React from "react";
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Deployment Workflow - LLM Gateway",
-  description:
-    "Complete deployment process using Terraform, from infrastructure provisioning to application deployment.",
-};
+import React from "react";
+import Link from "next/link";
 
 export default function DeploymentPage() {
   return (
