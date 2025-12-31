@@ -9,7 +9,7 @@ export default function CostPage() {
       <style jsx>{`
         .cost-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
           padding: 2rem;
           color: white;
         }
@@ -83,7 +83,7 @@ export default function CostPage() {
         }
 
         .savings-highlight {
-          color: #4fd1c5;
+          color: #00e5cc;
           font-weight: 700;
         }
 
@@ -121,17 +121,17 @@ export default function CostPage() {
         }
 
         .optimization-card .savings {
-          background: rgba(79, 209, 197, 0.3);
+          background: rgba(0, 229, 204, 0.2);
           padding: 1rem;
           border-radius: 8px;
           margin: 1rem 0;
-          border-left: 4px solid #4fd1c5;
+          border-left: 4px solid #00e5cc;
         }
 
         .optimization-card .savings .amount {
           font-size: 2rem;
           font-weight: 700;
-          color: #4fd1c5;
+          color: #00e5cc;
           display: block;
         }
 
@@ -150,7 +150,7 @@ export default function CostPage() {
           content: "→";
           position: absolute;
           left: 0;
-          color: #4fd1c5;
+          color: #00e5cc;
         }
 
         .comparison-section {
@@ -178,7 +178,7 @@ export default function CostPage() {
         .comparison-box h3 {
           font-size: 1.5rem;
           margin-bottom: 1rem;
-          color: #4fd1c5;
+          color: #00e5cc;
         }
 
         .comparison-box .price {
@@ -481,12 +481,12 @@ export default function CostPage() {
 
           <div
             style={{
-              background: "rgba(79, 209, 197, 0.2)",
+              background: "rgba(0, 229, 204, 0.2)",
               padding: "1.5rem",
               borderRadius: "8px",
               marginTop: "2rem",
               textAlign: "center",
-              borderLeft: "4px solid #4fd1c5",
+              borderLeft: "4px solid #00e5cc",
             }}
           >
             <div style={{ fontSize: "2.5rem", fontWeight: "700" }}>
@@ -509,7 +509,7 @@ export default function CostPage() {
               style={{
                 fontSize: "1.5rem",
                 marginBottom: "1rem",
-                color: "#4fd1c5",
+                color: "#00e5cc",
               }}
             >
               Future Optimizations

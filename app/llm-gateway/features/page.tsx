@@ -9,7 +9,7 @@ export default function FeaturesPage() {
       <style jsx>{`
         .features-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
           padding: 2rem;
           color: white;
         }
@@ -52,8 +52,8 @@ export default function FeaturesPage() {
 
         .demo-button {
           display: inline-block;
-          background: white;
-          color: #4facfe;
+          background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+          color: white;
           padding: 1rem 2.5rem;
           border-radius: 8px;
           font-weight: 700;
@@ -61,12 +61,13 @@ export default function FeaturesPage() {
           text-decoration: none;
           margin-top: 1rem;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
         }
 
         .demo-button:hover {
           transform: scale(1.05);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
+          background: linear-gradient(135deg, #00e5ff 0%, #00aaff 100%);
         }
 
         .content {
@@ -128,7 +129,7 @@ export default function FeaturesPage() {
           content: "→";
           position: absolute;
           left: 0;
-          color: #00f2fe;
+          color: #00d4ff;
           font-weight: bold;
         }
 
@@ -163,8 +164,8 @@ export default function FeaturesPage() {
         }
 
         .flow-step .step-num {
-          background: white;
-          color: #4facfe;
+          background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+          color: white;
           width: 40px;
           height: 40px;
           border-radius: 50%;
@@ -218,7 +219,7 @@ export default function FeaturesPage() {
         .model-card h3 {
           font-size: 1.25rem;
           margin-bottom: 0.75rem;
-          color: #00f2fe;
+          color: #00d4ff;
         }
 
         .model-card .provider {
@@ -258,13 +259,13 @@ export default function FeaturesPage() {
           padding: 1.5rem;
           margin: 1rem 0;
           border-radius: 8px;
-          border-left: 4px solid #00f2fe;
+          border-left: 4px solid #00d4ff;
         }
 
         .use-case h3 {
           font-size: 1.5rem;
           margin-bottom: 0.75rem;
-          color: #00f2fe;
+          color: #00d4ff;
         }
 
         .use-case p {

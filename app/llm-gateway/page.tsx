@@ -311,6 +311,20 @@ export default function LLMGatewayPage() {
           </span>
         </Link>
 
+        <Link href="/llm-gateway/requirements" className="page-card">
+          <h2>
+            <span className="icon">🎯</span>
+            Project Requirements
+          </h2>
+          <p>
+            Review the original project objectives and stretch goals. See how
+            each requirement was met and exceeded in this production deployment.
+          </p>
+          <span className="learn-more">
+            View Requirements <span>→</span>
+          </span>
+        </Link>
+
         <a
           href="https://github.com/henninb/llm-gateway"
           target="_blank"
