@@ -252,6 +252,81 @@ export default function RequirementsPage() {
           transform: translateY(-2px);
         }
 
+        .nav-bar {
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(10px);
+          padding: 1rem;
+          margin: 0 auto 2rem;
+          max-width: 1400px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links {
+          display: flex;
+          gap: 0.75rem;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        .nav-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.625rem 1rem;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 20px;
+          text-decoration: none;
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+          background: rgba(255, 255, 255, 0.3);
+          border-color: rgba(255, 255, 255, 0.4);
+          transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+          background: rgba(255, 255, 255, 0.4);
+          border-color: rgba(255, 255, 255, 0.5);
+          font-weight: 600;
+          cursor: default;
+        }
+
+        .nav-link.active:hover {
+          transform: none;
+        }
+
+        .bottom-nav {
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          margin: 3rem auto 2rem;
+          flex-wrap: wrap;
+          max-width: 1000px;
+        }
+
+        .nav-button {
+          display: inline-block;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          text-decoration: none;
+          color: white;
+          font-weight: 600;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+        }
+
         @media (max-width: 768px) {
           .header h1 {
             font-size: 2rem;
@@ -280,6 +355,39 @@ export default function RequirementsPage() {
           Exercise
         </p>
       </div>
+
+      <nav className="nav-bar">
+        <div className="nav-links">
+          <Link href="/llm-gateway" className="nav-link">
+            <span>🏠</span>
+            <span>Overview</span>
+          </Link>
+          <Link href="/llm-gateway/architecture" className="nav-link">
+            <span>🏗️</span>
+            <span>Architecture</span>
+          </Link>
+          <Link href="/llm-gateway/security" className="nav-link">
+            <span>🔒</span>
+            <span>Security</span>
+          </Link>
+          <Link href="/llm-gateway/cost" className="nav-link">
+            <span>💰</span>
+            <span>Cost</span>
+          </Link>
+          <Link href="/llm-gateway/deployment" className="nav-link">
+            <span>🚀</span>
+            <span>Deployment</span>
+          </Link>
+          <Link href="/llm-gateway/features" className="nav-link">
+            <span>✨</span>
+            <span>Features</span>
+          </Link>
+          <Link href="/llm-gateway/requirements" className="nav-link active">
+            <span>🎯</span>
+            <span>Requirements</span>
+          </Link>
+        </div>
+      </nav>
 
       <div className="content">
         <div className="overview-section">
@@ -523,9 +631,14 @@ export default function RequirementsPage() {
           </div>
         </div>
 
-        <Link href="/llm-gateway" className="back-link">
-          ← Back to Overview
-        </Link>
+        <div className="bottom-nav">
+          <Link href="/llm-gateway/features" className="nav-button">
+            ← Previous: Features
+          </Link>
+          <Link href="/llm-gateway" className="nav-button">
+            Back to Overview
+          </Link>
+        </div>
       </div>
     </div>
   );

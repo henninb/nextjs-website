@@ -201,6 +201,81 @@ export default function DeploymentPage() {
           box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
 
+        .nav-bar {
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(10px);
+          padding: 1rem;
+          margin: 0 auto 2rem;
+          max-width: 1400px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links {
+          display: flex;
+          gap: 0.75rem;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        .nav-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.625rem 1rem;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 20px;
+          text-decoration: none;
+          color: white;
+          font-size: 0.875rem;
+          font-weight: 500;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+          background: rgba(255, 255, 255, 0.3);
+          border-color: rgba(255, 255, 255, 0.4);
+          transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+          background: rgba(255, 255, 255, 0.4);
+          border-color: rgba(255, 255, 255, 0.5);
+          font-weight: 600;
+          cursor: default;
+        }
+
+        .nav-link.active:hover {
+          transform: none;
+        }
+
+        .bottom-nav {
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          margin: 3rem auto 2rem;
+          flex-wrap: wrap;
+          max-width: 1000px;
+        }
+
+        .nav-button {
+          display: inline-block;
+          background: white;
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          text-decoration: none;
+          color: #fa709a;
+          font-weight: 600;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
         @media (max-width: 768px) {
           .header h1 {
             font-size: 2rem;
@@ -231,6 +306,39 @@ export default function DeploymentPage() {
           using Terraform and Kubernetes.
         </p>
       </div>
+
+      <nav className="nav-bar">
+        <div className="nav-links">
+          <Link href="/llm-gateway" className="nav-link">
+            <span>🏠</span>
+            <span>Overview</span>
+          </Link>
+          <Link href="/llm-gateway/architecture" className="nav-link">
+            <span>🏗️</span>
+            <span>Architecture</span>
+          </Link>
+          <Link href="/llm-gateway/security" className="nav-link">
+            <span>🔒</span>
+            <span>Security</span>
+          </Link>
+          <Link href="/llm-gateway/cost" className="nav-link">
+            <span>💰</span>
+            <span>Cost</span>
+          </Link>
+          <Link href="/llm-gateway/deployment" className="nav-link active">
+            <span>🚀</span>
+            <span>Deployment</span>
+          </Link>
+          <Link href="/llm-gateway/features" className="nav-link">
+            <span>✨</span>
+            <span>Features</span>
+          </Link>
+          <Link href="/llm-gateway/requirements" className="nav-link">
+            <span>🎯</span>
+            <span>Requirements</span>
+          </Link>
+        </div>
+      </nav>
 
       <div className="content">
         <div className="prerequisites">
@@ -288,7 +396,7 @@ export default function DeploymentPage() {
 {`git clone https://github.com/henninb/llm-gateway.git
 cd llm-gateway
 
-<span class="comment"># View all available commands</span>
+# View all available commands
 make help`}
             </div>
           </div>
@@ -305,9 +413,9 @@ make help`}
 terraform init
 terraform apply
 
-<span class="comment"># Outputs:</span>
-<span class="comment"># litellm_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/litellm"</span>
-<span class="comment"># openwebui_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/openwebui"</span>`}
+# Outputs:
+# litellm_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/litellm"
+# openwebui_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/openwebui"`}
             </div>
           </div>
 
@@ -321,11 +429,11 @@ terraform apply
 {`cd ../..
 ./tools/build-and-push-ecr.sh
 
-<span class="comment"># This script:</span>
-<span class="comment"># - Authenticates with ECR</span>
-<span class="comment"># - Builds Docker images for LiteLLM and OpenWebUI</span>
-<span class="comment"># - Tags images with latest and git commit SHA</span>
-<span class="comment"># - Pushes to ECR repositories</span>`}
+# This script:
+# - Authenticates with ECR
+# - Builds Docker images for LiteLLM and OpenWebUI
+# - Tags images with latest and git commit SHA
+# - Pushes to ECR repositories`}
             </div>
           </div>
 
@@ -341,17 +449,17 @@ terraform apply
 terraform init
 terraform apply
 
-<span class="comment"># This creates:</span>
-<span class="comment"># - VPC with public/private subnets</span>
-<span class="comment"># - EKS cluster (control plane)</span>
-<span class="comment"># - SPOT instance node group</span>
-<span class="comment"># - Internet Gateway + NAT Gateway</span>
-<span class="comment"># - Security groups</span>
-<span class="comment"># - OIDC provider for IRSA</span>
-<span class="comment"># - EBS CSI driver addon</span>
-<span class="comment"># - VPC CNI addon with NetworkPolicy support</span>
+# This creates:
+# - VPC with public/private subnets
+# - EKS cluster (control plane)
+# - SPOT instance node group
+# - Internet Gateway + NAT Gateway
+# - Security groups
+# - OIDC provider for IRSA
+# - EBS CSI driver addon
+# - VPC CNI addon with NetworkPolicy support
 
-<span class="comment"># Wait ~15 minutes for cluster to be ready</span>`}
+# Wait ~15 minutes for cluster to be ready`}
             </div>
           </div>
 
@@ -366,13 +474,13 @@ terraform apply
   --region us-east-1 \\
   --name llm-gateway-eks
 
-<span class="comment"># Verify connection</span>
+# Verify connection
 kubectl get nodes
 
-<span class="comment"># Output:</span>
-<span class="comment"># NAME                             STATUS   ROLES    AGE   VERSION</span>
-<span class="comment"># ip-10-0-10-123.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...</span>
-<span class="comment"># ip-10-0-11-456.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...</span>`}
+# Output:
+# NAME                             STATUS   ROLES    AGE   VERSION
+# ip-10-0-10-123.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...
+# ip-10-0-11-456.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...`}
             </div>
           </div>
 
@@ -384,16 +492,16 @@ kubectl get nodes
               your domain.
             </p>
             <div className="code-block">
-{`<span class="comment"># Request certificate (via AWS Console or CLI)</span>
+{`# Request certificate (via AWS Console or CLI)
 aws acm request-certificate \\
   --domain-name openwebui.bhenning.com \\
   --validation-method DNS \\
   --region us-east-1
 
-<span class="comment"># Add DNS validation records to your DNS provider</span>
-<span class="comment"># Wait for certificate to be issued (~5-10 minutes)</span>
+# Add DNS validation records to your DNS provider
+# Wait for certificate to be issued (~5-10 minutes)
 
-<span class="comment"># Get certificate ARN for next step</span>
+# Get certificate ARN for next step
 aws acm list-certificates --region us-east-1`}
             </div>
           </div>
@@ -409,12 +517,12 @@ aws acm list-certificates --region us-east-1`}
 {`cd terraform/eks
 make eks-secrets-populate
 
-<span class="comment"># You'll be prompted to enter:</span>
-<span class="comment"># - LITELLM_MASTER_KEY (generate with: openssl rand -hex 32)</span>
-<span class="comment"># - WEBUI_SECRET_KEY (generate with: openssl rand -hex 32)</span>
-<span class="comment"># - PERPLEXITY_API_KEY (from Perplexity account)</span>
+# You'll be prompted to enter:
+# - LITELLM_MASTER_KEY (generate with: openssl rand -hex 32)
+# - WEBUI_SECRET_KEY (generate with: openssl rand -hex 32)
+# - PERPLEXITY_API_KEY (from Perplexity account)
 
-<span class="comment"># Secrets are encrypted with AWS KMS</span>`}
+# Secrets are encrypted with AWS KMS`}
             </div>
           </div>
 
@@ -426,18 +534,18 @@ make eks-secrets-populate
               configuration.
             </p>
             <div className="code-block">
-{`<span class="comment"># Edit terraform/eks/terraform.tfvars</span>
+{`# Edit terraform/eks/terraform.tfvars
 vim terraform.tfvars
 
-<span class="comment"># Update these values:</span>
+# Update these values:
 cluster_name = "llm-gateway-eks"
 aws_region = "us-east-1"
 environment = "dev"
 
-<span class="comment"># Add your ACM certificate ARN</span>
+# Add your ACM certificate ARN
 acm_certificate_arn = "arn:aws:acm:us-east-1:YOUR_ACCOUNT:certificate/YOUR_CERT_ID"
 
-<span class="comment"># Enable ECR images</span>
+# Enable ECR images
 use_ecr_images = true
 ecr_image_tag = "latest"`}
             </div>
@@ -455,15 +563,15 @@ ecr_image_tag = "latest"`}
 terraform init
 terraform apply
 
-<span class="comment"># This creates:</span>
-<span class="comment"># - Kubernetes namespace (llm-gateway)</span>
-<span class="comment"># - IRSA role for LiteLLM (Bedrock + Secrets Manager access)</span>
-<span class="comment"># - LiteLLM deployment + service</span>
-<span class="comment"># - OpenWebUI deployment + service + PVC</span>
-<span class="comment"># - Network Load Balancer with ACM certificate</span>
-<span class="comment"># - NetworkPolicies for zero-trust isolation</span>
+# This creates:
+# - Kubernetes namespace (llm-gateway)
+# - IRSA role for LiteLLM (Bedrock + Secrets Manager access)
+# - LiteLLM deployment + service
+# - OpenWebUI deployment + service + PVC
+# - Network Load Balancer with ACM certificate
+# - NetworkPolicies for zero-trust isolation
 
-<span class="comment"># Wait ~5 minutes for LoadBalancer to provision</span>`}
+# Wait ~5 minutes for LoadBalancer to provision`}
             </div>
           </div>
 
@@ -477,11 +585,11 @@ terraform apply
             <div className="code-block">
 {`kubectl get svc openwebui -n llm-gateway
 
-<span class="comment"># Output:</span>
-<span class="comment"># NAME        TYPE           EXTERNAL-IP</span>
-<span class="comment"># openwebui   LoadBalancer   a4e51119...elb.us-east-1.amazonaws.com</span>
+# Output:
+# NAME        TYPE           EXTERNAL-IP
+# openwebui   LoadBalancer   a4e51119...elb.us-east-1.amazonaws.com
 
-<span class="comment"># Copy the EXTERNAL-IP for next step</span>`}
+# Copy the EXTERNAL-IP for next step`}
             </div>
           </div>
 
@@ -493,17 +601,17 @@ terraform apply
               for geo-restriction and DDoS protection.
             </p>
             <div className="code-block">
-{`<span class="comment"># In CloudFlare dashboard:</span>
+{`# In CloudFlare dashboard:
 Type: CNAME
 Name: openwebui
 Target: a4e51119be1d84777819e4effb129b14-6ba95aeb4b36de2e.elb.us-east-1.amazonaws.com
 Proxy status: Proxied (orange cloud) - for US-only access
 TTL: Auto
 
-<span class="comment"># Optional: Configure CloudFlare firewall rule for US-only access</span>
-<span class="comment"># See docs/cloudflare-setup.md for full guide</span>
+# Optional: Configure CloudFlare firewall rule for US-only access
+# See docs/cloudflare-setup.md for full guide
 
-<span class="comment"># Verify DNS configuration</span>
+# Verify DNS configuration
 make eks-verify-dns`}
             </div>
           </div>
@@ -516,20 +624,20 @@ make eks-verify-dns`}
               access the OpenWebUI interface.
             </p>
             <div className="code-block">
-{`<span class="comment"># Verify CloudFlare security (IP ranges, geo-restriction)</span>
+{`# Verify CloudFlare security (IP ranges, geo-restriction)
 make eks-verify-cloudflare
 
-<span class="comment"># Verify DNS configuration</span>
+# Verify DNS configuration
 make eks-verify-dns
 
-<span class="comment"># Check pod status</span>
+# Check pod status
 kubectl get pods -n llm-gateway
 
-<span class="comment"># Test HTTPS connection</span>
+# Test HTTPS connection
 curl -I https://openwebui.bhenning.com
 
-<span class="comment"># Access in browser:</span>
-<span class="comment"># https://openwebui.bhenning.com</span>`}
+# Access in browser:
+# https://openwebui.bhenning.com`}
             </div>
           </div>
         </div>
@@ -548,9 +656,17 @@ curl -I https://openwebui.bhenning.com
           </ul>
         </div>
 
-        <Link href="/llm-gateway" className="back-link">
-          ← Back to Overview
-        </Link>
+        <div className="bottom-nav">
+          <Link href="/llm-gateway/cost" className="nav-button">
+            ← Previous: Cost
+          </Link>
+          <Link href="/llm-gateway" className="nav-button">
+            Back to Overview
+          </Link>
+          <Link href="/llm-gateway/features" className="nav-button">
+            Next: Features →
+          </Link>
+        </div>
       </div>
     </div>
   );
