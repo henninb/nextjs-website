@@ -225,6 +225,14 @@ export default function LLMGatewayPage() {
               <span className="stat-label">AWS Bedrock + Perplexity</span>
             </div>
             <div className="stat">
+              <span className="stat-value">US-Only</span>
+              <span className="stat-label">Geo-Restricted Access</span>
+            </div>
+            <div className="stat">
+              <span className="stat-value">30+ Commands</span>
+              <span className="stat-label">Automated Workflows</span>
+            </div>
+            <div className="stat">
               <span className="stat-value">Zero-Trust</span>
               <span className="stat-label">Network Security</span>
             </div>
@@ -258,9 +266,9 @@ export default function LLMGatewayPage() {
             Security Features
           </h2>
           <p>
-            Dive into zero-trust networking, Kubernetes NetworkPolicies, IRSA
-            authentication, non-root containers, and defense-in-depth security
-            controls.
+            Dive into zero-trust networking, geo-restriction (US-only access),
+            CloudFlare protection, IRSA authentication, non-root containers, and
+            defense-in-depth security controls.
           </p>
           <span className="learn-more">
             Learn more <span>→</span>
@@ -288,9 +296,9 @@ export default function LLMGatewayPage() {
             Deployment Workflow
           </h2>
           <p>
-            Walk through the complete deployment process using Terraform, from
-            infrastructure provisioning to application deployment and DNS
-            configuration.
+            Walk through the complete deployment process using Terraform and
+            automated Make commands, from infrastructure provisioning to application
+            deployment, DNS configuration, and security verification.
           </p>
           <span className="learn-more">
             Learn more <span>→</span>

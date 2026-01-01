@@ -281,12 +281,15 @@ export default function DeploymentPage() {
             <div className="step-number">1</div>
             <h2>Clone Repository</h2>
             <p>
-              Start by cloning the LLM Gateway repository from GitHub to your
-              local machine.
+              Start by cloning the LLM Gateway repository from GitHub. The project
+              includes 30+ automated Make commands to simplify deployment.
             </p>
             <div className="code-block">
 {`git clone https://github.com/henninb/llm-gateway.git
-cd llm-gateway`}
+cd llm-gateway
+
+<span class="comment"># View all available commands</span>
+make help`}
             </div>
           </div>
 
@@ -484,20 +487,24 @@ terraform apply
 
           <div className="step">
             <div className="step-number">11</div>
-            <h2>Configure DNS</h2>
+            <h2>Configure DNS & Security</h2>
             <p>
-              Create a CNAME record in CloudFlare (or your DNS provider)
-              pointing to the LoadBalancer.
+              Create a CNAME record in CloudFlare. Enable proxy mode (orange cloud)
+              for geo-restriction and DDoS protection.
             </p>
             <div className="code-block">
 {`<span class="comment"># In CloudFlare dashboard:</span>
 Type: CNAME
 Name: openwebui
 Target: a4e51119be1d84777819e4effb129b14-6ba95aeb4b36de2e.elb.us-east-1.amazonaws.com
-Proxy status: DNS only (not proxied)
+Proxy status: Proxied (orange cloud) - for US-only access
 TTL: Auto
 
-<span class="comment"># Wait 5-10 minutes for DNS propagation</span>`}
+<span class="comment"># Optional: Configure CloudFlare firewall rule for US-only access</span>
+<span class="comment"># See docs/cloudflare-setup.md for full guide</span>
+
+<span class="comment"># Verify DNS configuration</span>
+make eks-verify-dns`}
             </div>
           </div>
 
@@ -505,20 +512,21 @@ TTL: Auto
             <div className="step-number">12</div>
             <h2>Verify Deployment</h2>
             <p>
-              Test the deployment by accessing the OpenWebUI interface via
-              HTTPS.
+              Test the deployment using automated verification commands and
+              access the OpenWebUI interface.
             </p>
             <div className="code-block">
-{`<span class="comment"># Check pod status</span>
-kubectl get pods -n llm-gateway
+{`<span class="comment"># Verify CloudFlare security (IP ranges, geo-restriction)</span>
+make eks-verify-cloudflare
 
-<span class="comment"># Check network policies</span>
-kubectl get networkpolicies -n llm-gateway
+<span class="comment"># Verify DNS configuration</span>
+make eks-verify-dns
+
+<span class="comment"># Check pod status</span>
+kubectl get pods -n llm-gateway
 
 <span class="comment"># Test HTTPS connection</span>
 curl -I https://openwebui.bhenning.com
-
-<span class="comment"># Expected: HTTP/2 200 OK</span>
 
 <span class="comment"># Access in browser:</span>
 <span class="comment"># https://openwebui.bhenning.com</span>`}
@@ -527,15 +535,16 @@ curl -I https://openwebui.bhenning.com
         </div>
 
         <div className="prerequisites" style={{ marginTop: "3rem" }}>
-          <h2>Post-Deployment Tasks</h2>
+          <h2>Operations & Monitoring</h2>
           <ul>
-            <li>Create CloudWatch alarms for cost monitoring</li>
-            <li>Set up CloudTrail logging for audit trail</li>
+            <li>Run monthly: make eks-verify-cloudflare (check CloudFlare IPs)</li>
+            <li>Monitor costs: make aws-costs-py (view AWS spending)</li>
+            <li>Review security: make iam-report (IAM roles and architecture)</li>
+            <li>Test models: make test-all (validate all 7 AI models)</li>
+            <li>Local testing: make eks-port-forward (access LiteLLM API)</li>
+            <li>Set up CloudWatch alarms for cost monitoring</li>
             <li>Configure automated EBS snapshots for backups</li>
             <li>Test Arena Mode with multiple models</li>
-            <li>Verify network policies are enforcing isolation</li>
-            <li>Review IAM permissions for least-privilege</li>
-            <li>Document deployment for team members</li>
           </ul>
         </div>
 

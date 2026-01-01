@@ -323,6 +323,40 @@ USER litellm
 
           <div className="security-card">
             <h2>
+              <span className="icon">🌍</span>
+              Geo-Restriction
+            </h2>
+            <p>
+              CloudFlare geo-restriction with NLB security group enforcement
+              limits access to US-only traffic and prevents direct bypass
+              attempts.
+            </p>
+
+            <h3>CloudFlare Protection</h3>
+            <ul>
+              <li>Firewall rule blocks non-US traffic (HTTP 403)</li>
+              <li>DDoS protection and WAF included</li>
+              <li>Bot mitigation and rate limiting</li>
+              <li>Analytics and logging for all requests</li>
+            </ul>
+
+            <h3>NLB Security Group</h3>
+            <ul>
+              <li>Only accepts HTTPS from CloudFlare IPs</li>
+              <li>Blocks all other source IPs at AWS level</li>
+              <li>Prevents direct NLB hostname access</li>
+              <li>Auto-updated with CloudFlare IP ranges</li>
+            </ul>
+
+            <div className="highlight-box">
+              <strong>Defense in Depth:</strong> Even if someone discovers the
+              NLB hostname, they cannot bypass CloudFlare because the security
+              group blocks all non-CloudFlare IPs.
+            </div>
+          </div>
+
+          <div className="security-card">
+            <h2>
               <span className="icon">🔒</span>
               Secrets Management
             </h2>
@@ -384,9 +418,10 @@ USER litellm
           <div className="layer">
             <h3>Layer 1: Network Perimeter</h3>
             <p>
-              CloudFlare DNS + NLB with ACM certificate provides DDoS
-              protection and encrypted connections. VPC security groups
-              restrict traffic to necessary ports only.
+              CloudFlare proxy with geo-restriction (US-only) and DDoS
+              protection filters traffic before it reaches AWS. NLB security
+              group enforces CloudFlare-IP-only access, preventing direct
+              bypass. ACM certificate ensures encrypted connections.
             </p>
           </div>
 
