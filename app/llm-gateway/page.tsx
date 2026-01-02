@@ -282,7 +282,7 @@ export default function LLMGatewayPage() {
         <h2>Technology Stack</h2>
         <div className="tech-stack">
           <a href="https://docs.aws.amazon.com/eks/" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS EKS (Kubernetes)</a>
-          <a href="https://en.wikipedia.org/wiki/Docker_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">Docker</a>
+          <a href="https://en.wikipedia.org/wiki/Docker_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS ECR (Docker)</a>
           <a href="https://en.wikipedia.org/wiki/Terraform_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">Terraform</a>
           <a href="https://en.wikipedia.org/wiki/Cloudflare" target="_blank" rel="noopener noreferrer" className="tech-badge">Cloudflare</a>
           <a href="https://github.com/BerriAI/litellm" target="_blank" rel="noopener noreferrer" className="tech-badge">LiteLLM</a>

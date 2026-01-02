@@ -334,6 +334,7 @@ export default function ArchitecturePage() {
           <div className="component-card">
             <h3>🎨 OpenWebUI</h3>
             <ul>
+              <li><strong>Runs as non-root user (UID 1000)</strong></li>
               <li>React-based web interface</li>
               <li>User authentication & session management</li>
               <li>Arena Mode for model comparison</li>
@@ -346,6 +347,7 @@ export default function ArchitecturePage() {
           <div className="component-card">
             <h3>🔄 LiteLLM</h3>
             <ul>
+              <li><strong>Runs as non-root user (UID 1000)</strong></li>
               <li>Universal LLM proxy server</li>
               <li>Multi-provider support (AWS, Perplexity)</li>
               <li>OpenAI-compatible API interface</li>

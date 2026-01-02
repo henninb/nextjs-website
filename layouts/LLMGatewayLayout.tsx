@@ -17,9 +17,13 @@ export default function LLMGatewayLayout({ children }: LLMGatewayLayoutProps) {
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)" }}>
       <style jsx>{`
         .nav-bar {
+          position: sticky;
+          top: 0;
+          z-index: 1100;
           background: linear-gradient(135deg, #00a8cc 0%, #00d4ff 100%);
           padding: 1.5rem;
           box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4);
+          backdrop-filter: blur(10px);
         }
 
         .nav-container {
@@ -29,7 +33,7 @@ export default function LLMGatewayLayout({ children }: LLMGatewayLayoutProps) {
 
         .nav-links {
           display: flex;
-          gap: 0.75rem;
+          gap: 1rem;
           justify-content: center;
           flex-wrap: wrap;
         }
@@ -38,28 +42,31 @@ export default function LLMGatewayLayout({ children }: LLMGatewayLayoutProps) {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 0.875rem 1.5rem;
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 8px;
+          padding: 0.75rem 1.25rem;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
+          border-radius: 12px;
           text-decoration: none;
           color: white;
-          font-size: 1.1rem;
-          font-weight: 600;
-          border: 2px solid transparent;
+          font-size: 1rem;
+          font-weight: 700;
+          border: 2px solid rgba(255, 255, 255, 0.3);
           transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .nav-link:hover:not(.active) {
-          background: rgba(255, 255, 255, 0.25);
-          border-color: white;
-          transform: translateY(-2px);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.2) 100%);
+          border-color: rgba(255, 255, 255, 0.6);
+          transform: translateY(-3px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
 
         .nav-link.active {
-          background: white;
+          background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
           color: #00a8cc;
           font-weight: 700;
-          border-color: white;
+          border: 3px solid white;
+          box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
         }
 
         .demo-button {
@@ -68,19 +75,19 @@ export default function LLMGatewayLayout({ children }: LLMGatewayLayoutProps) {
           gap: 0.5rem;
           padding: 0.75rem 1.5rem;
           background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-          border-radius: 20px;
+          border-radius: 12px;
           text-decoration: none;
           color: white;
           font-size: 1rem;
           font-weight: 700;
-          border: 2px solid #27ae60;
+          border: 3px solid #2ecc71;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+          box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
         }
 
         .demo-button:hover {
           transform: translateY(-3px);
-          box-shadow: 0 6px 20px rgba(46, 204, 113, 0.5);
+          box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
           background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
         }
 
@@ -91,11 +98,28 @@ export default function LLMGatewayLayout({ children }: LLMGatewayLayoutProps) {
         @media (max-width: 768px) {
           .nav-bar {
             padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1100;
+          }
+
+          .nav-links {
+            gap: 0.5rem;
           }
 
           .nav-link {
-            font-size: 0.95rem;
-            padding: 0.75rem 1.25rem;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.875rem;
+            gap: 0.35rem;
+          }
+
+          .nav-link span:first-child {
+            font-size: 1rem;
+          }
+
+          .demo-button {
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
           }
         }
       `}</style>
