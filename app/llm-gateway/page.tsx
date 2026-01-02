@@ -67,6 +67,7 @@ export default function LLMGatewayPage() {
         }
 
         .tech-badge {
+          display: inline-block;
           background: rgba(0, 212, 255, 0.15);
           backdrop-filter: blur(10px);
           padding: 0.75rem 1.5rem;
@@ -75,7 +76,9 @@ export default function LLMGatewayPage() {
           font-weight: 600;
           border: 2px solid rgba(0, 212, 255, 0.3);
           color: white;
+          text-decoration: none;
           transition: all 0.3s ease;
+          cursor: pointer;
         }
 
         .tech-badge:hover {
@@ -186,16 +189,15 @@ export default function LLMGatewayPage() {
         }
 
         .cta-secondary {
-          background: rgba(255, 255, 255, 0.1);
+          background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
           color: white;
-          border-color: rgba(255, 255, 255, 0.3);
-          backdrop-filter: blur(10px);
+          border-color: #9b59b6;
+          box-shadow: 0 8px 32px rgba(155, 89, 182, 0.4);
         }
 
         .cta-secondary:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: rgba(0, 212, 255, 0.5);
-          transform: translateY(-3px);
+          transform: translateY(-5px);
+          box-shadow: 0 12px 48px rgba(155, 89, 182, 0.6);
         }
 
         .cta-explore {
@@ -279,14 +281,14 @@ export default function LLMGatewayPage() {
       <div className="tech-section">
         <h2>Technology Stack</h2>
         <div className="tech-stack">
-          <span className="tech-badge">AWS EKS (Kubernetes)</span>
-          <span className="tech-badge">Docker</span>
-          <span className="tech-badge">Terraform</span>
-          <span className="tech-badge">Cloudflare</span>
-          <span className="tech-badge">LiteLLM</span>
-          <span className="tech-badge">OpenWebUI</span>
-          <span className="tech-badge">AWS Bedrock</span>
-          <span className="tech-badge">Perplexity</span>
+          <a href="https://docs.aws.amazon.com/eks/" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS EKS (Kubernetes)</a>
+          <a href="https://en.wikipedia.org/wiki/Docker_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">Docker</a>
+          <a href="https://en.wikipedia.org/wiki/Terraform_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">Terraform</a>
+          <a href="https://en.wikipedia.org/wiki/Cloudflare" target="_blank" rel="noopener noreferrer" className="tech-badge">Cloudflare</a>
+          <a href="https://github.com/BerriAI/litellm" target="_blank" rel="noopener noreferrer" className="tech-badge">LiteLLM</a>
+          <a href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener noreferrer" className="tech-badge">OpenWebUI</a>
+          <a href="https://docs.aws.amazon.com/bedrock/" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS Bedrock</a>
+          <a href="https://en.wikipedia.org/wiki/Perplexity.ai" target="_blank" rel="noopener noreferrer" className="tech-badge">Perplexity</a>
         </div>
       </div>
 
@@ -322,13 +324,13 @@ export default function LLMGatewayPage() {
             <span>🚀</span>
             <span>Live Demo</span>
           </a>
-          <Link
+          <a
             href="/llm-gateway/requirements"
             className="cta-button cta-explore"
           >
             <span>🎯</span>
             <span>Start Exploring</span>
-          </Link>
+          </a>
           <a
             href="https://github.com/henninb/llm-gateway"
             target="_blank"
@@ -336,7 +338,7 @@ export default function LLMGatewayPage() {
             className="cta-button cta-secondary"
           >
             <span>📚</span>
-            <span>Documentation</span>
+            <span>GitHub Repo</span>
           </a>
         </div>
       </div>
