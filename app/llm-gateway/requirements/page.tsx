@@ -1,9 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function RequirementsPage() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const totalSteps = 7; // 5 core objectives + 2 stretch goals
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      // Don't advance if clicking on a link
+      const target = e.target as HTMLElement;
+      if (target.tagName === "A" || target.closest("a")) {
+        return;
+      }
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+    };
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === "r" || e.key === "R") {
+        setCurrentStep(0);
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+    document.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, []);
+
   return (
     <div className="requirements-container">
       <style jsx>{`
@@ -11,6 +39,7 @@ export default function RequirementsPage() {
           min-height: 100vh;
           padding: 0;
           color: white;
+          cursor: pointer;
         }
 
         .header {
@@ -81,6 +110,14 @@ export default function RequirementsPage() {
           margin: 1.5rem 0;
           border-radius: 12px;
           border-left: 5px solid #2ecc71;
+          opacity: 0;
+          transform: translateY(30px);
+          transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .objective.visible {
+          opacity: 1;
+          transform: translateY(0);
         }
 
         .objective.exceeded {
@@ -187,6 +224,14 @@ export default function RequirementsPage() {
           margin: 1.5rem 0;
           border-radius: 12px;
           border-left: 5px solid #f39c12;
+          opacity: 0;
+          transform: translateY(30px);
+          transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .stretch-goal.visible {
+          opacity: 1;
+          transform: translateY(0);
         }
 
         .summary-section {
@@ -252,6 +297,77 @@ export default function RequirementsPage() {
           transform: translateY(-2px);
         }
 
+        .progress-dots {
+          position: fixed;
+          bottom: 2rem;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 0.75rem;
+          z-index: 1000;
+          background: rgba(0, 0, 0, 0.5);
+          padding: 1rem 1.5rem;
+          border-radius: 30px;
+          backdrop-filter: blur(10px);
+        }
+
+        .progress-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+          background: #2ecc71;
+          transform: scale(1.3);
+        }
+
+        .progress-dot.completed {
+          background: rgba(46, 204, 113, 0.6);
+        }
+
+        .reset-hint {
+          position: fixed;
+          top: 1rem;
+          right: 1rem;
+          background: rgba(0, 0, 0, 0.7);
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          opacity: 0.7;
+          z-index: 1000;
+        }
+
+        .click-hint {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(0, 0, 0, 0.9);
+          padding: 2rem 3rem;
+          border-radius: 16px;
+          font-size: 1.5rem;
+          z-index: 999;
+          text-align: center;
+          border: 2px solid #00d4ff;
+          animation: pulse 2s infinite;
+          pointer-events: none;
+        }
+
+        @keyframes pulse {
+          0%,
+          100% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(1.05);
+          }
+        }
+
         .bottom-nav {
           display: flex;
           gap: 1rem;
@@ -299,6 +415,35 @@ export default function RequirementsPage() {
         }
       `}</style>
 
+      {currentStep === 0 && (
+        <div className="click-hint">
+          Click anywhere to begin
+          <br />
+          <span style={{ fontSize: "1rem", opacity: 0.8 }}>
+            or tap on mobile
+          </span>
+        </div>
+      )}
+
+      {currentStep > 0 && (
+        <div className="reset-hint">Press 'R' to reset</div>
+      )}
+
+      <div className="progress-dots">
+        {[...Array(totalSteps)].map((_, index) => (
+          <div
+            key={index}
+            className={`progress-dot ${
+              index + 1 === currentStep
+                ? "active"
+                : index + 1 < currentStep
+                  ? "completed"
+                  : ""
+            }`}
+          />
+        ))}
+      </div>
+
       <div className="header">
         <h1>🎯 Project Requirements</h1>
         <p>
@@ -322,7 +467,7 @@ export default function RequirementsPage() {
         <div className="objectives-section">
           <h2>Core Objectives</h2>
 
-          <div className="objective exceeded">
+          <div className={`objective exceeded ${currentStep >= 1 ? "visible" : ""}`}>
             <div className="number">OBJECTIVE 1</div>
             <h3>
               Deploy LiteLLM in AWS
@@ -347,7 +492,7 @@ export default function RequirementsPage() {
             </div>
           </div>
 
-          <div className="objective exceeded">
+          <div className={`objective exceeded ${currentStep >= 2 ? "visible" : ""}`}>
             <div className="number">OBJECTIVE 2</div>
             <h3>
               Configure Multiple AWS Bedrock Models
@@ -372,7 +517,7 @@ export default function RequirementsPage() {
             </div>
           </div>
 
-          <div className="objective exceeded">
+          <div className={`objective exceeded ${currentStep >= 3 ? "visible" : ""}`}>
             <div className="number">OBJECTIVE 3</div>
             <h3>
               Use IAM Roles (No Static Keys)
@@ -402,7 +547,7 @@ export default function RequirementsPage() {
             </div>
           </div>
 
-          <div className="objective complete">
+          <div className={`objective complete ${currentStep >= 4 ? "visible" : ""}`}>
             <div className="number">OBJECTIVE 4</div>
             <h3>
               Test Model Access
@@ -429,7 +574,7 @@ export default function RequirementsPage() {
             </div>
           </div>
 
-          <div className="objective exceeded">
+          <div className={`objective exceeded ${currentStep >= 5 ? "visible" : ""}`}>
             <div className="number">OBJECTIVE 5</div>
             <h3>
               Demonstrate Deployment
@@ -457,7 +602,7 @@ export default function RequirementsPage() {
         <div className="stretch-goals">
           <h2>🌟 Stretch Goals - BOTH ACHIEVED</h2>
 
-          <div className="stretch-goal">
+          <div className={`stretch-goal ${currentStep >= 6 ? "visible" : ""}`}>
             <div className="number">STRETCH GOAL 1</div>
             <h3>
               Container Orchestration (ECS/EKS)
@@ -482,7 +627,7 @@ export default function RequirementsPage() {
             </div>
           </div>
 
-          <div className="stretch-goal">
+          <div className={`stretch-goal ${currentStep >= 7 ? "visible" : ""}`}>
             <div className="number">STRETCH GOAL 2</div>
             <h3>
               Infrastructure as Code
