@@ -9,8 +9,7 @@ export default function ArchitecturePage() {
       <style jsx>{`
         .architecture-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-          padding: 2rem;
+          padding: 0;
           color: white;
         }
 
@@ -22,16 +21,17 @@ export default function ArchitecturePage() {
         }
 
         .header h1 {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+          font-size: 4.5rem;
+          margin-bottom: 1.5rem;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
-          font-size: 1.125rem;
-          opacity: 0.9;
-          max-width: 800px;
+          font-size: 1.75rem;
+          opacity: 0.95;
+          max-width: 1000px;
           margin: 0 auto;
+          line-height: 1.8;
         }
 
         .content {
@@ -48,16 +48,51 @@ export default function ArchitecturePage() {
           border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .diagram {
+        .visual-diagram {
           background: white;
-          color: #333;
           padding: 2rem;
+          border-radius: 12px;
+          margin: 1rem 0;
+        }
+
+        .diagram-box {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 1.5rem;
           border-radius: 8px;
-          font-family: monospace;
-          font-size: 0.75rem;
-          line-height: 1.4;
-          overflow-x: auto;
-          white-space: pre;
+          margin: 1rem;
+          text-align: center;
+        }
+
+        .diagram-box h4 {
+          font-size: 1.5rem;
+          margin-bottom: 0.5rem;
+          font-weight: 700;
+        }
+
+        .diagram-box p {
+          font-size: 1.1rem;
+          opacity: 0.95;
+          margin: 0.25rem 0;
+        }
+
+        .diagram-arrow {
+          text-align: center;
+          font-size: 2rem;
+          color: white;
+          margin: 0.5rem 0;
+        }
+
+        .diagram-row {
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        .diagram-row .diagram-box {
+          flex: 1;
+          min-width: 280px;
         }
 
         .components-grid {
@@ -98,7 +133,7 @@ export default function ArchitecturePage() {
           content: "→";
           position: absolute;
           left: 0;
-          color: #4fd1c5;
+          color: #00d4ff;
         }
 
         .tech-details {
@@ -128,7 +163,7 @@ export default function ArchitecturePage() {
         .tech-label {
           font-weight: 600;
           min-width: 200px;
-          color: #4fd1c5;
+          color: #00d4ff;
         }
 
         .tech-value {
@@ -154,50 +189,6 @@ export default function ArchitecturePage() {
         .back-link:hover {
           background: rgba(255, 255, 255, 0.3);
           transform: translateY(-2px);
-        }
-
-        .nav-bar {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(10px);
-          padding: 1rem;
-          margin: 0 auto 2rem;
-          max-width: 1400px;
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-links {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-
-        .nav-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.625rem 1rem;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          text-decoration: none;
-          color: white;
-          font-size: 0.875rem;
-          font-weight: 500;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: all 0.2s ease;
-        }
-
-        .nav-link:hover:not(.active) {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
-        }
-
-        .nav-link.active {
-          background: rgba(255, 255, 255, 0.4);
-          border-color: rgba(255, 255, 255, 0.5);
-          font-weight: 600;
-          cursor: default;
         }
 
         .bottom-nav {
@@ -261,124 +252,77 @@ export default function ArchitecturePage() {
         </p>
       </div>
 
-      <nav className="nav-bar">
-        <div className="nav-links">
-          <Link href="/llm-gateway" className="nav-link">
-            <span>🏠</span>
-            <span>Overview</span>
-          </Link>
-          <Link href="/llm-gateway/architecture" className="nav-link active">
-            <span>🏗️</span>
-            <span>Architecture</span>
-          </Link>
-          <Link href="/llm-gateway/security" className="nav-link">
-            <span>🔒</span>
-            <span>Security</span>
-          </Link>
-          <Link href="/llm-gateway/cost" className="nav-link">
-            <span>💰</span>
-            <span>Cost</span>
-          </Link>
-          <Link href="/llm-gateway/deployment" className="nav-link">
-            <span>🚀</span>
-            <span>Deployment</span>
-          </Link>
-          <Link href="/llm-gateway/features" className="nav-link">
-            <span>✨</span>
-            <span>Features</span>
-          </Link>
-          <Link href="/llm-gateway/requirements" className="nav-link">
-            <span>🎯</span>
-            <span>Requirements</span>
-          </Link>
-        </div>
-      </nav>
-
       <div className="content">
         <div className="diagram-section">
-          <h2 style={{ marginBottom: "1rem" }}>System Architecture Diagram</h2>
-          <div className="diagram">
-{`
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                            AWS EKS Cluster                                    ║
-║                    llm-gateway-eks (Kubernetes 1.34)                          ║
-║                                                                               ║
-║   ╔═══════════════════════════╗         ╔═══════════════════════════════╗   ║
-║   ║     OpenWebUI Pod         ║         ║      LiteLLM Pod              ║   ║
-║   ║   ┌───────────────────┐   ║         ║   ┌───────────────────────┐   ║   ║
-║   ║   │ Web Interface     │   ║         ║   │ LLM Proxy Gateway     │   ║   ║
-║   ║   │ • React Frontend  │   ║  HTTP   ║   │ • Multi-Provider API  │   ║   ║
-║   ║   │ • Authentication  │◄──╫─────────╫───┤ • Rate Limiting       │   ║   ║
-║   ║   │ • Arena Mode      │   ║  :4000  ║   │ • Cost Tracking       │   ║   ║
-║   ║   │ • Chat History    │   ║         ║   │ • Request Routing     │   ║   ║
-║   ║   └───────────────────┘   ║         ║   └───────────────────────┘   ║   ║
-║   ║                           ║         ║                               ║   ║
-║   ║   Port: 8080              ║         ║   Port: 4000                  ║   ║
-║   ║   User: 1000 (non-root)   ║         ║   User: 1000 (non-root)       ║   ║
-║   ║   Storage: EBS Volume     ║         ║   IRSA: Bedrock + Secrets     ║   ║
-║   ╚═══════════╤═══════════════╝         ╚══════════╤════════════════════╝   ║
-║               │                                    │                        ║
-║               │   ┌────────────────────────────┐   │                        ║
-║               └───┤  Network Policies          │───┘                        ║
-║                   │  (Zero-Trust Isolation)    │                            ║
-║                   └────────────────────────────┘                            ║
-╚═══════════════════╤════════════════════════════════╤═══════════════════════╝
-                    │                                │
-                    │                                │
-         ┌──────────▼──────────┐                    │
-         │                     │                    ├─────► AWS Bedrock
-         │  Network LB (NLB)   │                    │       ┌──────────────────┐
-         │  • Port 443 (HTTPS) │                    │       │ • nova-micro     │
-         │  • ACM Certificate  │                    │       │ • nova-lite      │
-         │  • SSL Termination  │                    │       │ • nova-pro       │
-         │                     │                    │       │ • llama3-2-1b    │
-         └──────────┬──────────┘                    │       │ • llama3-2-3b    │
-                    │                                │       └──────────────────┘
-         ┌──────────▼──────────┐                    │
-         │                     │                    └─────► Perplexity API
-         │   CloudFlare DNS    │                            ┌──────────────────┐
-         │   (DNS Only Mode)   │                            │ • sonar          │
-         │                     │                            │ • sonar-pro      │
-         └──────────┬──────────┘                            └──────────────────┘
-                    │
-                    ▼
-         openwebui.bhenning.com
+          <h2 style={{ marginBottom: "1rem", fontSize: "2.5rem" }}>System Architecture</h2>
+          <div className="visual-diagram">
+            <div className="diagram-box" style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }}>
+              <h4>🌐 User Access</h4>
+              <p>openwebui.bhenning.com</p>
+            </div>
 
+            <div className="diagram-arrow">↓</div>
 
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                           VPC Network Layout                                  ║
-║                              10.0.0.0/16                                      ║
-║                                                                               ║
-║   ┌─────────────────────────────────────────────────────────────────────┐   ║
-║   │  PUBLIC SUBNETS (2 AZs)                                             │   ║
-║   │  10.0.0.0/24 (us-east-1a), 10.0.1.0/24 (us-east-1b)                 │   ║
-║   │                                                                     │   ║
-║   │   ┌──────────────────┐           ┌──────────────┐                  │   ║
-║   │   │ Internet Gateway │──────────►│ NAT Gateway  │                  │   ║
-║   │   └────────┬─────────┘           └──────┬───────┘                  │   ║
-║   │            │                             │                          │   ║
-║   │            │                             │                          │   ║
-║   │            ▼                             │                          │   ║
-║   │   ┌──────────────────┐                  │                          │   ║
-║   │   │  NLB - HTTPS     │                  │                          │   ║
-║   │   │  Port 443        │                  │                          │   ║
-║   │   └──────────────────┘                  │                          │   ║
-║   └──────────────────────────────────────────┼──────────────────────────┘   ║
-║                                              │                               ║
-║   ┌──────────────────────────────────────────▼──────────────────────────┐   ║
-║   │  PRIVATE SUBNETS (2 AZs)                                            │   ║
-║   │  10.0.10.0/24 (us-east-1a), 10.0.11.0/24 (us-east-1b)               │   ║
-║   │                                                                     │   ║
-║   │   ┌─────────────────────────────────────────────────────────┐      │   ║
-║   │   │  EKS Worker Nodes (SPOT Instances)                      │      │   ║
-║   │   │  • Instance Types: t3.medium, t3a.medium, t2.medium     │      │   ║
-║   │   │  • Scaling: Min 2, Desired 2, Max 4                     │      │   ║
-║   │   │  • Pods: OpenWebUI + LiteLLM                            │      │   ║
-║   │   │  • Storage: EBS CSI Driver (gp3 volumes)                │      │   ║
-║   │   └─────────────────────────────────────────────────────────┘      │   ║
-║   └─────────────────────────────────────────────────────────────────────┘   ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-`}
+            <div className="diagram-box" style={{ background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" }}>
+              <h4>☁️ CloudFlare DNS</h4>
+              <p>US-Only Geo-Restriction • DDoS Protection</p>
+            </div>
+
+            <div className="diagram-arrow">↓</div>
+
+            <div className="diagram-box" style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
+              <h4>🔐 Network Load Balancer</h4>
+              <p>HTTPS Port 443 • ACM Certificate • SSL Termination</p>
+            </div>
+
+            <div className="diagram-arrow">↓</div>
+
+            <div style={{ background: "rgba(255,255,255,0.15)", padding: "2rem", borderRadius: "12px", margin: "1rem" }}>
+              <h3 style={{ textAlign: "center", fontSize: "2rem", marginBottom: "1.5rem", color: "white" }}>
+                ☸️ AWS EKS Cluster (Kubernetes 1.34)
+              </h3>
+
+              <div className="diagram-row">
+                <div className="diagram-box" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+                  <h4>🎨 OpenWebUI Pod</h4>
+                  <p>Port 8080</p>
+                  <p>React Frontend</p>
+                  <p>Arena Mode</p>
+                  <p>EBS Storage</p>
+                  <p>Non-root (UID 1000)</p>
+                </div>
+
+                <div className="diagram-box" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+                  <h4>🔄 LiteLLM Pod</h4>
+                  <p>Port 4000</p>
+                  <p>Multi-Provider API</p>
+                  <p>Rate Limiting</p>
+                  <p>IRSA Auth</p>
+                  <p>Non-root (UID 1000)</p>
+                </div>
+              </div>
+
+              <div className="diagram-box" style={{ background: "linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)", marginTop: "1rem" }}>
+                <h4>🛡️ Network Policies</h4>
+                <p>Zero-Trust Pod Isolation • Deny-by-Default</p>
+              </div>
+            </div>
+
+            <div className="diagram-arrow">↓</div>
+
+            <div className="diagram-row">
+              <div className="diagram-box" style={{ background: "linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)" }}>
+                <h4>🤖 AWS Bedrock</h4>
+                <p>Nova Models (3)</p>
+                <p>Llama Models (2)</p>
+              </div>
+
+              <div className="diagram-box" style={{ background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" }}>
+                <h4>🔍 Perplexity API</h4>
+                <p>Sonar</p>
+                <p>Sonar Pro</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -540,11 +484,11 @@ export default function ArchitecturePage() {
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway" className="nav-button">
-            ← Back to Overview
+          <Link href="/llm-gateway/requirements" className="nav-button">
+            ← Previous: Requirements
           </Link>
-          <Link href="/llm-gateway/security" className="nav-button">
-            Next: Security →
+          <Link href="/llm-gateway/deployment" className="nav-button">
+            Next: Deployment →
           </Link>
         </div>
       </div>

@@ -156,6 +156,7 @@ export default function Layout({ children }: LayoutProps) {
   const { isAuthenticated, user, logout } = useAuth();
 
   const isFinancePage = pathname?.startsWith("/finance") || pathname?.startsWith("/login") || pathname?.startsWith("/register") || false;
+  const isLLMGatewayPage = pathname?.startsWith("/llm-gateway") || false;
 
   // Helper function to safely get user display name with security best practices
   const getUserDisplayName = (): string => {
@@ -471,6 +472,11 @@ export default function Layout({ children }: LayoutProps) {
       {children}
     </Box>
   );
+
+  // LLM Gateway pages have their own layout, skip the AppBar entirely
+  if (isLLMGatewayPage) {
+    return <>{children}</>;
+  }
 
   return isFinancePage ? <FinanceLayout>{content}</FinanceLayout> : content;
 }

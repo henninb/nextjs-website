@@ -4,14 +4,21 @@ import React from "react";
 import Link from "next/link";
 
 export default function DeploymentPage() {
+  const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
+
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text.trim());
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
   return (
     <div className="deployment-container">
       <style jsx>{`
         .deployment-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-          padding: 2rem;
-          color: #333;
+          padding: 0;
+          color: white;
         }
 
         .header {
@@ -23,16 +30,17 @@ export default function DeploymentPage() {
         }
 
         .header h1 {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+          font-size: 4.5rem;
+          margin-bottom: 1.5rem;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
-          font-size: 1.125rem;
+          font-size: 1.75rem;
           opacity: 0.95;
-          max-width: 800px;
+          max-width: 1000px;
           margin: 0 auto;
+          line-height: 1.8;
         }
 
         .content {
@@ -57,7 +65,7 @@ export default function DeploymentPage() {
           position: absolute;
           top: -15px;
           left: 2rem;
-          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+          background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
           color: white;
           width: 50px;
           height: 50px;
@@ -89,11 +97,36 @@ export default function DeploymentPage() {
           padding: 1.25rem;
           border-radius: 8px;
           font-family: "Courier New", monospace;
-          font-size: 0.875rem;
+          font-size: 1.1rem;
           overflow-x: auto;
           margin: 1rem 0;
           white-space: pre;
-          line-height: 1.5;
+          line-height: 1.6;
+          position: relative;
+        }
+
+        .copy-button {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          background: rgba(46, 204, 113, 0.9);
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.875rem;
+          font-weight: 600;
+          transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+          background: rgba(46, 204, 113, 1);
+          transform: scale(1.05);
+        }
+
+        .copy-button.copied {
+          background: rgba(52, 152, 219, 0.9);
         }
 
         .code-block .comment {
@@ -162,7 +195,7 @@ export default function DeploymentPage() {
         }
 
         .module-card {
-          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+          background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
           color: white;
           padding: 1.5rem;
           border-radius: 8px;
@@ -199,55 +232,6 @@ export default function DeploymentPage() {
         .back-link:hover {
           transform: translateY(-2px);
           box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .nav-bar {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(10px);
-          padding: 1rem;
-          margin: 0 auto 2rem;
-          max-width: 1400px;
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-links {
-          display: flex;
-          gap: 0.75rem;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .nav-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.625rem 1rem;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          text-decoration: none;
-          color: white;
-          font-size: 0.875rem;
-          font-weight: 500;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: all 0.2s ease;
-        }
-
-        .nav-link:hover {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.4);
-          transform: translateY(-1px);
-        }
-
-        .nav-link.active {
-          background: rgba(255, 255, 255, 0.4);
-          border-color: rgba(255, 255, 255, 0.5);
-          font-weight: 600;
-          cursor: default;
-        }
-
-        .nav-link.active:hover {
-          transform: none;
         }
 
         .bottom-nav {
@@ -307,39 +291,6 @@ export default function DeploymentPage() {
         </p>
       </div>
 
-      <nav className="nav-bar">
-        <div className="nav-links">
-          <Link href="/llm-gateway" className="nav-link">
-            <span>🏠</span>
-            <span>Overview</span>
-          </Link>
-          <Link href="/llm-gateway/architecture" className="nav-link">
-            <span>🏗️</span>
-            <span>Architecture</span>
-          </Link>
-          <Link href="/llm-gateway/security" className="nav-link">
-            <span>🔒</span>
-            <span>Security</span>
-          </Link>
-          <Link href="/llm-gateway/cost" className="nav-link">
-            <span>💰</span>
-            <span>Cost</span>
-          </Link>
-          <Link href="/llm-gateway/deployment" className="nav-link active">
-            <span>🚀</span>
-            <span>Deployment</span>
-          </Link>
-          <Link href="/llm-gateway/features" className="nav-link">
-            <span>✨</span>
-            <span>Features</span>
-          </Link>
-          <Link href="/llm-gateway/requirements" className="nav-link">
-            <span>🎯</span>
-            <span>Requirements</span>
-          </Link>
-        </div>
-      </nav>
-
       <div className="content">
         <div className="prerequisites">
           <h2>Prerequisites</h2>
@@ -393,6 +344,16 @@ export default function DeploymentPage() {
               includes 30+ automated Make commands to simplify deployment.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 1 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`git clone https://github.com/henninb/llm-gateway.git
+cd llm-gateway
+
+# View all available commands
+make help`, 1)}
+              >
+                {copiedIndex === 1 ? "Copied!" : "Copy"}
+              </button>
 {`git clone https://github.com/henninb/llm-gateway.git
 cd llm-gateway
 
@@ -409,6 +370,14 @@ make help`}
               This eliminates Docker Hub rate limits.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 2 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`cd terraform/ecr
+terraform init
+terraform apply`, 2)}
+              >
+                {copiedIndex === 2 ? "Copied!" : "Copy"}
+              </button>
 {`cd terraform/ecr
 terraform init
 terraform apply
@@ -426,6 +395,13 @@ terraform apply
               Build the LiteLLM and OpenWebUI containers and push them to ECR.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 3 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`cd ../..
+./tools/build-and-push-ecr.sh`, 3)}
+              >
+                {copiedIndex === 3 ? "Copied!" : "Copy"}
+              </button>
 {`cd ../..
 ./tools/build-and-push-ecr.sh
 
@@ -445,6 +421,14 @@ terraform apply
               nodes using Terraform.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 4 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`cd terraform/eks-cluster
+terraform init
+terraform apply`, 4)}
+              >
+                {copiedIndex === 4 ? "Copied!" : "Copy"}
+              </button>
 {`cd terraform/eks-cluster
 terraform init
 terraform apply
@@ -470,6 +454,13 @@ terraform apply
               Update your local kubeconfig to connect to the new EKS cluster.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 5 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`aws eks update-kubeconfig --region us-east-1 --name llm-gateway-eks
+kubectl get nodes`, 5)}
+              >
+                {copiedIndex === 5 ? "Copied!" : "Copy"}
+              </button>
 {`aws eks update-kubeconfig \\
   --region us-east-1 \\
   --name llm-gateway-eks
@@ -492,6 +483,13 @@ kubectl get nodes
               your domain.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 6 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`aws acm request-certificate --domain-name openwebui.bhenning.com --validation-method DNS --region us-east-1
+aws acm list-certificates --region us-east-1`, 6)}
+              >
+                {copiedIndex === 6 ? "Copied!" : "Copy"}
+              </button>
 {`# Request certificate (via AWS Console or CLI)
 aws acm request-certificate \\
   --domain-name openwebui.bhenning.com \\
@@ -514,6 +512,13 @@ aws acm list-certificates --region us-east-1`}
               secure access by pods.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 7 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`cd terraform/eks
+make eks-secrets-populate`, 7)}
+              >
+                {copiedIndex === 7 ? "Copied!" : "Copy"}
+              </button>
 {`cd terraform/eks
 make eks-secrets-populate
 
@@ -534,6 +539,12 @@ make eks-secrets-populate
               configuration.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 8 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`vim terraform.tfvars`, 8)}
+              >
+                {copiedIndex === 8 ? "Copied!" : "Copy"}
+              </button>
 {`# Edit terraform/eks/terraform.tfvars
 vim terraform.tfvars
 
@@ -559,6 +570,14 @@ ecr_image_tag = "latest"`}
               roles.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 9 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`cd terraform/eks
+terraform init
+terraform apply`, 9)}
+              >
+                {copiedIndex === 9 ? "Copied!" : "Copy"}
+              </button>
 {`cd terraform/eks
 terraform init
 terraform apply
@@ -583,6 +602,12 @@ terraform apply
               configuration.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 10 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`kubectl get svc openwebui -n llm-gateway`, 10)}
+              >
+                {copiedIndex === 10 ? "Copied!" : "Copy"}
+              </button>
 {`kubectl get svc openwebui -n llm-gateway
 
 # Output:
@@ -601,6 +626,12 @@ terraform apply
               for geo-restriction and DDoS protection.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 11 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`make eks-verify-dns`, 11)}
+              >
+                {copiedIndex === 11 ? "Copied!" : "Copy"}
+              </button>
 {`# In CloudFlare dashboard:
 Type: CNAME
 Name: openwebui
@@ -624,6 +655,15 @@ make eks-verify-dns`}
               access the OpenWebUI interface.
             </p>
             <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 12 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`make eks-verify-cloudflare
+make eks-verify-dns
+kubectl get pods -n llm-gateway
+curl -I https://openwebui.bhenning.com`, 12)}
+              >
+                {copiedIndex === 12 ? "Copied!" : "Copy"}
+              </button>
 {`# Verify CloudFlare security (IP ranges, geo-restriction)
 make eks-verify-cloudflare
 
@@ -657,11 +697,8 @@ curl -I https://openwebui.bhenning.com
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway/cost" className="nav-button">
-            ← Previous: Cost
-          </Link>
-          <Link href="/llm-gateway" className="nav-button">
-            Back to Overview
+          <Link href="/llm-gateway/architecture" className="nav-button">
+            ← Previous: Architecture
           </Link>
           <Link href="/llm-gateway/features" className="nav-button">
             Next: Features →

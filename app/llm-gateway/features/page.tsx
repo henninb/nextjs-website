@@ -9,8 +9,7 @@ export default function FeaturesPage() {
       <style jsx>{`
         .features-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-          padding: 2rem;
+          padding: 0;
           color: white;
         }
 
@@ -22,16 +21,17 @@ export default function FeaturesPage() {
         }
 
         .header h1 {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+          font-size: 4.5rem;
+          margin-bottom: 1.5rem;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
-          font-size: 1.125rem;
+          font-size: 1.75rem;
           opacity: 0.95;
-          max-width: 800px;
+          max-width: 1000px;
           margin: 0 auto;
+          line-height: 1.8;
         }
 
         .demo-link-box {
@@ -294,55 +294,6 @@ export default function FeaturesPage() {
           transform: translateY(-2px);
         }
 
-        .nav-bar {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(10px);
-          padding: 1rem;
-          margin: 0 auto 2rem;
-          max-width: 1400px;
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-links {
-          display: flex;
-          gap: 0.75rem;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .nav-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.625rem 1rem;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          text-decoration: none;
-          color: white;
-          font-size: 0.875rem;
-          font-weight: 500;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: all 0.2s ease;
-        }
-
-        .nav-link:hover {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.4);
-          transform: translateY(-1px);
-        }
-
-        .nav-link.active {
-          background: rgba(255, 255, 255, 0.4);
-          border-color: rgba(255, 255, 255, 0.5);
-          font-weight: 600;
-          cursor: default;
-        }
-
-        .nav-link.active:hover {
-          transform: none;
-        }
-
         .bottom-nav {
           display: flex;
           gap: 1rem;
@@ -395,39 +346,6 @@ export default function FeaturesPage() {
           features, and real-world applications.
         </p>
       </div>
-
-      <nav className="nav-bar">
-        <div className="nav-links">
-          <Link href="/llm-gateway" className="nav-link">
-            <span>🏠</span>
-            <span>Overview</span>
-          </Link>
-          <Link href="/llm-gateway/architecture" className="nav-link">
-            <span>🏗️</span>
-            <span>Architecture</span>
-          </Link>
-          <Link href="/llm-gateway/security" className="nav-link">
-            <span>🔒</span>
-            <span>Security</span>
-          </Link>
-          <Link href="/llm-gateway/cost" className="nav-link">
-            <span>💰</span>
-            <span>Cost</span>
-          </Link>
-          <Link href="/llm-gateway/deployment" className="nav-link">
-            <span>🚀</span>
-            <span>Deployment</span>
-          </Link>
-          <Link href="/llm-gateway/features" className="nav-link active">
-            <span>✨</span>
-            <span>Features</span>
-          </Link>
-          <Link href="/llm-gateway/requirements" className="nav-link">
-            <span>🎯</span>
-            <span>Requirements</span>
-          </Link>
-        </div>
-      </nav>
 
       <div className="content">
         <div className="demo-link-box">
@@ -764,11 +682,8 @@ export default function FeaturesPage() {
           <Link href="/llm-gateway/deployment" className="nav-button">
             ← Previous: Deployment
           </Link>
-          <Link href="/llm-gateway" className="nav-button">
-            Back to Overview
-          </Link>
-          <Link href="/llm-gateway/requirements" className="nav-button">
-            Next: Requirements →
+          <Link href="/llm-gateway/security" className="nav-button">
+            Next: Security →
           </Link>
         </div>
       </div>

@@ -9,8 +9,7 @@ export default function SecurityPage() {
       <style jsx>{`
         .security-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
-          padding: 2rem;
+          padding: 0;
           color: white;
         }
 
@@ -22,16 +21,17 @@ export default function SecurityPage() {
         }
 
         .header h1 {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+          font-size: 4.5rem;
+          margin-bottom: 1.5rem;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
-          font-size: 1.125rem;
-          opacity: 0.9;
-          max-width: 800px;
+          font-size: 1.75rem;
+          opacity: 0.95;
+          max-width: 1000px;
           margin: 0 auto;
+          line-height: 1.8;
         }
 
         .content {
@@ -74,7 +74,7 @@ export default function SecurityPage() {
         .security-card h3 {
           font-size: 1.25rem;
           margin: 1.5rem 0 0.75rem;
-          color: #4fd1c5;
+          color: #00d4ff;
         }
 
         .security-card ul {
@@ -93,7 +93,7 @@ export default function SecurityPage() {
           content: "✓";
           position: absolute;
           left: 0;
-          color: #4fd1c5;
+          color: #00d4ff;
           font-weight: bold;
         }
 
@@ -143,7 +143,7 @@ export default function SecurityPage() {
         .layer h3 {
           font-size: 1.5rem;
           margin-bottom: 0.75rem;
-          color: #4fd1c5;
+          color: #00d4ff;
         }
 
         .layer p {
@@ -170,50 +170,6 @@ export default function SecurityPage() {
         .back-link:hover {
           background: rgba(255, 255, 255, 0.3);
           transform: translateY(-2px);
-        }
-
-        .nav-bar {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(10px);
-          padding: 1rem;
-          margin: 0 auto 2rem;
-          max-width: 1400px;
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-links {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-
-        .nav-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.625rem 1rem;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          text-decoration: none;
-          color: white;
-          font-size: 0.875rem;
-          font-weight: 500;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: all 0.2s ease;
-        }
-
-        .nav-link:hover:not(.active) {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
-        }
-
-        .nav-link.active {
-          background: rgba(255, 255, 255, 0.4);
-          border-color: rgba(255, 255, 255, 0.5);
-          font-weight: 600;
-          cursor: default;
         }
 
         .bottom-nav {
@@ -265,39 +221,6 @@ export default function SecurityPage() {
           workloads.
         </p>
       </div>
-
-      <nav className="nav-bar">
-        <div className="nav-links">
-          <Link href="/llm-gateway" className="nav-link">
-            <span>🏠</span>
-            <span>Overview</span>
-          </Link>
-          <Link href="/llm-gateway/architecture" className="nav-link">
-            <span>🏗️</span>
-            <span>Architecture</span>
-          </Link>
-          <Link href="/llm-gateway/security" className="nav-link active">
-            <span>🔒</span>
-            <span>Security</span>
-          </Link>
-          <Link href="/llm-gateway/cost" className="nav-link">
-            <span>💰</span>
-            <span>Cost</span>
-          </Link>
-          <Link href="/llm-gateway/deployment" className="nav-link">
-            <span>🚀</span>
-            <span>Deployment</span>
-          </Link>
-          <Link href="/llm-gateway/features" className="nav-link">
-            <span>✨</span>
-            <span>Features</span>
-          </Link>
-          <Link href="/llm-gateway/requirements" className="nav-link">
-            <span>🎯</span>
-            <span>Requirements</span>
-          </Link>
-        </div>
-      </nav>
 
       <div className="content">
         <div className="security-grid">
@@ -579,11 +502,8 @@ USER litellm
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway/architecture" className="nav-button">
-            ← Previous: Architecture
-          </Link>
-          <Link href="/llm-gateway" className="nav-button">
-            Back to Overview
+          <Link href="/llm-gateway/features" className="nav-button">
+            ← Previous: Features
           </Link>
           <Link href="/llm-gateway/cost" className="nav-button">
             Next: Cost →

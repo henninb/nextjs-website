@@ -34,10 +34,12 @@ export const metadata: Metadata = {
   },
 };
 
+import LLMGatewayLayoutClient from "../../layouts/LLMGatewayLayout";
+
 export default function LLMGatewayLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <LLMGatewayLayoutClient>{children}</LLMGatewayLayoutClient>;
 }
