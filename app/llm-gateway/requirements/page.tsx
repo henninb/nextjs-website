@@ -1,17 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function RequirementsPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = 7; // 5 core objectives + 2 stretch goals
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      // Don't advance if clicking on a link
+      // Don't advance if clicking on a link or button
       const target = e.target as HTMLElement;
-      if (target.tagName === "A" || target.closest("a")) {
+      if (
+        target.tagName === "A" ||
+        target.tagName === "BUTTON" ||
+        target.closest("a") ||
+        target.closest("button")
+      ) {
         return;
       }
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
@@ -370,28 +376,50 @@ export default function RequirementsPage() {
 
         .bottom-nav {
           display: flex;
-          gap: 1rem;
+          gap: 2rem;
           justify-content: center;
-          margin: 3rem auto 2rem;
+          align-items: center;
+          margin: 4rem auto 0;
+          padding-bottom: 10rem;
           flex-wrap: wrap;
           max-width: 1000px;
         }
 
         .nav-button {
-          display: inline-block;
-          background: rgba(255, 255, 255, 0.2);
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.2) 0%,
+            rgba(46, 204, 113, 0.2) 100%
+          );
+          padding: 1rem 2rem;
+          border-radius: 12px;
           text-decoration: none;
           color: white;
           font-weight: 600;
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          font-size: 1.1rem;
+          border: 2px solid rgba(0, 212, 255, 0.5);
           transition: all 0.3s ease;
+          cursor: pointer;
+          pointer-events: auto;
+          min-width: 200px;
         }
 
         .nav-button:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.4) 0%,
+            rgba(46, 204, 113, 0.4) 100%
+          );
+          transform: translateY(-3px);
+          box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
+          border-color: rgba(0, 212, 255, 0.8);
+        }
+
+        .nav-button:active {
+          transform: translateY(-1px);
         }
 
         @media (max-width: 768px) {
@@ -411,6 +439,27 @@ export default function RequirementsPage() {
 
           .summary-stats {
             grid-template-columns: 1fr;
+          }
+
+          .bottom-nav {
+            gap: 1rem;
+            padding-bottom: 12rem;
+          }
+
+          .nav-button {
+            min-width: 150px;
+            font-size: 1rem;
+            padding: 0.875rem 1.5rem;
+          }
+
+          .progress-dots {
+            bottom: 1rem;
+            padding: 0.75rem 1rem;
+          }
+
+          .progress-dot {
+            width: 10px;
+            height: 10px;
           }
         }
       `}</style>
@@ -695,12 +744,24 @@ export default function RequirementsPage() {
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway" className="nav-button">
+          <button
+            className="nav-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push("/llm-gateway");
+            }}
+          >
             ← Previous: Overview
-          </Link>
-          <Link href="/llm-gateway/architecture" className="nav-button">
+          </button>
+          <button
+            className="nav-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push("/llm-gateway/architecture");
+            }}
+          >
             Next: Architecture →
-          </Link>
+          </button>
         </div>
       </div>
     </div>
