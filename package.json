@@ -19,7 +19,7 @@
     "@mui/material": "^7.3.6",
     "@mui/x-data-grid": "^8.23.0",
     "@opennextjs/cloudflare": "^1.14.7",
-    "@tanstack/react-query": "^5.90.15",
+    "@tanstack/react-query": "^5.90.16",
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
     "next": "^16.1.1",
@@ -28,7 +28,7 @@
     "react-dom": "^19.2.3",
     "recharts": "^3.6.0",
     "styled-components": "^6.1.19",
-    "zod": "^4.2.1"
+    "zod": "^4.3.4"
   },
   "engines": {
     "node": "20.19.x || >=22.12.0"
