@@ -440,6 +440,48 @@ USER litellm
 - Resource exhaustion`}
             </div>
           </div>
+
+          <div className="security-card">
+            <h2>
+              <span className="icon">🔍</span>
+              Custom Guardrails
+            </h2>
+            <p>
+              Enterprise-grade content filtering with pre_call and post_call
+              hooks to validate both user inputs and AI model outputs.
+            </p>
+
+            <h3>Input Filtering (Pre-Call)</h3>
+            <ul>
+              <li>Validates user messages before LLM processing</li>
+              <li>Sanitizes conversation history to prevent bypass</li>
+              <li>Ensures proper message structure</li>
+              <li>Forces stream=false for output filtering</li>
+            </ul>
+
+            <h3>Output Filtering (Post-Call)</h3>
+            <ul>
+              <li>Scans AI responses for prohibited content</li>
+              <li>Works with streaming via stream=false forcing</li>
+              <li>Prevents indirect bypass attempts</li>
+              <li>HTTP 200 passthrough (no context corruption)</li>
+            </ul>
+
+            <h3>Testing & Validation</h3>
+            <ul>
+              <li>12 comprehensive tests (6 per model)</li>
+              <li>Tests both AWS Bedrock and Perplexity</li>
+              <li>Validates streaming fix (LiteLLM workaround)</li>
+              <li>Catches indirect queries like "what is bird that quacks?"</li>
+            </ul>
+
+            <div className="highlight-box">
+              <strong>Technical Achievement:</strong> Solved LiteLLM streaming
+              limitation where post_call hooks don't execute by auto-forcing
+              stream=false in pre_call hook, maintaining guardrail protection
+              for all request types.
+            </div>
+          </div>
         </div>
 
         <div className="defense-layers">
@@ -492,7 +534,17 @@ USER litellm
           </div>
 
           <div className="layer">
-            <h3>Layer 6: Data Protection</h3>
+            <h3>Layer 6: Content Filtering (Guardrails)</h3>
+            <p>
+              Custom guardrails filter both user inputs (pre_call) and AI
+              outputs (post_call) to prevent prohibited content, prompt
+              injection, PII leakage, and policy violations. Streaming mode
+              auto-fixes ensure protection for all request types.
+            </p>
+          </div>
+
+          <div className="layer">
+            <h3>Layer 7: Data Protection</h3>
             <p>
               Secrets stored in AWS Secrets Manager with KMS encryption. EBS
               volumes encrypted at rest. All API calls logged to CloudTrail

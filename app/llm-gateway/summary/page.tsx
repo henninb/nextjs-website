@@ -252,6 +252,11 @@ export default function SummaryPage() {
           </div>
 
           <div className="stat-card">
+            <span className="stat-value">12/12</span>
+            <span className="stat-label">Guardrail Tests Passing</span>
+          </div>
+
+          <div className="stat-card">
             <span className="stat-value">Zero</span>
             <span className="stat-label">Static AWS Credentials</span>
           </div>
@@ -324,6 +329,18 @@ export default function SummaryPage() {
               <p>
                 Blind model comparison for unbiased AI evaluation with live demo
                 at openwebui.bhenning.com
+              </p>
+            </div>
+
+            <div className="highlight-card">
+              <h3>
+                <span className="icon">🛡️</span>
+                Custom Guardrails
+              </h3>
+              <p>
+                Enterprise content filtering with streaming support. Solved
+                LiteLLM limitation via stream=false forcing. 12 comprehensive
+                tests validate security.
               </p>
             </div>
           </div>

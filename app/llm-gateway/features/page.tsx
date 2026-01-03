@@ -470,6 +470,25 @@ export default function FeaturesPage() {
               <li>User activity reports</li>
             </ul>
           </div>
+
+          <div className="feature-card">
+            <h2>
+              <span className="icon">🛡️</span>
+              Custom Guardrails
+            </h2>
+            <p>
+              Enterprise-grade content filtering system with streaming support
+              to control both user inputs and AI outputs.
+            </p>
+            <ul>
+              <li>Pre-call filtering (input validation)</li>
+              <li>Post-call filtering (output validation)</li>
+              <li>Streaming mode support (auto-fixes)</li>
+              <li>Conversation history sanitization</li>
+              <li>Indirect bypass prevention</li>
+              <li>12 comprehensive tests (6 per model)</li>
+            </ul>
+          </div>
         </div>
 
         <div className="arena-section">
