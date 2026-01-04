@@ -399,9 +399,10 @@ export default function FeaturesPage() {
             </h2>
             <p>
               Blind model comparison allows you to evaluate AI models without
-              bias. Two random models compete, and you choose the winner.
+              bias. Two random models from 7 available models across 3 providers compete, and you choose the winner.
             </p>
             <ul>
+              <li>Compare any 2 of 7 models</li>
               <li>Anonymous model responses</li>
               <li>Side-by-side comparison</li>
               <li>Vote for the best response</li>
@@ -416,15 +417,15 @@ export default function FeaturesPage() {
               Multi-Provider API
             </h2>
             <p>
-              Unified OpenAI-compatible API for seamless access to AWS Bedrock
-              and Perplexity models.
+              Unified OpenAI-compatible API for seamless access to 7 models across AWS Bedrock and Perplexity:
             </p>
             <ul>
+              <li>AWS Bedrock Nova: nova-micro, nova-lite, nova-pro</li>
+              <li>AWS Bedrock Llama: llama3-2-1b, llama3-2-3b</li>
+              <li>Perplexity: perplexity-sonar, perplexity-sonar-pro</li>
               <li>Single endpoint for all providers</li>
-              <li>Automatic request routing</li>
-              <li>Fallback handling</li>
+              <li>Automatic request routing & fallback</li>
               <li>Cost tracking per model</li>
-              <li>Usage analytics</li>
             </ul>
           </div>
 
@@ -525,7 +526,7 @@ export default function FeaturesPage() {
         <div className="arena-section">
           <h2>🎭 How Arena Mode Works</h2>
           <p style={{ textAlign: "center", opacity: "0.95" }}>
-            Unbiased model comparison through blind testing
+            Unbiased model comparison through blind testing - compare any 2 of 7 models across 3 providers (AWS Nova, AWS Llama/Meta, Perplexity)
           </p>
 
           <div className="arena-flow">
@@ -665,7 +666,7 @@ export default function FeaturesPage() {
             <h3>2. Research & Analysis</h3>
             <p>
               Leverage Perplexity's web search capabilities for up-to-date
-              information and multi-source research. Deep Research mode
+              information and multi-source research. Perplexity Sonar Pro
               provides comprehensive analysis with citations. Perfect for
               market research, competitive analysis, or fact-checking.
             </p>

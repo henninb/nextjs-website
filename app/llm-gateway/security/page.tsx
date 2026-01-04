@@ -319,8 +319,8 @@ export default function SecurityPage() {
 
             <h3>LiteLLM Permissions</h3>
             <ul>
-              <li>bedrock:InvokeModel (Nova, Llama, Claude)</li>
-              <li>secretsmanager:GetSecretValue (Perplexity key)</li>
+              <li>bedrock:InvokeModel (Nova models, Llama models)</li>
+              <li>secretsmanager:GetSecretValue (Perplexity API key)</li>
               <li>Region-scoped: us-east-1 only</li>
               <li>Resource ARN restrictions applied</li>
             </ul>

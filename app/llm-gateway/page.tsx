@@ -202,18 +202,6 @@ export default function LLMGatewayPage() {
           box-shadow: 0 12px 48px rgba(155, 89, 182, 0.6);
         }
 
-        .cta-explore {
-          background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-          color: white;
-          border-color: #2ecc71;
-          box-shadow: 0 8px 32px rgba(46, 204, 113, 0.4);
-        }
-
-        .cta-explore:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 12px 48px rgba(46, 204, 113, 0.6);
-        }
-
         @media (max-width: 968px) {
           .what-is-section {
             flex-direction: column;
@@ -393,13 +381,6 @@ export default function LLMGatewayPage() {
           >
             <span>🚀</span>
             <span>Live Demo</span>
-          </a>
-          <a
-            href="/llm-gateway/requirements"
-            className="cta-button cta-explore"
-          >
-            <span>🎯</span>
-            <span>Start Exploring</span>
           </a>
           <a
             href="https://github.com/henninb/llm-gateway"

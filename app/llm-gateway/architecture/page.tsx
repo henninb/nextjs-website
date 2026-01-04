@@ -284,7 +284,7 @@ export default function ArchitecturePage() {
               <li><strong>Runs as non-root user (UID 1000)</strong></li>
               <li>React-based web interface</li>
               <li>User authentication & session management</li>
-              <li>Arena Mode (3 models: Perplexity, AWS, Meta)</li>
+              <li>Arena Mode (compare any 2 of 7 models across 3 providers)</li>
               <li>Chat history with EBS persistence</li>
               <li>Connects to LiteLLM via internal network</li>
               <li>Exposed via NLB on port 443 (HTTPS)</li>
@@ -361,11 +361,12 @@ export default function ArchitecturePage() {
           <div className="component-card">
             <h3>🤖 AI Providers</h3>
             <ul>
-              <li><strong>AWS Bedrock (5 models)</strong></li>
-              <li>Nova: Pro, Lite, Micro</li>
-              <li>Llama: 3.2 1B, 3.2 3B</li>
+              <li><strong>AWS Bedrock Nova (3 models)</strong></li>
+              <li>nova-micro, nova-lite, nova-pro</li>
+              <li><strong>AWS Bedrock Llama (2 models)</strong></li>
+              <li>llama3-2-1b, llama3-2-3b</li>
               <li><strong>Perplexity (2 models)</strong></li>
-              <li>Sonar, Sonar Pro</li>
+              <li>perplexity-sonar, perplexity-sonar-pro</li>
               <li><strong>Total: 7 unified models</strong></li>
             </ul>
           </div>
@@ -458,7 +459,7 @@ export default function ArchitecturePage() {
           <div className="tech-row">
             <div className="tech-label">AI Providers</div>
             <div className="tech-value">
-              AWS Bedrock (Nova Pro/Lite/Micro, Llama 3.2 1B/3B), Perplexity (Sonar, Sonar Pro) - 7 models total
+              AWS Bedrock Nova (nova-pro, nova-lite, nova-micro), AWS Bedrock Llama (llama3-2-1b, llama3-2-3b), Perplexity (perplexity-sonar, perplexity-sonar-pro) - 7 models total
             </div>
           </div>
 

@@ -555,10 +555,12 @@ export default function RequirementsPage() {
               <h4>Implementation - 7 Models Total:</h4>
               <ul>
                 <li>
-                  AWS Bedrock (5 models): nova-micro, nova-lite, nova-pro,
-                  llama3-2-1b, llama3-2-3b
+                  AWS Bedrock Nova (3 models): nova-micro, nova-lite, nova-pro
                 </li>
-                <li>Perplexity API (2 models): sonar, sonar-pro</li>
+                <li>
+                  AWS Bedrock Llama (2 models): llama3-2-1b, llama3-2-3b
+                </li>
+                <li>Perplexity API (2 models): perplexity-sonar, perplexity-sonar-pro</li>
                 <li>Multi-provider support (AWS + Perplexity)</li>
                 <li>OpenAI-compatible API interface</li>
                 <li>Unified endpoint for all models</li>
