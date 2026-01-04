@@ -7,7 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import User from "../model/User";
 import useLogout from "../hooks/useLogoutProcess";
 import { initCsrfToken } from "../utils/csrf";
@@ -27,10 +27,32 @@ const useProvideAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); // Start as loading
   const router = useRouter();
+  const pathname = usePathname();
   const { logoutNow } = useLogout();
+
+  // Helper function to determine if current page requires authentication
+  const requiresAuth = (path: string): boolean => {
+    const authRequiredPaths = [
+      '/finance',
+      '/login',
+      '/register',
+      '/registration',
+      '/logout',
+      '/me',
+      '/payment'
+    ];
+
+    return authRequiredPaths.some(authPath => path.startsWith(authPath));
+  };
 
   useEffect(() => {
     async function fetchUser() {
+      // Skip authentication check for pages that don't require it
+      if (!requiresAuth(pathname)) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch("/api/me", {
           credentials: "include",
@@ -53,7 +75,7 @@ const useProvideAuth = () => {
       }
     }
     fetchUser();
-  }, []); // Empty dependency array is correct
+  }, [pathname]); // Re-run when pathname changes
 
   const login = async (user: User) => {
     setUser(user);
