@@ -23,6 +23,11 @@ export default function DeploymentPage() {
           color: white;
         }
 
+        .output-block pre {
+          margin: 0;
+          white-space: inherit;
+        }
+
         .header {
           text-align: center;
           padding: 3rem 2rem 2rem;
@@ -103,6 +108,8 @@ export default function DeploymentPage() {
           overflow-x: auto;
           margin: 0.75rem 0;
           white-space: pre-wrap;
+          word-break: break-word;
+          overflow-wrap: anywhere;
           line-height: 1.6;
           position: relative;
         }
@@ -117,8 +124,12 @@ export default function DeploymentPage() {
           overflow-x: auto;
           margin: 0.75rem 0;
           white-space: pre-wrap;
+          word-break: break-word;
+          overflow-wrap: anywhere;
           line-height: 1.6;
           border-left: 3px solid #4b5563;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .command-label {
@@ -453,6 +464,46 @@ cd llm-gateway
               </button>
 make help
             </div>
+
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`LLM Gateway - Available Commands:
+
+  help                              Show this help message
+  validate-setup                    Validate required tools are installed
+  local-deploy                      Deploy containers locally with docker-compose
+  local-status                      Show status of Docker containers, networks, and volumes
+  local-port-forward                Forward proxy port 8000 to localhost (Ctrl+C to stop)
+  local-destroy                     Destroy local Docker containers, volumes, networks, and images
+  test-health                       Check service health and connectivity
+  test-litellm-models               Test all LiteLLM models (optionally set ENDPOINT=http://host:port)
+  test-guardrails                   Test custom guardrails (pre_call and post_call hooks)
+  test-all                          Run all tests (setup validation, health check, model tests, guardrails)
+  aws-costs                         Generate AWS cost report for current resources (shell version)
+  aws-costs-py                      Generate AWS cost report (Python version with rich formatting)
+  iam-report                        Show IAM roles and security architecture for this project
+  ecr-init                          Initialize Terraform for ECR repositories
+  ecr-plan                          Plan Terraform changes for ECR
+  ecr-apply                         Apply Terraform to create ECR repositories
+  ecr-destroy                       Destroy ECR repositories
+  ecr-login                         Login to AWS ECR
+  ecr-build-push                    Build and push Docker images to ECR
+  eks-cluster-init                  Initialize Terraform for EKS cluster creation
+  eks-cluster-plan                  Plan Terraform changes for EKS cluster
+  eks-cluster-apply                 Apply Terraform to create EKS cluster
+  eks-cluster-destroy               Destroy EKS cluster infrastructure
+  eks-cluster-kubeconfig            Configure kubectl for EKS cluster
+  eks-secrets-ensure                Ensure AWS Secrets Manager secret exists (idempotent, creates if missing)
+  eks-secrets-populate              Populate AWS Secrets Manager with API keys (auto-sources .secrets ifexists)
+  eks-init                          Initialize Terraform for EKS deployment
+  eks-plan                          Plan Terraform changes for EKS
+  eks-apply                         Apply Terraform to deploy to EKS (auto-populates secrets first)
+  eks-destroy                       Destroy EKS deployment
+  eks-port-forward                  Forward LiteLLM from EKS to localhost:4000 (Ctrl+C to stop)
+  eks-verify-cloudflare             Verify CloudFlare IP ranges in NLB security group
+  eks-test-cloudflare-restriction   Test that NLB only accepts CloudFlare IPs (optionally set DOMAIN=your-domain.com)
+  eks-verify-cloudflare-dns         Verify/setup CloudFlare DNS (auto-sources .secrets if exists, optionally set DOMAIN=your-domain.com)`}</pre>
+            </div>
           </div>
 
           <div className="step">
@@ -499,8 +550,8 @@ cd terraform/ecr && terraform init && terraform apply
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-litellm_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/litellm"
-openwebui_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/openwebui"
+              <pre>{`litellm_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/litellm"
+openwebui_repository_url = "667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/openwebui"`}</pre>
             </div>
           </div>
 
@@ -544,6 +595,131 @@ make ecr-build-push
                 {copiedIndex === 32 ? "✓" : "⧉"}
               </button>
 ./tools/build-and-push-ecr.sh
+            </div>
+
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`========================================
+  LLM Gateway - ECR Image Builder
+========================================
+AWS Region: us-east-1
+AWS Account: 667778672048
+Image Tag: latest
+
+Logging in to AWS ECR...
+Login Succeeded
+
+========================================
+Building LiteLLM image...
+========================================
+[+] Building 1.0s (14/14) FINISHED                                                        docker:default
+ => [internal] load build definition from Dockerfile                                                0.0s
+ => => transferring dockerfile: 1.70kB                                                              0.0s
+ => [internal] load metadata for ghcr.io/berriai/litellm:main-latest@sha256:fff53d2f4fe65fc9baaee0  0.9s
+ => [internal] load .dockerignore                                                                   0.0s
+ => => transferring context: 461B                                                                   0.0s
+ => [1/9] FROM ghcr.io/berriai/litellm:main-latest@sha256:fff53d2f4fe65fc9baaee005a31aaf477c734b63  0.0s
+ => [internal] load build context                                                                   0.0s
+ => => transferring context: 195B                                                                   0.0s
+ => CACHED [2/9] WORKDIR /app                                                                       0.0s
+ => CACHED [3/9] RUN which netstat || (echo "ERROR: netstat not found in base image" && exit 1)     0.0s
+ => CACHED [4/9] COPY patches/apply_litellm_fix.py /tmp/                                            0.0s
+ => CACHED [5/9] RUN python3 /tmp/apply_litellm_fix.py && rm /tmp/apply_litellm_fix.py              0.0s
+ => CACHED [6/9] RUN addgroup -g 1000 litellm &&     adduser -D -u 1000 -G litellm litellm          0.0s
+ => CACHED [7/9] COPY config/litellm_config.yaml /app/config.yaml                                   0.0s
+ => CACHED [8/9] COPY config/custom_guardrail.py /app/custom_guardrail.py                           0.0s
+ => CACHED [9/9] RUN chown litellm:litellm /app/config.yaml /app/custom_guardrail.py                0.0s
+ => exporting to image                                                                              0.0s
+ => => exporting layers                                                                             0.0s
+ => => writing image sha256:c1874c9a389b0e3140315fff137afb3720947c83f8b388a5eedb2154c4bb6ba7        0.0s
+ => => naming to 667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/litellm:latest            0.0s
+Pushing LiteLLM image to ECR...
+The push refers to repository [667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/litellm]
+a922996a45d9: Layer already exists
+70873e3ccff0: Layer already exists
+cb86da8cccc8: Layer already exists
+0c1c0791aa12: Layer already exists
+e28691598689: Layer already exists
+d8debd30a5e3: Layer already exists
+5f70bf18a086: Layer already exists
+9217483fecfc: Layer already exists
+97fd3e4fa036: Layer already exists
+0e58bbc54472: Layer already exists
+5927a22d5011: Layer already exists
+f9018c851d2c: Layer already exists
+8f514b6a4025: Layer already exists
+030790cc38cc: Layer already exists
+f08d51e691c3: Layer already exists
+379d0c2544cc: Layer already exists
+6faea7b2b79c: Layer already exists
+0ab57e890071: Layer already exists
+1681e53285c3: Layer already exists
+0976d876f3fa: Layer already exists
+918b394b9a9b: Layer already exists
+14c17f327a48: Layer already exists
+9cb5532c87b3: Layer already exists
+c77d0e99fd08: Layer already exists
+7aeac29b5883: Layer already exists
+4fb8934e770e: Layer already exists
+d1a8ae7e4b6d: Layer already exists
+d8ac61f31f80: Layer already exists
+846629027186: Layer already exists
+latest: digest: sha256:3fefee1b1007e2110ffb5fe8f6fd3fd19414c5067a360beb5aef4ef1e68c2876 size: 7217
+✓ LiteLLM image pushed successfully
+
+========================================
+Building OpenWebUI image...
+========================================
+[+] Building 0.6s (8/8) FINISHED                                                          docker:default
+ => [internal] load build definition from Dockerfile.openwebui                                      0.0s
+ => => transferring dockerfile: 867B                                                                0.0s
+ => [internal] load metadata for ghcr.io/open-webui/open-webui:v0.6.43                              0.5s
+ => [internal] load .dockerignore                                                                   0.0s
+ => => transferring context: 461B                                                                   0.0s
+ => [1/4] FROM ghcr.io/open-webui/open-webui:v0.6.43@sha256:9cb724e0bc84f05ba2f81a3da5f53f5add07e1  0.0s
+ => CACHED [2/4] RUN which curl || (echo "ERROR: curl not found in base image" && exit 1)           0.0s
+ => CACHED [3/4] RUN groupadd -g 1000 openwebui &&     useradd -u 1000 -g 1000 -m -s /bin/bash ope  0.0s
+ => CACHED [4/4] RUN chown -R openwebui:openwebui /app                                              0.0s
+ => exporting to image                                                                              0.0s
+ => => exporting layers                                                                             0.0s
+ => => writing image sha256:0a696a48772ff171fbf9cd6aa1541e2384b1885a458f86b6f83b823ca74988e9        0.0s
+ => => naming to 667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/openwebui:latest          0.0s
+Pushing OpenWebUI image to ECR...
+The push refers to repository [667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/openwebui]
+e1a74a9dbdd8: Layer already exists
+fcda31d608bb: Layer already exists
+5f70bf18a086: Layer already exists
+e0d1c9f6ac74: Layer already exists
+23dddb7fc9a7: Layer already exists
+0a02296e6abf: Layer already exists
+cda66797c30d: Layer already exists
+03c9c2960532: Layer already exists
+265d21df8805: Layer already exists
+e6c4d8917a85: Layer already exists
+c5bac91127ec: Layer already exists
+652f6f61751e: Layer already exists
+f2387fbb4fc7: Layer already exists
+b64015d335a2: Layer already exists
+54ef8ce1a594: Layer already exists
+91833cdc5e63: Layer already exists
+abe743884ea0: Layer already exists
+latest: digest: sha256:b8f86b51d6defcf39917a814aa6d560727b4f8eafdac68d5f36ca48b4118a97c size: 4709
+✓ OpenWebUI image pushed successfully
+
+========================================
+  Build Complete!
+========================================
+LiteLLM Image:
+  667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/litellm:latest
+
+OpenWebUI Image:
+  667778672048.dkr.ecr.us-east-1.amazonaws.com/llm-gateway/openwebui:latest
+
+Next steps:
+  1. cd terraform/eks
+  2. terraform init
+  3. terraform plan
+  4. terraform apply`}</pre>
             </div>
           </div>
 
@@ -611,6 +787,11 @@ cd terraform/eks-cluster && terraform init && terraform apply
 make eks-cluster-kubeconfig
             </div>
 
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`Updated context arn:aws:eks:us-east-1:667778672048:cluster/llm-gateway-eks in /home/henninb/.kube/config`}</pre>
+            </div>
+
             <div className="command-label">Or manually:</div>
             <div className="code-block">
               <button
@@ -637,9 +818,9 @@ kubectl get nodes
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-NAME                             STATUS   ROLES    AGE   VERSION
-ip-10-0-10-123.ec2.internal      Ready    &lt;none&gt;   5m    v1.34.0-eks-...
-ip-10-0-11-456.ec2.internal      Ready    &lt;none&gt;   5m    v1.34.0-eks-...
+              <pre>{`NAME                             STATUS   ROLES    AGE   VERSION
+ip-10-0-10-123.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...
+ip-10-0-11-456.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...`}</pre>
             </div>
           </div>
 
@@ -678,7 +859,7 @@ aws acm list-certificates --region us-east-1
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-{`{
+              <pre>{`{
     "CertificateSummaryList": [
         {
             "CertificateArn": "arn:aws:acm:us-east-1:YOUR_ACCOUNT:certificate/52c0714b-ab17-4466-9959-52d9288b6249",
@@ -707,7 +888,7 @@ aws acm list-certificates --region us-east-1
             "IssuedAt": 1767208933.283
         }
     ]
-}`}
+}`}</pre>
             </div>
           </div>
 
@@ -760,12 +941,12 @@ vim terraform/eks/terraform.tfvars
 
             <div className="command-label">Example configuration:</div>
             <div className="output-block">
-cluster_name = "llm-gateway-eks"
+              <pre>{`cluster_name = "llm-gateway-eks"
 aws_region = "us-east-1"
 environment = "dev"
 acm_certificate_arn = "arn:aws:acm:us-east-1:YOUR_ACCOUNT:certificate/YOUR_CERT_ID"
 use_ecr_images = true
-ecr_image_tag = "latest"
+ecr_image_tag = "latest"`}</pre>
             </div>
           </div>
 
@@ -838,8 +1019,8 @@ kubectl get svc openwebui -n llm-gateway
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-NAME        TYPE           EXTERNAL-IP
-openwebui   LoadBalancer   a4e51119...elb.us-east-1.amazonaws.com
+              <pre>{`NAME        TYPE           EXTERNAL-IP
+openwebui   LoadBalancer   a4e51119...elb.us-east-1.amazonaws.com`}</pre>
             </div>
           </div>
 
@@ -864,16 +1045,52 @@ openwebui   LoadBalancer   a4e51119...elb.us-east-1.amazonaws.com
 make eks-verify-cloudflare-dns
             </div>
 
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`=== CloudFlare DNS Setup for openwebui.bhenning.com ===
+
+  Authentication: Global API Key
+
+1. Getting LoadBalancer hostname from Kubernetes...
+  LoadBalancer: adbfc9821e89940efb696ac92fd33f87-3ee10353c1b6a805.elb.us-east-1.amazonaws.com
+
+2. Looking up CloudFlare zone ID for bhenning.com...
+  Zone ID: 3d1dfa959372e2996636f272f2c747d8
+
+3. Checking if DNS record exists for openwebui.bhenning.com...
+  ✓ DNS record exists
+  Record ID: bee89039a0ac110b7d67a13d450bfb4f
+  Current target: adbfc9821e89940efb696ac92fd33f87-3ee10353c1b6a805.elb.us-east-1.amazonaws.com
+  ✓ Record points to correct LoadBalancer
+
+5. Verifying DNS resolution...
+  Local DNS: ✓ Resolves to: 52.1.180.76
+
+6. Checking CNAME record...
+  CNAME: openwebui.bhenning.com -> adbfc9821e89940efb696ac92fd33f87-3ee10353c1b6a805.elb.us-east-1.amazonaws.com.
+  ✓ CNAME points to correct LoadBalancer
+
+7. Testing HTTPS connectivity...
+  ✓ HTTPS endpoint is reachable (HTTP 200)
+
+=== Summary ===
+Domain: openwebui.bhenning.com
+Points to: adbfc9821e89940efb696ac92fd33f87-3ee10353c1b6a805.elb.us-east-1.amazonaws.com
+
+You can now access OpenWebUI at:
+  https://openwebui.bhenning.com`}</pre>
+            </div>
+
             <div className="command-label">Or manually in CloudFlare dashboard:</div>
             <div className="output-block">
-Type: CNAME
+              <pre>{`Type: CNAME
 Name: openwebui
 Target: a4e51119be1d84777819e4effb129b14-6ba95aeb4b36de2e.elb.us-east-1.amazonaws.com
 Proxy status: Proxied (orange cloud) - for US-only access
 TTL: Auto
 
 Optional: Configure CloudFlare firewall rule for US-only access
-See docs/cloudflare-setup.md for full guide
+See docs/cloudflare-setup.md for full guide`}</pre>
             </div>
           </div>
 
@@ -899,7 +1116,7 @@ make eks-verify-cloudflare
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-=== CloudFlare IP Ranges Verification ===
+              <pre>{`=== CloudFlare IP Ranges Verification ===
 
 1. Fetching current CloudFlare IP ranges...
   IPv4 ranges: 15
@@ -920,7 +1137,7 @@ make eks-verify-cloudflare
   Sample check: ✓ 173.245.48.0/20 is configured
 
 === Summary ===
-✓ Security group is up-to-date with current CloudFlare IP ranges
+✓ Security group is up-to-date with current CloudFlare IP ranges`}</pre>
             </div>
 
             <div className="command-label">Test CloudFlare IP restriction:</div>
@@ -937,7 +1154,7 @@ make eks-test-cloudflare-restriction
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-=== Testing CloudFlare-Only Access Restriction ===
+              <pre>{`=== Testing CloudFlare-Only Access Restriction ===
 
 1. Getting your public IP address...
   Your IP: 172.58.10.129
@@ -977,7 +1194,7 @@ In CloudFlare range: false
 Direct NLB access: PASS
 
 ✓ SUCCESS: NLB is properly restricted to CloudFlare IPs
-Non-CloudFlare IPs cannot access the NLB directly
+Non-CloudFlare IPs cannot access the NLB directly`}</pre>
             </div>
 
             <div className="command-label">Check pod status:</div>
@@ -994,9 +1211,9 @@ kubectl get pods -n llm-gateway
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-NAME                         READY   STATUS    RESTARTS   AGE
+              <pre>{`NAME                         READY   STATUS    RESTARTS   AGE
 litellm-86b89f5446-8hvdv     1/1     Running   0          62m
-openwebui-69476b998c-v9dxn   1/1     Running   0          62m
+openwebui-69476b998c-v9dxn   1/1     Running   0          62m`}</pre>
             </div>
 
             <div className="command-label">Test HTTPS connection:</div>
@@ -1013,7 +1230,7 @@ curl -I https://openwebui.bhenning.com
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-HTTP/1.1 200 OK
+              <pre>{`HTTP/1.1 200 OK
 date: Sun, 04 Jan 2026 14:19:26 GMT
 server: uvicorn
 content-type: text/html; charset=utf-8
@@ -1021,10 +1238,78 @@ accept-ranges: bytes
 content-length: 7514
 last-modified: Mon, 22 Dec 2025 06:07:10 GMT
 etag: "cbe34544a3acd481c8c9621575f8e3e5"
-x-process-time: 0
+x-process-time: 0`}</pre>
+            </div>
             </div>
           </div>
-        </div>
+
+          <div className="step">
+            <div className="step-number">13</div>
+            <h2>Local Testing</h2>
+            <p>
+              Forward LiteLLM from the EKS cluster to your machine to run local tests
+              against the deployed service.
+            </p>
+
+            <div className="command-label">Port-forward LiteLLM locally:</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 130 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`make eks-port-forward`, 130)}
+                title={copiedIndex === 130 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 130 ? "✓" : "⧉"}
+              </button>
+make eks-port-forward
+            </div>
+
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`Forwarding localhost:4000 -> llm-gateway/litellm:80 (press Ctrl+C to stop)
+Forwarding from 127.0.0.1:4000 -> 4000
+Forwarding from [::1]:4000 -> 4000`}</pre>
+            </div>
+
+            <div className="command-label">Tail application logs:</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 140 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`kubectl logs -n llm-gateway deployment/litellm -f`, 140)}
+                title={copiedIndex === 140 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 140 ? "✓" : "⧉"}
+              </button>
+kubectl logs -n llm-gateway deployment/litellm -f
+            </div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 141 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`kubectl logs -n llm-gateway deployment/openwebui -f`, 141)}
+                title={copiedIndex === 141 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 141 ? "✓" : "⧉"}
+              </button>
+kubectl logs -n llm-gateway deployment/openwebui -f
+            </div>
+
+            <div className="command-label">Inspect services and ingress:</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 142 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`kubectl get svc,ingress -n llm-gateway`, 142)}
+                title={copiedIndex === 142 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 142 ? "✓" : "⧉"}
+              </button>
+kubectl get svc,ingress -n llm-gateway
+            </div>
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`NAME                TYPE           CLUSTER-IP       EXTERNAL-IP                           PORT(S)         AGE
+service/litellm     ClusterIP      172.20.208.156   <none>                           80/TCP          167m
+service/openwebui   LoadBalancer   172.20.74.57     adbfc9821e89940efb696ac92fd33f87-3ee10353c1b6a805.elb.us-east-1.amazonaws.com   443:32390/TCP   167m`}</pre>
+            </div>
+          </div>
 
         <div className="prerequisites" style={{ marginTop: "3rem" }}>
           <h2>Operations & Monitoring</h2>
