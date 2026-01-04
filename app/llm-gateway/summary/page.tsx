@@ -385,8 +385,8 @@ export default function SummaryPage() {
                 Arena Mode
               </h3>
               <p>
-                Blind model comparison for unbiased AI evaluation with live demo
-                at openwebui.bhenning.com
+                Blind random model selection for unbiased AI evaluation. Live demo
+                at openwebui.bhenning.com (randomly picks one of three models per request).
               </p>
             </div>
 

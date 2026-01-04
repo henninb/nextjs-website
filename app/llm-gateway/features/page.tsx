@@ -379,14 +379,15 @@ export default function FeaturesPage() {
               Arena Mode
             </h2>
             <p>
-              Blind model comparison for unbiased evaluation. 3 models (one per provider) compete anonymously.
+              Blind random model selection for unbiased evaluation. ONE model randomly chosen per request (not simultaneous comparison).
             </p>
             <ul>
               <li>Models: perplexity-sonar-pro, nova-pro, llama3-2-3b</li>
-              <li>Anonymous side-by-side responses (Model A vs B)</li>
-              <li>Vote for best response, models revealed after</li>
-              <li>ELO ratings track performance over time</li>
-              <li>Production use: model selection for specific tasks</li>
+              <li>Randomly selects ONE model per request (blind testing)</li>
+              <li>Model identity hidden during conversation</li>
+              <li>Use regenerate to try different random models</li>
+              <li>Configured via EVALUATION_ARENA_MODELS env var</li>
+              <li>Monitoring tools verify random selection behavior</li>
             </ul>
           </div>
         </div>

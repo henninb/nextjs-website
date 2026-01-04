@@ -1608,7 +1608,7 @@ service/openwebui   LoadBalancer   172.20.74.57     adbfc9821e89940efb696ac92fd3
             <li>Local testing: make eks-port-forward (access LiteLLM API)</li>
             <li>Set up CloudWatch alarms for cost monitoring</li>
             <li>Configure automated EBS snapshots for backups</li>
-            <li>Test Arena Mode with multiple models</li>
+            <li>Test Arena Mode (blind random selection: perplexity-sonar-pro, nova-pro, llama3-2-3b)</li>
           </ul>
         </div>
 
