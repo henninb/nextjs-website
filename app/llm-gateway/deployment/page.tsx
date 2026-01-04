@@ -2,8 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function DeploymentPage() {
+  const router = useRouter();
   const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
 
   const copyToClipboard = (text: string, index: number) => {
@@ -236,28 +238,58 @@ export default function DeploymentPage() {
 
         .bottom-nav {
           display: flex;
-          gap: 1rem;
+          gap: 2rem;
           justify-content: center;
-          margin: 3rem auto 2rem;
+          align-items: center;
+          margin: 4rem auto 0;
+          padding-bottom: 10rem;
           flex-wrap: wrap;
           max-width: 1000px;
         }
 
         .nav-button {
-          display: inline-block;
-          background: white;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(30, 41, 59, 0.6);
           padding: 0.75rem 1.5rem;
-          border-radius: 8px;
+          border-radius: 20px;
           text-decoration: none;
-          color: #fa709a;
+          color: rgba(226, 232, 240, 0.95);
           font-weight: 600;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
+          font-size: 1rem;
+          border: 1px solid rgba(148, 163, 184, 0.15);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          pointer-events: auto;
+          min-width: 180px;
+          position: relative;
+        }
+
+        .nav-button::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          opacity: 0;
+          transition: opacity 0.2s;
         }
 
         .nav-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+          background: rgba(51, 65, 85, 0.8);
+          border-color: rgba(56, 189, 248, 0.3);
+          color: rgb(224, 242, 254);
+          transform: translateY(-1px);
+        }
+
+        .nav-button:hover::before {
+          opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -279,6 +311,17 @@ export default function DeploymentPage() {
 
           .code-block {
             font-size: 0.75rem;
+          }
+
+          .bottom-nav {
+            gap: 1rem;
+            padding-bottom: 12rem;
+          }
+
+          .nav-button {
+            min-width: 140px;
+            font-size: 0.875rem;
+            padding: 0.625rem 1.125rem;
           }
         }
       `}</style>
@@ -697,12 +740,18 @@ curl -I https://openwebui.bhenning.com
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway/architecture" className="nav-button">
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/architecture")}
+          >
             ← Previous: Architecture
-          </Link>
-          <Link href="/llm-gateway/features" className="nav-button">
+          </button>
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/features")}
+          >
             Next: Features →
-          </Link>
+          </button>
         </div>
       </div>
     </div>

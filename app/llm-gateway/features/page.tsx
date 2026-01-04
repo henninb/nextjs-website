@@ -2,8 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function FeaturesPage() {
+  const router = useRouter();
   return (
     <div className="features-container">
       <style jsx>{`
@@ -296,28 +298,58 @@ export default function FeaturesPage() {
 
         .bottom-nav {
           display: flex;
-          gap: 1rem;
+          gap: 2rem;
           justify-content: center;
-          margin: 3rem auto 2rem;
+          align-items: center;
+          margin: 4rem auto 0;
+          padding-bottom: 10rem;
           flex-wrap: wrap;
           max-width: 1000px;
         }
 
         .nav-button {
-          display: inline-block;
-          background: rgba(255, 255, 255, 0.2);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(30, 41, 59, 0.6);
           padding: 0.75rem 1.5rem;
-          border-radius: 8px;
+          border-radius: 20px;
           text-decoration: none;
-          color: white;
+          color: rgba(226, 232, 240, 0.95);
           font-weight: 600;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: all 0.3s ease;
+          font-size: 1rem;
+          border: 1px solid rgba(148, 163, 184, 0.15);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          pointer-events: auto;
+          min-width: 180px;
+          position: relative;
+        }
+
+        .nav-button::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          opacity: 0;
+          transition: opacity 0.2s;
         }
 
         .nav-button:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
+          background: rgba(51, 65, 85, 0.8);
+          border-color: rgba(56, 189, 248, 0.3);
+          color: rgb(224, 242, 254);
+          transform: translateY(-1px);
+        }
+
+        .nav-button:hover::before {
+          opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -336,11 +368,22 @@ export default function FeaturesPage() {
           .models-grid {
             grid-template-columns: 1fr;
           }
+
+          .bottom-nav {
+            gap: 1rem;
+            padding-bottom: 12rem;
+          }
+
+          .nav-button {
+            min-width: 140px;
+            font-size: 0.875rem;
+            padding: 0.625rem 1.125rem;
+          }
         }
       `}</style>
 
       <div className="header">
-        <h1>✨ Features & Demo</h1>
+        <h1>✨ Project Features</h1>
         <p>
           Experience the power of multi-provider AI with Arena Mode, advanced
           features, and real-world applications.
@@ -348,19 +391,6 @@ export default function FeaturesPage() {
       </div>
 
       <div className="content">
-        <div className="demo-link-box">
-          <h2>🌐 Live Demo</h2>
-          <p>Try the LLM Gateway in action with full access to all features</p>
-          <a
-            href="https://openwebui.bhenning.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="demo-button"
-          >
-            Launch Demo →
-          </a>
-        </div>
-
         <div className="features-grid">
           <div className="feature-card">
             <h2>
@@ -682,29 +712,19 @@ export default function FeaturesPage() {
           </div>
         </div>
 
-        <div className="demo-link-box">
-          <h2>Ready to Try It?</h2>
-          <p>
-            Access the full LLM Gateway with all features enabled. No
-            registration required for demo.
-          </p>
-          <a
-            href="https://openwebui.bhenning.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="demo-button"
-          >
-            Launch Demo →
-          </a>
-        </div>
-
         <div className="bottom-nav">
-          <Link href="/llm-gateway/deployment" className="nav-button">
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/deployment")}
+          >
             ← Previous: Deployment
-          </Link>
-          <Link href="/llm-gateway/security" className="nav-button">
+          </button>
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/security")}
+          >
             Next: Security →
-          </Link>
+          </button>
         </div>
       </div>
     </div>

@@ -2,8 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ArchitecturePage() {
+  const router = useRouter();
   return (
     <div className="architecture-container">
       <style jsx>{`
@@ -48,51 +50,21 @@ export default function ArchitecturePage() {
           border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .visual-diagram {
-          background: white;
+        .architecture-image-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
           padding: 2rem;
+          background: white;
           border-radius: 12px;
           margin: 1rem 0;
         }
 
-        .diagram-box {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 1.5rem;
+        .architecture-image {
+          max-width: 100%;
+          height: auto;
           border-radius: 8px;
-          margin: 1rem;
-          text-align: center;
-        }
-
-        .diagram-box h4 {
-          font-size: 1.5rem;
-          margin-bottom: 0.5rem;
-          font-weight: 700;
-        }
-
-        .diagram-box p {
-          font-size: 1.1rem;
-          opacity: 0.95;
-          margin: 0.25rem 0;
-        }
-
-        .diagram-arrow {
-          text-align: center;
-          font-size: 2rem;
-          color: white;
-          margin: 0.5rem 0;
-        }
-
-        .diagram-row {
-          display: flex;
-          gap: 1rem;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .diagram-row .diagram-box {
-          flex: 1;
-          min-width: 280px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .components-grid {
@@ -193,32 +165,58 @@ export default function ArchitecturePage() {
 
         .bottom-nav {
           display: flex;
-          justify-content: space-between;
+          gap: 2rem;
+          justify-content: center;
           align-items: center;
-          max-width: 1400px;
-          margin: 3rem auto 0;
-          padding: 1.5rem 0;
+          margin: 4rem auto 0;
+          padding-bottom: 10rem;
           flex-wrap: wrap;
-          gap: 1rem;
+          max-width: 1000px;
         }
 
         .nav-button {
           display: inline-flex;
           align-items: center;
-          gap: 0.5rem;
-          background: rgba(255, 255, 255, 0.2);
+          justify-content: center;
+          background: rgba(30, 41, 59, 0.6);
           padding: 0.75rem 1.5rem;
-          border-radius: 8px;
+          border-radius: 20px;
           text-decoration: none;
-          color: white;
+          color: rgba(226, 232, 240, 0.95);
           font-weight: 600;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: all 0.3s ease;
+          font-size: 1rem;
+          border: 1px solid rgba(148, 163, 184, 0.15);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          pointer-events: auto;
+          min-width: 180px;
+          position: relative;
+        }
+
+        .nav-button::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          opacity: 0;
+          transition: opacity 0.2s;
         }
 
         .nav-button:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
+          background: rgba(51, 65, 85, 0.8);
+          border-color: rgba(56, 189, 248, 0.3);
+          color: rgb(224, 242, 254);
+          transform: translateY(-1px);
+        }
+
+        .nav-button:hover::before {
+          opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -230,8 +228,8 @@ export default function ArchitecturePage() {
             grid-template-columns: 1fr;
           }
 
-          .diagram {
-            font-size: 0.65rem;
+          .architecture-image-container {
+            padding: 1rem;
           }
 
           .tech-row {
@@ -240,6 +238,17 @@ export default function ArchitecturePage() {
 
           .tech-label {
             margin-bottom: 0.5rem;
+          }
+
+          .bottom-nav {
+            gap: 1rem;
+            padding-bottom: 12rem;
+          }
+
+          .nav-button {
+            min-width: 140px;
+            font-size: 0.875rem;
+            padding: 0.625rem 1.125rem;
           }
         }
       `}</style>
@@ -254,75 +263,13 @@ export default function ArchitecturePage() {
 
       <div className="content">
         <div className="diagram-section">
-          <h2 style={{ marginBottom: "1rem", fontSize: "2.5rem" }}>System Architecture</h2>
-          <div className="visual-diagram">
-            <div className="diagram-box" style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }}>
-              <h4>🌐 User Access</h4>
-              <p>openwebui.bhenning.com</p>
-            </div>
-
-            <div className="diagram-arrow">↓</div>
-
-            <div className="diagram-box" style={{ background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" }}>
-              <h4>☁️ CloudFlare DNS</h4>
-              <p>US-Only Geo-Restriction • DDoS Protection</p>
-            </div>
-
-            <div className="diagram-arrow">↓</div>
-
-            <div className="diagram-box" style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
-              <h4>🔐 Network Load Balancer</h4>
-              <p>HTTPS Port 443 • ACM Certificate • SSL Termination</p>
-            </div>
-
-            <div className="diagram-arrow">↓</div>
-
-            <div style={{ background: "rgba(255,255,255,0.15)", padding: "2rem", borderRadius: "12px", margin: "1rem" }}>
-              <h3 style={{ textAlign: "center", fontSize: "2rem", marginBottom: "1.5rem", color: "white" }}>
-                ☸️ AWS EKS Cluster (Kubernetes 1.34)
-              </h3>
-
-              <div className="diagram-row">
-                <div className="diagram-box" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
-                  <h4>🎨 OpenWebUI Pod</h4>
-                  <p>Port 8080</p>
-                  <p>React Frontend</p>
-                  <p>Arena Mode</p>
-                  <p>EBS Storage</p>
-                  <p>Non-root (UID 1000)</p>
-                </div>
-
-                <div className="diagram-box" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
-                  <h4>🔄 LiteLLM Pod</h4>
-                  <p>Port 4000</p>
-                  <p>Multi-Provider API</p>
-                  <p>Rate Limiting</p>
-                  <p>IRSA Auth</p>
-                  <p>Non-root (UID 1000)</p>
-                </div>
-              </div>
-
-              <div className="diagram-box" style={{ background: "linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)", marginTop: "1rem" }}>
-                <h4>🛡️ Network Policies</h4>
-                <p>Zero-Trust Pod Isolation • Deny-by-Default</p>
-              </div>
-            </div>
-
-            <div className="diagram-arrow">↓</div>
-
-            <div className="diagram-row">
-              <div className="diagram-box" style={{ background: "linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)" }}>
-                <h4>🤖 AWS Bedrock</h4>
-                <p>Nova Models (3)</p>
-                <p>Llama Models (2)</p>
-              </div>
-
-              <div className="diagram-box" style={{ background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)" }}>
-                <h4>🔍 Perplexity API</h4>
-                <p>Sonar</p>
-                <p>Sonar Pro</p>
-              </div>
-            </div>
+          <h2 style={{ marginBottom: "1.5rem", fontSize: "2.5rem", textAlign: "center" }}>System Architecture</h2>
+          <div className="architecture-image-container">
+            <img
+              src="/img/architecture.png"
+              alt="LLM Gateway System Architecture Diagram showing AWS EKS cluster with OpenWebUI and LiteLLM pods, Network Load Balancer, CloudFlare, AWS Bedrock, Perplexity API, and Meta LLaMa integration"
+              className="architecture-image"
+            />
           </div>
         </div>
 
@@ -337,10 +284,11 @@ export default function ArchitecturePage() {
               <li><strong>Runs as non-root user (UID 1000)</strong></li>
               <li>React-based web interface</li>
               <li>User authentication & session management</li>
-              <li>Arena Mode for model comparison</li>
+              <li>Arena Mode (3 models: Perplexity, AWS, Meta)</li>
               <li>Chat history with EBS persistence</li>
               <li>Connects to LiteLLM via internal network</li>
               <li>Exposed via NLB on port 443 (HTTPS)</li>
+              <li>Internal port: 8080</li>
             </ul>
           </div>
 
@@ -348,11 +296,13 @@ export default function ArchitecturePage() {
             <h3>🔄 LiteLLM</h3>
             <ul>
               <li><strong>Runs as non-root user (UID 1000)</strong></li>
-              <li>Universal LLM proxy server</li>
-              <li>Multi-provider support (AWS, Perplexity)</li>
+              <li>Universal LLM proxy server (7 models)</li>
+              <li>Multi-provider support (AWS Bedrock, Perplexity)</li>
               <li>OpenAI-compatible API interface</li>
+              <li>Custom guardrails with streaming support</li>
               <li>Built-in rate limiting & cost tracking</li>
               <li>IRSA for AWS Bedrock authentication</li>
+              <li>Secrets Manager for Perplexity API key</li>
               <li>Internal-only access (port 4000)</li>
             </ul>
           </div>
@@ -361,7 +311,8 @@ export default function ArchitecturePage() {
             <h3>☸️ AWS EKS</h3>
             <ul>
               <li>Managed Kubernetes 1.34 control plane</li>
-              <li>Auto-scaling node groups (SPOT)</li>
+              <li>Auto-scaling node groups (SPOT instances)</li>
+              <li>Instance types: t3.medium, t3a.medium, t2.medium</li>
               <li>VPC CNI with network policy support</li>
               <li>EBS CSI driver for persistent storage</li>
               <li>IRSA for secure AWS service access</li>
@@ -376,7 +327,8 @@ export default function ArchitecturePage() {
               <li>Single NAT Gateway (cost optimized)</li>
               <li>Network Load Balancer with ACM cert</li>
               <li>CloudFlare DNS (DNS-only mode)</li>
-              <li>NetworkPolicies for pod isolation</li>
+              <li>Only CloudFlare IPs allowed (security group)</li>
+              <li>Zero-trust NetworkPolicies for pod isolation</li>
               <li>No direct internet access for pods</li>
             </ul>
           </div>
@@ -384,12 +336,13 @@ export default function ArchitecturePage() {
           <div className="component-card">
             <h3>🔐 Security</h3>
             <ul>
-              <li>Zero-trust network policies</li>
+              <li>Zero-trust network policies (deny-by-default)</li>
               <li>IRSA (no static credentials)</li>
               <li>Non-root containers (UID 1000)</li>
               <li>TLS/SSL termination at NLB</li>
               <li>AWS metadata service blocked</li>
               <li>Secrets in AWS Secrets Manager</li>
+              <li>CloudFlare IP restriction on NLB</li>
             </ul>
           </div>
 
@@ -402,6 +355,31 @@ export default function ArchitecturePage() {
               <li>Automatic provisioning</li>
               <li>Backup via EBS snapshots</li>
               <li>Encrypted at rest</li>
+            </ul>
+          </div>
+
+          <div className="component-card">
+            <h3>🤖 AI Providers</h3>
+            <ul>
+              <li><strong>AWS Bedrock (5 models)</strong></li>
+              <li>Nova: Pro, Lite, Micro</li>
+              <li>Llama: 3.2 1B, 3.2 3B</li>
+              <li><strong>Perplexity (2 models)</strong></li>
+              <li>Sonar, Sonar Pro</li>
+              <li><strong>Total: 7 unified models</strong></li>
+            </ul>
+          </div>
+
+          <div className="component-card">
+            <h3>🛡️ Custom Guardrails</h3>
+            <ul>
+              <li>Pre-call hook: Input content filtering</li>
+              <li>Post-call hook: Output content filtering</li>
+              <li>Streaming support with LiteLLM workaround</li>
+              <li>History sanitization (bypass prevention)</li>
+              <li>Passthrough mode (HTTP 200 with errors)</li>
+              <li>Prevents UI context corruption</li>
+              <li>Extensible for PII, compliance, safety</li>
             </ul>
           </div>
         </div>
@@ -480,18 +458,31 @@ export default function ArchitecturePage() {
           <div className="tech-row">
             <div className="tech-label">AI Providers</div>
             <div className="tech-value">
-              AWS Bedrock (Nova, Llama, Claude), Perplexity (Sonar)
+              AWS Bedrock (Nova Pro/Lite/Micro, Llama 3.2 1B/3B), Perplexity (Sonar, Sonar Pro) - 7 models total
+            </div>
+          </div>
+
+          <div className="tech-row">
+            <div className="tech-label">Custom Guardrails</div>
+            <div className="tech-value">
+              Pre-call & post-call hooks with streaming support, passthrough mode
             </div>
           </div>
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway/requirements" className="nav-button">
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/requirements")}
+          >
             ← Previous: Requirements
-          </Link>
-          <Link href="/llm-gateway/deployment" className="nav-button">
+          </button>
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/deployment")}
+          >
             Next: Deployment →
-          </Link>
+          </button>
         </div>
       </div>
     </div>

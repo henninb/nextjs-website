@@ -2,8 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SummaryPage() {
+  const router = useRouter();
   return (
     <div className="summary-container">
       <style jsx>{`
@@ -179,26 +181,58 @@ export default function SummaryPage() {
 
         .bottom-nav {
           display: flex;
+          gap: 2rem;
           justify-content: center;
-          margin: 4rem auto 2rem;
+          align-items: center;
+          margin: 4rem auto 0;
+          padding-bottom: 10rem;
+          flex-wrap: wrap;
+          max-width: 1000px;
         }
 
         .nav-button {
-          display: inline-block;
-          background: rgba(46, 204, 113, 0.3);
-          padding: 1.25rem 3rem;
-          border-radius: 12px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(30, 41, 59, 0.6);
+          padding: 0.75rem 1.5rem;
+          border-radius: 20px;
           text-decoration: none;
-          color: white;
+          color: rgba(226, 232, 240, 0.95);
           font-weight: 600;
-          font-size: 1.35rem;
-          border: 2px solid #2ecc71;
-          transition: all 0.3s ease;
+          font-size: 1rem;
+          border: 1px solid rgba(148, 163, 184, 0.15);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          pointer-events: auto;
+          min-width: 180px;
+          position: relative;
+        }
+
+        .nav-button::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          opacity: 0;
+          transition: opacity 0.2s;
         }
 
         .nav-button:hover {
-          background: rgba(46, 204, 113, 0.5);
-          transform: translateY(-2px);
+          background: rgba(51, 65, 85, 0.8);
+          border-color: rgba(56, 189, 248, 0.3);
+          color: rgb(224, 242, 254);
+          transform: translateY(-1px);
+        }
+
+        .nav-button:hover::before {
+          opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -214,6 +248,17 @@ export default function SummaryPage() {
 
           .stat-value {
             font-size: 3.5rem;
+          }
+
+          .bottom-nav {
+            gap: 1rem;
+            padding-bottom: 12rem;
+          }
+
+          .nav-button {
+            min-width: 140px;
+            font-size: 0.875rem;
+            padding: 0.625rem 1.125rem;
           }
         }
       `}</style>
@@ -380,9 +425,18 @@ export default function SummaryPage() {
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway" className="nav-button">
-            ← Back to Overview
-          </Link>
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/cost")}
+          >
+            ← Previous: Cost
+          </button>
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway")}
+          >
+            Next: Overview →
+          </button>
         </div>
       </div>
     </div>

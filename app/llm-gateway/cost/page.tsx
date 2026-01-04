@@ -2,8 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CostPage() {
+  const router = useRouter();
   return (
     <div className="cost-container">
       <style jsx>{`
@@ -220,32 +222,58 @@ export default function CostPage() {
 
         .bottom-nav {
           display: flex;
-          justify-content: space-between;
+          gap: 2rem;
+          justify-content: center;
           align-items: center;
-          max-width: 1400px;
-          margin: 3rem auto 0;
-          padding: 1.5rem 0;
+          margin: 4rem auto 0;
+          padding-bottom: 10rem;
           flex-wrap: wrap;
-          gap: 1rem;
+          max-width: 1000px;
         }
 
         .nav-button {
           display: inline-flex;
           align-items: center;
-          gap: 0.5rem;
-          background: rgba(255, 255, 255, 0.2);
+          justify-content: center;
+          background: rgba(30, 41, 59, 0.6);
           padding: 0.75rem 1.5rem;
-          border-radius: 8px;
+          border-radius: 20px;
           text-decoration: none;
-          color: white;
+          color: rgba(226, 232, 240, 0.95);
           font-weight: 600;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          transition: all 0.3s ease;
+          font-size: 1rem;
+          border: 1px solid rgba(148, 163, 184, 0.15);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          pointer-events: auto;
+          min-width: 180px;
+          position: relative;
+        }
+
+        .nav-button::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          opacity: 0;
+          transition: opacity 0.2s;
         }
 
         .nav-button:hover {
-          background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
+          background: rgba(51, 65, 85, 0.8);
+          border-color: rgba(56, 189, 248, 0.3);
+          color: rgb(224, 242, 254);
+          transform: translateY(-1px);
+        }
+
+        .nav-button:hover::before {
+          opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -268,6 +296,17 @@ export default function CostPage() {
           .cost-table th,
           .cost-table td {
             padding: 0.75rem 0.5rem;
+          }
+
+          .bottom-nav {
+            gap: 1rem;
+            padding-bottom: 12rem;
+          }
+
+          .nav-button {
+            min-width: 140px;
+            font-size: 0.875rem;
+            padding: 0.625rem 1.125rem;
           }
         }
       `}</style>
@@ -571,12 +610,18 @@ export default function CostPage() {
         </div>
 
         <div className="bottom-nav">
-          <Link href="/llm-gateway/security" className="nav-button">
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/security")}
+          >
             ← Previous: Security
-          </Link>
-          <Link href="/llm-gateway/summary" className="nav-button">
+          </button>
+          <button
+            className="nav-button"
+            onClick={() => router.push("/llm-gateway/summary")}
+          >
             Next: Summary →
-          </Link>
+          </button>
         </div>
       </div>
     </div>
