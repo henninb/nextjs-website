@@ -818,9 +818,8 @@ kubectl get nodes
 
             <div className="command-label">Expected output:</div>
             <div className="output-block">
-              <pre>{`NAME                             STATUS   ROLES    AGE   VERSION
-ip-10-0-10-123.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...
-ip-10-0-11-456.ec2.internal      Ready    <none>   5m    v1.34.0-eks-...`}</pre>
+              <pre>{`NAME                          STATUS   ROLES    AGE    VERSION
+ip-10-0-11-142.ec2.internal   Ready    <none>   3h4m   v1.34.2-eks-ecaa3a6`}</pre>
             </div>
           </div>
 
@@ -1268,6 +1267,243 @@ make eks-port-forward
               <pre>{`Forwarding localhost:4000 -> llm-gateway/litellm:80 (press Ctrl+C to stop)
 Forwarding from 127.0.0.1:4000 -> 4000
 Forwarding from [::1]:4000 -> 4000`}</pre>
+            </div>
+
+            <div className="command-label">Test all LiteLLM models:</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 131 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`make test-litellm-models`, 131)}
+                title={copiedIndex === 131 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 131 ? "✓" : "⧉"}
+              </button>
+make test-litellm-models
+            </div>
+
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`Checking if endpoint is available: http://localhost:4000
+✓ Service is responding
+
+Testing all LiteLLM models
+Endpoint: http://localhost:4000
+
+=== Perplexity Models (Primary - API Key Required) ===
+Testing perplexity-sonar... OK
+  Response: Hi! How can I help you today?[1][2][4]...
+Testing perplexity-sonar-pro... OK
+  Response: Hello there![1][3]...
+
+=== Amazon Nova Models (AWS Native - No Payment Required) ===
+Testing nova-micro... OK
+  Response: Hello! How can I assist you today? Whether you have a questi...
+Testing nova-lite... OK
+  Response: Hello! How can I assist you today? If you have questions, ne...
+Testing nova-pro... OK
+  Response: Hello! It's nice to have you here. I'm here to help with wha...
+
+=== Llama Models (Meta) ===
+Testing llama3-2-1b... OK
+  Response: How can I assist you today?...
+Testing llama3-2-3b... OK
+  Response: Hello! It's nice to meet you. Is there something I can help ...
+
+=== Test Summary ===
+
+Total tests: 7
+Passed: 7
+Failed: 0
+
+Active Models:
+  ✓ Perplexity (perplexity-sonar, perplexity-sonar-pro)
+  ✓ Amazon Nova (nova-micro, nova-lite, nova-pro) - No payment required
+  ✓ Meta Llama (llama3-2-1b, llama3-2-3b) - May need approval
+
+All tests passed!`}</pre>
+            </div>
+
+            <div className="command-label">Test custom guardrails (pre_call and post_call hooks):</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 132 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`make test-guardrails`, 132)}
+                title={copiedIndex === 132 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 132 ? "✓" : "⧉"}
+              </button>
+make test-guardrails
+            </div>
+
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`╔====================================================================╗
+║                    GUARDRAIL TEST SUITE                            ║
+╚====================================================================╝
+
+LiteLLM URL: http://localhost:4000
+Models to test: llama3-2-3b, perplexity-sonar
+
+
+######################################################################
+# TESTING MODEL: llama3-2-3b
+######################################################################
+
+**********************************************************************
+* PRE_CALL TESTS (Input Filtering)
+**********************************************************************
+
+======================================================================
+Test 1 (llama3-2-3b): Direct mention should be blocked
+======================================================================
+Status: 200
+Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions about cute animals may causeexcessive happiness and distraction. Please rephrase yo...
+✅ PASS: Request blocked (200 OK with BLOCKED message)
+
+======================================================================
+Test 2 (llama3-2-3b): Bypass prevention (history sanitization)
+======================================================================
+Simulating conversation:
+  1. User: 'duckies and bunnies' → BLOCKED
+  2. User: 'why no duckies?' → BLOCKED
+  3. User: 'hi' → Should respond normally WITHOUT mentioning ducks/bunnies
+
+Status: 200
+Response: how can i assist you today?...
+✅ PASS: Normal response without mentioning blocked topics
+   History sanitization working correctly!
+
+======================================================================
+Test 3 (llama3-2-3b): Normal conversation (no blocking)
+======================================================================
+Status: 200
+Response: 2 + 2 = 4....
+✅ PASS: Normal conversation allowed
+
+**********************************************************************
+* POST_CALL TESTS (Output Filtering)
+**********************************************************************
+
+======================================================================
+Test 4 (llama3-2-3b): Output filtering - non-streaming (post_call hook)
+======================================================================
+Asking: 'What's another name for rabbit?'
+Expected: LLM would naturally say 'bunny', but post_call hook should block it
+
+Status: 200
+Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions about cute animals may causeexcessive happiness and distraction. Please rephrase yo...
+✅ PASS: LLM output blocked (post_call hook working)
+
+======================================================================
+Test 5 (llama3-2-3b): Output filtering - streaming (post_call hook)
+======================================================================
+Asking: 'What's another name for rabbit?' with streaming=true
+Expected: LLM would naturally say 'bunny', but post_call hook should block it
+This tests the LiteLLM streaming bug fix
+
+Status: 200
+Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions about cute animals may causeexcessive happiness and distraction. Please rephrase yo...
+✅ PASS: LLM output blocked in streaming mode (post_call hook + patch working)
+
+======================================================================
+Test 6 (llama3-2-3b): Indirect bypass - 'what is bird that quacks?' (post_call hook)
+======================================================================
+Asking: 'what is bird that quacks?'
+Expected: Input passes pre_call (no blocked words), but LLM response
+          contains 'duck/mallard' which should be blocked by post_call hook
+
+Status: 200
+Response: ⚠️ BLOCKED: The response contains mentions of duckies or bunnies. Discussions about cute animals may cause excessive happiness and distraction. Please...
+✅ PASS: Indirect bypass blocked (post_call hook caught LLM response)
+
+----------------------------------------------------------------------
+Model 'llama3-2-3b' Results: 6/6 tests passed
+----------------------------------------------------------------------
+
+######################################################################
+# TESTING MODEL: perplexity-sonar
+######################################################################
+
+**********************************************************************
+* PRE_CALL TESTS (Input Filtering)
+**********************************************************************
+
+======================================================================
+Test 1 (perplexity-sonar): Direct mention should be blocked
+======================================================================
+Status: 200
+Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions about cute animals may causeexcessive happiness and distraction. Please rephrase yo...
+✅ PASS: Request blocked (200 OK with BLOCKED message)
+
+======================================================================
+Test 2 (perplexity-sonar): Bypass prevention (history sanitization)
+======================================================================
+Simulating conversation:
+  1. User: 'duckies and bunnies' → BLOCKED
+  2. User: 'why no duckies?' → BLOCKED
+  3. User: 'hi' → Should respond normally WITHOUT mentioning ducks/bunnies
+
+Status: 200
+Response: hi! how can i help you today?[1][2][4]...
+✅ PASS: Normal response without mentioning blocked topics
+   History sanitization working correctly!
+
+======================================================================
+Test 3 (perplexity-sonar): Normal conversation (no blocking)
+======================================================================
+Status: 200
+Response: **2 + 2 equals 4.**[1][3]
+
+This is a basic arithmetic operation where addition combines two units of 2 to yield a total of 4, as confirmed by standard...
+✅ PASS: Normal conversation allowed
+
+**********************************************************************
+* POST_CALL TESTS (Output Filtering)
+**********************************************************************
+
+======================================================================
+Test 4 (perplexity-sonar): Output filtering - non-streaming (post_call hook)
+======================================================================
+Asking: 'What's another name for rabbit?'
+Expected: LLM would naturally say 'bunny', but post_call hook should block it
+
+Status: 200
+Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions about cute animals may causeexcessive happiness and distraction. Please rephrase yo...
+✅ PASS: LLM output blocked (post_call hook working)
+
+======================================================================
+Test 5 (perplexity-sonar): Output filtering - streaming (post_call hook)
+======================================================================
+Asking: 'What's another name for rabbit?' with streaming=true
+Expected: LLM would naturally say 'bunny', but post_call hook should block it
+This tests the LiteLLM streaming bug fix
+
+Status: 200
+Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions about cute animals may causeexcessive happiness and distraction. Please rephrase yo...
+✅ PASS: LLM output blocked in streaming mode (post_call hook + patch working)
+
+======================================================================
+Test 6 (perplexity-sonar): Indirect bypass - 'what is bird that quacks?' (post_call hook)
+======================================================================
+Asking: 'what is bird that quacks?'
+Expected: Input passes pre_call (no blocked words), but LLM response
+          contains 'duck/mallard' which should be blocked by post_call hook
+
+Status: 200
+Response: ⚠️ BLOCKED: The response contains mentions of duckies or bunnies. Discussions about cute animals may cause excessive happiness and distraction. Please...
+✅ PASS: Indirect bypass blocked (post_call hook caught LLM response)
+
+----------------------------------------------------------------------
+Model 'perplexity-sonar' Results: 6/6 tests passed
+----------------------------------------------------------------------
+
+======================================================================
+FINAL SUMMARY
+======================================================================
+Total: 12/12 tests passed
+Failed: 0/12
+
+🎉 All tests passed!`}</pre>
             </div>
 
             <div className="command-label">Tail application logs:</div>
