@@ -135,60 +135,6 @@ export default function FeaturesPage() {
           font-weight: bold;
         }
 
-        .arena-section {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(10px);
-          border-radius: 16px;
-          padding: 2rem;
-          margin: 3rem 0;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .arena-section h2 {
-          font-size: 2rem;
-          margin-bottom: 1.5rem;
-          text-align: center;
-        }
-
-        .arena-flow {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 1.5rem;
-          margin-top: 2rem;
-        }
-
-        .flow-step {
-          background: rgba(255, 255, 255, 0.1);
-          padding: 1.5rem;
-          border-radius: 8px;
-          text-align: center;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .flow-step .step-num {
-          background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
-          color: white;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 1.25rem;
-          margin: 0 auto 1rem;
-        }
-
-        .flow-step h3 {
-          font-size: 1.125rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .flow-step p {
-          font-size: 0.95rem;
-          opacity: 0.9;
-        }
-
         .models-section {
           background: rgba(255, 255, 255, 0.15);
           backdrop-filter: blur(10px);
@@ -239,40 +185,6 @@ export default function FeaturesPage() {
         .model-card li {
           padding: 0.25rem 0;
           opacity: 0.9;
-        }
-
-        .use-cases {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(10px);
-          border-radius: 16px;
-          padding: 2rem;
-          margin: 3rem 0;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .use-cases h2 {
-          font-size: 2rem;
-          margin-bottom: 1.5rem;
-          text-align: center;
-        }
-
-        .use-case {
-          background: rgba(255, 255, 255, 0.1);
-          padding: 1.5rem;
-          margin: 1rem 0;
-          border-radius: 8px;
-          border-left: 4px solid #00d4ff;
-        }
-
-        .use-case h3 {
-          font-size: 1.5rem;
-          margin-bottom: 0.75rem;
-          color: #00d4ff;
-        }
-
-        .use-case p {
-          opacity: 0.95;
-          line-height: 1.6;
         }
 
         .back-link {
@@ -361,10 +273,6 @@ export default function FeaturesPage() {
             grid-template-columns: 1fr;
           }
 
-          .arena-flow {
-            grid-template-columns: 1fr;
-          }
-
           .models-grid {
             grid-template-columns: 1fr;
           }
@@ -383,10 +291,9 @@ export default function FeaturesPage() {
       `}</style>
 
       <div className="header">
-        <h1>✨ Project Features</h1>
+        <h1>✨ Technical Highlights</h1>
         <p>
-          Experience the power of multi-provider AI with Arena Mode, advanced
-          features, and real-world applications.
+          Production-grade security, cost optimization, and multi-provider AI infrastructure demonstrating enterprise engineering practices.
         </p>
       </div>
 
@@ -394,111 +301,20 @@ export default function FeaturesPage() {
         <div className="features-grid">
           <div className="feature-card">
             <h2>
-              <span className="icon">🎭</span>
-              Arena Mode
+              <span className="icon">🔒</span>
+              Security Architecture
             </h2>
             <p>
-              Blind model comparison allows you to evaluate AI models without
-              bias. Two random models from 3 carefully selected models compete: perplexity-sonar-pro, nova-pro, and llama3-2-3b.
+              Enterprise zero-trust networking with defense-in-depth security controls. No static credentials anywhere in the infrastructure.
             </p>
             <ul>
-              <li>3 models (one from each provider)</li>
-              <li>Anonymous model responses</li>
-              <li>Side-by-side comparison</li>
-              <li>Vote for the best response</li>
-              <li>Models revealed after voting</li>
-              <li>Tracks win rates and performance</li>
-            </ul>
-          </div>
-
-          <div className="feature-card">
-            <h2>
-              <span className="icon">🔄</span>
-              Multi-Provider API
-            </h2>
-            <p>
-              Unified OpenAI-compatible API for seamless access to 7 models across AWS Bedrock and Perplexity:
-            </p>
-            <ul>
-              <li>AWS Bedrock Nova: nova-micro, nova-lite, nova-pro</li>
-              <li>AWS Bedrock Llama: llama3-2-1b, llama3-2-3b</li>
-              <li>Perplexity: perplexity-sonar, perplexity-sonar-pro</li>
-              <li>Single endpoint for all providers</li>
-              <li>Automatic request routing & fallback</li>
-              <li>Cost tracking per model</li>
-            </ul>
-          </div>
-
-          <div className="feature-card">
-            <h2>
-              <span className="icon">💬</span>
-              Chat Interface
-            </h2>
-            <p>
-              Modern, responsive web UI with full conversation management and
-              history.
-            </p>
-            <ul>
-              <li>Real-time streaming responses</li>
-              <li>Conversation history persistence</li>
-              <li>Multi-turn conversations</li>
-              <li>Markdown rendering</li>
-              <li>Code syntax highlighting</li>
-              <li>Export conversations</li>
-            </ul>
-          </div>
-
-          <div className="feature-card">
-            <h2>
-              <span className="icon">📊</span>
-              Rate Limiting & Budgets
-            </h2>
-            <p>
-              Built-in cost controls and usage limits prevent unexpected
-              charges.
-            </p>
-            <ul>
-              <li>Per-user request throttling</li>
-              <li>Token limit enforcement</li>
-              <li>Budget alerts via CloudWatch</li>
-              <li>Real-time cost tracking</li>
-              <li>Monthly spending caps</li>
-            </ul>
-          </div>
-
-          <div className="feature-card">
-            <h2>
-              <span className="icon">🔐</span>
-              User Authentication
-            </h2>
-            <p>
-              Secure user management with session handling and role-based
-              access.
-            </p>
-            <ul>
-              <li>User registration and login</li>
-              <li>Session management</li>
-              <li>Per-user conversation isolation</li>
-              <li>API key generation</li>
-              <li>Admin controls</li>
-            </ul>
-          </div>
-
-          <div className="feature-card">
-            <h2>
-              <span className="icon">📈</span>
-              Analytics & Monitoring
-            </h2>
-            <p>
-              Track usage, performance, and costs across all AI models and
-              users.
-            </p>
-            <ul>
-              <li>Request/response logging</li>
-              <li>Latency metrics</li>
-              <li>Error rate tracking</li>
-              <li>Cost per model</li>
-              <li>User activity reports</li>
+              <li>Zero-Trust Network Policies (pod-to-pod isolation)</li>
+              <li>IRSA (IAM Roles for Service Accounts) - no static AWS keys</li>
+              <li>Non-root containers (UID 1000, read-only filesystem)</li>
+              <li>CloudFlare IP allowlist on NLB (geo-restriction capable)</li>
+              <li>AWS Metadata Service blocking (SSRF prevention)</li>
+              <li>HTTPS/TLS with ACM certificate management</li>
+              <li>Secrets Manager integration for API keys</li>
             </ul>
           </div>
 
@@ -508,208 +324,101 @@ export default function FeaturesPage() {
               Custom Guardrails
             </h2>
             <p>
-              Enterprise-grade content filtering system with streaming support
-              to control both user inputs and AI outputs.
+              Production content filtering with streaming support. Discovered and documented LiteLLM streaming bug, implemented workaround.
             </p>
             <ul>
-              <li>Pre-call filtering (input validation)</li>
-              <li>Post-call filtering (output validation)</li>
-              <li>Discovered & fixed streaming bypass bug</li>
-              <li>Streaming mode support (creative workaround)</li>
+              <li>Pre-call filtering (input validation before LLM)</li>
+              <li>Post-call filtering (output validation after LLM)</li>
+              <li>Discovered LiteLLM v1.80.11 streaming bypass bug</li>
+              <li>Implemented stream=false forcing workaround</li>
               <li>Conversation history sanitization</li>
-              <li>Indirect bypass prevention</li>
-              <li>12 comprehensive tests (6 per model)</li>
+              <li>Indirect bypass prevention (context poisoning)</li>
+              <li>12 comprehensive tests validating all attack vectors</li>
+            </ul>
+          </div>
+
+          <div className="feature-card">
+            <h2>
+              <span className="icon">💰</span>
+              Cost Optimization
+            </h2>
+            <p>
+              Engineered for 50-90% cost savings through strategic infrastructure decisions. ~$144-179/month total AWS spend.
+            </p>
+            <ul>
+              <li>SPOT instances: 50-90% savings on compute (t3.medium pool)</li>
+              <li>Single NAT Gateway: ~$32/month savings vs multi-AZ</li>
+              <li>ECR instead of Docker Hub (avoids rate limits)</li>
+              <li>Resource quotas prevent waste</li>
+              <li>Built-in rate limiting & budget controls</li>
+              <li>Cost tracking per model with CloudWatch alerts</li>
+            </ul>
+          </div>
+
+          <div className="feature-card">
+            <h2>
+              <span className="icon">🔄</span>
+              Multi-Provider Integration
+            </h2>
+            <p>
+              Unified OpenAI-compatible API for 7 models across 3 providers. Single endpoint, automatic routing, comprehensive testing.
+            </p>
+            <ul>
+              <li>AWS Bedrock Nova: nova-micro, nova-lite, nova-pro</li>
+              <li>AWS Bedrock Llama: llama3-2-1b, llama3-2-3b</li>
+              <li>Perplexity: perplexity-sonar, perplexity-sonar-pro</li>
+              <li>OpenAI-compatible REST API</li>
+              <li>Automated testing suite (all 7 models validated)</li>
+              <li>LiteLLM proxy with cost tracking</li>
+            </ul>
+          </div>
+
+          <div className="feature-card">
+            <h2>
+              <span className="icon">🎭</span>
+              Arena Mode
+            </h2>
+            <p>
+              Blind model comparison for unbiased evaluation. 3 models (one per provider) compete anonymously.
+            </p>
+            <ul>
+              <li>Models: perplexity-sonar-pro, nova-pro, llama3-2-3b</li>
+              <li>Anonymous side-by-side responses (Model A vs B)</li>
+              <li>Vote for best response, models revealed after</li>
+              <li>ELO ratings track performance over time</li>
+              <li>Production use: model selection for specific tasks</li>
             </ul>
           </div>
         </div>
 
-        <div className="arena-section">
-          <h2>🎭 How Arena Mode Works</h2>
-          <p style={{ textAlign: "center", opacity: "0.95" }}>
-            Unbiased model comparison through blind testing - 3 models (perplexity-sonar-pro, nova-pro, llama3-2-3b) representing each provider
-          </p>
-
-          <div className="arena-flow">
-            <div className="flow-step">
-              <div className="step-num">1</div>
-              <h3>Enter Prompt</h3>
-              <p>Type your question or request in the Arena interface</p>
-            </div>
-
-            <div className="flow-step">
-              <div className="step-num">2</div>
-              <h3>Two Models Respond</h3>
-              <p>
-                Random models generate responses (identities hidden as Model A
-                & B)
-              </p>
-            </div>
-
-            <div className="flow-step">
-              <div className="step-num">3</div>
-              <h3>Vote for Winner</h3>
-              <p>Compare responses and choose which one is better</p>
-            </div>
-
-            <div className="flow-step">
-              <div className="step-num">4</div>
-              <h3>Models Revealed</h3>
-              <p>After voting, see which models were compared</p>
-            </div>
-
-            <div className="flow-step">
-              <div className="step-num">5</div>
-              <h3>Track Results</h3>
-              <p>Arena maintains ELO ratings and win statistics</p>
-            </div>
-          </div>
-        </div>
-
         <div className="models-section">
-          <h2>🤖 Available AI Models</h2>
+          <h2>🤖 7 AI Models Across 3 Providers</h2>
 
           <div className="models-grid">
             <div className="model-card">
-              <h3>Nova Micro</h3>
-              <div className="provider">AWS Bedrock (Amazon)</div>
+              <h3>AWS Bedrock - Nova (Amazon)</h3>
               <ul>
-                <li>• Best for: Quick tasks</li>
-                <li>• Cost: Very low</li>
-                <li>• Speed: Very fast</li>
-                <li>• Context: 128K tokens</li>
+                <li>• nova-micro (128K context, very low cost)</li>
+                <li>• nova-lite (128K context, low cost)</li>
+                <li>• nova-pro (128K context, complex reasoning)</li>
               </ul>
             </div>
 
             <div className="model-card">
-              <h3>Nova Lite</h3>
-              <div className="provider">AWS Bedrock (Amazon)</div>
+              <h3>AWS Bedrock - Llama (Meta)</h3>
               <ul>
-                <li>• Best for: Efficient responses</li>
-                <li>• Cost: Low</li>
-                <li>• Speed: Fast</li>
-                <li>• Context: 128K tokens</li>
+                <li>• llama3-2-1b (1B params, very fast)</li>
+                <li>• llama3-2-3b (3B params, balanced)</li>
               </ul>
             </div>
 
             <div className="model-card">
-              <h3>Nova Pro</h3>
-              <div className="provider">AWS Bedrock (Amazon)</div>
+              <h3>Perplexity API</h3>
               <ul>
-                <li>• Best for: Complex reasoning</li>
-                <li>• Cost: Medium</li>
-                <li>• Speed: Fast</li>
-                <li>• Context: 128K tokens</li>
+                <li>• perplexity-sonar (web search, citations)</li>
+                <li>• perplexity-sonar-pro (deep research)</li>
               </ul>
             </div>
-
-            <div className="model-card">
-              <h3>Llama 3.2 1B</h3>
-              <div className="provider">AWS Bedrock (Meta)</div>
-              <ul>
-                <li>• Best for: Simple queries</li>
-                <li>• Cost: Very low</li>
-                <li>• Speed: Very fast</li>
-                <li>• Params: 1 billion</li>
-              </ul>
-            </div>
-
-            <div className="model-card">
-              <h3>Llama 3.2 3B</h3>
-              <div className="provider">AWS Bedrock (Meta)</div>
-              <ul>
-                <li>• Best for: Quick responses</li>
-                <li>• Cost: Low</li>
-                <li>• Speed: Fast</li>
-                <li>• Params: 3 billion</li>
-              </ul>
-            </div>
-
-            <div className="model-card">
-              <h3>Perplexity Sonar</h3>
-              <div className="provider">Perplexity API</div>
-              <ul>
-                <li>• Best for: Web search, facts</li>
-                <li>• Cost: Medium</li>
-                <li>• Speed: Fast</li>
-                <li>• Features: Real-time citations</li>
-              </ul>
-            </div>
-
-            <div className="model-card">
-              <h3>Perplexity Sonar Pro</h3>
-              <div className="provider">Perplexity API</div>
-              <ul>
-                <li>• Best for: Deep research</li>
-                <li>• Cost: Higher</li>
-                <li>• Speed: Fast</li>
-                <li>• Features: Advanced analysis</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="use-cases">
-          <h2>💡 Real-World Use Cases</h2>
-
-          <div className="use-case">
-            <h3>1. Content Generation</h3>
-            <p>
-              Use Arena Mode to test different models for blog posts, marketing
-              copy, or creative writing. Compare output quality, creativity,
-              and adherence to instructions. Nova Pro excels at structured
-              content, while Perplexity Sonar provides fact-based writing with
-              citations.
-            </p>
-          </div>
-
-          <div className="use-case">
-            <h3>2. Research & Analysis</h3>
-            <p>
-              Leverage Perplexity's web search capabilities for up-to-date
-              information and multi-source research. Perplexity Sonar Pro
-              provides comprehensive analysis with citations. Perfect for
-              market research, competitive analysis, or fact-checking.
-            </p>
-          </div>
-
-          <div className="use-case">
-            <h3>3. Code Generation & Review</h3>
-            <p>
-              Compare code quality across models. Test algorithm
-              implementations, code refactoring suggestions, and debugging
-              help. Use Arena Mode to find which model produces the most
-              efficient, readable code for your specific use case.
-            </p>
-          </div>
-
-          <div className="use-case">
-            <h3>4. Customer Support Automation</h3>
-            <p>
-              Integrate the OpenAI-compatible API into support tools. Use rate
-              limiting and cost controls to manage expenses. Track which models
-              provide the best customer satisfaction. IRSA ensures secure
-              access to internal knowledge bases.
-            </p>
-          </div>
-
-          <div className="use-case">
-            <h3>5. Education & Training</h3>
-            <p>
-              Create interactive learning experiences with AI tutors. Use
-              different models for different subjects (Llama for quick Q&A,
-              Perplexity for research-heavy topics). Conversation history helps
-              track student progress.
-            </p>
-          </div>
-
-          <div className="use-case">
-            <h3>6. Model Evaluation for Production</h3>
-            <p>
-              Before committing to a specific AI provider, use Arena Mode to
-              test with real-world prompts. Gather unbiased performance data
-              from actual users. Make data-driven decisions about which models
-              to deploy at scale.
-            </p>
           </div>
         </div>
 

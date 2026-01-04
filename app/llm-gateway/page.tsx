@@ -342,6 +342,7 @@ export default function LLMGatewayPage() {
           <a href="https://en.wikipedia.org/wiki/Docker_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS ECR (Docker)</a>
           <a href="https://en.wikipedia.org/wiki/Terraform_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">Terraform</a>
           <a href="https://en.wikipedia.org/wiki/Cloudflare" target="_blank" rel="noopener noreferrer" className="tech-badge">Cloudflare</a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="tech-badge">GitHub</a>
           <a href="https://github.com/BerriAI/litellm" target="_blank" rel="noopener noreferrer" className="tech-badge">LiteLLM</a>
           <a href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener noreferrer" className="tech-badge">OpenWebUI</a>
           <a href="https://docs.aws.amazon.com/bedrock/" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS Bedrock</a>
