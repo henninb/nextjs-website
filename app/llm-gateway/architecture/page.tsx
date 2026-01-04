@@ -284,7 +284,7 @@ export default function ArchitecturePage() {
               <li><strong>Runs as non-root user (UID 1000)</strong></li>
               <li>React-based web interface</li>
               <li>User authentication & session management</li>
-              <li>Arena Mode (compare any 2 of 7 models across 3 providers)</li>
+              <li>Arena Mode (3 models: perplexity-sonar-pro, nova-pro, llama3-2-3b)</li>
               <li>Chat history with EBS persistence</li>
               <li>Connects to LiteLLM via internal network</li>
               <li>Exposed via NLB on port 443 (HTTPS)</li>

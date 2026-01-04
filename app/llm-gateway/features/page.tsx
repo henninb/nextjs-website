@@ -399,10 +399,10 @@ export default function FeaturesPage() {
             </h2>
             <p>
               Blind model comparison allows you to evaluate AI models without
-              bias. Two random models from 7 available models across 3 providers compete, and you choose the winner.
+              bias. Two random models from 3 carefully selected models compete: perplexity-sonar-pro, nova-pro, and llama3-2-3b.
             </p>
             <ul>
-              <li>Compare any 2 of 7 models</li>
+              <li>3 models (one from each provider)</li>
               <li>Anonymous model responses</li>
               <li>Side-by-side comparison</li>
               <li>Vote for the best response</li>
@@ -526,7 +526,7 @@ export default function FeaturesPage() {
         <div className="arena-section">
           <h2>🎭 How Arena Mode Works</h2>
           <p style={{ textAlign: "center", opacity: "0.95" }}>
-            Unbiased model comparison through blind testing - compare any 2 of 7 models across 3 providers (AWS Nova, AWS Llama/Meta, Perplexity)
+            Unbiased model comparison through blind testing - 3 models (perplexity-sonar-pro, nova-pro, llama3-2-3b) representing each provider
           </p>
 
           <div className="arena-flow">

@@ -340,7 +340,7 @@ export default function CostPage() {
               </tr>
               <tr>
                 <td>EC2 SPOT Instances</td>
-                <td>2x t3.medium (avg ~70% discount)</td>
+                <td>2x nodes (t3.medium, t3a.medium, t2.medium pool - avg ~70% discount)</td>
                 <td className="savings-highlight">$15-30</td>
               </tr>
               <tr>
@@ -402,7 +402,8 @@ export default function CostPage() {
             </h3>
             <ul>
               <li>Use EC2 SPOT instances instead of on-demand</li>
-              <li>Multiple instance types (t3, t3a, t2)</li>
+              <li>Multiple instance types (t3.medium, t3a.medium, t2.medium)</li>
+              <li>SPOT diversity reduces interruption risk</li>
               <li>EKS handles automatic replacement</li>
               <li>Stateless workloads = SPOT friendly</li>
               <li>Persistent data on EBS volumes</li>
@@ -466,9 +467,10 @@ export default function CostPage() {
               Strategy
             </h3>
             <ul>
-              <li>t3.medium sufficient for LLM proxy</li>
+              <li>t3/t3a/t2.medium instances sufficient for LLM proxy</li>
               <li>Auto-scaling from 2-4 nodes</li>
               <li>Resource limits on pods</li>
+              <li>Resource quotas prevent resource waste</li>
               <li>gp3 volumes instead of gp2 (cheaper)</li>
               <li>ECR instead of Docker Hub (no rate limits)</li>
             </ul>
@@ -527,7 +529,7 @@ export default function CostPage() {
               <h3>❌ Standard Configuration</h3>
               <div className="price">~$300-350/mo</div>
               <ul>
-                <li>• On-demand EC2 instances (2x t3.medium)</li>
+                <li>• On-demand EC2 instances (2x nodes, single type)</li>
                 <li>• Multi-AZ NAT Gateways (2 NATs)</li>
                 <li>• Application Load Balancer instead of NLB</li>
                 <li>• No auto-scaling (always max capacity)</li>
