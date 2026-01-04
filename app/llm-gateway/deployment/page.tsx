@@ -20,7 +20,8 @@ export default function DeploymentPage() {
         .deployment-container {
           min-height: 100vh;
           padding: 0;
-          color: white;
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+          color: #e2e8f0;
         }
 
         .output-block pre {
@@ -33,13 +34,18 @@ export default function DeploymentPage() {
           padding: 3rem 2rem 2rem;
           max-width: 1200px;
           margin: 0 auto;
-          color: white;
+          color: #f1f5f9;
         }
 
         .header h1 {
           font-size: 4.5rem;
           margin-bottom: 1.5rem;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+          background: linear-gradient(135deg, #00d4ff 0%, #fa709a 50%, #fee140 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-shadow: none;
+          font-weight: 800;
         }
 
         .header p {
@@ -48,6 +54,7 @@ export default function DeploymentPage() {
           max-width: 1000px;
           margin: 0 auto;
           line-height: 1.8;
+          color: #cbd5e1;
         }
 
         .content {
@@ -60,12 +67,14 @@ export default function DeploymentPage() {
         }
 
         .step {
-          background: white;
-          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+          border-radius: 16px;
           padding: 2rem;
           margin: 1.5rem 0;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(148, 163, 184, 0.1);
           position: relative;
+          border: 1px solid rgba(100, 116, 139, 0.2);
+          backdrop-filter: blur(10px);
         }
 
         .step-number {
@@ -82,27 +91,31 @@ export default function DeploymentPage() {
           justify-content: center;
           font-size: 1.5rem;
           font-weight: 700;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
         }
 
         .step h2 {
           font-size: 1.75rem;
           margin-bottom: 1rem;
           margin-top: 1rem;
-          color: #fa709a;
+          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          font-weight: 700;
         }
 
         .step p {
           line-height: 1.6;
           margin-bottom: 1rem;
-          color: #555;
+          color: #cbd5e1;
         }
 
         .code-block {
-          background: #1e1e1e;
+          background: #1a1a1a;
           color: #d4d4d4;
           padding: 1.25rem;
-          border-radius: 8px;
+          border-radius: 10px;
           font-family: "Courier New", monospace;
           font-size: 1.1rem;
           overflow-x: auto;
@@ -112,13 +125,15 @@ export default function DeploymentPage() {
           overflow-wrap: anywhere;
           line-height: 1.6;
           position: relative;
+          border: 1px solid rgba(0, 212, 255, 0.2);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 212, 255, 0.05);
         }
 
         .output-block {
-          background: #2d2d2d;
+          background: #1f1f1f;
           color: #9ca3af;
           padding: 1.25rem;
-          border-radius: 8px;
+          border-radius: 10px;
           font-family: "Courier New", monospace;
           font-size: 0.95rem;
           overflow-x: auto;
@@ -127,17 +142,22 @@ export default function DeploymentPage() {
           word-break: break-word;
           overflow-wrap: anywhere;
           line-height: 1.6;
-          border-left: 3px solid #4b5563;
+          border-left: 3px solid #00d4ff;
           width: 100%;
           box-sizing: border-box;
+          border: 1px solid rgba(100, 116, 139, 0.2);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 212, 255, 0.03);
         }
 
         .command-label {
-          color: #555;
+          color: #94a3b8;
           font-weight: 600;
           margin-top: 1.5rem;
           margin-bottom: 0.5rem;
           font-size: 1rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-size: 0.875rem;
         }
 
         .command-label:first-of-type {
@@ -148,9 +168,9 @@ export default function DeploymentPage() {
           position: absolute;
           top: 0.5rem;
           right: 0.5rem;
-          background: rgba(255, 255, 255, 0.05);
-          color: rgba(255, 255, 255, 0.5);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(0, 212, 255, 0.1);
+          color: rgba(0, 212, 255, 0.7);
+          border: 1px solid rgba(0, 212, 255, 0.3);
           padding: 0.5rem;
           border-radius: 6px;
           cursor: pointer;
@@ -164,15 +184,17 @@ export default function DeploymentPage() {
         }
 
         .copy-button:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.8);
-          border-color: rgba(255, 255, 255, 0.2);
+          background: rgba(0, 212, 255, 0.2);
+          color: rgba(0, 212, 255, 1);
+          border-color: rgba(0, 212, 255, 0.5);
+          box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
         }
 
         .copy-button.copied {
-          background: rgba(34, 197, 94, 0.1);
+          background: rgba(34, 197, 94, 0.2);
           color: rgba(134, 239, 172, 1);
-          border-color: rgba(34, 197, 94, 0.2);
+          border-color: rgba(34, 197, 94, 0.5);
+          box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
         }
 
         .code-block .comment {
@@ -184,17 +206,23 @@ export default function DeploymentPage() {
         }
 
         .prerequisites {
-          background: white;
-          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+          border-radius: 16px;
           padding: 2rem;
           margin: 2rem 0;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(148, 163, 184, 0.1);
+          border: 1px solid rgba(100, 116, 139, 0.2);
+          backdrop-filter: blur(10px);
         }
 
         .prerequisites h2 {
-          color: #fa709a;
+          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           font-size: 2rem;
           margin-bottom: 1.5rem;
+          font-weight: 700;
         }
 
         .prerequisites ul {
@@ -206,7 +234,7 @@ export default function DeploymentPage() {
           padding: 0.75rem 0;
           padding-left: 2rem;
           position: relative;
-          color: #555;
+          color: #cbd5e1;
           font-size: 1.125rem;
         }
 
@@ -214,23 +242,30 @@ export default function DeploymentPage() {
           content: "✓";
           position: absolute;
           left: 0;
-          color: #fa709a;
+          color: #00d4ff;
           font-weight: bold;
           font-size: 1.25rem;
+          text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
 
         .terraform-modules {
-          background: white;
-          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+          border-radius: 16px;
           padding: 2rem;
           margin: 2rem 0;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(148, 163, 184, 0.1);
+          border: 1px solid rgba(100, 116, 139, 0.2);
+          backdrop-filter: blur(10px);
         }
 
         .terraform-modules h2 {
-          color: #fa709a;
+          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           font-size: 2rem;
           margin-bottom: 1.5rem;
+          font-weight: 700;
         }
 
         .module-grid {
@@ -241,43 +276,57 @@ export default function DeploymentPage() {
         }
 
         .module-card {
-          background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-          color: white;
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 153, 204, 0.15) 100%);
+          color: #e2e8f0;
           padding: 1.5rem;
-          border-radius: 8px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(0, 212, 255, 0.3);
+          transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);
+          border-color: rgba(0, 212, 255, 0.5);
         }
 
         .module-card h3 {
           font-size: 1.25rem;
           margin-bottom: 0.75rem;
+          color: #00d4ff;
+          font-weight: 700;
         }
 
         .module-card p {
           font-size: 0.95rem;
           opacity: 0.95;
-          color: white;
+          color: #cbd5e1;
+          line-height: 1.6;
         }
 
         .back-link {
           display: inline-block;
-          background: white;
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 153, 204, 0.2) 100%);
           padding: 0.75rem 1.5rem;
-          border-radius: 8px;
+          border-radius: 12px;
           text-decoration: none;
-          color: #fa709a;
+          color: #00d4ff;
           font-weight: 600;
           margin: 2rem auto;
           display: block;
           text-align: center;
           max-width: 200px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
           transition: all 0.3s ease;
+          border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .back-link:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 6px 25px rgba(0, 212, 255, 0.4);
+          border-color: rgba(0, 212, 255, 0.5);
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 153, 204, 0.3) 100%);
         }
 
         .bottom-nav {
@@ -295,19 +344,20 @@ export default function DeploymentPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: rgba(30, 41, 59, 0.6);
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
-          color: rgba(226, 232, 240, 0.95);
+          color: #e2e8f0;
           font-weight: 600;
           font-size: 1rem;
-          border: 1px solid rgba(148, 163, 184, 0.15);
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid rgba(0, 212, 255, 0.2);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: pointer;
           pointer-events: auto;
           min-width: 180px;
           position: relative;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .nav-button::before {
@@ -316,20 +366,21 @@ export default function DeploymentPage() {
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
-          transition: opacity 0.2s;
+          transition: opacity 0.3s;
         }
 
         .nav-button:hover {
-          background: rgba(51, 65, 85, 0.8);
-          border-color: rgba(56, 189, 248, 0.3);
-          color: rgb(224, 242, 254);
-          transform: translateY(-1px);
+          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          border-color: rgba(0, 212, 255, 0.5);
+          color: #00d4ff;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 25px rgba(0, 212, 255, 0.3);
         }
 
         .nav-button:hover::before {
