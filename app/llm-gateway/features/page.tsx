@@ -483,7 +483,8 @@ export default function FeaturesPage() {
             <ul>
               <li>Pre-call filtering (input validation)</li>
               <li>Post-call filtering (output validation)</li>
-              <li>Streaming mode support (auto-fixes)</li>
+              <li>Discovered & fixed streaming bypass bug</li>
+              <li>Streaming mode support (creative workaround)</li>
               <li>Conversation history sanitization</li>
               <li>Indirect bypass prevention</li>
               <li>12 comprehensive tests (6 per model)</li>

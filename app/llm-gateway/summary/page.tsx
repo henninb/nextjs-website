@@ -290,6 +290,19 @@ export default function SummaryPage() {
 
             <div className="highlight-card">
               <h3>
+                <span className="icon">🐛</span>
+                Bug Discovery & Fix
+              </h3>
+              <p>
+                Identified streaming bypass vulnerability in production,
+                debugged LiteLLM framework source code, and implemented
+                creative workaround. Demonstrates security-first mindset and
+                deep troubleshooting skills.
+              </p>
+            </div>
+
+            <div className="highlight-card">
+              <h3>
                 <span className="icon">💰</span>
                 Cost Optimized
               </h3>
@@ -338,9 +351,10 @@ export default function SummaryPage() {
                 Custom Guardrails
               </h3>
               <p>
-                Enterprise content filtering with streaming support. Solved
-                LiteLLM limitation via stream=false forcing. 12 comprehensive
-                tests validate security.
+                Discovered streaming bypass vulnerability in production.
+                Debugged LiteLLM framework limitation and implemented creative
+                workaround (stream=false forcing). 12 comprehensive tests
+                validate fix.
               </p>
             </div>
           </div>

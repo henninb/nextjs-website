@@ -476,10 +476,13 @@ USER litellm
             </ul>
 
             <div className="highlight-box">
-              <strong>Technical Achievement:</strong> Solved LiteLLM streaming
-              limitation where post_call hooks don't execute by auto-forcing
-              stream=false in pre_call hook, maintaining guardrail protection
-              for all request types.
+              <strong>Bug Discovery & Resolution:</strong> Identified streaming
+              bypass vulnerability through production testing in OpenWebUI.
+              Root-caused to LiteLLM framework limitation (post_call hooks don't
+              execute for streaming). Implemented creative workaround by
+              auto-forcing stream=false in pre_call hook, maintaining guardrail
+              protection for all request types. Validated fix with comprehensive
+              test suite.
             </div>
           </div>
         </div>
