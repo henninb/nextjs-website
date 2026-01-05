@@ -336,13 +336,14 @@ export default function SummaryPage() {
             <div className="highlight-card">
               <h3>
                 <span className="icon">🐛</span>
-                Bug Discovery & Fix
+                Production Debugging
               </h3>
               <p>
-                Identified streaming bypass vulnerability in production,
-                debugged LiteLLM framework source code, and implemented
-                creative workaround. Demonstrates security-first mindset and
-                deep troubleshooting skills.
+                Discovered guardrail bypass in production testing. Read LiteLLM framework
+                source code to identify async_post_call_success_hook isn't invoked for
+                streaming responses. Designed creative workaround forcing stream=false
+                at pre-call hook level. Demonstrates security-first thinking and systematic
+                debugging methodology.
               </p>
             </div>
 
@@ -385,8 +386,9 @@ export default function SummaryPage() {
                 Arena Mode
               </h3>
               <p>
-                Blind random model selection for unbiased AI evaluation. Live demo
-                at openwebui.bhenning.com (randomly picks one of three models per request).
+                Blind random model selection for unbiased AI evaluation. Currently disabled
+                but fully configured with nova-lite, nova-pro, and llama3-2-3b. Demonstrates
+                understanding of OpenWebUI's streaming behavior (forces stream=true for arena models).
               </p>
             </div>
 
@@ -396,10 +398,11 @@ export default function SummaryPage() {
                 Custom Guardrails
               </h3>
               <p>
-                Discovered streaming bypass vulnerability in production.
-                Debugged LiteLLM framework limitation and implemented creative
-                workaround (stream=false forcing). 12 comprehensive tests
-                validate fix.
+                Discovered critical streaming bypass vulnerability where LiteLLM v1.80.11
+                doesn't invoke post-call hooks for streaming responses. Debugged framework
+                source code, identified root cause, and implemented stream=false forcing
+                workaround. 12 comprehensive tests validate all attack vectors including
+                context poisoning and indirect bypasses.
               </p>
             </div>
           </div>

@@ -363,7 +363,7 @@ export default function LLMGatewayPage() {
           </p>
           <ul>
             <li>7 AI models from AWS Bedrock and Perplexity</li>
-            <li>Custom content guardrails with streaming support</li>
+            <li>Custom content guardrails with complete response filtering</li>
             <li>Zero-trust network security with geo-restrictions</li>
             <li>50-90% cost savings with SPOT instances</li>
             <li>100% Infrastructure as Code with Terraform</li>

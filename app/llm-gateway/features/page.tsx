@@ -324,15 +324,15 @@ export default function FeaturesPage() {
               Custom Guardrails
             </h2>
             <p>
-              Production content filtering with streaming support. Discovered and documented LiteLLM streaming bug, implemented workaround.
+              Production content filtering with complete response validation. Discovered LiteLLM streaming bypass bug where post-call hooks aren't invoked for streaming responses, implemented stream=false workaround.
             </p>
             <ul>
               <li>Pre-call filtering (input validation before LLM)</li>
-              <li>Post-call filtering (output validation after LLM)</li>
-              <li>Discovered LiteLLM v1.80.11 streaming bypass bug</li>
-              <li>Implemented stream=false forcing workaround</li>
-              <li>Conversation history sanitization</li>
-              <li>Indirect bypass prevention (context poisoning)</li>
+              <li>Post-call filtering (complete output validation after LLM)</li>
+              <li>Discovered LiteLLM v1.80.11 streaming bypass vulnerability</li>
+              <li>Implemented stream=false forcing to ensure hook execution</li>
+              <li>Conversation history sanitization (context poisoning prevention)</li>
+              <li>OpenWebUI/client streaming preferences overridden for security</li>
               <li>12 comprehensive tests validating all attack vectors</li>
             </ul>
           </div>
@@ -379,15 +379,15 @@ export default function FeaturesPage() {
               Arena Mode
             </h2>
             <p>
-              Blind random model selection for unbiased evaluation. ONE model randomly chosen per request (not simultaneous comparison).
+              Blind random model selection for unbiased evaluation. ONE model randomly chosen per request (not simultaneous comparison). Currently disabled.
             </p>
             <ul>
-              <li>Models: perplexity-sonar-pro, nova-pro, llama3-2-3b</li>
+              <li>Status: Currently disabled (ENABLE_EVALUATION_ARENA_MODELS=false)</li>
+              <li>Configured models: nova-lite, nova-pro, llama3-2-3b</li>
               <li>Randomly selects ONE model per request (blind testing)</li>
               <li>Model identity hidden during conversation</li>
-              <li>Use regenerate to try different random models</li>
-              <li>Configured via EVALUATION_ARENA_MODELS env var</li>
-              <li>Monitoring tools verify random selection behavior</li>
+              <li>OpenWebUI forces stream=true for arena models (overrides LiteLLM config)</li>
+              <li>Environment-based configuration (ENABLE_PERSISTENT_CONFIG=true)</li>
             </ul>
           </div>
         </div>
