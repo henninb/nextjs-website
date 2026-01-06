@@ -422,6 +422,30 @@ export default function RequirementsPage() {
           transform: translateY(-1px);
         }
 
+        .arrow-left,
+        .arrow-right {
+          font-size: 1.5rem;
+          color: #00d4ff;
+          font-weight: 900;
+          transition: transform 0.2s ease;
+        }
+
+        .arrow-left {
+          margin-right: 0.75rem;
+        }
+
+        .arrow-right {
+          margin-left: 0.75rem;
+        }
+
+        .nav-button:hover .arrow-left {
+          transform: translateX(-4px);
+        }
+
+        .nav-button:hover .arrow-right {
+          transform: translateX(4px);
+        }
+
         @media (max-width: 768px) {
           .header h1 {
             font-size: 2rem;
@@ -748,7 +772,7 @@ export default function RequirementsPage() {
               router.push("/llm-gateway");
             }}
           >
-            ← Previous: Overview
+            <span className="arrow-left">←</span> Previous: Overview
           </button>
           <button
             className="nav-button"
@@ -757,7 +781,7 @@ export default function RequirementsPage() {
               router.push("/llm-gateway/architecture");
             }}
           >
-            Next: Architecture →
+            Next: Architecture <span className="arrow-right">→</span>
           </button>
         </div>
       </div>

@@ -147,38 +147,6 @@ export default function SummaryPage() {
           opacity: 0.95;
         }
 
-        .tech-summary {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border-radius: 20px;
-          padding: 3rem;
-          margin: 3rem 0;
-          border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .tech-summary h2 {
-          font-size: 3rem;
-          margin-bottom: 2rem;
-          text-align: center;
-        }
-
-        .tech-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 1.5rem;
-          margin-top: 2rem;
-        }
-
-        .tech-badge {
-          background: rgba(46, 204, 113, 0.2);
-          border: 2px solid #2ecc71;
-          padding: 1.5rem;
-          border-radius: 12px;
-          text-align: center;
-          font-size: 1.35rem;
-          font-weight: 600;
-        }
-
         .bottom-nav {
           display: flex;
           gap: 2rem;
@@ -235,14 +203,37 @@ export default function SummaryPage() {
           opacity: 1;
         }
 
+        .arrow-left,
+        .arrow-right {
+          font-size: 1.5rem;
+          color: #00d4ff;
+          font-weight: 900;
+          transition: transform 0.2s ease;
+        }
+
+        .arrow-left {
+          margin-right: 0.75rem;
+        }
+
+        .arrow-right {
+          margin-left: 0.75rem;
+        }
+
+        .nav-button:hover .arrow-left {
+          transform: translateX(-4px);
+        }
+
+        .nav-button:hover .arrow-right {
+          transform: translateX(4px);
+        }
+
         @media (max-width: 768px) {
           .header h1 {
             font-size: 3rem;
           }
 
           .stats-grid,
-          .highlight-grid,
-          .tech-grid {
+          .highlight-grid {
             grid-template-columns: 1fr;
           }
 
@@ -407,37 +398,12 @@ export default function SummaryPage() {
           </div>
         </div>
 
-        <div className="tech-summary">
-          <h2>Technology Stack</h2>
-
-          <div className="tech-grid">
-            <div className="tech-badge">AWS EKS</div>
-            <div className="tech-badge">Kubernetes 1.34</div>
-            <div className="tech-badge">Terraform</div>
-            <div className="tech-badge">LiteLLM</div>
-            <div className="tech-badge">OpenWebUI</div>
-            <div className="tech-badge">AWS Bedrock</div>
-            <div className="tech-badge">Perplexity API</div>
-            <div className="tech-badge">CloudFlare</div>
-            <div className="tech-badge">IRSA</div>
-            <div className="tech-badge">Network Policies</div>
-            <div className="tech-badge">SPOT Instances</div>
-            <div className="tech-badge">ACM Certificates</div>
-          </div>
-        </div>
-
         <div className="bottom-nav">
           <button
             className="nav-button"
             onClick={() => router.push("/llm-gateway/cost")}
           >
-            ← Previous: Cost
-          </button>
-          <button
-            className="nav-button"
-            onClick={() => router.push("/llm-gateway")}
-          >
-            Next: Overview →
+            <span className="arrow-left">←</span> Previous: Cost
           </button>
         </div>
       </div>

@@ -273,6 +273,30 @@ export default function LLMGatewayPage() {
           opacity: 1;
         }
 
+        .arrow-left,
+        .arrow-right {
+          font-size: 1.5rem;
+          color: #00d4ff;
+          font-weight: 900;
+          transition: transform 0.2s ease;
+        }
+
+        .arrow-left {
+          margin-right: 0.75rem;
+        }
+
+        .arrow-right {
+          margin-left: 0.75rem;
+        }
+
+        .nav-button-link:hover .arrow-left {
+          transform: translateX(-4px);
+        }
+
+        .nav-button-link:hover .arrow-right {
+          transform: translateX(4px);
+        }
+
         @media (max-width: 768px) {
           .hero h1 {
             font-size: 3rem;
@@ -396,15 +420,9 @@ export default function LLMGatewayPage() {
         <div className="bottom-nav">
           <button
             className="nav-button-link"
-            onClick={() => router.push("/llm-gateway/summary")}
-          >
-            ← Previous: Summary
-          </button>
-          <button
-            className="nav-button-link"
             onClick={() => router.push("/llm-gateway/requirements")}
           >
-            Next: Requirements →
+            Next: Requirements <span className="arrow-right">→</span>
           </button>
         </div>
       </div>

@@ -387,6 +387,30 @@ export default function DeploymentPage() {
           opacity: 1;
         }
 
+        .arrow-left,
+        .arrow-right {
+          font-size: 1.5rem;
+          color: #00d4ff;
+          font-weight: 900;
+          transition: transform 0.2s ease;
+        }
+
+        .arrow-left {
+          margin-right: 0.75rem;
+        }
+
+        .arrow-right {
+          margin-left: 0.75rem;
+        }
+
+        .nav-button:hover .arrow-left {
+          transform: translateX(-4px);
+        }
+
+        .nav-button:hover .arrow-right {
+          transform: translateX(4px);
+        }
+
         @media (max-width: 768px) {
           .header h1 {
             font-size: 2rem;
@@ -1654,13 +1678,13 @@ service/openwebui   LoadBalancer   172.20.74.57     adbfc9821e89940efb696ac92fd3
             className="nav-button"
             onClick={() => router.push("/llm-gateway/architecture")}
           >
-            ← Previous: Architecture
+            <span className="arrow-left">←</span> Previous: Architecture
           </button>
           <button
             className="nav-button"
             onClick={() => router.push("/llm-gateway/features")}
           >
-            Next: Features →
+            Next: Features <span className="arrow-right">→</span>
           </button>
         </div>
       </div>
