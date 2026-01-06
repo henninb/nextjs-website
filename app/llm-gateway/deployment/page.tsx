@@ -539,6 +539,7 @@ make help
   ecr-destroy                       Destroy ECR repositories
   ecr-login                         Login to AWS ECR
   ecr-build-push                    Build and push Docker images to ECR
+  ecr-verify                        Verify ECR images match local builds
   eks-cluster-init                  Initialize Terraform for EKS cluster creation
   eks-cluster-plan                  Plan Terraform changes for EKS cluster
   eks-cluster-apply                 Apply Terraform to create EKS cluster
@@ -771,6 +772,44 @@ Next steps:
   2. terraform init
   3. terraform plan
   4. terraform apply`}</pre>
+            </div>
+
+            <div className="command-label">Verify images match (recommended):</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 33 ? "copied" : ""}`}
+                onClick={() => copyToClipboard(`make ecr-verify`, 33)}
+                title={copiedIndex === 33 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 33 ? "✓" : "⧉"}
+              </button>
+make ecr-verify
+            </div>
+
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`========================================
+  ECR Image Verification
+========================================
+Local LiteLLM digest:
+  sha256:8d2fd01af90747a15b4adc2e90dcd231faf483f3ac7aff1329e0ad16f9b1d321
+
+ECR LiteLLM digest:
+  sha256:8d2fd01af90747a15b4adc2e90dcd231faf483f3ac7aff1329e0ad16f9b1d321
+
+✓ LiteLLM images MATCH
+
+Local OpenWebUI digest:
+  sha256:f6c36a559ba2c2e0c9b37458c0820821b59677a1bfdc72297c7f492b406d92ec
+
+ECR OpenWebUI digest:
+  sha256:f6c36a559ba2c2e0c9b37458c0820821b59677a1bfdc72297c7f492b406d92ec
+
+✓ OpenWebUI images MATCH
+
+========================================
+  ✓ All images verified successfully!
+========================================`}</pre>
             </div>
           </div>
 
