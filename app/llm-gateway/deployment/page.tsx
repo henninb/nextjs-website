@@ -32,7 +32,7 @@ export default function DeploymentPage() {
         .header {
           text-align: center;
           padding: 3rem 2rem 2rem;
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
           color: #f1f5f9;
         }
@@ -58,7 +58,7 @@ export default function DeploymentPage() {
         }
 
         .content {
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
         }
 

@@ -51,7 +51,7 @@ export default function RequirementsPage() {
         .header {
           text-align: center;
           padding: 3rem 2rem 2rem;
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
         }
 
@@ -70,7 +70,7 @@ export default function RequirementsPage() {
         }
 
         .content {
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
         }
 
@@ -389,37 +389,47 @@ export default function RequirementsPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(
-            135deg,
-            rgba(0, 212, 255, 0.2) 0%,
-            rgba(46, 204, 113, 0.2) 100%
-          );
-          padding: 1rem 2rem;
-          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          padding: 0.75rem 1.5rem;
+          border-radius: 20px;
           text-decoration: none;
-          color: white;
+          color: #e2e8f0;
           font-weight: 600;
-          font-size: 1.1rem;
-          border: 2px solid rgba(0, 212, 255, 0.5);
-          transition: all 0.3s ease;
+          font-size: 1rem;
+          border: 1px solid rgba(0, 212, 255, 0.2);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: pointer;
           pointer-events: auto;
-          min-width: 200px;
+          min-width: 180px;
+          position: relative;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-button::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          opacity: 0;
+          transition: opacity 0.3s;
         }
 
         .nav-button:hover {
-          background: linear-gradient(
-            135deg,
-            rgba(0, 212, 255, 0.4) 0%,
-            rgba(46, 204, 113, 0.4) 100%
-          );
-          transform: translateY(-3px);
-          box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
-          border-color: rgba(0, 212, 255, 0.8);
+          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          border-color: rgba(0, 212, 255, 0.5);
+          color: #00d4ff;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 25px rgba(0, 212, 255, 0.3);
         }
 
-        .nav-button:active {
-          transform: translateY(-1px);
+        .nav-button:hover::before {
+          opacity: 1;
         }
 
         .arrow-left,
@@ -471,9 +481,9 @@ export default function RequirementsPage() {
           }
 
           .nav-button {
-            min-width: 150px;
-            font-size: 1rem;
-            padding: 0.875rem 1.5rem;
+            min-width: 140px;
+            font-size: 0.875rem;
+            padding: 0.625rem 1.125rem;
           }
 
           .progress-dots {

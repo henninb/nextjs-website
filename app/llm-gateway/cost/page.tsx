@@ -236,19 +236,20 @@ export default function CostPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: rgba(30, 41, 59, 0.6);
+          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
-          color: rgba(226, 232, 240, 0.95);
+          color: #e2e8f0;
           font-weight: 600;
           font-size: 1rem;
-          border: 1px solid rgba(148, 163, 184, 0.15);
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid rgba(0, 212, 255, 0.2);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: pointer;
           pointer-events: auto;
           min-width: 180px;
           position: relative;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .nav-button::before {
@@ -257,20 +258,21 @@ export default function CostPage() {
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
-          transition: opacity 0.2s;
+          transition: opacity 0.3s;
         }
 
         .nav-button:hover {
-          background: rgba(51, 65, 85, 0.8);
-          border-color: rgba(56, 189, 248, 0.3);
-          color: rgb(224, 242, 254);
-          transform: translateY(-1px);
+          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          border-color: rgba(0, 212, 255, 0.5);
+          color: #00d4ff;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 25px rgba(0, 212, 255, 0.3);
         }
 
         .nav-button:hover::before {
@@ -279,7 +281,7 @@ export default function CostPage() {
 
         .arrow-left,
         .arrow-right {
-          font-size: 2rem;
+          font-size: 2.5rem;
           color: #00d4ff;
           font-weight: 900;
           transition: transform 0.2s ease;
