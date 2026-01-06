@@ -149,10 +149,11 @@ export default function CostPage() {
         }
 
         .optimization-card li:before {
-          content: "→";
+          content: "✓";
           position: absolute;
           left: 0;
           color: #00d4ff;
+          font-weight: bold;
         }
 
         .comparison-section {
@@ -340,8 +341,8 @@ export default function CostPage() {
               </tr>
               <tr>
                 <td>EC2 SPOT Instances</td>
-                <td>2x nodes (t3.medium, t3a.medium, t2.medium pool - avg ~70% discount)</td>
-                <td className="savings-highlight">$15-30</td>
+                <td>1x node (t3.medium, t3a.medium, t2.medium pool - avg ~70% discount)</td>
+                <td className="savings-highlight">$8-15</td>
               </tr>
               <tr>
                 <td>NAT Gateway</td>
@@ -360,25 +361,15 @@ export default function CostPage() {
               </tr>
               <tr>
                 <td>Data Transfer</td>
-                <td>~100GB outbound traffic</td>
-                <td>$9.00</td>
-              </tr>
-              <tr>
-                <td>ACM Certificate</td>
-                <td>Public SSL/TLS certificate</td>
-                <td>$0.00 (Free)</td>
-              </tr>
-              <tr>
-                <td>ECR Storage</td>
-                <td>Docker images (~2GB)</td>
-                <td>$0.20</td>
+                <td>Variable</td>
+                <td>Variable</td>
               </tr>
               <tr className="total-row">
                 <td colSpan={2}>
                   <strong>Total Monthly Cost</strong>
                 </td>
                 <td>
-                  <strong>~$144-179</strong>
+                  <strong>~$137-144</strong>
                 </td>
               </tr>
             </tbody>
@@ -468,7 +459,7 @@ export default function CostPage() {
             </h3>
             <ul>
               <li>t3/t3a/t2.medium instances sufficient for LLM proxy</li>
-              <li>Auto-scaling from 2-4 nodes</li>
+              <li>Default 1 node (scales to 2+ for HA)</li>
               <li>Resource limits on pods</li>
               <li>Resource quotas prevent resource waste</li>
               <li>gp3 volumes instead of gp2 (cheaper)</li>
@@ -503,8 +494,7 @@ export default function CostPage() {
             <ul>
               <li>Per-user request throttling</li>
               <li>Maximum token limits enforced</li>
-              <li>Budget alerts configured</li>
-              <li>Cost tracking per model</li>
+              <li>Built-in cost tracking per model</li>
             </ul>
 
             <h3 style={{ fontSize: "1.25rem", marginTop: "1.5rem" }}>
@@ -513,8 +503,7 @@ export default function CostPage() {
             <ul>
               <li>Prevents abuse and runaway costs</li>
               <li>Blocks DoS-style API spamming</li>
-              <li>CloudWatch alarms for anomalies</li>
-              <li>Daily cost reports</li>
+              <li>Rate limiting prevents cost overruns</li>
             </ul>
           </div>
         </div>
@@ -539,13 +528,13 @@ export default function CostPage() {
 
             <div className="comparison-box">
               <h3>✅ Optimized Configuration</h3>
-              <div className="price savings-highlight">~$144-179/mo</div>
+              <div className="price savings-highlight">~$137-144/mo</div>
               <ul>
                 <li>• SPOT instances (50-90% discount)</li>
                 <li>• Single NAT Gateway ($32/mo savings)</li>
                 <li>• Network Load Balancer (cheaper)</li>
-                <li>• Auto-scaling (2-4 nodes as needed)</li>
-                <li>• Rate limiting + budget alerts</li>
+                <li>• Default 1 node (scales to 2+ for HA)</li>
+                <li>• Rate limiting for cost control</li>
               </ul>
             </div>
           </div>

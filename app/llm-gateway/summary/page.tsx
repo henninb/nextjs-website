@@ -317,7 +317,7 @@ export default function SummaryPage() {
                 Production Kubernetes
               </h3>
               <p>
-                AWS EKS cluster with multi-AZ deployment, auto-scaling, and
+                AWS EKS cluster with auto-scaling capability and
                 zero-trust network policies
               </p>
             </div>
@@ -328,7 +328,7 @@ export default function SummaryPage() {
                 Enterprise Security
               </h3>
               <p>
-                IRSA authentication, geo-restriction, CloudFlare protection, and
+                IRSA authentication, CloudFlare protection (optional geo-restriction), and
                 defense-in-depth controls
               </p>
             </div>
@@ -339,9 +339,9 @@ export default function SummaryPage() {
                 Production Debugging
               </h3>
               <p>
-                Discovered guardrail bypass in production testing. Read LiteLLM framework
+                Identified LiteLLM streaming bug during testing. Read LiteLLM framework
                 source code to identify async_post_call_success_hook isn't invoked for
-                streaming responses. Designed creative workaround forcing stream=false
+                streaming responses. Designed workaround forcing stream=false
                 at pre-call hook level. Demonstrates security-first thinking and systematic
                 debugging methodology.
               </p>
@@ -353,8 +353,8 @@ export default function SummaryPage() {
                 Cost Optimized
               </h3>
               <p>
-                SPOT instances and single NAT gateway reducing monthly costs by
-                $150-200 (50-60%)
+                SPOT instances and single NAT gateway achieving significant
+                cost savings (50-90% on compute)
               </p>
             </div>
 
@@ -398,11 +398,10 @@ export default function SummaryPage() {
                 Custom Guardrails
               </h3>
               <p>
-                Discovered critical streaming bypass vulnerability where LiteLLM v1.80.11
-                doesn't invoke post-call hooks for streaming responses. Debugged framework
-                source code, identified root cause, and implemented stream=false forcing
-                workaround. 12 comprehensive tests validate all attack vectors including
-                context poisoning and indirect bypasses.
+                Identified LiteLLM v1.80.11 streaming bug where post-call hooks aren't
+                invoked for streaming responses. Debugged framework source code, identified
+                root cause, and implemented stream=false forcing workaround. 12 comprehensive
+                tests validate all attack vectors including context poisoning and indirect bypasses.
               </p>
             </div>
           </div>

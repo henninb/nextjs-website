@@ -991,7 +991,7 @@ aws acm list-certificates --region us-east-1
             <p>
               Required environment variables (set in .secrets file or export):
               LITELLM_MASTER_KEY (generate with: openssl rand -hex 32),
-              WEBUI_SECRET_KEY (generate with: openssl rand -hex 32),
+              WEBUI_SECRET_KEY (generate with: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"),
               PERPLEXITY_API_KEY (from Perplexity account).
             </p>
 
@@ -1643,10 +1643,8 @@ service/openwebui   LoadBalancer   172.20.74.57     adbfc9821e89940efb696ac92fd3
             <li>Run monthly: make eks-verify-cloudflare (check CloudFlare IPs)</li>
             <li>Monitor costs: make aws-costs-py (view AWS spending)</li>
             <li>Review security: make iam-report (IAM roles and architecture)</li>
-            <li>Test models: make test-all (validate all 7 AI models)</li>
+            <li>Test all: make test-all (setup validation, health checks, model tests, guardrails)</li>
             <li>Local testing: make eks-port-forward (access LiteLLM API)</li>
-            <li>Set up CloudWatch alarms for cost monitoring</li>
-            <li>Configure automated EBS snapshots for backups</li>
             <li>Arena Mode: Currently disabled (would use nova-lite, nova-pro, llama3-2-3b for blind random selection)</li>
           </ul>
         </div>

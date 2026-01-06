@@ -529,13 +529,12 @@ export default function RequirementsPage() {
               <h4>Implementation:</h4>
               <ul>
                 <li>
-                  Deployed on AWS EKS (Kubernetes 1.34) - exceeds basic EC2
-                  deployment
+                  Deployed on AWS EKS - exceeds basic EC2 deployment
                 </li>
                 <li>Production-grade container orchestration</li>
-                <li>Multi-AZ deployment across 2 availability zones</li>
-                <li>Auto-scaling node groups (min 2, max 4)</li>
-                <li>SPOT instances for 50-90% cost savings</li>
+                <li>Auto-scaling node groups with SPOT instances</li>
+                <li>Default 1 node (can scale to 2+ for high availability)</li>
+                <li>Single NAT Gateway for cost optimization</li>
                 <li>100% Infrastructure as Code with Terraform</li>
               </ul>
             </div>
@@ -611,14 +610,10 @@ export default function RequirementsPage() {
             <div className="implementation">
               <h4>Implementation - Comprehensive Testing:</h4>
               <ul>
-                <li>Python test suite: tests/test-litellm-api.py</li>
-                <li>
-                  Production test script: tests/test-production.sh
-                </li>
-                <li>
-                  Interactive cURL examples: tests/curl-examples.sh
-                </li>
-                <li>Shell test script: tests/test-models.sh</li>
+                <li>Python test suite: tests/test-litellm-models-api.py</li>
+                <li>Shell test script: tests/test-litellm-models-api.sh</li>
+                <li>Interactive cURL examples: tests/curl-examples.sh</li>
+                <li>Guardrail test suite: tests/test-guardrails.py</li>
                 <li>All 7 models tested and validated</li>
                 <li>Tests documented in README.md with examples</li>
               </ul>
@@ -667,7 +662,7 @@ export default function RequirementsPage() {
             <div className="implementation">
               <h4>Implementation - AWS EKS:</h4>
               <ul>
-                <li>AWS EKS cluster (Kubernetes 1.34)</li>
+                <li>AWS EKS cluster with managed Kubernetes control plane</li>
                 <li>Container orchestration with auto-scaling</li>
                 <li>Network policies for zero-trust isolation</li>
                 <li>EBS CSI driver for persistent storage</li>

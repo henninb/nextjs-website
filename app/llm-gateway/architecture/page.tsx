@@ -102,10 +102,11 @@ export default function ArchitecturePage() {
         }
 
         .component-card li:before {
-          content: "→";
+          content: "✓";
           position: absolute;
           left: 0;
           color: #00d4ff;
+          font-weight: bold;
         }
 
         .tech-details {
@@ -282,9 +283,9 @@ export default function ArchitecturePage() {
             <h3>🎨 OpenWebUI</h3>
             <ul>
               <li><strong>Runs as non-root user (UID 1000)</strong></li>
-              <li>React-based web interface</li>
+              <li>Modern web interface for LLM interactions</li>
               <li>User authentication & session management</li>
-              <li>Arena Mode: blind random selection (perplexity-sonar-pro, nova-pro, llama3-2-3b)</li>
+              <li>Arena Mode (currently disabled): blind random selection (nova-lite, nova-pro, llama3-2-3b)</li>
               <li>Chat history with EBS persistence</li>
               <li>Connects to LiteLLM via internal network</li>
               <li>Exposed via NLB on port 443 (HTTPS)</li>
@@ -312,11 +313,11 @@ export default function ArchitecturePage() {
             <ul>
               <li>Managed Kubernetes 1.34 control plane</li>
               <li>Auto-scaling node groups (SPOT instances)</li>
+              <li>Default 1 node (can scale to 2+ for HA)</li>
               <li>Instance types: t3.medium, t3a.medium, t2.medium</li>
               <li>VPC CNI with network policy support</li>
               <li>EBS CSI driver for persistent storage</li>
               <li>IRSA for secure AWS service access</li>
-              <li>Two availability zones for HA</li>
             </ul>
           </div>
 
@@ -399,16 +400,6 @@ export default function ArchitecturePage() {
           </div>
 
           <div className="tech-row">
-            <div className="tech-label">Availability Zones</div>
-            <div className="tech-value">2 (us-east-1a, us-east-1b)</div>
-          </div>
-
-          <div className="tech-row">
-            <div className="tech-label">VPC CIDR</div>
-            <div className="tech-value">10.0.0.0/16</div>
-          </div>
-
-          <div className="tech-row">
             <div className="tech-label">Node Instance Types</div>
             <div className="tech-value">
               t3.medium, t3a.medium, t2.medium (SPOT)
@@ -417,7 +408,7 @@ export default function ArchitecturePage() {
 
           <div className="tech-row">
             <div className="tech-label">Node Scaling</div>
-            <div className="tech-value">Min: 2, Desired: 2, Max: 4</div>
+            <div className="tech-value">Default 1 node (scalable to 2+ for HA)</div>
           </div>
 
           <div className="tech-row">

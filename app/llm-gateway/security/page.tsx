@@ -393,17 +393,16 @@ USER litellm
           <div className="security-card">
             <h2>
               <span className="icon">🌍</span>
-              Geo-Restriction
+              Geo-Restriction (Optional)
             </h2>
             <p>
-              CloudFlare geo-restriction with NLB security group enforcement
-              limits access to US-only traffic and prevents direct bypass
-              attempts.
+              CloudFlare geo-restriction capability with NLB security group enforcement.
+              Optional firewall rules can limit access to US-only traffic.
             </p>
 
-            <h3>CloudFlare Protection</h3>
+            <h3>CloudFlare Protection (Available)</h3>
             <ul>
-              <li>Firewall rule blocks non-US traffic (HTTP 403)</li>
+              <li>Optional: Firewall rule to block non-US traffic (HTTP 403)</li>
               <li>DDoS protection and WAF included</li>
               <li>Bot mitigation and rate limiting</li>
               <li>Analytics and logging for all requests</li>
@@ -414,7 +413,7 @@ USER litellm
               <li>Only accepts HTTPS from CloudFlare IPs</li>
               <li>Blocks all other source IPs at AWS level</li>
               <li>Prevents direct NLB hostname access</li>
-              <li>Auto-updated with CloudFlare IP ranges</li>
+              <li>Manually verified and updated monthly</li>
             </ul>
 
             <div className="highlight-box">
@@ -440,7 +439,6 @@ USER litellm
               <li>WEBUI_SECRET_KEY in Secrets Manager</li>
               <li>PERPLEXITY_API_KEY in Secrets Manager</li>
               <li>KMS encryption at rest</li>
-              <li>Access logged to CloudTrail</li>
             </ul>
 
             <h3>Access Control</h3>
@@ -448,7 +446,6 @@ USER litellm
               <li>Retrieved via IRSA (no static credentials)</li>
               <li>Temporary session tokens only</li>
               <li>Fine-grained IAM policies</li>
-              <li>Rotation strategy configured</li>
             </ul>
           </div>
 
@@ -468,7 +465,6 @@ USER litellm
               <li>Per-user request throttling</li>
               <li>Maximum token limits enforced</li>
               <li>LITELLM_DROP_PARAMS=true (sanitization)</li>
-              <li>Budget alerts configured</li>
             </ul>
 
             <div className="code-block">
@@ -515,13 +511,11 @@ USER litellm
             </ul>
 
             <div className="highlight-box">
-              <strong>Bug Discovery & Resolution:</strong> Identified streaming
-              bypass vulnerability through production testing in OpenWebUI.
-              Root-caused to LiteLLM framework limitation (post_call hooks don't
-              execute for streaming). Implemented creative workaround by
-              auto-forcing stream=false in pre_call hook, maintaining guardrail
-              protection for all request types. Validated fix with comprehensive
-              test suite.
+              <strong>Streaming Bug Workaround:</strong> LiteLLM v1.80.11 has a
+              limitation where post_call hooks don't execute for streaming responses.
+              Implemented workaround by auto-forcing stream=false in pre_call hook,
+              maintaining guardrail protection for all request types. Validated fix
+              with comprehensive test suite.
             </div>
           </div>
         </div>
@@ -589,8 +583,7 @@ USER litellm
             <h3>Layer 7: Data Protection</h3>
             <p>
               Secrets stored in AWS Secrets Manager with KMS encryption. EBS
-              volumes encrypted at rest. All API calls logged to CloudTrail
-              for audit purposes.
+              volumes encrypted at rest.
             </p>
           </div>
         </div>

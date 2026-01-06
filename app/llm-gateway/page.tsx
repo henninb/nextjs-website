@@ -362,12 +362,11 @@ export default function LLMGatewayPage() {
             on AWS.
           </p>
           <ul>
-            <li>7 AI models from AWS Bedrock and Perplexity</li>
-            <li>Custom content guardrails with complete response filtering</li>
-            <li>Zero-trust network security with geo-restrictions</li>
-            <li>50-90% cost savings with SPOT instances</li>
-            <li>100% Infrastructure as Code with Terraform</li>
-            <li>Multi-AZ deployment with auto-scaling</li>
+            <li>Security: Zero-Trust Networking, IRSA (no static credentials), Non-Root Containers, HTTPS/TLS</li>
+            <li>Multi-Provider Support: AWS Bedrock (Nova, Llama) + Perplexity with unified API</li>
+            <li>Custom Guardrails: Extensible content filtering with streaming support</li>
+            <li>Infrastructure as Code: 100% Terraform</li>
+            <li>Automated Operations: DNS management, health checks, comprehensive testing</li>
           </ul>
         </div>
       </div>

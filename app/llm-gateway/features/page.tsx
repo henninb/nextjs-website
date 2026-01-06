@@ -128,7 +128,7 @@ export default function FeaturesPage() {
         }
 
         .feature-card li:before {
-          content: "→";
+          content: "✓";
           position: absolute;
           left: 0;
           color: #00d4ff;
@@ -324,12 +324,12 @@ export default function FeaturesPage() {
               Custom Guardrails
             </h2>
             <p>
-              Production content filtering with complete response validation. Discovered LiteLLM streaming bypass bug where post-call hooks aren't invoked for streaming responses, implemented stream=false workaround.
+              Production content filtering with complete response validation. LiteLLM v1.80.11 streaming bug workaround where post-call hooks aren't invoked for streaming responses, implemented stream=false forcing.
             </p>
             <ul>
               <li>Pre-call filtering (input validation before LLM)</li>
               <li>Post-call filtering (complete output validation after LLM)</li>
-              <li>Discovered LiteLLM v1.80.11 streaming bypass vulnerability</li>
+              <li>LiteLLM v1.80.11 streaming bug workaround (post_call hooks bypass)</li>
               <li>Implemented stream=false forcing to ensure hook execution</li>
               <li>Conversation history sanitization (context poisoning prevention)</li>
               <li>OpenWebUI/client streaming preferences overridden for security</li>
@@ -343,7 +343,7 @@ export default function FeaturesPage() {
               Cost Optimization
             </h2>
             <p>
-              Engineered for 50-90% cost savings through strategic infrastructure decisions. ~$144-179/month total AWS spend.
+              Engineered for 50-90% cost savings through strategic infrastructure decisions. ~$137-144/month total AWS spend.
             </p>
             <ul>
               <li>SPOT instances: 50-90% savings on compute (t3.medium pool)</li>
@@ -351,7 +351,7 @@ export default function FeaturesPage() {
               <li>ECR instead of Docker Hub (avoids rate limits)</li>
               <li>Resource quotas prevent waste</li>
               <li>Built-in rate limiting & budget controls</li>
-              <li>Cost tracking per model with CloudWatch alerts</li>
+              <li>Built-in cost tracking per model</li>
             </ul>
           </div>
 
@@ -382,44 +382,13 @@ export default function FeaturesPage() {
               Blind random model selection for unbiased evaluation. ONE model randomly chosen per request (not simultaneous comparison). Currently disabled.
             </p>
             <ul>
-              <li>Status: Currently disabled (ENABLE_EVALUATION_ARENA_MODELS=false)</li>
+              <li>Status: Currently disabled</li>
               <li>Configured models: nova-lite, nova-pro, llama3-2-3b</li>
               <li>Randomly selects ONE model per request (blind testing)</li>
               <li>Model identity hidden during conversation</li>
               <li>OpenWebUI forces stream=true for arena models (overrides LiteLLM config)</li>
-              <li>Environment-based configuration (ENABLE_PERSISTENT_CONFIG=true)</li>
+              <li>Environment-based configuration (ENABLE_PERSISTENT_CONFIG=false)</li>
             </ul>
-          </div>
-        </div>
-
-        <div className="models-section">
-          <h2>🤖 7 AI Models Across 3 Providers</h2>
-
-          <div className="models-grid">
-            <div className="model-card">
-              <h3>AWS Bedrock - Nova (Amazon)</h3>
-              <ul>
-                <li>• nova-micro (128K context, very low cost)</li>
-                <li>• nova-lite (128K context, low cost)</li>
-                <li>• nova-pro (128K context, complex reasoning)</li>
-              </ul>
-            </div>
-
-            <div className="model-card">
-              <h3>AWS Bedrock - Llama (Meta)</h3>
-              <ul>
-                <li>• llama3-2-1b (1B params, very fast)</li>
-                <li>• llama3-2-3b (3B params, balanced)</li>
-              </ul>
-            </div>
-
-            <div className="model-card">
-              <h3>Perplexity API</h3>
-              <ul>
-                <li>• perplexity-sonar (web search, citations)</li>
-                <li>• perplexity-sonar-pro (deep research)</li>
-              </ul>
-            </div>
           </div>
         </div>
 
