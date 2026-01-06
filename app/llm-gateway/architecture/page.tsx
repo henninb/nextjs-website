@@ -222,7 +222,7 @@ export default function ArchitecturePage() {
 
         .arrow-left,
         .arrow-right {
-          font-size: 1.5rem;
+          font-size: 2.5rem;
           color: #00d4ff;
           font-weight: 900;
           transition: transform 0.2s ease;

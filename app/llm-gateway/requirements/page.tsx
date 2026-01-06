@@ -424,7 +424,7 @@ export default function RequirementsPage() {
 
         .arrow-left,
         .arrow-right {
-          font-size: 1.5rem;
+          font-size: 2.5rem;
           color: #00d4ff;
           font-weight: 900;
           transition: transform 0.2s ease;
@@ -520,8 +520,7 @@ export default function RequirementsPage() {
       <div className="header">
         <h1>🎯 Project Requirements</h1>
         <p>
-          Pre-sales Security Architect Interview - LiteLLM AWS Deployment
-          Exercise
+          LiteLLM AWS Deployment Exercise
         </p>
       </div>
 
@@ -529,10 +528,9 @@ export default function RequirementsPage() {
         <div className="overview-section">
           <h2>Project Overview</h2>
           <p>
-            In this exercise, you will demonstrate your technical knowledge,
+            This exercise demonstrates technical knowledge,
             problem-solving skills, and ability to communicate technical
-            concepts to a technical audience. We look for our Pre-sales Security
-            Architects to be familiar with the command line, creating basic
+            concepts to a technical audience. It showcases familiarity with the command line, creating basic
             scripts, and troubleshooting installation and deployment issues.
           </p>
         </div>
