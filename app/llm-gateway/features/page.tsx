@@ -6,6 +6,14 @@ import { useRouter } from "next/navigation";
 
 export default function FeaturesPage() {
   const router = useRouter();
+  const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
+
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text.trim());
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
   return (
     <div className="features-container">
       <style jsx>{`
@@ -70,6 +78,92 @@ export default function FeaturesPage() {
           transform: scale(1.05);
           box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
           background: linear-gradient(135deg, #00e5ff 0%, #00aaff 100%);
+        }
+
+        .demo-questions-section {
+          background: rgba(155, 89, 182, 0.15);
+          backdrop-filter: blur(10px);
+          border-radius: 16px;
+          padding: 2rem;
+          margin: 2rem auto;
+          max-width: 900px;
+          border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+
+        .demo-questions-section h2 {
+          font-size: 1.75rem;
+          margin-bottom: 1.5rem;
+          text-align: center;
+          color: #9b59b6;
+        }
+
+        .demo-questions-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+
+        .question-card {
+          background: rgba(255, 255, 255, 0.1);
+          padding: 1.25rem;
+          border-radius: 10px;
+          border: 1px solid rgba(155, 89, 182, 0.2);
+          transition: all 0.3s ease;
+          cursor: pointer;
+          position: relative;
+        }
+
+        .question-card:hover {
+          background: rgba(155, 89, 182, 0.2);
+          border-color: rgba(155, 89, 182, 0.5);
+          transform: translateY(-3px);
+        }
+
+        .question-card .question-icon {
+          font-size: 1.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .question-card .question-text {
+          font-size: 1.1rem;
+          line-height: 1.5;
+          opacity: 0.95;
+          font-style: italic;
+          padding-right: 2.5rem;
+        }
+
+        .copy-button {
+          position: absolute;
+          top: 0.75rem;
+          right: 0.75rem;
+          background: rgba(155, 89, 182, 0.2);
+          color: rgba(155, 89, 182, 0.9);
+          border: 1px solid rgba(155, 89, 182, 0.4);
+          padding: 0.5rem;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+        }
+
+        .copy-button:hover {
+          background: rgba(155, 89, 182, 0.3);
+          color: rgba(155, 89, 182, 1);
+          border-color: rgba(155, 89, 182, 0.6);
+          box-shadow: 0 0 10px rgba(155, 89, 182, 0.4);
+        }
+
+        .copy-button.copied {
+          background: rgba(34, 197, 94, 0.2);
+          color: rgba(134, 239, 172, 1);
+          border-color: rgba(34, 197, 94, 0.5);
+          box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
         }
 
         .content {
@@ -301,6 +395,10 @@ export default function FeaturesPage() {
             grid-template-columns: 1fr;
           }
 
+          .demo-questions-grid {
+            grid-template-columns: 1fr;
+          }
+
           .bottom-nav {
             gap: 1rem;
             padding-bottom: 12rem;
@@ -319,6 +417,59 @@ export default function FeaturesPage() {
         <p>
           Production-grade security, cost optimization, and multi-provider AI infrastructure demonstrating enterprise engineering practices.
         </p>
+      </div>
+
+      <div className="demo-questions-section">
+        <h2>💬 Demo Questions</h2>
+        <p style={{ textAlign: 'center', marginBottom: '1.5rem', opacity: 0.9 }}>
+          Try these sample questions during the live demo at <a href="https://openwebui.bhenning.com" target="_blank" rel="noopener noreferrer" style={{ color: '#00d4ff', textDecoration: 'underline' }}>openwebui.bhenning.com</a>
+        </p>
+        <div className="demo-questions-grid">
+          <div className="question-card">
+            <button
+              className={`copy-button ${copiedIndex === 1 ? "copied" : ""}`}
+              onClick={() => copyToClipboard("Tell me about duckies and bunnies", 1)}
+              title={copiedIndex === 1 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 1 ? "✓" : "⧉"}
+            </button>
+            <div className="question-icon">🦆</div>
+            <div className="question-text">"Tell me about duckies and bunnies"</div>
+          </div>
+          <div className="question-card">
+            <button
+              className={`copy-button ${copiedIndex === 2 ? "copied" : ""}`}
+              onClick={() => copyToClipboard("What are some famous lines from 'Macbeth'", 2)}
+              title={copiedIndex === 2 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 2 ? "✓" : "⧉"}
+            </button>
+            <div className="question-icon">📖</div>
+            <div className="question-text">"What are some famous lines from 'Macbeth'"</div>
+          </div>
+          <div className="question-card">
+            <button
+              className={`copy-button ${copiedIndex === 3 ? "copied" : ""}`}
+              onClick={() => copyToClipboard("What is a bird that quacks?", 3)}
+              title={copiedIndex === 3 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 3 ? "✓" : "⧉"}
+            </button>
+            <div className="question-icon">🐦</div>
+            <div className="question-text">"What is a bird that quacks?"</div>
+          </div>
+          <div className="question-card">
+            <button
+              className={`copy-button ${copiedIndex === 4 ? "copied" : ""}`}
+              onClick={() => copyToClipboard("What is the capital of Japan", 4)}
+              title={copiedIndex === 4 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 4 ? "✓" : "⧉"}
+            </button>
+            <div className="question-icon">🗾</div>
+            <div className="question-text">"What is the capital of Japan"</div>
+          </div>
+        </div>
       </div>
 
       <div className="content">
