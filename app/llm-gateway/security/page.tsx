@@ -189,7 +189,11 @@ export default function SecurityPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.8) 0%,
+            rgba(51, 65, 85, 0.8) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
@@ -206,14 +210,22 @@ export default function SecurityPage() {
         }
 
         .nav-button::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(250, 112, 154, 0.3)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -221,7 +233,11 @@ export default function SecurityPage() {
         }
 
         .nav-button:hover {
-          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.95) 0%,
+            rgba(71, 85, 105, 0.95) 100%
+          );
           border-color: rgba(0, 212, 255, 0.5);
           color: #00d4ff;
           transform: translateY(-2px);
@@ -295,8 +311,8 @@ export default function SecurityPage() {
               Zero-Trust Networking
             </h2>
             <p>
-              Kubernetes NetworkPolicies enforce strict pod-to-pod
-              communication rules with deny-by-default stance.
+              Kubernetes NetworkPolicies enforce strict pod-to-pod communication
+              rules with deny-by-default stance.
             </p>
 
             <h3>LiteLLM Network Policy</h3>
@@ -309,7 +325,7 @@ export default function SecurityPage() {
 
             <h3>OpenWebUI Network Policy</h3>
             <ul>
-              <li>Accepts traffic from LoadBalancer only</li>
+              <li>Accepts traffic from ALB ingress only</li>
               <li>Egress restricted to LiteLLM pods</li>
               <li>Can access AWS Secrets Manager for keys</li>
               <li>DNS resolution allowed via kube-system</li>
@@ -347,8 +363,6 @@ export default function SecurityPage() {
             <ul>
               <li>bedrock:InvokeModel (Nova models, Llama models)</li>
               <li>secretsmanager:GetSecretValue (Perplexity API key)</li>
-              <li>Region-scoped: us-east-1 only</li>
-              <li>Resource ARN restrictions applied</li>
             </ul>
 
             <div className="highlight-box">
@@ -372,22 +386,14 @@ export default function SecurityPage() {
             <ul>
               <li>USER directive in Dockerfile sets UID 1000</li>
               <li>No root privileges inside containers</li>
-              <li>Read-only root filesystem where possible</li>
               <li>Security context enforces non-root</li>
               <li>Prevents privilege escalation</li>
             </ul>
 
             <div className="code-block">
-              {`# Dockerfile security
-FROM ghcr.io/berriai/litellm:main-latest
-RUN addgroup -g 1000 litellm && \\
-    adduser -D -u 1000 -G litellm litellm
-USER litellm
-
-# If container escape occurs:
-# - Cannot modify host system
-# - Cannot install packages
-# - Cannot access other users' files`}
+              {`# Non-root containers reduce blast radius
+# UID 1000 enforced for LiteLLM and OpenWebUI
+# Prevents privilege escalation inside pods`}
             </div>
           </div>
 
@@ -397,55 +403,48 @@ USER litellm
               TLS/SSL Encryption
             </h2>
             <p>
-              End-to-end encryption with ACM certificates and NLB SSL
+              End-to-end encryption with ACM certificates and ALB SSL
               termination protects data in transit.
             </p>
 
             <h3>Encryption Details</h3>
             <ul>
               <li>ACM certificate for openwebui.bhenning.com</li>
-              <li>TLS 1.2+ enforced at NLB</li>
+              <li>TLS 1.3 security policy on ALB</li>
               <li>Automatic certificate renewal</li>
               <li>HTTP disabled (HTTPS only)</li>
-              <li>Perfect forward secrecy enabled</li>
             </ul>
-
-            <div className="highlight-box">
-              <strong>Certificate:</strong>{" "}
-              arn:aws:acm:us-east-1:667778672048:certificate/52c0714b-ab17-4466-9959-52d9288b6249
-            </div>
           </div>
 
           <div className="security-card">
             <h2>
               <span className="icon">🌍</span>
-              Geo-Restriction (Optional)
+              Access Control & DNS
             </h2>
             <p>
-              CloudFlare geo-restriction capability with NLB security group enforcement.
-              Optional firewall rules can limit access to US-only traffic.
+              ISP-based access control restricts HTTPS access to authorized IP
+              ranges via ALB security groups, with optional CloudFlare proxy mode
+              available via origin certificates.
             </p>
 
-            <h3>CloudFlare Protection (Available)</h3>
+            <h3>ISP-Based Access Control</h3>
             <ul>
-              <li>Optional: Firewall rule to block non-US traffic (HTTP 403)</li>
-              <li>DDoS protection and WAF included</li>
-              <li>Bot mitigation and rate limiting</li>
-              <li>Analytics and logging for all requests</li>
+              <li>ALB security groups restrict HTTPS to authorized IP ranges (FREE)</li>
+              <li>On-demand IP allowlisting with make eks-allow-ip</li>
+              <li>HTTPS access limited to authorized CIDR ranges</li>
             </ul>
 
-            <h3>NLB Security Group</h3>
+            <h3>CloudFlare DNS (Default)</h3>
             <ul>
-              <li>Only accepts HTTPS from CloudFlare IPs</li>
-              <li>Blocks all other source IPs at AWS level</li>
-              <li>Prevents direct NLB hostname access</li>
-              <li>Manually verified and updated monthly</li>
+              <li>DNS-only mode recommended (proxied: false)</li>
+              <li>Automated DNS setup via CloudFlare API</li>
+              <li>Optional proxy mode documented in CLOUDFLARE-CERT.md</li>
             </ul>
 
             <div className="highlight-box">
-              <strong>Defense in Depth:</strong> Even if someone discovers the
-              NLB hostname, they cannot bypass CloudFlare because the security
-              group blocks all non-CloudFlare IPs.
+              <strong>Defense in Depth:</strong> ISP-based access control via
+              ALB security groups provides free IP allowlisting, while optional
+              CloudFlare proxy mode adds DDoS/WAF protection if enabled.
             </div>
           </div>
 
@@ -455,8 +454,8 @@ USER litellm
               Secrets Management
             </h2>
             <p>
-              AWS Secrets Manager stores sensitive data with encryption at
-              rest, automatic rotation, and audit logging.
+              AWS Secrets Manager stores sensitive data with encryption at rest
+              and controlled access via IRSA.
             </p>
 
             <h3>Secrets Storage</h3>
@@ -481,8 +480,8 @@ USER litellm
               Rate Limiting & Validation
             </h2>
             <p>
-              Input validation and rate limiting prevent abuse, DoS attacks,
-              and unexpected costs.
+              Input validation and rate limiting prevent abuse, DoS attacks, and
+              unexpected costs.
             </p>
 
             <h3>Protection Mechanisms</h3>
@@ -538,10 +537,10 @@ USER litellm
 
             <div className="highlight-box">
               <strong>Streaming Bug Workaround:</strong> LiteLLM v1.80.11 has a
-              limitation where post_call hooks don't execute for streaming responses.
-              Implemented workaround by auto-forcing stream=false in pre_call hook,
-              maintaining guardrail protection for all request types. Validated fix
-              with comprehensive test suite.
+              limitation where post_call hooks don't execute for streaming
+              responses. Implemented workaround by auto-forcing stream=false in
+              pre_call hook, maintaining guardrail protection for all request
+              types. Validated fix with comprehensive test suite.
             </div>
           </div>
         </div>
@@ -552,10 +551,10 @@ USER litellm
           <div className="layer">
             <h3>Layer 1: Network Perimeter</h3>
             <p>
-              CloudFlare proxy with geo-restriction (US-only) and DDoS
-              protection filters traffic before it reaches AWS. NLB security
-              group enforces CloudFlare-IP-only access, preventing direct
-              bypass. ACM certificate ensures encrypted connections.
+              ALB with ACM TLS termination provides HTTPS access. ALB security
+              groups restrict access to authorized IP ranges, and CloudFlare DNS
+              runs in DNS-only mode by default with optional proxy mode
+              available via origin certificates.
             </p>
           </div>
 
@@ -572,8 +571,7 @@ USER litellm
             <h3>Layer 3: Pod Security</h3>
             <p>
               Non-root containers with security contexts limit the impact of
-              container escapes. Read-only filesystems prevent malicious code
-              execution.
+              container escapes and privilege escalation.
             </p>
           </div>
 

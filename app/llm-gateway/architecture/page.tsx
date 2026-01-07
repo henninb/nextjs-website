@@ -179,7 +179,11 @@ export default function ArchitecturePage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.8) 0%,
+            rgba(51, 65, 85, 0.8) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
@@ -196,14 +200,22 @@ export default function ArchitecturePage() {
         }
 
         .nav-button::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(250, 112, 154, 0.3)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -211,7 +223,11 @@ export default function ArchitecturePage() {
         }
 
         .nav-button:hover {
-          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.95) 0%,
+            rgba(71, 85, 105, 0.95) 100%
+          );
           border-color: rgba(0, 212, 255, 0.5);
           color: #00d4ff;
           transform: translateY(-2px);
@@ -290,11 +306,19 @@ export default function ArchitecturePage() {
 
       <div className="content">
         <div className="diagram-section">
-          <h2 style={{ marginBottom: "1.5rem", fontSize: "2.5rem", textAlign: "center" }}>System Architecture</h2>
+          <h2
+            style={{
+              marginBottom: "1.5rem",
+              fontSize: "2.5rem",
+              textAlign: "center",
+            }}
+          >
+            System Architecture
+          </h2>
           <div className="architecture-image-container">
             <img
               src="/img/architecture.png"
-              alt="LLM Gateway System Architecture Diagram showing AWS EKS cluster with OpenWebUI and LiteLLM pods, Network Load Balancer, CloudFlare, AWS Bedrock, Perplexity API, and Meta LLaMa integration"
+              alt="LLM Gateway System Architecture Diagram showing AWS EKS cluster with OpenWebUI and LiteLLM pods, Application Load Balancer, CloudFlare DNS, AWS Bedrock, Perplexity API, and Meta Llama integration"
               className="architecture-image"
             />
           </div>
@@ -308,21 +332,26 @@ export default function ArchitecturePage() {
           <div className="component-card">
             <h3>🎨 OpenWebUI</h3>
             <ul>
-              <li><strong>Runs as non-root user (UID 1000)</strong></li>
+              <li>
+                <strong>Runs as non-root user (UID 1000)</strong>
+              </li>
               <li>Modern web interface for LLM interactions</li>
-              <li>User authentication & session management</li>
-              <li>Arena Mode (currently disabled): blind random selection (nova-lite, nova-pro, llama3-2-3b)</li>
+              <li>
+                Arena Mode (currently disabled): blind random selection
+                (nova-lite, nova-pro, llama3-2-3b)
+              </li>
               <li>Chat history with EBS persistence</li>
               <li>Connects to LiteLLM via internal network</li>
-              <li>Exposed via NLB on port 443 (HTTPS)</li>
-              <li>Internal port: 8080</li>
+              <li>Exposed via ALB with HTTPS</li>
             </ul>
           </div>
 
           <div className="component-card">
             <h3>🔄 LiteLLM</h3>
             <ul>
-              <li><strong>Runs as non-root user (UID 1000)</strong></li>
+              <li>
+                <strong>Runs as non-root user (UID 1000)</strong>
+              </li>
               <li>Universal LLM proxy server (7 models)</li>
               <li>Multi-provider support (AWS Bedrock, Perplexity)</li>
               <li>OpenAI-compatible API interface</li>
@@ -337,12 +366,10 @@ export default function ArchitecturePage() {
           <div className="component-card">
             <h3>☸️ AWS EKS</h3>
             <ul>
-              <li>Managed Kubernetes 1.34 control plane</li>
               <li>Auto-scaling node groups (SPOT instances)</li>
               <li>Default 1 node (can scale to 2+ for HA)</li>
               <li>Instance types: t3.medium, t3a.medium, t2.medium</li>
-              <li>VPC CNI with network policy support</li>
-              <li>EBS CSI driver for persistent storage</li>
+              <li>EBS-backed persistent storage</li>
               <li>IRSA for secure AWS service access</li>
             </ul>
           </div>
@@ -352,11 +379,13 @@ export default function ArchitecturePage() {
             <ul>
               <li>VPC with public & private subnets</li>
               <li>Single NAT Gateway (cost optimized)</li>
-              <li>Network Load Balancer with ACM cert</li>
+              <li>Application Load Balancer (ALB) with ACM cert</li>
               <li>CloudFlare DNS (DNS-only mode)</li>
-              <li>Only CloudFlare IPs allowed (security group)</li>
+              <li>
+                ALB security groups restrict HTTPS access to authorized IP
+                ranges
+              </li>
               <li>Zero-trust NetworkPolicies for pod isolation</li>
-              <li>No direct internet access for pods</li>
             </ul>
           </div>
 
@@ -366,35 +395,39 @@ export default function ArchitecturePage() {
               <li>Zero-trust network policies (deny-by-default)</li>
               <li>IRSA (no static credentials)</li>
               <li>Non-root containers (UID 1000)</li>
-              <li>TLS/SSL termination at NLB</li>
+              <li>TLS/SSL termination at ALB</li>
               <li>AWS metadata service blocked</li>
               <li>Secrets in AWS Secrets Manager</li>
-              <li>CloudFlare IP restriction on NLB</li>
+              <li>On-demand IP allowlisting with make eks-allow-ip</li>
             </ul>
           </div>
 
           <div className="component-card">
             <h3>💾 Storage</h3>
             <ul>
-              <li>EBS CSI driver addon</li>
-              <li>PersistentVolumes for OpenWebUI data</li>
-              <li>20GB gp3 volumes</li>
-              <li>Automatic provisioning</li>
-              <li>Backup via EBS snapshots</li>
-              <li>Encrypted at rest</li>
+              <li>Persistent volumes for OpenWebUI data</li>
+              <li>User data and conversations stored in EBS volumes</li>
             </ul>
           </div>
 
           <div className="component-card">
             <h3>🤖 AI Providers</h3>
             <ul>
-              <li><strong>AWS Bedrock Nova (3 models)</strong></li>
+              <li>
+                <strong>AWS Bedrock Nova (3 models)</strong>
+              </li>
               <li>nova-micro, nova-lite, nova-pro</li>
-              <li><strong>AWS Bedrock Llama (2 models)</strong></li>
+              <li>
+                <strong>AWS Bedrock Llama (2 models)</strong>
+              </li>
               <li>llama3-2-1b, llama3-2-3b</li>
-              <li><strong>Perplexity (2 models)</strong></li>
+              <li>
+                <strong>Perplexity (2 models)</strong>
+              </li>
               <li>perplexity-sonar, perplexity-sonar-pro</li>
-              <li><strong>Total: 7 unified models</strong></li>
+              <li>
+                <strong>Total: 7 unified models</strong>
+              </li>
             </ul>
           </div>
 
@@ -416,11 +449,6 @@ export default function ArchitecturePage() {
           <h2>Technical Specifications</h2>
 
           <div className="tech-row">
-            <div className="tech-label">Kubernetes Version</div>
-            <div className="tech-value">1.34</div>
-          </div>
-
-          <div className="tech-row">
             <div className="tech-label">Region</div>
             <div className="tech-value">us-east-1</div>
           </div>
@@ -434,33 +462,21 @@ export default function ArchitecturePage() {
 
           <div className="tech-row">
             <div className="tech-label">Node Scaling</div>
-            <div className="tech-value">Default 1 node (scalable to 2+ for HA)</div>
-          </div>
-
-          <div className="tech-row">
-            <div className="tech-label">Container Runtime</div>
-            <div className="tech-value">containerd</div>
-          </div>
-
-          <div className="tech-row">
-            <div className="tech-label">CNI Plugin</div>
             <div className="tech-value">
-              AWS VPC CNI (with NetworkPolicy support)
+              Default 1 node (scalable to 2+ for HA)
             </div>
           </div>
 
           <div className="tech-row">
             <div className="tech-label">Load Balancer</div>
             <div className="tech-value">
-              Network Load Balancer (NLB) with ACM
+              Application Load Balancer (ALB) with ACM
             </div>
           </div>
 
           <div className="tech-row">
             <div className="tech-label">DNS</div>
-            <div className="tech-value">
-              CloudFlare (DNS-only, no proxy)
-            </div>
+            <div className="tech-value">CloudFlare (DNS-only, no proxy)</div>
           </div>
 
           <div className="tech-row">
@@ -476,14 +492,17 @@ export default function ArchitecturePage() {
           <div className="tech-row">
             <div className="tech-label">AI Providers</div>
             <div className="tech-value">
-              AWS Bedrock Nova (nova-pro, nova-lite, nova-micro), AWS Bedrock Llama (llama3-2-1b, llama3-2-3b), Perplexity (perplexity-sonar, perplexity-sonar-pro) - 7 models total
+              AWS Bedrock Nova (nova-pro, nova-lite, nova-micro), AWS Bedrock
+              Llama (llama3-2-1b, llama3-2-3b), Perplexity (perplexity-sonar,
+              perplexity-sonar-pro) - 7 models total
             </div>
           </div>
 
           <div className="tech-row">
             <div className="tech-label">Custom Guardrails</div>
             <div className="tech-value">
-              Pre-call & post-call hooks with streaming support, passthrough mode
+              Pre-call & post-call hooks with streaming support, passthrough
+              mode
             </div>
           </div>
         </div>

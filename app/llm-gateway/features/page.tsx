@@ -317,7 +317,11 @@ export default function FeaturesPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.8) 0%,
+            rgba(51, 65, 85, 0.8) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
@@ -334,14 +338,22 @@ export default function FeaturesPage() {
         }
 
         .nav-button::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(250, 112, 154, 0.3)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -349,7 +361,11 @@ export default function FeaturesPage() {
         }
 
         .nav-button:hover {
-          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.95) 0%,
+            rgba(71, 85, 105, 0.95) 100%
+          );
           border-color: rgba(0, 212, 255, 0.5);
           color: #00d4ff;
           transform: translateY(-2px);
@@ -417,37 +433,56 @@ export default function FeaturesPage() {
       <div className="header">
         <h1>✨ Technical Highlights</h1>
         <p>
-          Production-grade security, cost optimization, and multi-provider AI infrastructure demonstrating enterprise engineering practices.
+          Production-grade security, cost optimization, and multi-provider AI
+          infrastructure demonstrating enterprise engineering practices.
         </p>
       </div>
 
       <div className="demo-questions-section">
         <h2>💬 Demo Questions</h2>
-        <p style={{ textAlign: 'center', marginBottom: '1.5rem', opacity: 0.9 }}>
-          Try these sample questions during the live demo at <a href="https://openwebui.bhenning.com" target="_blank" rel="noopener noreferrer" style={{ color: '#00d4ff', textDecoration: 'underline' }}>openwebui.bhenning.com</a>
+        <p
+          style={{ textAlign: "center", marginBottom: "1.5rem", opacity: 0.9 }}
+        >
+          Try these sample questions during the live demo at{" "}
+          <a
+            href="https://openwebui.bhenning.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#00d4ff", textDecoration: "underline" }}
+          >
+            openwebui.bhenning.com
+          </a>
         </p>
         <div className="demo-questions-grid">
           <div className="question-card">
             <button
               className={`copy-button ${copiedIndex === 1 ? "copied" : ""}`}
-              onClick={() => copyToClipboard("Tell me about duckies and bunnies", 1)}
+              onClick={() =>
+                copyToClipboard("Tell me about duckies and bunnies", 1)
+              }
               title={copiedIndex === 1 ? "Copied!" : "Copy to clipboard"}
             >
               {copiedIndex === 1 ? "✓" : "⧉"}
             </button>
             <div className="question-icon">🦆</div>
-            <div className="question-text">"Tell me about duckies and bunnies"</div>
+            <div className="question-text">
+              "Tell me about duckies and bunnies"
+            </div>
           </div>
           <div className="question-card">
             <button
               className={`copy-button ${copiedIndex === 2 ? "copied" : ""}`}
-              onClick={() => copyToClipboard("What are some famous lines from 'Macbeth'", 2)}
+              onClick={() =>
+                copyToClipboard("What are some famous lines from 'Macbeth'", 2)
+              }
               title={copiedIndex === 2 ? "Copied!" : "Copy to clipboard"}
             >
               {copiedIndex === 2 ? "✓" : "⧉"}
             </button>
             <div className="question-icon">📖</div>
-            <div className="question-text">"What are some famous lines from 'Macbeth'"</div>
+            <div className="question-text">
+              "What are some famous lines from 'Macbeth'"
+            </div>
           </div>
           <div className="question-card">
             <button
@@ -482,13 +517,20 @@ export default function FeaturesPage() {
               Security Architecture
             </h2>
             <p>
-              Enterprise zero-trust networking with defense-in-depth security controls. No static credentials anywhere in the infrastructure.
+              Enterprise zero-trust networking with defense-in-depth security
+              controls. No static credentials anywhere in the infrastructure.
             </p>
             <ul>
               <li>Zero-Trust Network Policies (pod-to-pod isolation)</li>
-              <li>IRSA (IAM Roles for Service Accounts) - no static AWS keys</li>
-              <li>Non-root containers (UID 1000, read-only filesystem)</li>
-              <li>CloudFlare IP allowlist on NLB (geo-restriction capable)</li>
+              <li>
+                IRSA (IAM Roles for Service Accounts) - no static AWS keys
+              </li>
+              <li>Non-root containers (UID 1000)</li>
+              <li>
+                ISP-Based Access Control: ALB security groups restrict HTTPS
+                access to authorized IP ranges (FREE)
+              </li>
+              <li>On-demand IP allowlisting with make eks-allow-ip</li>
               <li>AWS Metadata Service blocking (SSRF prevention)</li>
               <li>HTTPS/TLS with ACM certificate management</li>
               <li>Secrets Manager integration for API keys</li>
@@ -501,15 +543,28 @@ export default function FeaturesPage() {
               Custom Guardrails
             </h2>
             <p>
-              Production content filtering with complete response validation. LiteLLM v1.80.11 streaming bug workaround where post-call hooks aren't invoked for streaming responses, implemented stream=false forcing.
+              Production content filtering with complete response validation.
+              LiteLLM v1.80.11 streaming bug workaround where post-call hooks
+              aren't invoked for streaming responses, implemented stream=false
+              forcing.
             </p>
             <ul>
               <li>Pre-call filtering (input validation before LLM)</li>
-              <li>Post-call filtering (complete output validation after LLM)</li>
-              <li>LiteLLM v1.80.11 streaming bug workaround (post_call hooks bypass)</li>
+              <li>
+                Post-call filtering (complete output validation after LLM)
+              </li>
+              <li>
+                LiteLLM v1.80.11 streaming bug workaround (post_call hooks
+                bypass)
+              </li>
               <li>Implemented stream=false forcing to ensure hook execution</li>
-              <li>Conversation history sanitization (context poisoning prevention)</li>
-              <li>OpenWebUI/client streaming preferences overridden for security</li>
+              <li>Passthrough mode returns HTTP 200 with violation message</li>
+              <li>
+                Conversation history sanitization (context poisoning prevention)
+              </li>
+              <li>
+                OpenWebUI/client streaming preferences overridden for security
+              </li>
               <li>12 comprehensive tests validating all attack vectors</li>
             </ul>
           </div>
@@ -520,10 +575,14 @@ export default function FeaturesPage() {
               Cost Optimization
             </h2>
             <p>
-              Engineered for 50-90% cost savings through strategic infrastructure decisions. ~$137-144/month total AWS spend.
+              Engineered for 50-90% cost savings through strategic
+              infrastructure decisions. ~$137-150/month total AWS spend.
             </p>
             <ul>
-              <li>SPOT instances: 50-90% savings on compute (t3.medium pool)</li>
+              <li>
+                SPOT instances: 50-90% savings on compute (t3.medium,
+                t3a.medium, t2.medium)
+              </li>
               <li>Single NAT Gateway: ~$32/month savings vs multi-AZ</li>
               <li>ECR instead of Docker Hub (avoids rate limits)</li>
               <li>Resource quotas prevent waste</li>
@@ -538,7 +597,8 @@ export default function FeaturesPage() {
               Multi-Provider Integration
             </h2>
             <p>
-              Unified OpenAI-compatible API for 7 models across 3 providers. Single endpoint, automatic routing, comprehensive testing.
+              Unified OpenAI-compatible API for 7 models across 3 providers.
+              Single endpoint, automatic routing, comprehensive testing.
             </p>
             <ul>
               <li>AWS Bedrock Nova: nova-micro, nova-lite, nova-pro</li>
@@ -556,15 +616,26 @@ export default function FeaturesPage() {
               Arena Mode
             </h2>
             <p>
-              Blind random model selection for unbiased evaluation. ONE model randomly chosen per request (not simultaneous comparison). Currently disabled.
+              Blind random model selection for unbiased evaluation. ONE model
+              randomly chosen per request (not simultaneous comparison).
+              Currently disabled.
             </p>
             <ul>
               <li>Status: Currently disabled</li>
               <li>Configured models: nova-lite, nova-pro, llama3-2-3b</li>
               <li>Randomly selects ONE model per request (blind testing)</li>
               <li>Model identity hidden during conversation</li>
-              <li>OpenWebUI forces stream=true for arena models (overrides LiteLLM config)</li>
-              <li>Environment-based configuration (ENABLE_PERSISTENT_CONFIG=false)</li>
+              <li>
+                OpenWebUI forces stream=true for arena models (overrides LiteLLM
+                config)
+              </li>
+              <li>
+                Configured via ENABLE_EVALUATION_ARENA_MODELS and
+                EVALUATION_ARENA_MODELS
+              </li>
+              <li>
+                Environment-based configuration (ENABLE_PERSISTENT_CONFIG=false)
+              </li>
             </ul>
           </div>
         </div>

@@ -118,7 +118,9 @@ export default function RequirementsPage() {
           border-left: 5px solid #2ecc71;
           opacity: 0;
           transform: translateY(30px);
-          transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+          transition:
+            opacity 0.6s ease-out,
+            transform 0.6s ease-out;
         }
 
         .objective.visible {
@@ -232,7 +234,9 @@ export default function RequirementsPage() {
           border-left: 5px solid #f39c12;
           opacity: 0;
           transform: translateY(30px);
-          transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+          transition:
+            opacity 0.6s ease-out,
+            transform 0.6s ease-out;
         }
 
         .stretch-goal.visible {
@@ -389,7 +393,11 @@ export default function RequirementsPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.8) 0%,
+            rgba(51, 65, 85, 0.8) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
@@ -406,14 +414,22 @@ export default function RequirementsPage() {
         }
 
         .nav-button::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(250, 112, 154, 0.3)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -421,7 +437,11 @@ export default function RequirementsPage() {
         }
 
         .nav-button:hover {
-          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.95) 0%,
+            rgba(71, 85, 105, 0.95) 100%
+          );
           border-color: rgba(0, 212, 255, 0.5);
           color: #00d4ff;
           transform: translateY(-2px);
@@ -508,9 +528,7 @@ export default function RequirementsPage() {
         </div>
       )}
 
-      {currentStep > 0 && (
-        <div className="reset-hint">Press 'R' to reset</div>
-      )}
+      {currentStep > 0 && <div className="reset-hint">Press 'R' to reset</div>}
 
       <div className="progress-dots">
         {[...Array(totalSteps)].map((_, index) => (
@@ -528,59 +546,58 @@ export default function RequirementsPage() {
       </div>
 
       <div className="header">
-        <h1>🎯 Project Requirements</h1>
-        <p>
-          LiteLLM AWS Deployment Exercise
-        </p>
+        <h1>🎯 Core Capabilities</h1>
+        <p>LLM Gateway overview and key capabilities from the README</p>
       </div>
 
       <div className="content">
         <div className="overview-section">
           <h2>Project Overview</h2>
           <p>
-            This exercise demonstrates technical knowledge,
-            problem-solving skills, and ability to communicate technical
-            concepts to a technical audience. It showcases familiarity with the command line, creating basic
-            scripts, and troubleshooting installation and deployment issues.
+            LLM Gateway provides a unified interface for multiple AI model
+            providers through a single OpenAI-compatible endpoint, with
+            production-grade security, cost optimization, and operational best
+            practices on AWS EKS.
           </p>
         </div>
 
         <div className="objectives-section">
-          <h2>Core Objectives</h2>
+          <h2>Core Capabilities</h2>
 
-          <div className={`objective exceeded ${currentStep >= 1 ? "visible" : ""}`}>
+          <div
+            className={`objective exceeded ${currentStep >= 1 ? "visible" : ""}`}
+          >
             <div className="number">OBJECTIVE 1</div>
             <h3>
-              Deploy LiteLLM in AWS
+              Secure AWS EKS Deployment
               <span className="status exceeded">✓ EXCEEDED</span>
             </h3>
             <div className="requirement">
-              <strong>Requirement:</strong> Deploy LiteLLM in AWS
+              <strong>Requirement:</strong> Production-ready deployment on AWS
             </div>
             <div className="implementation">
               <h4>Implementation:</h4>
               <ul>
-                <li>
-                  Deployed on AWS EKS - exceeds basic EC2 deployment
-                </li>
-                <li>Production-grade container orchestration</li>
+                <li>AWS EKS with ALB HTTPS termination</li>
+                <li>Zero-trust NetworkPolicies for pod isolation</li>
+                <li>CloudFlare DNS in DNS-only mode</li>
                 <li>Auto-scaling node groups with SPOT instances</li>
-                <li>Default 1 node (can scale to 2+ for high availability)</li>
-                <li>Single NAT Gateway for cost optimization</li>
-                <li>100% Infrastructure as Code with Terraform</li>
+                <li>Terraform-managed infrastructure</li>
               </ul>
             </div>
           </div>
 
-          <div className={`objective exceeded ${currentStep >= 2 ? "visible" : ""}`}>
+          <div
+            className={`objective exceeded ${currentStep >= 2 ? "visible" : ""}`}
+          >
             <div className="number">OBJECTIVE 2</div>
             <h3>
-              Configure Multiple AWS Bedrock Models
+              Multi-Provider Model Access
               <span className="status exceeded">✓ EXCEEDED</span>
             </h3>
             <div className="requirement">
-              <strong>Requirement:</strong> Configure LiteLLM to provide access
-              to at least two models in AWS Bedrock
+              <strong>Requirement:</strong> Unified API across multiple AI
+              providers
             </div>
             <div className="implementation">
               <h4>Implementation - 7 Models Total:</h4>
@@ -588,10 +605,11 @@ export default function RequirementsPage() {
                 <li>
                   AWS Bedrock Nova (3 models): nova-micro, nova-lite, nova-pro
                 </li>
+                <li>AWS Bedrock Llama (2 models): llama3-2-1b, llama3-2-3b</li>
                 <li>
-                  AWS Bedrock Llama (2 models): llama3-2-1b, llama3-2-3b
+                  Perplexity API (2 models): perplexity-sonar,
+                  perplexity-sonar-pro
                 </li>
-                <li>Perplexity API (2 models): perplexity-sonar, perplexity-sonar-pro</li>
                 <li>Multi-provider support (AWS + Perplexity)</li>
                 <li>OpenAI-compatible API interface</li>
                 <li>Unified endpoint for all models</li>
@@ -599,79 +617,81 @@ export default function RequirementsPage() {
             </div>
           </div>
 
-          <div className={`objective exceeded ${currentStep >= 3 ? "visible" : ""}`}>
+          <div
+            className={`objective exceeded ${currentStep >= 3 ? "visible" : ""}`}
+          >
             <div className="number">OBJECTIVE 3</div>
             <h3>
               Use IAM Roles (No Static Keys)
               <span className="status exceeded">✓ EXCEEDED</span>
             </h3>
             <div className="requirement">
-              <strong>Requirement:</strong> Use IAM roles so that LiteLLM can
-              access Bedrock without requiring static AWS keys
+              <strong>Requirement:</strong> IRSA-based authentication (no static
+              credentials)
             </div>
             <div className="implementation">
               <h4>Implementation - IRSA:</h4>
               <ul>
-                <li>
-                  IRSA (IAM Roles for Service Accounts) fully implemented
-                </li>
+                <li>IRSA (IAM Roles for Service Accounts) fully implemented</li>
                 <li>OIDC provider auto-derived from EKS cluster</li>
                 <li>Temporary credentials with automatic rotation</li>
                 <li>Fine-grained IAM policies (least-privilege)</li>
                 <li>
-                  Permissions: bedrock:InvokeModel, secretsmanager:GetSecretValue
+                  Permissions: bedrock:InvokeModel,
+                  secretsmanager:GetSecretValue
                 </li>
                 <li>No static AWS keys anywhere in the deployment</li>
-                <li>
-                  Documented in: terraform/eks/irsa-litellm.tf
-                </li>
               </ul>
             </div>
           </div>
 
-          <div className={`objective complete ${currentStep >= 4 ? "visible" : ""}`}>
+          <div
+            className={`objective complete ${currentStep >= 4 ? "visible" : ""}`}
+          >
             <div className="number">OBJECTIVE 4</div>
             <h3>
-              Test Model Access
+              Comprehensive Testing
               <span className="status complete">✓ COMPLETE</span>
             </h3>
             <div className="requirement">
-              <strong>Requirement:</strong> Test model access through LiteLLM
-              with cURL or a simple Python script
+              <strong>Requirement:</strong> Validate model access and guardrails
             </div>
             <div className="implementation">
-              <h4>Implementation - Comprehensive Testing:</h4>
+              <h4>Implementation - Test Suites:</h4>
               <ul>
                 <li>Python test suite: tests/test-litellm-models-api.py</li>
                 <li>Shell test script: tests/test-litellm-models-api.sh</li>
                 <li>Interactive cURL examples: tests/curl-examples.sh</li>
                 <li>Guardrail test suite: tests/test-guardrails.py</li>
                 <li>All 7 models tested and validated</li>
-                <li>Tests documented in README.md with examples</li>
+                <li>
+                  make test-all runs setup, health, model, and guardrail tests
+                </li>
               </ul>
             </div>
           </div>
 
-          <div className={`objective exceeded ${currentStep >= 5 ? "visible" : ""}`}>
+          <div
+            className={`objective exceeded ${currentStep >= 5 ? "visible" : ""}`}
+          >
             <div className="number">OBJECTIVE 5</div>
             <h3>
-              Demonstrate Deployment
+              Operations & DNS Management
               <span className="status exceeded">✓ EXCEEDED</span>
             </h3>
             <div className="requirement">
-              <strong>Requirement:</strong> Be prepared to walk through your
-              setup and demonstrate your deployment's functionality
+              <strong>Requirement:</strong> Operational workflows and DNS setup
             </div>
             <div className="implementation">
               <h4>Implementation:</h4>
               <ul>
-                <li>Live demo: https://openwebui.bhenning.com</li>
-                <li>Complete README.md with deployment guide</li>
-                <li>Architecture diagrams with ASCII art</li>
-                <li>6-page visual presentation website (this site)</li>
-                <li>Step-by-step Terraform deployment instructions</li>
-                <li>Troubleshooting documentation</li>
-                <li>Test scripts for validation</li>
+                <li>
+                  Automated CloudFlare DNS setup: make eks-verify-cloudflare-dns
+                </li>
+                <li>ALB access control with on-demand IP allowlisting</li>
+                <li>Cost reporting: make aws-costs or make aws-costs-py</li>
+                <li>IAM architecture report: make iam-report</li>
+                <li>Port-forward for API access: make eks-port-forward</li>
               </ul>
             </div>
           </div>
@@ -697,9 +717,8 @@ export default function RequirementsPage() {
                 <li>AWS EKS cluster with managed Kubernetes control plane</li>
                 <li>Container orchestration with auto-scaling</li>
                 <li>Network policies for zero-trust isolation</li>
-                <li>EBS CSI driver for persistent storage</li>
-                <li>VPC CNI with network policy support</li>
-                <li>LoadBalancer service with HTTPS/TLS</li>
+                <li>EBS-backed persistent storage</li>
+                <li>Load balancer with HTTPS/TLS</li>
                 <li>Health checks and readiness probes</li>
               </ul>
             </div>
@@ -725,7 +744,7 @@ export default function RequirementsPage() {
                 <li>
                   terraform/eks: Application deployment, IRSA, network policies
                 </li>
-                <li>100% infrastructure defined as code</li>
+                <li>Infrastructure defined as code</li>
                 <li>Modular design with reusable components</li>
                 <li>State management and versioning</li>
                 <li>Documented variables and outputs</li>
@@ -735,39 +754,38 @@ export default function RequirementsPage() {
         </div>
 
         <div className="summary-section">
-          <h2>🎉 Project Summary</h2>
+          <h2>🎉 Capability Summary</h2>
           <p style={{ fontSize: "1.25rem", marginBottom: "2rem" }}>
-            All objectives met and exceeded
+            Core capabilities are aligned with the README source of truth
           </p>
 
           <div className="summary-stats">
             <div className="stat-box">
-              <span className="value">5/5</span>
-              <span className="label">Core Objectives</span>
-            </div>
-
-            <div className="stat-box">
-              <span className="value">2/2</span>
-              <span className="label">Stretch Goals</span>
-            </div>
-
-            <div className="stat-box">
-              <span className="value">100%</span>
-              <span className="label">Requirements Met</span>
-            </div>
-
-            <div className="stat-box">
               <span className="value">7</span>
-              <span className="label">AI Models Deployed</span>
+              <span className="label">Models</span>
+            </div>
+
+            <div className="stat-box">
+              <span className="value">3</span>
+              <span className="label">Providers</span>
+            </div>
+
+            <div className="stat-box">
+              <span className="value">50-90%</span>
+              <span className="label">SPOT Savings</span>
+            </div>
+
+            <div className="stat-box">
+              <span className="value">12/12</span>
+              <span className="label">Guardrail Tests</span>
             </div>
           </div>
 
           <div style={{ marginTop: "2rem", opacity: "0.95" }}>
             <p>
-              <strong>Beyond Requirements:</strong> This deployment demonstrates
-              production-grade cloud architecture with enterprise security
-              (zero-trust networking, IRSA, defense-in-depth), cost optimization
-              (SPOT instances, single NAT), and comprehensive documentation.
+              <strong>Key themes:</strong> Zero-trust security, IRSA
+              authentication, ALB HTTPS, cost-optimized infrastructure, and
+              automated DNS management with CloudFlare.
             </p>
           </div>
         </div>

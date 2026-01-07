@@ -162,7 +162,11 @@ export default function SummaryPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.8) 0%,
+            rgba(51, 65, 85, 0.8) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
@@ -179,14 +183,22 @@ export default function SummaryPage() {
         }
 
         .nav-button::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(250, 112, 154, 0.3)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -194,7 +206,11 @@ export default function SummaryPage() {
         }
 
         .nav-button:hover {
-          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.95) 0%,
+            rgba(71, 85, 105, 0.95) 100%
+          );
           border-color: rgba(0, 212, 255, 0.5);
           color: #00d4ff;
           transform: translateY(-2px);
@@ -259,17 +275,17 @@ export default function SummaryPage() {
       <div className="header">
         <h1>📊 Project Summary</h1>
         <p>
-          Production-grade AWS infrastructure demonstrating enterprise security,
-          cost optimization, and modern DevOps practices
+          Production-ready LLM gateway on AWS EKS with zero-trust security, cost
+          optimization, and multi-provider AI access
         </p>
       </div>
 
       <div className="content">
         <div className="achievement-banner">
-          <h2>🎉 All Requirements Exceeded</h2>
+          <h2>✅ Production-Ready Deployment</h2>
           <p>
-            5/5 core objectives met • 2/2 stretch goals achieved • 100%
-            Infrastructure as Code • Production-ready deployment
+            Unified OpenAI-compatible API across AWS Bedrock and Perplexity,
+            secured with IRSA, NetworkPolicies, and HTTPS via ALB
           </p>
         </div>
 
@@ -280,13 +296,13 @@ export default function SummaryPage() {
           </div>
 
           <div className="stat-card">
-            <span className="stat-value">50-90%</span>
-            <span className="stat-label">Cost Savings with SPOT</span>
+            <span className="stat-value">3</span>
+            <span className="stat-label">Providers Integrated</span>
           </div>
 
           <div className="stat-card">
-            <span className="stat-value">100%</span>
-            <span className="stat-label">Infrastructure as Code</span>
+            <span className="stat-value">50-90%</span>
+            <span className="stat-label">Cost Savings with SPOT</span>
           </div>
 
           <div className="stat-card">
@@ -310,8 +326,8 @@ export default function SummaryPage() {
                 Production Kubernetes
               </h3>
               <p>
-                AWS EKS cluster with auto-scaling capability and
-                zero-trust network policies
+                AWS EKS deployment with auto-scaling, EBS persistence, and ALB
+                HTTPS termination
               </p>
             </div>
 
@@ -321,22 +337,20 @@ export default function SummaryPage() {
                 Enterprise Security
               </h3>
               <p>
-                IRSA authentication, CloudFlare protection (optional geo-restriction), and
-                defense-in-depth controls
+                NetworkPolicies, IRSA, non-root containers, ALB TLS, metadata
+                service blocking, and input validation
               </p>
             </div>
 
             <div className="highlight-card">
               <h3>
                 <span className="icon">🐛</span>
-                Production Debugging
+                Custom Guardrails
               </h3>
               <p>
-                Identified LiteLLM streaming bug during testing. Read LiteLLM framework
-                source code to identify async_post_call_success_hook isn't invoked for
-                streaming responses. Designed workaround forcing stream=false
-                at pre-call hook level. Demonstrates security-first thinking and systematic
-                debugging methodology.
+                Pre-call and post-call filtering with history sanitization,
+                passthrough responses (HTTP 200), and stream=false forcing to
+                enable output filtering
               </p>
             </div>
 
@@ -346,8 +360,8 @@ export default function SummaryPage() {
                 Cost Optimized
               </h3>
               <p>
-                SPOT instances and single NAT gateway achieving significant
-                cost savings (50-90% on compute)
+                SPOT instances and single NAT gateway achieving significant cost
+                savings (50-90% on compute)
               </p>
             </div>
 
@@ -357,19 +371,20 @@ export default function SummaryPage() {
                 Multi-Provider AI
               </h3>
               <p>
-                7 models across 3 providers: AWS Bedrock Nova (3 models), AWS Bedrock Llama (2 models),
-                Perplexity (2 models) - all via unified OpenAI-compatible API
+                7 models across 3 providers: AWS Bedrock Nova (3 models), AWS
+                Bedrock Llama (2 models), Perplexity (2 models) - all via
+                unified OpenAI-compatible API
               </p>
             </div>
 
             <div className="highlight-card">
               <h3>
                 <span className="icon">🚀</span>
-                Automated Deployment
+                Automated Operations
               </h3>
               <p>
-                30+ Make commands for streamlined infrastructure provisioning
-                and operations
+                Make-based workflows for deployment, testing, cost reporting,
+                and IAM architecture visibility
               </p>
             </div>
 
@@ -379,22 +394,19 @@ export default function SummaryPage() {
                 Arena Mode
               </h3>
               <p>
-                Blind random model selection for unbiased AI evaluation. Currently disabled
-                but fully configured with nova-lite, nova-pro, and llama3-2-3b. Demonstrates
-                understanding of OpenWebUI's streaming behavior (forces stream=true for arena models).
+                Blind random model selection for unbiased evaluation. Currently
+                disabled, configured for nova-lite, nova-pro, and llama3-2-3b
               </p>
             </div>
 
             <div className="highlight-card">
               <h3>
-                <span className="icon">🛡️</span>
-                Custom Guardrails
+                <span className="icon">🌐</span>
+                DNS & HTTPS
               </h3>
               <p>
-                Identified LiteLLM v1.80.11 streaming bug where post-call hooks aren't
-                invoked for streaming responses. Debugged framework source code, identified
-                root cause, and implemented stream=false forcing workaround. 12 comprehensive
-                tests validate all attack vectors including context poisoning and indirect bypasses.
+                CloudFlare DNS-only setup with automated verification, plus
+                optional proxy mode via origin certificates
               </p>
             </div>
           </div>

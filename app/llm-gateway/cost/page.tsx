@@ -236,7 +236,11 @@ export default function CostPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.8) 0%,
+            rgba(51, 65, 85, 0.8) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
@@ -253,14 +257,22 @@ export default function CostPage() {
         }
 
         .nav-button::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(250, 112, 154, 0.3)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -268,7 +280,11 @@ export default function CostPage() {
         }
 
         .nav-button:hover {
-          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.95) 0%,
+            rgba(71, 85, 105, 0.95) 100%
+          );
           border-color: rgba(0, 212, 255, 0.5);
           color: #00d4ff;
           transform: translateY(-2px);
@@ -367,7 +383,10 @@ export default function CostPage() {
               </tr>
               <tr>
                 <td>EC2 SPOT Instances</td>
-                <td>1x node (t3.medium, t3a.medium, t2.medium pool - avg ~70% discount)</td>
+                <td>
+                  1x node (t3.medium, t3a.medium, t2.medium pool - avg ~70%
+                  discount)
+                </td>
                 <td className="savings-highlight">$8-15</td>
               </tr>
               <tr>
@@ -376,13 +395,13 @@ export default function CostPage() {
                 <td className="savings-highlight">$32.00</td>
               </tr>
               <tr>
-                <td>Network Load Balancer</td>
-                <td>NLB with 1 LCU</td>
-                <td>$16.00</td>
+                <td>Application Load Balancer</td>
+                <td>ALB with TLS termination</td>
+                <td>$16-22</td>
               </tr>
               <tr>
                 <td>EBS Volumes</td>
-                <td>20GB gp3 for persistent storage</td>
+                <td>Persistent storage for OpenWebUI data</td>
                 <td>$8.00</td>
               </tr>
               <tr>
@@ -395,7 +414,7 @@ export default function CostPage() {
                   <strong>Total Monthly Cost</strong>
                 </td>
                 <td>
-                  <strong>~$137-144</strong>
+                  <strong>~$137-150</strong>
                 </td>
               </tr>
             </tbody>
@@ -419,7 +438,9 @@ export default function CostPage() {
             </h3>
             <ul>
               <li>Use EC2 SPOT instances instead of on-demand</li>
-              <li>Multiple instance types (t3.medium, t3a.medium, t2.medium)</li>
+              <li>
+                Multiple instance types (t3.medium, t3a.medium, t2.medium)
+              </li>
               <li>SPOT diversity reduces interruption risk</li>
               <li>EKS handles automatic replacement</li>
               <li>Stateless workloads = SPOT friendly</li>
@@ -488,7 +509,6 @@ export default function CostPage() {
               <li>Default 1 node (scales to 2+ for HA)</li>
               <li>Resource limits on pods</li>
               <li>Resource quotas prevent resource waste</li>
-              <li>gp3 volumes instead of gp2 (cheaper)</li>
               <li>ECR instead of Docker Hub (no rate limits)</li>
             </ul>
 
@@ -530,98 +550,6 @@ export default function CostPage() {
               <li>Prevents abuse and runaway costs</li>
               <li>Blocks DoS-style API spamming</li>
               <li>Rate limiting prevents cost overruns</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="comparison-section">
-          <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
-            Cost Comparison: Optimized vs Standard
-          </h2>
-
-          <div className="comparison-grid">
-            <div className="comparison-box">
-              <h3>❌ Standard Configuration</h3>
-              <div className="price">~$300-350/mo</div>
-              <ul>
-                <li>• On-demand EC2 instances (2x nodes, single type)</li>
-                <li>• Multi-AZ NAT Gateways (2 NATs)</li>
-                <li>• Application Load Balancer instead of NLB</li>
-                <li>• No auto-scaling (always max capacity)</li>
-                <li>• No rate limiting (risk of overruns)</li>
-              </ul>
-            </div>
-
-            <div className="comparison-box">
-              <h3>✅ Optimized Configuration</h3>
-              <div className="price savings-highlight">~$137-144/mo</div>
-              <ul>
-                <li>• SPOT instances (50-90% discount)</li>
-                <li>• Single NAT Gateway ($32/mo savings)</li>
-                <li>• Network Load Balancer (cheaper)</li>
-                <li>• Default 1 node (scales to 2+ for HA)</li>
-                <li>• Rate limiting for cost control</li>
-              </ul>
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: "rgba(0, 229, 204, 0.2)",
-              padding: "1.5rem",
-              borderRadius: "8px",
-              marginTop: "2rem",
-              textAlign: "center",
-              borderLeft: "4px solid #00e5cc",
-            }}
-          >
-            <div style={{ fontSize: "2.5rem", fontWeight: "700" }}>
-              <span className="savings-highlight">50-60%</span>
-            </div>
-            <div style={{ fontSize: "1.25rem", marginTop: "0.5rem" }}>
-              Total Cost Reduction
-            </div>
-            <div style={{ opacity: "0.9", marginTop: "1rem" }}>
-              Saving $150-200/month with optimized configuration
-            </div>
-          </div>
-        </div>
-
-        <div className="cost-breakdown">
-          <h2>Additional Cost Optimizations</h2>
-
-          <div style={{ marginTop: "2rem" }}>
-            <h3
-              style={{
-                fontSize: "1.5rem",
-                marginBottom: "1rem",
-                color: "#00e5cc",
-              }}
-            >
-              Future Optimizations
-            </h3>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: "0",
-                fontSize: "1.125rem",
-              }}
-            >
-              <li style={{ padding: "0.5rem 0", paddingLeft: "1.5rem" }}>
-                → Implement EKS Fargate for serverless pods (pay per second)
-              </li>
-              <li style={{ padding: "0.5rem 0", paddingLeft: "1.5rem" }}>
-                → Use S3 for long-term storage (cheaper than EBS)
-              </li>
-              <li style={{ padding: "0.5rem 0", paddingLeft: "1.5rem" }}>
-                → Implement caching to reduce API calls
-              </li>
-              <li style={{ padding: "0.5rem 0", paddingLeft: "1.5rem" }}>
-                → Schedule cluster shutdown during non-business hours
-              </li>
-              <li style={{ padding: "0.5rem 0", paddingLeft: "1.5rem" }}>
-                → Use Savings Plans for predictable workloads
-              </li>
             </ul>
           </div>
         </div>

@@ -248,14 +248,22 @@ export default function LLMGatewayPage() {
         }
 
         .nav-button-link::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(14, 165, 233, 0.1));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(56, 189, 248, 0.1),
+            rgba(14, 165, 233, 0.1)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -353,24 +361,79 @@ export default function LLMGatewayPage() {
           Production-Ready AI Infrastructure on AWS EKS
         </p>
         <p className="description">
-          A secure, cost-optimized, and enterprise-grade LLM gateway deployed
-          on AWS EKS with comprehensive security controls, zero-trust
-          networking, and multi-provider AI model support.
+          A secure, cost-optimized, and enterprise-grade LLM gateway deployed on
+          AWS EKS with comprehensive security controls, zero-trust networking,
+          and multi-provider AI model support.
         </p>
       </div>
 
       <div className="tech-section">
         <h2>Technology Stack</h2>
         <div className="tech-stack">
-          <a href="https://docs.aws.amazon.com/eks/" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS EKS (Kubernetes)</a>
-          <a href="https://en.wikipedia.org/wiki/Docker_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS ECR (Docker)</a>
-          <a href="https://en.wikipedia.org/wiki/Terraform_(software)" target="_blank" rel="noopener noreferrer" className="tech-badge">Terraform</a>
-          <a href="https://en.wikipedia.org/wiki/Cloudflare" target="_blank" rel="noopener noreferrer" className="tech-badge">Cloudflare</a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="tech-badge">GitHub</a>
-          <a href="https://github.com/BerriAI/litellm" target="_blank" rel="noopener noreferrer" className="tech-badge">LiteLLM</a>
-          <a href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener noreferrer" className="tech-badge">OpenWebUI</a>
-          <a href="https://docs.aws.amazon.com/bedrock/" target="_blank" rel="noopener noreferrer" className="tech-badge">AWS Bedrock</a>
-          <a href="https://en.wikipedia.org/wiki/Perplexity.ai" target="_blank" rel="noopener noreferrer" className="tech-badge">Perplexity</a>
+          <a
+            href="https://docs.aws.amazon.com/eks/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            AWS EKS (Kubernetes)
+          </a>
+          <a
+            href="https://en.wikipedia.org/wiki/Docker_(software)"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            AWS ECR (Docker)
+          </a>
+          <a
+            href="https://en.wikipedia.org/wiki/Terraform_(software)"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            Terraform
+          </a>
+          <a
+            href="https://en.wikipedia.org/wiki/Cloudflare"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            Cloudflare
+          </a>
+          <a
+            href="https://github.com/BerriAI/litellm"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            LiteLLM
+          </a>
+          <a
+            href="https://github.com/open-webui/open-webui"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            OpenWebUI
+          </a>
+          <a
+            href="https://docs.aws.amazon.com/bedrock/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            AWS Bedrock
+          </a>
+          <a
+            href="https://en.wikipedia.org/wiki/Perplexity.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tech-badge"
+          >
+            Perplexity
+          </a>
         </div>
       </div>
 
@@ -386,11 +449,23 @@ export default function LLMGatewayPage() {
             on AWS.
           </p>
           <ul>
-            <li>Security: Zero-Trust Networking, IRSA (no static credentials), Non-Root Containers, HTTPS/TLS</li>
-            <li>Multi-Provider Support: AWS Bedrock (Nova, Llama) + Perplexity with unified API</li>
-            <li>Custom Guardrails: Extensible content filtering with streaming support</li>
-            <li>Infrastructure as Code: 100% Terraform</li>
-            <li>Automated Operations: DNS management, health checks, comprehensive testing</li>
+            <li>
+              Security: Zero-Trust Networking, IRSA (no static credentials),
+              Non-Root Containers, HTTPS/TLS
+            </li>
+            <li>
+              Multi-Provider Support: AWS Bedrock (Nova, Llama) + Perplexity
+              with unified API
+            </li>
+            <li>
+              Custom Guardrails: Extensible content filtering with streaming
+              support
+            </li>
+            <li>Infrastructure as Code: Terraform</li>
+            <li>
+              Automated Operations: DNS management, health checks, comprehensive
+              testing
+            </li>
           </ul>
         </div>
       </div>
