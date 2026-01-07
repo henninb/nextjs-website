@@ -975,7 +975,7 @@ cd terraform/eks && terraform init && terraform apply
               >
                 {copiedIndex === 100 ? "✓" : "⧉"}
               </button>
-kubectl get ingress openwebui -n llm-gateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+{`kubectl get ingress openwebui -n llm-gateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`}
             </div>
           </div>
 
