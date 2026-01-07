@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import useCategoryMerge from "../../hooks/useCategoryMerge";
 
-
 // Mock the useAuth hook
 
 // Mock CSRF utilities

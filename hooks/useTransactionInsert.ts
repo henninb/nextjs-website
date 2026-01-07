@@ -162,7 +162,9 @@ export default function useTransactionInsert() {
           });
 
           // Optimistically update totals based on transaction state
-          const oldTotals: Totals = queryClient.getQueryData<Totals>(totalsKey) || {
+          const oldTotals: Totals = queryClient.getQueryData<Totals>(
+            totalsKey,
+          ) || {
             totals: 0,
             totalsFuture: 0,
             totalsCleared: 0,

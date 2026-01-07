@@ -231,7 +231,11 @@ export default function Payments() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -284,7 +288,8 @@ export default function Payments() {
       handleError(error, `Add Payment error: ${error}`, false);
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
         // Handle offline error if needed.
       }
@@ -711,7 +716,8 @@ export default function Payments() {
             onChange={(value) => {
               setPaymentData((prev: Payment) => ({
                 ...prev,
-                amount: typeof value === 'string' ? parseFloat(value) || 0 : value,
+                amount:
+                  typeof value === "string" ? parseFloat(value) || 0 : value,
               }));
             }}
             onBlur={() => {

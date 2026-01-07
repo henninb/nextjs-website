@@ -13,7 +13,7 @@ import { getErrorMessage } from "../types";
  * Type guard to check if error has validationErrors property
  */
 function hasValidationErrorsProperty(
-  error: unknown
+  error: unknown,
 ): error is { validationErrors: ValidationError[] } {
   return (
     typeof error === "object" &&

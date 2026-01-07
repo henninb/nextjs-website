@@ -44,7 +44,6 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import CategoryIcon from "@mui/icons-material/Category";
 import TransactionIcon from "@mui/icons-material/Receipt";
 
-
 import PageHeader from "../../../components/PageHeader";
 import LoadingState from "../../../components/LoadingState";
 import ErrorDisplay from "../../../components/ErrorDisplay";

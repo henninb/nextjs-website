@@ -16,7 +16,6 @@ import {
   ConsoleSpy,
 } from "../../testHelpers";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
@@ -525,7 +524,9 @@ describe("useSpendingTrends", () => {
       const filters1: TrendsFilters = { dateRange: { months: 12 } };
       const filters2: TrendsFilters = { dateRange: { months: 6 } };
 
-      expect(JSON.stringify(filters1)).not.toStrictEqual(JSON.stringify(filters2));
+      expect(JSON.stringify(filters1)).not.toStrictEqual(
+        JSON.stringify(filters2),
+      );
     });
   });
 

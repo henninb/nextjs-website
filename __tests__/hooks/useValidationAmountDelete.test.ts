@@ -11,7 +11,6 @@ import {
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

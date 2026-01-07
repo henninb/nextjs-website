@@ -101,7 +101,11 @@ export default function Descriptions() {
         await deleteDescription(selectedDescription);
         handleSuccess(`Description deleted successfully.`);
       } catch (error) {
-        handleError(error, `Delete Description: ${getErrorMessage(error)}`, false);
+        handleError(
+          error,
+          `Delete Description: ${getErrorMessage(error)}`,
+          false,
+        );
       } finally {
         setShowModalDelete(false);
         setSelectedDescription(null);
@@ -113,7 +117,11 @@ export default function Descriptions() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -164,10 +172,15 @@ export default function Descriptions() {
       handleSuccess(`Description added successfully.`);
       setFormErrors({});
     } catch (error) {
-      handleError(error, `Add Description error: ${getErrorMessage(error)}`, false);
+      handleError(
+        error,
+        `Add Description error: ${getErrorMessage(error)}`,
+        false,
+      );
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     } finally {
@@ -301,7 +314,11 @@ export default function Descriptions() {
       setRowSelection([]);
       refetchDescriptions();
     } catch (error: unknown) {
-      handleError(error, `Merge Descriptions error: ${getErrorMessage(error)}`, false);
+      handleError(
+        error,
+        `Merge Descriptions error: ${getErrorMessage(error)}`,
+        false,
+      );
     }
   };
 

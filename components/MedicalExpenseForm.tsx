@@ -105,7 +105,10 @@ export default function MedicalExpenseForm({
     formData.patientResponsibility,
   ]);
 
-  const handleFieldChange = (field: keyof MedicalExpense, value: MedicalExpense[keyof MedicalExpense] | null) => {
+  const handleFieldChange = (
+    field: keyof MedicalExpense,
+    value: MedicalExpense[keyof MedicalExpense] | null,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear field error when user starts fixing it

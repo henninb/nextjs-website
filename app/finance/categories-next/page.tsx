@@ -195,7 +195,11 @@ export default function CategoriesNextGen() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -249,7 +253,11 @@ export default function CategoriesNextGen() {
 
       handleSuccess("Category added successfully.");
     } catch (error: unknown) {
-      handleError(error, `Add Category error: ${getErrorMessage(error)}`, false);
+      handleError(
+        error,
+        `Add Category error: ${getErrorMessage(error)}`,
+        false,
+      );
     } finally {
       setShowModalAdd(false);
     }

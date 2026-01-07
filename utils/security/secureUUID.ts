@@ -102,7 +102,10 @@ class SecureUUIDGenerator {
     // Try to use crypto API if available
     if (typeof crypto !== "undefined" && crypto.getRandomValues) {
       crypto.getRandomValues(array);
-    } else if (typeof globalThis !== "undefined" && (globalThis as any).crypto?.getRandomValues) {
+    } else if (
+      typeof globalThis !== "undefined" &&
+      (globalThis as any).crypto?.getRandomValues
+    ) {
       (globalThis as any).crypto.getRandomValues(array);
     } else {
       // Last resort fallback - should rarely happen in modern environments
@@ -116,7 +119,9 @@ class SecureUUIDGenerator {
     array[8] = (array[8] & 0x3f) | 0x80; // Variant 10
 
     // Convert to UUID string format
-    const hex = Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const hex = Array.from(array, (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
   }
 

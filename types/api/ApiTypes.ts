@@ -5,7 +5,7 @@
  * to replace 'any' types in API response handling.
  */
 
-import { ErrorResult } from '../errors/AppError';
+import { ErrorResult } from "../errors/AppError";
 
 /**
  * Generic API response wrapper
@@ -36,7 +36,7 @@ export interface PaginatedResponse<T> {
 /**
  * Extended fetch options with typed query parameters
  */
-export interface FetchOptions extends Omit<RequestInit, 'body'> {
+export interface FetchOptions extends Omit<RequestInit, "body"> {
   params?: Record<string, string | number | boolean>;
   body?: unknown;
   timeout?: number;
@@ -71,7 +71,7 @@ export type FetchResult<T> =
 /**
  * HTTP method types
  */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /**
  * API endpoint configuration

@@ -145,7 +145,9 @@ export async function fetchWithErrorHandling(
   const isMutation =
     options?.method &&
     ["POST", "PUT", "DELETE", "PATCH"].includes(options.method);
-  console.log(`[fetchUtils] ${options?.method || "GET"} ${url}, isMutation:${isMutation}`);
+  console.log(
+    `[fetchUtils] ${options?.method || "GET"} ${url}, isMutation:${isMutation}`,
+  );
   const csrfHeaders = isMutation ? await getCsrfHeaders() : {};
   console.log("[fetchUtils] CSRF headers:", csrfHeaders);
 
@@ -155,7 +157,10 @@ export async function fetchWithErrorHandling(
       ...csrfHeaders,
       ...options?.headers,
     };
-    console.log("[fetchUtils] Final headers:", Object.keys(finalHeaders).join(", "));
+    console.log(
+      "[fetchUtils] Final headers:",
+      Object.keys(finalHeaders).join(", "),
+    );
     const response = await fetch(url, {
       ...DEFAULT_FETCH_OPTIONS,
       ...options,
@@ -167,9 +172,7 @@ export async function fetchWithErrorHandling(
       if (response.status === 403 && isMutation) {
         try {
           const errorText =
-            typeof response.text === "function"
-              ? await response.text()
-              : "";
+            typeof response.text === "function" ? await response.text() : "";
           if (
             errorText.includes("CSRF") ||
             errorText.includes("Invalid CSRF token")

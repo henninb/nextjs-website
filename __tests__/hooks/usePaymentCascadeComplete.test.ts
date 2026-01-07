@@ -5,7 +5,6 @@ import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import Payment from "../../model/Payment";
 import Transaction from "../../model/Transaction";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
@@ -253,7 +252,9 @@ describe("Payment Update Cascade Functionality", () => {
         new Date(destLinkedTransaction?.transactionDate as any).toDateString(),
       ).toBe(updatedPayment.transactionDate.toDateString());
 
-      expect(sourceUnlinkedTransaction).toStrictEqual(initialSourceTransactions[1]);
+      expect(sourceUnlinkedTransaction).toStrictEqual(
+        initialSourceTransactions[1],
+      );
       expect(destUnlinkedTransaction).toStrictEqual(initialDestTransactions[1]);
     });
 

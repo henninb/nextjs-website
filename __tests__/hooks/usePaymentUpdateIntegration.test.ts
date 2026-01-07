@@ -15,7 +15,6 @@ function createMockLogger() {
   };
 }
 
-
 // Mock CSRF utilities
 jest.mock("../../utils/csrf", () => ({
   getCsrfHeaders: jest.fn().mockResolvedValue({}),

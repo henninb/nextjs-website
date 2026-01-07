@@ -113,7 +113,12 @@ describe("TransactionsByDescription page", () => {
   });
 
   it("renders the heading with the description name", async () => {
-    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, { wrapper: createWrapper() });
+    render(
+      <TransactionsByDescription
+        params={{ descriptionName: "Grocery Store" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
     await waitFor(() => {
       expect(
         screen.getByRole("heading", { name: "Grocery Store" }),
@@ -129,12 +134,22 @@ describe("TransactionsByDescription page", () => {
       error: null,
     });
 
-    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, { wrapper: createWrapper() });
+    render(
+      <TransactionsByDescription
+        params={{ descriptionName: "Grocery Store" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
   it("renders the data grid with transaction rows", () => {
-    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, { wrapper: createWrapper() });
+    render(
+      <TransactionsByDescription
+        params={{ descriptionName: "Grocery Store" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // DataGrid is globally mocked in __mocks__/@mui/x-data-grid.ts
     const grid = screen.getByTestId("data-grid");
@@ -151,7 +166,12 @@ describe("TransactionsByDescription page", () => {
       loading: false,
     });
 
-    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, { wrapper: createWrapper() });
+    render(
+      <TransactionsByDescription
+        params={{ descriptionName: "Grocery Store" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
     expect(replaceMock).toHaveBeenCalledWith("/login");
   });
 
@@ -165,7 +185,12 @@ describe("TransactionsByDescription page", () => {
       refetch: refetchMock,
     });
 
-    render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, { wrapper: createWrapper() });
+    render(
+      <TransactionsByDescription
+        params={{ descriptionName: "Grocery Store" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
     expect(screen.getByTestId("error-display")).toBeInTheDocument();
     const btn = screen.getByTestId("retry-button");
     btn.click();
@@ -183,12 +208,19 @@ describe("TransactionsByDescription page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, {
-        wrapper: createWrapper(),
-      });
+      const { rerender } = render(
+        <TransactionsByDescription
+          params={{ descriptionName: "Grocery Store" } as any}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       // Component should return null but not crash due to hook order violations
-      expect(screen.queryByRole("heading", { name: "Grocery Store" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { name: "Grocery Store" }),
+      ).not.toBeInTheDocument();
 
       // Second render: loading = false (should call same hooks in same order)
       (AuthProvider.useAuth as jest.Mock).mockReturnValue({
@@ -196,10 +228,16 @@ describe("TransactionsByDescription page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />);
+      rerender(
+        <TransactionsByDescription
+          params={{ descriptionName: "Grocery Store" } as any}
+        />,
+      );
 
       // Should render successfully without Rules of Hooks error
-      expect(screen.getByRole("heading", { name: "Grocery Store" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Grocery Store" }),
+      ).toBeInTheDocument();
     });
 
     it("calls hooks consistently during authentication state transitions", () => {
@@ -209,12 +247,19 @@ describe("TransactionsByDescription page", () => {
         loading: true,
       });
 
-      const { rerender } = render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, {
-        wrapper: createWrapper(),
-      });
+      const { rerender } = render(
+        <TransactionsByDescription
+          params={{ descriptionName: "Grocery Store" } as any}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       // Should return null without hook violations
-      expect(screen.queryByRole("heading", { name: "Grocery Store" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { name: "Grocery Store" }),
+      ).not.toBeInTheDocument();
 
       // Change to not authenticated, not loading
       (AuthProvider.useAuth as jest.Mock).mockReturnValue({
@@ -222,10 +267,16 @@ describe("TransactionsByDescription page", () => {
         loading: false,
       });
 
-      rerender(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />);
+      rerender(
+        <TransactionsByDescription
+          params={{ descriptionName: "Grocery Store" } as any}
+        />,
+      );
 
       // Should still return null and trigger redirect
-      expect(screen.queryByRole("heading", { name: "Grocery Store" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { name: "Grocery Store" }),
+      ).not.toBeInTheDocument();
       expect(replaceMock).toHaveBeenCalledWith("/login");
     });
 
@@ -238,9 +289,14 @@ describe("TransactionsByDescription page", () => {
         error: null,
       });
 
-      const { rerender } = render(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />, {
-        wrapper: createWrapper(),
-      });
+      const { rerender } = render(
+        <TransactionsByDescription
+          params={{ descriptionName: "Grocery Store" } as any}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
       expect(screen.getByTestId("spinner")).toBeInTheDocument();
 
       // Change to loaded data - useMemo should handle null -> data transition
@@ -251,7 +307,11 @@ describe("TransactionsByDescription page", () => {
         error: null,
       });
 
-      rerender(<TransactionsByDescription params={{ descriptionName: "Grocery Store" } as any} />);
+      rerender(
+        <TransactionsByDescription
+          params={{ descriptionName: "Grocery Store" } as any}
+        />,
+      );
 
       // Should render data grid without hook order errors
       expect(screen.getByTestId("data-grid")).toBeInTheDocument();

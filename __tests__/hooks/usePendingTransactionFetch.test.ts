@@ -10,7 +10,6 @@ import {
 } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

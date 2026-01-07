@@ -33,16 +33,16 @@ const useProvideAuth = () => {
   // Helper function to determine if current page requires authentication
   const requiresAuth = (path: string): boolean => {
     const authRequiredPaths = [
-      '/finance',
-      '/login',
-      '/register',
-      '/registration',
-      '/logout',
-      '/me',
-      '/payment'
+      "/finance",
+      "/login",
+      "/register",
+      "/registration",
+      "/logout",
+      "/me",
+      "/payment",
     ];
 
-    return authRequiredPaths.some(authPath => path.startsWith(authPath));
+    return authRequiredPaths.some((authPath) => path.startsWith(authPath));
   };
 
   useEffect(() => {

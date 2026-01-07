@@ -4,7 +4,9 @@ export const runtime = "edge";
 function generateSecureId(length) {
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(36)).join("").substr(0, length);
+  return Array.from(array, (byte) => byte.toString(36))
+    .join("")
+    .substr(0, length);
 }
 
 // Generate cryptographically secure random number

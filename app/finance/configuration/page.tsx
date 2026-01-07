@@ -166,7 +166,11 @@ export default function Configuration() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -219,7 +223,8 @@ export default function Configuration() {
 
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
         const offlineId = await generateSecureUUID();
         const newOfflineRow = { ...newData, parameterId: offlineId };

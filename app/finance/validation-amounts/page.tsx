@@ -131,7 +131,11 @@ export default function ValidationAmounts() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = getErrorMessage(error)
       ? `${moduleName}: ${getErrorMessage(error)}`
       : `${moduleName}: Failure`;

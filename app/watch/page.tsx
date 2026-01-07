@@ -498,7 +498,6 @@ const WatchPage: NextPage = () => {
 
   return (
     <>
-
       <div
         style={{
           maxWidth: "1200px",

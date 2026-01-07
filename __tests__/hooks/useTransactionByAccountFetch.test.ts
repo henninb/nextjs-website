@@ -48,7 +48,6 @@ import {
   createTestTransaction,
 } from "../../testHelpers";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

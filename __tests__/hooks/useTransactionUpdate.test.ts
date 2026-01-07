@@ -8,7 +8,6 @@ import {
 import { updateTransaction } from "../../hooks/useTransactionUpdate";
 import { HookValidator } from "../../utils/hookValidation";
 
-
 // Mock the useAuth hook
 
 // Mock CSRF utilities

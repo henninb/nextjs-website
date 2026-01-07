@@ -7,7 +7,8 @@ export const metadata: Metadata = {
     default: "Finance Management",
     template: "%s | Finance App",
   },
-  description: "Personal finance management application for tracking transactions, payments, and budgets.",
+  description:
+    "Personal finance management application for tracking transactions, payments, and budgets.",
 };
 
 export default function FinanceLayout({

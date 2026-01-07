@@ -127,16 +127,12 @@ export default function PaymentRequiredPage() {
   return (
     <div>
       <Box sx={{ mb: 3, textAlign: "center" }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          sx={{ mb: 1, fontWeight: 600 }}
-        >
+        <Typography variant="h4" component="h1" sx={{ mb: 1, fontWeight: 600 }}>
           Account Balances
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Monitor account balances and track validation amounts across all
-          your accounts
+          Monitor account balances and track validation amounts across all your
+          accounts
         </Typography>
       </Box>
       {showSpinner ? (

@@ -53,7 +53,6 @@ import { setupNewAccount, insertAccount } from "../../hooks/useAccountInsert";
 import { HookValidator } from "../../utils/hookValidation";
 import { DataValidator } from "../../utils/validation";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

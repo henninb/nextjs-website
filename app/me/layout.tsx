@@ -6,10 +6,6 @@ export const metadata: Metadata = {
   description: "View and manage your personal profile and account settings.",
 };
 
-export default function MeLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MeLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

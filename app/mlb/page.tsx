@@ -184,7 +184,9 @@ export default function BaseballPage() {
         setData(transformedData);
       } catch (err: unknown) {
         console.error("Fetch error:", err);
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred",
+        );
       } finally {
         setLoading(false);
       }

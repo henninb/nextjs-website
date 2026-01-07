@@ -185,9 +185,7 @@ describe("pages/finance/descriptions", () => {
       });
 
       render(<DescriptionsPage />);
-      fireEvent.click(
-        screen.getByRole("button", { name: /add description/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /add description/i }));
       expect(screen.getByText(/Add New Description/i)).toBeInTheDocument();
     });
 
@@ -205,9 +203,7 @@ describe("pages/finance/descriptions", () => {
       });
 
       render(<DescriptionsPage />);
-      fireEvent.click(
-        screen.getByRole("button", { name: /add description/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /add description/i }));
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
       expect(insertDescriptionMock).not.toHaveBeenCalled();
       expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
@@ -228,9 +224,7 @@ describe("pages/finance/descriptions", () => {
       });
 
       render(<DescriptionsPage />);
-      fireEvent.click(
-        screen.getByRole("button", { name: /add description/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /add description/i }));
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
       expect(insertDescriptionMock).not.toHaveBeenCalled();
       expect(screen.getAllByText(/Name is required/i)).toHaveLength(2);
@@ -250,9 +244,7 @@ describe("pages/finance/descriptions", () => {
       });
 
       render(<DescriptionsPage />);
-      fireEvent.click(
-        screen.getByRole("button", { name: /add description/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /add description/i }));
       const sw = screen.getByRole("switch", { name: /status/i });
       const initialChecked = (sw as HTMLInputElement).checked;
       fireEvent.click(sw);
@@ -335,9 +327,7 @@ describe("pages/finance/descriptions", () => {
       });
 
       render(<DescriptionsPage />);
-      fireEvent.click(
-        screen.getByRole("button", { name: /add description/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /add description/i }));
       fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
       expect(insertDescriptionMock).not.toHaveBeenCalled();
       // Validation appears in both snackbar and helper text
@@ -427,8 +417,10 @@ describe("pages/finance/descriptions", () => {
       }
 
       // Click checkboxes within select cells
-      const checkboxes = selectCells.slice(0, 2).map(cell => cell.querySelector('input[type="checkbox"]'));
-      checkboxes.forEach(cb => cb && fireEvent.click(cb));
+      const checkboxes = selectCells
+        .slice(0, 2)
+        .map((cell) => cell.querySelector('input[type="checkbox"]'));
+      checkboxes.forEach((cb) => cb && fireEvent.click(cb));
 
       // Merge button appears
       const mergeBtn = screen.queryByRole("button", { name: /^merge$/i });
@@ -439,7 +431,9 @@ describe("pages/finance/descriptions", () => {
       fireEvent.click(mergeBtn);
 
       // Modal opens
-      const dialog = screen.getByRole("dialog", { name: /Merge Descriptions/i });
+      const dialog = screen.getByRole("dialog", {
+        name: /Merge Descriptions/i,
+      });
 
       // Submit disabled until valid
       const modalSubmit = within(dialog).getByRole("button", {
@@ -500,8 +494,10 @@ describe("pages/finance/descriptions", () => {
       }
 
       // Click checkboxes within select cells
-      const checkboxes = selectCells.slice(0, 2).map(cell => cell.querySelector('input[type="checkbox"]'));
-      checkboxes.forEach(cb => cb && fireEvent.click(cb));
+      const checkboxes = selectCells
+        .slice(0, 2)
+        .map((cell) => cell.querySelector('input[type="checkbox"]'));
+      checkboxes.forEach((cb) => cb && fireEvent.click(cb));
 
       const mergeBtn = screen.queryByRole("button", { name: /^merge$/i });
       if (!mergeBtn) {
@@ -510,7 +506,9 @@ describe("pages/finance/descriptions", () => {
       }
       fireEvent.click(mergeBtn);
       // Type invalid input (spaces only) to trigger validation helper
-      const dialog = screen.getByRole("dialog", { name: /Merge Descriptions/i });
+      const dialog = screen.getByRole("dialog", {
+        name: /Merge Descriptions/i,
+      });
       const input = within(dialog).getByLabelText(/new name/i);
       fireEvent.change(input, { target: { value: "   " } });
       expect(screen.getByText(/Name is required/i)).toBeInTheDocument();

@@ -1,4 +1,3 @@
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
@@ -327,21 +326,37 @@ describe("Finance Validation Functions", () => {
     describe("Valid categories", () => {
       it("should validate simple categories", () => {
         expect(validateCategory("Food")).toStrictEqual({ isValid: true });
-        expect(validateCategory("Transportation")).toStrictEqual({ isValid: true });
-        expect(validateCategory("Entertainment")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Transportation")).toStrictEqual({
+          isValid: true,
+        });
+        expect(validateCategory("Entertainment")).toStrictEqual({
+          isValid: true,
+        });
       });
 
       it("should validate categories with allowed special characters", () => {
-        expect(validateCategory("Food & Dining")).toStrictEqual({ isValid: true });
-        expect(validateCategory("Gas-Station")).toStrictEqual({ isValid: true });
-        expect(validateCategory("ATM (Withdrawal)")).toStrictEqual({ isValid: true });
-        expect(validateCategory("Auto_Repair")).toStrictEqual({ isValid: true });
-        expect(validateCategory("Shopping123")).toStrictEqual({ isValid: true });
+        expect(validateCategory("Food & Dining")).toStrictEqual({
+          isValid: true,
+        });
+        expect(validateCategory("Gas-Station")).toStrictEqual({
+          isValid: true,
+        });
+        expect(validateCategory("ATM (Withdrawal)")).toStrictEqual({
+          isValid: true,
+        });
+        expect(validateCategory("Auto_Repair")).toStrictEqual({
+          isValid: true,
+        });
+        expect(validateCategory("Shopping123")).toStrictEqual({
+          isValid: true,
+        });
       });
 
       it("should validate categories with numbers", () => {
         expect(validateCategory("Category1")).toStrictEqual({ isValid: true });
-        expect(validateCategory("2024 Expenses")).toStrictEqual({ isValid: true });
+        expect(validateCategory("2024 Expenses")).toStrictEqual({
+          isValid: true,
+        });
         expect(validateCategory("Tax123Form")).toStrictEqual({ isValid: true });
       });
     });
@@ -385,7 +400,9 @@ describe("Finance Validation Functions", () => {
     describe("Edge cases", () => {
       it("should handle exactly 50 characters", () => {
         const fiftyCharCategory = "a".repeat(50);
-        expect(validateCategory(fiftyCharCategory)).toStrictEqual({ isValid: true });
+        expect(validateCategory(fiftyCharCategory)).toStrictEqual({
+          isValid: true,
+        });
       });
 
       it("should handle single character categories", () => {
@@ -410,7 +427,9 @@ describe("Finance Validation Functions", () => {
       });
 
       it("should validate descriptions with special characters", () => {
-        expect(validateDescription("Payment for services @company")).toStrictEqual({
+        expect(
+          validateDescription("Payment for services @company"),
+        ).toStrictEqual({
           isValid: true,
         });
         expect(validateDescription("Transaction #12345")).toStrictEqual({
@@ -435,9 +454,9 @@ describe("Finance Validation Functions", () => {
         expect(validateDescription("Withdrawal (emergency)")).toStrictEqual({
           isValid: true,
         });
-        expect(validateDescription("Purchase: groceries and supplies")).toStrictEqual(
-          { isValid: true },
-        );
+        expect(
+          validateDescription("Purchase: groceries and supplies"),
+        ).toStrictEqual({ isValid: true });
         expect(validateDescription("Question? Answer!")).toStrictEqual({
           isValid: true,
         });
@@ -466,11 +485,15 @@ describe("Finance Validation Functions", () => {
 
       it("should reject descriptions with invalid characters", () => {
         // Test characters not in the allowed pattern
-        expect(validateDescription("Description with ~ character")).toStrictEqual({
+        expect(
+          validateDescription("Description with ~ character"),
+        ).toStrictEqual({
           isValid: false,
           error: "Description contains invalid characters",
         });
-        expect(validateDescription("Description with ` character")).toStrictEqual({
+        expect(
+          validateDescription("Description with ` character"),
+        ).toStrictEqual({
           isValid: false,
           error: "Description contains invalid characters",
         });
@@ -480,13 +503,17 @@ describe("Finance Validation Functions", () => {
     describe("Edge cases", () => {
       it("should handle exactly 200 characters", () => {
         const maxDescription = "a".repeat(200);
-        expect(validateDescription(maxDescription)).toStrictEqual({ isValid: true });
+        expect(validateDescription(maxDescription)).toStrictEqual({
+          isValid: true,
+        });
       });
 
       it("should handle complex valid descriptions", () => {
         const complexDesc =
           "Purchase at Store #123: Items A, B & C (total: $45.67) - Receipt #456";
-        expect(validateDescription(complexDesc)).toStrictEqual({ isValid: true });
+        expect(validateDescription(complexDesc)).toStrictEqual({
+          isValid: true,
+        });
       });
     });
   });
@@ -500,7 +527,9 @@ describe("Finance Validation Functions", () => {
         expect(validateAccountName("Savings Account")).toStrictEqual({
           isValid: true,
         });
-        expect(validateAccountName("Credit Card")).toStrictEqual({ isValid: true });
+        expect(validateAccountName("Credit Card")).toStrictEqual({
+          isValid: true,
+        });
       });
 
       it("should validate account names with allowed characters", () => {
@@ -510,7 +539,9 @@ describe("Finance Validation Functions", () => {
         expect(validateAccountName("Credit Card (Main)")).toStrictEqual({
           isValid: true,
         });
-        expect(validateAccountName("Account_123")).toStrictEqual({ isValid: true });
+        expect(validateAccountName("Account_123")).toStrictEqual({
+          isValid: true,
+        });
         expect(validateAccountName("Business & Personal")).toStrictEqual({
           isValid: true,
         });
@@ -552,7 +583,9 @@ describe("Finance Validation Functions", () => {
     describe("Edge cases", () => {
       it("should handle exactly 100 characters", () => {
         const maxAccountName = "a".repeat(100);
-        expect(validateAccountName(maxAccountName)).toStrictEqual({ isValid: true });
+        expect(validateAccountName(maxAccountName)).toStrictEqual({
+          isValid: true,
+        });
       });
     });
   });
@@ -656,7 +689,9 @@ describe("Finance Validation Functions", () => {
         const ninetyNineYearsAgoStr = ninetyNineYearsAgo
           .toISOString()
           .split("T")[0];
-        expect(validateDate(ninetyNineYearsAgoStr)).toStrictEqual({ isValid: true });
+        expect(validateDate(ninetyNineYearsAgoStr)).toStrictEqual({
+          isValid: true,
+        });
 
         // Test exactly 1 year from now
         const oneYearFromNow = new Date(
@@ -665,7 +700,9 @@ describe("Finance Validation Functions", () => {
           now.getDate(),
         );
         const oneYearFromNowStr = oneYearFromNow.toISOString().split("T")[0];
-        expect(validateDate(oneYearFromNowStr)).toStrictEqual({ isValid: true });
+        expect(validateDate(oneYearFromNowStr)).toStrictEqual({
+          isValid: true,
+        });
       });
     });
   });

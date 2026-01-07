@@ -7,7 +7,6 @@ import {
 import { userAccountRegister } from "../../hooks/useUserAccountRegister";
 import { HookValidator } from "../../utils/hookValidation";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

@@ -686,7 +686,9 @@ describe("pages/finance/payments", () => {
       fireEvent.change(amountInput, { target: { value: "invalid" } });
 
       // Button text changes to "Pay $0.00" with invalid input (converts to 0)
-      const saveButton = screen.getByRole("button", { name: /pay \$|add payment/i });
+      const saveButton = screen.getByRole("button", {
+        name: /pay \$|add payment/i,
+      });
       fireEvent.click(saveButton);
 
       // Invalid input converts to 0, which is valid (non-negative), so insert is called

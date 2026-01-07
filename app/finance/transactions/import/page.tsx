@@ -69,7 +69,9 @@ export default function TransactionImporter() {
   const [isValidating, setIsValidating] = useState(false);
   const [loadingRows, setLoadingRows] = useState<Set<string>>(new Set()); // Track loading rows by guid
   const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if this is the first load
-  const [aiCategorizingRows, setAiCategorizingRows] = useState<Set<string>>(new Set()); // Track rows being AI-categorized
+  const [aiCategorizingRows, setAiCategorizingRows] = useState<Set<string>>(
+    new Set(),
+  ); // Track rows being AI-categorized
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
 
@@ -88,10 +90,8 @@ export default function TransactionImporter() {
     error: errorAccounts,
   } = useAccountFetch();
 
-  const {
-    data: fetchedCategories,
-    isSuccess: isSuccessCategories,
-  } = useCategoryFetch();
+  const { data: fetchedCategories, isSuccess: isSuccessCategories } =
+    useCategoryFetch();
 
   const { mutateAsync: insertTransaction } = useTransactionInsert();
   const { mutateAsync: deleteAllPendingTransactions } =
@@ -146,7 +146,9 @@ export default function TransactionImporter() {
         const transactionsWithGUID: Transaction[] = await Promise.all(
           fetchedPendingTransactions.map(async (transaction) => {
             // Use fast rule-based categorization
-            const category = getCategoryFromDescription(transaction.description || "");
+            const category = getCategoryFromDescription(
+              transaction.description || "",
+            );
 
             return {
               ...transaction,
@@ -158,13 +160,14 @@ export default function TransactionImporter() {
               categoryMetadata: {
                 source: "rule-based" as const,
                 timestamp: new Date(),
-                fallbackReason: "Initial load - click AI button to use AI categorization",
+                fallbackReason:
+                  "Initial load - click AI button to use AI categorization",
               },
               accountType: "debit" as AccountType,
               activeStatus: true,
               notes: "imported",
             };
-          })
+          }),
         );
 
         setTransactions(transactionsWithGUID);
@@ -217,7 +220,8 @@ export default function TransactionImporter() {
       handleError(error, "handleAddRow", false);
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
         // offline error handling
       }
@@ -244,7 +248,8 @@ export default function TransactionImporter() {
       refetchPendingTransactions();
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
         // offline error handling
       }
@@ -268,7 +273,9 @@ export default function TransactionImporter() {
       setShowSnackbar(true);
     } catch (error: unknown) {
       console.error("Error deleting pending transactions: ", error);
-      setMessage(`Error deleting pending transactions: ${getErrorMessage(error)}`);
+      setMessage(
+        `Error deleting pending transactions: ${getErrorMessage(error)}`,
+      );
       setShowSnackbar(true);
     } finally {
       setIsDeletingAll(false);
@@ -277,7 +284,11 @@ export default function TransactionImporter() {
 
   const handleSnackbarClose = () => setShowSnackbar(false);
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -407,11 +418,13 @@ export default function TransactionImporter() {
                 category: categorizationResult.category,
                 categoryMetadata: categorizationResult.metadata,
               }
-            : t
-        )
+            : t,
+        ),
       );
 
-      setMessage(`AI categorization completed: ${categorizationResult.category}`);
+      setMessage(
+        `AI categorization completed: ${categorizationResult.category}`,
+      );
       setShowSnackbar(true);
     } catch (error) {
       setMessage(`AI categorization failed: ${getErrorMessage(error)}`);
@@ -483,7 +496,8 @@ export default function TransactionImporter() {
       width: 150,
       renderCell: (params: GridRenderCellParams<Transaction>) => {
         const isAICategorizing = aiCategorizingRows.has(params.row.guid || "");
-        const isRuleBased = params.row.categoryMetadata?.source === "rule-based";
+        const isRuleBased =
+          params.row.categoryMetadata?.source === "rule-based";
 
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -514,7 +528,8 @@ export default function TransactionImporter() {
       headerName: "Amount",
       type: "number",
       width: 90,
-      renderCell: (params: GridRenderCellParams<Transaction>) => currencyFormat(params.value),
+      renderCell: (params: GridRenderCellParams<Transaction>) =>
+        currencyFormat(params.value),
       editable: true,
       cellClassName: "nowrap",
     },
@@ -528,14 +543,16 @@ export default function TransactionImporter() {
       field: "transactionType",
       headerName: "Type",
       width: 180,
-      renderCell: (params: GridRenderCellParams<Transaction>) => params.value || "undefined",
+      renderCell: (params: GridRenderCellParams<Transaction>) =>
+        params.value || "undefined",
       editable: true,
     },
     {
       field: "reoccurringType",
       headerName: "Reoccur",
       width: 150,
-      renderCell: (params: GridRenderCellParams<Transaction>) => params.value || "undefined",
+      renderCell: (params: GridRenderCellParams<Transaction>) =>
+        params.value || "undefined",
       editable: true,
     },
     {

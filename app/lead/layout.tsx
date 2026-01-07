@@ -6,7 +6,8 @@ export const metadata: Metadata = {
     default: "Vehicle Lead Form",
     template: "%s | Finance App",
   },
-  description: "Complete your vehicle information and contact details to receive a personalized quote.",
+  description:
+    "Complete your vehicle information and contact details to receive a personalized quote.",
 };
 
 export default function LeadLayout({

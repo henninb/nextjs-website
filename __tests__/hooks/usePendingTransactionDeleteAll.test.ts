@@ -5,7 +5,6 @@
 
 import { ConsoleSpy } from "../../testHelpers";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
@@ -104,7 +103,9 @@ describe("usePendingTransactionDeleteAll Business Logic", () => {
         await deleteAllPendingTransactions();
 
         const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toStrictEqual(["Deleting all pending transactions"]);
+        expect(calls.log[0]).toStrictEqual([
+          "Deleting all pending transactions",
+        ]);
       });
 
       it("should call the delete endpoint only once", async () => {

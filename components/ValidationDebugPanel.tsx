@@ -203,7 +203,9 @@ export default function ValidationDebugPanel({
             Message:
           </Typography>
           <Typography variant="body2" sx={{ mt: 0.5, fontFamily: "monospace" }}>
-            {error instanceof Error ? error.message : String(error) || "No message"}
+            {error instanceof Error
+              ? error.message
+              : String(error) || "No message"}
           </Typography>
         </Box>
 
@@ -346,8 +348,9 @@ export default function ValidationDebugPanel({
             >
               {JSON.stringify(
                 {
-                  name: error instanceof Error ? error.name : 'Unknown',
-                  message: error instanceof Error ? error.message : String(error),
+                  name: error instanceof Error ? error.name : "Unknown",
+                  message:
+                    error instanceof Error ? error.message : String(error),
                   status: (error as any).status,
                   statusText: (error as any).statusText,
                   validationErrors: (error as any).validationErrors,
@@ -379,7 +382,7 @@ export default function ValidationDebugPanel({
                   wordBreak: "break-word",
                 }}
               >
-                {error instanceof Error ? error.stack : ''}
+                {error instanceof Error ? error.stack : ""}
               </Box>
             </AccordionDetails>
           </Accordion>

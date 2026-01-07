@@ -9,10 +9,6 @@ export const metadata: Metadata = {
   description: "Access next-generation features and improved functionality.",
 };
 
-export default function V2Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function V2Layout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

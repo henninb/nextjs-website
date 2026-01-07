@@ -14,13 +14,13 @@ This document outlines the plan to merge duplicate test files across the codebas
 
 ### Finance Pages - Duplicates to Merge
 
-| Module | Files to Merge | Total Lines | Target File |
-|--------|----------------|-------------|-------------|
-| categories | 3 files (base, extended, merge) | 1,149 | categories.test.tsx |
-| configuration | 2 files (base, extended) | 1,061 | configuration.test.tsx |
-| descriptions | 2 files (base, merge) | 660 | descriptions.test.tsx |
-| payments | 2 files (base, extended) | 1,127 | payments.test.tsx |
-| transfers | 1 file (base) | 361 | transfers.test.tsx |
+| Module        | Files to Merge                  | Total Lines | Target File            |
+| ------------- | ------------------------------- | ----------- | ---------------------- |
+| categories    | 3 files (base, extended, merge) | 1,149       | categories.test.tsx    |
+| configuration | 2 files (base, extended)        | 1,061       | configuration.test.tsx |
+| descriptions  | 2 files (base, merge)           | 660         | descriptions.test.tsx  |
+| payments      | 2 files (base, extended)        | 1,127       | payments.test.tsx      |
+| transfers     | 1 file (base)                   | 361         | transfers.test.tsx     |
 
 **Note**: `-next.test.tsx` files will be kept separate temporarily as they test experimental/next-gen features.
 
@@ -35,6 +35,7 @@ This document outlines the plan to merge duplicate test files across the codebas
 ## Merge Strategy
 
 ### 1. Naming Convention
+
 - **Target**: Keep base name (e.g., `categories.test.tsx`)
 - **Removed**: `-extended`, `.merge` suffixes
 - **Preserved**: `-next` suffix (kept separate for now)
@@ -82,6 +83,7 @@ describe("ModuleName Page", () => {
 ### 3. Mock Consolidation
 
 Common mocks found across files:
+
 - `next/navigation` (useRouter)
 - `ResizeObserver` global mock
 - `@mui/x-data-grid` (DataGrid)
@@ -89,6 +91,7 @@ Common mocks found across files:
 - Hook mocks (useCategoryFetch, etc.)
 
 **Strategy**: Extract common mocks into:
+
 1. Shared `beforeAll()` setup for globals
 2. Shared `beforeEach()` for per-test mocks
 3. Helper functions for complex mock configurations
@@ -107,6 +110,7 @@ Common mocks found across files:
 ### Module 1: Categories (3 files → 1 file)
 
 **Files to Merge**:
+
 - `categories.test.tsx` (225 lines) - 8 test cases
 - `categories-extended.test.tsx` (738 lines) - ~40 test cases
 - `categories.merge.test.tsx` (186 lines) - 2 test cases
@@ -114,6 +118,7 @@ Common mocks found across files:
 **Target**: `categories.test.tsx`
 
 **Steps**:
+
 1. Create backup: `git stash push -m "pre-merge-categories"`
 2. Read all three files completely
 3. Identify duplicate test cases (if any)
@@ -138,12 +143,14 @@ Common mocks found across files:
 ### Module 2: Configuration (2 files → 1 file)
 
 **Files to Merge**:
+
 - `configuration.test.tsx` (377 lines) - Basic functionality
 - `configuration-extended.test.tsx` (684 lines) - Extended coverage
 
 **Target**: `configuration.test.tsx`
 
 **Steps**:
+
 1. Create backup: `git stash push -m "pre-merge-configuration"`
 2. Read both files completely
 3. Identify duplicate test cases
@@ -167,12 +174,14 @@ Common mocks found across files:
 ### Module 3: Descriptions (2 files → 1 file)
 
 **Files to Merge**:
+
 - `descriptions.test.tsx` (451 lines) - Basic functionality
 - `descriptions.merge.test.tsx` (209 lines) - Merge functionality
 
 **Target**: `descriptions.test.tsx`
 
 **Steps**:
+
 1. Create backup: `git stash push -m "pre-merge-descriptions"`
 2. Read both files completely
 3. Identify duplicate test cases
@@ -195,12 +204,14 @@ Common mocks found across files:
 ### Module 4: Payments (2 files → 1 file)
 
 **Files to Merge**:
+
 - `payments.test.tsx` (360 lines) - Basic functionality
 - `payments-extended.test.tsx` (767 lines) - Extended validation
 
 **Target**: `payments.test.tsx`
 
 **Steps**:
+
 1. Create backup: `git stash push -m "pre-merge-payments"`
 2. Read both files completely
 3. Identify duplicate test cases
@@ -225,12 +236,14 @@ Common mocks found across files:
 ### Module 5: Transfers (Already Single File)
 
 **Current State**:
+
 - `transfers.test.tsx` (361 lines) - Basic functionality
 - `transfers-next.test.tsx` (505 lines) - Next-gen (KEPT SEPARATE)
 
 **Action**: No merge needed. Verify current tests pass.
 
 **Steps**:
+
 1. Run tests: `npm test -- transfers.test.tsx`
 2. Verify all tests pass
 
@@ -253,6 +266,7 @@ Common mocks found across files:
 After merging each module:
 
 1. **Run module tests**:
+
    ```bash
    npm test -- <module>.test.tsx
    ```
@@ -274,6 +288,7 @@ After merging each module:
 After all merges complete:
 
 1. **Run full test suite**:
+
    ```bash
    npm test
    ```
@@ -316,6 +331,7 @@ git stash apply stash@{1}  # Second most recent
 ### Alternative: Branch Strategy
 
 Before starting merges:
+
 ```bash
 git checkout -b test-merge-cleanup
 # Do all merges on this branch
@@ -328,6 +344,7 @@ git checkout -b test-merge-cleanup
 ## Common Mock Patterns to Consolidate
 
 ### 1. Next.js Router Mock
+
 ```typescript
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
@@ -335,6 +352,7 @@ jest.mock("next/navigation", () => ({
 ```
 
 ### 2. ResizeObserver Mock
+
 ```typescript
 beforeAll(() => {
   global.ResizeObserver = class {
@@ -346,6 +364,7 @@ beforeAll(() => {
 ```
 
 ### 3. MUI DataGrid Mock (Complex - varies by test needs)
+
 ```typescript
 jest.mock("@mui/x-data-grid", () => ({
   DataGrid: ({ rows = [], columns = [], processRowUpdate }: any) => {
@@ -355,6 +374,7 @@ jest.mock("@mui/x-data-grid", () => ({
 ```
 
 ### 4. AuthProvider Mock
+
 ```typescript
 jest.mock("../../../components/AuthProvider", () => ({
   useAuth: jest.fn(),
@@ -390,6 +410,7 @@ jest.mock("../../../components/AuthProvider", () => ({
    - Verify coverage metrics maintained
 
 3. **Clean up**:
+
    ```bash
    # Remove stashes after validation
    git stash clear
@@ -446,15 +467,19 @@ jest.mock("../../../components/AuthProvider", () => ({
 ## Questions & Decisions Log
 
 ### Q1: Naming convention for merged files?
+
 **A**: Keep base name (e.g., `categories.test.tsx`)
 
 ### Q2: How to organize tests within merged files?
+
 **A**: Group by feature with describe blocks
 
 ### Q3: Should we deduplicate test utilities and mocks?
+
 **A**: Yes, consolidate common mocks
 
 ### Q4: What to do with -next.test.tsx files?
+
 **A**: Keep separate temporarily
 
 ---
@@ -490,14 +515,14 @@ jest.mock("../../../components/AuthProvider", () => ({
 
 ### Results by Module
 
-| Module | Before | After | Tests | Status |
-|--------|--------|-------|-------|--------|
-| descriptions | 2 files | 1 file | 18 tests | ✅ PASS |
-| categories | 3 files | 1 file | 39 tests | ✅ PASS |
-| configuration | 2 files | 1 file | 32 tests | ✅ PASS |
-| payments | 2 files | 1 file | 23 tests | ✅ PASS |
-| transfers | 1 file | 1 file | 13 tests | ✅ PASS |
-| **TOTAL** | **10 files** | **5 files** | **125 tests** | ✅ ALL PASS |
+| Module        | Before       | After       | Tests         | Status      |
+| ------------- | ------------ | ----------- | ------------- | ----------- |
+| descriptions  | 2 files      | 1 file      | 18 tests      | ✅ PASS     |
+| categories    | 3 files      | 1 file      | 39 tests      | ✅ PASS     |
+| configuration | 2 files      | 1 file      | 32 tests      | ✅ PASS     |
+| payments      | 2 files      | 1 file      | 23 tests      | ✅ PASS     |
+| transfers     | 1 file       | 1 file      | 13 tests      | ✅ PASS     |
+| **TOTAL**     | **10 files** | **5 files** | **125 tests** | ✅ ALL PASS |
 
 ### Success Criteria Met
 

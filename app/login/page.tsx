@@ -127,9 +127,12 @@ export default function LoginPage() {
     setErrorMessage("");
     const data = { email: email.trim(), password };
 
-    console.log('[LOGIN DEBUG] Email state:', email);
-    console.log('[LOGIN DEBUG] Email trimmed:', email.trim());
-    console.log('[LOGIN DEBUG] Data being sent:', { email: data.email, passwordLength: password.length });
+    console.log("[LOGIN DEBUG] Email state:", email);
+    console.log("[LOGIN DEBUG] Email trimmed:", email.trim());
+    console.log("[LOGIN DEBUG] Data being sent:", {
+      email: data.email,
+      passwordLength: password.length,
+    });
 
     try {
       await userLogin(data);

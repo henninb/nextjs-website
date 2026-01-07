@@ -34,7 +34,10 @@ import useAccountFetch from "../../../../hooks/useAccountFetch";
 import useCategoryFetch from "../../../../hooks/useCategoryFetch";
 import useDescriptionFetch from "../../../../hooks/useDescriptionFetch";
 import useAccountUsageTracking from "../../../../hooks/useAccountUsageTracking";
-import { getCategoryWithAI, createManualMetadata } from "../../../../utils/ai/categorization";
+import {
+  getCategoryWithAI,
+  createManualMetadata,
+} from "../../../../utils/ai/categorization";
 import AICategoryBadge from "../../../../components/AICategoryBadge";
 import { AccountType } from "../../../../model/AccountType";
 import Transaction from "../../../../model/Transaction";
@@ -510,7 +513,9 @@ export default function TransactionsByAccount({
     }
   };
 
-  const handleAddRow = async (newData: Transaction): Promise<Transaction | null> => {
+  const handleAddRow = async (
+    newData: Transaction,
+  ): Promise<Transaction | null> => {
     try {
       // Generate a secure UUID from the server before inserting
       const uuidResponse = await fetch("/api/uuid/generate", {
@@ -550,7 +555,8 @@ export default function TransactionsByAccount({
       handleError(error, "Add Transaction", false);
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
         console.log("Network error detected");
       }
@@ -600,7 +606,8 @@ export default function TransactionsByAccount({
         minWidth: 90,
         headerAlign: "right",
         align: "right",
-        renderCell: (params: GridRenderCellParams<Transaction>) => currencyFormat(params.value),
+        renderCell: (params: GridRenderCellParams<Transaction>) =>
+          currencyFormat(params.value),
         editable: true,
         cellClassName: "nowrap",
       },
@@ -626,7 +633,8 @@ export default function TransactionsByAccount({
           return (
             <Box display="flex" alignItems="center">
               {transactionStates.map((state: TransactionState) => {
-                let IconComponent: React.ComponentType<{ fontSize?: string }> = CheckCircleIcon;
+                let IconComponent: React.ComponentType<{ fontSize?: string }> =
+                  CheckCircleIcon;
                 let tooltipText: string = "";
 
                 // Map states to icons and tooltips
@@ -667,7 +675,8 @@ export default function TransactionsByAccount({
         headerName: "Type",
         flex: 0.8,
         minWidth: 100,
-        renderCell: (params: GridRenderCellParams<Transaction>) => params.value || "undefined",
+        renderCell: (params: GridRenderCellParams<Transaction>) =>
+          params.value || "undefined",
       },
       {
         field: "reoccurringType",
@@ -1086,7 +1095,9 @@ export default function TransactionsByAccount({
                         <DataGridBase
                           rows={filteredTransactions}
                           columns={columns}
-                          getRowId={(row: Transaction) => row.transactionId || 0}
+                          getRowId={(row: Transaction) =>
+                            row.transactionId || 0
+                          }
                           checkboxSelection={true}
                           rowSelection={true}
                           paginationModel={paginationModel}
@@ -1441,7 +1452,8 @@ export default function TransactionsByAccount({
             onChange={(value) => {
               setTransactionData((prev: Transaction) => ({
                 ...prev,
-                amount: typeof value === 'string' ? parseFloat(value) || 0 : value,
+                amount:
+                  typeof value === "string" ? parseFloat(value) || 0 : value,
               }));
             }}
             onBlur={() => {
@@ -1583,7 +1595,9 @@ export default function TransactionsByAccount({
                 prev
                   ? {
                       ...prev,
-                      accountNameOwner: newValue ? newValue.accountNameOwner : "",
+                      accountNameOwner: newValue
+                        ? newValue.accountNameOwner
+                        : "",
                       accountId: newValue ? newValue.accountId : 0,
                     }
                   : null,

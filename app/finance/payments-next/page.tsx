@@ -180,7 +180,11 @@ export default function PaymentsNextGen() {
     }
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
     setMessage(errorMessage);
     setShowSnackbar(true);
@@ -502,7 +506,8 @@ export default function PaymentsNextGen() {
             onChange={(value) =>
               setPaymentData((prev: Payment) => ({
                 ...prev,
-                amount: typeof value === 'string' ? parseFloat(value) || 0 : value
+                amount:
+                  typeof value === "string" ? parseFloat(value) || 0 : value,
               }))
             }
             onBlur={() => {

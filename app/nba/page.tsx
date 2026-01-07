@@ -151,7 +151,11 @@ export default function BasketballPage() {
       data={data}
       columns={columns}
       title="Wolves Basketball Scores"
-      getRowId={(row: { DateUtc: string; HomeTeam: string; AwayTeam: string }) => row.DateUtc + row.HomeTeam + row.AwayTeam}
+      getRowId={(row: {
+        DateUtc: string;
+        HomeTeam: string;
+        AwayTeam: string;
+      }) => row.DateUtc + row.HomeTeam + row.AwayTeam}
       sport="basketball"
     />
   );

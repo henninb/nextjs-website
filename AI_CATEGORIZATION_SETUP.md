@@ -104,6 +104,7 @@ The system will automatically detect if the API key is configured. Check the bro
 ## 🔧 Current Implementation Status
 
 ### ✅ Implemented
+
 - Transaction metadata model
 - AI categorization utility with fallback
 - Server-side API endpoint (`/api/categorize`)
@@ -183,6 +184,7 @@ Display with Badge
 **Cause:** API key not configured or AI code not uncommented
 
 **Solution:**
+
 1. Verify `PERPLEXITY_API_KEY` in `.env.local`
 2. Restart dev server
 3. Check `app/api/categorize/route.ts` - uncomment AI integration code
@@ -192,6 +194,7 @@ Display with Badge
 **Cause:** Incorrect or expired API key
 
 **Solution:**
+
 1. Verify your API key at [Perplexity Settings](https://www.perplexity.ai/settings/api)
 2. Generate a new key if needed
 3. Update `.env.local` and Vercel environment variables
@@ -201,6 +204,7 @@ Display with Badge
 **Cause:** Environment variable not set in Vercel
 
 **Solution:**
+
 1. Check Vercel Dashboard → Settings → Environment Variables
 2. Ensure `PERPLEXITY_API_KEY` is set for all environments
 3. Redeploy the application
@@ -210,6 +214,7 @@ Display with Badge
 **Cause:** Too many API calls
 
 **Solution:**
+
 1. Enable caching in the categorization utility
 2. Set up rate limiting in Perplexity dashboard
 3. Consider using rule-based for common merchants

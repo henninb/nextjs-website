@@ -16,6 +16,7 @@ API routes **CAN and SHOULD** be migrated to App Router. In App Router, they're 
 ### API Routes Inventory (15 total)
 
 **Pages Router Pattern (11 routes):**
+
 ```
 pages/api/
 ├── nba.js              ❌ Old pattern
@@ -32,6 +33,7 @@ pages/api/
 ```
 
 **App Router Pattern (3 routes):**
+
 ```
 pages/api/
 ├── celsius.js          ✅ Already uses App Router pattern!
@@ -46,29 +48,28 @@ pages/api/
 ## 🔍 Pattern Comparison
 
 ### Pages Router API Route (Old)
+
 ```typescript
 // pages/api/hello.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
-export default function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method === 'GET') {
-    res.status(200).json({ message: 'Hello' });
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method === "GET") {
+    res.status(200).json({ message: "Hello" });
   } else {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: "Method not allowed" });
   }
 }
 ```
 
 ### App Router Route Handler (New)
+
 ```typescript
 // app/api/hello/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  return NextResponse.json({ message: 'Hello' });
+  return NextResponse.json({ message: "Hello" });
 }
 
 export async function POST(request: Request) {
@@ -82,26 +83,31 @@ export async function POST(request: Request) {
 ## 🚀 Benefits of Migration
 
 ### 1. **Explicit HTTP Methods**
+
 - ✅ Clear separation: `GET()`, `POST()`, `PUT()`, `DELETE()`
 - ✅ No need for `if (req.method === 'GET')` checks
 - ✅ Better code organization
 
 ### 2. **Modern Web Standards**
+
 - ✅ Uses Web `Request` and `Response` APIs
 - ✅ Better compatibility with Edge Runtime
 - ✅ Native streaming support
 
 ### 3. **Better TypeScript Support**
+
 - ✅ Stronger typing
 - ✅ Better IDE autocomplete
 - ✅ Fewer type assertions needed
 
 ### 4. **Consistency**
+
 - ✅ Same patterns as pages (all in `app/`)
 - ✅ Single routing system
 - ✅ Easier to maintain
 
 ### 5. **New Features**
+
 - ✅ Built-in streaming responses
 - ✅ Better middleware integration
 - ✅ Improved caching controls
@@ -114,6 +120,7 @@ export async function POST(request: Request) {
 ### Example 1: Simple GET Route
 
 **Before (Pages Router):**
+
 ```javascript
 // pages/api/celsius.js
 export default function handler(req, res) {
@@ -124,15 +131,16 @@ export default function handler(req, res) {
 ```
 
 **After (App Router):**
+
 ```javascript
 // app/api/celsius/route.js
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET(request) {
   const requestBody = await request.json();
   const fahrenheit = requestBody.fahrenheit;
   const celsius = (5.0 / 9.0) * (fahrenheit - 32.0);
-  
+
   return NextResponse.json({ celsius });
 }
 ```
@@ -140,26 +148,28 @@ export async function GET(request) {
 ### Example 2: Multiple Methods
 
 **Before (Pages Router):**
+
 ```javascript
 // pages/api/lead.js
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const data = req.body;
     // Process lead
     res.status(200).json({ success: true });
-  } else if (req.method === 'GET') {
+  } else if (req.method === "GET") {
     // Get leads
     res.status(200).json({ leads: [] });
   } else {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: "Method not allowed" });
   }
 }
 ```
 
 **After (App Router):**
+
 ```javascript
 // app/api/lead/route.js
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function POST(request) {
   const data = await request.json();
@@ -176,6 +186,7 @@ export async function GET(request) {
 ### Example 3: Dynamic Routes
 
 **Before (Pages Router):**
+
 ```javascript
 // pages/api/uuid/generate.ts
 export default function handler(req, res) {
@@ -185,9 +196,10 @@ export default function handler(req, res) {
 ```
 
 **After (App Router):**
+
 ```typescript
 // app/api/uuid/generate/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET() {
   const uuid = crypto.randomUUID();
@@ -200,18 +212,22 @@ export async function GET() {
 ## ⚠️ Important Differences
 
 ### 1. File Naming
+
 - **Pages Router**: `pages/api/hello.ts`
 - **App Router**: `app/api/hello/route.ts` ← Note: `/route.ts` suffix!
 
 ### 2. Export Pattern
+
 - **Pages Router**: `export default function handler()`
 - **App Router**: `export async function GET()` (named exports)
 
 ### 3. Request/Response
+
 - **Pages Router**: `NextApiRequest` / `NextApiResponse`
 - **App Router**: Web `Request` / `Response` or `NextResponse`
 
 ### 4. Method Handling
+
 - **Pages Router**: Manual `if (req.method === 'GET')`
 - **App Router**: Separate function per method
 
@@ -220,16 +236,19 @@ export async function GET() {
 ## 🎯 Migration Strategy
 
 ### Phase 1: Analysis ✅
+
 - [x] Identify all API routes (15 routes found)
 - [x] Categorize by pattern (11 old, 3 hybrid, 1 edge)
 - [x] Document differences
 
 ### Phase 2: Preparation
+
 - [ ] Create `app/api/` directory structure
 - [ ] Set up TypeScript types for new pattern
 - [ ] Plan route-by-route migration order
 
 ### Phase 3: Migration
+
 - [ ] Migrate simple GET routes first (health, uuid)
 - [ ] Migrate conversion routes (celsius, fahrenheit)
 - [ ] Migrate sports data routes (nfl, nba, mlb, nhl)
@@ -237,12 +256,14 @@ export async function GET() {
 - [ ] Migrate complex routes (lead, weather)
 
 ### Phase 4: Verification
+
 - [ ] Test each migrated route
 - [ ] Update any frontend code that calls these APIs
 - [ ] Run full test suite
 - [ ] Verify in production
 
 ### Phase 5: Cleanup
+
 - [ ] Delete old `pages/api/` routes
 - [ ] Update documentation
 - [ ] Update deployment configs if needed
@@ -255,11 +276,11 @@ For each API route:
 
 1. ✅ **Create directory**: `app/api/[route-name]/`
 2. ✅ **Create file**: `app/api/[route-name]/route.ts` or `route.js`
-3. ✅ **Update imports**: 
+3. ✅ **Update imports**:
    - Remove `NextApiRequest`, `NextApiResponse`
    - Add `NextResponse` if needed
 4. ✅ **Split by method**: Create separate `GET`, `POST`, etc. functions
-5. ✅ **Update request handling**: 
+5. ✅ **Update request handling**:
    - `req.body` → `await request.json()`
    - `req.query` → `request.nextUrl.searchParams`
    - `req.headers` → `request.headers`
@@ -274,16 +295,16 @@ For each API route:
 
 ## 📊 Estimated Effort
 
-| Route Type | Count | Complexity | Est. Time |
-|------------|-------|------------|-----------|
-| Simple GET | 2 | Low | 10 min each |
-| Conversion | 2 | Low | 10 min each |
-| Sports data | 4 | Medium | 15 min each |
-| Analytics | 3 | Medium | 15 min each |
-| Complex (lead) | 1 | High | 30 min |
-| Weather | 1 | Medium | 20 min |
-| UUID | 1 | Low | 10 min |
-| Health | 1 | Low | 10 min |
+| Route Type     | Count | Complexity | Est. Time   |
+| -------------- | ----- | ---------- | ----------- |
+| Simple GET     | 2     | Low        | 10 min each |
+| Conversion     | 2     | Low        | 10 min each |
+| Sports data    | 4     | Medium     | 15 min each |
+| Analytics      | 3     | Medium     | 15 min each |
+| Complex (lead) | 1     | High       | 30 min      |
+| Weather        | 1     | Medium     | 20 min      |
+| UUID           | 1     | Low        | 10 min      |
+| Health         | 1     | Low        | 10 min      |
 
 **Total Estimated Time**: ~3-4 hours for complete migration
 
@@ -305,22 +326,20 @@ For each API route:
 ### Migration Priority
 
 **High Priority** (migrate first):
+
 1. Routes already using App Router patterns (celsius, fahrenheit, lead)
 2. Simple routes (health, uuid/generate)
 
-**Medium Priority**:
-3. Sports data routes (nfl, nba, mlb, nhl)
-4. Player analytics routes
+**Medium Priority**: 3. Sports data routes (nfl, nba, mlb, nhl) 4. Player analytics routes
 
-**Lower Priority** (but still important):
-5. Weather route
-6. Remaining player routes
+**Lower Priority** (but still important): 5. Weather route 6. Remaining player routes
 
 ---
 
 ## 🎉 Conclusion
 
 API routes **CAN** be migrated to App Router and **SHOULD** be migrated for:
+
 - ✅ Modern architecture
 - ✅ Better developer experience
 - ✅ Consistency with App Router pages
@@ -330,6 +349,5 @@ API routes **CAN** be migrated to App Router and **SHOULD** be migrated for:
 
 ---
 
-*Analysis completed by Claude Code*  
-*Date: December 9, 2025*
-
+_Analysis completed by Claude Code_  
+_Date: December 9, 2025_

@@ -269,7 +269,10 @@ export default function TransfersNextGen() {
     }
   }, [showModalAdd]);
 
-  const handleSourceAccountChange = (_e: React.SyntheticEvent, newValue: Account | null) => {
+  const handleSourceAccountChange = (
+    _e: React.SyntheticEvent,
+    newValue: Account | null,
+  ) => {
     setSelectedSourceAccount(newValue);
     setTransferData((prev) => ({
       ...prev,
@@ -307,7 +310,11 @@ export default function TransfersNextGen() {
     }
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
     setMessage(errorMessage);
     setShowSnackbar(true);
@@ -617,7 +624,8 @@ export default function TransfersNextGen() {
             onChange={(value) =>
               setTransferData((prev: Transfer) => ({
                 ...prev,
-                amount: typeof value === 'string' ? parseFloat(value) || 0 : value
+                amount:
+                  typeof value === "string" ? parseFloat(value) || 0 : value,
               }))
             }
             onBlur={() => {

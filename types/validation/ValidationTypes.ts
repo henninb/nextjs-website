@@ -5,7 +5,7 @@
  * 'any' types in the validation system.
  */
 
-import { ValidationError } from '../../utils/validation/schemas';
+import { ValidationError } from "../../utils/validation/schemas";
 
 /**
  * Generic validation result type
@@ -63,14 +63,14 @@ export interface ArrayValidationResult<T> {
  * Represents a function that validates data and returns a ValidationResult
  */
 export type ValidatorFunction<TInput, TOutput = TInput> = (
-  data: TInput
+  data: TInput,
 ) => ValidationResult<TOutput>;
 
 /**
  * Type guard to check if a validation result succeeded
  */
 export function isValidationSuccess<T>(
-  result: ValidationResult<T>
+  result: ValidationResult<T>,
 ): result is ValidationResult<T> & { success: true; data: T } {
   return result.success && result.data !== undefined;
 }
@@ -79,7 +79,10 @@ export function isValidationSuccess<T>(
  * Type guard to check if a validation result failed
  */
 export function isValidationFailure<T>(
-  result: ValidationResult<T>
-): result is ValidationResult<T> & { success: false; errors: ValidationError[] } {
+  result: ValidationResult<T>,
+): result is ValidationResult<T> & {
+  success: false;
+  errors: ValidationError[];
+} {
   return !result.success && result.errors !== undefined;
 }

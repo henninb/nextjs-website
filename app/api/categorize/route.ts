@@ -58,10 +58,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const apiKey = process.env.PERPLEXITY_API_KEY;
     const isApiConfigured = apiKey && apiKey !== "your-perplexity-api-key-here";
 
-    console.log('[AI Categorization] API key check:', {
+    console.log("[AI Categorization] API key check:", {
       hasKey: !!apiKey,
       keyPrefix: apiKey?.substring(0, 8),
-      isConfigured: isApiConfigured
+      isConfigured: isApiConfigured,
     });
 
     if (isApiConfigured) {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           description,
           amount,
           availableCategories,
-          similarTransactions || []
+          similarTransactions || [],
         );
 
         // Retry logic with exponential backoff for rate limiting
@@ -82,28 +82,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         while (attempt < maxRetries) {
           try {
             // Call Perplexity API
-            const response = await fetch('https://api.perplexity.ai/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
+            const response = await fetch(
+              "https://api.perplexity.ai/chat/completions",
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${apiKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  model: "sonar-pro",
+                  messages: [
+                    {
+                      role: "system",
+                      content:
+                        "You are a financial categorization expert. Respond with only the category name.",
+                    },
+                    {
+                      role: "user",
+                      content: prompt,
+                    },
+                  ],
+                  temperature: 0.2,
+                  max_tokens: 50,
+                }),
               },
-              body: JSON.stringify({
-                model: 'sonar-pro',
-                messages: [
-                  {
-                    role: 'system',
-                    content: 'You are a financial categorization expert. Respond with only the category name.'
-                  },
-                  {
-                    role: 'user',
-                    content: prompt
-                  }
-                ],
-                temperature: 0.2,
-                max_tokens: 50,
-              }),
-            });
+            );
 
             // Handle rate limiting (429)
             if (response.status === 429) {
@@ -111,56 +115,71 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               if (attempt < maxRetries) {
                 // Exponential backoff: 1s, 2s, 4s
                 const delay = Math.pow(2, attempt - 1) * 1000;
-                console.warn(`[AI Categorization] Rate limited (429), retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`);
-                await new Promise(resolve => setTimeout(resolve, delay));
+                console.warn(
+                  `[AI Categorization] Rate limited (429), retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
                 continue;
               } else {
-                console.error('[AI Categorization] Rate limited after max retries, falling back to rule-based');
+                console.error(
+                  "[AI Categorization] Rate limited after max retries, falling back to rule-based",
+                );
                 break;
               }
             }
 
             if (response.ok) {
               const data = await response.json();
-              const aiCategory = parseAIResponse(data.choices[0]?.message?.content || '');
+              const aiCategory = parseAIResponse(
+                data.choices[0]?.message?.content || "",
+              );
 
               if (validateCategory(aiCategory, availableCategories)) {
                 const result: CategorizationResponse = {
                   category: aiCategory,
                   metadata: {
-                    source: 'ai',
-                    aiModel: 'sonar-pro',
+                    source: "ai",
+                    aiModel: "sonar-pro",
                     timestamp: new Date(),
                     similarTransactionsUsed: similarTransactions?.length || 0,
                   },
                   success: true,
                 };
 
-                console.log('[AI Categorization] Success:', { description, category: aiCategory });
+                console.log("[AI Categorization] Success:", {
+                  description,
+                  category: aiCategory,
+                });
                 return NextResponse.json(result, { status: 200 });
               } else {
-                console.warn('[AI Categorization] Invalid category returned:', aiCategory);
+                console.warn(
+                  "[AI Categorization] Invalid category returned:",
+                  aiCategory,
+                );
                 break;
               }
             } else {
               const errorText = await response.text();
-              console.error('[AI Categorization] API error:', {
+              console.error("[AI Categorization] API error:", {
                 status: response.status,
                 statusText: response.statusText,
                 headers: Object.fromEntries(response.headers.entries()),
-                body: errorText.substring(0, 500)
+                body: errorText.substring(0, 500),
               });
               lastError = `API error: ${response.status}`;
               break;
             }
           } catch (fetchError) {
-            lastError = fetchError instanceof Error ? fetchError.message : String(fetchError);
-            console.error('[AI Categorization] Fetch exception:', fetchError);
+            lastError =
+              fetchError instanceof Error
+                ? fetchError.message
+                : String(fetchError);
+            console.error("[AI Categorization] Fetch exception:", fetchError);
             break;
           }
         }
       } catch (error) {
-        console.error('[AI Categorization] Exception:', error);
+        console.error("[AI Categorization] Exception:", error);
         // Fall through to rule-based categorization
       }
     } else {
@@ -186,7 +205,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       success: true,
     };
 
-    console.log('[AI Categorization] Using fallback:', { description, category, reason: fallbackReason });
+    console.log("[AI Categorization] Using fallback:", {
+      description,
+      category,
+      reason: fallbackReason,
+    });
 
     return NextResponse.json(result, {
       status: 200,

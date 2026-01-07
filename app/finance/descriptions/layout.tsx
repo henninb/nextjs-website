@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Transaction Descriptions",
-  description: "Manage transaction descriptions and merchant names. Organize and categorize your transaction history.",
+  description:
+    "Manage transaction descriptions and merchant names. Organize and categorize your transaction history.",
 };
 
 export default function DescriptionsLayout({

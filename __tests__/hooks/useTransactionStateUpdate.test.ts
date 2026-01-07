@@ -7,7 +7,6 @@ import { createFetchMock, ConsoleSpy } from "../../testHelpers";
 import { TransactionState } from "../../model/TransactionState";
 import Transaction from "../../model/Transaction";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

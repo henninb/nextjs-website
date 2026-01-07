@@ -3,7 +3,8 @@ import { Container, Typography, Box, Paper } from "@mui/material";
 
 export const metadata: Metadata = {
   title: "Proxmox Basics - How-To Guide",
-  description: "Essential Proxmox commands for VM management and system administration",
+  description:
+    "Essential Proxmox commands for VM management and system administration",
 };
 
 export default function ProxmoxPage() {

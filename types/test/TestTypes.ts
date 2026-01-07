@@ -5,9 +5,9 @@
  * to replace 'any' types in test files.
  */
 
-import { ReactNode, ReactElement } from 'react';
-import { QueryClient } from '@tanstack/react-query';
-import { RenderOptions, RenderResult } from '@testing-library/react';
+import { ReactNode, ReactElement } from "react";
+import { QueryClient } from "@tanstack/react-query";
+import { RenderOptions, RenderResult } from "@testing-library/react";
 
 /**
  * Test wrapper component props
@@ -21,15 +21,16 @@ export interface TestWrapperProps {
  * Use this for creating React Query test wrappers
  */
 export type QueryClientWrapper = (
-  queryClient: QueryClient
+  queryClient: QueryClient,
 ) => React.FC<TestWrapperProps>;
 
 /**
  * Generic mock function type with proper typing
  * Use this instead of jest.Mock<any, any>
  */
-export type MockedFunction<T extends (...args: Parameters<T>) => ReturnType<T>> =
-  jest.MockedFunction<T>;
+export type MockedFunction<
+  T extends (...args: Parameters<T>) => ReturnType<T>,
+> = jest.MockedFunction<T>;
 
 /**
  * Mock fetch response type
@@ -56,7 +57,7 @@ export interface MockResponse {
 /**
  * Custom render options for React Testing Library
  */
-export interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+export interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   queryClient?: QueryClient;
   wrapper?: React.ComponentType<TestWrapperProps>;
 }
@@ -120,5 +121,5 @@ export interface MockConsole {
  */
 export type TestRender = (
   ui: ReactElement,
-  options?: CustomRenderOptions
+  options?: CustomRenderOptions,
 ) => CustomRenderResult;

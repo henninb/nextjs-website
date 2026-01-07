@@ -22,7 +22,11 @@ export const deactivateAccount = async (
   payload: Account,
 ): Promise<Account | null> => {
   // Validate that account identifier exists
-  HookValidator.validateDelete(payload, "accountNameOwner", "deactivateAccount");
+  HookValidator.validateDelete(
+    payload,
+    "accountNameOwner",
+    "deactivateAccount",
+  );
 
   // Sanitize account name for URL
   const sanitizedAccountName = InputSanitizer.sanitizeAccountName(

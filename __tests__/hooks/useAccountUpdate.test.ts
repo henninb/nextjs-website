@@ -44,7 +44,6 @@ import {
 import { updateAccount } from "../../hooks/useAccountUpdate";
 import { HookValidator } from "../../utils/hookValidation";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

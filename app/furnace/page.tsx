@@ -29,7 +29,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 const FurnacePage: NextPage = () => {
   return (
     <>
-
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>

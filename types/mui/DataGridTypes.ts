@@ -13,8 +13,8 @@ import {
   GridCallbackDetails,
   GridRowSelectionModel,
   GridPaginationModel,
-} from '@mui/x-data-grid';
-import * as React from 'react';
+} from "@mui/x-data-grid";
+import * as React from "react";
 
 /**
  * Typed render cell params for DataGrid columns
@@ -49,7 +49,7 @@ export type TypedRenderCellParams<T extends GridValidRowModel> =
  */
 export type TypedGridColDef<T extends GridValidRowModel> = Omit<
   MuiGridColDef,
-  'renderCell'
+  "renderCell"
 > & {
   renderCell?: (params: TypedRenderCellParams<T>) => React.ReactNode;
 };
@@ -70,7 +70,7 @@ export type {
  */
 export type RowSelectionChangeHandler = (
   model: GridRowSelectionModel,
-  details?: GridCallbackDetails
+  details?: GridCallbackDetails,
 ) => void;
 
 /**
@@ -83,5 +83,5 @@ export type PaginationChangeHandler = (model: GridPaginationModel) => void;
  */
 export type ProcessRowUpdateHandler<T extends GridValidRowModel> = (
   newRow: T,
-  oldRow: T
+  oldRow: T,
 ) => Promise<T> | T;

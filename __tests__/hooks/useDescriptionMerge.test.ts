@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Module under test
 import useDescriptionMerge from "../../hooks/useDescriptionMerge";
 
-
 // Mock the useAuth hook
 
 // Mock CSRF utilities

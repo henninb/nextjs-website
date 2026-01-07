@@ -109,6 +109,7 @@ Next.js 13+ supports running both routers simultaneously:
 ### ✅ Phase 1: COMPLETED (December 8, 2025)
 
 **Completed Tasks:**
+
 - ✅ Created `/app` directory with foundational structure
 - ✅ Set up root layout (`app/layout.tsx`) with MUI theme, providers, and global styles
 - ✅ Created client-side providers wrapper (`app/providers.tsx`) for React Query, Auth, and UI Context
@@ -122,6 +123,7 @@ Next.js 13+ supports running both routers simultaneously:
 - ✅ Smoke tested in development - confirmed working
 
 **Key Changes Made:**
+
 1. **Component Updates**: Added `"use client"` to Layout, AuthProvider, ErrorBoundary, and loading component
 2. **TypeScript Fixes**: Resolved nullable type issues in:
    - `AccountCard.tsx` (validationDate handling)
@@ -286,6 +288,7 @@ Why these pages?
 **Page Migrated**: `/tools` (Developer Tools & Utilities)
 
 **Implementation Details**:
+
 - **Files Created**:
   - `app/tools/page.tsx` - Client Component with interactive tool cards
   - `app/tools/layout.tsx` - Metadata configuration for SEO
@@ -294,6 +297,7 @@ Why these pages?
 - **Content**: 10 external tools organized into 4 categories (Calculators, Network, Development, Utilities)
 
 **Testing Results**:
+
 - ✅ All 2561 tests passed (139 test suites)
 - ✅ Production build successful (8.7s compile time)
 - ✅ Route visible in build output under "Route (app)"
@@ -301,6 +305,7 @@ Why these pages?
 - ✅ TypeScript compilation successful
 
 **Key Learnings**:
+
 1. **Client Component Choice**: Used 'use client' because the page has interactive cards with onClick handlers
 2. **Metadata API**: Successfully implemented SEO metadata in layout.tsx (Next.js 16 pattern)
 3. **Build Performance**: No impact on build time, smooth integration
@@ -310,6 +315,7 @@ Why these pages?
 **Issues Encountered**: None
 
 **Next Steps**:
+
 1. Monitor `/tools` page in production for 1-2 weeks
 2. Verify manually that all external links work correctly
 3. Check SEO metadata in browser dev tools
@@ -374,6 +380,7 @@ All 4 sports data pages migrated together as Client Components:
 **Page Migrated**: `/temperature` (Temperature Converter)
 
 **Implementation Details**:
+
 - **Files Created**:
   - `app/temperature/page.tsx` - Client Component with temperature converters and weather data
   - `app/temperature/layout.tsx` - Metadata configuration for SEO
@@ -387,6 +394,7 @@ All 4 sports data pages migrated together as Client Components:
   - Real-time result display with snackbar notifications
 
 **Testing Results**:
+
 - ✅ All 2,561 tests passed (139 test suites)
 - ✅ Production build successful (8.7s compile time)
 - ✅ Route visible under "Route (app)" in build output
@@ -394,6 +402,7 @@ All 4 sports data pages migrated together as Client Components:
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Client Component Required**: Used 'use client' for useState, useEffect, useCallback hooks
 2. **API Integration**: Client-side API calls to `/api/celsius`, `/api/fahrenheit`, `/api/weather` work seamlessly
 3. **TypeScript Migration**: Successfully converted from JSX to TSX with proper typing
@@ -403,6 +412,7 @@ All 4 sports data pages migrated together as Client Components:
 **Migration Time**: ~15 minutes
 
 **Next Steps**:
+
 1. Manually test `/temperature` page at http://localhost:3000/temperature
 2. Verify temperature conversions work correctly
 3. Check weather data loads properly
@@ -416,6 +426,7 @@ All 4 sports data pages migrated together as Client Components:
 **Page Migrated**: `/howto` (How-To Guides Index)
 
 **Implementation Details**:
+
 - **Files Created**:
   - `app/howto/page.tsx` - Client Component with interactive guide cards
   - `app/howto/layout.tsx` - Metadata configuration for SEO
@@ -429,6 +440,7 @@ All 4 sports data pages migrated together as Client Components:
   - Responsive grid layout (1-4 columns based on screen size)
 
 **Testing Results**:
+
 - ✅ All 2,561 tests passed (139 test suites)
 - ✅ Production build successful (8.7s compile time)
 - ✅ Route visible under "Route (app)" in build output
@@ -436,6 +448,7 @@ All 4 sports data pages migrated together as Client Components:
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Icon Availability**: MUI doesn't have all icons (e.g., no `Docker` icon) - used alternatives like `Dns` for Docker
 2. **Next.js Link Pattern**: Used `Link` with `legacyBehavior` and `passHref` for proper MUI Card integration
 3. **Fast Migration**: Third migration took ~10 minutes - patterns are well established
@@ -445,6 +458,7 @@ All 4 sports data pages migrated together as Client Components:
 **Migration Time**: ~10 minutes
 
 **Next Steps**:
+
 1. Manually test `/howto` page at http://localhost:3000/howto
 2. Verify all 8 guide links navigate correctly
 3. Test responsive layout on different screen sizes
@@ -458,6 +472,7 @@ All 4 sports data pages migrated together as Client Components:
 **Pages Migrated**: 7 how-to guide pages in batch
 
 **Implementation Details**:
+
 - **Files Created** (all Server Components):
   - `app/howto/docker/page.tsx` - Full Docker command reference with 13 commands
   - `app/howto/cloudflare/page.tsx` - Placeholder for future content
@@ -471,6 +486,7 @@ All 4 sports data pages migrated together as Client Components:
 - **Styling**: Modern MUI Paper components with dark code blocks for commands
 
 **Testing Results**:
+
 - ✅ All 2,561 tests passed (139 test suites)
 - ✅ Production build successful
 - ✅ All 11 App Router routes visible in build output
@@ -478,6 +494,7 @@ All 4 sports data pages migrated together as Client Components:
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Batch Migration Efficiency**: Migrated 7 pages in ~15 minutes using established patterns
 2. **Server Components Advantage**: Static content pages don't need 'use client' directive
 3. **Code Block Styling**: Consistent dark theme code blocks with MUI `sx` prop
@@ -487,11 +504,13 @@ All 4 sports data pages migrated together as Client Components:
 **Migration Time**: ~15 minutes for all 7 pages
 
 **Content Quality**:
+
 - **Docker page**: Complete reference with 11 core commands + 2 Docker Compose commands
 - **Proxmox page**: 6 essential VM management commands
 - **Other 5 pages**: Clean placeholders ready for future content expansion
 
 **Next Steps**:
+
 1. Manually test all how-to guide pages
 2. Verify navigation from index page works correctly
 3. Check code block rendering and syntax
@@ -505,6 +524,7 @@ All 4 sports data pages migrated together as Client Components:
 **Pages Migrated**: 4 sports data pages (NHL, NBA, NFL, MLB)
 
 **Implementation Details**:
+
 - **Files Created** (all Client Components):
   - `app/nhl/page.tsx` + `app/nhl/layout.tsx` - Minnesota Wild hockey scores
   - `app/nba/page.tsx` + `app/nba/layout.tsx` - Minnesota Timberwolves basketball scores
@@ -517,6 +537,7 @@ All 4 sports data pages migrated together as Client Components:
   - MLB: Custom fetch with useEffect (includes data transformation and deduplication)
 
 **Key Features**:
+
 - Dynamic imports for SportsDataGrid component with loading states
 - Custom column definitions with renderCell for formatting
 - Team-specific emojis (🏒, 🏀, 🏈, ⚾)
@@ -525,6 +546,7 @@ All 4 sports data pages migrated together as Client Components:
 - Retry functionality for failed API calls
 
 **Testing Results**:
+
 - ✅ All 2,561 tests passed (139 test suites)
 - ✅ Production build successful (10.6s compile time)
 - ✅ All 15 App Router routes visible in build output
@@ -532,6 +554,7 @@ All 4 sports data pages migrated together as Client Components:
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Dynamic Imports**: Successfully migrated dynamic imports to App Router
 2. **TypeScript Type Annotations**: Added proper `any` types for params and rows
 3. **getRowId Signature**: MLB page required fix - getRowId expects single parameter, not (row, index)
@@ -541,12 +564,14 @@ All 4 sports data pages migrated together as Client Components:
 **Migration Time**: ~20 minutes for all 4 pages
 
 **API Integration**:
+
 - `/api/nhl` - Hockey game data
 - `/api/nba` - Basketball game data
 - `/api/nfl` - Football game data
 - `/api/mlb` - Baseball game data with complex nested structure
 
 **Next Steps**:
+
 1. Manually test all 4 sports pages
 2. Verify live data fetching works correctly
 3. Check SportsDataGrid rendering and interactions
@@ -583,6 +608,7 @@ Strategy:
 **Pages Migrated**: Blog system with 3 routes (index, slug, topics)
 
 **Implementation Details**:
+
 - **Files Created**:
   - `app/blog/page.tsx` - Server Component fetching all posts with ISR (1h revalidate)
   - `app/blog/BlogIndexClient.tsx` - Client Component with topic filtering and featured post
@@ -605,6 +631,7 @@ Strategy:
 - **Content**: 7 blog posts across 5 topics (nextjs, typescript, webdev, docker, ai)
 
 **Testing Results**:
+
 - ✅ All 2,561 tests passed (139 test suites)
 - ✅ Production build successful (10.6s compile time)
 - ✅ All routes visible in build output:
@@ -615,6 +642,7 @@ Strategy:
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **MDXRemote SSR Challenge**: MDXRemote components with hooks caused "Cannot read properties of null (reading 'useState')" during SSG
 2. **Solution**: Used dynamic imports with `ssr: false` in a Client Component wrapper to prevent server-side rendering of MDX
 3. **Theme Provider**: Blog pages needed their own ThemeProvider since they're not finance pages
@@ -624,6 +652,7 @@ Strategy:
 7. **Pattern Established**: Server Component (data) → Client Wrapper (ssr:false) → Client Component (interactive)
 
 **Technical Challenges Resolved**:
+
 1. **React hydration error**: Fixed by removing nested ThemeProvider from blog client components
 2. **useTheme() without provider**: Added blog-specific ThemeProvider in layout
 3. **SSR with hooks**: Disabled SSR for MDX rendering component using dynamic import
@@ -641,6 +670,7 @@ Strategy:
 - [ ] **MONITOR**: Use blog routes for 2-3 weeks before proceeding - **IN PROGRESS**
 
 **Next Steps**:
+
 1. Manually test all 3 blog routes in browser
 2. Verify MDX content renders properly with code blocks, headings, etc.
 3. Test topic filtering on index page
@@ -677,6 +707,7 @@ Strategy:
 **Page Migrated**: `/` (Home Page - Portfolio/Personal Website)
 
 **Implementation Details**:
+
 - **Files Created**:
   - `app/page.tsx` - Server Component with complete portfolio page
 - **Files Removed**:
@@ -690,6 +721,7 @@ Strategy:
   - Footer with email and social media links
 
 **Testing Results**:
+
 - ✅ All 2,559 tests passed (no new failures)
 - ✅ Production build successful (11.5s compile time)
 - ✅ Route visible as static route in build output: `○ /`
@@ -697,6 +729,7 @@ Strategy:
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Perfect for Server Components**: Static portfolio content = ideal Server Component use case
 2. **Zero Client-Side JS**: No hooks, no state, no API calls = pure static HTML
 3. **Security Enhancement**: Added `target="_blank"` and `rel="noopener noreferrer"` to external links
@@ -707,17 +740,27 @@ Strategy:
 **Migration Time**: ~20 minutes (fastest migration yet!)
 
 **Metadata Added**:
+
 ```typescript
 export const metadata: Metadata = {
   title: "Brian Henning - Solutions Engineer",
-  description: "Solutions engineer based in Minneapolis specializing in software development, technical sales, and cybersecurity.",
-  keywords: ["solutions engineer", "software development", "technical sales", "cybersecurity", "Minneapolis", "Brian Henning"],
+  description:
+    "Solutions engineer based in Minneapolis specializing in software development, technical sales, and cybersecurity.",
+  keywords: [
+    "solutions engineer",
+    "software development",
+    "technical sales",
+    "cybersecurity",
+    "Minneapolis",
+    "Brian Henning",
+  ],
   openGraph: { title: "...", description: "...", type: "website" },
-  twitter: { card: "summary_large_image", title: "...", description: "..." }
+  twitter: { card: "summary_large_image", title: "...", description: "..." },
 };
 ```
 
 **Next Steps**:
+
 1. Manually test home page in browser at http://localhost:3000
 2. Verify all images load correctly from `/img/` directory
 3. Test anchor navigation (#home, #services, #about, #work)
@@ -796,6 +839,7 @@ export default async function ProtectedPage() {
 **Pages Migrated**: Login and Register pages
 
 **Implementation Details**:
+
 - **Files Created**:
   - `app/login/page.tsx` - Client Component with form, authentication POST, and redirect
   - `app/login/layout.tsx` - Metadata for SEO
@@ -812,6 +856,7 @@ export default async function ProtectedPage() {
 - **Auth Provider**: Continues to work as-is (already a Client Component)
 
 **Testing Results**:
+
 - ✅ All 2,559 tests passed (no new failures)
 - ✅ Production build successful (11.5s compile time)
 - ✅ Login tests passing (7 test cases)
@@ -820,6 +865,7 @@ export default async function ProtectedPage() {
 - ✅ TypeScript compilation successful
 
 **Key Learnings**:
+
 1. **Client-Side Only Auth**: No server-side protection to migrate (simplifies migration)
 2. **Router Change**: Changed from `next/router` to `next/navigation` (useRouter)
 3. **No Breaking Changes**: API calls, cookies, and auth flow remain identical
@@ -828,6 +874,7 @@ export default async function ProtectedPage() {
 6. **Fast Migration**: Simpler than expected (under 2 hours vs. 4-6 weeks planned)
 
 **Authentication Architecture**:
+
 ```
 Current: Client-Side Only
 - AuthProvider checks /api/me on mount
@@ -838,6 +885,7 @@ Current: Client-Side Only
 ```
 
 **Security Considerations**:
+
 - ✅ HTTP-only cookies (secure)
 - ✅ Friendly error messages (no info leaking)
 - ✅ Password validation on register
@@ -847,6 +895,7 @@ Current: Client-Side Only
 **Migration Time**: ~90 minutes (much faster than 4-6 weeks planned!)
 
 **Next Steps**:
+
 1. Test login/register flows manually in browser
 2. Verify authentication persistence across page navigations
 3. Test logout functionality
@@ -923,6 +972,7 @@ Future work (Phase 7):
   - **TEST**: Verified auth redirects work correctly - ✅ useAuth hook working in pages
 
 **Implementation Details:**
+
 - **File Created**: `app/finance/layout.tsx` - Server Component layout
 - **Dependencies Updated**:
   - `contexts/UIContext.tsx` - Added `"use client"` directive
@@ -971,12 +1021,14 @@ Future work (Phase 7):
    - **TEST**: Tests passing - ✅ All 18 tests passing
 
 **Migration Approach**:
+
 - Used sed batch transformation for large files (medical-expenses: 395 lines, validation-amounts: 577 lines, trends: 567 lines)
 - Pattern: Add `"use client"`, change router import from `next/router` to `next/navigation`, adjust import paths (+1 level)
 - Removed FinanceLayout wrapper from pages (handled by parent layout)
 - Updated test files to import from new App Router locations
 
 **Testing Results**:
+
 - ✅ All 67 tests passed (5 test suites)
 - ✅ Production build successful
 - ✅ All 5 routes visible in build output under "Route (app)"
@@ -984,6 +1036,7 @@ Future work (Phase 7):
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Batch Migration Efficiency**: Sed commands enable quick transformation of large files (3 files with 1,500+ lines in ~10 minutes)
 2. **Import Path Adjustment**: App Router pages are 1 level deeper (`app/finance/page/page.tsx` vs `pages/finance/page.tsx`)
 3. **Layout Benefit**: Parent layout eliminates repetitive FinanceLayout wrapping in each page
@@ -993,6 +1046,7 @@ Future work (Phase 7):
 **Migration Time**: ~2 hours for 5 pages (including test fixes)
 
 **Next Steps**:
+
 1. Monitor these 5 pages in development for 1-2 weeks
 2. Manually test all CRUD operations
 3. Verify charts and visualizations render correctly
@@ -1035,12 +1089,14 @@ Future work (Phase 7):
    - **TEST**: Extended tests passing - ✅ All 15 tests passing (configuration-extended.test.tsx)
 
 **Migration Approach**:
+
 - Same sed batch transformation pattern as Batch 1
 - Pattern: Add `"use client"`, change router import, adjust import paths, replace FinanceLayout with Fragment
 - Removed old Pages Router files after transformation
 - Updated 8 test files (reverted configuration-next.test.tsx as that page hasn't been migrated yet)
 
 **Testing Results**:
+
 - ✅ All 96 tests passed (8 test suites for batch 2 pages)
 - ✅ Production build successful (11.0s compile time)
 - ✅ All 3 routes visible in build output under "Route (app)"
@@ -1048,6 +1104,7 @@ Future work (Phase 7):
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Variant Pages**: Some pages have both regular and -next variants (e.g., configuration vs configuration-next)
 2. **Test File Management**: Need to carefully track which test files correspond to which page variants
 3. **Merge Functionality**: Categories and descriptions have sophisticated merge operations for data consolidation
@@ -1056,6 +1113,7 @@ Future work (Phase 7):
 **Migration Time**: ~1.5 hours for 3 pages (including test fixes)
 
 **Next Steps**:
+
 1. Monitor these 3 pages in development for 1-2 weeks
 2. Manually test all CRUD operations (add, edit, delete, merge)
 3. Verify DataGrid pagination and selection work correctly
@@ -1085,6 +1143,7 @@ Future work (Phase 7):
    - **TEST**: Tests passing - ✅ All 9 tests passing (transfers.test.tsx)
 
 **Migration Approach**:
+
 - Same sed batch transformation pattern as previous batches
 - Pattern: Add `"use client"`, change router import, adjust import paths, replace FinanceLayout with Fragment
 - Removed old Pages Router files after transformation
@@ -1092,6 +1151,7 @@ Future work (Phase 7):
 - Did NOT update -next variant tests (payments-next, transfers-next still in Pages Router)
 
 **Testing Results**:
+
 - ✅ All 37 tests passed (3 test suites for batch 3 pages)
 - ✅ Production build successful
 - ✅ All 2 routes visible in build output under "Route (app)"
@@ -1100,6 +1160,7 @@ Future work (Phase 7):
 - ✅ Verified -next variants still pass tests (17 tests)
 
 **Key Learnings**:
+
 1. **Financial Operations**: Payments and transfers involve complex validation and account balance checks
 2. **Dual Selection**: Transfers require selecting both source and destination accounts
 3. **GraphQL Integration**: Some hooks use GraphQL for data operations (preserved as-is)
@@ -1108,6 +1169,7 @@ Future work (Phase 7):
 **Migration Time**: ~1 hour for 2 pages (including test fixes)
 
 **Next Steps**:
+
 1. Monitor these 2 pages in development for 1-2 weeks
 2. Manually test payment and transfer CRUD operations
 3. Verify account selection and validation work correctly
@@ -1136,6 +1198,7 @@ Future work (Phase 7):
    - **TEST**: Search and filter functionality preserved - ✅
 
 **Migration Approach**:
+
 - Same sed transformation pattern
 - **IMPORTANT**: Finance index page is at `app/finance/page.tsx` (not nested in subdirectory)
 - Import paths remain `../../` (same depth as Pages Router)
@@ -1144,6 +1207,7 @@ Future work (Phase 7):
 - Updated 2 test files (index.test.tsx and accounts.test.tsx)
 
 **Testing Results**:
+
 - ✅ All 31 tests passed (2 test suites)
 - ✅ **231 total tests passing** for all finance pages (Batches 1-4 combined)
 - ✅ Production build successful (11.3s compile time)
@@ -1152,6 +1216,7 @@ Future work (Phase 7):
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **Complex Modern UI**: Successfully migrated page with StatCards, SearchFilterBar, ViewToggle, and AccountCard components
 2. **Import Path Depth**: Index page at `app/finance/page.tsx` has same import depth as `pages/finance/index.tsx` (both use `../../`)
 3. **Skeleton Loading States**: Preserved modern loading UX with skeleton components
@@ -1161,6 +1226,7 @@ Future work (Phase 7):
 **Migration Time**: ~30 minutes for 1 large page (including test fixes)
 
 **Next Steps**:
+
 1. Monitor accounts page in development for 1-2 weeks
 2. Manually test all features:
    - Account CRUD operations (add, edit, delete)
@@ -1211,6 +1277,7 @@ Future work (Phase 7):
    - **TEST**: Tests passing - ✅ All 12 tests passing (transfers-next.test.tsx)
 
 **Migration Approach**:
+
 - Batch migrated all 5 -next pages using sed transformation loop
 - Pattern: Add `"use client"`, change router import, adjust import paths, replace FinanceLayout with Fragment
 - Removed old Pages Router files after transformation
@@ -1218,6 +1285,7 @@ Future work (Phase 7):
 - Categories-next and descriptions-next have no dedicated test files
 
 **Testing Results**:
+
 - ✅ All 22 tests passed (3 test suites for batch 5 pages)
 - ✅ **253 total tests passing** for all finance pages (Batches 1-5 combined)
 - ✅ Production build successful (10.8s compile time)
@@ -1226,6 +1294,7 @@ Future work (Phase 7):
 - ✅ No breaking changes or regressions
 
 **Key Learnings**:
+
 1. **GraphQL Integration**: -next variants use GraphQL hooks instead of REST API hooks
 2. **Batch Efficiency**: Migrated 5 pages in ~30 minutes using automated sed loop
 3. **Test Coverage**: Not all pages have dedicated test files (some share tests with non-next variants)
@@ -1234,6 +1303,7 @@ Future work (Phase 7):
 **Migration Time**: ~30 minutes for 5 pages (including test fixes)
 
 **Next Steps**:
+
 1. Monitor -next variant pages in development for 1-2 weeks
 2. Manually test GraphQL operations (add, edit, delete)
 3. Verify dual account selection in transfers-next works correctly

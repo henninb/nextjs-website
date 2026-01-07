@@ -3,7 +3,8 @@ import { Container, Typography, Box } from "@mui/material";
 
 export const metadata: Metadata = {
   title: "Debian Basics - How-To Guide",
-  description: "Learn Debian Linux system administration and package management",
+  description:
+    "Learn Debian Linux system administration and package management",
 };
 
 export default function DebianPage() {

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Spotify Authentication",
-  description: "Connect your Spotify account to access your playlists and music data.",
+  description:
+    "Connect your Spotify account to access your playlists and music data.",
 };
 
 export default function SpotifyAuthLayout({

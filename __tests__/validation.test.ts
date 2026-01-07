@@ -201,7 +201,8 @@ describe("Input Validation and Sanitization", () => {
     it("should prevent nested script tag attacks (incomplete multi-character sanitization)", () => {
       // This test verifies the fix for CodeQL alerts #37, #60, #61
       // New approach: simply remove all < and > characters
-      const nestedScriptAttack = '<sc<script>ript>alert("xss")</sc</script>ript>';
+      const nestedScriptAttack =
+        '<sc<script>ript>alert("xss")</sc</script>ript>';
       const sanitized = InputSanitizer.sanitizeHtml(nestedScriptAttack);
       expect(sanitized).not.toContain("<");
       expect(sanitized).not.toContain(">");
@@ -216,11 +217,11 @@ describe("Input Validation and Sanitization", () => {
       expect(sanitized2).toBe('scriptscriptalert("xss")/script/script');
 
       // Test with space in closing tag (CodeQL alert #60)
-      const spaceInTag = '<script>alert(1)</script >';
+      const spaceInTag = "<script>alert(1)</script >";
       const sanitized3 = InputSanitizer.sanitizeHtml(spaceInTag);
       expect(sanitized3).not.toContain("<");
       expect(sanitized3).not.toContain(">");
-      expect(sanitized3).toBe('scriptalert(1)/script');
+      expect(sanitized3).toBe("scriptalert(1)/script");
     });
 
     it("should sanitize account names", () => {

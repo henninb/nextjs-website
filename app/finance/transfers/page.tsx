@@ -207,7 +207,9 @@ export default function Transfers() {
       );
     } else if (isSuccessAccounts) {
       setAvailableDestinationAccounts(
-        (fetchedAccounts || []).filter((account) => account.accountType === "debit"),
+        (fetchedAccounts || []).filter(
+          (account) => account.accountType === "debit",
+        ),
       );
     }
   }, [selectedSourceAccount, isSuccessAccounts, fetchedAccounts]);
@@ -224,12 +226,17 @@ export default function Transfers() {
       );
     } else if (isSuccessAccounts) {
       setAvailableSourceAccounts(
-        (fetchedAccounts || []).filter((account) => account.accountType === "debit"),
+        (fetchedAccounts || []).filter(
+          (account) => account.accountType === "debit",
+        ),
       );
     }
   }, [selectedDestinationAccount, isSuccessAccounts, fetchedAccounts]);
 
-  const handleSourceAccountChange = (_event: React.SyntheticEvent, newValue: Account | null) => {
+  const handleSourceAccountChange = (
+    _event: React.SyntheticEvent,
+    newValue: Account | null,
+  ) => {
     setSelectedSourceAccount(newValue);
     setTransferData((prev) => ({
       ...prev,
@@ -270,7 +277,11 @@ export default function Transfers() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = getErrorMessage(error)
       ? `${moduleName}: ${getErrorMessage(error)}`
       : `${moduleName}: Failure`;
@@ -340,7 +351,8 @@ export default function Transfers() {
       handleError(error, `Add Transfer error: ${error}`, false);
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     }
@@ -657,7 +669,8 @@ export default function Transfers() {
             onChange={(value) => {
               setTransferData((prev: Transfer) => ({
                 ...prev,
-                amount: typeof value === 'string' ? parseFloat(value) || 0 : value,
+                amount:
+                  typeof value === "string" ? parseFloat(value) || 0 : value,
               }));
               // Clear amount error when user starts typing
               if (formErrors.amount) {

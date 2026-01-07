@@ -20,7 +20,12 @@ export default function DeploymentPage() {
         .deployment-container {
           min-height: 100vh;
           padding: 0;
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+          background: linear-gradient(
+            135deg,
+            #0f172a 0%,
+            #1e293b 50%,
+            #0f172a 100%
+          );
           color: #e2e8f0;
         }
 
@@ -40,7 +45,12 @@ export default function DeploymentPage() {
         .header h1 {
           font-size: 4.5rem;
           margin-bottom: 1.5rem;
-          background: linear-gradient(135deg, #00d4ff 0%, #fa709a 50%, #fee140 100%);
+          background: linear-gradient(
+            135deg,
+            #00d4ff 0%,
+            #fa709a 50%,
+            #fee140 100%
+          );
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -67,11 +77,17 @@ export default function DeploymentPage() {
         }
 
         .step {
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.95) 0%,
+            rgba(51, 65, 85, 0.95) 100%
+          );
           border-radius: 16px;
           padding: 2rem;
           margin: 1.5rem 0;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(148, 163, 184, 0.1);
+          box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(148, 163, 184, 0.1);
           position: relative;
           border: 1px solid rgba(100, 116, 139, 0.2);
           backdrop-filter: blur(10px);
@@ -126,7 +142,9 @@ export default function DeploymentPage() {
           line-height: 1.6;
           position: relative;
           border: 1px solid rgba(0, 212, 255, 0.2);
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 212, 255, 0.05);
+          box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.3),
+            inset 0 0 20px rgba(0, 212, 255, 0.05);
         }
 
         .output-block {
@@ -146,7 +164,9 @@ export default function DeploymentPage() {
           width: 100%;
           box-sizing: border-box;
           border: 1px solid rgba(100, 116, 139, 0.2);
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(0, 212, 255, 0.03);
+          box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.3),
+            inset 0 0 20px rgba(0, 212, 255, 0.03);
         }
 
         .command-label {
@@ -206,11 +226,17 @@ export default function DeploymentPage() {
         }
 
         .prerequisites {
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.95) 0%,
+            rgba(51, 65, 85, 0.95) 100%
+          );
           border-radius: 16px;
           padding: 2rem;
           margin: 2rem 0;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(148, 163, 184, 0.1);
+          box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(148, 163, 184, 0.1);
           border: 1px solid rgba(100, 116, 139, 0.2);
           backdrop-filter: blur(10px);
         }
@@ -249,11 +275,17 @@ export default function DeploymentPage() {
         }
 
         .terraform-modules {
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.95) 0%,
+            rgba(51, 65, 85, 0.95) 100%
+          );
           border-radius: 16px;
           padding: 2rem;
           margin: 2rem 0;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(148, 163, 184, 0.1);
+          box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(148, 163, 184, 0.1);
           border: 1px solid rgba(100, 116, 139, 0.2);
           backdrop-filter: blur(10px);
         }
@@ -276,7 +308,11 @@ export default function DeploymentPage() {
         }
 
         .module-card {
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 153, 204, 0.15) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.15) 0%,
+            rgba(0, 153, 204, 0.15) 100%
+          );
           color: #e2e8f0;
           padding: 1.5rem;
           border-radius: 12px;
@@ -307,7 +343,11 @@ export default function DeploymentPage() {
 
         .back-link {
           display: inline-block;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 153, 204, 0.2) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.2) 0%,
+            rgba(0, 153, 204, 0.2) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 12px;
           text-decoration: none;
@@ -326,7 +366,11 @@ export default function DeploymentPage() {
           transform: translateY(-2px);
           box-shadow: 0 6px 25px rgba(0, 212, 255, 0.4);
           border-color: rgba(0, 212, 255, 0.5);
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 153, 204, 0.3) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3) 0%,
+            rgba(0, 153, 204, 0.3) 100%
+          );
         }
 
         .bottom-nav {
@@ -344,7 +388,11 @@ export default function DeploymentPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.8) 0%,
+            rgba(51, 65, 85, 0.8) 100%
+          );
           padding: 0.75rem 1.5rem;
           border-radius: 20px;
           text-decoration: none;
@@ -361,14 +409,22 @@ export default function DeploymentPage() {
         }
 
         .nav-button::before {
-          content: '';
+          content: "";
           position: absolute;
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(250, 112, 154, 0.3));
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          background: linear-gradient(
+            135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(250, 112, 154, 0.3)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: 0;
@@ -376,7 +432,11 @@ export default function DeploymentPage() {
         }
 
         .nav-button:hover {
-          background: linear-gradient(135deg, rgba(51, 65, 85, 0.95) 0%, rgba(71, 85, 105, 0.95) 100%);
+          background: linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.95) 0%,
+            rgba(71, 85, 105, 0.95) 100%
+          );
           border-color: rgba(0, 212, 255, 0.5);
           color: #00d4ff;
           transform: translateY(-2px);
@@ -457,7 +517,9 @@ export default function DeploymentPage() {
         <div className="prerequisites">
           <h2>Prerequisites</h2>
           <ul>
-            <li>AWS account with appropriate permissions (EKS, VPC, EC2, IAM)</li>
+            <li>
+              AWS account with appropriate permissions (EKS, VPC, EC2, IAM)
+            </li>
             <li>Terraform 1.0+ installed</li>
             <li>AWS CLI configured with credentials</li>
             <li>kubectl installed</li>
@@ -490,8 +552,8 @@ export default function DeploymentPage() {
             <div className="module-card">
               <h3>☸️ terraform/eks</h3>
               <p>
-                Deploys applications (LiteLLM, OpenWebUI), network policies,
-                and IRSA roles.
+                Deploys applications (LiteLLM, OpenWebUI), network policies, and
+                IRSA roles.
               </p>
             </div>
           </div>
@@ -502,20 +564,27 @@ export default function DeploymentPage() {
             <div className="step-number">1</div>
             <h2>Clone Repository</h2>
             <p>
-              Start by cloning the LLM Gateway repository from GitHub. The project
-              includes a comprehensive Makefile to simplify deployment.
+              Start by cloning the LLM Gateway repository from GitHub. The
+              project includes a comprehensive Makefile to simplify deployment.
             </p>
 
-            <div className="command-label">Clone and navigate to repository:</div>
+            <div className="command-label">
+              Clone and navigate to repository:
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 10 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`git clone https://github.com/henninb/llm-gateway.git`, 10)}
+                onClick={() =>
+                  copyToClipboard(
+                    `git clone https://github.com/henninb/llm-gateway.git`,
+                    10,
+                  )
+                }
                 title={copiedIndex === 10 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 10 ? "✓" : "⧉"}
               </button>
-git clone https://github.com/henninb/llm-gateway.git
+              git clone https://github.com/henninb/llm-gateway.git
             </div>
             <div className="code-block">
               <button
@@ -525,7 +594,7 @@ git clone https://github.com/henninb/llm-gateway.git
               >
                 {copiedIndex === 11 ? "✓" : "⧉"}
               </button>
-cd llm-gateway
+              cd llm-gateway
             </div>
 
             <div className="command-label">View all available commands:</div>
@@ -537,7 +606,7 @@ cd llm-gateway
               >
                 {copiedIndex === 12 ? "✓" : "⧉"}
               </button>
-make help
+              make help
             </div>
 
             <div className="command-label">Key commands (from README):</div>
@@ -598,7 +667,9 @@ make eks-verify-cloudflare-dns`}</pre>
               This eliminates Docker Hub rate limits.
             </p>
 
-            <div className="command-label">Using Make commands (recommended):</div>
+            <div className="command-label">
+              Using Make commands (recommended):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 20 ? "copied" : ""}`}
@@ -607,7 +678,7 @@ make eks-verify-cloudflare-dns`}</pre>
               >
                 {copiedIndex === 20 ? "✓" : "⧉"}
               </button>
-make ecr-init
+              make ecr-init
             </div>
             <div className="code-block">
               <button
@@ -617,21 +688,25 @@ make ecr-init
               >
                 {copiedIndex === 21 ? "✓" : "⧉"}
               </button>
-make ecr-apply
+              make ecr-apply
             </div>
 
             <div className="command-label">Or manually:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 22 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`cd terraform/ecr && terraform init && terraform apply`, 22)}
+                onClick={() =>
+                  copyToClipboard(
+                    `cd terraform/ecr && terraform init && terraform apply`,
+                    22,
+                  )
+                }
                 title={copiedIndex === 22 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 22 ? "✓" : "⧉"}
               </button>
-cd terraform/ecr && terraform init && terraform apply
+              cd terraform/ecr && terraform init && terraform apply
             </div>
-
           </div>
 
           <div className="step">
@@ -639,10 +714,13 @@ cd terraform/ecr && terraform init && terraform apply
             <h2>Build and Push Docker Images</h2>
             <p>
               Build the LiteLLM and OpenWebUI containers and push them to ECR.
-              This authenticates with ECR, builds images, tags them with latest and git commit SHA, and pushes to ECR repositories.
+              This authenticates with ECR, builds images, tags them with latest
+              and git commit SHA, and pushes to ECR repositories.
             </p>
 
-            <div className="command-label">Using Make commands (recommended):</div>
+            <div className="command-label">
+              Using Make commands (recommended):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 30 ? "copied" : ""}`}
@@ -651,7 +729,7 @@ cd terraform/ecr && terraform init && terraform apply
               >
                 {copiedIndex === 30 ? "✓" : "⧉"}
               </button>
-make ecr-login
+              make ecr-login
             </div>
             <div className="code-block">
               <button
@@ -661,22 +739,26 @@ make ecr-login
               >
                 {copiedIndex === 31 ? "✓" : "⧉"}
               </button>
-make ecr-build-push
+              make ecr-build-push
             </div>
 
             <div className="command-label">Or manually:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 32 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`./tools/build-and-push-ecr.sh`, 32)}
+                onClick={() =>
+                  copyToClipboard(`./tools/build-and-push-ecr.sh`, 32)
+                }
                 title={copiedIndex === 32 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 32 ? "✓" : "⧉"}
               </button>
-./tools/build-and-push-ecr.sh
+              ./tools/build-and-push-ecr.sh
             </div>
 
-            <div className="command-label">Verify images match (recommended):</div>
+            <div className="command-label">
+              Verify images match (recommended):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 33 ? "copied" : ""}`}
@@ -685,7 +767,7 @@ make ecr-build-push
               >
                 {copiedIndex === 33 ? "✓" : "⧉"}
               </button>
-make ecr-verify
+              make ecr-verify
             </div>
 
             <div className="command-label">Expected output:</div>
@@ -719,12 +801,14 @@ ECR OpenWebUI digest:
             <div className="step-number">4</div>
             <h2>Provision EKS Cluster</h2>
             <p>
-              Create the EKS cluster and core networking (VPC, subnets,
-              Internet Gateway, NAT Gateway), plus OIDC for IRSA. Wait
-              approximately 15 minutes for the cluster to be ready.
+              Create the EKS cluster and core networking (VPC, subnets, Internet
+              Gateway, NAT Gateway), plus OIDC for IRSA. Wait approximately 15
+              minutes for the cluster to be ready.
             </p>
 
-            <div className="command-label">Using Make commands (recommended):</div>
+            <div className="command-label">
+              Using Make commands (recommended):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 40 ? "copied" : ""}`}
@@ -733,7 +817,7 @@ ECR OpenWebUI digest:
               >
                 {copiedIndex === 40 ? "✓" : "⧉"}
               </button>
-make eks-cluster-init
+              make eks-cluster-init
             </div>
             <div className="code-block">
               <button
@@ -743,19 +827,24 @@ make eks-cluster-init
               >
                 {copiedIndex === 41 ? "✓" : "⧉"}
               </button>
-make eks-cluster-apply
+              make eks-cluster-apply
             </div>
 
             <div className="command-label">Or manually:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 42 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`cd terraform/eks-cluster && terraform init && terraform apply`, 42)}
+                onClick={() =>
+                  copyToClipboard(
+                    `cd terraform/eks-cluster && terraform init && terraform apply`,
+                    42,
+                  )
+                }
                 title={copiedIndex === 42 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 42 ? "✓" : "⧉"}
               </button>
-cd terraform/eks-cluster && terraform init && terraform apply
+              cd terraform/eks-cluster && terraform init && terraform apply
             </div>
           </div>
 
@@ -766,28 +855,38 @@ cd terraform/eks-cluster && terraform init && terraform apply
               Update your local kubeconfig to connect to the new EKS cluster.
             </p>
 
-            <div className="command-label">Using Make command (recommended):</div>
+            <div className="command-label">
+              Using Make command (recommended):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 50 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`make eks-cluster-kubeconfig`, 50)}
+                onClick={() =>
+                  copyToClipboard(`make eks-cluster-kubeconfig`, 50)
+                }
                 title={copiedIndex === 50 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 50 ? "✓" : "⧉"}
               </button>
-make eks-cluster-kubeconfig
+              make eks-cluster-kubeconfig
             </div>
 
             <div className="command-label">Or manually:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 51 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`aws eks update-kubeconfig --region us-east-1 --name llm-gateway-eks`, 51)}
+                onClick={() =>
+                  copyToClipboard(
+                    `aws eks update-kubeconfig --region us-east-1 --name llm-gateway-eks`,
+                    51,
+                  )
+                }
                 title={copiedIndex === 51 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 51 ? "✓" : "⧉"}
               </button>
-aws eks update-kubeconfig --region us-east-1 --name llm-gateway-eks
+              aws eks update-kubeconfig --region us-east-1 --name
+              llm-gateway-eks
             </div>
 
             <div className="command-label">Verify connection:</div>
@@ -799,7 +898,7 @@ aws eks update-kubeconfig --region us-east-1 --name llm-gateway-eks
               >
                 {copiedIndex === 52 ? "✓" : "⧉"}
               </button>
-kubectl get nodes
+              kubectl get nodes
             </div>
 
             <div className="command-label">Expected output:</div>
@@ -813,44 +912,63 @@ ip-10-0-11-142.ec2.internal   Ready    <none>   3h4m   v1.34.2-eks-ecaa3a6`}</pr
             <div className="step-number">6</div>
             <h2>Request ACM Certificate</h2>
             <p>
-              Request an SSL/TLS certificate from AWS Certificate Manager for your domain.
-              After running the command, add DNS validation records to your DNS provider and
-              wait approximately 5-10 minutes for the certificate to be issued.
+              Request an SSL/TLS certificate from AWS Certificate Manager for
+              your domain. After running the command, add DNS validation records
+              to your DNS provider and wait approximately 5-10 minutes for the
+              certificate to be issued.
             </p>
 
             <div className="command-label">Request certificate:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 60 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`aws acm request-certificate --domain-name openwebui.bhenning.com --validation-method DNS --region us-east-1`, 60)}
+                onClick={() =>
+                  copyToClipboard(
+                    `aws acm request-certificate --domain-name openwebui.bhenning.com --validation-method DNS --region us-east-1`,
+                    60,
+                  )
+                }
                 title={copiedIndex === 60 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 60 ? "✓" : "⧉"}
               </button>
-aws acm request-certificate --domain-name openwebui.bhenning.com --validation-method DNS --region us-east-1
+              aws acm request-certificate --domain-name openwebui.bhenning.com
+              --validation-method DNS --region us-east-1
             </div>
 
             <div className="command-label">Get validation records:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 61 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`aws acm describe-certificate --certificate-arn arn:aws:acm:us-east-1:YOUR_ACCOUNT:certificate/YOUR_CERT_ID --region us-east-1`, 61)}
+                onClick={() =>
+                  copyToClipboard(
+                    `aws acm describe-certificate --certificate-arn arn:aws:acm:us-east-1:YOUR_ACCOUNT:certificate/YOUR_CERT_ID --region us-east-1`,
+                    61,
+                  )
+                }
                 title={copiedIndex === 61 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 61 ? "✓" : "⧉"}
               </button>
-aws acm describe-certificate --certificate-arn arn:aws:acm:us-east-1:YOUR_ACCOUNT:certificate/YOUR_CERT_ID --region us-east-1
+              aws acm describe-certificate --certificate-arn
+              arn:aws:acm:us-east-1:YOUR_ACCOUNT:certificate/YOUR_CERT_ID
+              --region us-east-1
             </div>
             <div className="command-label">Verify certificate is issued:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 62 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`aws acm list-certificates --region us-east-1`, 62)}
+                onClick={() =>
+                  copyToClipboard(
+                    `aws acm list-certificates --region us-east-1`,
+                    62,
+                  )
+                }
                 title={copiedIndex === 62 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 62 ? "✓" : "⧉"}
               </button>
-aws acm list-certificates --region us-east-1
+              aws acm list-certificates --region us-east-1
             </div>
           </div>
 
@@ -858,17 +976,22 @@ aws acm list-certificates --region us-east-1
             <div className="step-number">7</div>
             <h2>Create Secrets in AWS Secrets Manager</h2>
             <p>
-              Store sensitive API keys and secrets in AWS Secrets Manager for secure access by pods.
-              Auto-sources from .secrets file if available.
+              Store sensitive API keys and secrets in AWS Secrets Manager for
+              secure access by pods. Auto-sources from .secrets file if
+              available.
             </p>
             <p>
               Required environment variables (set in .secrets file or export):
               LITELLM_MASTER_KEY (generate with: openssl rand -hex 32),
-              WEBUI_SECRET_KEY (generate with: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"),
-              PERPLEXITY_API_KEY (from Perplexity account).
+              WEBUI_SECRET_KEY (generate with: python3 -c "from
+              cryptography.fernet import Fernet;
+              print(Fernet.generate_key().decode())"), PERPLEXITY_API_KEY (from
+              Perplexity account).
             </p>
 
-            <div className="command-label">Using Make command (recommended):</div>
+            <div className="command-label">
+              Using Make command (recommended):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 70 ? "copied" : ""}`}
@@ -877,7 +1000,7 @@ aws acm list-certificates --region us-east-1
               >
                 {copiedIndex === 70 ? "✓" : "⧉"}
               </button>
-make eks-secrets-populate
+              make eks-secrets-populate
             </div>
           </div>
 
@@ -885,20 +1008,23 @@ make eks-secrets-populate
             <div className="step-number">8</div>
             <h2>Configure Terraform Variables</h2>
             <p>
-              Update terraform/eks/terraform.tfvars with your ACM certificate ARN and configuration.
-              Set cluster_name, aws_region, environment, acm_certificate_arn, use_ecr_images, and ecr_image_tag.
+              Update terraform/eks/terraform.tfvars with your ACM certificate
+              ARN and configuration. Set cluster_name, aws_region, environment,
+              acm_certificate_arn, use_ecr_images, and ecr_image_tag.
             </p>
 
             <div className="command-label">Edit configuration file:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 80 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`vim terraform/eks/terraform.tfvars`, 80)}
+                onClick={() =>
+                  copyToClipboard(`vim terraform/eks/terraform.tfvars`, 80)
+                }
                 title={copiedIndex === 80 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 80 ? "✓" : "⧉"}
               </button>
-vim terraform/eks/terraform.tfvars
+              vim terraform/eks/terraform.tfvars
             </div>
 
             <div className="command-label">Example configuration:</div>
@@ -916,15 +1042,18 @@ ecr_image_tag = "latest"`}</pre>
             <div className="step-number">9</div>
             <h2>Deploy Applications to EKS</h2>
             <p>
-              Deploy LiteLLM, OpenWebUI, network policies, and configure IRSA roles.
-              The make command auto-populates secrets first. This creates Kubernetes namespace,
-              IRSA role for LiteLLM (Bedrock + Secrets Manager access), LiteLLM deployment + service,
-              OpenWebUI deployment + service + PVC, Application Load Balancer with ACM certificate,
-              and NetworkPolicies for zero-trust isolation.
-              Wait approximately 5 minutes for LoadBalancer to provision.
+              Deploy LiteLLM, OpenWebUI, network policies, and configure IRSA
+              roles. The make command auto-populates secrets first. This creates
+              Kubernetes namespace, IRSA role for LiteLLM (Bedrock + Secrets
+              Manager access), LiteLLM deployment + service, OpenWebUI
+              deployment + service + PVC, Application Load Balancer with ACM
+              certificate, and NetworkPolicies for zero-trust isolation. Wait
+              approximately 5 minutes for LoadBalancer to provision.
             </p>
 
-            <div className="command-label">Using Make commands (recommended):</div>
+            <div className="command-label">
+              Using Make commands (recommended):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 90 ? "copied" : ""}`}
@@ -933,7 +1062,7 @@ ecr_image_tag = "latest"`}</pre>
               >
                 {copiedIndex === 90 ? "✓" : "⧉"}
               </button>
-make eks-init
+              make eks-init
             </div>
             <div className="code-block">
               <button
@@ -943,39 +1072,47 @@ make eks-init
               >
                 {copiedIndex === 91 ? "✓" : "⧉"}
               </button>
-make eks-apply
+              make eks-apply
             </div>
 
             <div className="command-label">Or manually:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 92 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`cd terraform/eks && terraform init && terraform apply`, 92)}
+                onClick={() =>
+                  copyToClipboard(
+                    `cd terraform/eks && terraform init && terraform apply`,
+                    92,
+                  )
+                }
                 title={copiedIndex === 92 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 92 ? "✓" : "⧉"}
               </button>
-cd terraform/eks && terraform init && terraform apply
+              cd terraform/eks && terraform init && terraform apply
             </div>
           </div>
 
           <div className="step">
             <div className="step-number">10</div>
             <h2>Get LoadBalancer DNS</h2>
-            <p>
-              Retrieve the ALB hostname for DNS configuration.
-            </p>
+            <p>Retrieve the ALB hostname for DNS configuration.</p>
 
             <div className="command-label">Get ALB hostname:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 100 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`kubectl get ingress openwebui -n llm-gateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`, 100)}
+                onClick={() =>
+                  copyToClipboard(
+                    `kubectl get ingress openwebui -n llm-gateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`,
+                    100,
+                  )
+                }
                 title={copiedIndex === 100 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 100 ? "✓" : "⧉"}
               </button>
-{`kubectl get ingress openwebui -n llm-gateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`}
+              {`kubectl get ingress openwebui -n llm-gateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`}
             </div>
           </div>
 
@@ -983,26 +1120,30 @@ cd terraform/eks && terraform init && terraform apply
             <div className="step-number">11</div>
             <h2>Configure DNS</h2>
             <p>
-              Create a CNAME record in CloudFlare in DNS-only mode
-              (proxied: false). The automated approach uses the CloudFlare API
-              to create and manage DNS records. Alternatively, configure
-              manually in the CloudFlare dashboard. Optional proxy mode is
-              documented in CLOUDFLARE-CERT.md.
+              Create a CNAME record in CloudFlare in DNS-only mode (proxied:
+              false). The automated approach uses the CloudFlare API to create
+              and manage DNS records. Alternatively, configure manually in the
+              CloudFlare dashboard. Optional proxy mode is documented in
+              CLOUDFLARE-CERT.md.
             </p>
 
             <div className="command-label">Automated Setup (Recommended):</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 110 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`make eks-verify-cloudflare-dns`, 110)}
+                onClick={() =>
+                  copyToClipboard(`make eks-verify-cloudflare-dns`, 110)
+                }
                 title={copiedIndex === 110 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 110 ? "✓" : "⧉"}
               </button>
-make eks-verify-cloudflare-dns
+              make eks-verify-cloudflare-dns
             </div>
 
-            <div className="command-label">Manual Setup (Alternative) - In CloudFlare dashboard:</div>
+            <div className="command-label">
+              Manual Setup (Alternative) - In CloudFlare dashboard:
+            </div>
             <div className="output-block">
               <pre>{`Type: CNAME
 Name: openwebui
@@ -1024,94 +1165,102 @@ TTL: Auto`}</pre>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 120 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`dig +short openwebui.bhenning.com`, 120)}
+                onClick={() =>
+                  copyToClipboard(`dig +short openwebui.bhenning.com`, 120)
+                }
                 title={copiedIndex === 120 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 120 ? "✓" : "⧉"}
               </button>
-dig +short openwebui.bhenning.com
+              dig +short openwebui.bhenning.com
             </div>
 
             <div className="command-label">Check pod status:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 122 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`kubectl get pods -n llm-gateway`, 122)}
+                onClick={() =>
+                  copyToClipboard(`kubectl get pods -n llm-gateway`, 122)
+                }
                 title={copiedIndex === 122 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 122 ? "✓" : "⧉"}
               </button>
-kubectl get pods -n llm-gateway
+              kubectl get pods -n llm-gateway
             </div>
 
             <div className="command-label">Test HTTPS connection:</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 123 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`curl -I https://openwebui.bhenning.com`, 123)}
+                onClick={() =>
+                  copyToClipboard(`curl -I https://openwebui.bhenning.com`, 123)
+                }
                 title={copiedIndex === 123 ? "Copied!" : "Copy to clipboard"}
               >
                 {copiedIndex === 123 ? "✓" : "⧉"}
               </button>
-curl -I https://openwebui.bhenning.com
-            </div>
+              curl -I https://openwebui.bhenning.com
             </div>
           </div>
+        </div>
 
-          <div className="step">
-            <div className="step-number">13</div>
-            <h2>Local Testing</h2>
-            <p>
-              Forward LiteLLM from the EKS cluster to your machine to run local tests
-              against the deployed service.
-            </p>
+        <div className="step">
+          <div className="step-number">13</div>
+          <h2>Local Testing</h2>
+          <p>
+            Forward LiteLLM from the EKS cluster to your machine to run local
+            tests against the deployed service.
+          </p>
 
-            <div className="command-label">Port-forward LiteLLM locally:</div>
-            <div className="code-block">
-              <button
-                className={`copy-button ${copiedIndex === 130 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`make eks-port-forward`, 130)}
-                title={copiedIndex === 130 ? "Copied!" : "Copy to clipboard"}
-              >
-                {copiedIndex === 130 ? "✓" : "⧉"}
-              </button>
-make eks-port-forward
-            </div>
+          <div className="command-label">Port-forward LiteLLM locally:</div>
+          <div className="code-block">
+            <button
+              className={`copy-button ${copiedIndex === 130 ? "copied" : ""}`}
+              onClick={() => copyToClipboard(`make eks-port-forward`, 130)}
+              title={copiedIndex === 130 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 130 ? "✓" : "⧉"}
+            </button>
+            make eks-port-forward
+          </div>
 
-            <div className="command-label">Expected output:</div>
-            <div className="output-block">
-              <pre>{`Forwarding localhost:4000 -> llm-gateway/litellm:80 (press Ctrl+C to stop)
+          <div className="command-label">Expected output:</div>
+          <div className="output-block">
+            <pre>{`Forwarding localhost:4000 -> llm-gateway/litellm:80 (press Ctrl+C to stop)
 Forwarding from 127.0.0.1:4000 -> 4000
 Forwarding from [::1]:4000 -> 4000`}</pre>
-            </div>
+          </div>
 
-            <div className="command-label">Test all LiteLLM models:</div>
-            <div className="code-block">
-              <button
-                className={`copy-button ${copiedIndex === 131 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`make test-litellm-models`, 131)}
-                title={copiedIndex === 131 ? "Copied!" : "Copy to clipboard"}
-              >
-                {copiedIndex === 131 ? "✓" : "⧉"}
-              </button>
-make test-litellm-models
-            </div>
+          <div className="command-label">Test all LiteLLM models:</div>
+          <div className="code-block">
+            <button
+              className={`copy-button ${copiedIndex === 131 ? "copied" : ""}`}
+              onClick={() => copyToClipboard(`make test-litellm-models`, 131)}
+              title={copiedIndex === 131 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 131 ? "✓" : "⧉"}
+            </button>
+            make test-litellm-models
+          </div>
 
-            <div className="command-label">Test custom guardrails (pre_call and post_call hooks):</div>
-            <div className="code-block">
-              <button
-                className={`copy-button ${copiedIndex === 132 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`make test-guardrails`, 132)}
-                title={copiedIndex === 132 ? "Copied!" : "Copy to clipboard"}
-              >
-                {copiedIndex === 132 ? "✓" : "⧉"}
-              </button>
-make test-guardrails
-            </div>
+          <div className="command-label">
+            Test custom guardrails (pre_call and post_call hooks):
+          </div>
+          <div className="code-block">
+            <button
+              className={`copy-button ${copiedIndex === 132 ? "copied" : ""}`}
+              onClick={() => copyToClipboard(`make test-guardrails`, 132)}
+              title={copiedIndex === 132 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 132 ? "✓" : "⧉"}
+            </button>
+            make test-guardrails
+          </div>
 
-            <div className="command-label">Expected output:</div>
-            <div className="output-block">
-              <pre>{`╔====================================================================╗
+          <div className="command-label">Expected output:</div>
+          <div className="output-block">
+            <pre>{`╔====================================================================╗
 ║                    GUARDRAIL TEST SUITE                            ║
 ╚====================================================================╝
 
@@ -1278,52 +1427,75 @@ Total: 12/12 tests passed
 Failed: 0/12
 
 🎉 All tests passed!`}</pre>
-            </div>
-
-            <div className="command-label">Tail application logs:</div>
-            <div className="code-block">
-              <button
-                className={`copy-button ${copiedIndex === 140 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`kubectl logs -n llm-gateway deployment/litellm -f`, 140)}
-                title={copiedIndex === 140 ? "Copied!" : "Copy to clipboard"}
-              >
-                {copiedIndex === 140 ? "✓" : "⧉"}
-              </button>
-kubectl logs -n llm-gateway deployment/litellm -f
-            </div>
-            <div className="code-block">
-              <button
-                className={`copy-button ${copiedIndex === 141 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`kubectl logs -n llm-gateway deployment/openwebui -f`, 141)}
-                title={copiedIndex === 141 ? "Copied!" : "Copy to clipboard"}
-              >
-                {copiedIndex === 141 ? "✓" : "⧉"}
-              </button>
-kubectl logs -n llm-gateway deployment/openwebui -f
-            </div>
-
-            <div className="command-label">Inspect ingress:</div>
-            <div className="code-block">
-              <button
-                className={`copy-button ${copiedIndex === 142 ? "copied" : ""}`}
-                onClick={() => copyToClipboard(`kubectl get ingress openwebui -n llm-gateway`, 142)}
-                title={copiedIndex === 142 ? "Copied!" : "Copy to clipboard"}
-              >
-                {copiedIndex === 142 ? "✓" : "⧉"}
-              </button>
-kubectl get ingress openwebui -n llm-gateway
-            </div>
           </div>
+
+          <div className="command-label">Tail application logs:</div>
+          <div className="code-block">
+            <button
+              className={`copy-button ${copiedIndex === 140 ? "copied" : ""}`}
+              onClick={() =>
+                copyToClipboard(
+                  `kubectl logs -n llm-gateway deployment/litellm -f`,
+                  140,
+                )
+              }
+              title={copiedIndex === 140 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 140 ? "✓" : "⧉"}
+            </button>
+            kubectl logs -n llm-gateway deployment/litellm -f
+          </div>
+          <div className="code-block">
+            <button
+              className={`copy-button ${copiedIndex === 141 ? "copied" : ""}`}
+              onClick={() =>
+                copyToClipboard(
+                  `kubectl logs -n llm-gateway deployment/openwebui -f`,
+                  141,
+                )
+              }
+              title={copiedIndex === 141 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 141 ? "✓" : "⧉"}
+            </button>
+            kubectl logs -n llm-gateway deployment/openwebui -f
+          </div>
+
+          <div className="command-label">Inspect ingress:</div>
+          <div className="code-block">
+            <button
+              className={`copy-button ${copiedIndex === 142 ? "copied" : ""}`}
+              onClick={() =>
+                copyToClipboard(
+                  `kubectl get ingress openwebui -n llm-gateway`,
+                  142,
+                )
+              }
+              title={copiedIndex === 142 ? "Copied!" : "Copy to clipboard"}
+            >
+              {copiedIndex === 142 ? "✓" : "⧉"}
+            </button>
+            kubectl get ingress openwebui -n llm-gateway
+          </div>
+        </div>
 
         <div className="prerequisites" style={{ marginTop: "3rem" }}>
           <h2>Operations & Monitoring</h2>
           <ul>
             <li>DNS setup/verify: make eks-verify-cloudflare-dns</li>
             <li>Monitor costs: make aws-costs-py or make aws-costs</li>
-            <li>Review security: make iam-report (IAM roles and architecture)</li>
-            <li>Test all: make test-all (setup validation, health checks, model tests, guardrails)</li>
+            <li>
+              Review security: make iam-report (IAM roles and architecture)
+            </li>
+            <li>
+              Test all: make test-all (setup validation, health checks, model
+              tests, guardrails)
+            </li>
             <li>Local testing: make eks-port-forward (access LiteLLM API)</li>
-            <li>Arena Mode: Currently disabled (nova-lite, nova-pro, llama3-2-3b when enabled)</li>
+            <li>
+              Arena Mode: Currently disabled (nova-lite, nova-pro, llama3-2-3b
+              when enabled)
+            </li>
           </ul>
         </div>
 

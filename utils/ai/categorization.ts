@@ -99,7 +99,6 @@ async function fetchSimilarTransactions(
   }
 }
 
-
 /**
  * Build the AI prompt for categorization
  */

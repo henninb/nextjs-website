@@ -31,7 +31,9 @@ export default function Error({
         {getErrorMessage(error) || "An unexpected error occurred"}
       </p>
       {error.digest && (
-        <p style={{ marginBottom: "1rem", fontSize: "0.875rem", color: "#999" }}>
+        <p
+          style={{ marginBottom: "1rem", fontSize: "0.875rem", color: "#999" }}
+        >
           Error ID: {error.digest}
         </p>
       )}

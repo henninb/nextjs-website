@@ -11,7 +11,6 @@ jest.mock("../../utils/graphqlClient", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

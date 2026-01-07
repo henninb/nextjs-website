@@ -65,7 +65,10 @@ export default function SelectNavigateAccounts({
     }
   }, [isSuccess, data]);
 
-  const handleChange = (_event: React.SyntheticEvent, newValue: Option | null) => {
+  const handleChange = (
+    _event: React.SyntheticEvent,
+    newValue: Option | null,
+  ) => {
     setSelectedOption(newValue);
     if (newValue) {
       trackAccountVisit(newValue.value);

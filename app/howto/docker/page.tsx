@@ -3,7 +3,8 @@ import { Container, Typography, Box, Paper } from "@mui/material";
 
 export const metadata: Metadata = {
   title: "Docker How-To - Basic Commands",
-  description: "Essential Docker commands for container management, image building, and Docker Compose",
+  description:
+    "Essential Docker commands for container management, image building, and Docker Compose",
 };
 
 export default function DockerPage() {

@@ -68,7 +68,6 @@ import {
 import { DataValidator } from "../../utils/validation";
 import { generateSecureUUID } from "../../utils/security/secureUUID";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

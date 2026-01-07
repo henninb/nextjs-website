@@ -35,7 +35,7 @@ type DataGridBaseProps<R extends GridValidRowModel> = {
   disableColumnFilter?: boolean;
   disableColumnMenu?: boolean;
   disableVirtualization?: boolean;
-  paginationMode?: 'client' | 'server';
+  paginationMode?: "client" | "server";
   rowCount?: number;
 };
 

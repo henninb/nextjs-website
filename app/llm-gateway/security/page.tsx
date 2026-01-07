@@ -423,13 +423,16 @@ export default function SecurityPage() {
             </h2>
             <p>
               ISP-based access control restricts HTTPS access to authorized IP
-              ranges via ALB security groups, with optional CloudFlare proxy mode
-              available via origin certificates.
+              ranges via ALB security groups, with optional CloudFlare proxy
+              mode available via origin certificates.
             </p>
 
             <h3>ISP-Based Access Control</h3>
             <ul>
-              <li>ALB security groups restrict HTTPS to authorized IP ranges (FREE)</li>
+              <li>
+                ALB security groups restrict HTTPS to authorized IP ranges
+                (FREE)
+              </li>
               <li>On-demand IP allowlisting with make eks-allow-ip</li>
               <li>HTTPS access limited to authorized CIDR ranges</li>
             </ul>

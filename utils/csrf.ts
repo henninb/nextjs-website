@@ -98,7 +98,10 @@ export async function getCsrfToken(): Promise<string | null> {
 export async function getCsrfHeaders(): Promise<Record<string, string>> {
   console.log("[CSRF] getCsrfHeaders called");
   const token = await getCsrfToken();
-  console.log("[CSRF] Token retrieved:", token ? `${token.substring(0, 20)}...` : "null");
+  console.log(
+    "[CSRF] Token retrieved:",
+    token ? `${token.substring(0, 20)}...` : "null",
+  );
   if (!token) {
     console.warn("[CSRF] No token available, returning empty headers");
     return {};

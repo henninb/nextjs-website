@@ -196,7 +196,11 @@ export default function DescriptionsNextGen() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -250,7 +254,11 @@ export default function DescriptionsNextGen() {
 
       handleSuccess("Description added successfully.");
     } catch (error: unknown) {
-      handleError(error, `Add Description error: ${getErrorMessage(error)}`, false);
+      handleError(
+        error,
+        `Add Description error: ${getErrorMessage(error)}`,
+        false,
+      );
     } finally {
       setShowModalAdd(false);
     }

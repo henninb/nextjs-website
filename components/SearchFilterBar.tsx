@@ -315,7 +315,9 @@ export default function SearchFilterBar({
           label="Checking"
           onClick={() =>
             handleAccountNamePatternFilter(
-              activeFilters.accountNamePattern === "checking" ? "all" : "checking"
+              activeFilters.accountNamePattern === "checking"
+                ? "all"
+                : "checking",
             )
           }
           color={

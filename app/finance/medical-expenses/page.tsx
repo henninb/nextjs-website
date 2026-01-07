@@ -119,7 +119,9 @@ export default function MedicalExpenses() {
       setShowModalForm(false);
       setSelectedExpense(null);
     } catch (error: unknown) {
-      setMessage(`${isEditMode ? "Update" : "Create"} error: ${getErrorMessage(error)}`);
+      setMessage(
+        `${isEditMode ? "Update" : "Create"} error: ${getErrorMessage(error)}`,
+      );
       setShowSnackbar(true);
     }
   };

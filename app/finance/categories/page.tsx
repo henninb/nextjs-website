@@ -119,7 +119,11 @@ export default function Categories() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -172,10 +176,15 @@ export default function Categories() {
 
       handleSuccess("Category added successfully.");
     } catch (error) {
-      handleError(error, `Add Category error: ${getErrorMessage(error)}`, false);
+      handleError(
+        error,
+        `Add Category error: ${getErrorMessage(error)}`,
+        false,
+      );
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     } finally {
@@ -245,7 +254,11 @@ export default function Categories() {
       setRowSelection([]);
       refetch();
     } catch (error: unknown) {
-      handleError(error, `Merge Categories error: ${getErrorMessage(error)}`, false);
+      handleError(
+        error,
+        `Merge Categories error: ${getErrorMessage(error)}`,
+        false,
+      );
     }
   };
 

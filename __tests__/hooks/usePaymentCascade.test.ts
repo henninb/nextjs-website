@@ -5,7 +5,6 @@ import usePaymentUpdate from "../../hooks/usePaymentUpdate";
 import Payment from "../../model/Payment";
 import Transaction from "../../model/Transaction";
 
-
 // Mock the useAuth hook
 
 // Mock CSRF utilities

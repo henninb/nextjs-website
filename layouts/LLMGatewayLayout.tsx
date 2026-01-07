@@ -14,7 +14,13 @@ export default function LLMGatewayLayout({ children }: LLMGatewayLayoutProps) {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
+      }}
+    >
       <style jsx global>{`
         .nav-bar {
           position: sticky;
@@ -95,35 +101,59 @@ export default function LLMGatewayLayout({ children }: LLMGatewayLayoutProps) {
       <nav className="nav-bar">
         <div className="nav-container">
           <div className="nav-links">
-            <Link href="/llm-gateway" className={`nav-link ${isActive("/llm-gateway") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway"
+              className={`nav-link ${isActive("/llm-gateway") ? "active" : ""}`}
+            >
               <span>🏠</span>
               <span>Overview</span>
             </Link>
-            <Link href="/llm-gateway/requirements" className={`nav-link ${isActive("/llm-gateway/requirements") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway/requirements"
+              className={`nav-link ${isActive("/llm-gateway/requirements") ? "active" : ""}`}
+            >
               <span>🎯</span>
               <span>Requirements</span>
             </Link>
-            <Link href="/llm-gateway/architecture" className={`nav-link ${isActive("/llm-gateway/architecture") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway/architecture"
+              className={`nav-link ${isActive("/llm-gateway/architecture") ? "active" : ""}`}
+            >
               <span>🏗️</span>
               <span>Architecture</span>
             </Link>
-            <Link href="/llm-gateway/deployment" className={`nav-link ${isActive("/llm-gateway/deployment") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway/deployment"
+              className={`nav-link ${isActive("/llm-gateway/deployment") ? "active" : ""}`}
+            >
               <span>🚀</span>
               <span>Deployment</span>
             </Link>
-            <Link href="/llm-gateway/features" className={`nav-link ${isActive("/llm-gateway/features") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway/features"
+              className={`nav-link ${isActive("/llm-gateway/features") ? "active" : ""}`}
+            >
               <span>✨</span>
               <span>Features</span>
             </Link>
-            <Link href="/llm-gateway/security" className={`nav-link ${isActive("/llm-gateway/security") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway/security"
+              className={`nav-link ${isActive("/llm-gateway/security") ? "active" : ""}`}
+            >
               <span>🔒</span>
               <span>Security</span>
             </Link>
-            <Link href="/llm-gateway/cost" className={`nav-link ${isActive("/llm-gateway/cost") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway/cost"
+              className={`nav-link ${isActive("/llm-gateway/cost") ? "active" : ""}`}
+            >
               <span>💰</span>
               <span>Cost</span>
             </Link>
-            <Link href="/llm-gateway/summary" className={`nav-link ${isActive("/llm-gateway/summary") ? "active" : ""}`}>
+            <Link
+              href="/llm-gateway/summary"
+              className={`nav-link ${isActive("/llm-gateway/summary") ? "active" : ""}`}
+            >
               <span>📊</span>
               <span>Summary</span>
             </Link>

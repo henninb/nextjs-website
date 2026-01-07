@@ -71,7 +71,6 @@ export default function Payment() {
 
   return (
     <div>
-      
       <h2>Payment Information</h2>
       <form onSubmit={handleSubmit}>
         <div>

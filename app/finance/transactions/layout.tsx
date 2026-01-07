@@ -6,7 +6,8 @@ export const metadata: Metadata = {
     default: "Transactions",
     template: "%s | Finance App",
   },
-  description: "View and manage your financial transactions. Filter by account, category, or description for detailed analysis.",
+  description:
+    "View and manage your financial transactions. Filter by account, category, or description for detailed analysis.",
 };
 
 export default function TransactionsLayout({

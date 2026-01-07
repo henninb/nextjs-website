@@ -53,7 +53,6 @@ import {
 import { updatePayment } from "../../hooks/usePaymentUpdate";
 import { HookValidator } from "../../utils/hookValidation";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

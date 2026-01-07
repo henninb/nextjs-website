@@ -123,7 +123,9 @@ describe("pages/finance/index (Accounts)", () => {
       refetch: jest.fn(),
     });
 
-    const { container } = render(<AccountsPage />, { wrapper: createWrapper() });
+    const { container } = render(<AccountsPage />, {
+      wrapper: createWrapper(),
+    });
     // Check for MUI Skeleton components (should have multiple skeletons during loading)
     const skeletons = container.querySelectorAll(".MuiSkeleton-root");
     expect(skeletons.length).toBeGreaterThan(0);

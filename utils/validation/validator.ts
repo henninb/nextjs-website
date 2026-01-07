@@ -184,7 +184,10 @@ export class DataValidator {
       return result as ValidationResult<Payment>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
-      console.error("[validator.ts] validatePayment EXCEPTION:", errorResult.message);
+      console.error(
+        "[validator.ts] validatePayment EXCEPTION:",
+        errorResult.message,
+      );
       return {
         success: false,
         errors: [
@@ -259,7 +262,10 @@ export class DataValidator {
       return result as ValidationResult<Transfer>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
-      console.error("[validator.ts] validateTransfer EXCEPTION:", errorResult.message);
+      console.error(
+        "[validator.ts] validateTransfer EXCEPTION:",
+        errorResult.message,
+      );
       return {
         success: false,
         errors: [

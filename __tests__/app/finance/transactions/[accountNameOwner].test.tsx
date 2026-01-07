@@ -352,7 +352,12 @@ describe("AccountTransactions Component", () => {
 
   it("renders account name in heading", async () => {
     // In tests, pass plain object directly - React.use() is handled by Next.js runtime
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
     await waitFor(() => {
       expect(
         screen.getByRole("heading", { name: "Test Account" }),
@@ -361,29 +366,42 @@ describe("AccountTransactions Component", () => {
   });
 
   it("shows spinner while loading", () => {
-    (useTransactionByAccountFetchPaged.default as jest.Mock).mockReturnValue(
-      {
-        data: null,
-        isSuccess: false,
-        isLoading: true,
-        isFetching: true,
-        error: null,
-      },
-    );
+    (useTransactionByAccountFetchPaged.default as jest.Mock).mockReturnValue({
+      data: null,
+      isSuccess: false,
+      isLoading: true,
+      isFetching: true,
+      error: null,
+    });
 
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
   it("renders data grid component", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     expect(screen.getByTestId("data-grid")).toBeInTheDocument();
   });
 
   it("displays account totals table with correct data", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     expect(screen.getByText("$1,000.00")).toBeInTheDocument(); // totals
     expect(screen.getByText("$800.00")).toBeInTheDocument(); // cleared
@@ -392,7 +410,12 @@ describe("AccountTransactions Component", () => {
   });
 
   it("opens add transaction modal when Add Transaction button is clicked", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     const addButton = screen.getAllByText("Add Transaction")[0];
     fireEvent.click(addButton);
@@ -406,7 +429,12 @@ describe("AccountTransactions Component", () => {
       mutateAsync: mockInsertTransaction,
     });
 
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Open modal
     const addButton = screen.getAllByText("Add Transaction")[0];
@@ -426,7 +454,12 @@ describe("AccountTransactions Component", () => {
       mutateAsync: mockUpdateTransaction,
     });
 
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Find state change buttons (cleared, outstanding, future)
     const stateButtons = screen.getAllByRole("button");
@@ -444,7 +477,12 @@ describe("AccountTransactions Component", () => {
   });
 
   it("opens clone confirmation modal when clone button is clicked", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     const cloneButtons = screen.getAllByTestId("ContentCopyIcon");
     expect(cloneButtons.length).toBeGreaterThan(0);
@@ -456,7 +494,12 @@ describe("AccountTransactions Component", () => {
   });
 
   it("opens move transaction modal when move button is clicked", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     const moveButtons = screen.getAllByTestId("SwapVertIcon");
     expect(moveButtons.length).toBeGreaterThan(0);
@@ -467,7 +510,12 @@ describe("AccountTransactions Component", () => {
   });
 
   it("opens delete confirmation modal when delete button is clicked", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     const deleteButtons = screen.getAllByTestId("DeleteRoundedIcon");
     expect(deleteButtons.length).toBeGreaterThan(0);
@@ -483,7 +531,12 @@ describe("AccountTransactions Component", () => {
       mutateAsync: mockDeleteTransaction,
     });
 
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Verify delete hook is configured
     expect(mockDeleteTransaction).toBeDefined();
@@ -499,7 +552,12 @@ describe("AccountTransactions Component", () => {
       mutateAsync: mockInsertTransaction,
     });
 
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Verify clone hook is configured
     expect(mockInsertTransaction).toBeDefined();
@@ -510,7 +568,12 @@ describe("AccountTransactions Component", () => {
   });
 
   it("validates amount input with negative values using USDAmountInput", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Open modal
     const addButton = screen.getByText("Add Transaction");
@@ -532,7 +595,12 @@ describe("AccountTransactions Component", () => {
       mutateAsync: mockInsertValidationAmount,
     });
 
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Find and click the validation button (shows amount and date)
     const validationButton = screen.getByText(/\$0.00 - No Date/);
@@ -544,7 +612,12 @@ describe("AccountTransactions Component", () => {
   });
 
   it("handles row selection and shows selected total", async () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Check if checkboxes are present for row selection
     const checkboxes = screen.getAllByRole("checkbox");
@@ -566,13 +639,23 @@ describe("AccountTransactions Component", () => {
   });
 
   it("formats currency amounts correctly in the grid", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     expect(screen.getByText("-$50.00")).toBeInTheDocument();
   });
 
   it("displays transaction date in correct format", () => {
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // After timezone fix, 2024-01-01 correctly displays as 1/1/2024 instead of 12/31/2023
     expect(screen.getByText("1/1/2024")).toBeInTheDocument();
@@ -581,7 +664,12 @@ describe("AccountTransactions Component", () => {
   it("tracks account visit when component loads", () => {
     // This test verifies that account usage tracking is called
     // The actual tracking logic would be tested in the hook tests
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Component should render without errors, indicating tracking was called
     expect(
@@ -605,7 +693,12 @@ describe("AccountTransactions Component", () => {
       error: null,
     });
 
-    render(<AccountTransactions params={{ accountNameOwner: "Test Account" } as any} />, { wrapper: createWrapper() });
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
 
     // Main test goal: Page should render normally without entering error state
     expect(

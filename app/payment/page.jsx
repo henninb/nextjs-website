@@ -151,7 +151,6 @@ export default function Payment() {
 
   return (
     <>
-
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Typography

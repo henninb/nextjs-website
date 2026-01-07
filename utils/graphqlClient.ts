@@ -80,8 +80,7 @@ export async function graphqlRequest<T>({
   if (!res.ok) {
     let text = "";
     try {
-      text =
-        typeof res.text === "function" ? await res.text() : "";
+      text = typeof res.text === "function" ? await res.text() : "";
     } catch {
       // Ignore errors reading response text
     }
@@ -125,7 +124,9 @@ export async function graphqlRequest<T>({
   });
 
   if (json.errors?.length) {
-    const msg = json.errors.map((e: { message: string }) => e.message).join("; ");
+    const msg = json.errors
+      .map((e: { message: string }) => e.message)
+      .join("; ");
     console.error(`[GQL] GraphQL error for ${opName}:`, {
       errors: json.errors,
       message: msg,

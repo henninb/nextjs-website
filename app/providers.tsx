@@ -19,10 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             retry: (failureCount, error: unknown) => {
               // Don't retry on certain errors
               const errorMsg = getErrorMessage(error);
-              if (
-                errorMsg.includes("401") ||
-                errorMsg.includes("403")
-              ) {
+              if (errorMsg.includes("401") || errorMsg.includes("403")) {
                 return false; // Authentication/authorization errors
               }
               if (errorMsg.includes("404")) {

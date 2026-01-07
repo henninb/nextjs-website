@@ -13,10 +13,10 @@ export class AppError extends Error {
     message: string,
     public readonly code: string,
     public readonly statusCode?: number,
-    public readonly field?: string
+    public readonly field?: string,
   ) {
     super(message);
-    this.name = 'AppError';
+    this.name = "AppError";
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AppError);
@@ -53,10 +53,10 @@ export function isError(error: unknown): error is Error {
  */
 export function hasMessage(error: unknown): error is { message: string } {
   return (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error !== null &&
-    'message' in error &&
-    typeof (error as { message: unknown }).message === 'string'
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
   );
 }
 
@@ -90,7 +90,7 @@ export function toErrorResult(error: unknown): ErrorResult {
   if (isError(error)) {
     return {
       message: error.message,
-      code: 'ERROR',
+      code: "ERROR",
     };
   }
 
@@ -98,14 +98,14 @@ export function toErrorResult(error: unknown): ErrorResult {
   if (hasMessage(error)) {
     return {
       message: error.message,
-      code: 'UNKNOWN_ERROR',
+      code: "UNKNOWN_ERROR",
     };
   }
 
   // Handle all other cases (strings, numbers, null, etc.)
   return {
     message: String(error),
-    code: 'UNKNOWN_ERROR',
+    code: "UNKNOWN_ERROR",
   };
 }
 

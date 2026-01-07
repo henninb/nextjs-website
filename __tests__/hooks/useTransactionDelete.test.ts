@@ -8,7 +8,6 @@ import {
 import { deleteTransaction } from "../../hooks/useTransactionDelete";
 import { HookValidator } from "../../utils/hookValidation";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

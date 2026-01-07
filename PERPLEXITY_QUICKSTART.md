@@ -3,6 +3,7 @@
 ## 🚀 5-Minute Setup
 
 ### 1. Get Your API Key
+
 - Visit: https://www.perplexity.ai/settings/api
 - Generate new API key
 - Copy the key (starts with `pplx-`)
@@ -10,11 +11,13 @@
 ### 2. Localhost Setup
 
 Edit `.env.local`:
+
 ```bash
 PERPLEXITY_API_KEY=pplx-your-actual-key-here
 ```
 
 Restart dev server:
+
 ```bash
 npm run dev
 ```
@@ -22,12 +25,14 @@ npm run dev
 ### 3. Vercel Setup
 
 **Via Dashboard:**
+
 1. Go to https://vercel.com/dashboard
 2. Select your project → Settings → Environment Variables
 3. Add: `PERPLEXITY_API_KEY` = `pplx-your-key`
 4. Save and redeploy
 
 **Via CLI:**
+
 ```bash
 vercel env add PERPLEXITY_API_KEY
 # Enter your key when prompted
@@ -36,6 +41,7 @@ vercel env add PERPLEXITY_API_KEY
 ### 4. Enable AI Code (Currently Disabled)
 
 Edit `app/api/categorize/route.ts`:
+
 - Uncomment lines ~74-137 (the AI integration code)
 - Test locally first
 
@@ -44,6 +50,7 @@ Edit `app/api/categorize/route.ts`:
 ## 🧪 Quick Test
 
 ### Test the API Endpoint:
+
 ```bash
 curl -X POST http://localhost:3000/api/categorize \
   -H "Content-Type: application/json" \
@@ -55,6 +62,7 @@ curl -X POST http://localhost:3000/api/categorize \
 ```
 
 ### Expected Response (Rule-Based Fallback):
+
 ```json
 {
   "category": "restaurants",
@@ -68,6 +76,7 @@ curl -X POST http://localhost:3000/api/categorize \
 ```
 
 ### Expected Response (AI Enabled):
+
 ```json
 {
   "category": "restaurants",
@@ -88,6 +97,7 @@ curl -X POST http://localhost:3000/api/categorize \
 ### Check Environment Variables
 
 **Localhost:**
+
 ```bash
 # In your dev server logs, you should see:
 # [AI Categorization] Perplexity API key not configured...
@@ -95,6 +105,7 @@ curl -X POST http://localhost:3000/api/categorize \
 ```
 
 **Vercel:**
+
 ```bash
 vercel env ls
 # Should show PERPLEXITY_API_KEY
@@ -112,12 +123,12 @@ vercel env ls
 
 ## 📁 Key Files
 
-| File | Purpose |
-|------|---------|
-| `.env.local` | Localhost API key (gitignored) |
-| `.env.example` | Template for environment variables |
+| File                          | Purpose                               |
+| ----------------------------- | ------------------------------------- |
+| `.env.local`                  | Localhost API key (gitignored)        |
+| `.env.example`                | Template for environment variables    |
 | `app/api/categorize/route.ts` | API endpoint (uncomment to enable AI) |
-| `AI_CATEGORIZATION_SETUP.md` | Full documentation |
+| `AI_CATEGORIZATION_SETUP.md`  | Full documentation                    |
 
 ---
 
@@ -135,6 +146,7 @@ vercel env ls
 **Issue:** Badge always shows blue (rule-based)
 
 **Fix:**
+
 1. Check API key in `.env.local`
 2. Restart dev server
 3. Uncomment AI code in `route.ts`
@@ -142,6 +154,7 @@ vercel env ls
 **Issue:** Works locally but not on Vercel
 
 **Fix:**
+
 1. Add `PERPLEXITY_API_KEY` to Vercel environment variables
 2. Redeploy
 
@@ -154,5 +167,6 @@ See `AI_CATEGORIZATION_SETUP.md` for complete details.
 ---
 
 **Questions?** Check the logs:
+
 - Localhost: Terminal where you ran `npm run dev`
 - Vercel: Deployment logs in Vercel dashboard

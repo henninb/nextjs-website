@@ -149,7 +149,9 @@ export default async function proxy(request) {
       }
 
       const targetUrl = new URL(upstreamPath, upstreamOrigin).toString();
-      const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(request.method);
+      const isMutation = ["POST", "PUT", "DELETE", "PATCH"].includes(
+        request.method,
+      );
 
       if (isDev) {
         const hasToken = (request.headers.get("cookie") || "").includes(
@@ -166,13 +168,19 @@ export default async function proxy(request) {
       const cookieHeader = request.headers.get("cookie") || "";
       const hasXsrfCookie = cookieHeader.includes("XSRF-TOKEN=");
       if (isDev && isMutation) {
-        console.log(`[MW] CSRF token header: ${csrfToken ? "present" : "missing"}`);
-        console.log(`[MW] XSRF-TOKEN cookie: ${hasXsrfCookie ? "present" : "MISSING"}`);
+        console.log(
+          `[MW] CSRF token header: ${csrfToken ? "present" : "missing"}`,
+        );
+        console.log(
+          `[MW] XSRF-TOKEN cookie: ${hasXsrfCookie ? "present" : "MISSING"}`,
+        );
         if (csrfToken && hasXsrfCookie) {
           // Extract just the cookie value to compare
           const cookieMatch = cookieHeader.match(/XSRF-TOKEN=([^;]+)/);
           if (cookieMatch) {
-            console.log(`[MW] Token matches cookie: ${csrfToken === cookieMatch[1]}`);
+            console.log(
+              `[MW] Token matches cookie: ${csrfToken === cookieMatch[1]}`,
+            );
           }
         }
       }
@@ -191,7 +199,10 @@ export default async function proxy(request) {
       };
 
       if (isDev) {
-        console.log("[MW] Headers being forwarded:", Object.keys(headersToForward).join(", "));
+        console.log(
+          "[MW] Headers being forwarded:",
+          Object.keys(headersToForward).join(", "),
+        );
       }
 
       const response = await fetch(targetUrl, {
@@ -247,8 +258,12 @@ export default async function proxy(request) {
                 .replace(/;\s*SameSite=Strict/gi, "; SameSite=Lax");
 
               if (isDev && isCsrfCookie) {
-                console.log(`[MW] CSRF cookie rewrite: ${value.substring(0, 80)}...`);
-                console.log(`[MW] CSRF cookie modified: ${modifiedCookie.substring(0, 80)}...`);
+                console.log(
+                  `[MW] CSRF cookie rewrite: ${value.substring(0, 80)}...`,
+                );
+                console.log(
+                  `[MW] CSRF cookie modified: ${modifiedCookie.substring(0, 80)}...`,
+                );
               }
 
               responseHeaders.set(key, modifiedCookie);

@@ -42,7 +42,6 @@ import PendingTransaction from "../../model/PendingTransaction";
 import { insertPendingTransaction } from "../../hooks/usePendingTransactionInsert";
 import { HookValidator } from "../../utils/hookValidation";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({

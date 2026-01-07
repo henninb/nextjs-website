@@ -10,6 +10,7 @@
 ### Current State
 
 #### `pages/_app.tsx` - Functionality:
+
 - QueryClient setup with React Query
 - AuthProvider wrapper
 - UIProvider wrapper
@@ -18,6 +19,7 @@
 - Global API setup (`setupGlobalAPIs()`)
 
 #### `pages/_document.tsx` - Functionality:
+
 - PX (PerimeterX) scripts initialization
 - PX diagnostic scripts
 - Human challenge scripts
@@ -29,12 +31,14 @@
 #### ✅ All functionality migrated to App Router:
 
 **`app/layout.tsx`** contains:
+
 - All scripts from `_document.tsx` (using Next.js `<Script>` component)
 - ErrorBoundary wrapper
 - Layout component
 - Providers wrapper (delegated to `app/providers.tsx`)
 
 **`app/providers.tsx`** contains:
+
 - QueryClient setup (identical configuration)
 - AuthProvider wrapper
 - UIProvider wrapper
@@ -46,7 +50,7 @@
 
 #### Why they're not needed:
 
-1. **No Pages Router pages remain**: 
+1. **No Pages Router pages remain**:
    - All 45+ pages migrated to App Router
    - Only API routes remain in `pages/api/`
    - `_app.tsx` and `_document.tsx` only affect Pages Router pages, NOT API routes
@@ -65,12 +69,13 @@
 
 ## 📊 Comparison
 
-### pages/_app.tsx vs app/providers.tsx
+### pages/\_app.tsx vs app/providers.tsx
+
 ```typescript
 // pages/_app.tsx (OLD)
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient({...}));
-  
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -92,11 +97,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 "use client";
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({...}));
-  
+
   useEffect(() => {
     setupGlobalAPIs();
   }, []);
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -107,7 +112,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 ```
 
-### pages/_document.tsx vs app/layout.tsx
+### pages/\_document.tsx vs app/layout.tsx
+
 ```typescript
 // pages/_document.tsx (OLD)
 <Html>
@@ -154,6 +160,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 ## ✅ Recommendation
 
 ### **SAFE TO DELETE** both files:
+
 - ✅ `pages/_app.tsx`
 - ✅ `pages/_document.tsx`
 
@@ -177,12 +184,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
 ## 🚀 Recommended Action
 
 ### Step 1: Verify (Done ✅)
+
 - ✅ All pages migrated to App Router
 - ✅ All providers migrated to `app/providers.tsx`
 - ✅ All scripts migrated to `app/layout.tsx`
 - ✅ All tests passing
 
 ### Step 2: Safe Deletion
+
 ```bash
 # Backup (optional)
 mkdir -p .backup/pages
@@ -201,6 +210,7 @@ npm test
 ```
 
 ### Step 3: Verify API Routes Still Work
+
 API routes in `pages/api/` will continue working normally as they don't depend on `_app.tsx` or `_document.tsx`.
 
 ---
@@ -218,10 +228,12 @@ API routes in `pages/api/` will continue working normally as they don't depend o
 **`pages/_app.tsx` and `pages/_document.tsx` are safe to delete.**
 
 All functionality has been successfully migrated to:
+
 - ✅ `app/layout.tsx` - Document structure and scripts
 - ✅ `app/providers.tsx` - React Query, Auth, UI providers
 
 Deleting these files will:
+
 - ✅ Clean up the codebase
 - ✅ Remove duplicate code
 - ✅ Complete the App Router migration
@@ -229,6 +241,5 @@ Deleting these files will:
 
 ---
 
-*Analysis completed by Claude Code*  
-*Date: December 9, 2025*
-
+_Analysis completed by Claude Code_  
+_Date: December 9, 2025_

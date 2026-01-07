@@ -1,11 +1,13 @@
 # SEO Metadata Enhancement Plan
 
 ## Overview
+
 Add `metadata` exports to all 45+ pages for improved SEO.
 
 ## Metadata Strategy
 
 ### Finance Pages (20 pages)
+
 1. app/finance/page.tsx - "Account Management | Finance Dashboard"
 2. app/finance/backup/page.tsx - "Backup & Restore | Finance"
 3. app/finance/categories/page.tsx - "Transaction Categories | Finance"
@@ -28,12 +30,14 @@ Add `metadata` exports to all 45+ pages for improved SEO.
 20. app/finance/transactions/import/page.tsx - "Import Transactions | Finance"
 
 ### Sports Pages (4 pages)
+
 1. app/nfl/page.tsx - "NFL Scores & Stats | Sports"
 2. app/nba/page.tsx - "NBA Scores & Stats | Sports"
 3. app/mlb/page.tsx - "MLB Scores & Stats | Sports"
 4. app/nhl/page.tsx - "NHL Scores & Stats | Sports"
 
 ### How-To Pages (8 pages)
+
 1. app/howto/page.tsx - "How-To Guides"
 2. app/howto/cloudflare/page.tsx - "Cloudflare Setup Guide"
 3. app/howto/debian/page.tsx - "Debian Configuration Guide"
@@ -45,17 +49,20 @@ Add `metadata` exports to all 45+ pages for improved SEO.
 9. app/howto/proxmox/page.tsx - "Proxmox Setup Guide"
 
 ### Auth Pages (3 pages)
+
 1. app/login/page.tsx - "Login | Finance App"
 2. app/register/page.tsx - "Register | Finance App"
 3. app/logout/page.tsx - "Logout | Finance App"
 
 ### Lead Pages (4 pages)
+
 1. app/lead/page.jsx - "Vehicle Information | Lead Form"
 2. app/lead/color/page.jsx - "Select Color | Lead Form"
 3. app/lead/info/page.jsx - "Contact Information | Lead Form"
 4. app/lead/success/page.jsx - "Thank You | Lead Form"
 
 ### Utility Pages (8 pages)
+
 1. app/tools/page.tsx - "Developer Tools"
 2. app/temperature/page.tsx - "Temperature Converter"
 3. app/me/page.tsx - "Profile | My Account"
@@ -73,4 +80,3 @@ Add `metadata` exports to all 45+ pages for improved SEO.
 - For dynamic routes, use `generateMetadata` function
 - Keep descriptions concise (150-160 characters)
 - Use template in root layout for consistent branding
-

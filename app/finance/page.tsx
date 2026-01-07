@@ -205,7 +205,13 @@ export default function Accounts() {
         (activeFilters.accountNamePattern === "checking" &&
           account.accountNameOwner.toLowerCase().includes("checking"));
 
-      return matchesSearch && matchesType && matchesStatus && matchesBalance && matchesAccountNamePattern;
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesStatus &&
+        matchesBalance &&
+        matchesAccountNamePattern
+      );
     });
   }, [fetchedAccounts, searchTerm, activeFilters]);
 
@@ -219,7 +225,9 @@ export default function Accounts() {
     });
   };
 
-  const handleAccountTypeKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleAccountTypeKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (event.key === "Tab") {
       const inputValue = (event.currentTarget.value || "").toLowerCase();
       const match = accountTypeOptions.find((option) =>
@@ -242,7 +250,11 @@ export default function Accounts() {
         setMessage("Account deleted successfully.");
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, `Delete Account error: ${getErrorMessage(error)}`, false);
+        handleError(
+          error,
+          `Delete Account error: ${getErrorMessage(error)}`,
+          false,
+        );
       } finally {
         setShowModelDelete(false);
         setSelectedAccount(null);
@@ -254,10 +266,16 @@ export default function Accounts() {
     if (selectedAccount) {
       try {
         await deactivateAccount({ oldRow: selectedAccount });
-        setMessage("Account and all associated transactions deactivated successfully.");
+        setMessage(
+          "Account and all associated transactions deactivated successfully.",
+        );
         setShowSnackbar(true);
       } catch (error) {
-        handleError(error, `Deactivate Account error: ${getErrorMessage(error)}`, false);
+        handleError(
+          error,
+          `Deactivate Account error: ${getErrorMessage(error)}`,
+          false,
+        );
       } finally {
         setShowModelDeactivate(false);
         setSelectedAccount(null);
@@ -269,7 +287,11 @@ export default function Accounts() {
     setShowSnackbar(false);
   };
 
-  const handleError = (error: unknown, moduleName: string, throwIt: boolean) => {
+  const handleError = (
+    error: unknown,
+    moduleName: string,
+    throwIt: boolean,
+  ) => {
     const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
 
     setMessage(errorMessage);
@@ -324,7 +346,8 @@ export default function Accounts() {
       handleError(error, `Add Account ${getErrorMessage(error)}`, false);
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) &&
+          getErrorMessage(error).includes("Failed to fetch"))
       ) {
       }
     }
@@ -406,7 +429,13 @@ export default function Accounts() {
       width: 150,
       renderCell: (params) => (
         <Box>
-          <Tooltip title={params.row.activeStatus ? "Deactivate this account" : "Account is already inactive"}>
+          <Tooltip
+            title={
+              params.row.activeStatus
+                ? "Deactivate this account"
+                : "Account is already inactive"
+            }
+          >
             <span>
               <IconButton
                 aria-label="Deactivate this account"

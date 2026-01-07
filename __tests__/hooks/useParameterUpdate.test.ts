@@ -13,7 +13,6 @@ import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
 
-
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
