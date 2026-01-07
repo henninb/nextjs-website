@@ -405,8 +405,9 @@ export default function SummaryPage() {
                 DNS & HTTPS
               </h3>
               <p>
-                CloudFlare DNS-only setup with automated verification, plus
-                optional proxy mode via origin certificates
+                CloudFlare proxy mode with origin certificates, providing DDoS
+                protection, WAF, and edge caching with automated DNS
+                verification
               </p>
             </div>
           </div>

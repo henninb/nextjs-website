@@ -580,7 +580,10 @@ export default function RequirementsPage() {
               <ul>
                 <li>AWS EKS with ALB HTTPS termination</li>
                 <li>Zero-trust NetworkPolicies for pod isolation</li>
-                <li>CloudFlare DNS in DNS-only mode</li>
+                <li>
+                  CloudFlare proxy mode with origin certificates (DDoS/WAF
+                  enabled)
+                </li>
                 <li>Auto-scaling node groups with SPOT instances</li>
                 <li>Terraform-managed infrastructure</li>
               </ul>

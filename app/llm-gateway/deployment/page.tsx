@@ -1123,16 +1123,16 @@ ecr_image_tag = "latest"`}</pre>
 
           <div className="step">
             <div className="step-number">11</div>
-            <h2>Configure DNS</h2>
+            <h2>Configure DNS & CloudFlare Proxy</h2>
             <p>
-              Create a CNAME record in CloudFlare in DNS-only mode (proxied:
-              false). The automated approach uses the CloudFlare API to create
-              and manage DNS records. Alternatively, configure manually in the
-              CloudFlare dashboard. Optional proxy mode is documented in
-              CLOUDFLARE-CERT.md.
+              Set up CloudFlare with proxy mode enabled for DDoS protection, WAF,
+              and edge caching. Production deployments use CloudFlare Origin
+              Certificates for secure end-to-end encryption. See CLOUDFLARE-CERT.md
+              for complete setup instructions including certificate generation and
+              security group configuration.
             </p>
 
-            <div className="command-label">Automated Setup (Recommended):</div>
+            <div className="command-label">Quick DNS Setup (for initial deployment):</div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 110 ? "copied" : ""}`}
@@ -1147,14 +1147,17 @@ ecr_image_tag = "latest"`}</pre>
             </div>
 
             <div className="command-label">
-              Manual Setup (Alternative) - In CloudFlare dashboard:
+              Production Setup - CloudFlare Proxy Mode (Current):
             </div>
             <div className="output-block">
-              <pre>{`Type: CNAME
-Name: openwebui
-Target: <ALB hostname from previous step>
-Proxy status: DNS only (proxied: false)
-TTL: Auto`}</pre>
+              <pre>{`1. Generate CloudFlare Origin Certificate (15-year validity)
+2. Import certificate to AWS ACM
+3. Update Terraform with certificate ARN
+4. Switch security groups to CloudFlare mode
+5. Enable proxy in CloudFlare (orange cloud)
+6. Verify HTTPS connectivity
+
+See CLOUDFLARE-CERT.md for detailed step-by-step guide`}</pre>
             </div>
           </div>
 

@@ -527,12 +527,13 @@ export default function FeaturesPage() {
               </li>
               <li>Non-root containers (UID 1000)</li>
               <li>
-                ISP-Based Access Control: ALB security groups restrict HTTPS
-                access to authorized IP ranges (FREE)
+                CloudFlare Proxy Mode: DDoS protection, WAF, bot detection, and
+                edge caching (currently enabled)
               </li>
-              <li>On-demand IP allowlisting (make eks-allow-ip, eks-revoke-ip, eks-list-ips)</li>
+              <li>Dual Security Groups: CloudFlare and ISP modes with flexible switching</li>
+              <li>On-demand IP allowlisting (make eks-allow-ip SG=cloudflare|isp)</li>
               <li>AWS Metadata Service blocking (SSRF prevention)</li>
-              <li>HTTPS/TLS with ACM certificate management</li>
+              <li>HTTPS/TLS with CloudFlare Origin Certificates (15-year validity)</li>
               <li>Secrets Manager integration for API keys</li>
             </ul>
           </div>

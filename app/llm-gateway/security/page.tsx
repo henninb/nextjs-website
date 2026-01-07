@@ -403,15 +403,16 @@ export default function SecurityPage() {
               TLS/SSL Encryption
             </h2>
             <p>
-              End-to-end encryption with ACM certificates and ALB SSL
-              termination protects data in transit.
+              End-to-end encryption with CloudFlare Origin Certificates and ALB
+              SSL termination protects data in transit through CloudFlare's global edge network.
             </p>
 
             <h3>Encryption Details</h3>
             <ul>
-              <li>ACM certificate for openwebui.bhenning.com</li>
+              <li>CloudFlare Origin Certificate (15-year validity)</li>
+              <li>CloudFlare Universal SSL for client connections</li>
+              <li>Full (strict) SSL/TLS mode validates origin</li>
               <li>TLS 1.3 security policy on ALB</li>
-              <li>Automatic certificate renewal</li>
               <li>HTTP disabled (HTTPS only)</li>
             </ul>
           </div>
@@ -419,35 +420,36 @@ export default function SecurityPage() {
           <div className="security-card">
             <h2>
               <span className="icon">🌍</span>
-              Access Control & DNS
+              Access Control & CloudFlare
             </h2>
             <p>
-              ISP-based access control restricts HTTPS access to authorized IP
-              ranges via ALB security groups, with optional CloudFlare proxy
-              mode available via origin certificates.
+              CloudFlare proxy mode (currently enabled) provides DDoS protection,
+              WAF, and bot detection while hiding the origin ALB. Dual security
+              group architecture supports both proxy and direct access modes.
             </p>
 
-            <h3>ISP-Based Access Control</h3>
+            <h3>CloudFlare Proxy Mode (Currently Active)</h3>
             <ul>
-              <li>
-                ALB security groups restrict HTTPS to authorized IP ranges
-                (FREE)
-              </li>
-              <li>On-demand IP allowlisting with make eks-allow-ip</li>
-              <li>HTTPS access limited to authorized CIDR ranges</li>
+              <li>DDoS protection and Layer 7 WAF enabled</li>
+              <li>Bot detection and rate limiting at edge</li>
+              <li>Origin ALB hostname hidden from public</li>
+              <li>Edge caching at 300+ global data centers</li>
+              <li>HTTP/3 and Brotli compression support</li>
             </ul>
 
-            <h3>CloudFlare DNS (Default)</h3>
+            <h3>Dual Security Group Architecture</h3>
             <ul>
-              <li>DNS-only mode recommended (proxied: false)</li>
-              <li>Automated DNS setup via CloudFlare API</li>
-              <li>Optional proxy mode documented in CLOUDFLARE-CERT.md</li>
+              <li>CloudFlare SG: Allows CloudFlare IP ranges (active)</li>
+              <li>ISP SG: Allows specific ISP/office IPs (inactive)</li>
+              <li>On-demand IP allowlisting: make eks-allow-ip SG=cloudflare|isp</li>
+              <li>Seamless switching between proxy and direct modes</li>
             </ul>
 
             <div className="highlight-box">
-              <strong>Defense in Depth:</strong> ISP-based access control via
-              ALB security groups provides free IP allowlisting, while optional
-              CloudFlare proxy mode adds DDoS/WAF protection if enabled.
+              <strong>Defense in Depth:</strong> CloudFlare proxy mode provides
+              enterprise-grade DDoS protection and WAF, while the dual security
+              group architecture enables flexible access control and easy
+              switching between proxy and direct access modes.
             </div>
           </div>
 
@@ -554,10 +556,10 @@ export default function SecurityPage() {
           <div className="layer">
             <h3>Layer 1: Network Perimeter</h3>
             <p>
-              ALB with ACM TLS termination provides HTTPS access. ALB security
-              groups restrict access to authorized IP ranges, and CloudFlare DNS
-              runs in DNS-only mode by default with optional proxy mode
-              available via origin certificates.
+              CloudFlare edge network with proxy mode enabled provides the first
+              layer of defense with DDoS protection, WAF, and bot detection. ALB
+              with CloudFlare Origin Certificate handles TLS termination, while
+              security groups allow only CloudFlare IP ranges to reach the origin.
             </p>
           </div>
 
