@@ -655,7 +655,12 @@ make eks-apply
 make eks-destroy
 make eks-secrets-populate
 make eks-port-forward
-make eks-verify-cloudflare-dns`}</pre>
+make eks-verify-cloudflare-dns
+
+# EKS Security Group Management
+make eks-allow-ip IP=1.2.3.4/32 DESC="Office"
+make eks-revoke-ip IP=1.2.3.4/32
+make eks-list-ips`}</pre>
             </div>
           </div>
 
@@ -1492,6 +1497,9 @@ Failed: 0/12
               tests, guardrails)
             </li>
             <li>Local testing: make eks-port-forward (access LiteLLM API)</li>
+            <li>
+              On-demand IP allowlisting: make eks-allow-ip IP=1.2.3.4/32 DESC="Office" (add), make eks-revoke-ip IP=1.2.3.4/32 (remove), make eks-list-ips (list all)
+            </li>
             <li>
               Arena Mode: Currently disabled (nova-lite, nova-pro, llama3-2-3b
               when enabled)

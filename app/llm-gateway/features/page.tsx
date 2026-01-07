@@ -530,7 +530,7 @@ export default function FeaturesPage() {
                 ISP-Based Access Control: ALB security groups restrict HTTPS
                 access to authorized IP ranges (FREE)
               </li>
-              <li>On-demand IP allowlisting with make eks-allow-ip</li>
+              <li>On-demand IP allowlisting (make eks-allow-ip, eks-revoke-ip, eks-list-ips)</li>
               <li>AWS Metadata Service blocking (SSRF prevention)</li>
               <li>HTTPS/TLS with ACM certificate management</li>
               <li>Secrets Manager integration for API keys</li>
@@ -634,7 +634,7 @@ export default function FeaturesPage() {
                 EVALUATION_ARENA_MODELS
               </li>
               <li>
-                Environment-based configuration (ENABLE_PERSISTENT_CONFIG=false)
+                Persistent configuration (ENABLE_PERSISTENT_CONFIG=true)
               </li>
             </ul>
           </div>
