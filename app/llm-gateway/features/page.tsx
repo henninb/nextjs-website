@@ -104,6 +104,29 @@ export default function FeaturesPage() {
           margin-top: 1rem;
         }
 
+        .demo-images {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 2rem;
+          margin: 3rem auto;
+          max-width: 800px;
+          padding: 0 2rem;
+        }
+
+        .demo-images img {
+          width: 100%;
+          max-width: 350px;
+          height: auto;
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+          transition: transform 0.3s ease;
+        }
+
+        .demo-images img:hover {
+          transform: scale(1.05);
+        }
+
         .question-card {
           background: rgba(255, 255, 255, 0.1);
           padding: 1.25rem;
@@ -417,6 +440,15 @@ export default function FeaturesPage() {
             grid-template-columns: 1fr;
           }
 
+          .demo-images {
+            flex-direction: column;
+            gap: 1.5rem;
+          }
+
+          .demo-images img {
+            max-width: 280px;
+          }
+
           .bottom-nav {
             gap: 1rem;
             padding-bottom: 12rem;
@@ -507,6 +539,11 @@ export default function FeaturesPage() {
             <div className="question-text">"What is the capital of Japan"</div>
           </div>
         </div>
+      </div>
+
+      <div className="demo-images">
+        <img src="/img/duck.png" alt="Duck - Blocked by guardrails" />
+        <img src="/img/bunny.png" alt="Bunny - Blocked by guardrails" />
       </div>
 
       <div className="content">
