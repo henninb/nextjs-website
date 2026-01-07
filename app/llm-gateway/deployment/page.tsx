@@ -1127,7 +1127,7 @@ ecr_image_tag = "latest"`}</pre>
             <p>
               Set up CloudFlare with proxy mode enabled for DDoS protection, WAF,
               and edge caching. Production deployments use CloudFlare Origin
-              Certificates for secure end-to-end encryption. See CLOUDFLARE-CERT.md
+              Certificates for secure end-to-end encryption. See CLOUDFLARE-ORIGIN-CERT.md
               for complete setup instructions including certificate generation and
               security group configuration.
             </p>
@@ -1157,7 +1157,7 @@ ecr_image_tag = "latest"`}</pre>
 5. Enable proxy in CloudFlare (orange cloud)
 6. Verify HTTPS connectivity
 
-See CLOUDFLARE-CERT.md for detailed step-by-step guide`}</pre>
+See CLOUDFLARE-ORIGIN-CERT.md for detailed step-by-step guide`}</pre>
             </div>
           </div>
 
