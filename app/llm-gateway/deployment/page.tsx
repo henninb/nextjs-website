@@ -1011,6 +1011,112 @@ ip-10-0-11-142.ec2.internal   Ready    <none>   3h4m   v1.34.2-eks-ecaa3a6`}</pr
 
           <div className="step">
             <div className="step-number">8</div>
+            <h2>Install External Secrets Operator</h2>
+            <p>
+              Install the External Secrets Operator to sync secrets from AWS
+              Secrets Manager to Kubernetes. This enables secure secret
+              management without storing values in Terraform state. Installs ESO
+              in the external-secrets-system namespace with CRDs.
+            </p>
+
+            <div className="command-label">
+              Using Make command (recommended):
+            </div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 71 ? "copied" : ""}`}
+                onClick={() =>
+                  copyToClipboard(`make eks-install-external-secrets`, 71)
+                }
+                title={copiedIndex === 71 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 71 ? "✓" : "⧉"}
+              </button>
+              make eks-install-external-secrets
+            </div>
+          </div>
+
+          <div className="step">
+            <div className="step-number">9</div>
+            <h2>Configure External Secrets Resources</h2>
+            <p>
+              Create the Kubernetes resources for External Secrets Operator:
+              IAM role with Secrets Manager permissions, ServiceAccount with
+              IRSA annotation, SecretStore (AWS authentication), and
+              ExternalSecret (secret sync definition). This must run BEFORE
+              eks-apply to ensure secrets exist before pods start.
+            </p>
+
+            <div className="command-label">
+              Using Make command (recommended):
+            </div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 72 ? "copied" : ""}`}
+                onClick={() =>
+                  copyToClipboard(`make eks-external-secrets-apply`, 72)
+                }
+                title={copiedIndex === 72 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 72 ? "✓" : "⧉"}
+              </button>
+              make eks-external-secrets-apply
+            </div>
+          </div>
+
+          <div className="step">
+            <div className="step-number">10</div>
+            <h2>Verify Secret Synchronization</h2>
+            <p>
+              Verify that External Secrets Operator successfully synced secrets
+              from AWS Secrets Manager to Kubernetes. The ExternalSecret status
+              should show "SecretSynced" and the secret should exist in the
+              llm-gateway namespace.
+            </p>
+
+            <div className="command-label">Check ExternalSecret status:</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 73 ? "copied" : ""}`}
+                onClick={() =>
+                  copyToClipboard(
+                    `kubectl get externalsecret -n llm-gateway`,
+                    73,
+                  )
+                }
+                title={copiedIndex === 73 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 73 ? "✓" : "⧉"}
+              </button>
+              kubectl get externalsecret -n llm-gateway
+            </div>
+
+            <div className="command-label">Verify the secret exists:</div>
+            <div className="code-block">
+              <button
+                className={`copy-button ${copiedIndex === 74 ? "copied" : ""}`}
+                onClick={() =>
+                  copyToClipboard(`kubectl get secret api-keys -n llm-gateway`, 74)
+                }
+                title={copiedIndex === 74 ? "Copied!" : "Copy to clipboard"}
+              >
+                {copiedIndex === 74 ? "✓" : "⧉"}
+              </button>
+              kubectl get secret api-keys -n llm-gateway
+            </div>
+
+            <div className="command-label">Expected output:</div>
+            <div className="output-block">
+              <pre>{`NAME            STORE             REFRESH INTERVAL   STATUS         READY
+api-keys        aws-secret-store  1h                 SecretSynced   True
+
+NAME       TYPE     DATA   AGE
+api-keys   Opaque   3      2m`}</pre>
+            </div>
+          </div>
+
+          <div className="step">
+            <div className="step-number">11</div>
             <h2>Configure Terraform Variables</h2>
             <p>
               Update terraform/eks/terraform.tfvars with your ACM certificate
@@ -1044,13 +1150,13 @@ ecr_image_tag = "latest"`}</pre>
           </div>
 
           <div className="step">
-            <div className="step-number">9</div>
+            <div className="step-number">12</div>
             <h2>Deploy Applications to EKS</h2>
             <p>
               Deploy LiteLLM, OpenWebUI, network policies, and configure IRSA
-              roles. The make command auto-populates secrets first. This creates
-              Kubernetes namespace, IRSA role for LiteLLM (Bedrock + Secrets
-              Manager access), LiteLLM deployment + service, OpenWebUI
+              roles. External Secrets must be configured first (steps 8-10).
+              This creates Kubernetes namespace, IRSA role for LiteLLM (Bedrock
+              + Secrets Manager access), LiteLLM deployment + service, OpenWebUI
               deployment + service + PVC, Application Load Balancer with ACM
               certificate, and NetworkPolicies for zero-trust isolation. Wait
               approximately 5 minutes for LoadBalancer to provision.
@@ -1099,7 +1205,7 @@ ecr_image_tag = "latest"`}</pre>
           </div>
 
           <div className="step">
-            <div className="step-number">10</div>
+            <div className="step-number">13</div>
             <h2>Get LoadBalancer DNS</h2>
             <p>Retrieve the ALB hostname for DNS configuration.</p>
 
@@ -1122,7 +1228,7 @@ ecr_image_tag = "latest"`}</pre>
           </div>
 
           <div className="step">
-            <div className="step-number">11</div>
+            <div className="step-number">14</div>
             <h2>Configure DNS & CloudFlare Proxy</h2>
             <p>
               Set up CloudFlare with proxy mode enabled for DDoS protection, WAF,
@@ -1162,7 +1268,7 @@ See CLOUDFLARE-ORIGIN-CERT.md for detailed step-by-step guide`}</pre>
           </div>
 
           <div className="step">
-            <div className="step-number">12</div>
+            <div className="step-number">15</div>
             <h2>Verify Deployment</h2>
             <p>
               Test the deployment using automated verification commands and
@@ -1214,7 +1320,7 @@ See CLOUDFLARE-ORIGIN-CERT.md for detailed step-by-step guide`}</pre>
         </div>
 
         <div className="step">
-          <div className="step-number">13</div>
+          <div className="step-number">16</div>
           <h2>Local Testing</h2>
           <p>
             Forward LiteLLM from the EKS cluster to your machine to run local
