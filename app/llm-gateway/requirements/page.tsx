@@ -603,12 +603,12 @@ export default function RequirementsPage() {
               providers
             </div>
             <div className="implementation">
-              <h4>Implementation - 7 Models Total:</h4>
+              <h4>Implementation - 6 Models Total:</h4>
               <ul>
                 <li>
                   AWS Bedrock Nova (3 models): nova-micro, nova-lite, nova-pro
                 </li>
-                <li>AWS Bedrock Llama (2 models): llama3-2-1b, llama3-2-3b</li>
+                <li>AWS Bedrock Llama: llama3-2-1b</li>
                 <li>
                   Perplexity API (2 models): perplexity-sonar,
                   perplexity-sonar-pro
@@ -666,7 +666,7 @@ export default function RequirementsPage() {
                 <li>Shell test script: tests/test-litellm-models-api.sh</li>
                 <li>Interactive cURL examples: tests/curl-examples.sh</li>
                 <li>Guardrail test suite: tests/test-guardrails.py</li>
-                <li>All 7 models tested and validated</li>
+                <li>All 6 models tested and validated</li>
                 <li>
                   make test-all runs setup, health, model, and guardrail tests
                 </li>
@@ -764,7 +764,7 @@ export default function RequirementsPage() {
 
           <div className="summary-stats">
             <div className="stat-box">
-              <span className="value">7</span>
+              <span className="value">6</span>
               <span className="label">Models</span>
             </div>
 

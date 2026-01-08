@@ -1273,11 +1273,11 @@ Forwarding from [::1]:4000 -> 4000`}</pre>
 ╚====================================================================╝
 
 LiteLLM URL: http://localhost:4000
-Models to test: llama3-2-3b, perplexity-sonar
+Models to test: llama3-2-1b, perplexity-sonar
 
 
 ######################################################################
-# TESTING MODEL: llama3-2-3b
+# TESTING MODEL: llama3-2-1b
 ######################################################################
 
 **********************************************************************
@@ -1285,14 +1285,14 @@ Models to test: llama3-2-3b, perplexity-sonar
 **********************************************************************
 
 ======================================================================
-Test 1 (llama3-2-3b): Direct mention should be blocked
+Test 1 (llama3-2-1b): Direct mention should be blocked
 ======================================================================
 Status: 200
 Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions about cute animals may causeexcessive happiness and distraction. Please rephrase yo...
 ✅ PASS: Request blocked (200 OK with BLOCKED message)
 
 ======================================================================
-Test 2 (llama3-2-3b): Bypass prevention (history sanitization)
+Test 2 (llama3-2-1b): Bypass prevention (history sanitization)
 ======================================================================
 Simulating conversation:
   1. User: 'duckies and bunnies' → BLOCKED
@@ -1305,7 +1305,7 @@ Response: how can i assist you today?...
    History sanitization working correctly!
 
 ======================================================================
-Test 3 (llama3-2-3b): Normal conversation (no blocking)
+Test 3 (llama3-2-1b): Normal conversation (no blocking)
 ======================================================================
 Status: 200
 Response: 2 + 2 = 4....
@@ -1316,7 +1316,7 @@ Response: 2 + 2 = 4....
 **********************************************************************
 
 ======================================================================
-Test 4 (llama3-2-3b): Output filtering - non-streaming (post_call hook)
+Test 4 (llama3-2-1b): Output filtering - non-streaming (post_call hook)
 ======================================================================
 Asking: 'What's another name for rabbit?'
 Expected: LLM would naturally say 'bunny', but post_call hook should block it
@@ -1326,7 +1326,7 @@ Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions 
 ✅ PASS: LLM output blocked (post_call hook working)
 
 ======================================================================
-Test 5 (llama3-2-3b): Output filtering - streaming (post_call hook)
+Test 5 (llama3-2-1b): Output filtering - streaming (post_call hook)
 ======================================================================
 Asking: 'What's another name for rabbit?' with streaming=true
 Expected: LLM would naturally say 'bunny', but post_call hook should block it
@@ -1337,7 +1337,7 @@ Response: ⚠️ BLOCKED: Your message mentions duckies or bunnies. Discussions 
 ✅ PASS: LLM output blocked in streaming mode (post_call hook + patch working)
 
 ======================================================================
-Test 6 (llama3-2-3b): Indirect bypass - 'what is bird that quacks?' (post_call hook)
+Test 6 (llama3-2-1b): Indirect bypass - 'what is bird that quacks?' (post_call hook)
 ======================================================================
 Asking: 'what is bird that quacks?'
 Expected: Input passes pre_call (no blocked words), but LLM response
@@ -1348,7 +1348,7 @@ Response: ⚠️ BLOCKED: The response contains mentions of duckies or bunnies. 
 ✅ PASS: Indirect bypass blocked (post_call hook caught LLM response)
 
 ----------------------------------------------------------------------
-Model 'llama3-2-3b' Results: 6/6 tests passed
+Model 'llama3-2-1b' Results: 6/6 tests passed
 ----------------------------------------------------------------------
 
 ######################################################################
@@ -1504,7 +1504,7 @@ Failed: 0/12
               On-demand IP allowlisting: make eks-allow-ip IP=1.2.3.4/32 DESC="Office" (add), make eks-revoke-ip IP=1.2.3.4/32 (remove), make eks-list-ips (list all)
             </li>
             <li>
-              Arena Mode: Currently disabled (nova-lite, nova-pro, llama3-2-3b
+              Arena Mode: Currently disabled (nova-lite, nova-pro, llama3-2-1b
               when enabled)
             </li>
           </ul>

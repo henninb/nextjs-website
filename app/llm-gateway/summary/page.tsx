@@ -371,8 +371,8 @@ export default function SummaryPage() {
                 Multi-Provider AI
               </h3>
               <p>
-                7 models across 3 providers: AWS Bedrock Nova (3 models), AWS
-                Bedrock Llama (2 models), Perplexity (2 models) - all via
+                6 models across 3 providers: AWS Bedrock Nova (3 models), AWS
+                Bedrock Llama (1 model), Perplexity (2 models) - all via
                 unified OpenAI-compatible API
               </p>
             </div>
@@ -395,7 +395,7 @@ export default function SummaryPage() {
               </h3>
               <p>
                 Blind random model selection for unbiased evaluation. Currently
-                disabled, configured for nova-lite, nova-pro, and llama3-2-3b
+                disabled, configured for nova-lite, nova-pro, and llama3-2-1b
               </p>
             </div>
 

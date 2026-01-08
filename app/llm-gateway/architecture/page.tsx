@@ -338,7 +338,7 @@ export default function ArchitecturePage() {
               <li>Modern web interface for LLM interactions</li>
               <li>
                 Arena Mode (currently disabled): blind random selection
-                (nova-lite, nova-pro, llama3-2-3b)
+                (nova-lite, nova-pro, llama3-2-1b)
               </li>
               <li>Chat history with EBS persistence</li>
               <li>Connects to LiteLLM via internal network</li>
@@ -352,7 +352,7 @@ export default function ArchitecturePage() {
               <li>
                 <strong>Runs as non-root user (UID 1000)</strong>
               </li>
-              <li>Universal LLM proxy server (7 models)</li>
+              <li>Universal LLM proxy server (6 models)</li>
               <li>Multi-provider support (AWS Bedrock, Perplexity)</li>
               <li>OpenAI-compatible API interface</li>
               <li>Custom guardrails with streaming support</li>
@@ -417,15 +417,15 @@ export default function ArchitecturePage() {
               </li>
               <li>nova-micro, nova-lite, nova-pro</li>
               <li>
-                <strong>AWS Bedrock Llama (2 models)</strong>
+                <strong>AWS Bedrock Llama (1 model)</strong>
               </li>
-              <li>llama3-2-1b, llama3-2-3b</li>
+              <li>llama3-2-1b</li>
               <li>
                 <strong>Perplexity (2 models)</strong>
               </li>
               <li>perplexity-sonar, perplexity-sonar-pro</li>
               <li>
-                <strong>Total: 7 unified models</strong>
+                <strong>Total: 6 unified models</strong>
               </li>
             </ul>
           </div>
@@ -492,8 +492,8 @@ export default function ArchitecturePage() {
             <div className="tech-label">AI Providers</div>
             <div className="tech-value">
               AWS Bedrock Nova (nova-pro, nova-lite, nova-micro), AWS Bedrock
-              Llama (llama3-2-1b, llama3-2-3b), Perplexity (perplexity-sonar,
-              perplexity-sonar-pro) - 7 models total
+              Llama (llama3-2-1b), Perplexity (perplexity-sonar,
+              perplexity-sonar-pro) - 6 models total
             </div>
           </div>
 

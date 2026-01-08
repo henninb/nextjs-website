@@ -635,15 +635,15 @@ export default function FeaturesPage() {
               Multi-Provider Integration
             </h2>
             <p>
-              Unified OpenAI-compatible API for 7 models across 3 providers.
+              Unified OpenAI-compatible API for 6 models across 3 providers.
               Single endpoint, automatic routing, comprehensive testing.
             </p>
             <ul>
               <li>AWS Bedrock Nova: nova-micro, nova-lite, nova-pro</li>
-              <li>AWS Bedrock Llama: llama3-2-1b, llama3-2-3b</li>
+              <li>AWS Bedrock Llama: llama3-2-1b</li>
               <li>Perplexity: perplexity-sonar, perplexity-sonar-pro</li>
               <li>OpenAI-compatible REST API</li>
-              <li>Automated testing suite (all 7 models validated)</li>
+              <li>Automated testing suite (all 6 models validated)</li>
               <li>LiteLLM proxy with cost tracking</li>
             </ul>
           </div>
@@ -660,7 +660,7 @@ export default function FeaturesPage() {
             </p>
             <ul>
               <li>Status: Currently disabled</li>
-              <li>Configured models: nova-lite, nova-pro, llama3-2-3b</li>
+              <li>Configured models: nova-lite, nova-pro, llama3-2-1b</li>
               <li>Randomly selects ONE model per request (blind testing)</li>
               <li>Model identity hidden during conversation</li>
               <li>
