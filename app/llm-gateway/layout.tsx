@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "LLM Gateway - Production AI Infrastructure",
     description:
-      "Secure, cost-optimized LLM gateway on AWS EKS with 7 AI models from AWS Bedrock and Perplexity.",
+      "Secure, cost-optimized LLM gateway on AWS EKS with 6 AI models from AWS Bedrock and Perplexity.",
   },
 };
 

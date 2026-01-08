@@ -614,7 +614,7 @@ export default function FeaturesPage() {
             </h2>
             <p>
               Engineered for 50-90% cost savings through strategic
-              infrastructure decisions. ~$137-150/month total AWS spend.
+              infrastructure decisions. ~$152-170/month total AWS spend.
             </p>
             <ul>
               <li>
@@ -635,7 +635,7 @@ export default function FeaturesPage() {
               Multi-Provider Integration
             </h2>
             <p>
-              Unified OpenAI-compatible API for 6 models across 3 providers.
+              Unified OpenAI-compatible API for 6 models across 2 providers.
               Single endpoint, automatic routing, comprehensive testing.
             </p>
             <ul>

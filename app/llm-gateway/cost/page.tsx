@@ -358,8 +358,8 @@ export default function CostPage() {
         <h1>💰 Cost Optimization</h1>
         <p>
           Strategic cost reduction through SPOT instances, efficient networking,
-          and smart resource allocation — saving 50-90% on AWS infrastructure
-          costs.
+          and smart resource allocation — total monthly cost ~$152-170 with
+          50-90% savings on compute.
         </p>
       </div>
 
@@ -405,6 +405,19 @@ export default function CostPage() {
                 <td>$8.00</td>
               </tr>
               <tr>
+                <td>VPC Endpoints</td>
+                <td>
+                  Private AWS access (2 endpoints: Bedrock Runtime $7.20 +
+                  Secrets Manager $7.20)
+                </td>
+                <td>$14.40</td>
+              </tr>
+              <tr>
+                <td>ECR Storage</td>
+                <td>Container image storage (~4 GB for 2 images)</td>
+                <td>$0.40</td>
+              </tr>
+              <tr>
                 <td>Data Transfer</td>
                 <td>Variable</td>
                 <td>Variable</td>
@@ -414,7 +427,7 @@ export default function CostPage() {
                   <strong>Total Monthly Cost</strong>
                 </td>
                 <td>
-                  <strong>~$137-150</strong>
+                  <strong>~$152-170</strong>
                 </td>
               </tr>
             </tbody>

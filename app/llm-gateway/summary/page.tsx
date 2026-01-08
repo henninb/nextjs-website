@@ -291,12 +291,12 @@ export default function SummaryPage() {
 
         <div className="stats-grid">
           <div className="stat-card">
-            <span className="stat-value">7</span>
+            <span className="stat-value">6</span>
             <span className="stat-label">AI Models Deployed</span>
           </div>
 
           <div className="stat-card">
-            <span className="stat-value">3</span>
+            <span className="stat-value">2</span>
             <span className="stat-label">Providers Integrated</span>
           </div>
 
@@ -371,8 +371,8 @@ export default function SummaryPage() {
                 Multi-Provider AI
               </h3>
               <p>
-                6 models across 3 providers: AWS Bedrock Nova (3 models), AWS
-                Bedrock Llama (1 model), Perplexity (2 models) - all via
+                6 models across 2 providers: AWS Bedrock (Nova family: 3
+                models + Llama: 1 model), Perplexity (2 models) - all via
                 unified OpenAI-compatible API
               </p>
             </div>
