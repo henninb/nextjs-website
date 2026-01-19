@@ -170,34 +170,54 @@ export default function HomePage() {
                 />
               </a>
 
-              <a href="portfolio-item.html" className="portfolio__item">
+              <a
+                href="https://github.com/henninb/llm-gateway"
+                className="portfolio__item"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
-                  src="img/portfolio-04.jpg"
-                  alt="item4"
+                  src="img/portfolio-llm-gateway.png"
+                  alt="LLM Gateway - Unified AI Model API"
                   className="portfolio__img"
                 />
               </a>
 
-              <a href="portfolio-item.html" className="portfolio__item">
+              <a
+                href="https://github.com/henninb/flutter-cribbage"
+                className="portfolio__item"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
-                  src="img/portfolio-05.jpg"
-                  alt="item5"
+                  src="img/portfolio-flutter-cribbage.png"
+                  alt="Flutter Cribbage - Cross-Platform Card Game"
                   className="portfolio__img"
                 />
               </a>
 
-              <a href="portfolio-item.html" className="portfolio__item">
+              <a
+                href="https://github.com/henninb/flutter-fivehundred"
+                className="portfolio__item"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
-                  src="img/portfolio-06.jpg"
-                  alt="item6"
+                  src="img/portfolio-flutter-fivehundred.png"
+                  alt="Flutter Five Hundred - Classic Trick-Taking Game"
                   className="portfolio__img"
                 />
               </a>
 
-              <a href="portfolio-item.html" className="portfolio__item">
+              <a
+                href="https://github.com/henninb/raspi-finance-endpoint"
+                className="portfolio__item"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
-                  src="img/portfolio-07.jpg"
-                  alt="item7"
+                  src="img/portfolio-finance-endpoint.png"
+                  alt="Finance Endpoint API"
                   className="portfolio__img"
                 />
               </a>
