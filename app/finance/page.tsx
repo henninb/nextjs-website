@@ -67,10 +67,10 @@ export default function Accounts() {
     accountType?: string;
     moniker?: string;
   }>({});
-  // const [paginationModel, setPaginationModel] = useState({
-  //   pageSize: 25,
-  //   page: 0,
-  // });
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 50,
+    page: 0,
+  });
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState("");
@@ -681,6 +681,8 @@ export default function Accounts() {
                       getRowId={(row: Account) =>
                         row.accountId ?? row.accountNameOwner
                       }
+                      paginationModel={paginationModel}
+                      onPaginationModelChange={setPaginationModel}
                       pageSizeOptions={[25, 50, 100]}
                       checkboxSelection={false}
                       rowSelection={false}
