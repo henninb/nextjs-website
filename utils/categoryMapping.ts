@@ -12,13 +12,18 @@ export function getCategoryFromDescription(description: string): string {
     return "paycheck";
   }
 
-  // Generic payment/income transactions
+  // Generic payment/income transactions (money coming in)
   if (
     desc.includes("electronic payment received") ||
     desc.includes("payment received") ||
     desc.includes("ach credit")
   ) {
     return "payment";
+  }
+
+  // Bill payments (money going out to pay bills)
+  if (desc === "payment" || desc.startsWith("payment ")) {
+    return "bill_pay";
   }
 
   // Interest income
