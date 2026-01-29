@@ -26,7 +26,13 @@ describe("getCategoryFromDescription", () => {
     expect(getCategoryFromDescription("mcdonalds")).toBe("restaurants");
   });
 
-  it("should categorize payment/income descriptions correctly", () => {
+  it("should categorize paycheck descriptions correctly", () => {
+    expect(getCategoryFromDescription("Direct Deposit")).toBe("paycheck");
+    expect(getCategoryFromDescription("Payroll")).toBe("paycheck");
+    expect(getCategoryFromDescription("Salary Payment")).toBe("paycheck");
+  });
+
+  it("should categorize generic payment descriptions correctly", () => {
     expect(getCategoryFromDescription("Electronic Payment Received")).toBe(
       "payment",
     );
@@ -35,16 +41,20 @@ describe("getCategoryFromDescription", () => {
     );
     expect(getCategoryFromDescription("Payment Received")).toBe("payment");
     expect(getCategoryFromDescription("ACH Credit")).toBe("payment");
-    expect(getCategoryFromDescription("Direct Deposit")).toBe("payment");
-    expect(getCategoryFromDescription("Payroll")).toBe("payment");
-    expect(getCategoryFromDescription("Salary Payment")).toBe("payment");
   });
 
-  it("should categorize bill descriptions correctly", () => {
-    expect(getCategoryFromDescription("Electric Bill")).toBe("bills");
-    expect(getCategoryFromDescription("Water Utility")).toBe("bills");
-    expect(getCategoryFromDescription("ELECTRIC")).toBe("bills");
-    expect(getCategoryFromDescription("bill")).toBe("bills");
+  it("should categorize utility descriptions correctly", () => {
+    expect(getCategoryFromDescription("Centerpoint Energy")).toBe("utilities");
+    expect(getCategoryFromDescription("Xcel Energy")).toBe("utilities");
+    expect(getCategoryFromDescription("Connexus Energy")).toBe("utilities");
+    expect(getCategoryFromDescription("City of Coon Rapids")).toBe("utilities");
+  });
+
+  it("should categorize communication providers correctly", () => {
+    expect(getCategoryFromDescription("T-Mobile")).toBe("communication");
+    expect(getCategoryFromDescription("Comcast")).toBe("communication");
+    expect(getCategoryFromDescription("Xfinity")).toBe("communication");
+    expect(getCategoryFromDescription("Verizon")).toBe("communication");
   });
 
   it("should default to imported for unrecognized descriptions", () => {
@@ -134,10 +144,54 @@ describe("getCategoryFromDescription", () => {
       expect(getCategoryFromDescription("Hotel Las Vegas")).toBe("imported");
     });
 
-    it("should handle Bill's vs bill correctly", () => {
-      expect(getCategoryFromDescription("Bill's Store")).toBe("imported"); // Person's store
-      expect(getCategoryFromDescription("Electric Bill")).toBe("bills"); // Utility bill
+    it("should handle Bill's Superette correctly as fuel", () => {
+      expect(getCategoryFromDescription("Bill's Store")).toBe("imported"); // Person's store - not recognized
       expect(getCategoryFromDescription("Bill's Superette")).toBe("fuel"); // Gas station
+      expect(getCategoryFromDescription("Bills Superette - Ramsey")).toBe("fuel"); // Gas station variant
+    });
+
+    it("should categorize local grocery stores correctly", () => {
+      expect(getCategoryFromDescription("Mikes Discount Foods")).toBe("groceries");
+      expect(getCategoryFromDescription("Cub Foods - Coon Rapids")).toBe("groceries");
+      expect(getCategoryFromDescription("Coborns")).toBe("groceries");
+      expect(getCategoryFromDescription("Hy-Vee")).toBe("groceries");
+      expect(getCategoryFromDescription("Rainbow Foods")).toBe("groceries");
+    });
+
+    it("should categorize local fuel stations correctly", () => {
+      expect(getCategoryFromDescription("Superamerica - Coon Rapids")).toBe("fuel");
+      expect(getCategoryFromDescription("Holiday Station Stores")).toBe("fuel");
+      expect(getCategoryFromDescription("Kwik Trip")).toBe("fuel");
+      expect(getCategoryFromDescription("Caseys")).toBe("fuel");
+      expect(getCategoryFromDescription("PDQ - Anoka")).toBe("fuel");
+      expect(getCategoryFromDescription("Anoka Gas Stop")).toBe("fuel");
+    });
+
+    it("should categorize garbage/waste services correctly", () => {
+      expect(getCategoryFromDescription("Ace Solid Waste")).toBe("garbage");
+      expect(getCategoryFromDescription("Curbeside Waste")).toBe("garbage");
+      expect(getCategoryFromDescription("Walters Recycling")).toBe("garbage");
+      expect(getCategoryFromDescription("Republic Services")).toBe("garbage");
+    });
+
+    it("should categorize healthcare providers correctly", () => {
+      expect(getCategoryFromDescription("Allina Health")).toBe("healthcare");
+      expect(getCategoryFromDescription("Quest Diagnostics")).toBe("healthcare");
+      expect(getCategoryFromDescription("Family First Chiropractic")).toBe("healthcare");
+      expect(getCategoryFromDescription("Ramsey Dental")).toBe("healthcare");
+    });
+
+    it("should categorize local restaurants correctly", () => {
+      expect(getCategoryFromDescription("Culvers")).toBe("restaurants");
+      expect(getCategoryFromDescription("Five Guys")).toBe("restaurants");
+      expect(getCategoryFromDescription("Mercy Hospital Cafeteria")).toBe("restaurants");
+      expect(getCategoryFromDescription("Willy McCoys")).toBe("restaurants");
+    });
+
+    it("should categorize transportation correctly", () => {
+      expect(getCategoryFromDescription("Lyft Rideshare")).toBe("transportation");
+      expect(getCategoryFromDescription("Uber Rideshare")).toBe("transportation");
+      expect(getCategoryFromDescription("Navan Trip Fee")).toBe("transportation");
     });
   });
 });
