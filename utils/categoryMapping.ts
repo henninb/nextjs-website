@@ -316,9 +316,17 @@ export function getCategoryFromDescription(description: string): string {
     return "healthcare";
   }
 
-  // Shopping and retail (specific stores only, avoid generic terms)
+  // Online shopping (marketplaces)
   if (
     desc.includes("amazon") ||
+    desc.includes("ebay") ||
+    desc.includes("aliexpress")
+  ) {
+    return "online";
+  }
+
+  // Shopping and retail (specific stores only, avoid generic terms)
+  if (
     desc.includes("best buy") ||
     desc.includes("home depot") ||
     desc.includes("lowes") ||
