@@ -26,6 +26,16 @@ export function getCategoryFromDescription(description: string): string {
     return "interest";
   }
 
+  // Rewards and cashback
+  if (
+    desc.includes("rewards") ||
+    desc.includes("cashback") ||
+    desc.includes("cash back") ||
+    desc.includes("cash rewards")
+  ) {
+    return "cashback";
+  }
+
   // Check for gas stations first (before other categories to catch Costco Gas, Walmart Gas, etc.)
   if (
     desc.includes(" gas ") ||
