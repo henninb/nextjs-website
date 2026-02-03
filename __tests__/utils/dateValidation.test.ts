@@ -167,7 +167,12 @@ describe("Date Validation Utilities", () => {
 
   describe("validateDate", () => {
     it("should validate format and boundaries", () => {
-      const result = validateDate("2025-01-15", "testDate", "YYYY-MM-DD", {
+      // Use a date within the past year to avoid DATE_TOO_OLD failures
+      const recentDate = new Date();
+      recentDate.setMonth(recentDate.getMonth() - 3);
+      const dateStr = recentDate.toISOString().split("T")[0];
+
+      const result = validateDate(dateStr, "testDate", "YYYY-MM-DD", {
         pastYears: 1,
         futureYears: 1,
       });

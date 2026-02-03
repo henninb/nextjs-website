@@ -220,11 +220,16 @@ describe("Validation Error Flow Integration", () => {
     });
 
     it("should accept valid YYYY-MM-DD date", () => {
+      // Use a date within the past year to avoid DATE_TOO_OLD failures
+      const recentDate = new Date();
+      recentDate.setMonth(recentDate.getMonth() - 3);
+      const dateStr = recentDate.toISOString().split("T")[0];
+
       const paymentData = {
         paymentId: 0,
         sourceAccount: "test_account",
         destinationAccount: "dest_account",
-        transactionDate: "2025-01-15", // Valid format
+        transactionDate: dateStr, // Valid format, within 1 year
         amount: 100,
         activeStatus: true,
       };

@@ -53,6 +53,7 @@ import VerifiedIcon from "@mui/icons-material/Verified";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
+import SessionExpiryWarning from "./SessionExpiryWarning";
 import FinanceLayout from "../layouts/FinanceLayout";
 import { useUI } from "../contexts/UIContext";
 import { modernTheme } from "../themes/modernTheme";
@@ -153,7 +154,14 @@ export default function Layout({ children }: LayoutProps) {
   const globalTheme = useTheme();
   const { uiMode } = useUI();
 
-  const { isAuthenticated, user, logout } = useAuth();
+  const {
+    isAuthenticated,
+    user,
+    logout,
+    showSessionWarning,
+    sessionMinutesRemaining,
+    extendSession,
+  } = useAuth();
 
   const isFinancePage =
     pathname?.startsWith("/finance") ||
@@ -474,6 +482,14 @@ export default function Layout({ children }: LayoutProps) {
         </Box>
       </Drawer>
       {children}
+      {isFinancePage && isAuthenticated && (
+        <SessionExpiryWarning
+          open={showSessionWarning}
+          minutesRemaining={sessionMinutesRemaining}
+          onExtend={extendSession}
+          onLogout={logout}
+        />
+      )}
     </Box>
   );
 

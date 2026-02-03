@@ -6,6 +6,7 @@ import * as useLogoutProcess from "../../hooks/useLogoutProcess";
 
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
+  usePathname: jest.fn().mockReturnValue("/finance"),
 }));
 
 jest.mock("../../hooks/useLogoutProcess");
