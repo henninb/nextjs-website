@@ -51,7 +51,9 @@ export function getCategoryFromDescription(description: string): string {
     desc.includes("gas station") ||
     desc.includes("shell") ||
     desc.includes("exxon") ||
-    (desc.includes("mobil") && !desc.includes("t-mobile") && !desc.includes("tmobile")) ||
+    (desc.includes("mobil") &&
+      !desc.includes("t-mobile") &&
+      !desc.includes("tmobile")) ||
     desc.includes("chevron") ||
     desc.includes("texaco") ||
     desc.includes("fuel") ||

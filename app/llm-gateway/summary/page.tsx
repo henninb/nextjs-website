@@ -371,9 +371,9 @@ export default function SummaryPage() {
                 Multi-Provider AI
               </h3>
               <p>
-                6 models across 2 providers: AWS Bedrock (Nova family: 3
-                models + Llama: 1 model), Perplexity (2 models) - all via
-                unified OpenAI-compatible API
+                6 models across 2 providers: AWS Bedrock (Nova family: 3 models
+                + Llama: 1 model), Perplexity (2 models) - all via unified
+                OpenAI-compatible API
               </p>
             </div>
 

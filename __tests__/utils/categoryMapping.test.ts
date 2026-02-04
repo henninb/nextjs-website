@@ -147,19 +147,27 @@ describe("getCategoryFromDescription", () => {
     it("should handle Bill's Superette correctly as fuel", () => {
       expect(getCategoryFromDescription("Bill's Store")).toBe("imported"); // Person's store - not recognized
       expect(getCategoryFromDescription("Bill's Superette")).toBe("fuel"); // Gas station
-      expect(getCategoryFromDescription("Bills Superette - Ramsey")).toBe("fuel"); // Gas station variant
+      expect(getCategoryFromDescription("Bills Superette - Ramsey")).toBe(
+        "fuel",
+      ); // Gas station variant
     });
 
     it("should categorize local grocery stores correctly", () => {
-      expect(getCategoryFromDescription("Mikes Discount Foods")).toBe("groceries");
-      expect(getCategoryFromDescription("Cub Foods - Coon Rapids")).toBe("groceries");
+      expect(getCategoryFromDescription("Mikes Discount Foods")).toBe(
+        "groceries",
+      );
+      expect(getCategoryFromDescription("Cub Foods - Coon Rapids")).toBe(
+        "groceries",
+      );
       expect(getCategoryFromDescription("Coborns")).toBe("groceries");
       expect(getCategoryFromDescription("Hy-Vee")).toBe("groceries");
       expect(getCategoryFromDescription("Rainbow Foods")).toBe("groceries");
     });
 
     it("should categorize local fuel stations correctly", () => {
-      expect(getCategoryFromDescription("Superamerica - Coon Rapids")).toBe("fuel");
+      expect(getCategoryFromDescription("Superamerica - Coon Rapids")).toBe(
+        "fuel",
+      );
       expect(getCategoryFromDescription("Holiday Station Stores")).toBe("fuel");
       expect(getCategoryFromDescription("Kwik Trip")).toBe("fuel");
       expect(getCategoryFromDescription("Caseys")).toBe("fuel");
@@ -176,22 +184,34 @@ describe("getCategoryFromDescription", () => {
 
     it("should categorize healthcare providers correctly", () => {
       expect(getCategoryFromDescription("Allina Health")).toBe("healthcare");
-      expect(getCategoryFromDescription("Quest Diagnostics")).toBe("healthcare");
-      expect(getCategoryFromDescription("Family First Chiropractic")).toBe("healthcare");
+      expect(getCategoryFromDescription("Quest Diagnostics")).toBe(
+        "healthcare",
+      );
+      expect(getCategoryFromDescription("Family First Chiropractic")).toBe(
+        "healthcare",
+      );
       expect(getCategoryFromDescription("Ramsey Dental")).toBe("healthcare");
     });
 
     it("should categorize local restaurants correctly", () => {
       expect(getCategoryFromDescription("Culvers")).toBe("restaurants");
       expect(getCategoryFromDescription("Five Guys")).toBe("restaurants");
-      expect(getCategoryFromDescription("Mercy Hospital Cafeteria")).toBe("restaurants");
+      expect(getCategoryFromDescription("Mercy Hospital Cafeteria")).toBe(
+        "restaurants",
+      );
       expect(getCategoryFromDescription("Willy McCoys")).toBe("restaurants");
     });
 
     it("should categorize transportation correctly", () => {
-      expect(getCategoryFromDescription("Lyft Rideshare")).toBe("transportation");
-      expect(getCategoryFromDescription("Uber Rideshare")).toBe("transportation");
-      expect(getCategoryFromDescription("Navan Trip Fee")).toBe("transportation");
+      expect(getCategoryFromDescription("Lyft Rideshare")).toBe(
+        "transportation",
+      );
+      expect(getCategoryFromDescription("Uber Rideshare")).toBe(
+        "transportation",
+      );
+      expect(getCategoryFromDescription("Navan Trip Fee")).toBe(
+        "transportation",
+      );
     });
   });
 });

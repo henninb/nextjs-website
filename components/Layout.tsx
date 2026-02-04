@@ -132,6 +132,7 @@ const financeLinks = [
 
 const generalLinks = [
   { text: "Home", href: "/", icon: <HomeIcon /> },
+  { text: "Portfolio", href: "/portfolio", icon: <ContactPageIcon /> },
   { text: "NBA", href: "/nba", icon: <SportsBasketballIcon /> },
   { text: "NFL", href: "/nfl", icon: <SportsFootballIcon /> },
   { text: "NHL", href: "/nhl", icon: <SportsHockeyIcon /> },
@@ -169,6 +170,7 @@ export default function Layout({ children }: LayoutProps) {
     pathname?.startsWith("/register") ||
     false;
   const isLLMGatewayPage = pathname?.startsWith("/llm-gateway") || false;
+  const isHomePage = pathname === "/";
 
   // Helper function to safely get user display name with security best practices
   const getUserDisplayName = (): string => {
@@ -220,10 +222,16 @@ export default function Layout({ children }: LayoutProps) {
   const content = (
     <Box
       sx={{
-        backgroundColor: isFinancePage
-          ? theme.palette.background.default
-          : "#fff",
-        color: isFinancePage ? theme.palette.text.primary : "#000",
+        backgroundColor: isHomePage
+          ? "transparent"
+          : isFinancePage
+            ? theme.palette.background.default
+            : "#fff",
+        color: isHomePage
+          ? "#e6f1ff"
+          : isFinancePage
+            ? theme.palette.text.primary
+            : "#000",
         minHeight: "100vh",
       }}
     >

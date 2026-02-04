@@ -440,7 +440,9 @@ describe("TransactionImporter Component", () => {
 
     it("should assign 'utilities' category for utility company descriptions", async () => {
       // Test the category mapping function directly with known utility patterns
-      expect(getCategoryFromDescription("Centerpoint Energy")).toBe("utilities");
+      expect(getCategoryFromDescription("Centerpoint Energy")).toBe(
+        "utilities",
+      );
       expect(getCategoryFromDescription("Xcel Energy")).toBe("utilities");
     });
 
@@ -459,7 +461,9 @@ describe("TransactionImporter Component", () => {
       expect(getCategoryFromDescription("McDonald's Restaurant")).toBe(
         "restaurants",
       );
-      expect(getCategoryFromDescription("Centerpoint Energy")).toBe("utilities");
+      expect(getCategoryFromDescription("Centerpoint Energy")).toBe(
+        "utilities",
+      );
       expect(getCategoryFromDescription("Unknown Business")).toBe("imported");
     });
   });

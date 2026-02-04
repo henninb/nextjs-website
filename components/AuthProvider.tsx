@@ -163,7 +163,9 @@ const useProvideAuth = () => {
 
       if (timeRemaining <= SESSION_WARNING_THRESHOLD) {
         setShowSessionWarning(true);
-        setSessionMinutesRemaining(Math.max(1, Math.ceil(timeRemaining / 60000)));
+        setSessionMinutesRemaining(
+          Math.max(1, Math.ceil(timeRemaining / 60000)),
+        );
       } else {
         setShowSessionWarning(false);
       }

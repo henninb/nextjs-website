@@ -379,11 +379,11 @@ export default function ArchitecturePage() {
             <ul>
               <li>VPC with public & private subnets</li>
               <li>Single NAT Gateway (cost optimized)</li>
-              <li>Application Load Balancer (ALB) with CloudFlare Origin cert</li>
-              <li>CloudFlare Proxy Mode (DDoS/WAF enabled)</li>
               <li>
-                ALB security groups allow CloudFlare IP ranges only
+                Application Load Balancer (ALB) with CloudFlare Origin cert
               </li>
+              <li>CloudFlare Proxy Mode (DDoS/WAF enabled)</li>
+              <li>ALB security groups allow CloudFlare IP ranges only</li>
               <li>Zero-trust NetworkPolicies for pod isolation</li>
             </ul>
           </div>
@@ -475,7 +475,9 @@ export default function ArchitecturePage() {
 
           <div className="tech-row">
             <div className="tech-label">DNS & Security</div>
-            <div className="tech-value">CloudFlare Proxy Mode (DDoS/WAF/Edge Caching)</div>
+            <div className="tech-value">
+              CloudFlare Proxy Mode (DDoS/WAF/Edge Caching)
+            </div>
           </div>
 
           <div className="tech-row">

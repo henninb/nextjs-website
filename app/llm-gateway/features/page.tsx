@@ -567,10 +567,17 @@ export default function FeaturesPage() {
                 CloudFlare Proxy Mode: DDoS protection, WAF, bot detection, and
                 edge caching (currently enabled)
               </li>
-              <li>Dual Security Groups: CloudFlare and ISP modes with flexible switching</li>
-              <li>On-demand IP allowlisting (make eks-allow-ip SG=cloudflare|isp)</li>
+              <li>
+                Dual Security Groups: CloudFlare and ISP modes with flexible
+                switching
+              </li>
+              <li>
+                On-demand IP allowlisting (make eks-allow-ip SG=cloudflare|isp)
+              </li>
               <li>AWS Metadata Service blocking (SSRF prevention)</li>
-              <li>HTTPS/TLS with CloudFlare Origin Certificates (15-year validity)</li>
+              <li>
+                HTTPS/TLS with CloudFlare Origin Certificates (15-year validity)
+              </li>
               <li>Secrets Manager integration for API keys</li>
             </ul>
           </div>
@@ -671,9 +678,7 @@ export default function FeaturesPage() {
                 Configured via ENABLE_EVALUATION_ARENA_MODELS and
                 EVALUATION_ARENA_MODELS
               </li>
-              <li>
-                Persistent configuration (ENABLE_PERSISTENT_CONFIG=true)
-              </li>
+              <li>Persistent configuration (ENABLE_PERSISTENT_CONFIG=true)</li>
             </ul>
           </div>
         </div>

@@ -1040,11 +1040,11 @@ ip-10-0-11-142.ec2.internal   Ready    <none>   3h4m   v1.34.2-eks-ecaa3a6`}</pr
             <div className="step-number">9</div>
             <h2>Configure External Secrets Resources</h2>
             <p>
-              Create the Kubernetes resources for External Secrets Operator:
-              IAM role with Secrets Manager permissions, ServiceAccount with
-              IRSA annotation, SecretStore (AWS authentication), and
-              ExternalSecret (secret sync definition). This must run BEFORE
-              eks-apply to ensure secrets exist before pods start.
+              Create the Kubernetes resources for External Secrets Operator: IAM
+              role with Secrets Manager permissions, ServiceAccount with IRSA
+              annotation, SecretStore (AWS authentication), and ExternalSecret
+              (secret sync definition). This must run BEFORE eks-apply to ensure
+              secrets exist before pods start.
             </p>
 
             <div className="command-label">
@@ -1096,7 +1096,10 @@ ip-10-0-11-142.ec2.internal   Ready    <none>   3h4m   v1.34.2-eks-ecaa3a6`}</pr
               <button
                 className={`copy-button ${copiedIndex === 74 ? "copied" : ""}`}
                 onClick={() =>
-                  copyToClipboard(`kubectl get secret api-keys -n llm-gateway`, 74)
+                  copyToClipboard(
+                    `kubectl get secret api-keys -n llm-gateway`,
+                    74,
+                  )
                 }
                 title={copiedIndex === 74 ? "Copied!" : "Copy to clipboard"}
               >
@@ -1231,14 +1234,16 @@ ecr_image_tag = "latest"`}</pre>
             <div className="step-number">14</div>
             <h2>Configure DNS & CloudFlare Proxy</h2>
             <p>
-              Set up CloudFlare with proxy mode enabled for DDoS protection, WAF,
-              and edge caching. Production deployments use CloudFlare Origin
-              Certificates for secure end-to-end encryption. See CLOUDFLARE-ORIGIN-CERT.md
-              for complete setup instructions including certificate generation and
-              security group configuration.
+              Set up CloudFlare with proxy mode enabled for DDoS protection,
+              WAF, and edge caching. Production deployments use CloudFlare
+              Origin Certificates for secure end-to-end encryption. See
+              CLOUDFLARE-ORIGIN-CERT.md for complete setup instructions
+              including certificate generation and security group configuration.
             </p>
 
-            <div className="command-label">Quick DNS Setup (for initial deployment):</div>
+            <div className="command-label">
+              Quick DNS Setup (for initial deployment):
+            </div>
             <div className="code-block">
               <button
                 className={`copy-button ${copiedIndex === 110 ? "copied" : ""}`}
@@ -1607,7 +1612,9 @@ Failed: 0/12
             </li>
             <li>Local testing: make eks-port-forward (access LiteLLM API)</li>
             <li>
-              On-demand IP allowlisting: make eks-allow-ip IP=1.2.3.4/32 DESC="Office" (add), make eks-revoke-ip IP=1.2.3.4/32 (remove), make eks-list-ips (list all)
+              On-demand IP allowlisting: make eks-allow-ip IP=1.2.3.4/32
+              DESC="Office" (add), make eks-revoke-ip IP=1.2.3.4/32 (remove),
+              make eks-list-ips (list all)
             </li>
             <li>
               Arena Mode: Currently disabled (nova-lite, nova-pro, llama3-2-1b

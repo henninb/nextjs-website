@@ -404,7 +404,8 @@ export default function SecurityPage() {
             </h2>
             <p>
               End-to-end encryption with CloudFlare Origin Certificates and ALB
-              SSL termination protects data in transit through CloudFlare's global edge network.
+              SSL termination protects data in transit through CloudFlare's
+              global edge network.
             </p>
 
             <h3>Encryption Details</h3>
@@ -423,9 +424,10 @@ export default function SecurityPage() {
               Access Control & CloudFlare
             </h2>
             <p>
-              CloudFlare proxy mode (currently enabled) provides DDoS protection,
-              WAF, and bot detection while hiding the origin ALB. Dual security
-              group architecture supports both proxy and direct access modes.
+              CloudFlare proxy mode (currently enabled) provides DDoS
+              protection, WAF, and bot detection while hiding the origin ALB.
+              Dual security group architecture supports both proxy and direct
+              access modes.
             </p>
 
             <h3>CloudFlare Proxy Mode (Currently Active)</h3>
@@ -441,7 +443,9 @@ export default function SecurityPage() {
             <ul>
               <li>CloudFlare SG: Allows CloudFlare IP ranges (active)</li>
               <li>ISP SG: Allows specific ISP/office IPs (inactive)</li>
-              <li>On-demand IP allowlisting: make eks-allow-ip SG=cloudflare|isp</li>
+              <li>
+                On-demand IP allowlisting: make eks-allow-ip SG=cloudflare|isp
+              </li>
               <li>Seamless switching between proxy and direct modes</li>
             </ul>
 
@@ -559,7 +563,8 @@ export default function SecurityPage() {
               CloudFlare edge network with proxy mode enabled provides the first
               layer of defense with DDoS protection, WAF, and bot detection. ALB
               with CloudFlare Origin Certificate handles TLS termination, while
-              security groups allow only CloudFlare IP ranges to reach the origin.
+              security groups allow only CloudFlare IP ranges to reach the
+              origin.
             </p>
           </div>
 

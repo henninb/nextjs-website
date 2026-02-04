@@ -405,29 +405,29 @@ class PerplexityClient(
 
 ```typescript
 // pages/api/finance-chat.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { question } = req.body;
   const authToken = req.headers.authorization;
 
   if (!authToken) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
     const response = await fetch(`${process.env.KOTLIN_API_URL}/api/llm/chat`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authToken,
+        "Content-Type": "application/json",
+        Authorization: authToken,
       },
       body: JSON.stringify({ question }),
     });
@@ -435,8 +435,8 @@ export default async function handler(
     const data = await response.json();
     return res.status(200).json(data);
   } catch (error) {
-    console.error('Finance chat error:', error);
-    return res.status(500).json({ error: 'Failed to process question' });
+    console.error("Finance chat error:", error);
+    return res.status(500).json({ error: "Failed to process question" });
   }
 }
 ```
@@ -445,17 +445,24 @@ export default async function handler(
 
 ```tsx
 // components/FinanceChat.tsx
-import { useState } from 'react';
-import { Box, TextField, Button, Paper, Typography, CircularProgress } from '@mui/material';
+import { useState } from "react";
+import {
+  Box,
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
 export default function FinanceChat() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -463,39 +470,48 @@ export default function FinanceChat() {
     if (!input.trim() || loading) return;
 
     const userMessage = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setInput("");
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
 
     try {
-      const response = await fetch('/api/finance-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/finance-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userMessage }),
       });
 
       const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.answer }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.answer },
+      ]);
     } catch (error) {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error processing your question.'
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, I encountered an error processing your question.",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', p: 2 }}>
-      <Paper sx={{ height: 400, overflow: 'auto', p: 2, mb: 2 }}>
+    <Box sx={{ maxWidth: 600, mx: "auto", p: 2 }}>
+      <Paper sx={{ height: 400, overflow: "auto", p: 2, mb: 2 }}>
         {messages.map((msg, i) => (
-          <Box key={i} sx={{ mb: 2, textAlign: msg.role === 'user' ? 'right' : 'left' }}>
+          <Box
+            key={i}
+            sx={{ mb: 2, textAlign: msg.role === "user" ? "right" : "left" }}
+          >
             <Paper
               sx={{
-                display: 'inline-block',
+                display: "inline-block",
                 p: 1,
-                bgcolor: msg.role === 'user' ? 'primary.light' : 'grey.100'
+                bgcolor: msg.role === "user" ? "primary.light" : "grey.100",
               }}
             >
               <Typography>{msg.content}</Typography>
@@ -506,7 +522,7 @@ export default function FinanceChat() {
       </Paper>
 
       <form onSubmit={handleSubmit}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <TextField
             fullWidth
             value={input}
@@ -526,20 +542,20 @@ export default function FinanceChat() {
 
 ## 4. Security Checklist
 
-| Layer | Protection | Status |
-|-------|------------|--------|
-| PostgreSQL | Read-only role (`llm_ro`) | [ ] |
-| PostgreSQL | Views only (no direct table access) | [ ] |
-| PostgreSQL | Row-Level Security for multi-tenant | [ ] |
-| Kotlin | Parameterized queries only | [ ] |
-| Kotlin | Tool whitelist (sealed class) | [ ] |
-| Kotlin | Result limits enforced | [ ] |
-| Kotlin | Input sanitization | [ ] |
-| Kotlin | User authentication required | [ ] |
-| LLM | No direct SQL execution | [ ] |
-| LLM | Structured tool responses only | [ ] |
-| API | Rate limiting | [ ] |
-| API | Audit logging | [ ] |
+| Layer      | Protection                          | Status |
+| ---------- | ----------------------------------- | ------ |
+| PostgreSQL | Read-only role (`llm_ro`)           | [ ]    |
+| PostgreSQL | Views only (no direct table access) | [ ]    |
+| PostgreSQL | Row-Level Security for multi-tenant | [ ]    |
+| Kotlin     | Parameterized queries only          | [ ]    |
+| Kotlin     | Tool whitelist (sealed class)       | [ ]    |
+| Kotlin     | Result limits enforced              | [ ]    |
+| Kotlin     | Input sanitization                  | [ ]    |
+| Kotlin     | User authentication required        | [ ]    |
+| LLM        | No direct SQL execution             | [ ]    |
+| LLM        | Structured tool responses only      | [ ]    |
+| API        | Rate limiting                       | [ ]    |
+| API        | Audit logging                       | [ ]    |
 
 ## 5. Example Questions the LLM Can Answer
 
@@ -553,27 +569,32 @@ export default function FinanceChat() {
 ## 6. Implementation Phases
 
 ### Phase 1: Database Setup
+
 - [ ] Create `llm_ro` role
 - [ ] Create views for transactions, summaries, balances
 - [ ] Test read-only access
 
 ### Phase 2: Kotlin Backend
+
 - [ ] Define tool sealed class
 - [ ] Implement tool executor
 - [ ] Set up Perplexity client
 - [ ] Create REST endpoint
 
 ### Phase 3: RLS (If Multi-Tenant)
+
 - [ ] Add owner_id columns
 - [ ] Enable RLS policies
 - [ ] Test tenant isolation
 
 ### Phase 4: Next.js Integration
+
 - [ ] Create API route
 - [ ] Build chat UI component
 - [ ] Connect to Kotlin backend
 
 ### Phase 5: Testing & Hardening
+
 - [ ] Test all tool functions
 - [ ] Verify RLS isolation
 - [ ] Add rate limiting
