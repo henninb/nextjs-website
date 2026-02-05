@@ -29,12 +29,6 @@ function sanitizeLead(input) {
 }
 
 export async function POST(request) {
-  if (request.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
   let requestBody = {};
   try {
     requestBody = await request.json();
@@ -58,59 +52,37 @@ export async function POST(request) {
     );
   }
 
-  const { vin, color, name, email, phone } = sanitizeLead(parse.data);
-
-  const data = {
-    vin,
-    color,
-    name,
-    email,
-    phone,
-  };
-
-  // Do not log cookies or header values
-
+  let data;
   try {
-    const apiResponse = await fetch(
-      "https://f5x3msep1f.execute-api.us-east-1.amazonaws.com/prod/api-lead",
+    const sanitized = sanitizeLead(parse.data);
+    data = {
+      vin: sanitized.vin,
+      color: sanitized.color,
+      name: sanitized.name,
+      email: sanitized.email,
+      phone: sanitized.phone,
+    };
+  } catch (sanitizeError) {
+    return new Response(
+      JSON.stringify({ error: "Input sanitization failed" }),
       {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "x-bh-test": 1,
-        },
-        body: JSON.stringify(data),
+        status: 400,
+        headers: { "Content-Type": "application/json" },
       },
     );
-
-    let responseBody;
-    try {
-      responseBody = await apiResponse.json();
-    } catch (jsonError) {
-      responseBody = await apiResponse.text();
-    }
-
-    if (!apiResponse.ok) {
-      return new Response(JSON.stringify({ error: "Lead service error" }), {
-        status: 502,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const res = new Response(JSON.stringify(responseBody), {
-      status: apiResponse.status,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    });
-    res.headers.set("Cache-Control", "no-store");
-    return res;
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to submit lead" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
   }
+
+  const responseBody = {
+    leadId: `LEAD-${Date.now()}`,
+    status: "submitted",
+    ...data,
+  };
+
+  return new Response(JSON.stringify(responseBody), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
+  });
 }
