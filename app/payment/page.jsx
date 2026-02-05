@@ -28,8 +28,7 @@ import {
   CheckCircle,
   Visibility,
   VisibilityOff,
-  AccountBalance,
-  MonetizationOn,
+  Person,
 } from "@mui/icons-material";
 
 export default function Payment() {
@@ -43,13 +42,6 @@ export default function Payment() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const theme = useTheme();
-
-  const handlePayPalClick = async () => {
-    window.open(
-      "https://www.paypal.com/donate/?business=54U7R9SHDDK7J&no_recurring=0&currency_code=USD",
-      "_blank",
-    );
-  };
 
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -234,7 +226,7 @@ export default function Payment() {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <AccountBalance color="action" />
+                              <Person color="action" />
                             </InputAdornment>
                           ),
                         }}
@@ -337,53 +329,6 @@ export default function Payment() {
           {/* Payment Options Sidebar */}
           <Grid item xs={12} md={4}>
             <Stack spacing={3}>
-              {/* PayPal Option */}
-              <Card
-                elevation={4}
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.05)} 0%, ${alpha(theme.palette.info.main, 0.1)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                  transition:
-                    "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: theme.shadows[6],
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 3, textAlign: "center" }}>
-                  <MonetizationOn
-                    sx={{ fontSize: 48, color: "#0070ba", mb: 2 }}
-                  />
-                  <Typography variant="h6" gutterBottom fontWeight={600}>
-                    PayPal Donation
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 3 }}
-                  >
-                    Quick and secure donation through PayPal
-                  </Typography>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={handlePayPalClick}
-                    sx={{
-                      backgroundColor: "#0070ba",
-                      py: 1.5,
-                      fontWeight: 600,
-                      "&:hover": {
-                        backgroundColor: "#005ea6",
-                        transform: "translateY(-1px)",
-                      },
-                    }}
-                  >
-                    Donate with PayPal
-                  </Button>
-                </CardContent>
-              </Card>
-
               {/* Security Information */}
               <Paper
                 elevation={2}

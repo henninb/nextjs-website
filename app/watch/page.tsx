@@ -40,8 +40,8 @@ const WatchPage: NextPage = () => {
   const [adTimeLeft, setAdTimeLeft] = useState(0);
   const [apiCallCount, setApiCallCount] = useState(0);
   const [lastEventLog, setLastEventLog] = useState<string>("");
-  const [pxScoreData, setPxScoreData] = useState<any[]>([]);
-  const [pxStatus, setPxStatus] = useState<string>("Waiting for PX events...");
+  const [riskScoreData, setRiskScoreData] = useState<any[]>([]);
+  const [riskStatus, setRiskStatus] = useState<string>("Waiting for security events...");
   const [videoDisabled, setVideoDisabled] = useState<boolean>(false);
 
   // Snackbar state for UX feedback
@@ -59,13 +59,13 @@ const WatchPage: NextPage = () => {
   const adTrackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentTimeRef = useRef(0);
   const durationRef = useRef(0);
-  // PX detection retry control
-  const pxRetryIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const pxRetryAttemptsRef = useRef(0);
-  const pxErrorHandlerRef = useRef<((ev: ErrorEvent) => void) | null>(null);
+  // Security detection retry control
+  const securityRetryIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const securityRetryAttemptsRef = useRef(0);
+  const securityErrorHandlerRef = useRef<((ev: ErrorEvent) => void) | null>(null);
 
-  // Prevent multiple PX setups due to React strict mode
-  const pxSetupRef = useRef(false);
+  // Prevent multiple security setups due to React strict mode
+  const securitySetupRef = useRef(false);
 
   // Fetch video metadata on component mount
   useEffect(() => {
@@ -94,71 +94,70 @@ const WatchPage: NextPage = () => {
     fetchVideoData();
   }, []);
 
-  // PX Risk Event Listener Setup
+  // Risk Event Listener Setup
   useEffect(() => {
     // Prevent multiple setups due to React strict mode/HMR
-    if (pxSetupRef.current) {
-      console.log("🚫 PX setup already done, skipping to prevent duplication");
+    if (securitySetupRef.current) {
+      console.log("Security setup already done, skipping to prevent duplication");
       return;
     }
-    pxSetupRef.current = true;
+    securitySetupRef.current = true;
 
-    const setupPxListener = () => {
-      console.log("🔧 Setting up PX binary score listener...");
-      setPxStatus("Setting up PX binary score listener...");
+    const setupSecurityListener = () => {
+      console.log("Setting up binary score listener...");
+      setRiskStatus("Setting up binary score listener...");
 
-      // Check for PX script
-      const pxScript = document.getElementById(
+      // Check for security script
+      const secScript = document.getElementById(
         "px-script",
       ) as HTMLScriptElement | null;
-      if (pxScript) {
-        pxScript.addEventListener("error", (e) => {
-          console.error("PX script failed to load", e);
-          setPxStatus("PX script failed to load");
+      if (secScript) {
+        secScript.addEventListener("error", (e) => {
+          console.error("Security script failed to load", e);
+          setRiskStatus("Security script failed to load");
         });
       }
 
-      // Global resource error handler for PX
+      // Global resource error handler for security
       const onResError = (ev: ErrorEvent) => {
         const tgt = ev.target as any;
         if (tgt?.tagName === "SCRIPT" && tgt.src?.includes("px-cloud")) {
-          console.error("PX script error:", tgt.src);
-          setPxStatus("PX network/script error");
+          console.error("Security script error:", tgt.src);
+          setRiskStatus("Security network/script error");
         }
       };
       window.addEventListener("error", onResError, true);
-      pxErrorHandlerRef.current = onResError;
+      securityErrorHandlerRef.current = onResError;
 
-      // Set up the PX async init function
-      (window as any).PXjJ0cYtn9_asyncInit = function (px: any) {
-        console.log("🎯 PX initialized for binary score monitoring");
+      // Set up the security async init function
+      (window as any).PXjJ0cYtn9_asyncInit = function (sec: any) {
+        console.log("Security initialized for binary score monitoring");
 
-        // Validate that the PX object has Events API
-        if (!px || !px.Events || typeof px.Events.on !== "function") {
-          console.error("❌ PX Events API not available");
-          setPxStatus("PX Events API not available");
+        // Validate that the security object has Events API
+        if (!sec || !sec.Events || typeof sec.Events.on !== "function") {
+          console.error("Security Events API not available");
+          setRiskStatus("Security Events API not available");
           return;
         }
 
-        console.log("✅ PX Events API available");
+        console.log("Security Events API available");
 
-        setPxStatus("PX initialized - monitoring binary score events...");
+        setRiskStatus("Initialized - monitoring binary score events...");
 
-        console.log("🎯 Setting up binary score listener...");
+        console.log("Setting up binary score listener...");
 
         // Binary score event handler
         const scoreHandler = function (score, kind) {
-          console.log(`🎯 PX Score Event - Score: ${score}, Kind: ${kind}`);
+          console.log(`Score Event - Score: ${score}, Kind: ${kind}`);
 
           if (kind === "binary") {
-            console.log("🚫 Binary block decision:", score);
+            console.log("Binary block decision:", score);
 
             // Check if score is 1 (handle both string and number)
             if (score == 1) {
-              console.log("🚫 Disabling video due to binary score of 1");
-              console.log("🚫 Setting videoDisabled to true");
+              console.log("Disabling video due to binary score of 1");
               setVideoDisabled(true);
-              setIsPlaying(false); // Also stop playback
+              setIsPlaying(false);
 
               // Also pause the video element directly to be sure
               if (videoRef.current) {
@@ -173,112 +172,111 @@ const WatchPage: NextPage = () => {
               id: Date.now() + Math.random(),
             };
 
-            setPxScoreData((prev) => {
+            setRiskScoreData((prev) => {
               const newData = [scoreEvent, ...prev.slice(0, 9)];
               return newData;
             });
 
             const statusMessage = `BINARY BLOCK DECISION: ${score} - ${new Date().toLocaleTimeString()}`;
-            setPxStatus(statusMessage);
-            showToast(`🚫 PX Block Decision: ${score}`);
+            setRiskStatus(statusMessage);
+            showToast(`Block Decision: ${score}`);
           }
         };
 
-        px.Events.on("score", scoreHandler);
+        sec.Events.on("score", scoreHandler);
 
-        console.log("✅ PX binary score monitoring setup complete");
+        console.log("Binary score monitoring setup complete");
       };
 
-      // Check if PX is already loaded
-      const pxCandidates = [
+      // Check if security module is already loaded
+      const candidates = [
         (window as any).px,
         (window as any).PX,
         (window as any).PXjJ0cYtn9,
         (window as any)._PXjJ0cYtn9,
       ];
 
-      const validCandidates = pxCandidates.filter((c) => c);
-      const pxObject = validCandidates.find(
-        (px) => px && px.Events && typeof px.Events.on === "function",
+      const validCandidates = candidates.filter((c) => c);
+      const secObject = validCandidates.find(
+        (s) => s && s.Events && typeof s.Events.on === "function",
       );
 
-      if (pxObject) {
-        console.log("✅ Found PX object with Events API");
-        (window as any).PXjJ0cYtn9_asyncInit(pxObject);
+      if (secObject) {
+        console.log("Found security object with Events API");
+        (window as any).PXjJ0cYtn9_asyncInit(secObject);
       } else {
-        console.log("⏳ Waiting for PX to load...");
+        console.log("Waiting for security module to load...");
 
-        // Retry detection for PX after script loads
+        // Retry detection after script loads
         const maxAttempts = 120;
-        if (!pxRetryIntervalRef.current) {
-          pxRetryAttemptsRef.current = 0;
-          pxRetryIntervalRef.current = setInterval(() => {
-            pxRetryAttemptsRef.current += 1;
-            const found = pxCandidates.find(
+        if (!securityRetryIntervalRef.current) {
+          securityRetryAttemptsRef.current = 0;
+          securityRetryIntervalRef.current = setInterval(() => {
+            securityRetryAttemptsRef.current += 1;
+            const found = candidates.find(
               (p) => p && p.Events && typeof p.Events.on === "function",
             );
             if (found) {
-              console.log("✅ PX detected, initializing...");
+              console.log("Security module detected, initializing...");
               (window as any).PXjJ0cYtn9_asyncInit(found);
-              if (pxRetryIntervalRef.current) {
-                clearInterval(pxRetryIntervalRef.current);
-                pxRetryIntervalRef.current = null;
+              if (securityRetryIntervalRef.current) {
+                clearInterval(securityRetryIntervalRef.current);
+                securityRetryIntervalRef.current = null;
               }
-            } else if (pxRetryAttemptsRef.current >= maxAttempts) {
-              if (pxRetryIntervalRef.current) {
-                clearInterval(pxRetryIntervalRef.current);
-                pxRetryIntervalRef.current = null;
+            } else if (securityRetryAttemptsRef.current >= maxAttempts) {
+              if (securityRetryIntervalRef.current) {
+                clearInterval(securityRetryIntervalRef.current);
+                securityRetryIntervalRef.current = null;
               }
-              console.warn("PX not detected after waiting");
-              setPxStatus("PX not detected");
+              console.warn("Security module not detected after waiting");
+              setRiskStatus("Security module not detected");
             }
           }, 500);
         }
       }
     };
 
-    console.log("🚀 Starting PX binary score monitoring...");
-    setupPxListener();
+    console.log("Starting binary score monitoring...");
+    setupSecurityListener();
 
     return () => {
-      console.log("🧹 Cleaning up PX async init function...");
+      console.log("Cleaning up security async init function...");
       // Cleanup - remove the function
       if ((window as any).PXjJ0cYtn9_asyncInit) {
         delete (window as any).PXjJ0cYtn9_asyncInit;
-        console.log("✅ PX async init function cleaned up");
+        console.log("Security async init function cleaned up");
       }
-      // Clear PX detection retries
-      if (pxRetryIntervalRef.current) {
-        clearInterval(pxRetryIntervalRef.current);
-        pxRetryIntervalRef.current = null;
+      // Clear security detection retries
+      if (securityRetryIntervalRef.current) {
+        clearInterval(securityRetryIntervalRef.current);
+        securityRetryIntervalRef.current = null;
       }
       // Remove global resource error trap
-      if (pxErrorHandlerRef.current) {
+      if (securityErrorHandlerRef.current) {
         window.removeEventListener(
           "error",
-          pxErrorHandlerRef.current as any,
+          securityErrorHandlerRef.current as any,
           true,
         );
-        pxErrorHandlerRef.current = null;
+        securityErrorHandlerRef.current = null;
       }
       // Reset setup ref for re-initialization
-      pxSetupRef.current = false;
+      securitySetupRef.current = false;
     };
   }, []);
 
-  // Debug: Log whenever pxScoreData changes
+  // Debug: Log whenever riskScoreData changes
   useEffect(() => {
-    console.log("📊 pxScoreData state changed:", pxScoreData);
-    console.log("📊 pxScoreData length:", pxScoreData.length);
-    if (pxScoreData.length > 0) {
-      console.log("📊 Latest score event:", pxScoreData[0]);
+    console.log("riskScoreData state changed:", riskScoreData);
+    if (riskScoreData.length > 0) {
+      console.log("Latest score event:", riskScoreData[0]);
     }
-  }, [pxScoreData]);
+  }, [riskScoreData]);
 
-  // Debug: Log whenever pxStatus changes
+  // Debug: Log whenever riskStatus changes
   useEffect(() => {
-    console.log("📱 pxStatus changed:", pxStatus);
-  }, [pxStatus]);
+    console.log("riskStatus changed:", riskStatus);
+  }, [riskStatus]);
 
   // Start consistent XHR calls when video starts playing
   useEffect(() => {
@@ -639,7 +637,7 @@ const WatchPage: NextPage = () => {
               <div
                 style={{ fontSize: "12px", marginTop: "10px", color: "#666" }}
               >
-                [DEBUG: Video disabled due to binary score = 1]
+                [DEBUG: Video disabled due to security risk score]
               </div>
             </div>
           )}
@@ -793,7 +791,7 @@ const WatchPage: NextPage = () => {
           </div>
         </div>
 
-        {/* PX Testing Panel */}
+        {/* Security Testing Panel */}
         <div
           style={{
             marginTop: "30px",
@@ -804,14 +802,14 @@ const WatchPage: NextPage = () => {
           }}
         >
           <h3 style={{ margin: "0 0 15px 0", fontSize: "18px" }}>
-            PX Event Testing Controls
+            Security Event Testing Controls
           </h3>
 
           <div
             style={{ marginBottom: "15px", fontSize: "14px", color: "#721c24" }}
           >
             Use these controls to simulate suspicious behavior that might
-            trigger PX binary events:
+            trigger security binary events:
           </div>
 
           <div
@@ -1092,7 +1090,7 @@ const WatchPage: NextPage = () => {
           </div>
         </div>
 
-        {/* PX Binary Score Monitor */}
+        {/* Binary Score Monitor */}
         <div
           style={{
             marginTop: "30px",
@@ -1103,26 +1101,26 @@ const WatchPage: NextPage = () => {
           }}
         >
           <h3 style={{ margin: "0 0 10px 0", fontSize: "18px" }}>
-            PX Binary Score Monitor (Dedicated)
+            Binary Score Monitor
           </h3>
 
           <div style={{ marginBottom: "15px" }}>
             <strong>Status:</strong>{" "}
-            <span style={{ color: "#2d3436" }}>{pxStatus}</span>
+            <span style={{ color: "#2d3436" }}>{riskStatus}</span>
           </div>
 
           <div style={{ marginBottom: "15px" }}>
-            <strong>Binary Score Events Captured:</strong> {pxScoreData.length}
+            <strong>Binary Score Events Captured:</strong> {riskScoreData.length}
             <div
               style={{ fontSize: "12px", color: "#856404", marginTop: "5px" }}
             >
-              {pxScoreData.length === 0
+              {riskScoreData.length === 0
                 ? "No binary score events detected yet"
-                : `${pxScoreData.length} binary score events captured`}
+                : `${riskScoreData.length} binary score events captured`}
             </div>
           </div>
 
-          {pxScoreData.length > 0 ? (
+          {riskScoreData.length > 0 ? (
             <div>
               <h4 style={{ margin: "15px 0 10px 0", fontSize: "16px" }}>
                 Recent Score Events:
@@ -1137,7 +1135,7 @@ const WatchPage: NextPage = () => {
                   backgroundColor: "#fff",
                 }}
               >
-                {pxScoreData.map((event) => (
+                {riskScoreData.map((event) => (
                   <div
                     key={event.id}
                     style={{
@@ -1219,23 +1217,23 @@ const WatchPage: NextPage = () => {
                 🔍 No binary score events detected
               </div>
               <div style={{ fontSize: "14px" }}>
-                Binary events only fire when PX determines blocking action is
-                needed.
+                Binary events only fire when the security system determines
+                blocking action is needed.
                 <br />• Try the test buttons above to trigger suspicious
                 behavior
                 <br />• Normal browsing typically doesn't generate binary events
-                <br />• PX may be configured to only fire events under specific
-                conditions
+                <br />• The security system may be configured to only fire
+                events under specific conditions
               </div>
             </div>
           )}
 
           <div style={{ marginTop: "15px", fontSize: "14px", color: "#666" }}>
             <p>
-              🔍 <strong>PerimeterX Binary Score Monitoring:</strong>
+              🔍 <strong>Binary Score Monitoring:</strong>
               <br />
-              This panel captures binary score events from PerimeterX (block
-              decisions only).
+              This panel captures binary score events from the security system
+              (block decisions only).
               <br />• <strong>Binary Score:</strong> Block decision values in
               red
               <br />• Hashed scores are not available in this configuration
