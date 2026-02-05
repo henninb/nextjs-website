@@ -58,13 +58,13 @@ export default function Info() {
       newErrors.email = "Please enter a valid email address";
     }
 
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    const phoneDigits = formData.phone.replace(/[\s\-\(\)\+]/g, "");
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (
-      !phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ""))
-    ) {
-      newErrors.phone = "Please enter a valid phone number";
+    } else if (!/^\d+$/.test(phoneDigits)) {
+      newErrors.phone = "Phone number can only contain digits";
+    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      newErrors.phone = "Phone number must be 10 digits (or 11 with country code)";
     }
 
     setErrors(newErrors);

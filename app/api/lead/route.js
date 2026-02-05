@@ -13,7 +13,7 @@ const LeadSchema = z.object({
   color: z.string().trim().min(1).max(30),
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email(),
-  phone: z.string().trim().min(1).max(20),
+  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(15),
 });
 
 function sanitizeLead(input) {

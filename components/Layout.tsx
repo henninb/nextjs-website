@@ -171,6 +171,13 @@ export default function Layout({ children }: LayoutProps) {
     false;
   const isLLMGatewayPage = pathname?.startsWith("/llm-gateway") || false;
   const isHomePage = pathname === "/";
+  const isCleanPage =
+    isHomePage ||
+    pathname === "/tools" ||
+    pathname === "/temperature" ||
+    pathname?.startsWith("/lead") ||
+    pathname === "/payment" ||
+    pathname === "/watch";
 
   // Helper function to safely get user display name with security best practices
   const getUserDisplayName = (): string => {
@@ -501,8 +508,8 @@ export default function Layout({ children }: LayoutProps) {
     </Box>
   );
 
-  // LLM Gateway pages have their own layout, skip the AppBar entirely
-  if (isLLMGatewayPage) {
+  // LLM Gateway and clean pages skip the AppBar entirely
+  if (isLLMGatewayPage || isCleanPage) {
     return <>{children}</>;
   }
 
