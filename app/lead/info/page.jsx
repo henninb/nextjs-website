@@ -59,8 +59,9 @@ export default function Info() {
     }
 
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    if (
-      formData.phone &&
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (
       !phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ""))
     ) {
       newErrors.phone = "Please enter a valid phone number";
@@ -91,7 +92,7 @@ export default function Info() {
       color,
       name: formData.name.trim(),
       email: formData.email.trim(),
-      phone: formData.phone.trim() || null,
+      phone: formData.phone.trim(),
     };
 
     try {
@@ -160,10 +161,6 @@ export default function Info() {
       title="Contact Information"
       subtitle="Tell us how to reach you"
     >
-      <Head>
-        <title>Contact Information - Vehicle Lead</title>
-      </Head>
-
       <Box sx={{ maxWidth: 600, mx: "auto" }}>
         <Breadcrumbs
           separator={<NavigateNextIcon fontSize="small" />}
@@ -273,13 +270,14 @@ export default function Info() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Phone Number (Optional)"
+                label="Phone Number"
                 value={formData.phone}
                 onChange={handleChange("phone")}
                 error={!!errors.phone}
                 helperText={
                   errors.phone || "We may call you to discuss your vehicle"
                 }
+                required
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">

@@ -13,7 +13,7 @@ const LeadSchema = z.object({
   color: z.string().trim().min(1).max(30),
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email(),
-  phone: z.string().trim().max(20).optional(),
+  phone: z.string().trim().min(1).max(20),
 });
 
 function sanitizeLead(input) {
@@ -28,7 +28,7 @@ function sanitizeLead(input) {
   };
 }
 
-export default async function POST(request) {
+export async function POST(request) {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
