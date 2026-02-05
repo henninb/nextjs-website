@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import ShieldIcon from "./svg/ShieldIcon";
 import LockIcon from "./svg/LockIcon";
 import "../styles/landing.css";
@@ -22,6 +23,69 @@ export default function LandingPageContent() {
         <div className="landing-hero__terminal">
           <span>$ status: all systems secured</span>
           <span className="landing-hero__terminal-cursor" />
+        </div>
+      </section>
+
+      {/* Quick Links */}
+      <section className="landing-section">
+        <h2 className="landing-section__title">
+          Explore <span>Features</span>
+        </h2>
+        <div className="landing-links">
+          <Link href="/tools" className="landing-link">
+            <div className="landing-link__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+            </div>
+            <h3 className="landing-link__title">Tools</h3>
+            <p className="landing-link__desc">Developer tools and utilities</p>
+            <span className="landing-link__arrow">&rarr;</span>
+          </Link>
+          <Link href="/temperature" className="landing-link">
+            <div className="landing-link__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+              </svg>
+            </div>
+            <h3 className="landing-link__title">Temperature</h3>
+            <p className="landing-link__desc">Conversion and live weather</p>
+            <span className="landing-link__arrow">&rarr;</span>
+          </Link>
+          <Link href="/lead" className="landing-link">
+            <div className="landing-link__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="3" width="15" height="13" rx="2" />
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                <circle cx="5.5" cy="18.5" r="2.5" />
+                <circle cx="18.5" cy="18.5" r="2.5" />
+              </svg>
+            </div>
+            <h3 className="landing-link__title">Lead</h3>
+            <p className="landing-link__desc">Vehicle lead form with VIN lookup</p>
+            <span className="landing-link__arrow">&rarr;</span>
+          </Link>
+          <Link href="/payment" className="landing-link">
+            <div className="landing-link__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                <line x1="1" y1="10" x2="23" y2="10" />
+              </svg>
+            </div>
+            <h3 className="landing-link__title">Payment</h3>
+            <p className="landing-link__desc">Secure payment processing</p>
+            <span className="landing-link__arrow">&rarr;</span>
+          </Link>
+          <Link href="/watch" className="landing-link">
+            <div className="landing-link__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </div>
+            <h3 className="landing-link__title">Watch</h3>
+            <p className="landing-link__desc">Video player with analytics</p>
+            <span className="landing-link__arrow">&rarr;</span>
+          </Link>
         </div>
       </section>
 
@@ -96,14 +160,6 @@ export default function LandingPageContent() {
         <div className="landing-steps">
           <div className="landing-step">
             <div className="landing-step__number">1</div>
-            <h3 className="landing-step__title">PerimeterX Integration</h3>
-            <p className="landing-step__text">
-              Client-side sensors collect behavioral signals and device
-              fingerprints on every page load.
-            </p>
-          </div>
-          <div className="landing-step">
-            <div className="landing-step__number">2</div>
             <h3 className="landing-step__title">Risk Scoring</h3>
             <p className="landing-step__text">
               Machine learning models analyze collected data in real time to
@@ -111,7 +167,7 @@ export default function LandingPageContent() {
             </p>
           </div>
           <div className="landing-step">
-            <div className="landing-step__number">3</div>
+            <div className="landing-step__number">2</div>
             <h3 className="landing-step__title">Challenge or Allow</h3>
             <p className="landing-step__text">
               Low-risk visitors pass through seamlessly. Suspicious traffic
@@ -119,7 +175,7 @@ export default function LandingPageContent() {
             </p>
           </div>
           <div className="landing-step">
-            <div className="landing-step__number">4</div>
+            <div className="landing-step__number">3</div>
             <h3 className="landing-step__title">Continuous Monitoring</h3>
             <p className="landing-step__text">
               Ongoing session analysis detects anomalies and adapts defenses as

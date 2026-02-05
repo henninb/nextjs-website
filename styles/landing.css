@@ -225,6 +225,94 @@ body:has(.landing-page) {
   color: #00ff41;
 }
 
+/* ---- Quick Links Grid ---- */
+
+.landing-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.landing-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-decoration: none;
+  background: rgba(0, 255, 65, 0.03);
+  border: 1px solid rgba(0, 255, 65, 0.12);
+  border-radius: 12px;
+  padding: 28px 20px 24px;
+  position: relative;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+
+.landing-link:hover {
+  border-color: rgba(0, 255, 65, 0.5);
+  box-shadow:
+    0 0 24px rgba(0, 255, 65, 0.12),
+    inset 0 0 24px rgba(0, 255, 65, 0.03);
+  transform: translateY(-4px);
+  background: rgba(0, 255, 65, 0.06);
+}
+
+.landing-link__icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(0, 255, 65, 0.08);
+  color: #00ff41;
+  margin-bottom: 16px;
+  transition: background 0.3s ease;
+}
+
+.landing-link:hover .landing-link__icon {
+  background: rgba(0, 255, 65, 0.15);
+}
+
+.landing-link__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.landing-link__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e6f1ff;
+  margin-bottom: 6px;
+}
+
+.landing-link__desc {
+  font-size: 0.8rem;
+  color: #8892b0;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.landing-link__arrow {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 1.1rem;
+  color: #00ff41;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.landing-link:hover .landing-link__arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 /* ---- Card Grid ---- */
 
 .landing-cards {
@@ -390,5 +478,9 @@ body:has(.landing-page) {
   .landing-stats,
   .landing-steps {
     grid-template-columns: 1fr;
+  }
+
+  .landing-links {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
