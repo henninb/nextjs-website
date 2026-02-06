@@ -32,6 +32,7 @@ export enum ClaimStatus {
 }
 
 export interface MedicalExpenseCreateRequest {
+  owner?: string;
   transactionId?: number; // Optional - medical expenses can exist without linked transactions
   providerId?: number;
   familyMemberId?: number;

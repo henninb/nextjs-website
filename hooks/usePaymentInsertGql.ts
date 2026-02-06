@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Payment from "../model/Payment";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("usePaymentInsertGql");
 
@@ -41,6 +42,7 @@ const CREATE_PAYMENT_MUTATION = /* GraphQL */ `
 
 export default function usePaymentInsertGql() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationKey: ["insertPaymentGQL"],
@@ -64,6 +66,7 @@ export default function usePaymentInsertGql() {
         transactionDate: dateToLocalDate(p.transactionDate),
         amount: p.amount,
         activeStatus: p.activeStatus,
+        owner: user?.username || "",
       };
 
       console.log(

@@ -5,6 +5,7 @@ import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { InputSanitizer } from "../utils/validation/sanitization";
 import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useParameterInsert");
 
@@ -53,9 +54,10 @@ export const insertParameter = async (
  */
 export default function useParameterInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Parameter }) => insertParameter(variables.payload),
+    (variables: { payload: Parameter }) => insertParameter({ ...variables.payload, owner: user?.username || "" }),
     {
       mutationKey: ["insertParameter"],
       onSuccess: (newParameter) => {

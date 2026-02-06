@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Parameter from "../model/Parameter";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useParameterInsertGql");
 
@@ -33,6 +34,7 @@ const CREATE_PARAMETER_MUTATION = /* GraphQL */ `
 
 export default function useParameterInsertGql() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationKey: ["insertParameterGQL"],
@@ -43,6 +45,7 @@ export default function useParameterInsertGql() {
         parameterName: p.parameterName,
         parameterValue: p.parameterValue,
         activeStatus: p.activeStatus ?? true,
+        owner: user?.username || "",
       };
       const data = await graphqlRequest<CreateParameterResult>({
         query: CREATE_PARAMETER_MUTATION,

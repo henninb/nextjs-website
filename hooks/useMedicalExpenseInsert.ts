@@ -8,6 +8,7 @@ import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useMedicalExpenseInsert");
 
@@ -78,10 +79,11 @@ export const insertMedicalExpense = async (
  */
 export default function useMedicalExpenseInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
     (variables: { payload: MedicalExpenseCreateRequest }) =>
-      insertMedicalExpense(variables.payload),
+      insertMedicalExpense({ ...variables.payload, owner: user?.username || "" }),
     {
       mutationKey: ["insertMedicalExpense"],
       onSuccess: (newExpense) => {

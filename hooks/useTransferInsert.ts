@@ -6,6 +6,7 @@ import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";
 import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useTransferInsert");
 
@@ -83,9 +84,10 @@ export const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
  */
 export default function useTransferInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Transfer }) => insertTransfer(variables.payload),
+    (variables: { payload: Transfer }) => insertTransfer({ ...variables.payload, owner: user?.username || "" }),
     {
       mutationKey: ["insertTransfer"],
       onSuccess: (newTransfer) => {

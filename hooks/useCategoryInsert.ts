@@ -6,6 +6,7 @@ import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";
 import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useCategoryInsert");
 
@@ -51,9 +52,10 @@ export const insertCategory = async (
  */
 export default function useCategoryInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { category: Category }) => insertCategory(variables.category),
+    (variables: { category: Category }) => insertCategory({ ...variables.category, owner: user?.username || "" }),
     {
       mutationKey: ["insertCategory"],
       onSuccess: (newCategory) => {

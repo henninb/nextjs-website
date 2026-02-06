@@ -4,6 +4,7 @@ import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useValidationAmountInsert");
 
@@ -48,10 +49,11 @@ export const insertValidationAmount = async (
  */
 export default function useValidationAmountInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
     (variables: { accountNameOwner: string; payload: ValidationAmount }) =>
-      insertValidationAmount(variables.accountNameOwner, variables.payload),
+      insertValidationAmount(variables.accountNameOwner, { ...variables.payload, owner: user?.username || "" }),
     {
       mutationKey: ["insertValidationAmount"],
       onSuccess: (newValidation, variables) => {

@@ -7,6 +7,7 @@ import { HookValidator } from "../utils/hookValidation";
 import { formatDateForInput } from "../components/Common";
 import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("usePaymentInsert");
 
@@ -28,6 +29,7 @@ export const setupNewPayment = async (payload: Payment) => {
     guidSource: null,
     guidDestination: null,
     activeStatus: true,
+    owner: payload.owner || "",
   };
 };
 
@@ -92,9 +94,10 @@ export const insertPayment = async (payload: Payment): Promise<Payment> => {
  */
 export default function usePaymentInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Payment }) => insertPayment(variables.payload),
+    (variables: { payload: Payment }) => insertPayment({ ...variables.payload, owner: user?.username || "" }),
     {
       mutationKey: ["insertPayment"],
       onSuccess: (newPayment) => {

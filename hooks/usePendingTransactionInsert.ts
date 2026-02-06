@@ -4,6 +4,7 @@ import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("usePendingTransactionInsert");
 
@@ -47,10 +48,11 @@ export const insertPendingTransaction = async (
  */
 export default function usePendingTransactionInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
     (variables: { pendingTransaction: PendingTransaction }) =>
-      insertPendingTransaction(variables.pendingTransaction),
+      insertPendingTransaction({ ...variables.pendingTransaction, owner: user?.username || "" }),
     {
       mutationKey: ["insertPendingTransaction"],
       onSuccess: (newTransaction) => {

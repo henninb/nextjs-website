@@ -8,6 +8,7 @@ import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";
 import { getAccountKey, getTotalsKey } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useTransactionInsert");
 
@@ -53,6 +54,11 @@ export const setupNewTransaction = async (
   // Only include dueDate if it has a value
   if (payload.dueDate) {
     result.dueDate = payload.dueDate;
+  }
+
+  // Include owner if provided
+  if (payload.owner) {
+    result.owner = payload.owner;
   }
 
   // Explicitly DO NOT include: transactionId, accountId, receiptImage
@@ -127,12 +133,13 @@ export const insertTransaction = async (
  */
 export default function useTransactionInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
     (variables: TransactionInsertType) =>
       insertTransaction(
         variables.newRow.accountNameOwner,
-        variables.newRow,
+        { ...variables.newRow, owner: user?.username || "" },
         variables.isFutureTransaction,
         variables.isImportTransaction,
       ),

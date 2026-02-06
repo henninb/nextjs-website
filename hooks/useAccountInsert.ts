@@ -6,6 +6,7 @@ import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";
 import { QueryKeys, CacheUpdateStrategies } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useAccountInsert");
 
@@ -84,9 +85,10 @@ export const insertAccount = async (
  */
 export default function useAccountInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Account }) => insertAccount(variables.payload),
+    (variables: { payload: Account }) => insertAccount({ ...variables.payload, owner: user?.username || "" }),
     {
       mutationKey: ["insertAccount"],
       onError: (error) => {

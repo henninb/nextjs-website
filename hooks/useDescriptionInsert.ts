@@ -6,6 +6,7 @@ import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { HookValidator } from "../utils/hookValidation";
 import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useDescriptionInsert");
 
@@ -18,9 +19,10 @@ const log = createHookLogger("useDescriptionInsert");
  */
 export const insertDescription = async (
   descriptionName: string,
+  owner: string = "",
 ): Promise<Description> => {
   // Create description object with default activeStatus
-  const descriptionData = { descriptionName, activeStatus: true };
+  const descriptionData = { descriptionName, activeStatus: true, owner };
 
   // Validate description data
   const validatedData = HookValidator.validateInsert(
@@ -56,10 +58,11 @@ export const insertDescription = async (
  */
 export default function useDescriptionInsert() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useStandardMutation(
     (variables: { descriptionName: string }) =>
-      insertDescription(variables.descriptionName),
+      insertDescription(variables.descriptionName, user?.username || ""),
     {
       mutationKey: ["insertDescription"],
       onSuccess: (newDescription) => {

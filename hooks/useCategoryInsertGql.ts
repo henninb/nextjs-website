@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Category from "../model/Category";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useCategoryInsertGql");
 
@@ -33,6 +34,7 @@ const CREATE_CATEGORY_MUTATION = /* GraphQL */ `
 
 export default function useCategoryInsertGql() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationKey: ["insertCategoryGQL"],
@@ -50,6 +52,7 @@ export default function useCategoryInsertGql() {
       const category = {
         categoryName: normalizedName,
         activeStatus: c.activeStatus,
+        owner: user?.username || "",
       };
       const data = await graphqlRequest<CreateCategoryResult>({
         query: CREATE_CATEGORY_MUTATION,

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "../utils/graphqlClient";
 import Description from "../model/Description";
 import { createHookLogger } from "../utils/logger";
+import { useAuth } from "../components/AuthProvider";
 
 const log = createHookLogger("useDescriptionInsertGql");
 
@@ -33,6 +34,7 @@ const CREATE_DESCRIPTION_MUTATION = /* GraphQL */ `
 
 export default function useDescriptionInsertGql() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationKey: ["insertDescriptionGQL"],
@@ -50,6 +52,7 @@ export default function useDescriptionInsertGql() {
       const description = {
         descriptionName: normalizedName,
         activeStatus: d.activeStatus,
+        owner: user?.username || "",
       };
       const data = await graphqlRequest<CreateDescriptionResult>({
         query: CREATE_DESCRIPTION_MUTATION,
