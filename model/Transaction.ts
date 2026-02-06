@@ -7,6 +7,7 @@ import TransactionCategoryMetadata from "./TransactionCategoryMetadata";
 
 export default interface Transaction {
   transactionId?: number;
+  owner?: string;
   guid: string;
   accountId?: number;
   accountType: AccountType;

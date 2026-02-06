@@ -8,6 +8,7 @@ const log = createHookLogger("useParameterUpdateGql");
 type UpdateParameterResult = {
   updateParameter: {
     parameterId: number;
+    owner?: string | null;
     parameterName: string;
     parameterValue: string;
     activeStatus: boolean;
@@ -20,6 +21,7 @@ const UPDATE_PARAMETER_MUTATION = /* GraphQL */ `
   mutation UpdateParameter($parameter: ParameterInput!) {
     updateParameter(parameter: $parameter) {
       parameterId
+      owner
       parameterName
       parameterValue
       activeStatus
@@ -55,6 +57,7 @@ export default function useParameterUpdateGql() {
       const t = data.updateParameter;
       const mapped: Parameter = {
         parameterId: t.parameterId,
+        owner: t.owner ?? undefined,
         parameterName: t.parameterName,
         parameterValue: t.parameterValue,
         activeStatus: !!t.activeStatus,

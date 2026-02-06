@@ -8,6 +8,7 @@ const log = createHookLogger("useCategoryUpdateGql");
 type UpdateCategoryResult = {
   updateCategory: {
     categoryId: number;
+    owner?: string | null;
     categoryName: string;
     activeStatus: boolean;
     categoryCount?: number | null;
@@ -20,6 +21,7 @@ const UPDATE_CATEGORY_MUTATION = /* GraphQL */ `
   mutation UpdateCategory($category: CategoryInput!, $oldCategoryName: String) {
     updateCategory(category: $category, oldCategoryName: $oldCategoryName) {
       categoryId
+      owner
       categoryName
       activeStatus
       categoryCount
@@ -78,6 +80,7 @@ export default function useCategoryUpdateGql() {
       const t = data.updateCategory;
       const mapped: Category = {
         categoryId: t.categoryId,
+        owner: t.owner ?? undefined,
         categoryName: t.categoryName,
         activeStatus: !!t.activeStatus,
         categoryCount: t.categoryCount ?? undefined,

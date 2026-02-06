@@ -8,6 +8,7 @@ const log = createHookLogger("useCategoryInsertGql");
 type CreateCategoryResult = {
   createCategory: {
     categoryId: number;
+    owner?: string | null;
     categoryName: string;
     activeStatus: boolean;
     categoryCount?: number | null;
@@ -20,6 +21,7 @@ const CREATE_CATEGORY_MUTATION = /* GraphQL */ `
   mutation CreateCategory($category: CategoryInput!) {
     createCategory(category: $category) {
       categoryId
+      owner
       categoryName
       activeStatus
       categoryCount
@@ -56,6 +58,7 @@ export default function useCategoryInsertGql() {
       const t = data.createCategory;
       const mapped: Category = {
         categoryId: t.categoryId,
+        owner: t.owner ?? undefined,
         categoryName: t.categoryName,
         activeStatus: !!t.activeStatus,
         categoryCount: t.categoryCount ?? undefined,

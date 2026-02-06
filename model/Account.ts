@@ -2,6 +2,7 @@ import { AccountType } from "./AccountType";
 
 export default interface Account {
   accountId?: number;
+  owner?: string;
   accountNameOwner: string;
   accountType: AccountType;
   activeStatus: boolean;

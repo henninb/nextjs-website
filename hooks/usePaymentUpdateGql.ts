@@ -8,6 +8,7 @@ const log = createHookLogger("usePaymentUpdateGql");
 type UpdatePaymentResult = {
   updatePayment: {
     paymentId: number;
+    owner?: string | null;
     sourceAccount: string;
     destinationAccount: string;
     transactionDate: string;
@@ -24,6 +25,7 @@ const UPDATE_PAYMENT_MUTATION = /* GraphQL */ `
   mutation UpdatePayment($id: ID!, $payment: PaymentInput!) {
     updatePayment(id: $id, payment: $payment) {
       paymentId
+      owner
       sourceAccount
       destinationAccount
       transactionDate
@@ -76,6 +78,7 @@ export default function usePaymentUpdateGql() {
       const t = data.updatePayment;
       const mapped: Payment = {
         paymentId: t.paymentId,
+        owner: t.owner ?? undefined,
         sourceAccount: t.sourceAccount,
         destinationAccount: t.destinationAccount,
         transactionDate: new Date(t.transactionDate),

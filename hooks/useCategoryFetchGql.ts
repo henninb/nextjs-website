@@ -8,6 +8,7 @@ const log = createHookLogger("useCategoryFetchGql");
 type CategoriesQueryResult = {
   categories: {
     categoryId: number;
+    owner?: string | null;
     categoryName: string;
     activeStatus: boolean;
     categoryCount?: number | null;
@@ -20,6 +21,7 @@ const CATEGORIES_QUERY = /* GraphQL */ `
   query Categories {
     categories {
       categoryId
+      owner
       categoryName
       activeStatus
       categoryCount
@@ -37,6 +39,7 @@ export default function useCategoryFetchGql() {
     });
     const mapped: Category[] = (data.categories || []).map((c) => ({
       categoryId: c.categoryId,
+      owner: c.owner ?? undefined,
       categoryName: c.categoryName,
       activeStatus: !!c.activeStatus,
       categoryCount: c.categoryCount ?? undefined,

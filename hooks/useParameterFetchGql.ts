@@ -8,6 +8,7 @@ const log = createHookLogger("useParameterFetchGql");
 type ParametersQueryResult = {
   parameters: {
     parameterId: number;
+    owner?: string | null;
     parameterName: string;
     parameterValue: string;
     activeStatus: boolean;
@@ -20,6 +21,7 @@ const PARAMETERS_QUERY = /* GraphQL */ `
   query Parameters {
     parameters {
       parameterId
+      owner
       parameterName
       parameterValue
       activeStatus
@@ -37,6 +39,7 @@ export default function useParameterFetchGql() {
     });
     const mapped: Parameter[] = (data.parameters || []).map((p) => ({
       parameterId: p.parameterId,
+      owner: p.owner ?? undefined,
       parameterName: p.parameterName,
       parameterValue: p.parameterValue,
       activeStatus: !!p.activeStatus,

@@ -8,6 +8,7 @@ const log = createHookLogger("useParameterInsertGql");
 type CreateParameterResult = {
   createParameter: {
     parameterId: number;
+    owner?: string | null;
     parameterName: string;
     parameterValue: string;
     activeStatus: boolean;
@@ -20,6 +21,7 @@ const CREATE_PARAMETER_MUTATION = /* GraphQL */ `
   mutation CreateParameter($parameter: ParameterInput!) {
     createParameter(parameter: $parameter) {
       parameterId
+      owner
       parameterName
       parameterValue
       activeStatus
@@ -49,6 +51,7 @@ export default function useParameterInsertGql() {
       const t = data.createParameter;
       const mapped: Parameter = {
         parameterId: t.parameterId,
+        owner: t.owner ?? undefined,
         parameterName: t.parameterName,
         parameterValue: t.parameterValue,
         activeStatus: !!t.activeStatus,

@@ -8,6 +8,7 @@ const log = createHookLogger("usePaymentInsertGql");
 type CreatePaymentResult = {
   createPayment: {
     paymentId: number;
+    owner?: string | null;
     sourceAccount: string;
     destinationAccount: string;
     transactionDate: string;
@@ -24,6 +25,7 @@ const CREATE_PAYMENT_MUTATION = /* GraphQL */ `
   mutation CreatePayment($payment: PaymentInput!) {
     createPayment(payment: $payment) {
       paymentId
+      owner
       sourceAccount
       destinationAccount
       transactionDate
@@ -75,6 +77,7 @@ export default function usePaymentInsertGql() {
       const t = data.createPayment;
       const mapped: Payment = {
         paymentId: t.paymentId,
+        owner: t.owner ?? undefined,
         sourceAccount: t.sourceAccount,
         destinationAccount: t.destinationAccount,
         transactionDate: new Date(t.transactionDate),

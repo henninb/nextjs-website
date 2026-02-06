@@ -8,6 +8,7 @@ const log = createHookLogger("useDescriptionUpdateGql");
 type UpdateDescriptionResult = {
   updateDescription: {
     descriptionId: number;
+    owner?: string | null;
     descriptionName: string;
     activeStatus: boolean;
     descriptionCount?: number | null;
@@ -26,6 +27,7 @@ const UPDATE_DESCRIPTION_MUTATION = /* GraphQL */ `
       oldDescriptionName: $oldDescriptionName
     ) {
       descriptionId
+      owner
       descriptionName
       activeStatus
       descriptionCount
@@ -85,6 +87,7 @@ export default function useDescriptionUpdateGql() {
       const t = data.updateDescription;
       const mapped: Description = {
         descriptionId: t.descriptionId,
+        owner: t.owner ?? undefined,
         descriptionName: t.descriptionName,
         activeStatus: !!t.activeStatus,
         descriptionCount: t.descriptionCount ?? undefined,

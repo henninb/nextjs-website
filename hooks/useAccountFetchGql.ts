@@ -8,6 +8,7 @@ const log = createHookLogger("useAccountFetchGql");
 type AccountsQueryResult = {
   accounts: {
     accountId?: number;
+    owner?: string | null;
     accountNameOwner: string;
     accountType: string;
     activeStatus: boolean;
@@ -26,6 +27,7 @@ const ACCOUNTS_QUERY = /* GraphQL */ `
   query Accounts {
     accounts {
       accountId
+      owner
       accountNameOwner
       accountType
       activeStatus
@@ -69,6 +71,7 @@ export default function useAccountFetchGql() {
 
       const mapped: Account[] = (data.accounts || []).map((a) => ({
         accountId: a.accountId,
+        owner: a.owner ?? undefined,
         accountNameOwner: a.accountNameOwner,
         accountType: (a.accountType as any) ?? "undefined",
         activeStatus: !!a.activeStatus,

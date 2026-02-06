@@ -8,6 +8,7 @@ const log = createHookLogger("useTransferInsertGql");
 type CreateTransferResult = {
   createTransfer: {
     transferId: number;
+    owner?: string | null;
     sourceAccount: string;
     destinationAccount: string;
     transactionDate: string;
@@ -24,6 +25,7 @@ const CREATE_TRANSFER_MUTATION = /* GraphQL */ `
   mutation CreateTransfer($transfer: TransferInput!) {
     createTransfer(transfer: $transfer) {
       transferId
+      owner
       sourceAccount
       destinationAccount
       transactionDate
@@ -74,6 +76,7 @@ export default function useTransferInsertGql() {
       const t = data.createTransfer;
       const mapped: Transfer = {
         transferId: t.transferId,
+        owner: t.owner ?? undefined,
         sourceAccount: t.sourceAccount,
         destinationAccount: t.destinationAccount,
         transactionDate: new Date(t.transactionDate),

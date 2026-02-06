@@ -8,6 +8,7 @@ const log = createHookLogger("usePaymentFetchGql");
 type PaymentsQueryResult = {
   payments: {
     paymentId: number;
+    owner?: string | null;
     sourceAccount: string;
     destinationAccount: string;
     transactionDate: string;
@@ -24,6 +25,7 @@ const PAYMENTS_QUERY = /* GraphQL */ `
   query Payments {
     payments {
       paymentId
+      owner
       sourceAccount
       destinationAccount
       transactionDate
@@ -45,6 +47,7 @@ export default function usePaymentFetchGql() {
     });
     const mapped: Payment[] = (data.payments || []).map((p) => ({
       paymentId: p.paymentId,
+      owner: p.owner ?? undefined,
       sourceAccount: p.sourceAccount,
       destinationAccount: p.destinationAccount,
       transactionDate: new Date(p.transactionDate),

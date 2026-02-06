@@ -1,5 +1,6 @@
 export default interface Transfer {
   transferId: number;
+  owner?: string;
   sourceAccount: string;
   destinationAccount: string;
   transactionDate: Date;

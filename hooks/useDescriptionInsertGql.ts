@@ -8,6 +8,7 @@ const log = createHookLogger("useDescriptionInsertGql");
 type CreateDescriptionResult = {
   createDescription: {
     descriptionId: number;
+    owner?: string | null;
     descriptionName: string;
     activeStatus: boolean;
     descriptionCount?: number | null;
@@ -20,6 +21,7 @@ const CREATE_DESCRIPTION_MUTATION = /* GraphQL */ `
   mutation CreateDescription($description: DescriptionInput!) {
     createDescription(description: $description) {
       descriptionId
+      owner
       descriptionName
       activeStatus
       descriptionCount
@@ -56,6 +58,7 @@ export default function useDescriptionInsertGql() {
       const t = data.createDescription;
       const mapped: Description = {
         descriptionId: t.descriptionId,
+        owner: t.owner ?? undefined,
         descriptionName: t.descriptionName,
         activeStatus: !!t.activeStatus,
         descriptionCount: t.descriptionCount ?? undefined,

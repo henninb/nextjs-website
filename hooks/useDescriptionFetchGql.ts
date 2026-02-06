@@ -8,6 +8,7 @@ const log = createHookLogger("useDescriptionFetchGql");
 type DescriptionsQueryResult = {
   descriptions: {
     descriptionId: number;
+    owner?: string | null;
     descriptionName: string;
     activeStatus: boolean;
     descriptionCount?: number | null;
@@ -20,6 +21,7 @@ const DESCRIPTIONS_QUERY = /* GraphQL */ `
   query Descriptions {
     descriptions {
       descriptionId
+      owner
       descriptionName
       activeStatus
       descriptionCount
@@ -37,6 +39,7 @@ export default function useDescriptionFetchGql() {
     });
     const mapped: Description[] = (data.descriptions || []).map((d) => ({
       descriptionId: d.descriptionId,
+      owner: d.owner ?? undefined,
       descriptionName: d.descriptionName,
       activeStatus: !!d.activeStatus,
       descriptionCount: d.descriptionCount ?? undefined,

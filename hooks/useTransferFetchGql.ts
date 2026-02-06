@@ -8,6 +8,7 @@ const log = createHookLogger("useTransferFetchGql");
 type TransfersQueryResult = {
   transfers: {
     transferId: number;
+    owner?: string | null;
     sourceAccount: string;
     destinationAccount: string;
     transactionDate: string;
@@ -24,6 +25,7 @@ const TRANSFERS_QUERY = /* GraphQL */ `
   query Transfers {
     transfers {
       transferId
+      owner
       sourceAccount
       destinationAccount
       transactionDate
@@ -45,6 +47,7 @@ export default function useTransferFetchGql() {
     });
     const mapped: Transfer[] = (data.transfers || []).map((t) => ({
       transferId: t.transferId,
+      owner: t.owner ?? undefined,
       sourceAccount: t.sourceAccount,
       destinationAccount: t.destinationAccount,
       transactionDate: new Date(t.transactionDate),

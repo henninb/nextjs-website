@@ -1,5 +1,6 @@
 export interface MedicalExpense {
   medicalExpenseId: number;
+  owner?: string;
   transactionId: number;
   providerId?: number;
   familyMemberId?: number;
