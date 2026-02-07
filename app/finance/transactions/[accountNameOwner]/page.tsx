@@ -1,4 +1,5 @@
 "use client";
+export const runtime = "edge";
 import { getErrorMessage } from "../../../../types";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
