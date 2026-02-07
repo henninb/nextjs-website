@@ -94,6 +94,7 @@ describe("usePaymentInsert business logic", () => {
         destinationAccount: "credit",
         guidSource: null,
         guidDestination: null,
+        owner: "",
         activeStatus: true,
       });
     });

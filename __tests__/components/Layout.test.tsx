@@ -342,8 +342,8 @@ describe("Layout Component", () => {
 describe("Layout Component - Non-Finance Pages", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Set router for non-finance page
-    mockRouterPathname = "/";
+    // Set router for non-finance, non-clean page
+    mockRouterPathname = "/nba";
     // Reset auth state
     mockIsAuthenticated = true;
     mockUser = {

@@ -89,6 +89,7 @@ describe("useCategoryInsertGql", () => {
         category: {
           categoryName: "groceriestest", // Normalized: spaces removed, lowercase
           activeStatus: true,
+          owner: "",
         },
       },
     });
@@ -211,6 +212,7 @@ describe("useCategoryInsertGql", () => {
         category: {
           categoryName: "inactive",
           activeStatus: false,
+          owner: "",
         },
       },
     });

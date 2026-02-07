@@ -114,10 +114,11 @@ describe("useMedicalExpenseInsert", () => {
     expect(result.current.isError).toBe(false);
     expect(result.current.isPending).toBe(false);
 
-    // Hook formats dates to YYYY-MM-DD and adds paidDate: null
+    // Hook formats dates to YYYY-MM-DD and adds paidDate: null and owner: ""
     const expectedBody = {
       ...mockCreateRequest,
       serviceDate: "2024-01-15", // Formatted to YYYY-MM-DD
+      owner: "", // Added by the hook
       paidDate: null, // Added by the hook
     };
 
@@ -173,10 +174,11 @@ describe("useMedicalExpenseInsert", () => {
 
     expect(createdExpense).toStrictEqual(minimalExpense);
 
-    // Hook formats dates to YYYY-MM-DD and adds paidDate: null
+    // Hook formats dates to YYYY-MM-DD and adds paidDate: null and owner: ""
     const expectedBody = {
       ...minimalRequest,
       serviceDate: "2024-02-01", // Formatted to YYYY-MM-DD
+      owner: "", // Added by the hook
       paidDate: null, // Added by the hook
     };
 

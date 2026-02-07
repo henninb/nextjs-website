@@ -89,6 +89,7 @@ describe("useDescriptionInsertGql", () => {
         description: {
           descriptionName: "amazonprimetest", // Normalized: spaces removed, lowercase
           activeStatus: true,
+          owner: "",
         },
       },
     });
@@ -213,6 +214,7 @@ describe("useDescriptionInsertGql", () => {
         description: {
           descriptionName: "inactive",
           activeStatus: false,
+          owner: "",
         },
       },
     });
@@ -254,6 +256,7 @@ describe("useDescriptionInsertGql", () => {
         description: {
           descriptionName: "testdescriptionwithspaces",
           activeStatus: true,
+          owner: "",
         },
       },
     });

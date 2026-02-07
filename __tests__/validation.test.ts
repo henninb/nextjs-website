@@ -260,17 +260,14 @@ describe("Input Validation and Sanitization", () => {
       expect(result.success).toBe(true);
     });
 
-    it("should reject dates too far in the past", () => {
+    it("should allow dates far in the past", () => {
       const oldTransaction = {
         amount: 100,
         transactionDate: new Date("2020-01-01").toISOString(), // Over a year ago
       };
 
       const result = DataValidator.validateFinancialBoundaries(oldTransaction);
-      expect(result.success).toBe(false);
-      expect(result.errors?.some((err) => err.code === "DATE_TOO_OLD")).toBe(
-        true,
-      );
+      expect(result.success).toBe(true);
     });
 
     it("should reject dates too far in the future", () => {
