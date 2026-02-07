@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isLocalhost, isVercelHost } from "./utils/security/hostValidation";
 
-export const runtime = "experimental-edge";
+//export const runtime = "experimental-edge";
 
 export const config = {
   matcher: [
