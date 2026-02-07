@@ -14,6 +14,8 @@ import {
   Tooltip,
   Stack,
   Chip,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -103,6 +105,7 @@ export default function TransactionsByAccount({
   >("info");
   const [showModalMove, setShowModalMove] = useState<boolean>(false);
   const [showModalAdd, setShowModalAdd] = useState<boolean>(false);
+  const [adjustmentMode, setAdjustmentMode] = useState<boolean>(false);
   const [showModalClone, setShowModalClone] = useState<boolean>(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
@@ -1302,19 +1305,49 @@ export default function TransactionsByAccount({
           onClose={() => {
             setShowModalAdd(false);
             setTransactionData(initialTransactionData);
+            setAdjustmentMode(false);
           }}
           onSubmit={async () => {
             if (transactionData) {
-              const result = await handleAddRow(transactionData);
+              let dataToInsert = transactionData;
+              if (adjustmentMode) {
+                const clearedTotal = fetchedTotals?.totalsCleared ?? 0;
+                const adjustmentAmount = transactionData.amount - clearedTotal;
+                dataToInsert = {
+                  ...transactionData,
+                  amount: Number(adjustmentAmount.toFixed(2)),
+                };
+              }
+              const result = await handleAddRow(dataToInsert);
               if (result) {
                 setShowModalAdd(false);
                 setTransactionData(initialTransactionData);
+                setAdjustmentMode(false);
               }
             }
           }}
           title={modalTitles.addNew("transaction")}
           submitText="Add"
         >
+          <FormControlLabel
+            control={
+              <Switch
+                checked={adjustmentMode}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setAdjustmentMode(checked);
+                  if (checked) {
+                    setTransactionData((prev) => ({
+                      ...prev,
+                      description: prev.description || "adjustment",
+                      category: prev.category || "adjustment",
+                    }));
+                  }
+                }}
+              />
+            }
+            label="Adjustment Mode"
+          />
           <TextField
             label="Transaction Date"
             fullWidth
@@ -1448,7 +1481,7 @@ export default function TransactionsByAccount({
           )}
 
           <USDAmountInput
-            label="Amount ($)"
+            label={adjustmentMode ? "New Account Value ($)" : "Amount ($)"}
             value={transactionData?.amount ? transactionData.amount : ""}
             onChange={(value) => {
               setTransactionData((prev: Transaction) => ({
@@ -1471,7 +1504,11 @@ export default function TransactionsByAccount({
             }}
             fullWidth
             margin="normal"
-            helperText="Enter positive or negative amounts (e.g., -123.45, 67.89)"
+            helperText={
+              adjustmentMode
+                ? `Current cleared: ${currencyFormat(noNaN(fetchedTotals?.totalsCleared ?? 0))} → Adjustment: ${currencyFormat(noNaN((transactionData?.amount || 0) - (fetchedTotals?.totalsCleared ?? 0)))}`
+                : "Enter positive or negative amounts (e.g., -123.45, 67.89)"
+            }
             error={
               transactionData?.amount !== undefined &&
               isNaN(Number(transactionData?.amount))
