@@ -359,24 +359,11 @@ export class DataValidator {
     // Date checks
     const transactionDate = new Date(data.transactionDate);
     const now = new Date();
-    const oneYearAgo = new Date(
-      now.getFullYear() - 1,
-      now.getMonth(),
-      now.getDate(),
-    );
     const oneYearFromNow = new Date(
       now.getFullYear() + 1,
       now.getMonth(),
       now.getDate(),
     );
-
-    if (transactionDate < oneYearAgo) {
-      errors.push({
-        field: "transactionDate",
-        message: "Transaction date cannot be more than one year in the past",
-        code: "DATE_TOO_OLD",
-      });
-    }
 
     if (transactionDate > oneYearFromNow) {
       errors.push({
