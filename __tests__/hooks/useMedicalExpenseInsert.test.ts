@@ -13,7 +13,7 @@ jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
   }),
@@ -118,7 +118,7 @@ describe("useMedicalExpenseInsert", () => {
     const expectedBody = {
       ...mockCreateRequest,
       serviceDate: "2024-01-15", // Formatted to YYYY-MM-DD
-      owner: "", // Added by the hook
+      owner: "testuser", // Added by the hook
       paidDate: null, // Added by the hook
     };
 
@@ -178,7 +178,7 @@ describe("useMedicalExpenseInsert", () => {
     const expectedBody = {
       ...minimalRequest,
       serviceDate: "2024-02-01", // Formatted to YYYY-MM-DD
-      owner: "", // Added by the hook
+      owner: "testuser", // Added by the hook
       paidDate: null, // Added by the hook
     };
 

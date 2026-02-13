@@ -45,7 +45,7 @@ jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
   }),

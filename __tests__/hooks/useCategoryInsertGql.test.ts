@@ -16,7 +16,7 @@ jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
   }),
@@ -89,7 +89,7 @@ describe("useCategoryInsertGql", () => {
         category: {
           categoryName: "groceriestest", // Normalized: spaces removed, lowercase
           activeStatus: true,
-          owner: "",
+          owner: "testuser",
         },
       },
     });
@@ -212,7 +212,7 @@ describe("useCategoryInsertGql", () => {
         category: {
           categoryName: "inactive",
           activeStatus: false,
-          owner: "",
+          owner: "testuser",
         },
       },
     });

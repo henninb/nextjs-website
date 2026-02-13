@@ -16,7 +16,7 @@ jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
   }),
@@ -89,7 +89,7 @@ describe("useDescriptionInsertGql", () => {
         description: {
           descriptionName: "amazonprimetest", // Normalized: spaces removed, lowercase
           activeStatus: true,
-          owner: "",
+          owner: "testuser",
         },
       },
     });
@@ -214,7 +214,7 @@ describe("useDescriptionInsertGql", () => {
         description: {
           descriptionName: "inactive",
           activeStatus: false,
-          owner: "",
+          owner: "testuser",
         },
       },
     });
@@ -256,7 +256,7 @@ describe("useDescriptionInsertGql", () => {
         description: {
           descriptionName: "testdescriptionwithspaces",
           activeStatus: true,
-          owner: "",
+          owner: "testuser",
         },
       },
     });

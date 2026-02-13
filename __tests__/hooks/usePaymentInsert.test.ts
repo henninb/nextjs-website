@@ -13,7 +13,7 @@ jest.mock("../../components/AuthProvider", () => ({
   useAuth: () => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
   }),
@@ -94,7 +94,7 @@ describe("usePaymentInsert business logic", () => {
         destinationAccount: "credit",
         guidSource: null,
         guidDestination: null,
-        owner: "",
+        owner: undefined,
         activeStatus: true,
       });
     });
