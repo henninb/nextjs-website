@@ -47,6 +47,9 @@ export default function usePaymentInsertGql() {
   return useMutation({
     mutationKey: ["insertPaymentGQL"],
     mutationFn: async (variables: { payload: Payment }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a payment");
+      }
       const p = variables.payload;
       log.debug("Starting mutation", {
         sourceAccount: p.sourceAccount,
@@ -66,7 +69,7 @@ export default function usePaymentInsertGql() {
         transactionDate: dateToLocalDate(p.transactionDate),
         amount: p.amount,
         activeStatus: p.activeStatus,
-        owner: user?.username || "",
+        owner: user.username,
       };
 
       console.log(

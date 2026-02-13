@@ -83,7 +83,12 @@ export default function useMedicalExpenseInsert() {
 
   return useStandardMutation(
     (variables: { payload: MedicalExpenseCreateRequest }) =>
-      insertMedicalExpense({ ...variables.payload, owner: user?.username || "" }),
+      {
+        if (!user?.username) {
+          throw new Error("User must be logged in to insert a medical expense");
+        }
+        return insertMedicalExpense({ ...variables.payload, owner: user.username });
+      },
     {
       mutationKey: ["insertMedicalExpense"],
       onSuccess: (newExpense) => {

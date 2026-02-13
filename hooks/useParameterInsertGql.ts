@@ -39,13 +39,16 @@ export default function useParameterInsertGql() {
   return useMutation({
     mutationKey: ["insertParameterGQL"],
     mutationFn: async (variables: { payload: Parameter }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a parameter");
+      }
       const p = variables.payload;
       log.debug("Starting mutation", { parameterName: p.parameterName });
       const parameter = {
         parameterName: p.parameterName,
         parameterValue: p.parameterValue,
         activeStatus: p.activeStatus ?? true,
-        owner: user?.username || "",
+        owner: user.username,
       };
       const data = await graphqlRequest<CreateParameterResult>({
         query: CREATE_PARAMETER_MUTATION,

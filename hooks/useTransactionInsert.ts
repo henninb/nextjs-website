@@ -136,13 +136,17 @@ export default function useTransactionInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: TransactionInsertType) =>
-      insertTransaction(
+    (variables: TransactionInsertType) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a transaction");
+      }
+      return insertTransaction(
         variables.newRow.accountNameOwner,
-        { ...variables.newRow, owner: user?.username || "" },
+        { ...variables.newRow, owner: user.username },
         variables.isFutureTransaction,
         variables.isImportTransaction,
-      ),
+      );
+    },
     {
       mutationKey: ["insertTransaction"],
       onSuccess: (response: Transaction, variables: TransactionInsertType) => {

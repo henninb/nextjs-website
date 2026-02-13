@@ -53,7 +53,12 @@ export default function useValidationAmountInsert() {
 
   return useStandardMutation(
     (variables: { accountNameOwner: string; payload: ValidationAmount }) =>
-      insertValidationAmount(variables.accountNameOwner, { ...variables.payload, owner: user?.username || "" }),
+      {
+        if (!user?.username) {
+          throw new Error("User must be logged in to insert a validation amount");
+        }
+        return insertValidationAmount(variables.accountNameOwner, { ...variables.payload, owner: user.username });
+      },
     {
       mutationKey: ["insertValidationAmount"],
       onSuccess: (newValidation, variables) => {

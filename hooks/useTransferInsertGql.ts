@@ -47,6 +47,9 @@ export default function useTransferInsertGql() {
   return useMutation({
     mutationKey: ["insertTransferGQL"],
     mutationFn: async (variables: { payload: Transfer }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a transfer");
+      }
       const p = variables.payload;
       log.debug("Starting mutation", {
         sourceAccount: p.sourceAccount,
@@ -65,7 +68,7 @@ export default function useTransferInsertGql() {
         transactionDate: dateToLocalDate(p.transactionDate),
         amount: p.amount,
         activeStatus: p.activeStatus,
-        owner: user?.username || "",
+        owner: user!.username,
       };
 
       console.log(

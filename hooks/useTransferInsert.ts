@@ -87,7 +87,12 @@ export default function useTransferInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Transfer }) => insertTransfer({ ...variables.payload, owner: user?.username || "" }),
+    (variables: { payload: Transfer }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a transfer");
+      }
+      return insertTransfer({ ...variables.payload, owner: user.username });
+    },
     {
       mutationKey: ["insertTransfer"],
       onSuccess: (newTransfer) => {

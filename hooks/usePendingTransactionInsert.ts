@@ -51,8 +51,12 @@ export default function usePendingTransactionInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { pendingTransaction: PendingTransaction }) =>
-      insertPendingTransaction({ ...variables.pendingTransaction, owner: user?.username || "" }),
+    (variables: { pendingTransaction: PendingTransaction }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a pending transaction");
+      }
+      return insertPendingTransaction({ ...variables.pendingTransaction, owner: user.username });
+    },
     {
       mutationKey: ["insertPendingTransaction"],
       onSuccess: (newTransaction) => {

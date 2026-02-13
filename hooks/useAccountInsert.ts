@@ -88,7 +88,12 @@ export default function useAccountInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Account }) => insertAccount({ ...variables.payload, owner: user?.username || "" }),
+    (variables: { payload: Account }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert an account");
+      }
+      return insertAccount({ ...variables.payload, owner: user.username });
+    },
     {
       mutationKey: ["insertAccount"],
       onError: (error) => {

@@ -29,7 +29,7 @@ export const setupNewPayment = async (payload: Payment) => {
     guidSource: null,
     guidDestination: null,
     activeStatus: true,
-    owner: payload.owner || "",
+    owner: payload.owner,
   };
 };
 
@@ -97,7 +97,12 @@ export default function usePaymentInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Payment }) => insertPayment({ ...variables.payload, owner: user?.username || "" }),
+    (variables: { payload: Payment }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a payment");
+      }
+      return insertPayment({ ...variables.payload, owner: user.username });
+    },
     {
       mutationKey: ["insertPayment"],
       onSuccess: (newPayment) => {

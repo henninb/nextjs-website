@@ -39,6 +39,9 @@ export default function useCategoryInsertGql() {
   return useMutation({
     mutationKey: ["insertCategoryGQL"],
     mutationFn: async (variables: { category: Category }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a category");
+      }
       const c = variables.category;
       // Normalize category name for GraphQL backend:
       // - Remove spaces (backend doesn't allow spaces)
@@ -52,7 +55,7 @@ export default function useCategoryInsertGql() {
       const category = {
         categoryName: normalizedName,
         activeStatus: c.activeStatus,
-        owner: user?.username || "",
+        owner: user.username,
       };
       const data = await graphqlRequest<CreateCategoryResult>({
         query: CREATE_CATEGORY_MUTATION,

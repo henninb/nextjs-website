@@ -57,7 +57,12 @@ export default function useParameterInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { payload: Parameter }) => insertParameter({ ...variables.payload, owner: user?.username || "" }),
+    (variables: { payload: Parameter }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a parameter");
+      }
+      return insertParameter({ ...variables.payload, owner: user.username });
+    },
     {
       mutationKey: ["insertParameter"],
       onSuccess: (newParameter) => {

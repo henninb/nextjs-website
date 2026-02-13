@@ -55,7 +55,12 @@ export default function useCategoryInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { category: Category }) => insertCategory({ ...variables.category, owner: user?.username || "" }),
+    (variables: { category: Category }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a category");
+      }
+      return insertCategory({ ...variables.category, owner: user.username });
+    },
     {
       mutationKey: ["insertCategory"],
       onSuccess: (newCategory) => {

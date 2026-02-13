@@ -39,6 +39,9 @@ export default function useDescriptionInsertGql() {
   return useMutation({
     mutationKey: ["insertDescriptionGQL"],
     mutationFn: async (variables: { description: Description }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a description");
+      }
       const d = variables.description;
       // Normalize description name for GraphQL backend:
       // - Remove spaces (backend doesn't allow spaces)
@@ -52,7 +55,7 @@ export default function useDescriptionInsertGql() {
       const description = {
         descriptionName: normalizedName,
         activeStatus: d.activeStatus,
-        owner: user?.username || "",
+        owner: user.username,
       };
       const data = await graphqlRequest<CreateDescriptionResult>({
         query: CREATE_DESCRIPTION_MUTATION,
