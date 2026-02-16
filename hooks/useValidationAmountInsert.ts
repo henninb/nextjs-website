@@ -52,13 +52,15 @@ export default function useValidationAmountInsert() {
   const { user } = useAuth();
 
   return useStandardMutation(
-    (variables: { accountNameOwner: string; payload: ValidationAmount }) =>
-      {
-        if (!user?.username) {
-          throw new Error("User must be logged in to insert a validation amount");
-        }
-        return insertValidationAmount(variables.accountNameOwner, { ...variables.payload, owner: user.username });
-      },
+    (variables: { accountNameOwner: string; payload: ValidationAmount }) => {
+      if (!user?.username) {
+        throw new Error("User must be logged in to insert a validation amount");
+      }
+      return insertValidationAmount(variables.accountNameOwner, {
+        ...variables.payload,
+        owner: user.username,
+      });
+    },
     {
       mutationKey: ["insertValidationAmount"],
       onSuccess: (newValidation, variables) => {

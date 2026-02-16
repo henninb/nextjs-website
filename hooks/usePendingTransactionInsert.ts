@@ -53,9 +53,14 @@ export default function usePendingTransactionInsert() {
   return useStandardMutation(
     (variables: { pendingTransaction: PendingTransaction }) => {
       if (!user?.username) {
-        throw new Error("User must be logged in to insert a pending transaction");
+        throw new Error(
+          "User must be logged in to insert a pending transaction",
+        );
       }
-      return insertPendingTransaction({ ...variables.pendingTransaction, owner: user.username });
+      return insertPendingTransaction({
+        ...variables.pendingTransaction,
+        owner: user.username,
+      });
     },
     {
       mutationKey: ["insertPendingTransaction"],

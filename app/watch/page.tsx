@@ -41,7 +41,9 @@ const WatchPage: NextPage = () => {
   const [apiCallCount, setApiCallCount] = useState(0);
   const [lastEventLog, setLastEventLog] = useState<string>("");
   const [riskScoreData, setRiskScoreData] = useState<any[]>([]);
-  const [riskStatus, setRiskStatus] = useState<string>("Waiting for security events...");
+  const [riskStatus, setRiskStatus] = useState<string>(
+    "Waiting for security events...",
+  );
   const [videoDisabled, setVideoDisabled] = useState<boolean>(false);
 
   // Snackbar state for UX feedback
@@ -62,7 +64,9 @@ const WatchPage: NextPage = () => {
   // Security detection retry control
   const securityRetryIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const securityRetryAttemptsRef = useRef(0);
-  const securityErrorHandlerRef = useRef<((ev: ErrorEvent) => void) | null>(null);
+  const securityErrorHandlerRef = useRef<((ev: ErrorEvent) => void) | null>(
+    null,
+  );
 
   // Prevent multiple security setups due to React strict mode
   const securitySetupRef = useRef(false);
@@ -98,7 +102,9 @@ const WatchPage: NextPage = () => {
   useEffect(() => {
     // Prevent multiple setups due to React strict mode/HMR
     if (securitySetupRef.current) {
-      console.log("Security setup already done, skipping to prevent duplication");
+      console.log(
+        "Security setup already done, skipping to prevent duplication",
+      );
       return;
     }
     securitySetupRef.current = true;
@@ -1110,7 +1116,8 @@ const WatchPage: NextPage = () => {
           </div>
 
           <div style={{ marginBottom: "15px" }}>
-            <strong>Binary Score Events Captured:</strong> {riskScoreData.length}
+            <strong>Binary Score Events Captured:</strong>{" "}
+            {riskScoreData.length}
             <div
               style={{ fontSize: "12px", color: "#856404", marginTop: "5px" }}
             >

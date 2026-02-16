@@ -64,7 +64,8 @@ export default function Info() {
     } else if (!/^\d+$/.test(phoneDigits)) {
       newErrors.phone = "Phone number can only contain digits";
     } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-      newErrors.phone = "Phone number must be 10 digits (or 11 with country code)";
+      newErrors.phone =
+        "Phone number must be 10 digits (or 11 with country code)";
     }
 
     setErrors(newErrors);
