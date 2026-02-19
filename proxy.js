@@ -63,6 +63,8 @@ export default async function proxy(request) {
     "/api/human",
     "/api/health",
     "/api/categorize",
+    "/api/planets",
+    "/api/geocode",
   ];
 
   // Normalize pathname by removing trailing slashes for consistent matching

@@ -51,6 +51,7 @@ import WatchIcon from "@mui/icons-material/Watch";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import NightsStayIcon from "@mui/icons-material/NightsStay";
 
 import SelectNavigateAccounts from "./SelectNavigateAccounts";
 import SessionExpiryWarning from "./SessionExpiryWarning";
@@ -140,6 +141,7 @@ const generalLinks = [
   // { text: "Howto", href: "/howto", icon: <MenuBookIcon /> },
   { text: "Tools", href: "/tools", icon: <BuildIcon /> },
   { text: "Temperature", href: "/temperature", icon: <DeviceThermostatIcon /> },
+  { text: "Planets", href: "/planets", icon: <NightsStayIcon /> },
   { text: "Furnace", href: "/furnace", icon: <LocalFireDepartmentIcon /> },
   { text: "Lead", href: "/lead", icon: <ContactPageIcon /> },
   { text: "Payment", href: "/payment", icon: <PaymentIcon /> },
