@@ -146,7 +146,7 @@ MSW is fully configured for API mocking with worker in public/ directory.
 
 ```nginx
 # Local Next.js APIs - pass through to Vercel (must come before general /api/ block)
-location ~ ^/api/(nhl|nba|nfl|mlb|celsius|fahrenheit|lead|player-ads|player-analytics|player-heartbeat|player-metadata|weather|uuid|human)(/.*)?$ {
+location ~ ^/api/(nhl|nba|nfl|mlb|celsius|fahrenheit|lead|player-ads|player-analytics|player-heartbeat|player-metadata|weather|uuid|human|categorize|geocode|planets)(/.*)?$ {
     proxy_pass https://nextjs-website-alpha-weld.vercel.app$request_uri;
     proxy_set_header Host nextjs-website-alpha-weld.vercel.app;
     proxy_set_header X-Real-IP $remote_addr;
