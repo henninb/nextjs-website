@@ -17,6 +17,7 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -40,6 +41,9 @@ import { useAuth } from "../../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 import { currencyFormat } from "../../../components/Common";
 
+const VALIDATION_CACHE_ENABLED_KEY = "finance_cache_enabled_validation_amounts";
+const VALIDATION_CACHE_DATA_KEY = "finance_cached_data_validation_amounts";
+
 export default function ValidationAmounts() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -48,6 +52,10 @@ export default function ValidationAmounts() {
   >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(VALIDATION_CACHE_ENABLED_KEY) === "true";
+  });
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedValidationAmount, setSelectedValidationAmount] =
     useState<ValidationAmount | null>(null);
@@ -210,6 +218,9 @@ export default function ValidationAmounts() {
       });
 
       handleSuccess("Validation amount added successfully.");
+      if (cacheEnabled && typeof window !== "undefined") {
+        localStorage.setItem(VALIDATION_CACHE_DATA_KEY, JSON.stringify(formData));
+      }
       setFormData({
         validationDate: new Date(),
         amount: 0,
@@ -226,6 +237,29 @@ export default function ValidationAmounts() {
     } finally {
       setShowModalAdd(false);
     }
+  };
+
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(VALIDATION_CACHE_DATA_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.validationDate) {
+            parsed.validationDate = new Date(parsed.validationDate);
+          }
+          setFormData(parsed);
+        } else {
+          setFormData({ validationDate: new Date(), amount: 0, transactionState: "cleared", activeStatus: true });
+        }
+      } catch {
+        setFormData({ validationDate: new Date(), amount: 0, transactionState: "cleared", activeStatus: true });
+      }
+    } else {
+      setFormData({ validationDate: new Date(), amount: 0, transactionState: "cleared", activeStatus: true });
+    }
+    setFormErrors({});
+    setShowModalAdd(true);
   };
 
   const getRowId = (row: ValidationAmount) =>
@@ -331,7 +365,7 @@ export default function ValidationAmounts() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => handleOpenAddModal()}
               disabled={!selectedAccount}
               sx={{ backgroundColor: "primary.main" }}
             >
@@ -359,7 +393,7 @@ export default function ValidationAmounts() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => handleOpenAddModal()}
               disabled={!selectedAccount}
               sx={{ backgroundColor: "primary.main" }}
             >
@@ -457,7 +491,7 @@ export default function ValidationAmounts() {
                     dataType="generic"
                     variant="create"
                     actionLabel="Add Validation Amount"
-                    onAction={() => setShowModalAdd(true)}
+                    onAction={() => handleOpenAddModal()}
                     onRefresh={() => refetch()}
                   />
                 )}
@@ -575,6 +609,27 @@ export default function ValidationAmounts() {
                 />
               }
               label="Active Status"
+            />
+          </Box>
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(VALIDATION_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        localStorage.removeItem(VALIDATION_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
             />
           </Box>
         </FormDialog>

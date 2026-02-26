@@ -12,6 +12,8 @@ import {
   Link,
   TextField,
   Autocomplete,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -43,6 +45,7 @@ import useTransferUpdateGql from "../../../hooks/useTransferUpdateGql";
 import useAccountFetchGql from "../../../hooks/useAccountFetchGql";
 
 const LAST_TRANSFER_STORAGE_KEY = "finance_last_transfer_next";
+const TRANSFERS_NEXT_CACHE_ENABLED_KEY = "finance_cache_enabled_transfers_next";
 
 const initialTransferData: Transfer = {
   transferId: 0,
@@ -106,12 +109,18 @@ export default function TransfersNextGen() {
 
   const [lastSubmittedTransfer, setLastSubmittedTransfer] =
     useState<Transfer | null>(null);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(TRANSFERS_NEXT_CACHE_ENABLED_KEY) === "true";
+  });
 
-  // Initialize last transfer from localStorage on mount
+  // Initialize last transfer from localStorage on mount (only if cache is enabled)
   useEffect(() => {
-    const storedTransfer = getLastTransferFromStorage();
-    if (storedTransfer) {
-      setLastSubmittedTransfer(storedTransfer);
+    if (localStorage.getItem(TRANSFERS_NEXT_CACHE_ENABLED_KEY) === "true") {
+      const storedTransfer = getLastTransferFromStorage();
+      if (storedTransfer) {
+        setLastSubmittedTransfer(storedTransfer);
+      }
     }
   }, []);
   const [availableSourceAccounts, setAvailableSourceAccounts] = useState<
@@ -325,8 +334,10 @@ export default function TransfersNextGen() {
   const handleAddRow = async (newData: Transfer) => {
     try {
       await insertTransfer({ payload: newData });
-      setLastSubmittedTransfer(newData);
-      saveLastTransferToStorage(newData);
+      if (cacheEnabled) {
+        setLastSubmittedTransfer(newData);
+        saveLastTransferToStorage(newData);
+      }
       const when = formatDateForDisplay(newData.transactionDate);
       setMessage(
         `Transferred ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
@@ -435,7 +446,7 @@ export default function TransfersNextGen() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setTransferData(lastSubmittedTransfer || initialTransferData);
+                setTransferData(cacheEnabled ? (lastSubmittedTransfer || initialTransferData) : initialTransferData);
                 setSelectedSourceAccount(null);
                 setSelectedDestinationAccount(null);
                 setShowModalAdd(true);
@@ -509,7 +520,7 @@ export default function TransfersNextGen() {
             message="Create your first transfer to move funds between accounts."
             actionLabel="Add Transfer"
             onAction={() => {
-              setTransferData(lastSubmittedTransfer || initialTransferData);
+              setTransferData(cacheEnabled ? (lastSubmittedTransfer || initialTransferData) : initialTransferData);
               setSelectedSourceAccount(null);
               setSelectedDestinationAccount(null);
               setShowModalAdd(true);
@@ -642,6 +653,28 @@ export default function TransfersNextGen() {
             fullWidth
             margin="normal"
           />
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(TRANSFERS_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        setLastSubmittedTransfer(null);
+                        localStorage.removeItem(LAST_TRANSFER_STORAGE_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
+          </Box>
         </FormDialog>
       </>
     </div>

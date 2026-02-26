@@ -38,6 +38,9 @@ import FormDialog from "../../../components/FormDialog";
 import { useAuth } from "../../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
+const CATEGORIES_CACHE_ENABLED_KEY = "finance_cache_enabled_categories";
+const CATEGORIES_CACHE_DATA_KEY = "finance_cached_data_categories";
+
 export default function Categories() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -46,6 +49,10 @@ export default function Categories() {
   >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(CATEGORIES_CACHE_ENABLED_KEY) === "true";
+  });
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [paginationModel, setPaginationModel] = useState({
@@ -174,6 +181,9 @@ export default function Categories() {
       console.log("from handleAddRow: " + JSON.stringify(newData));
       await insertCategory({ category: newData });
 
+      if (cacheEnabled && typeof window !== "undefined") {
+        localStorage.setItem(CATEGORIES_CACHE_DATA_KEY, JSON.stringify(newData));
+      }
       handleSuccess("Category added successfully.");
     } catch (error) {
       handleError(
@@ -226,6 +236,21 @@ export default function Categories() {
     if (!/^[a-zA-Z0-9 _-]+$/.test(trimmed))
       return "Name contains invalid characters";
     return undefined;
+  };
+
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(CATEGORIES_CACHE_DATA_KEY);
+        setCategoryData(stored ? JSON.parse(stored) : null);
+      } catch {
+        setCategoryData(null);
+      }
+    } else {
+      setCategoryData(null);
+    }
+    setFormErrors({});
+    setShowModalAdd(true);
   };
 
   const handleMerge = async () => {
@@ -342,7 +367,7 @@ export default function Categories() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => handleOpenAddModal()}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Category
@@ -370,7 +395,7 @@ export default function Categories() {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
+                onClick={() => handleOpenAddModal()}
                 sx={{ backgroundColor: "primary.main" }}
               >
                 Add Category
@@ -450,7 +475,7 @@ export default function Categories() {
                     dataType="categories"
                     variant="create"
                     actionLabel="Add Category"
-                    onAction={() => setShowModalAdd(true)}
+                    onAction={() => handleOpenAddModal()}
                     onRefresh={() => refetch()}
                   />
                 )}
@@ -560,6 +585,27 @@ export default function Categories() {
                 {formErrors.activeStatus}
               </Typography>
             )}
+          </Box>
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(CATEGORIES_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        localStorage.removeItem(CATEGORIES_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
           </Box>
         </FormDialog>
       </>

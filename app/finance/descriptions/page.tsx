@@ -37,6 +37,9 @@ import FormDialog from "../../../components/FormDialog";
 import { useAuth } from "../../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
+const DESCRIPTIONS_CACHE_ENABLED_KEY = "finance_cache_enabled_descriptions";
+const DESCRIPTIONS_CACHE_DATA_KEY = "finance_cached_data_descriptions";
+
 export default function Descriptions() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -45,6 +48,10 @@ export default function Descriptions() {
   >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(DESCRIPTIONS_CACHE_ENABLED_KEY) === "true";
+  });
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedDescription, setSelectedDescription] =
     useState<Description | null>(null);
@@ -169,6 +176,9 @@ export default function Descriptions() {
 
     try {
       await insertDescription(newData);
+      if (cacheEnabled && typeof window !== "undefined") {
+        localStorage.setItem(DESCRIPTIONS_CACHE_DATA_KEY, JSON.stringify(newData));
+      }
       handleSuccess(`Description added successfully.`);
       setFormErrors({});
     } catch (error) {
@@ -186,6 +196,21 @@ export default function Descriptions() {
     } finally {
       setShowModalAdd(false);
     }
+  };
+
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(DESCRIPTIONS_CACHE_DATA_KEY);
+        setDescriptionData(stored ? JSON.parse(stored) : null);
+      } catch {
+        setDescriptionData(null);
+      }
+    } else {
+      setDescriptionData(null);
+    }
+    setFormErrors({});
+    setShowModalAdd(true);
   };
 
   const isRowSelected = (rowId: string | number) =>
@@ -351,7 +376,7 @@ export default function Descriptions() {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => setShowModalAdd(true)}
+                onClick={() => handleOpenAddModal()}
                 sx={{ backgroundColor: "primary.main" }}
               >
                 Add Description
@@ -418,7 +443,7 @@ export default function Descriptions() {
                     dataType="descriptions"
                     variant="create"
                     actionLabel="Add Description"
-                    onAction={() => setShowModalAdd(true)}
+                    onAction={() => handleOpenAddModal()}
                     onRefresh={() => refetchDescriptions()}
                   />
                 )}
@@ -502,6 +527,27 @@ export default function Descriptions() {
                 {formErrors.activeStatus}
               </Typography>
             )}
+          </Box>
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(DESCRIPTIONS_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        localStorage.removeItem(DESCRIPTIONS_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
           </Box>
         </FormDialog>
 

@@ -13,6 +13,8 @@ import {
   TextField,
   Typography,
   Autocomplete,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -45,6 +47,7 @@ import { useAuth } from "../../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
 const LAST_TRANSFER_STORAGE_KEY = "finance_last_transfer";
+const TRANSFERS_CACHE_ENABLED_KEY = "finance_cache_enabled_transfers";
 
 const initialTransferData: Transfer = {
   transferId: 0,
@@ -109,12 +112,18 @@ export default function Transfers() {
 
   const [lastSubmittedTransfer, setLastSubmittedTransfer] =
     useState<Transfer | null>(null);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(TRANSFERS_CACHE_ENABLED_KEY) === "true";
+  });
 
-  // Initialize last transfer from localStorage on mount
+  // Initialize last transfer from localStorage on mount (only if cache is enabled)
   useEffect(() => {
-    const storedTransfer = getLastTransferFromStorage();
-    if (storedTransfer) {
-      setLastSubmittedTransfer(storedTransfer);
+    if (localStorage.getItem(TRANSFERS_CACHE_ENABLED_KEY) === "true") {
+      const storedTransfer = getLastTransferFromStorage();
+      if (storedTransfer) {
+        setLastSubmittedTransfer(storedTransfer);
+      }
     }
   }, []);
 
@@ -338,8 +347,10 @@ export default function Transfers() {
       };
       console.log(`Transfer Insert: ${JSON.stringify(insertThisValue)}`);
       await insertTransfer({ payload: insertThisValue });
-      setLastSubmittedTransfer(newData);
-      saveLastTransferToStorage(newData);
+      if (cacheEnabled) {
+        setLastSubmittedTransfer(newData);
+        saveLastTransferToStorage(newData);
+      }
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
       handleSuccess(
@@ -463,7 +474,7 @@ export default function Transfers() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setTransferData(lastSubmittedTransfer || initialTransferData);
+                setTransferData(cacheEnabled ? (lastSubmittedTransfer || initialTransferData) : initialTransferData);
                 setFormErrors({});
                 setSelectedSourceAccount(null);
                 setSelectedDestinationAccount(null);
@@ -699,6 +710,28 @@ export default function Transfers() {
               {formErrors.accounts}
             </Typography>
           )}
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(TRANSFERS_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        setLastSubmittedTransfer(null);
+                        localStorage.removeItem(LAST_TRANSFER_STORAGE_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
+          </Box>
         </FormDialog>
       </>
     </div>

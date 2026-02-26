@@ -11,6 +11,8 @@ import {
   Tooltip,
   TextField,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -33,6 +35,9 @@ import { useAuth } from "../../../components/AuthProvider";
 import { generateSecureUUID } from "../../../utils/security/secureUUID";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
+const CONFIGURATION_CACHE_ENABLED_KEY = "finance_cache_enabled_configuration";
+const CONFIGURATION_CACHE_DATA_KEY = "finance_cached_data_configuration";
+
 export default function Configuration() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -41,6 +46,10 @@ export default function Configuration() {
   >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(CONFIGURATION_CACHE_ENABLED_KEY) === "true";
+  });
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState<Parameter | null>(
@@ -211,6 +220,9 @@ export default function Configuration() {
 
     try {
       await insertParameter({ payload: newData });
+      if (cacheEnabled && typeof window !== "undefined") {
+        localStorage.setItem(CONFIGURATION_CACHE_DATA_KEY, JSON.stringify(newData));
+      }
       const secureId = await generateSecureUUID();
       setParameterData((prev: Parameter) =>
         prev?.parameterId ? prev : { ...newData, parameterId: secureId },
@@ -240,6 +252,21 @@ export default function Configuration() {
         setParameterData({ ...newData, parameterId: Math.random() });
       }
     }
+  };
+
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(CONFIGURATION_CACHE_DATA_KEY);
+        setParameterData(stored ? JSON.parse(stored) : null);
+      } catch {
+        setParameterData(null);
+      }
+    } else {
+      setParameterData(null);
+    }
+    setFormErrors({});
+    setShowModalAdd(true);
   };
 
   const columns: GridColDef[] = [
@@ -303,7 +330,7 @@ export default function Configuration() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModalAdd(true)}
+              onClick={() => handleOpenAddModal()}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Parameter
@@ -370,7 +397,7 @@ export default function Configuration() {
                     dataType="parameters"
                     variant="create"
                     actionLabel="Add Parameter"
-                    onAction={() => setShowModalAdd(true)}
+                    onAction={() => handleOpenAddModal()}
                     onRefresh={() => refetchParameters()}
                   />
                 )}
@@ -450,6 +477,27 @@ export default function Configuration() {
               )
             }
           />
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(CONFIGURATION_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        localStorage.removeItem(CONFIGURATION_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
+          </Box>
         </FormDialog>
       </>
     </div>

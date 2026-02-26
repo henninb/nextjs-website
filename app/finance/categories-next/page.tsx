@@ -12,6 +12,7 @@ import {
   TextField,
   Switch,
   FormControlLabel,
+  Checkbox,
   Typography,
   Fade,
   Grow,
@@ -50,6 +51,9 @@ import useCategoryInsertGql from "../../../hooks/useCategoryInsertGql";
 import useCategoryDeleteGql from "../../../hooks/useCategoryDeleteGql";
 import useCategoryUpdateGql from "../../../hooks/useCategoryUpdateGql";
 
+const CATEGORIES_NEXT_CACHE_ENABLED_KEY = "finance_cache_enabled_categories_next";
+const CATEGORIES_NEXT_CACHE_DATA_KEY = "finance_cached_data_categories_next";
+
 export default function CategoriesNextGen() {
   const router = useRouter();
   const { isAuthenticated, loading } = useAuth();
@@ -61,6 +65,10 @@ export default function CategoriesNextGen() {
   >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(CATEGORIES_NEXT_CACHE_ENABLED_KEY) === "true";
+  });
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 50,
@@ -251,6 +259,9 @@ export default function CategoriesNextGen() {
       console.log("from handleAddRow: " + JSON.stringify(newData));
       await insertCategory({ category: newData });
 
+      if (cacheEnabled && typeof window !== "undefined") {
+        localStorage.setItem(CATEGORIES_NEXT_CACHE_DATA_KEY, JSON.stringify(newData));
+      }
       handleSuccess("Category added successfully.");
     } catch (error: unknown) {
       handleError(
@@ -261,6 +272,21 @@ export default function CategoriesNextGen() {
     } finally {
       setShowModalAdd(false);
     }
+  };
+
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(CATEGORIES_NEXT_CACHE_DATA_KEY);
+        setCategoryData(stored ? JSON.parse(stored) : null);
+      } catch {
+        setCategoryData(null);
+      }
+    } else {
+      setCategoryData(null);
+    }
+    setFormErrors({});
+    setShowModalAdd(true);
   };
 
   const handleClearFilters = () => {
@@ -365,7 +391,7 @@ export default function CategoriesNextGen() {
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => setShowModalAdd(true)}
+                  onClick={() => handleOpenAddModal()}
                   sx={{ backgroundColor: "primary.main" }}
                 >
                   Add Category
@@ -571,7 +597,7 @@ export default function CategoriesNextGen() {
               ) {
                 handleClearFilters();
               } else {
-                setShowModalAdd(true);
+                handleOpenAddModal();
               }
             }}
             onRefresh={() => refetchCategories()}
@@ -656,6 +682,27 @@ export default function CategoriesNextGen() {
                 {formErrors.activeStatus}
               </Typography>
             )}
+          </Box>
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(CATEGORIES_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        localStorage.removeItem(CATEGORIES_NEXT_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
           </Box>
         </FormDialog>
       </>

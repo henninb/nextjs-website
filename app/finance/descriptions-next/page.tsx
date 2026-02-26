@@ -13,6 +13,7 @@ import {
   TextField,
   Switch,
   FormControlLabel,
+  Checkbox,
   Typography,
   Fade,
   Grow,
@@ -50,6 +51,9 @@ import useDescriptionInsertGql from "../../../hooks/useDescriptionInsertGql";
 import useDescriptionDeleteGql from "../../../hooks/useDescriptionDeleteGql";
 import useDescriptionUpdateGql from "../../../hooks/useDescriptionUpdateGql";
 
+const DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY = "finance_cache_enabled_descriptions_next";
+const DESCRIPTIONS_NEXT_CACHE_DATA_KEY = "finance_cached_data_descriptions_next";
+
 export default function DescriptionsNextGen() {
   const router = useRouter();
   const { isAuthenticated, loading } = useAuth();
@@ -61,6 +65,10 @@ export default function DescriptionsNextGen() {
   >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY) === "true";
+  });
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 50,
@@ -252,6 +260,9 @@ export default function DescriptionsNextGen() {
       console.log("from handleAddRow: " + JSON.stringify(newData));
       await insertDescription({ description: newData });
 
+      if (cacheEnabled && typeof window !== "undefined") {
+        localStorage.setItem(DESCRIPTIONS_NEXT_CACHE_DATA_KEY, JSON.stringify(newData));
+      }
       handleSuccess("Description added successfully.");
     } catch (error: unknown) {
       handleError(
@@ -262,6 +273,21 @@ export default function DescriptionsNextGen() {
     } finally {
       setShowModalAdd(false);
     }
+  };
+
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(DESCRIPTIONS_NEXT_CACHE_DATA_KEY);
+        setDescriptionData(stored ? JSON.parse(stored) : null);
+      } catch {
+        setDescriptionData(null);
+      }
+    } else {
+      setDescriptionData(null);
+    }
+    setFormErrors({});
+    setShowModalAdd(true);
   };
 
   const handleClearFilters = () => {
@@ -366,7 +392,7 @@ export default function DescriptionsNextGen() {
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => setShowModalAdd(true)}
+                  onClick={() => handleOpenAddModal()}
                   sx={{ backgroundColor: "primary.main" }}
                 >
                   Add Description
@@ -576,7 +602,7 @@ export default function DescriptionsNextGen() {
               ) {
                 handleClearFilters();
               } else {
-                setShowModalAdd(true);
+                handleOpenAddModal();
               }
             }}
             onRefresh={() => refetchDescriptions()}
@@ -661,6 +687,27 @@ export default function DescriptionsNextGen() {
                 {formErrors.activeStatus}
               </Typography>
             )}
+          </Box>
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        localStorage.removeItem(DESCRIPTIONS_NEXT_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
           </Box>
         </FormDialog>
       </>

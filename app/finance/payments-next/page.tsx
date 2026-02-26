@@ -12,6 +12,8 @@ import {
   Link,
   TextField,
   Autocomplete,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -43,6 +45,7 @@ import usePaymentUpdateGql from "../../../hooks/usePaymentUpdateGql";
 import useAccountFetchGql from "../../../hooks/useAccountFetchGql";
 
 const LAST_PAYMENT_STORAGE_KEY = "finance_last_payment_next";
+const PAYMENTS_NEXT_CACHE_ENABLED_KEY = "finance_cache_enabled_payments_next";
 
 const initialPaymentData: Payment = {
   paymentId: 0,
@@ -100,12 +103,18 @@ export default function PaymentsNextGen() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [lastSubmittedPayment, setLastSubmittedPayment] =
     useState<Payment | null>(null);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY) === "true";
+  });
 
-  // Initialize last payment from localStorage on mount
+  // Initialize last payment from localStorage on mount (only if cache is enabled)
   useEffect(() => {
-    const storedPayment = getLastPaymentFromStorage();
-    if (storedPayment) {
-      setLastSubmittedPayment(storedPayment);
+    if (localStorage.getItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY) === "true") {
+      const storedPayment = getLastPaymentFromStorage();
+      if (storedPayment) {
+        setLastSubmittedPayment(storedPayment);
+      }
     }
   }, []);
 
@@ -195,8 +204,10 @@ export default function PaymentsNextGen() {
   const handleAddRow = async (newData: Payment) => {
     try {
       await insertPayment({ payload: newData });
-      setLastSubmittedPayment(newData);
-      saveLastPaymentToStorage(newData);
+      if (cacheEnabled) {
+        setLastSubmittedPayment(newData);
+        saveLastPaymentToStorage(newData);
+      }
       const when = formatDateForDisplay(newData.transactionDate);
       setMessage(
         `Payment added: ${currencyFormat(newData.amount)} from ${newData.sourceAccount} to ${newData.destinationAccount} on ${when}.`,
@@ -305,7 +316,7 @@ export default function PaymentsNextGen() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setPaymentData(lastSubmittedPayment || initialPaymentData);
+                setPaymentData(cacheEnabled ? (lastSubmittedPayment || initialPaymentData) : initialPaymentData);
                 setShowModalAdd(true);
               }}
             >
@@ -373,7 +384,7 @@ export default function PaymentsNextGen() {
             message="No payments have been recorded yet. Create your first payment to get started."
             actionLabel="Add Payment"
             onAction={() => {
-              setPaymentData(lastSubmittedPayment || initialPaymentData);
+              setPaymentData(cacheEnabled ? (lastSubmittedPayment || initialPaymentData) : initialPaymentData);
               setShowModalAdd(true);
             }}
             variant="create"
@@ -524,6 +535,28 @@ export default function PaymentsNextGen() {
             fullWidth
             margin="normal"
           />
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        setLastSubmittedPayment(null);
+                        localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
+          </Box>
         </FormDialog>
       </>
     </div>

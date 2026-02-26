@@ -15,6 +15,8 @@ import {
   Tooltip,
   Fade,
   Grow,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -53,11 +55,18 @@ import AccountCardSkeleton from "../../components/AccountCardSkeleton";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 
+const ACCOUNTS_CACHE_ENABLED_KEY = "finance_cache_enabled_accounts";
+const ACCOUNTS_CACHE_DATA_KEY = "finance_cached_data_accounts";
+
 export default function Accounts() {
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModelAdd, setShowModelAdd] = useState(false);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(ACCOUNTS_CACHE_ENABLED_KEY) === "true";
+  });
   const [showModelDelete, setShowModelDelete] = useState(false);
   const [showModelDeactivate, setShowModelDeactivate] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
@@ -339,6 +348,9 @@ export default function Accounts() {
 
     try {
       await insertAccount({ payload: newData });
+      if (cacheEnabled && typeof window !== "undefined") {
+        localStorage.setItem(ACCOUNTS_CACHE_DATA_KEY, JSON.stringify(newData));
+      }
       setShowModelAdd(false);
       setMessage("Account inserted successfully.");
       setShowSnackbar(true);
@@ -351,6 +363,21 @@ export default function Accounts() {
       ) {
       }
     }
+  };
+
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(ACCOUNTS_CACHE_DATA_KEY);
+        setAccountData(stored ? JSON.parse(stored) : null);
+      } catch {
+        setAccountData(null);
+      }
+    } else {
+      setAccountData(null);
+    }
+    setFormErrors({});
+    setShowModelAdd(true);
   };
 
   const columns: GridColDef[] = [
@@ -497,7 +524,7 @@ export default function Accounts() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setShowModelAdd(true)}
+              onClick={() => handleOpenAddModal()}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Account
@@ -907,6 +934,27 @@ export default function Accounts() {
               }))
             }
           />
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(ACCOUNTS_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        localStorage.removeItem(ACCOUNTS_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
+          </Box>
         </FormDialog>
       </>
     </div>

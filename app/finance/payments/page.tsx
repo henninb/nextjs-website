@@ -15,6 +15,8 @@ import {
   Autocomplete,
   ToggleButton,
   ToggleButtonGroup,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -47,6 +49,7 @@ import { useAuth } from "../../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
 const LAST_PAYMENT_STORAGE_KEY = "finance_last_payment";
+const PAYMENTS_CACHE_ENABLED_KEY = "finance_cache_enabled_payments";
 
 const initialPaymentData: Payment = {
   paymentId: 0,
@@ -110,12 +113,18 @@ export default function Payments() {
   );
   const [lastSubmittedPayment, setLastSubmittedPayment] =
     useState<Payment | null>(null);
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(PAYMENTS_CACHE_ENABLED_KEY) === "true";
+  });
 
-  // Initialize last payment from localStorage on mount
+  // Initialize last payment from localStorage on mount (only if cache is enabled)
   useEffect(() => {
-    const storedPayment = getLastPaymentFromStorage();
-    if (storedPayment) {
-      setLastSubmittedPayment(storedPayment);
+    if (localStorage.getItem(PAYMENTS_CACHE_ENABLED_KEY) === "true") {
+      const storedPayment = getLastPaymentFromStorage();
+      if (storedPayment) {
+        setLastSubmittedPayment(storedPayment);
+      }
     }
   }, []);
 
@@ -277,8 +286,10 @@ export default function Payments() {
 
     try {
       await insertPayment({ payload: newData });
-      setLastSubmittedPayment(newData);
-      saveLastPaymentToStorage(newData);
+      if (cacheEnabled) {
+        setLastSubmittedPayment(newData);
+        saveLastPaymentToStorage(newData);
+      }
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
       handleSuccess(
@@ -447,7 +458,7 @@ export default function Payments() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setPaymentData(lastSubmittedPayment || initialPaymentData);
+                setPaymentData(cacheEnabled ? (lastSubmittedPayment || initialPaymentData) : initialPaymentData);
                 setFormErrors({});
                 setPaymentMode("payBill");
                 setShowModalAdd(true);
@@ -737,6 +748,28 @@ export default function Payments() {
             error={!!formErrors.amount}
             helperText={formErrors.amount}
           />
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(PAYMENTS_CACHE_ENABLED_KEY, String(checked));
+                      if (!checked) {
+                        setLastSubmittedPayment(null);
+                        localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
+          </Box>
         </FormDialog>
       </>
     </div>
