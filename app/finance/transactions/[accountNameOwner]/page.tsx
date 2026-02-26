@@ -16,6 +16,7 @@ import {
   Chip,
   Switch,
   FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -151,10 +152,26 @@ export default function TransactionsByAccount({
     Array<string | number>
   >([]);
 
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const ownerKey =
+      typeof unwrappedParams?.accountNameOwner === "string"
+        ? unwrappedParams.accountNameOwner
+        : "";
+    return (
+      localStorage.getItem(
+        `finance_cache_enabled_transactions_${ownerKey}`,
+      ) === "true"
+    );
+  });
+
   const router = useRouter();
   const accountNameOwner = unwrappedParams.accountNameOwner;
   const validAccountNameOwner =
     typeof accountNameOwner === "string" ? accountNameOwner : "";
+
+  const TRANSACTIONS_CACHE_ENABLED_KEY = `finance_cache_enabled_transactions_${validAccountNameOwner}`;
+  const TRANSACTIONS_CACHE_DATA_KEY = `finance_cached_data_transactions_${validAccountNameOwner}`;
 
   const {
     data: transactionPage,
@@ -365,6 +382,34 @@ export default function TransactionsByAccount({
     setShowSnackbar(true);
   }, []);
 
+  const handleOpenAddModal = () => {
+    if (cacheEnabled && typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(TRANSACTIONS_CACHE_DATA_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.transactionDate) {
+            parsed.transactionDate = new Date(parsed.transactionDate);
+          }
+          setTransactionData((prev) => ({
+            ...initialTransactionData,
+            ...parsed,
+            accountNameOwner: validAccountNameOwner,
+            accountType: prev.accountType,
+            guid: "pending-uuid",
+          }));
+        } else {
+          setTransactionData(initialTransactionData);
+        }
+      } catch {
+        setTransactionData(initialTransactionData);
+      }
+    } else {
+      setTransactionData(initialTransactionData);
+    }
+    setShowModalAdd(true);
+  };
+
   // Calculate amount bounds from actual data
   const amountBounds = useMemo(() => {
     if (!fetchedTransactions || fetchedTransactions.length === 0) {
@@ -550,6 +595,27 @@ export default function TransactionsByAccount({
       });
       console.log(`Transaction added successfully: ${JSON.stringify(result)}`);
       handleSuccess(`Transaction added successfully.`);
+
+      if (cacheEnabled && typeof window !== "undefined") {
+        try {
+          const dataToCache = {
+            description: newData.description,
+            category: newData.category,
+            amount: newData.amount,
+            transactionDate: newData.transactionDate,
+            transactionState: newData.transactionState,
+            transactionType: newData.transactionType,
+            reoccurringType: newData.reoccurringType,
+            notes: newData.notes,
+          };
+          localStorage.setItem(
+            TRANSACTIONS_CACHE_DATA_KEY,
+            JSON.stringify(dataToCache),
+          );
+        } catch {
+          // ignore storage errors
+        }
+      }
 
       // Reset to page 0 to see the newly inserted transaction
       setPaginationModel({ ...paginationModel, page: 0 });
@@ -924,7 +990,7 @@ export default function TransactionsByAccount({
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => setShowModalAdd(true)}
+                  onClick={() => handleOpenAddModal()}
                   sx={{ backgroundColor: "primary.main" }}
                 >
                   Add Transaction
@@ -1251,7 +1317,7 @@ export default function TransactionsByAccount({
                       dataType="transactions"
                       variant="create"
                       actionLabel="Add Transaction"
-                      onAction={() => setShowModalAdd(true)}
+                      onAction={() => handleOpenAddModal()}
                       onRefresh={() => {
                         refetchTransactions();
                         refetchTotals();
@@ -1585,6 +1651,30 @@ export default function TransactionsByAccount({
             multiline
             rows={3}
           />
+          <Box mt={2}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cacheEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCacheEnabled(checked);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(
+                        TRANSACTIONS_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
+                      if (!checked) {
+                        localStorage.removeItem(TRANSACTIONS_CACHE_DATA_KEY);
+                      }
+                    }
+                  }}
+                  size="small"
+                />
+              }
+              label="Remember field data"
+            />
+          </Box>
         </FormDialog>
 
         <FormDialog
