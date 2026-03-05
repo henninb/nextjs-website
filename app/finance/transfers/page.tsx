@@ -1,8 +1,6 @@
 "use client";
 import { getErrorMessage } from "../../../types";
-
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -43,7 +41,7 @@ import {
   formatDateForInput,
   formatDateForDisplay,
 } from "../../../components/Common";
-import { useAuth } from "../../../components/AuthProvider";
+import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
 const LAST_TRANSFER_STORAGE_KEY = "finance_last_transfer";
@@ -86,23 +84,33 @@ const saveLastTransferToStorage = (transfer: Transfer): void => {
 };
 
 export default function Transfers() {
-  const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState<
-    "error" | "warning" | "info" | "success"
-  >("info");
-  const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setShowModalAdd] = useState(false);
-  const [showModalDelete, setShowModalDelete] = useState(false);
+  const {
+    message,
+    showSnackbar,
+    snackbarSeverity,
+    showSpinner,
+    setShowSpinner,
+    showModalAdd,
+    setShowModalAdd,
+    showModalDelete,
+    setShowModalDelete,
+    paginationModel,
+    setPaginationModel,
+    cacheEnabled,
+    setCacheEnabled,
+    isAuthenticated,
+    loading,
+    handleError,
+    handleSuccess,
+    handleSnackbarClose,
+    setMessage,
+    setShowSnackbar,
+    setSnackbarSeverity,
+  } = useFinancePageState(TRANSFERS_CACHE_ENABLED_KEY);
   const [formErrors, setFormErrors] = useState<{
     amount?: string;
     accounts?: string;
   }>({});
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 50,
-    page: 0,
-  });
-
   const [transferData, setTransferData] =
     useState<Transfer>(initialTransferData);
 
@@ -112,11 +120,6 @@ export default function Transfers() {
 
   const [lastSubmittedTransfer, setLastSubmittedTransfer] =
     useState<Transfer | null>(null);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(TRANSFERS_CACHE_ENABLED_KEY) === "true";
-  });
-
   // Initialize last transfer from localStorage on mount (only if cache is enabled)
   useEffect(() => {
     if (localStorage.getItem(TRANSFERS_CACHE_ENABLED_KEY) === "true") {
@@ -158,17 +161,6 @@ export default function Transfers() {
 
   const transfersToDisplay =
     fetchedTransfers?.filter((row) => row != null) || [];
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (loading) {
-      setShowSpinner(true);
-    }
-    if (!loading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (
@@ -280,34 +272,6 @@ export default function Transfers() {
         setSelectedTransfer(null);
       }
     }
-  };
-
-  const handleSnackbarClose = () => {
-    setShowSnackbar(false);
-  };
-
-  const handleError = (
-    error: unknown,
-    moduleName: string,
-    throwIt: boolean,
-  ) => {
-    const errorMessage = getErrorMessage(error)
-      ? `${moduleName}: ${getErrorMessage(error)}`
-      : `${moduleName}: Failure`;
-
-    setMessage(errorMessage);
-    setSnackbarSeverity("error");
-    setShowSnackbar(true);
-
-    console.error(errorMessage);
-
-    if (throwIt) throw error;
-  };
-
-  const handleSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    setSnackbarSeverity("success");
-    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Transfer) => {

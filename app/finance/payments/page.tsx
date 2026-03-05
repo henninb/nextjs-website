@@ -1,8 +1,6 @@
 "use client";
 import { getErrorMessage } from "../../../types";
-
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
@@ -45,7 +43,7 @@ import {
   formatDateForInput,
   formatDateForDisplay,
 } from "../../../components/Common";
-import { useAuth } from "../../../components/AuthProvider";
+import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
 const LAST_PAYMENT_STORAGE_KEY = "finance_last_payment";
@@ -90,20 +88,31 @@ const saveLastPaymentToStorage = (payment: Payment): void => {
 };
 
 export default function Payments() {
-  const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState<
-    "error" | "warning" | "info" | "success"
-  >("info");
-  const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setShowModalAdd] = useState(false);
+  const {
+    message,
+    showSnackbar,
+    snackbarSeverity,
+    showSpinner,
+    setShowSpinner,
+    showModalAdd,
+    setShowModalAdd,
+    showModalDelete,
+    setShowModalDelete,
+    paginationModel,
+    setPaginationModel,
+    cacheEnabled,
+    setCacheEnabled,
+    isAuthenticated,
+    loading,
+    handleError,
+    handleSuccess,
+    handleSnackbarClose,
+    setMessage,
+    setShowSnackbar,
+    setSnackbarSeverity,
+  } = useFinancePageState(PAYMENTS_CACHE_ENABLED_KEY);
   const [paymentData, setPaymentData] = useState<Payment>(initialPaymentData);
-  const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 50,
-    page: 0,
-  });
   const [formErrors, setFormErrors] = useState<{
     amount?: string;
     accounts?: string;
@@ -113,11 +122,6 @@ export default function Payments() {
   );
   const [lastSubmittedPayment, setLastSubmittedPayment] =
     useState<Payment | null>(null);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(PAYMENTS_CACHE_ENABLED_KEY) === "true";
-  });
-
   // Initialize last payment from localStorage on mount (only if cache is enabled)
   useEffect(() => {
     if (localStorage.getItem(PAYMENTS_CACHE_ENABLED_KEY) === "true") {
@@ -154,14 +158,6 @@ export default function Payments() {
   const { mutateAsync: insertPayment } = usePaymentInsert();
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (
@@ -234,32 +230,6 @@ export default function Payments() {
         setSelectedPayment(null);
       }
     }
-  };
-
-  const handleSnackbarClose = () => {
-    setShowSnackbar(false);
-  };
-
-  const handleError = (
-    error: unknown,
-    moduleName: string,
-    throwIt: boolean,
-  ) => {
-    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
-
-    setMessage(errorMessage);
-    setSnackbarSeverity("error");
-    setShowSnackbar(true);
-
-    console.error(errorMessage);
-
-    if (throwIt) throw error;
-  };
-
-  const handleSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    setSnackbarSeverity("success");
-    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Payment) => {

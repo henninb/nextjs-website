@@ -1,8 +1,6 @@
 "use client";
 import { getErrorMessage } from "../../../types";
-
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -34,34 +32,41 @@ import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
-import { useAuth } from "../../../components/AuthProvider";
+import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
 const DESCRIPTIONS_CACHE_ENABLED_KEY = "finance_cache_enabled_descriptions";
 const DESCRIPTIONS_CACHE_DATA_KEY = "finance_cached_data_descriptions";
 
 export default function Descriptions() {
-  const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState<
-    "error" | "warning" | "info" | "success"
-  >("info");
-  const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setShowModalAdd] = useState(false);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(DESCRIPTIONS_CACHE_ENABLED_KEY) === "true";
-  });
-  const [showModalDelete, setShowModalDelete] = useState(false);
+  const {
+    message,
+    showSnackbar,
+    snackbarSeverity,
+    showSpinner,
+    setShowSpinner,
+    showModalAdd,
+    setShowModalAdd,
+    showModalDelete,
+    setShowModalDelete,
+    paginationModel,
+    setPaginationModel,
+    cacheEnabled,
+    setCacheEnabled,
+    isAuthenticated,
+    loading,
+    handleError,
+    handleSuccess,
+    handleSnackbarClose,
+    setMessage,
+    setShowSnackbar,
+    setSnackbarSeverity,
+  } = useFinancePageState(DESCRIPTIONS_CACHE_ENABLED_KEY);
   const [selectedDescription, setSelectedDescription] =
     useState<Description | null>(null);
   const [descriptionData, setDescriptionData] = useState<Description | null>(
     null,
   );
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 50,
-    page: 0,
-  });
   const [formErrors, setFormErrors] = useState<{
     descriptionName?: string;
     activeStatus?: string;
@@ -79,18 +84,10 @@ export default function Descriptions() {
   const { mutateAsync: updateDescription } = useDescriptionUpdate();
   const { mutateAsync: deleteDescription } = useDescriptionDelete();
   const { mutateAsync: mergeDescriptions } = useDescriptionMerge();
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
   const [rowSelection, setRowSelection] = useState<Array<string | number>>([]);
   const [showModalMerge, setShowModalMerge] = useState(false);
   const [mergeName, setMergeName] = useState("");
   const [mergeError, setMergeError] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingDescriptions || loading || (!loading && !isAuthenticated)) {
@@ -118,32 +115,6 @@ export default function Descriptions() {
         setSelectedDescription(null);
       }
     }
-  };
-
-  const handleSnackbarClose = () => {
-    setShowSnackbar(false);
-  };
-
-  const handleError = (
-    error: unknown,
-    moduleName: string,
-    throwIt: boolean,
-  ) => {
-    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
-
-    setMessage(errorMessage);
-    setSnackbarSeverity("error");
-    setShowSnackbar(true);
-
-    console.error(errorMessage);
-
-    if (throwIt) throw error;
-  };
-
-  const handleSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    setSnackbarSeverity("success");
-    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Description) => {

@@ -1,8 +1,6 @@
 "use client";
 import { getErrorMessage } from "../../../types";
-
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -31,7 +29,7 @@ import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
-import { useAuth } from "../../../components/AuthProvider";
+import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { generateSecureUUID } from "../../../utils/security/secureUUID";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
@@ -39,19 +37,30 @@ const CONFIGURATION_CACHE_ENABLED_KEY = "finance_cache_enabled_configuration";
 const CONFIGURATION_CACHE_DATA_KEY = "finance_cached_data_configuration";
 
 export default function Configuration() {
-  const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState<
-    "error" | "warning" | "info" | "success"
-  >("info");
-  const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setShowModalAdd] = useState(false);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(CONFIGURATION_CACHE_ENABLED_KEY) === "true";
-  });
+  const {
+    message,
+    showSnackbar,
+    snackbarSeverity,
+    showSpinner,
+    setShowSpinner,
+    showModalAdd,
+    setShowModalAdd,
+    showModalDelete,
+    setShowModalDelete,
+    paginationModel,
+    setPaginationModel,
+    cacheEnabled,
+    setCacheEnabled,
+    isAuthenticated,
+    loading,
+    handleError,
+    handleSuccess,
+    handleSnackbarClose,
+    setMessage,
+    setShowSnackbar,
+    setSnackbarSeverity,
+  } = useFinancePageState(CONFIGURATION_CACHE_ENABLED_KEY);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
-  const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState<Parameter | null>(
     null,
   );
@@ -60,10 +69,6 @@ export default function Configuration() {
     parameterValue?: string;
   }>({});
   const [offlineRows, setOfflineRows] = useState<Parameter[]>([]);
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 50,
-    page: 0,
-  });
 
   const {
     data: fetchedParameters,
@@ -76,15 +81,6 @@ export default function Configuration() {
   const { mutateAsync: insertParameter } = useParameterInsert();
   const { mutateAsync: updateParameter } = useParameterUpdate();
   const { mutateAsync: deleteParameter } = useParameterDelete();
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [loading, isAuthenticated, router]);
-
   useEffect(() => {
     if (isFetchingParameters || loading || (!loading && !isAuthenticated)) {
       setShowSpinner(true);
@@ -169,32 +165,6 @@ export default function Configuration() {
 
     setShowModalDelete(false);
     setSelectedParameter(null);
-  };
-
-  const handleSnackbarClose = () => {
-    setShowSnackbar(false);
-  };
-
-  const handleError = (
-    error: unknown,
-    moduleName: string,
-    throwIt: boolean,
-  ) => {
-    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
-
-    setMessage(errorMessage);
-    setSnackbarSeverity("error");
-    setShowSnackbar(true);
-
-    console.error(errorMessage);
-
-    if (throwIt) throw error;
-  };
-
-  const handleSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    setSnackbarSeverity("success");
-    setShowSnackbar(true);
   };
 
   const handleAddRow = async (newData: Parameter) => {
