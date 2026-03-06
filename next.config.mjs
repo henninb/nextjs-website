@@ -199,6 +199,13 @@ const nextConfig = {
               process.env.NODE_ENV === "production" ? "no-store" : "no-store",
           },
 
+          // Vary on Next.js RSC headers so CDNs (e.g. Akamai) cache RSC
+          // payloads and full HTML responses as separate objects
+          {
+            key: "Vary",
+            value: "RSC, Next-Router-State-Tree, Next-Router-Prefetch",
+          },
+
           // Additional security headers
           {
             key: "X-XSS-Protection",
