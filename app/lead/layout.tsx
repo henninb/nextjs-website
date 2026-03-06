@@ -1,6 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "Vehicle Lead Form",
