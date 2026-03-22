@@ -10,7 +10,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Query too short" }, { status: 400 });
   }
 
-  const sanitized = q.trim().slice(0, 100).replace(/[<>"']/g, "");
+  const sanitized = q
+    .trim()
+    .slice(0, 100)
+    .replace(/[<>"']/g, "");
 
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(sanitized)}&format=json&limit=5&addressdetails=1`;

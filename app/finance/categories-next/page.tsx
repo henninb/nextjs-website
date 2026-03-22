@@ -51,7 +51,8 @@ import useCategoryInsertGql from "../../../hooks/useCategoryInsertGql";
 import useCategoryDeleteGql from "../../../hooks/useCategoryDeleteGql";
 import useCategoryUpdateGql from "../../../hooks/useCategoryUpdateGql";
 
-const CATEGORIES_NEXT_CACHE_ENABLED_KEY = "finance_cache_enabled_categories_next";
+const CATEGORIES_NEXT_CACHE_ENABLED_KEY =
+  "finance_cache_enabled_categories_next";
 const CATEGORIES_NEXT_CACHE_DATA_KEY = "finance_cached_data_categories_next";
 
 export default function CategoriesNextGen() {
@@ -260,7 +261,10 @@ export default function CategoriesNextGen() {
       await insertCategory({ category: newData });
 
       if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(CATEGORIES_NEXT_CACHE_DATA_KEY, JSON.stringify(newData));
+        localStorage.setItem(
+          CATEGORIES_NEXT_CACHE_DATA_KEY,
+          JSON.stringify(newData),
+        );
       }
       handleSuccess("Category added successfully.");
     } catch (error: unknown) {
@@ -692,7 +696,10 @@ export default function CategoriesNextGen() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(CATEGORIES_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        CATEGORIES_NEXT_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         localStorage.removeItem(CATEGORIES_NEXT_CACHE_DATA_KEY);
                       }

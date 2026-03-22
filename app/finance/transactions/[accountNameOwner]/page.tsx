@@ -159,9 +159,8 @@ export default function TransactionsByAccount({
         ? unwrappedParams.accountNameOwner
         : "";
     return (
-      localStorage.getItem(
-        `finance_cache_enabled_transactions_${ownerKey}`,
-      ) === "true"
+      localStorage.getItem(`finance_cache_enabled_transactions_${ownerKey}`) ===
+      "true"
     );
   });
 

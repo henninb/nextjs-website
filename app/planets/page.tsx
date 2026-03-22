@@ -93,7 +93,10 @@ function formatTime(isoString: string | null): string {
   });
 }
 
-function timeToPercent(isoString: string | null, dayStartMs: number): number | null {
+function timeToPercent(
+  isoString: string | null,
+  dayStartMs: number,
+): number | null {
   if (!isoString) return null;
   const t = new Date(isoString).getTime();
   const pct = ((t - dayStartMs) / (24 * 3600 * 1000)) * 100;
@@ -124,7 +127,14 @@ interface TimelineBarProps {
   nighttimeWindows: NighttimeWindow[];
 }
 
-function TimelineBar({ rise, set, transit, dayStartMs, color, nighttimeWindows }: TimelineBarProps) {
+function TimelineBar({
+  rise,
+  set,
+  transit,
+  dayStartMs,
+  color,
+  nighttimeWindows,
+}: TimelineBarProps) {
   const riseP = timeToPercent(rise, dayStartMs);
   const setP = timeToPercent(set, dayStartMs);
   const transitP = timeToPercent(transit, dayStartMs);
@@ -230,12 +240,19 @@ function TimelineBar({ rise, set, transit, dayStartMs, color, nighttimeWindows }
               left: `${(h / 24) * 100}%`,
               fontSize: "0.6rem",
               color: "text.disabled",
-              transform: h === 0 ? "none" : h === 24 ? "translateX(-100%)" : "translateX(-50%)",
+              transform:
+                h === 0
+                  ? "none"
+                  : h === 24
+                    ? "translateX(-100%)"
+                    : "translateX(-50%)",
               lineHeight: 1,
               userSelect: "none",
             }}
           >
-            {h === 0 || h === 24 ? `${String(h % 24).padStart(2, "0")}:00` : `${h}:00`}
+            {h === 0 || h === 24
+              ? `${String(h % 24).padStart(2, "0")}:00`
+              : `${h}:00`}
           </Typography>
         ))}
       </Box>
@@ -274,7 +291,14 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
     >
       <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1.5,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Typography
               sx={{
@@ -295,7 +319,10 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
             size="small"
             sx={{
               bgcolor: visibilityBadge.bg,
-              color: planet.visibleNow || planet.visibleTonight ? "black" : "text.secondary",
+              color:
+                planet.visibleNow || planet.visibleTonight
+                  ? "black"
+                  : "text.secondary",
               fontWeight: 600,
               fontSize: "0.7rem",
             }}
@@ -307,13 +334,33 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
           {/* @ts-expect-error MUI v7 Grid type issue */}
           <Grid item xs={4}>
             <Box sx={{ textAlign: "center" }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mb: 0.25 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 0.5,
+                  mb: 0.25,
+                }}
+              >
                 <ArrowUpward sx={{ fontSize: 13, color: "success.main" }} />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Rise
                 </Typography>
               </Box>
-              <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.85rem" }}>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                sx={{ fontSize: "0.85rem" }}
+              >
                 {formatTime(planet.rise)}
               </Typography>
             </Box>
@@ -321,13 +368,33 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
           {/* @ts-expect-error MUI v7 Grid type issue */}
           <Grid item xs={4}>
             <Box sx={{ textAlign: "center" }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mb: 0.25 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 0.5,
+                  mb: 0.25,
+                }}
+              >
                 <WbTwilight sx={{ fontSize: 13, color: "warning.light" }} />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Transit
                 </Typography>
               </Box>
-              <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.85rem" }}>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                sx={{ fontSize: "0.85rem" }}
+              >
                 {formatTime(planet.transit)}
               </Typography>
             </Box>
@@ -335,13 +402,33 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
           {/* @ts-expect-error MUI v7 Grid type issue */}
           <Grid item xs={4}>
             <Box sx={{ textAlign: "center" }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mb: 0.25 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 0.5,
+                  mb: 0.25,
+                }}
+              >
                 <ArrowDownward sx={{ fontSize: 13, color: "error.light" }} />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.65rem",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
                   Set
                 </Typography>
               </Box>
-              <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.85rem" }}>
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                sx={{ fontSize: "0.85rem" }}
+              >
                 {formatTime(planet.set)}
               </Typography>
             </Box>
@@ -365,8 +452,15 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
           {[
             { label: "Altitude", value: `${planet.altitude}°` },
             { label: "Max Alt", value: `${planet.maxAltitude}°` },
-            { label: "Magnitude", value: planet.magnitude !== null ? planet.magnitude.toFixed(1) : "—" },
-            { label: "Direction", value: `${planet.direction} (${planet.azimuth}°)` },
+            {
+              label: "Magnitude",
+              value:
+                planet.magnitude !== null ? planet.magnitude.toFixed(1) : "—",
+            },
+            {
+              label: "Direction",
+              value: `${planet.direction} (${planet.azimuth}°)`,
+            },
           ].map(({ label, value }) => (
             /* @ts-expect-error MUI v7 Grid type issue */
             <Grid item xs={6} key={label}>
@@ -379,10 +473,23 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
                   border: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: 0.5, display: "block" }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.6rem",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                    display: "block",
+                  }}
+                >
                   {label}
                 </Typography>
-                <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.8rem" }}>
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                  sx={{ fontSize: "0.8rem" }}
+                >
                   {value}
                 </Typography>
               </Box>
@@ -393,9 +500,19 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
         {/* Nighttime viewing windows */}
         {planet.nighttimeWindows.length > 0 && (
           <Box sx={{ mb: 1.5 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.75 }}>
+            <Box
+              sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.75 }}
+            >
               <NightsStay sx={{ fontSize: 14, color }} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  fontSize: "0.7rem",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
                 Best Viewing Windows
               </Typography>
             </Box>
@@ -471,7 +588,9 @@ export default function PlanetsPage() {
     debounceRef.current = setTimeout(async () => {
       setGeocoding(true);
       try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(cityQuery.trim())}`);
+        const res = await fetch(
+          `/api/geocode?q=${encodeURIComponent(cityQuery.trim())}`,
+        );
         if (res.ok) {
           const data: GeocodeSuggestion[] = await res.json();
           setSuggestions(data);
@@ -491,7 +610,10 @@ export default function PlanetsPage() {
   // Close suggestions on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+      if (
+        searchBoxRef.current &&
+        !searchBoxRef.current.contains(e.target as Node)
+      ) {
         setShowSuggestions(false);
       }
     }
@@ -540,7 +662,9 @@ export default function PlanetsPage() {
     setError("");
     try {
       const dateParam = `${date}T12:00:00Z`;
-      const res = await fetch(`/api/planets?lat=${lat}&lon=${lon}&date=${encodeURIComponent(dateParam)}`);
+      const res = await fetch(
+        `/api/planets?lat=${lat}&lon=${lon}&date=${encodeURIComponent(dateParam)}`,
+      );
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || "Failed to fetch planet data");
@@ -562,7 +686,6 @@ export default function PlanetsPage() {
     }
   }, [lat, lon, date, fetchPlanets]);
 
-
   const dayStartMs = planetsData
     ? (() => {
         const d = new Date(planetsData.referenceTime);
@@ -572,8 +695,11 @@ export default function PlanetsPage() {
     : 0;
 
   const visibleNow = planetsData?.planets.filter((p) => p.visibleNow) ?? [];
-  const visibleTonight = planetsData?.planets.filter((p) => !p.visibleNow && p.visibleTonight) ?? [];
-  const notVisible = planetsData?.planets.filter((p) => !p.visibleNow && !p.visibleTonight) ?? [];
+  const visibleTonight =
+    planetsData?.planets.filter((p) => !p.visibleNow && p.visibleTonight) ?? [];
+  const notVisible =
+    planetsData?.planets.filter((p) => !p.visibleNow && !p.visibleTonight) ??
+    [];
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -594,7 +720,8 @@ export default function PlanetsPage() {
           Planet Rise &amp; Set
         </Typography>
         <Typography variant="h6" color="text.secondary">
-          Rise, transit, and set times for all 7 planets from any location on Earth
+          Rise, transit, and set times for all 7 planets from any location on
+          Earth
         </Typography>
       </Box>
 
@@ -623,7 +750,9 @@ export default function PlanetsPage() {
                   setCityQuery(e.target.value);
                   setShowSuggestions(true);
                 }}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                onFocus={() =>
+                  suggestions.length > 0 && setShowSuggestions(true)
+                }
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -666,7 +795,10 @@ export default function PlanetsPage() {
                           <ListItemText
                             primary={getPlaceName(s)}
                             secondary={`${parseFloat(s.lat).toFixed(4)}°, ${parseFloat(s.lon).toFixed(4)}°`}
-                            primaryTypographyProps={{ variant: "body2", fontWeight: 500 }}
+                            primaryTypographyProps={{
+                              variant: "body2",
+                              fontWeight: 500,
+                            }}
                             secondaryTypographyProps={{ variant: "caption" }}
                           />
                         </ListItemButton>
@@ -695,7 +827,14 @@ export default function PlanetsPage() {
           {/* Action buttons */}
           {/* @ts-expect-error MUI v7 Grid type issue */}
           <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ display: "flex", gap: 1, height: "100%", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                height: "100%",
+                alignItems: "center",
+              }}
+            >
               <Tooltip title="Use my current location">
                 <span>
                   <IconButton
@@ -705,10 +844,16 @@ export default function PlanetsPage() {
                     sx={{
                       border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
                       color: theme.palette.primary.main,
-                      "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) },
+                      "&:hover": {
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                      },
                     }}
                   >
-                    {geolocating ? <CircularProgress size={22} /> : <GpsFixed />}
+                    {geolocating ? (
+                      <CircularProgress size={22} />
+                    ) : (
+                      <GpsFixed />
+                    )}
                   </IconButton>
                 </span>
               </Tooltip>
@@ -719,7 +864,9 @@ export default function PlanetsPage() {
                   sx={{
                     border: `1px solid ${alpha(theme.palette.secondary.main, 0.4)}`,
                     color: theme.palette.secondary.main,
-                    "&:hover": { bgcolor: alpha(theme.palette.secondary.main, 0.1) },
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                    },
                   }}
                 >
                   <AccessTime />
@@ -735,7 +882,10 @@ export default function PlanetsPage() {
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                     color: theme.palette.primary.light,
                     maxWidth: 180,
-                    ".MuiChip-label": { overflow: "hidden", textOverflow: "ellipsis" },
+                    ".MuiChip-label": {
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
                   }}
                 />
               )}
@@ -744,13 +894,23 @@ export default function PlanetsPage() {
         </Grid>
 
         {!lat && !loading && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: "center" }}>
-            Search for a city or click <GpsFixed sx={{ fontSize: 14, verticalAlign: "middle" }} /> to use your current location
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 2, textAlign: "center" }}
+          >
+            Search for a city or click{" "}
+            <GpsFixed sx={{ fontSize: 14, verticalAlign: "middle" }} /> to use
+            your current location
           </Typography>
         )}
 
         {lastFetchTime && (
-          <Typography variant="caption" color="text.disabled" sx={{ display: "block", textAlign: "right", mt: 1 }}>
+          <Typography
+            variant="caption"
+            color="text.disabled"
+            sx={{ display: "block", textAlign: "right", mt: 1 }}
+          >
             Last updated: {lastFetchTime.toLocaleTimeString()}
           </Typography>
         )}
@@ -763,42 +923,91 @@ export default function PlanetsPage() {
       )}
 
       {loading && (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, py: 8 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 2,
+            py: 8,
+          }}
+        >
           <CircularProgress size={40} />
-          <Typography color="text.secondary">Calculating planet positions...</Typography>
+          <Typography color="text.secondary">
+            Calculating planet positions...
+          </Typography>
         </Box>
       )}
 
       {planetsData && !loading && (
         <>
           {/* Legend */}
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 3, alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              flexWrap: "wrap",
+              mb: 3,
+              alignItems: "center",
+            }}
+          >
             <Typography variant="body2" color="text.secondary" fontWeight={600}>
               Timeline legend:
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <Box sx={{ width: 28, height: 8, bgcolor: "rgba(255,255,255,0.15)", borderRadius: 0.5, border: "1px solid rgba(255,255,255,0.2)" }} />
-              <Typography variant="caption" color="text.secondary">Above horizon (daytime)</Typography>
+              <Box
+                sx={{
+                  width: 28,
+                  height: 8,
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  borderRadius: 0.5,
+                  border: "1px solid rgba(255,255,255,0.2)",
+                }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                Above horizon (daytime)
+              </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <Box sx={{ width: 28, height: 8, bgcolor: "#7c4dff", borderRadius: 0.5, opacity: 0.85 }} />
-              <Typography variant="caption" color="text.secondary">Visible at night</Typography>
+              <Box
+                sx={{
+                  width: 28,
+                  height: 8,
+                  bgcolor: "#7c4dff",
+                  borderRadius: 0.5,
+                  opacity: 0.85,
+                }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                Visible at night
+              </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <Box sx={{ width: 2, height: 14, bgcolor: "rgba(255,255,255,0.4)" }} />
-              <Typography variant="caption" color="text.secondary">Transit (highest point)</Typography>
+              <Box
+                sx={{ width: 2, height: 14, bgcolor: "rgba(255,255,255,0.4)" }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                Transit (highest point)
+              </Typography>
             </Box>
           </Box>
 
           {/* Visible Now */}
           {visibleNow.length > 0 && (
             <Box sx={{ mb: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
                 <Visibility sx={{ color: "success.main" }} />
                 <Typography variant="h5" fontWeight={700} color="success.main">
                   Visible Now
                 </Typography>
-                <Chip label={visibleNow.length} size="small" color="success" sx={{ fontWeight: 700 }} />
+                <Chip
+                  label={visibleNow.length}
+                  size="small"
+                  color="success"
+                  sx={{ fontWeight: 700 }}
+                />
               </Box>
               <Grid container spacing={2}>
                 {visibleNow.map((planet) => (
@@ -814,12 +1023,19 @@ export default function PlanetsPage() {
           {/* Visible Tonight */}
           {visibleTonight.length > 0 && (
             <Box sx={{ mb: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
                 <NightsStay sx={{ color: "warning.main" }} />
                 <Typography variant="h5" fontWeight={700} color="warning.main">
                   Visible Tonight
                 </Typography>
-                <Chip label={visibleTonight.length} size="small" color="warning" sx={{ fontWeight: 700 }} />
+                <Chip
+                  label={visibleTonight.length}
+                  size="small"
+                  color="warning"
+                  sx={{ fontWeight: 700 }}
+                />
               </Box>
               <Grid container spacing={2}>
                 {visibleTonight.map((planet) => (
@@ -835,12 +1051,18 @@ export default function PlanetsPage() {
           {/* Not Visible */}
           {notVisible.length > 0 && (
             <Box sx={{ mb: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
                 <VisibilityOff sx={{ color: "text.disabled" }} />
                 <Typography variant="h5" fontWeight={700} color="text.disabled">
                   Not Visible
                 </Typography>
-                <Chip label={notVisible.length} size="small" sx={{ bgcolor: "rgba(255,255,255,0.1)", fontWeight: 700 }} />
+                <Chip
+                  label={notVisible.length}
+                  size="small"
+                  sx={{ bgcolor: "rgba(255,255,255,0.1)", fontWeight: 700 }}
+                />
               </Box>
               <Grid container spacing={2}>
                 {notVisible.map((planet) => (
@@ -855,9 +1077,13 @@ export default function PlanetsPage() {
 
           {/* Footer */}
           <Divider sx={{ my: 3 }} />
-          <Typography variant="caption" color="text.disabled" sx={{ display: "block", textAlign: "center" }}>
-            Times shown in your local timezone · Rise/set searched from UTC midnight ·
-            Powered by{" "}
+          <Typography
+            variant="caption"
+            color="text.disabled"
+            sx={{ display: "block", textAlign: "center" }}
+          >
+            Times shown in your local timezone · Rise/set searched from UTC
+            midnight · Powered by{" "}
             <Box component="span" sx={{ color: theme.palette.primary.light }}>
               astronomy-engine
             </Box>

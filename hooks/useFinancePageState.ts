@@ -40,7 +40,9 @@ export function useFinancePageState(cacheEnabledKey?: string) {
     throwIt: boolean,
   ) => {
     const msg = getErrorMessage(error);
-    const errorMessage = msg ? `${moduleName}: ${msg}` : `${moduleName}: Failure`;
+    const errorMessage = msg
+      ? `${moduleName}: ${msg}`
+      : `${moduleName}: Failure`;
     setMessage(errorMessage);
     setSnackbarSeverity("error");
     setShowSnackbar(true);

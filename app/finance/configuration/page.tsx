@@ -191,7 +191,10 @@ export default function Configuration() {
     try {
       await insertParameter({ payload: newData });
       if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(CONFIGURATION_CACHE_DATA_KEY, JSON.stringify(newData));
+        localStorage.setItem(
+          CONFIGURATION_CACHE_DATA_KEY,
+          JSON.stringify(newData),
+        );
       }
       const secureId = await generateSecureUUID();
       setParameterData((prev: Parameter) =>
@@ -456,7 +459,10 @@ export default function Configuration() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(CONFIGURATION_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        CONFIGURATION_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         localStorage.removeItem(CONFIGURATION_CACHE_DATA_KEY);
                       }

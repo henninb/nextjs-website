@@ -51,8 +51,10 @@ import useDescriptionInsertGql from "../../../hooks/useDescriptionInsertGql";
 import useDescriptionDeleteGql from "../../../hooks/useDescriptionDeleteGql";
 import useDescriptionUpdateGql from "../../../hooks/useDescriptionUpdateGql";
 
-const DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY = "finance_cache_enabled_descriptions_next";
-const DESCRIPTIONS_NEXT_CACHE_DATA_KEY = "finance_cached_data_descriptions_next";
+const DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY =
+  "finance_cache_enabled_descriptions_next";
+const DESCRIPTIONS_NEXT_CACHE_DATA_KEY =
+  "finance_cached_data_descriptions_next";
 
 export default function DescriptionsNextGen() {
   const router = useRouter();
@@ -261,7 +263,10 @@ export default function DescriptionsNextGen() {
       await insertDescription({ description: newData });
 
       if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(DESCRIPTIONS_NEXT_CACHE_DATA_KEY, JSON.stringify(newData));
+        localStorage.setItem(
+          DESCRIPTIONS_NEXT_CACHE_DATA_KEY,
+          JSON.stringify(newData),
+        );
       }
       handleSuccess("Description added successfully.");
     } catch (error: unknown) {
@@ -697,9 +702,14 @@ export default function DescriptionsNextGen() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
-                        localStorage.removeItem(DESCRIPTIONS_NEXT_CACHE_DATA_KEY);
+                        localStorage.removeItem(
+                          DESCRIPTIONS_NEXT_CACHE_DATA_KEY,
+                        );
                       }
                     }
                   }}

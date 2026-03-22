@@ -148,7 +148,10 @@ export default function Descriptions() {
     try {
       await insertDescription(newData);
       if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(DESCRIPTIONS_CACHE_DATA_KEY, JSON.stringify(newData));
+        localStorage.setItem(
+          DESCRIPTIONS_CACHE_DATA_KEY,
+          JSON.stringify(newData),
+        );
       }
       handleSuccess(`Description added successfully.`);
       setFormErrors({});
@@ -508,7 +511,10 @@ export default function Descriptions() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(DESCRIPTIONS_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        DESCRIPTIONS_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         localStorage.removeItem(DESCRIPTIONS_CACHE_DATA_KEY);
                       }

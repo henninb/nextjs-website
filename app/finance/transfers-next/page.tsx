@@ -446,7 +446,11 @@ export default function TransfersNextGen() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setTransferData(cacheEnabled ? (lastSubmittedTransfer || initialTransferData) : initialTransferData);
+                setTransferData(
+                  cacheEnabled
+                    ? lastSubmittedTransfer || initialTransferData
+                    : initialTransferData,
+                );
                 setSelectedSourceAccount(null);
                 setSelectedDestinationAccount(null);
                 setShowModalAdd(true);
@@ -520,7 +524,11 @@ export default function TransfersNextGen() {
             message="Create your first transfer to move funds between accounts."
             actionLabel="Add Transfer"
             onAction={() => {
-              setTransferData(cacheEnabled ? (lastSubmittedTransfer || initialTransferData) : initialTransferData);
+              setTransferData(
+                cacheEnabled
+                  ? lastSubmittedTransfer || initialTransferData
+                  : initialTransferData,
+              );
               setSelectedSourceAccount(null);
               setSelectedDestinationAccount(null);
               setShowModalAdd(true);
@@ -662,7 +670,10 @@ export default function TransfersNextGen() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(TRANSFERS_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        TRANSFERS_NEXT_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         setLastSubmittedTransfer(null);
                         localStorage.removeItem(LAST_TRANSFER_STORAGE_KEY);

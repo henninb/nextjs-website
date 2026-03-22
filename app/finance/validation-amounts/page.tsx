@@ -219,7 +219,10 @@ export default function ValidationAmounts() {
 
       handleSuccess("Validation amount added successfully.");
       if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(VALIDATION_CACHE_DATA_KEY, JSON.stringify(formData));
+        localStorage.setItem(
+          VALIDATION_CACHE_DATA_KEY,
+          JSON.stringify(formData),
+        );
       }
       setFormData({
         validationDate: new Date(),
@@ -250,13 +253,28 @@ export default function ValidationAmounts() {
           }
           setFormData(parsed);
         } else {
-          setFormData({ validationDate: new Date(), amount: 0, transactionState: "cleared", activeStatus: true });
+          setFormData({
+            validationDate: new Date(),
+            amount: 0,
+            transactionState: "cleared",
+            activeStatus: true,
+          });
         }
       } catch {
-        setFormData({ validationDate: new Date(), amount: 0, transactionState: "cleared", activeStatus: true });
+        setFormData({
+          validationDate: new Date(),
+          amount: 0,
+          transactionState: "cleared",
+          activeStatus: true,
+        });
       }
     } else {
-      setFormData({ validationDate: new Date(), amount: 0, transactionState: "cleared", activeStatus: true });
+      setFormData({
+        validationDate: new Date(),
+        amount: 0,
+        transactionState: "cleared",
+        activeStatus: true,
+      });
     }
     setFormErrors({});
     setShowModalAdd(true);
@@ -620,7 +638,10 @@ export default function ValidationAmounts() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(VALIDATION_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        VALIDATION_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         localStorage.removeItem(VALIDATION_CACHE_DATA_KEY);
                       }

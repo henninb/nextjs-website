@@ -316,7 +316,11 @@ export default function PaymentsNextGen() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setPaymentData(cacheEnabled ? (lastSubmittedPayment || initialPaymentData) : initialPaymentData);
+                setPaymentData(
+                  cacheEnabled
+                    ? lastSubmittedPayment || initialPaymentData
+                    : initialPaymentData,
+                );
                 setShowModalAdd(true);
               }}
             >
@@ -384,7 +388,11 @@ export default function PaymentsNextGen() {
             message="No payments have been recorded yet. Create your first payment to get started."
             actionLabel="Add Payment"
             onAction={() => {
-              setPaymentData(cacheEnabled ? (lastSubmittedPayment || initialPaymentData) : initialPaymentData);
+              setPaymentData(
+                cacheEnabled
+                  ? lastSubmittedPayment || initialPaymentData
+                  : initialPaymentData,
+              );
               setShowModalAdd(true);
             }}
             variant="create"
@@ -544,7 +552,10 @@ export default function PaymentsNextGen() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        PAYMENTS_NEXT_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         setLastSubmittedPayment(null);
                         localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);

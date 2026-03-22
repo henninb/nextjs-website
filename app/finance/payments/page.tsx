@@ -428,7 +428,11 @@ export default function Payments() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setPaymentData(cacheEnabled ? (lastSubmittedPayment || initialPaymentData) : initialPaymentData);
+                setPaymentData(
+                  cacheEnabled
+                    ? lastSubmittedPayment || initialPaymentData
+                    : initialPaymentData,
+                );
                 setFormErrors({});
                 setPaymentMode("payBill");
                 setShowModalAdd(true);
@@ -727,7 +731,10 @@ export default function Payments() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(PAYMENTS_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        PAYMENTS_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         setLastSubmittedPayment(null);
                         localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);

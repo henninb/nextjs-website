@@ -153,7 +153,10 @@ export default function Categories() {
       await insertCategory({ category: newData });
 
       if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(CATEGORIES_CACHE_DATA_KEY, JSON.stringify(newData));
+        localStorage.setItem(
+          CATEGORIES_CACHE_DATA_KEY,
+          JSON.stringify(newData),
+        );
       }
       handleSuccess("Category added successfully.");
     } catch (error) {
@@ -566,7 +569,10 @@ export default function Categories() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(CATEGORIES_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        CATEGORIES_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         localStorage.removeItem(CATEGORIES_CACHE_DATA_KEY);
                       }

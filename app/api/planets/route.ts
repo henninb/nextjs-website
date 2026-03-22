@@ -109,7 +109,13 @@ function calculateNighttimeWindows(
     const sunHor = Horizon(time, observer, sunEq.ra, sunEq.dec, "normal");
 
     const planetEq = Equator(body, time, observer, true, true);
-    const planetHor = Horizon(time, observer, planetEq.ra, planetEq.dec, "normal");
+    const planetHor = Horizon(
+      time,
+      observer,
+      planetEq.ra,
+      planetEq.dec,
+      "normal",
+    );
 
     const isVisible = sunHor.altitude < -6 && planetHor.altitude > 0;
 
@@ -137,7 +143,14 @@ export async function GET(req: NextRequest) {
   const lon = parseFloat(searchParams.get("lon") || "");
   const dateStr = searchParams.get("date");
 
-  if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+  if (
+    isNaN(lat) ||
+    isNaN(lon) ||
+    lat < -90 ||
+    lat > 90 ||
+    lon < -180 ||
+    lon > 180
+  ) {
     return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
   }
 
@@ -154,7 +167,13 @@ export async function GET(req: NextRequest) {
   const observer = new Observer(lat, lon, 0);
 
   const sunEqNow = Equator("Sun" as Body, refDate, observer, true, true);
-  const sunHorNow = Horizon(refDate, observer, sunEqNow.ra, sunEqNow.dec, "normal");
+  const sunHorNow = Horizon(
+    refDate,
+    observer,
+    sunEqNow.ra,
+    sunEqNow.dec,
+    "normal",
+  );
   const isNightNow = sunHorNow.altitude < -6;
 
   const planets = PLANET_CONFIG.map(({ name, body, symbol, color, tip }) => {
@@ -191,7 +210,11 @@ export async function GET(req: NextRequest) {
       // Magnitude not available
     }
 
-    const nighttimeWindows = calculateNighttimeWindows(body, observer, dayStart);
+    const nighttimeWindows = calculateNighttimeWindows(
+      body,
+      observer,
+      dayStart,
+    );
 
     return {
       name,

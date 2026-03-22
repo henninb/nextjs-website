@@ -438,7 +438,11 @@ export default function Transfers() {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
-                setTransferData(cacheEnabled ? (lastSubmittedTransfer || initialTransferData) : initialTransferData);
+                setTransferData(
+                  cacheEnabled
+                    ? lastSubmittedTransfer || initialTransferData
+                    : initialTransferData,
+                );
                 setFormErrors({});
                 setSelectedSourceAccount(null);
                 setSelectedDestinationAccount(null);
@@ -683,7 +687,10 @@ export default function Transfers() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(TRANSFERS_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        TRANSFERS_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         setLastSubmittedTransfer(null);
                         localStorage.removeItem(LAST_TRANSFER_STORAGE_KEY);

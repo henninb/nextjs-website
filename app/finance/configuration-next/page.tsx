@@ -34,8 +34,10 @@ import useParameterInsertGql from "../../../hooks/useParameterInsertGql";
 import useParameterDeleteGql from "../../../hooks/useParameterDeleteGql";
 import useParameterUpdateGql from "../../../hooks/useParameterUpdateGql";
 
-const CONFIGURATION_NEXT_CACHE_ENABLED_KEY = "finance_cache_enabled_configuration_next";
-const CONFIGURATION_NEXT_CACHE_DATA_KEY = "finance_cached_data_configuration_next";
+const CONFIGURATION_NEXT_CACHE_ENABLED_KEY =
+  "finance_cache_enabled_configuration_next";
+const CONFIGURATION_NEXT_CACHE_DATA_KEY =
+  "finance_cached_data_configuration_next";
 
 export default function ConfigurationNextGen() {
   const router = useRouter();
@@ -47,7 +49,9 @@ export default function ConfigurationNextGen() {
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
-    return localStorage.getItem(CONFIGURATION_NEXT_CACHE_ENABLED_KEY) === "true";
+    return (
+      localStorage.getItem(CONFIGURATION_NEXT_CACHE_ENABLED_KEY) === "true"
+    );
   });
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
@@ -128,7 +132,10 @@ export default function ConfigurationNextGen() {
     try {
       await insertParameter({ payload: { ...newData, activeStatus: true } });
       if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(CONFIGURATION_NEXT_CACHE_DATA_KEY, JSON.stringify(newData));
+        localStorage.setItem(
+          CONFIGURATION_NEXT_CACHE_DATA_KEY,
+          JSON.stringify(newData),
+        );
       }
       setShowModalAdd(false);
       setFormErrors({});
@@ -361,9 +368,14 @@ export default function ConfigurationNextGen() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(CONFIGURATION_NEXT_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        CONFIGURATION_NEXT_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
-                        localStorage.removeItem(CONFIGURATION_NEXT_CACHE_DATA_KEY);
+                        localStorage.removeItem(
+                          CONFIGURATION_NEXT_CACHE_DATA_KEY,
+                        );
                       }
                     }
                   }}

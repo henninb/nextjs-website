@@ -943,7 +943,10 @@ export default function Accounts() {
                     const checked = e.target.checked;
                     setCacheEnabled(checked);
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(ACCOUNTS_CACHE_ENABLED_KEY, String(checked));
+                      localStorage.setItem(
+                        ACCOUNTS_CACHE_ENABLED_KEY,
+                        String(checked),
+                      );
                       if (!checked) {
                         localStorage.removeItem(ACCOUNTS_CACHE_DATA_KEY);
                       }
