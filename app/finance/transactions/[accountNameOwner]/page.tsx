@@ -1395,7 +1395,7 @@ export default function TransactionsByAccount({
                             value={creditCardDates.prevDueFormatted}
                             color={
                               (creditCardDates.daysUntilPrevDue ?? 99) <= 7
-                                ? "error"
+                                ? "secondary"
                                 : "warning"
                             }
                           />
