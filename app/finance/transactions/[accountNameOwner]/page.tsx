@@ -79,6 +79,7 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AlarmIcon from "@mui/icons-material/Alarm";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+import PaymentIcon from "@mui/icons-material/Payment";
 import Fade from "@mui/material/Fade";
 import Grow from "@mui/material/Grow";
 import TransactionFilterBar, {
@@ -426,20 +427,22 @@ export default function TransactionsByAccount({
 
     const closeDay = currentAccount.billingStatementCloseDay;
     let nextClose: Date | null = null;
+    let prevClose: Date | null = null;
     if (closeDay != null) {
       const thisMonth = new Date(
         today.getFullYear(),
         today.getMonth(),
         closeDay,
       );
-      nextClose =
-        thisMonth > today
-          ? thisMonth
-          : new Date(today.getFullYear(), today.getMonth() + 1, closeDay);
-      nextClose = applyWeekendShift(
-        nextClose,
-        currentAccount.billingCycleWeekendShift,
-      );
+      if (thisMonth > today) {
+        nextClose = thisMonth;
+        prevClose = new Date(today.getFullYear(), today.getMonth() - 1, closeDay);
+      } else {
+        nextClose = new Date(today.getFullYear(), today.getMonth() + 1, closeDay);
+        prevClose = thisMonth;
+      }
+      nextClose = applyWeekendShift(nextClose, currentAccount.billingCycleWeekendShift);
+      prevClose = applyWeekendShift(prevClose, currentAccount.billingCycleWeekendShift);
     }
 
     let nextDue: Date | null = null;
@@ -466,6 +469,26 @@ export default function TransactionsByAccount({
       }
     }
 
+    let prevDue: Date | null = null;
+    if (prevClose) {
+      const closeMonth = prevClose.getMonth();
+      const closeYear = prevClose.getFullYear();
+      if (currentAccount.billingDueDaySameMonth != null) {
+        prevDue = applyWeekendShift(
+          new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth),
+          currentAccount.billingCycleWeekendShift,
+        );
+      } else if (currentAccount.billingDueDayNextMonth != null) {
+        prevDue = applyWeekendShift(
+          new Date(closeYear, closeMonth + 1, currentAccount.billingDueDayNextMonth),
+          currentAccount.billingCycleWeekendShift,
+        );
+      } else if (currentAccount.billingGracePeriodDays != null) {
+        prevDue = new Date(prevClose);
+        prevDue.setDate(prevDue.getDate() + currentAccount.billingGracePeriodDays);
+      }
+    }
+
     const daysUntil = (d: Date) =>
       Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -483,6 +506,8 @@ export default function TransactionsByAccount({
         year: "numeric",
       });
 
+    const prevDueFuture = prevDue && prevDue >= today ? prevDue : null;
+
     return {
       nextClose,
       nextDue,
@@ -491,6 +516,8 @@ export default function TransactionsByAccount({
       daysUntilDue: nextDue ? daysUntil(nextDue) : null,
       nextCloseFormatted: nextClose ? formatDate(nextClose) : null,
       nextDueFormatted: nextDue ? formatDate(nextDue) : null,
+      prevDueFormatted: prevDueFuture ? formatDate(prevDueFuture) : null,
+      daysUntilPrevDue: prevDueFuture ? daysUntil(prevDueFuture) : null,
     };
   }, [isCreditCard, currentAccount]);
 
@@ -1349,6 +1376,28 @@ export default function TransactionsByAccount({
                             label="Grace Period"
                             value={`${creditCardDates.gracePeriod} days`}
                             color="success"
+                          />
+                        </Box>
+                      </Grow>
+                    )}
+
+                    {/* Current Statement Due (previous cycle due date still in the future) */}
+                    {creditCardDates.prevDueFormatted && (
+                      <Grow in={true} timeout={1200}>
+                        <Box>
+                          <StatCard
+                            icon={<PaymentIcon />}
+                            label={
+                              creditCardDates.daysUntilPrevDue != null
+                                ? `Current Due · ${creditCardDates.daysUntilPrevDue}d away`
+                                : "Current Due"
+                            }
+                            value={creditCardDates.prevDueFormatted}
+                            color={
+                              (creditCardDates.daysUntilPrevDue ?? 99) <= 7
+                                ? "error"
+                                : "warning"
+                            }
                           />
                         </Box>
                       </Grow>
