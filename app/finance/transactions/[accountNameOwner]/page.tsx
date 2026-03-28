@@ -415,9 +415,12 @@ export default function TransactionsByAccount({
       if (shift === "forward") {
         if (day === 6) result.setDate(result.getDate() + 2); // Sat → Mon
         else if (day === 0) result.setDate(result.getDate() + 1); // Sun → Mon
-      } else if (shift === "backward") {
+      } else if (shift === "back") {
         if (day === 6) result.setDate(result.getDate() - 1); // Sat → Fri
         else if (day === 0) result.setDate(result.getDate() - 2); // Sun → Fri
+      } else if (shift === "back_sat_only") {
+        if (day === 6) result.setDate(result.getDate() - 1); // Sat → Fri only
+        // Sunday unchanged
       }
       return result;
     };
