@@ -75,6 +75,10 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import ChecklistIcon from "@mui/icons-material/Checklist";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AlarmIcon from "@mui/icons-material/Alarm";
+import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import Fade from "@mui/material/Fade";
 import Grow from "@mui/material/Grow";
 import TransactionFilterBar, {
@@ -380,6 +384,115 @@ export default function TransactionsByAccount({
     setSnackbarSeverity("success");
     setShowSnackbar(true);
   }, []);
+
+  const currentAccount = useMemo(
+    () =>
+      fetchedAccounts?.find(
+        (account) => account.accountNameOwner === validAccountNameOwner,
+      ) ?? null,
+    [fetchedAccounts, validAccountNameOwner],
+  );
+
+  const isCreditCard = useMemo(
+    () =>
+      !!(
+        currentAccount &&
+        (currentAccount.billingStatementCloseDay != null ||
+          currentAccount.billingGracePeriodDays != null ||
+          currentAccount.billingDueDaySameMonth != null ||
+          currentAccount.billingDueDayNextMonth != null)
+      ),
+    [currentAccount],
+  );
+
+  const creditCardDates = useMemo(() => {
+    if (!isCreditCard || !currentAccount) return null;
+
+    const applyWeekendShift = (d: Date, shift: string | undefined): Date => {
+      const result = new Date(d);
+      const day = result.getDay();
+      if (shift === "forward") {
+        if (day === 6) result.setDate(result.getDate() + 2); // Sat → Mon
+        else if (day === 0) result.setDate(result.getDate() + 1); // Sun → Mon
+      } else if (shift === "backward") {
+        if (day === 6) result.setDate(result.getDate() - 1); // Sat → Fri
+        else if (day === 0) result.setDate(result.getDate() - 2); // Sun → Fri
+      }
+      return result;
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const closeDay = currentAccount.billingStatementCloseDay;
+    let nextClose: Date | null = null;
+    if (closeDay != null) {
+      const thisMonth = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        closeDay,
+      );
+      nextClose =
+        thisMonth > today
+          ? thisMonth
+          : new Date(today.getFullYear(), today.getMonth() + 1, closeDay);
+      nextClose = applyWeekendShift(
+        nextClose,
+        currentAccount.billingCycleWeekendShift,
+      );
+    }
+
+    let nextDue: Date | null = null;
+    if (nextClose) {
+      const closeMonth = nextClose.getMonth();
+      const closeYear = nextClose.getFullYear();
+      if (currentAccount.billingDueDaySameMonth != null) {
+        nextDue = applyWeekendShift(
+          new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth),
+          currentAccount.billingCycleWeekendShift,
+        );
+      } else if (currentAccount.billingDueDayNextMonth != null) {
+        nextDue = applyWeekendShift(
+          new Date(
+            closeYear,
+            closeMonth + 1,
+            currentAccount.billingDueDayNextMonth,
+          ),
+          currentAccount.billingCycleWeekendShift,
+        );
+      } else if (currentAccount.billingGracePeriodDays != null) {
+        nextDue = new Date(nextClose);
+        nextDue.setDate(nextDue.getDate() + currentAccount.billingGracePeriodDays);
+      }
+    }
+
+    const daysUntil = (d: Date) =>
+      Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    const gracePeriod =
+      nextClose && nextDue
+        ? Math.ceil(
+            (nextDue.getTime() - nextClose.getTime()) / (1000 * 60 * 60 * 24),
+          )
+        : currentAccount.billingGracePeriodDays ?? null;
+
+    const formatDate = (d: Date) =>
+      d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+    return {
+      nextClose,
+      nextDue,
+      gracePeriod,
+      daysUntilClose: nextClose ? daysUntil(nextClose) : null,
+      daysUntilDue: nextDue ? daysUntil(nextDue) : null,
+      nextCloseFormatted: nextClose ? formatDate(nextClose) : null,
+      nextDueFormatted: nextDue ? formatDate(nextDue) : null,
+    };
+  }, [isCreditCard, currentAccount]);
 
   const handleOpenAddModal = () => {
     if (cacheEnabled && typeof window !== "undefined") {
@@ -1137,6 +1250,113 @@ export default function TransactionsByAccount({
                 </Grow>
               )}
             </Box>
+
+            {/* Credit Card Billing Section */}
+            {isCreditCard && creditCardDates && (
+              <Fade in={true} timeout={800}>
+                <Box
+                  sx={{
+                    maxWidth: "1400px",
+                    margin: "0 auto",
+                    mb: 4,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1.5,
+                    }}
+                  >
+                    <CreditCardIcon
+                      sx={{ fontSize: "1rem", color: "text.secondary" }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 600,
+                        color: "text.secondary",
+                        fontSize: "0.7rem",
+                      }}
+                    >
+                      Credit Card Billing Cycle
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        sm: "repeat(2, 1fr)",
+                        md: "repeat(3, 1fr)",
+                      },
+                      gap: 2,
+                    }}
+                  >
+                    {/* Next Close Date */}
+                    {creditCardDates.nextCloseFormatted && (
+                      <Grow in={true} timeout={900}>
+                        <Box>
+                          <StatCard
+                            icon={<CalendarTodayIcon />}
+                            label={
+                              creditCardDates.daysUntilClose != null
+                                ? `Next Close · ${creditCardDates.daysUntilClose}d away`
+                                : "Next Close"
+                            }
+                            value={creditCardDates.nextCloseFormatted}
+                            color={
+                              (creditCardDates.daysUntilClose ?? 99) <= 7
+                                ? "warning"
+                                : "primary"
+                            }
+                          />
+                        </Box>
+                      </Grow>
+                    )}
+
+                    {/* Next Due Date */}
+                    {creditCardDates.nextDueFormatted && (
+                      <Grow in={true} timeout={1000}>
+                        <Box>
+                          <StatCard
+                            icon={<AlarmIcon />}
+                            label={
+                              creditCardDates.daysUntilDue != null
+                                ? `Next Due · ${creditCardDates.daysUntilDue}d away`
+                                : "Next Due"
+                            }
+                            value={creditCardDates.nextDueFormatted}
+                            color={
+                              (creditCardDates.daysUntilDue ?? 99) <= 7
+                                ? "warning"
+                                : "info"
+                            }
+                          />
+                        </Box>
+                      </Grow>
+                    )}
+
+                    {/* Grace Period */}
+                    {creditCardDates.gracePeriod != null && (
+                      <Grow in={true} timeout={1100}>
+                        <Box>
+                          <StatCard
+                            icon={<HourglassBottomIcon />}
+                            label="Grace Period"
+                            value={`${creditCardDates.gracePeriod} days`}
+                            color="success"
+                          />
+                        </Box>
+                      </Grow>
+                    )}
+                  </Box>
+                </Box>
+              </Fade>
+            )}
 
             {/* Transaction Filter Bar - Filters current page only with server-side pagination */}
             <Fade in={true} timeout={500}>

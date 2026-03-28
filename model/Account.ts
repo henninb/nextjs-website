@@ -14,4 +14,9 @@ export default interface Account {
   validationDate?: Date;
   dateAdded?: Date;
   dateUpdated?: Date;
+  billingStatementCloseDay?: number;
+  billingGracePeriodDays?: number;
+  billingDueDaySameMonth?: number;
+  billingDueDayNextMonth?: number;
+  billingCycleWeekendShift?: string;
 }
