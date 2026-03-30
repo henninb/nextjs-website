@@ -27,6 +27,17 @@ function checkRateLimit(key) {
   return true;
 }
 
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-px-block",
+    },
+  });
+}
+
 export async function GET(req) {
   const key = rateLimitKey(req);
   if (!checkRateLimit(key)) {
@@ -34,7 +45,7 @@ export async function GET(req) {
       JSON.stringify({ error: "Rate limit exceeded. Try again later." }),
       {
         status: 429,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       },
     );
   }
@@ -70,7 +81,7 @@ export async function GET(req) {
         JSON.stringify({ error: "Upstream weather API error" }),
         {
           status: 502,
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         },
       );
     }
@@ -97,13 +108,14 @@ export async function GET(req) {
 
     const res = NextResponse.json(transformedData);
     res.headers.set("Cache-Control", "no-store");
+    res.headers.set("Access-Control-Allow-Origin", "*");
     return res;
   } catch (err) {
     return new Response(
       JSON.stringify({ error: "Failed to fetch weather data" }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       },
     );
   }
