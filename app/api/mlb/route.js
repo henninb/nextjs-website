@@ -5,8 +5,8 @@ export async function GET(req) {
     const url = new URL("https://statsapi.mlb.com/api/v1/schedule");
 
     const params = {
-      startDate: "1/01/2025",
-      endDate: "12/31/2025",
+      startDate: "1/01/2026",
+      endDate: "12/31/2026",
       gameTypes: "R",
       sportId: 1,
       teamId: 142,
