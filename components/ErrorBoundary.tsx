@@ -2,7 +2,7 @@
 
 import React, { Component, ReactNode } from "react";
 import { Box, Typography, Button, Paper } from "@mui/material";
-import { ErrorOutline, Refresh } from "@mui/icons-material";
+import { ErrorOutlined, Refresh } from "@mui/icons-material";
 
 interface Props {
   children: ReactNode;
@@ -81,7 +81,7 @@ class ErrorBoundary extends Component<Props, State> {
             alignItems="center"
             gap={2}
           >
-            <ErrorOutline sx={{ fontSize: 48, color: "error.main" }} />
+            <ErrorOutlined sx={{ fontSize: 48, color: "error.main" }} />
 
             <Typography variant="h5" component="h2" gutterBottom>
               Something went wrong
