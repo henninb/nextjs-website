@@ -43,3 +43,6 @@ jest-results.json
 *.bak
 .env.local.backup
 test-output.log
+
+# Claude Code local settings
+.claude/settings.local.json
