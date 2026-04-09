@@ -843,7 +843,7 @@ export default function TransactionsByAccount({
           };
 
           return (
-            <Box display="flex" alignItems="center">
+            <Box sx={{ display: "flex", alignItems: "center" }}>
               {transactionStates.map((state: TransactionState) => {
                 let IconComponent: React.ComponentType<{ fontSize?: string }> =
                   CheckCircleIcon;
@@ -1097,8 +1097,7 @@ export default function TransactionsByAccount({
             <Stack
               direction="row"
               spacing={2}
-              alignItems="center"
-              flexWrap="wrap"
+              sx={{ alignItems: "center", flexWrap: "wrap" }}
             >
               <Fade in={true} timeout={600}>
                 <Box>
@@ -1427,7 +1426,7 @@ export default function TransactionsByAccount({
             </Fade>
 
             <div>
-              <Box display="flex" justifyContent="center">
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
                 <Box sx={{ width: "100%", maxWidth: "1400px" }}>
                   {filteredTransactions && filteredTransactions.length > 0 ? (
                     <>
@@ -1922,7 +1921,7 @@ export default function TransactionsByAccount({
             multiline
             rows={3}
           />
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

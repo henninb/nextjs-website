@@ -305,9 +305,8 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
           <Stack
             direction="row"
             spacing={1}
-            flexWrap="wrap"
             useFlexGap
-            sx={{ mb: 2 }}
+            sx={{ mb: 2, flexWrap: "wrap" }}
           >
             {/* State buttons */}
             {(["cleared", "outstanding", "future"] as TransactionState[]).map(

@@ -153,8 +153,7 @@ export default function ToolsPage() {
         <Stack
           direction="row"
           spacing={1}
-          justifyContent="center"
-          flexWrap="wrap"
+          sx={{ justifyContent: "center", flexWrap: "wrap" }}
         >
           <Chip
             label={`${toolsData.reduce((acc, cat) => acc + cat.tools.length, 0)} Tools`}
@@ -245,8 +244,7 @@ export default function ToolsPage() {
                         <Typography
                           variant="h6"
                           component="h3"
-                          fontWeight={600}
-                          sx={{ mb: 0.5 }}
+                          sx={{ fontWeight: 600, mb: 0.5 }}
                         >
                           {tool.name}
                         </Typography>
@@ -321,7 +319,7 @@ export default function ToolsPage() {
           border: `1px solid ${alpha(theme.palette.grey[500], 0.2)}`,
         }}
       >
-        <Typography variant="h6" gutterBottom fontWeight={600}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
           Missing a Tool?
         </Typography>
         <Typography variant="body2" color="text.secondary">

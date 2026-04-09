@@ -310,7 +310,7 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
             >
               {planet.symbol}
             </Typography>
-            <Typography variant="h6" fontWeight={700} sx={{ color }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color }}>
               {planet.name}
             </Typography>
           </Box>
@@ -358,8 +358,7 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
               </Box>
               <Typography
                 variant="body2"
-                fontWeight={600}
-                sx={{ fontSize: "0.85rem" }}
+                sx={{ fontWeight: 600, fontSize: "0.85rem" }}
               >
                 {formatTime(planet.rise)}
               </Typography>
@@ -392,8 +391,7 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
               </Box>
               <Typography
                 variant="body2"
-                fontWeight={600}
-                sx={{ fontSize: "0.85rem" }}
+                sx={{ fontWeight: 600, fontSize: "0.85rem" }}
               >
                 {formatTime(planet.transit)}
               </Typography>
@@ -426,8 +424,7 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
               </Box>
               <Typography
                 variant="body2"
-                fontWeight={600}
-                sx={{ fontSize: "0.85rem" }}
+                sx={{ fontWeight: 600, fontSize: "0.85rem" }}
               >
                 {formatTime(planet.set)}
               </Typography>
@@ -487,8 +484,7 @@ function PlanetCard({ planet, dayStartMs }: PlanetCardProps) {
                 </Typography>
                 <Typography
                   variant="body2"
-                  fontWeight={600}
-                  sx={{ fontSize: "0.8rem" }}
+                  sx={{ fontWeight: 600, fontSize: "0.8rem" }}
                 >
                   {value}
                 </Typography>
@@ -736,7 +732,7 @@ export default function PlanetsPage() {
           borderRadius: 2,
         }}
       >
-        <Grid container spacing={2} alignItems="flex-start">
+        <Grid container spacing={2} sx={{ alignItems: "flex-start" }}>
           {/* City search */}
           {/* @ts-expect-error MUI v7 Grid type issue */}
           <Grid item xs={12} md={6}>
@@ -753,7 +749,7 @@ export default function PlanetsPage() {
                 onFocus={() =>
                   suggestions.length > 0 && setShowSuggestions(true)
                 }
-                InputProps={{
+                slotProps={{ input: {
                   startAdornment: (
                     <InputAdornment position="start">
                       <Search sx={{ color: "text.secondary" }} />
@@ -764,7 +760,7 @@ export default function PlanetsPage() {
                       <CircularProgress size={18} />
                     </InputAdornment>
                   ) : null,
-                }}
+                } }}
               />
               {showSuggestions && suggestions.length > 0 && (
                 <Paper
@@ -795,11 +791,7 @@ export default function PlanetsPage() {
                           <ListItemText
                             primary={getPlaceName(s)}
                             secondary={`${parseFloat(s.lat).toFixed(4)}°, ${parseFloat(s.lon).toFixed(4)}°`}
-                            primaryTypographyProps={{
-                              variant: "body2",
-                              fontWeight: 500,
-                            }}
-                            secondaryTypographyProps={{ variant: "caption" }}
+                            slotProps={{ primary: { variant: "body2", sx: { fontWeight: 500 } }, secondary: { variant: "caption" } }}
                           />
                         </ListItemButton>
                       </ListItem>
@@ -819,8 +811,7 @@ export default function PlanetsPage() {
               label="Date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ max: "2053-12-31", min: "1900-01-01" }}
+              slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: "2053-12-31", min: "1900-01-01" } }}
             />
           </Grid>
 
@@ -951,7 +942,7 @@ export default function PlanetsPage() {
               alignItems: "center",
             }}
           >
-            <Typography variant="body2" color="text.secondary" fontWeight={600}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
               Timeline legend:
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
@@ -999,7 +990,7 @@ export default function PlanetsPage() {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
               >
                 <Visibility sx={{ color: "success.main" }} />
-                <Typography variant="h5" fontWeight={700} color="success.main">
+                <Typography variant="h5" sx={{ fontWeight: 700 }} color="success.main">
                   Visible Now
                 </Typography>
                 <Chip
@@ -1027,7 +1018,7 @@ export default function PlanetsPage() {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
               >
                 <NightsStay sx={{ color: "warning.main" }} />
-                <Typography variant="h5" fontWeight={700} color="warning.main">
+                <Typography variant="h5" sx={{ fontWeight: 700 }} color="warning.main">
                   Visible Tonight
                 </Typography>
                 <Chip
@@ -1055,7 +1046,7 @@ export default function PlanetsPage() {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
               >
                 <VisibilityOff sx={{ color: "text.disabled" }} />
-                <Typography variant="h5" fontWeight={700} color="text.disabled">
+                <Typography variant="h5" sx={{ fontWeight: 700 }} color="text.disabled">
                   Not Visible
                 </Typography>
                 <Chip

@@ -225,10 +225,10 @@ export default function USDAmountInput({
         placeholder={placeholder}
         isPositive={isPositive}
         isNegative={isNegative}
-        inputProps={{
+        slotProps={{ htmlInput: {
           inputMode: "decimal",
           autoComplete: "off",
-        }}
+        } }}
       />
 
       {showDecimalPlaceholder &&

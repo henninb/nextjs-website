@@ -394,7 +394,7 @@ export default function Layout({ children }: LayoutProps) {
         anchor="left"
         open={isOpen}
         onClose={toggleDrawer(false)}
-        PaperProps={{
+        slotProps={{ paper: {
           sx: {
             width: 320,
             height: "100vh",
@@ -405,7 +405,7 @@ export default function Layout({ children }: LayoutProps) {
             boxShadow:
               "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
           },
-        }}
+        } }}
       >
         <Box
           sx={{
@@ -458,10 +458,9 @@ export default function Layout({ children }: LayoutProps) {
                   </ListItemIcon>
                   <ListItemText
                     primary={text}
-                    primaryTypographyProps={{
-                      fontWeight: 500,
-                      fontSize: "0.875rem",
-                    }}
+                    slotProps={{ primary: {
+                      sx: { fontWeight: 500, fontSize: "0.875rem" },
+                    } }}
                   />
                 </ListItemButton>
               </ListItem>

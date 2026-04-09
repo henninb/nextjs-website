@@ -317,7 +317,7 @@ export default function Configuration() {
           />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {(fetchedParameters && fetchedParameters.length > 0) ||
                 offlineRows.length > 0 ? (
@@ -450,7 +450,7 @@ export default function Configuration() {
               )
             }
           />
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

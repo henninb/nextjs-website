@@ -336,7 +336,7 @@ export default function MedicalExpenses() {
             />
           </Box>
 
-          <Box display="flex" justifyContent="center">
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Box sx={{ width: "fit-content" }}>
               {medicalExpenses && medicalExpenses.length > 0 ? (
                 <DataGridBase

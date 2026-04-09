@@ -132,10 +132,10 @@ function ErrorItem({
             error.message
           )
         }
-        primaryTypographyProps={{
+        slotProps={{ primary: {
           variant: "body2",
           component: "span",
-        }}
+        } }}
       />
     </ListItem>
   );
@@ -211,8 +211,7 @@ export default function ValidationErrorList({
                 <Box>
                   <Typography
                     variant="body2"
-                    fontWeight="bold"
-                    sx={{ mt: 1, mb: 0.5 }}
+                    sx={{ fontWeight: "bold", mt: 1, mb: 0.5 }}
                   >
                     {formatFieldName(field)}:
                   </Typography>

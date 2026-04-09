@@ -161,10 +161,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 
     return (
       <Box
-        display="flex"
-        alignItems="center"
-        gap={1}
-        color={`${severity}.main`}
+        sx={{ display: "flex", alignItems: "center", gap: 1, color: `${severity}.main` }}
         className={className}
       >
         {getIcon()}
@@ -194,7 +191,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
         }}
         className={className}
       >
-        <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
           <Box color="error.main" sx={{ fontSize: 48 }}>
             <ErrorOutlined />
           </Box>
@@ -234,7 +231,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       }}
       className={className}
     >
-      <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
         <Box color={`${severity}.main`} sx={{ fontSize: 48 }}>
           {getIcon()}
         </Box>

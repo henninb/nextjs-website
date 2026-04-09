@@ -173,8 +173,7 @@ export default function HowtoPage() {
                     <Typography
                       variant="h5"
                       component="h2"
-                      fontWeight={600}
-                      sx={{ mb: 1.5, color: "text.primary" }}
+                      sx={{ fontWeight: 600, mb: 1.5, color: "text.primary" }}
                     >
                       {guide.title}
                     </Typography>
@@ -203,7 +202,7 @@ export default function HowtoPage() {
           border: `1px solid ${alpha(theme.palette.grey[500], 0.2)}`,
         }}
       >
-        <Typography variant="h6" gutterBottom fontWeight={600}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
           More Guides Coming Soon
         </Typography>
         <Typography variant="body2" color="text.secondary">

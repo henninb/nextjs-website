@@ -203,7 +203,7 @@ const DescriptionCard = React.memo<DescriptionCardProps>(
               <Typography
                 variant="caption"
                 color="text.secondary"
-                display="block"
+                sx={{ display: "block" }}
               >
                 Added: {format(new Date(description.dateAdded), "MMM d, yyyy")}
               </Typography>
@@ -212,7 +212,7 @@ const DescriptionCard = React.memo<DescriptionCardProps>(
               <Typography
                 variant="caption"
                 color="text.secondary"
-                display="block"
+                sx={{ display: "block" }}
               >
                 Updated:{" "}
                 {format(new Date(description.dateUpdated), "MMM d, yyyy")}

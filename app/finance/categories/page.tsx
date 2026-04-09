@@ -273,16 +273,16 @@ export default function Categories() {
           checked={isAllSelected}
           indeterminate={isIndeterminate}
           onChange={handleSelectAll}
-          inputProps={{ "aria-label": "Select all categories" }}
+          slotProps={{ input: { "aria-label": "Select all categories" } }}
         />
       ),
       renderCell: (params) => (
         <Checkbox
           checked={isRowSelected(getRowId(params.row))}
           onChange={() => handleRowToggle(getRowId(params.row))}
-          inputProps={{
+          slotProps={{ input: {
             "aria-label": `Select category ${params.row?.categoryName ?? ""}`,
-          }}
+          } }}
         />
       ),
     },
@@ -389,7 +389,7 @@ export default function Categories() {
           <LoadingState variant="card" message="Loading categories..." />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {fetchedCategories && fetchedCategories.length > 0 ? (
                   <DataGridBase
@@ -539,7 +539,7 @@ export default function Categories() {
               )
             }
           />
-          <Box mt={1}>
+          <Box sx={{ mt: 1 }}>
             <FormControlLabel
               control={
                 <Switch
@@ -560,7 +560,7 @@ export default function Categories() {
               </Typography>
             )}
           </Box>
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

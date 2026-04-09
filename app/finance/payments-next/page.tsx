@@ -334,7 +334,7 @@ export default function PaymentsNextGen() {
             message="Loading payments and accounts..."
           />
         ) : paymentsToDisplay && paymentsToDisplay.length > 0 ? (
-          <Box display="flex" justifyContent="center">
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Box sx={{ width: "100%", maxWidth: "1200px" }}>
               <DataGridBase
                 rows={paymentsToDisplay}
@@ -543,7 +543,7 @@ export default function PaymentsNextGen() {
             fullWidth
             margin="normal"
           />
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

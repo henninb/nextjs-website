@@ -19,7 +19,7 @@ export default function ProxmoxPage() {
           <Typography variant="h5" gutterBottom>
             Update Proxmox Packages
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Keep your Proxmox installation up-to-date with the latest package
             updates:
           </Typography>
@@ -41,7 +41,7 @@ export default function ProxmoxPage() {
           <Typography variant="h5" gutterBottom>
             Check Proxmox Version
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Display the current version of Proxmox you are running:
           </Typography>
           <Box
@@ -62,7 +62,7 @@ export default function ProxmoxPage() {
           <Typography variant="h5" gutterBottom>
             Restart a VM
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Restart a virtual machine with a specific VM ID:
           </Typography>
           <Box
@@ -83,7 +83,7 @@ export default function ProxmoxPage() {
           <Typography variant="h5" gutterBottom>
             Start a VM
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Start a virtual machine with a specific VM ID:
           </Typography>
           <Box
@@ -104,7 +104,7 @@ export default function ProxmoxPage() {
           <Typography variant="h5" gutterBottom>
             Stop a VM
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Stop a virtual machine with a specific VM ID:
           </Typography>
           <Box
@@ -125,7 +125,7 @@ export default function ProxmoxPage() {
           <Typography variant="h5" gutterBottom>
             List All VMs
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Get a list of all virtual machines and their statuses:
           </Typography>
           <Box

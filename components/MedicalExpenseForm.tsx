@@ -226,7 +226,7 @@ export default function MedicalExpenseForm({
             }
             error={!!errors.serviceDate}
             helperText={errors.serviceDate}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             aria-describedby={
               errors.serviceDate ? "service-date-error" : undefined
             }
@@ -250,12 +250,12 @@ export default function MedicalExpenseForm({
               errors.transactionId || "Optional: Link to existing transaction"
             }
             placeholder="Leave empty if no transaction yet"
-            inputProps={{
+            slotProps={{ htmlInput: {
               min: 1,
               "aria-describedby": errors.transactionId
                 ? "transaction-id-error"
                 : undefined,
-            }}
+            } }}
           />
         </Grid>
 
@@ -289,7 +289,7 @@ export default function MedicalExpenseForm({
             helperText={
               errors.billedAmount || "Total amount billed by provider"
             }
-            inputProps={{ min: 0, step: 0.01 }}
+            slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
           />
         </Grid>
 
@@ -306,7 +306,7 @@ export default function MedicalExpenseForm({
               )
             }
             helperText="Amount discounted by insurance"
-            inputProps={{ min: 0, step: 0.01 }}
+            slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
           />
         </Grid>
 
@@ -320,7 +320,7 @@ export default function MedicalExpenseForm({
               handleFieldChange("insurancePaid", Number(e.target.value) || 0)
             }
             helperText="Amount paid by insurance"
-            inputProps={{ min: 0, step: 0.01 }}
+            slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
           />
         </Grid>
 
@@ -337,7 +337,7 @@ export default function MedicalExpenseForm({
               )
             }
             helperText="Amount patient owes"
-            inputProps={{ min: 0, step: 0.01 }}
+            slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
           />
         </Grid>
 
@@ -444,7 +444,7 @@ export default function MedicalExpenseForm({
                 )
               }
               helperText="Date patient paid their responsibility"
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
             />
           </Grid>
         )}

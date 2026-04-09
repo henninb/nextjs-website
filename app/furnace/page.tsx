@@ -254,7 +254,7 @@ const FurnacePage: NextPage = () => {
             How Your Furnace Works
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Typography paragraph>
+          <Typography sx={{ mb: 2 }}>
             Your Armstrong G1D93AU is a <strong>condensing gas furnace</strong>{" "}
             that achieves 93% efficiency by extracting additional heat from
             combustion gases that would otherwise be vented outside.
@@ -451,11 +451,11 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Symptoms:</strong> Furnace runs for 1-5 minutes, shuts
                 off, then restarts repeatedly.
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Common Causes & Solutions:</strong>
               </Typography>
               <Box component="ol" sx={{ pl: 2 }}>
@@ -491,11 +491,11 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Symptoms:</strong> Water pooling around furnace,
                 gurgling sounds, 3-flash error code.
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Step-by-Step Fix:</strong>
               </Typography>
               <Box component="ol" sx={{ pl: 2 }}>
@@ -537,11 +537,11 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Symptoms:</strong> Some rooms too cold, others too hot;
                 furnace runs constantly but house doesn't reach temperature.
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Diagnostic Steps:</strong>
               </Typography>
               <Box component="ol" sx={{ pl: 2 }}>
@@ -581,7 +581,7 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Noise Type → Likely Cause:</strong>
               </Typography>
               <TableContainer sx={{ mb: 2 }}>
@@ -645,7 +645,7 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Systematic Diagnostic Process:</strong>
               </Typography>
               <Box component="ol" sx={{ pl: 2 }}>
@@ -807,11 +807,11 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Tools Needed:</strong> Phillips screwdriver, 1/4" nut
                 driver or wrench, 220-grit sandpaper or emery cloth
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Step-by-Step:</strong>
               </Typography>
               <Box component="ol" sx={{ pl: 2 }}>
@@ -858,16 +858,16 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Why It Matters:</strong> A dirty blower wheel reduces
                 airflow by 30-50%, causing short cycling, high limit trips, and
                 increased heating costs.
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Tools Needed:</strong> Screwdrivers, vacuum, soft brush,
                 towels, spray bottle with mild soap solution
               </Typography>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Procedure:</strong>
               </Typography>
               <Box component="ol" sx={{ pl: 2 }}>
@@ -916,7 +916,7 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>
                   Perform these checks in late September/early October before
                   heating season:
@@ -968,7 +968,7 @@ const FurnacePage: NextPage = () => {
           </Typography>
           <Divider sx={{ mb: 2 }} />
 
-          <Typography variant="body2" paragraph>
+          <Typography variant="body2" sx={{ mb: 2 }}>
             Your 93% AFUE furnace is already highly efficient. Here are key
             strategies to maximize performance and minimize operating costs:
           </Typography>
@@ -978,7 +978,7 @@ const FurnacePage: NextPage = () => {
               <Typography variant="h6">System Performance & Airflow</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Airflow Optimization:</strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2, mb: 2 }}>
@@ -997,7 +997,7 @@ const FurnacePage: NextPage = () => {
                 </Box>
               </Box>
 
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Combustion & Burner Maintenance:</strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
@@ -1134,7 +1134,7 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>General Sizing Guidelines:</strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
@@ -1175,7 +1175,7 @@ const FurnacePage: NextPage = () => {
               <Typography variant="h6">A/C System Compatibility</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Your Furnace Blower Specifications:</strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
@@ -1213,7 +1213,7 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Your 93% AFUE furnace uses PVC venting:</strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
@@ -1258,7 +1258,7 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Power Requirements:</strong>
               </Typography>
               <Box component="ul" sx={{ pl: 2 }}>
@@ -1281,7 +1281,7 @@ const FurnacePage: NextPage = () => {
                   (typically 18-8 or 18-5 thermostat wire)
                 </Box>
               </Box>
-              <Typography variant="body2" paragraph sx={{ mt: 2 }}>
+              <Typography variant="body2" sx={{ mt: 2, mb: 2 }}>
                 <strong>Typical Thermostat Wire Terminals:</strong>
               </Typography>
               <TableContainer>
@@ -1328,7 +1328,7 @@ const FurnacePage: NextPage = () => {
               <Typography variant="h6">Replacement Upgrade Options</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>
                   When your furnace eventually needs replacement, consider these
                   upgrades:
@@ -1529,7 +1529,7 @@ const FurnacePage: NextPage = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Air Filters:</strong>
                 <br />
                 Common sizes: 16x20x1, 16x25x1, 20x25x1 (verify your size)
@@ -1545,7 +1545,7 @@ const FurnacePage: NextPage = () => {
                 </Link>
               </Typography>
 
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Inducer Motor Assembly:</strong>
                 <br />
                 R100676-01 (Inducer Assembly), R06428D455 (With Pressure Switch)
@@ -1559,7 +1559,7 @@ const FurnacePage: NextPage = () => {
                 </Link>
               </Typography>
 
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Pressure Switch (additional part numbers):</strong>
                 <br />
                 R102614-01 (-0.40" WC), R102699-01 (-0.60" WC), R101432-13
@@ -1574,7 +1574,7 @@ const FurnacePage: NextPage = () => {
                 </Link>
               </Typography>
 
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>Control Board:</strong>
                 <br />
                 R40403-003 (Blower Control)
@@ -1588,7 +1588,7 @@ const FurnacePage: NextPage = () => {
                 </Link>
               </Typography>
 
-              <Typography variant="body2" paragraph>
+              <Typography variant="body2" sx={{ mb: 2 }}>
                 <strong>General Parts Suppliers:</strong>
                 <br />
                 <Link
@@ -1640,7 +1640,7 @@ const FurnacePage: NextPage = () => {
                   <Typography variant="h6" gutterBottom>
                     How Condensing Furnaces Work
                   </Typography>
-                  <Typography variant="body2" paragraph>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     Understand the science behind 93% efficiency and condensing
                     technology
                   </Typography>
@@ -1661,7 +1661,7 @@ const FurnacePage: NextPage = () => {
                   <Typography variant="h6" gutterBottom>
                     Furnace Flame Sensor Cleaning
                   </Typography>
-                  <Typography variant="body2" paragraph>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     DIY cleaning tutorial for fixing 1-flash and 8-flash errors
                   </Typography>
                   <Link
@@ -1681,7 +1681,7 @@ const FurnacePage: NextPage = () => {
                   <Typography variant="h6" gutterBottom>
                     Furnace Filter Replacement
                   </Typography>
-                  <Typography variant="body2" paragraph>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     Step-by-step guide for changing your furnace filter
                   </Typography>
                   <Link
@@ -1701,7 +1701,7 @@ const FurnacePage: NextPage = () => {
                   <Typography variant="h6" gutterBottom>
                     Troubleshooting Pressure Switch Issues
                   </Typography>
-                  <Typography variant="body2" paragraph>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     Diagnose and fix 2-flash and 3-flash error codes
                   </Typography>
                   <Link
@@ -1721,7 +1721,7 @@ const FurnacePage: NextPage = () => {
                   <Typography variant="h6" gutterBottom>
                     Condensate Drain Cleaning
                   </Typography>
-                  <Typography variant="body2" paragraph>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     Prevent clogs and 3-flash errors with regular drain
                     maintenance
                   </Typography>
@@ -1742,7 +1742,7 @@ const FurnacePage: NextPage = () => {
                   <Typography variant="h6" gutterBottom>
                     Understanding Furnace Error Codes
                   </Typography>
-                  <Typography variant="body2" paragraph>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
                     Complete guide to LED flash codes and diagnostics
                   </Typography>
                   <Link
@@ -1932,7 +1932,7 @@ const FurnacePage: NextPage = () => {
             <Typography variant="h6" gutterBottom>
               Warranty Information
             </Typography>
-            <Typography paragraph>
+            <Typography sx={{ mb: 2 }}>
               Armstrong Air furnaces typically come with:
             </Typography>
             <Box component="ul" sx={{ pl: 2, mb: 1 }}>

@@ -76,10 +76,7 @@ class ErrorBoundary extends Component<Props, State> {
           }}
         >
           <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            gap={2}
+            sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
           >
             <ErrorOutlined sx={{ fontSize: 48, color: "error.main" }} />
 
@@ -87,7 +84,7 @@ class ErrorBoundary extends Component<Props, State> {
               Something went wrong
             </Typography>
 
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               We're sorry, but something unexpected happened. Please try
               refreshing the page.
             </Typography>

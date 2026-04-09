@@ -532,7 +532,7 @@ export default function CategoriesNextGen() {
             </Box>
           ) : (
             // Table View
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 <DataGridBase
                   rows={categoriesToDisplay}
@@ -664,7 +664,7 @@ export default function CategoriesNextGen() {
               }))
             }
           />
-          <Box mt={1}>
+          <Box sx={{ mt: 1 }}>
             <FormControlLabel
               control={
                 <Switch
@@ -687,7 +687,7 @@ export default function CategoriesNextGen() {
               </Typography>
             )}
           </Box>
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

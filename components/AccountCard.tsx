@@ -333,12 +333,12 @@ export default function AccountCard({
         open={menuOpen}
         onClose={() => handleMenuClose()}
         onClick={(e) => e.stopPropagation()}
-        PaperProps={{
+        slotProps={{ paper: {
           sx: {
             mt: 1,
             minWidth: 150,
           },
-        }}
+        } }}
       >
         <MenuItem onClick={handleEdit}>Edit Account</MenuItem>
         <MenuItem

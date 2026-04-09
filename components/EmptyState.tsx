@@ -150,7 +150,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {getDefaultMessage()}
       </Typography>
 
-      <Box display="flex" gap={2}>
+      <Box sx={{ display: "flex", gap: 2 }}>
         {onAction && (
           <Button
             variant="contained"

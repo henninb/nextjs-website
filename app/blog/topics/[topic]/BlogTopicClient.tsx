@@ -156,12 +156,12 @@ export default function BlogTopicClient({
                 Blog
               </Typography>
             </Link>
-            <Typography color="text.primary" fontWeight={500}>
+            <Typography color="text.primary" sx={{ fontWeight: 500 }}>
               {config.title}
             </Typography>
           </Breadcrumbs>
 
-          <Box display="flex" alignItems="center" mb={4}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
             <Box
               sx={{
                 p: 2,
@@ -218,7 +218,7 @@ export default function BlogTopicClient({
 
       <Container maxWidth="lg" sx={{ py: 6 }}>
         {posts.length === 0 ? (
-          <Box textAlign="center" py={8}>
+          <Box sx={{ textAlign: "center", py: 8 }}>
             <Icon sx={{ fontSize: 80, color: "text.secondary", mb: 3 }} />
             <Typography variant="h5" color="text.secondary" gutterBottom>
               No {config.title} articles yet
@@ -279,7 +279,7 @@ export default function BlogTopicClient({
                       )}
 
                       <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                        <Box display="flex" alignItems="center" mb={2}>
+                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                           <CalendarToday
                             sx={{
                               mr: 1,
@@ -392,7 +392,7 @@ export default function BlogTopicClient({
         )}
 
         {/* Back to Blog Button */}
-        <Box textAlign="center" mt={8}>
+        <Box sx={{ textAlign: "center", mt: 8 }}>
           <Button
             component={Link}
             href="/blog"

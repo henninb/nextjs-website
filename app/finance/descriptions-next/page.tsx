@@ -538,7 +538,7 @@ export default function DescriptionsNextGen() {
             </Box>
           ) : (
             // Table View
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 <DataGridBase
                   rows={descriptionsToDisplay}
@@ -670,7 +670,7 @@ export default function DescriptionsNextGen() {
               }))
             }
           />
-          <Box mt={1}>
+          <Box sx={{ mt: 1 }}>
             <FormControlLabel
               control={
                 <Switch
@@ -693,7 +693,7 @@ export default function DescriptionsNextGen() {
               </Typography>
             )}
           </Box>
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

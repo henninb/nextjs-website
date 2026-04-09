@@ -722,19 +722,19 @@ export default function TransactionImporter() {
                     <ListItem sx={{ py: 0 }}>
                       <ListItemText
                         primary="Date: YYYY-MM-DD (e.g., 2024-02-25)"
-                        primaryTypographyProps={{ variant: "body2" }}
+                        slotProps={{ primary: { variant: "body2" } }}
                       />
                     </ListItem>
                     <ListItem sx={{ py: 0 }}>
                       <ListItemText
                         primary="Description: Any text (e.g., Coffee Shop, Salary Payment)"
-                        primaryTypographyProps={{ variant: "body2" }}
+                        slotProps={{ primary: { variant: "body2" } }}
                       />
                     </ListItem>
                     <ListItem sx={{ py: 0 }}>
                       <ListItemText
                         primary="Amount: Number with 2 decimal places (e.g., -4.50, 2000.00)"
-                        primaryTypographyProps={{ variant: "body2" }}
+                        slotProps={{ primary: { variant: "body2" } }}
                       />
                     </ListItem>
                   </List>

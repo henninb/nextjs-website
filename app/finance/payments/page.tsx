@@ -450,7 +450,7 @@ export default function Payments() {
           />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {fetchedPayments && fetchedPayments.length > 0 ? (
                   <DataGridBase
@@ -722,7 +722,7 @@ export default function Payments() {
             error={!!formErrors.amount}
             helperText={formErrors.amount}
           />
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

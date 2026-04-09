@@ -241,7 +241,7 @@ export default function TransactionsByCategory({
           <Spinner />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "fit-content" }}>
                 <DataGridBase
                   rows={filteredTransactions}

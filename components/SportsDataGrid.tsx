@@ -71,11 +71,7 @@ export default function SportsDataGrid({
       <StyledPaper elevation={0}>
         <HeaderBox>
           <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            gap={2}
-            mb={2}
+            sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, mb: 2 }}
           >
             <SportsIcon sx={{ fontSize: 40, color: colors.primary }} />
             <Typography
@@ -94,7 +90,7 @@ export default function SportsDataGrid({
             </Typography>
           </Box>
 
-          <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap">
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
             <Chip
               label={`${gameCount} Games`}
               color="primary"

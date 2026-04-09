@@ -199,7 +199,7 @@ const CategoryCard = React.memo<CategoryCardProps>(({ category, onDelete }) => {
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               Added: {format(new Date(category.dateAdded), "MMM d, yyyy")}
             </Typography>
@@ -208,7 +208,7 @@ const CategoryCard = React.memo<CategoryCardProps>(({ category, onDelete }) => {
             <Typography
               variant="caption"
               color="text.secondary"
-              display="block"
+              sx={{ display: "block" }}
             >
               Updated: {format(new Date(category.dateUpdated), "MMM d, yyyy")}
             </Typography>

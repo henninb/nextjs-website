@@ -204,14 +204,13 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
-            FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
-            InputProps={{
+            slotProps={{ formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: {
               startAdornment: (
                 <InputAdornment position="start">
                   <EmailIcon />
                 </InputAdornment>
               ),
-            }}
+            } }}
           />
           <TextField
             margin="normal"
@@ -225,8 +224,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
-            FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
-            InputProps={{
+            slotProps={{ formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: {
               startAdornment: (
                 <InputAdornment position="start">
                   <LockIcon />
@@ -245,7 +243,7 @@ export default function LoginPage() {
                   </IconButton>
                 </InputAdornment>
               ),
-            }}
+            } }}
           />
           <FormControlLabel
             control={

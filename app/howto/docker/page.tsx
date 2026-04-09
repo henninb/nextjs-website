@@ -252,7 +252,7 @@ export default function DockerPage() {
         <Typography variant="h4" component="h2" gutterBottom sx={{ mt: 4 }}>
           Docker Compose
         </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           Docker Compose is a tool for defining and running multi-container
           Docker applications. Here are some basic commands:
         </Typography>

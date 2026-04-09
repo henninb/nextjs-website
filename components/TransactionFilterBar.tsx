@@ -89,7 +89,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           size="small"
-          InputProps={{
+          slotProps={{ input: {
             startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon
@@ -111,7 +111,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
                 </IconButton>
               </InputAdornment>
             ),
-          }}
+          } }}
           sx={{
             minWidth: "300px",
             flexGrow: 1,

@@ -116,7 +116,7 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
                 Blog
               </Typography>
             </Link>
-            <Typography color="text.primary" fontWeight={500}>
+            <Typography color="text.primary" sx={{ fontWeight: 500 }}>
               Article
             </Typography>
           </Breadcrumbs>
@@ -164,10 +164,9 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={3}
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            sx={{ mb: 4 }}
+            sx={{ mb: 4, alignItems: { xs: "flex-start", sm: "center" } }}
           >
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
               {post.author && (
                 <>
                   <Avatar
@@ -188,7 +187,7 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
                   <Box>
                     <Typography
                       variant="body2"
-                      fontWeight={600}
+                      sx={{ fontWeight: 600 }}
                       color="text.primary"
                     >
                       {post.author}
@@ -201,7 +200,7 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
               )}
             </Stack>
 
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
               <CalendarToday
                 sx={{ fontSize: "1rem", color: "text.secondary" }}
               />
@@ -312,12 +311,11 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
         >
           <Stack
             direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
             spacing={3}
+            sx={{ justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" } }}
           >
             <Box>
-              <Typography variant="h6" gutterBottom fontWeight={600}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                 Share this article
               </Typography>
               <Stack direction="row" spacing={1}>

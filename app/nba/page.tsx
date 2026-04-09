@@ -12,7 +12,7 @@ const SportsDataGrid = dynamic(
   () => import("../../components/SportsDataGrid"),
   {
     loading: () => (
-      <Box display="flex" justifyContent="center" p={4}>
+      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
         <CircularProgress />
       </Box>
     ),
@@ -113,10 +113,7 @@ export default function BasketballPage() {
   if (loading) {
     return (
       <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
+        sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}
       >
         <CircularProgress />
       </Box>
@@ -126,12 +123,7 @@ export default function BasketballPage() {
   if (error && (!data || data.length === 0)) {
     return (
       <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-        p={4}
+        sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "200px", p: 4 }}
       >
         <div style={{ marginBottom: "16px", textAlign: "center" }}>
           <strong>Error loading basketball scores:</strong> {error}

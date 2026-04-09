@@ -208,7 +208,7 @@ const TrendsPage = () => {
       {/* Filters Section */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={2} sx={{ alignItems: "center" }}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Date Range</InputLabel>
@@ -218,10 +218,10 @@ const TrendsPage = () => {
                   onChange={(e) =>
                     handleDateRangeChange(e.target.value as number)
                   }
-                  inputProps={{
+                  slotProps={{ input: {
                     tabIndex: 0,
                     "aria-label": "Date Range",
-                  }}
+                  } }}
                 >
                   <MenuItem value={6}>6 months</MenuItem>
                   <MenuItem value={12}>12 months</MenuItem>
@@ -242,10 +242,9 @@ const TrendsPage = () => {
                     {...params}
                     label="Accounts"
                     placeholder="All accounts"
-                    inputProps={{
-                      ...params.inputProps,
+                    slotProps={{ htmlInput: {
                       "aria-label": "Accounts",
-                    }}
+                    } }}
                   />
                 )}
               />
@@ -263,10 +262,9 @@ const TrendsPage = () => {
                     {...params}
                     label="Categories"
                     placeholder="All categories"
-                    inputProps={{
-                      ...params.inputProps,
+                    slotProps={{ htmlInput: {
                       "aria-label": "Categories",
-                    }}
+                    } }}
                   />
                 )}
               />
@@ -278,10 +276,10 @@ const TrendsPage = () => {
                   <Switch
                     checked={!filters.includeTransfers}
                     onChange={(e) => handleTransferToggle(!e.target.checked)}
-                    inputProps={{
+                    slotProps={{ input: {
                       tabIndex: 0,
                       "aria-label": "Exclude transfers",
-                    }}
+                    } }}
                   />
                 }
                 label="Exclude transfers"
@@ -373,10 +371,7 @@ const TrendsPage = () => {
           <Card>
             <CardContent>
               <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
+                sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
               >
                 <Typography variant="h6" component="h2">
                   Monthly Spending Trend
@@ -385,7 +380,7 @@ const TrendsPage = () => {
               <Box
                 role="region"
                 aria-label="Monthly spending chart"
-                height={300}
+                sx={{ height: 300 }}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
@@ -416,10 +411,7 @@ const TrendsPage = () => {
           <Card>
             <CardContent>
               <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
+                sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
               >
                 <Typography variant="h6" component="h2">
                   Spending by Category
@@ -430,9 +422,9 @@ const TrendsPage = () => {
                       checked={stackedView}
                       onChange={(e) => setStackedView(e.target.checked)}
                       size="small"
-                      inputProps={{
+                      slotProps={{ input: {
                         "aria-label": "Stacked view",
-                      }}
+                      } }}
                     />
                   }
                   label="Stacked view"
@@ -441,7 +433,7 @@ const TrendsPage = () => {
               <Box
                 role="region"
                 aria-label="Category breakdown chart"
-                height={300}
+                sx={{ height: 300 }}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
@@ -476,22 +468,18 @@ const TrendsPage = () => {
         <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
-              <Typography variant="h6" component="h2" mb={2}>
+              <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
                 Top Categories This Month
               </Typography>
               <Stack spacing={1}>
                 {trendsData.topCategories.map((category) => (
                   <Box
                     key={category.category}
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    p={1}
-                    sx={{ bgcolor: "grey.50", borderRadius: 1 }}
+                    sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1, bgcolor: "grey.50", borderRadius: 1 }}
                   >
                     <Typography variant="body1">{category.category}</Typography>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="body2" fontWeight="bold">
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: "bold" }}>
                         {currencyFormat(category.amount)}
                       </Typography>
                       <Chip
@@ -510,25 +498,21 @@ const TrendsPage = () => {
         <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
-              <Typography variant="h6" component="h2" mb={2}>
+              <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
                 Biggest Changes
               </Typography>
               <Stack spacing={1}>
                 {trendsData.categoryChanges.slice(0, 5).map((change) => (
                   <Box
                     key={change.category}
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    p={1}
-                    sx={{ bgcolor: "grey.50", borderRadius: 1 }}
+                    sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1, bgcolor: "grey.50", borderRadius: 1 }}
                   >
                     <Typography variant="body1">{change.category}</Typography>
-                    <Box display="flex" alignItems="center" gap={1}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Typography
                         variant="body2"
-                        fontWeight="bold"
                         sx={{
+                          fontWeight: "bold",
                           color:
                             change.absoluteChange >= 0
                               ? "success.main"

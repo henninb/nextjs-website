@@ -244,7 +244,7 @@ export default function ConfigurationNextGen() {
             message="Loading configuration parameters..."
           />
         ) : fetchedParameters && fetchedParameters.length > 0 ? (
-          <Box display="flex" justifyContent="center">
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Box sx={{ width: "100%", maxWidth: "1200px" }}>
               <DataGridBase
                 rows={fetchedParameters}
@@ -359,7 +359,7 @@ export default function ConfigurationNextGen() {
               )
             }
           />
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

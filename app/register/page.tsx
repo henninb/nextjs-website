@@ -223,7 +223,7 @@ export default function RegisterPage() {
             label="First Name"
             name="firstName"
             autoComplete="given-name"
-            inputProps={{ "data-testid": "input-firstName" }}
+            slotProps={{ htmlInput: { "data-testid": "input-firstName" }, formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } } }}
             value={firstName}
             onChange={(e) => {
               const v = e.target.value;
@@ -235,7 +235,6 @@ export default function RegisterPage() {
             }}
             error={!!firstNameError}
             helperText={firstNameError || ""}
-            FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
           />
           <TextField
             margin="normal"
@@ -245,7 +244,7 @@ export default function RegisterPage() {
             label="Last Name"
             name="lastName"
             autoComplete="family-name"
-            inputProps={{ "data-testid": "input-lastName" }}
+            slotProps={{ htmlInput: { "data-testid": "input-lastName" }, formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } } }}
             value={lastName}
             onChange={(e) => {
               const v = e.target.value;
@@ -257,7 +256,6 @@ export default function RegisterPage() {
             }}
             error={!!lastNameError}
             helperText={lastNameError || ""}
-            FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
           />
           <TextField
             margin="normal"
@@ -268,7 +266,13 @@ export default function RegisterPage() {
             name="email"
             type="email"
             autoComplete="email"
-            inputProps={{ "data-testid": "input-email" }}
+            slotProps={{ htmlInput: { "data-testid": "input-email" }, formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailIcon />
+                </InputAdornment>
+              ),
+            } }}
             value={email}
             onChange={(e) => {
               const v = e.target.value;
@@ -280,14 +284,6 @@ export default function RegisterPage() {
             }}
             error={!!emailError}
             helperText={emailError || ""}
-            FormHelperTextProps={{ sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailIcon />
-                </InputAdornment>
-              ),
-            }}
           />
           <TextField
             margin="normal"
@@ -298,13 +294,12 @@ export default function RegisterPage() {
             name="password"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
-            inputProps={{ "data-testid": "input-password" }}
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               setPasswordValidation(validatePassword(e.target.value));
             }}
-            InputProps={{
+            slotProps={{ htmlInput: { "data-testid": "input-password" }, input: {
               startAdornment: (
                 <InputAdornment position="start">
                   <LockIcon />
@@ -321,7 +316,7 @@ export default function RegisterPage() {
                   </IconButton>
                 </InputAdornment>
               ),
-            }}
+            } }}
           />
           {password && (
             <Box sx={{ mt: 1, mb: 2 }}>
@@ -339,7 +334,7 @@ export default function RegisterPage() {
                   </ListItemIcon>
                   <ListItemText
                     primary="At least one uppercase letter"
-                    primaryTypographyProps={{ variant: "body2" }}
+                    slotProps={{ primary: { variant: "body2" } }}
                   />
                 </ListItem>
                 <ListItem disablePadding>
@@ -352,7 +347,7 @@ export default function RegisterPage() {
                   </ListItemIcon>
                   <ListItemText
                     primary="At least one lowercase letter"
-                    primaryTypographyProps={{ variant: "body2" }}
+                    slotProps={{ primary: { variant: "body2" } }}
                   />
                 </ListItem>
                 <ListItem disablePadding>
@@ -365,7 +360,7 @@ export default function RegisterPage() {
                   </ListItemIcon>
                   <ListItemText
                     primary="At least one digit"
-                    primaryTypographyProps={{ variant: "body2" }}
+                    slotProps={{ primary: { variant: "body2" } }}
                   />
                 </ListItem>
                 <ListItem disablePadding>
@@ -378,7 +373,7 @@ export default function RegisterPage() {
                   </ListItemIcon>
                   <ListItemText
                     primary="At least one special character (@$!%*?&)"
-                    primaryTypographyProps={{ variant: "body2" }}
+                    slotProps={{ primary: { variant: "body2" } }}
                   />
                 </ListItem>
               </List>
@@ -393,10 +388,9 @@ export default function RegisterPage() {
             name="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             autoComplete="new-password"
-            inputProps={{ "data-testid": "input-confirmPassword" }}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            InputProps={{
+            slotProps={{ htmlInput: { "data-testid": "input-confirmPassword" }, input: {
               startAdornment: (
                 <InputAdornment position="start">
                   <LockIcon />
@@ -413,7 +407,7 @@ export default function RegisterPage() {
                   </IconButton>
                 </InputAdornment>
               ),
-            }}
+            } }}
           />
           {errorMessage && (
             <Box sx={{ mt: 2 }}>

@@ -370,7 +370,7 @@ export default function Descriptions() {
           <LoadingState variant="card" message="Loading descriptions..." />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {fetchedDescrptions && fetchedDescrptions.length > 0 ? (
                   <DataGridBase
@@ -481,7 +481,7 @@ export default function Descriptions() {
               )
             }
           />
-          <Box mt={1}>
+          <Box sx={{ mt: 1 }}>
             <FormControlLabel
               control={
                 <Switch
@@ -502,7 +502,7 @@ export default function Descriptions() {
               </Typography>
             )}
           </Box>
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

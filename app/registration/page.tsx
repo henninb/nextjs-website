@@ -191,10 +191,7 @@ export default function ContactForm() {
         }
         error={!!errorText}
         helperText={errorText || ""}
-        FormHelperTextProps={{
-          sx: { ml: 0, mt: 0.5, lineHeight: 1.25 },
-        }}
-        InputProps={(() => {
+        slotProps={{ formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: (() => {
           if (isPassword) {
             return {
               endAdornment: (
@@ -228,7 +225,7 @@ export default function ContactForm() {
             } as const;
           }
           return undefined;
-        })()}
+        })() }}
       />
     );
   };

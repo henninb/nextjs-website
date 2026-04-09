@@ -157,7 +157,7 @@ export default function TemperaturePage() {
                     color: theme.palette.primary.main,
                   }}
                 />
-                <Typography variant="h5" component="h2" fontWeight={600}>
+                <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
                   Fahrenheit to Celsius
                 </Typography>
               </Box>
@@ -169,13 +169,12 @@ export default function TemperaturePage() {
                   value={fahrenheitValue}
                   onChange={(e) => setFahrenheitValue(Number(e.target.value))}
                   label="Temperature in Fahrenheit"
-                  inputProps={{ min: -500, max: 500 }}
                   sx={{ mb: 2 }}
-                  InputProps={{
+                  slotProps={{ htmlInput: { min: -500, max: 500 }, input: {
                     endAdornment: (
                       <Typography color="text.secondary">°F</Typography>
                     ),
-                  }}
+                  } }}
                 />
                 <Button
                   fullWidth
@@ -207,7 +206,7 @@ export default function TemperaturePage() {
                   <Typography
                     variant="h6"
                     color="success.main"
-                    textAlign="center"
+                    sx={{ textAlign: "center" }}
                   >
                     Result: {celsiusResult}
                   </Typography>
@@ -242,7 +241,7 @@ export default function TemperaturePage() {
                     color: theme.palette.secondary.main,
                   }}
                 />
-                <Typography variant="h5" component="h2" fontWeight={600}>
+                <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
                   Celsius to Fahrenheit
                 </Typography>
               </Box>
@@ -254,13 +253,12 @@ export default function TemperaturePage() {
                   value={celsiusValue}
                   onChange={(e) => setCelsiusValue(Number(e.target.value))}
                   label="Temperature in Celsius"
-                  inputProps={{ min: -500, max: 500 }}
                   sx={{ mb: 2 }}
-                  InputProps={{
+                  slotProps={{ htmlInput: { min: -500, max: 500 }, input: {
                     endAdornment: (
                       <Typography color="text.secondary">°C</Typography>
                     ),
-                  }}
+                  } }}
                 />
                 <Button
                   fullWidth
@@ -292,7 +290,7 @@ export default function TemperaturePage() {
                   <Typography
                     variant="h6"
                     color="success.main"
-                    textAlign="center"
+                    sx={{ textAlign: "center" }}
                   >
                     Result: {fahrenheitResult}
                   </Typography>
@@ -306,7 +304,7 @@ export default function TemperaturePage() {
       <Divider sx={{ my: 4 }} />
 
       <Box sx={{ textAlign: "center", mb: 4 }}>
-        <Typography variant="h4" component="h2" gutterBottom fontWeight={600}>
+        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
           Current Weather in Minneapolis
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -345,14 +343,13 @@ export default function TemperaturePage() {
                       mb: 1,
                     }}
                   />
-                  <Typography variant="h4" fontWeight={700} color="primary">
+                  <Typography variant="h4" sx={{ fontWeight: 700 }} color="primary">
                     {weatherData.imperial.temp}°F
                   </Typography>
                   <Typography
                     variant="h6"
-                    fontWeight={500}
                     color="secondary"
-                    sx={{ mt: 0.5 }}
+                    sx={{ fontWeight: 500, mt: 0.5 }}
                   >
                     {Math.round(((weatherData.imperial.temp - 32) * 5) / 9)}°C
                   </Typography>
@@ -379,14 +376,13 @@ export default function TemperaturePage() {
                       mb: 1,
                     }}
                   />
-                  <Typography variant="h4" fontWeight={700} color="primary">
+                  <Typography variant="h4" sx={{ fontWeight: 700 }} color="primary">
                     {weatherData.imperial.windChill}°F
                   </Typography>
                   <Typography
                     variant="h6"
-                    fontWeight={500}
                     color="secondary"
-                    sx={{ mt: 0.5 }}
+                    sx={{ fontWeight: 500, mt: 0.5 }}
                   >
                     {Math.round(
                       ((weatherData.imperial.windChill - 32) * 5) / 9,
@@ -416,7 +412,7 @@ export default function TemperaturePage() {
                       mb: 1,
                     }}
                   />
-                  <Typography variant="h4" fontWeight={700} color="primary">
+                  <Typography variant="h4" sx={{ fontWeight: 700 }} color="primary">
                     {weatherData.imperial.pressure}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -444,9 +440,8 @@ export default function TemperaturePage() {
                   />
                   <Typography
                     variant="body1"
-                    fontWeight={600}
                     color="primary"
-                    sx={{ mb: 1 }}
+                    sx={{ fontWeight: 600, mb: 1 }}
                   >
                     {new Date(weatherData.obsTimeLocal).toLocaleTimeString()}
                   </Typography>

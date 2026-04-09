@@ -461,7 +461,7 @@ export default function Transfers() {
           />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1200px" }}>
                 {transfersToDisplay && transfersToDisplay.length > 0 ? (
                   <DataGridBase
@@ -678,7 +678,7 @@ export default function Transfers() {
               {formErrors.accounts}
             </Typography>
           )}
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

@@ -79,7 +79,7 @@ const CategoryFilterBar: React.FC<CategoryFilterBarProps> = ({
         placeholder="Search categories by name..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        InputProps={{
+        slotProps={{ input: {
           startAdornment: (
             <InputAdornment position="start">
               <SearchIcon color="action" />
@@ -96,7 +96,7 @@ const CategoryFilterBar: React.FC<CategoryFilterBarProps> = ({
               </IconButton>
             </InputAdornment>
           ),
-        }}
+        } }}
         sx={{ mb: 3 }}
       />
 
@@ -107,7 +107,7 @@ const CategoryFilterBar: React.FC<CategoryFilterBarProps> = ({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Status
           </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
             <Chip
               label="All"
               onClick={() => handleStatusChange("all")}
@@ -146,7 +146,7 @@ const CategoryFilterBar: React.FC<CategoryFilterBarProps> = ({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Transaction Association
           </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
             <Chip
               label="All Categories"
               onClick={() => handleUsageChange("all")}

@@ -698,7 +698,7 @@ export default function Accounts() {
             </Box>
 
             {/* Data Grid / Grid View */}
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: viewMode === "grid" ? "100%" : "fit-content" }}>
                 {filteredAccounts && filteredAccounts.length > 0 ? (
                   viewMode === "table" ? (
@@ -934,7 +934,7 @@ export default function Accounts() {
               }))
             }
           />
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

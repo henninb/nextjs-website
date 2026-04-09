@@ -421,7 +421,7 @@ export default function ValidationAmounts() {
         />
 
         {/* Account Selector */}
-        <Box display="flex" justifyContent="center" sx={{ mb: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
           <Box sx={{ width: "100%", maxWidth: "600px" }}>
             <FormControl fullWidth>
               <InputLabel id="account-select-label">Select Account</InputLabel>
@@ -447,7 +447,7 @@ export default function ValidationAmounts() {
         </Box>
 
         {!selectedAccount ? (
-          <Box display="flex" justifyContent="center">
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <EmptyState
               title="No Account Selected"
               message="Please select an account from the dropdown above to view validation amounts."
@@ -462,7 +462,7 @@ export default function ValidationAmounts() {
           />
         ) : (
           <div>
-            <Box display="flex" justifyContent="center">
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Box sx={{ width: "100%", maxWidth: "1400px" }}>
                 {validationAmounts && validationAmounts.length > 0 ? (
                   <DataGridBase
@@ -563,9 +563,9 @@ export default function ValidationAmounts() {
                 validationDate: new Date(e.target.value),
               }))
             }
-            InputLabelProps={{
+            slotProps={{ inputLabel: {
               shrink: true,
-            }}
+            } }}
           />
           <TextField
             label="Amount"
@@ -581,9 +581,9 @@ export default function ValidationAmounts() {
                 amount: parseFloat(e.target.value),
               }))
             }
-            inputProps={{
+            slotProps={{ htmlInput: {
               step: "0.01",
-            }}
+            } }}
           />
           <FormControl
             fullWidth
@@ -613,7 +613,7 @@ export default function ValidationAmounts() {
               </Typography>
             )}
           </FormControl>
-          <Box mt={1}>
+          <Box sx={{ mt: 1 }}>
             <FormControlLabel
               control={
                 <Switch
@@ -629,7 +629,7 @@ export default function ValidationAmounts() {
               label="Active Status"
             />
           </Box>
-          <Box mt={2}>
+          <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox

@@ -76,7 +76,7 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
         }}
       >
         <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
-          <Box textAlign="center" mb={6}>
+          <Box sx={{ textAlign: "center", mb: 6 }}>
             <Typography
               variant="h1"
               component="h1"
@@ -110,9 +110,7 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
             <Stack
               direction="row"
               spacing={2}
-              justifyContent="center"
-              flexWrap="wrap"
-              sx={{ gap: 2 }}
+              sx={{ gap: 2, justifyContent: "center", flexWrap: "wrap" }}
             >
               {TOPICS.map((topic) =>
                 topic.value === "all" ? (
@@ -159,7 +157,7 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
         {/* Featured Post */}
         {featuredPost && selectedTopic === "all" && (
           <Fade in={true}>
-            <Box mb={8}>
+            <Box sx={{ mb: 8 }}>
               <Typography
                 variant="h4"
                 sx={{
@@ -218,7 +216,7 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
                     sx={{ display: "flex", flexDirection: "column", flex: 1 }}
                   >
                     <CardContent sx={{ flex: 1, p: 4 }}>
-                      <Box display="flex" alignItems="center" mb={2}>
+                      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                         <CalendarToday
                           sx={{
                             mr: 1,
@@ -302,9 +300,7 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
                       )}
 
                       <Box
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="space-between"
+                        sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
                       >
                         <Button
                           endIcon={<ArrowForward />}
@@ -386,7 +382,7 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
                         )}
 
                         <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                          <Box display="flex" alignItems="center" mb={2}>
+                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                             <CalendarToday
                               sx={{
                                 mr: 1,
@@ -490,7 +486,7 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
         </Box>
 
         {filteredPosts.length === 0 && (
-          <Box textAlign="center" py={8}>
+          <Box sx={{ textAlign: "center", py: 8 }}>
             <Typography variant="h5" color="text.secondary" gutterBottom>
               No articles found
             </Typography>
