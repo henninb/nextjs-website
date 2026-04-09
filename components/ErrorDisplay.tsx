@@ -9,7 +9,7 @@ import {
   IconButton,
 } from "@mui/material";
 import {
-  ErrorOutline,
+  ErrorOutlined,
   Refresh,
   ExpandMore,
   ExpandLess,
@@ -64,7 +64,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   const getIcon = () => {
     if (isNetworkError) return <WifiOff />;
     if (severity === "warning") return <Warning />;
-    return <ErrorOutline />;
+    return <ErrorOutlined />;
   };
 
   const getTitle = () => {
@@ -196,7 +196,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       >
         <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
           <Box color="error.main" sx={{ fontSize: 48 }}>
-            <ErrorOutline />
+            <ErrorOutlined />
           </Box>
 
           <Typography variant="h6" color="error.main">
