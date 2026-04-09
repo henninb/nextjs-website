@@ -14,7 +14,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutlined";
 import BoltIcon from "@mui/icons-material/Bolt";
 import PaymentIcon from "@mui/icons-material/Payment";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
