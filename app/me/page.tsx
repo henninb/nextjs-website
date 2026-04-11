@@ -9,6 +9,7 @@ const MePage: NextPage = () => {
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading user data.</div>;
+  if (!user) return <div>Not authenticated.</div>;
 
   return (
     <div>
@@ -17,11 +18,6 @@ const MePage: NextPage = () => {
         <p>
           <strong>Username:</strong> {user.username}
         </p>
-        {user.email && (
-          <p>
-            <strong>Email:</strong> {user.email}
-          </p>
-        )}
         {/* Display additional user fields as needed */}
       </div>
     </div>

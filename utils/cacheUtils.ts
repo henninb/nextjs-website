@@ -61,7 +61,7 @@ export class CacheUpdateStrategies {
    * );
    * ```
    */
-  static updateInList<T extends Record<string, unknown>>(
+  static updateInList<T extends object>(
     queryClient: QueryClient,
     queryKey: readonly unknown[],
     updatedItem: T,
@@ -99,7 +99,7 @@ export class CacheUpdateStrategies {
    * );
    * ```
    */
-  static removeFromList<T extends Record<string, unknown>>(
+  static removeFromList<T extends object>(
     queryClient: QueryClient,
     queryKey: readonly unknown[],
     itemToRemove: T,
