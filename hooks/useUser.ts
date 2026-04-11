@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
+import { SafeUser } from "../model/User";
 
 const log = createHookLogger("useUser");
 
@@ -10,7 +11,7 @@ const log = createHookLogger("useUser");
  *
  * @returns Current user data or null
  */
-export async function fetchUser(): Promise<any | null> {
+export async function fetchUser(): Promise<SafeUser | null> {
   log.debug("Fetching current user");
 
   const res = await fetch("/api/me", {
@@ -35,7 +36,7 @@ export async function fetchUser(): Promise<any | null> {
 
   const user = await res.json();
   log.debug("Fetched current user", { username: user?.username });
-  return user;
+  return user as SafeUser;
 }
 
 /**
@@ -50,7 +51,7 @@ export async function fetchUser(): Promise<any | null> {
  * ```
  */
 export function useUser() {
-  const { data, error, isLoading } = useQuery<any | null, Error>({
+  const { data, error, isLoading } = useQuery<SafeUser | null, Error>({
     queryKey: QueryKeys.me(),
     queryFn: fetchUser,
     staleTime: 5 * 60 * 1000, // 5 minutes

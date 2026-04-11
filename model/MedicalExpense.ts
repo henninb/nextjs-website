@@ -22,14 +22,15 @@ export interface MedicalExpense {
   dateUpdated?: Date;
 }
 
-export enum ClaimStatus {
-  Submitted = "submitted",
-  Processing = "processing",
-  Approved = "approved",
-  Denied = "denied",
-  Paid = "paid",
-  Closed = "closed",
-}
+export const ClaimStatus = {
+  Submitted: "submitted",
+  Processing: "processing",
+  Approved: "approved",
+  Denied: "denied",
+  Paid: "paid",
+  Closed: "closed",
+} as const;
+export type ClaimStatus = typeof ClaimStatus[keyof typeof ClaimStatus];
 
 export interface MedicalExpenseCreateRequest {
   owner?: string;

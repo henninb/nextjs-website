@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { logger } from "../logger";
 
 // Financial constants for boundary checks
 export const FINANCIAL_LIMITS = {
@@ -307,28 +308,24 @@ export function validateSchema<T>(
   errors?: ValidationError[];
 } {
   try {
-    console.log("[schemas.ts] validateSchema INPUT:", JSON.stringify(data));
+    logger.debug("[schemas.ts] validateSchema INPUT", { data });
     const result = schema.safeParse(data);
 
     if (result.success) {
-      console.log("[schemas.ts] validateSchema SUCCESS");
+      logger.debug("[schemas.ts] validateSchema SUCCESS");
       return {
         success: true,
         data: result.data,
       };
     }
 
-    // Handle ZodError structure (uses 'issues' instead of 'errors')
-    const zodError = result.error as any;
-    if (zodError && zodError.issues) {
-      console.log(
-        "[schemas.ts] Zod issues:",
-        JSON.stringify(zodError.issues, null, 2),
-      );
-      const errors: ValidationError[] = zodError.issues.map((issue: any) => ({
+    // ZodError.issues is fully typed — no cast needed
+    if (result.error.issues.length > 0) {
+      logger.debug("[schemas.ts] Zod issues", { issues: result.error.issues });
+      const errors: ValidationError[] = result.error.issues.map((issue) => ({
         field: issue.path?.join(".") || "unknown",
         message: issue.message || "Validation failed",
-        code: issue.code || "VALIDATION_ERROR",
+        code: issue.code,
       }));
 
       return {
@@ -340,7 +337,7 @@ export function validateSchema<T>(
     const errors: ValidationError[] = [
       {
         field: "validation",
-        message: result.error?.message || "Unknown validation error",
+        message: result.error.message || "Unknown validation error",
         code: "VALIDATION_ERROR",
       },
     ];
@@ -350,7 +347,7 @@ export function validateSchema<T>(
       errors,
     };
   } catch (error) {
-    console.error("[schemas.ts] validateSchema EXCEPTION:", error);
+    logger.error("[schemas.ts] validateSchema EXCEPTION", error);
     return {
       success: false,
       errors: [

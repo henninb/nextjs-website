@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
@@ -13,25 +13,16 @@ export default function SnackbarBaseline({
   handleSnackbarClose: () => void;
   severity?: "error" | "warning" | "info" | "success";
 }) {
-  const [showSnackbar, setShowSnackbar] = useState(false);
-
-  useEffect(() => {
-    setShowSnackbar(state);
-  }, [state]);
-
   return (
     <div>
       <Snackbar
-        open={showSnackbar}
+        open={state}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "center",
         }}
         autoHideDuration={severity === "error" ? 8000 : 4500}
-        onClose={() => {
-          setShowSnackbar(false);
-          handleSnackbarClose();
-        }}
+        onClose={handleSnackbarClose}
       >
         <Alert severity={severity}>{message}</Alert>
       </Snackbar>

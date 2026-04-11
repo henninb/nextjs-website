@@ -615,20 +615,12 @@ export class HookValidator {
  * const validData = validateAccountInsert(accountData);
  * ```
  */
-export function withValidation<T>(
-  validator: (data: T) => {
-    success: boolean;
-    data?: any;
-    errors?: ValidationError[];
-  },
+export function withValidation<T, R = T>(
+  validator: (data: T) => ValidationResult<R>,
   operationName: string,
 ) {
-  return function <U extends T>(data: U): U {
-    return HookValidator.validateInsert(
-      data,
-      validator as any,
-      operationName,
-    ) as U;
+  return function (data: T): R {
+    return HookValidator.validateInsert(data, validator, operationName);
   };
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Autocomplete,
   TextField,
@@ -32,38 +32,35 @@ export default function SelectNavigateAccounts({
   onNavigate,
   theme,
 }: SelectNavigateAccountsProps) {
-  const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
-  const [maxWidth, setMaxWidth] = useState<number>(200);
   const router = useRouter();
   const { data, isSuccess, isError, error, isLoading, refetch } =
     useFetchAccount();
   const { trackAccountVisit, removeAccount, getMostUsedAccounts } =
     useAccountUsageTracking();
 
-  useEffect(() => {
-    if (isSuccess && Array.isArray(data)) {
-      const optionList = data
-        .filter(
-          (account: Account) =>
-            typeof account.accountNameOwner === "string" &&
-            account.accountNameOwner.trim() !== "",
-        )
-        .map(({ accountNameOwner }: Account) => ({
-          value: accountNameOwner,
-          label: accountNameOwner,
-        }));
-      setOptions(optionList);
-
-      const longestLabel = optionList.reduce(
-        (max, option) =>
-          option.label.length > max.length ? option.label : max,
-        "",
-      );
-      const newMaxWidth = Math.max(longestLabel.length * 10, 200);
-      setMaxWidth(newMaxWidth);
-    }
+  const options = useMemo<Option[]>(() => {
+    if (!isSuccess || !Array.isArray(data)) return [];
+    return data
+      .filter(
+        (account: Account) =>
+          typeof account.accountNameOwner === "string" &&
+          account.accountNameOwner.trim() !== "",
+      )
+      .map(({ accountNameOwner }: Account) => ({
+        value: accountNameOwner,
+        label: accountNameOwner,
+      }));
   }, [isSuccess, data]);
+
+  const maxWidth = useMemo<number>(() => {
+    if (options.length === 0) return 200;
+    const longestLabel = options.reduce(
+      (max, option) => (option.label.length > max.length ? option.label : max),
+      "",
+    );
+    return Math.max(longestLabel.length * 10, 200);
+  }, [options]);
 
   const handleChange = (
     _event: React.SyntheticEvent,
@@ -156,31 +153,20 @@ export default function SelectNavigateAccounts({
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "transparent",
                     "& fieldset": {
-                      borderColor: true
-                        ? theme?.palette?.divider || "rgba(255, 255, 255, 0.23)"
-                        : "rgba(139, 233, 253, 0.5)",
+                      borderColor: theme?.palette?.divider || "rgba(255, 255, 255, 0.23)",
                     },
                     "&:hover fieldset": {
-                      borderColor: true
-                        ? theme?.palette?.primary?.main || "#3b82f6"
-                        : "rgba(139, 233, 253, 0.8)",
+                      borderColor: theme?.palette?.primary?.main || "#3b82f6",
                     },
                     "&.Mui-focused fieldset": {
-                      borderColor: true
-                        ? theme?.palette?.primary?.main || "#3b82f6"
-                        : "rgba(139, 233, 253, 1)",
+                      borderColor: theme?.palette?.primary?.main || "#3b82f6",
                     },
                   },
                   "& .MuiInputLabel-root": {
-                    color: true
-                      ? theme?.palette?.text?.secondary ||
-                        "rgba(255, 255, 255, 0.7)"
-                      : "rgba(248, 248, 242, 0.7)",
+                    color: theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)",
                   },
                   "& .MuiInputBase-input": {
-                    color: true
-                      ? theme?.palette?.text?.primary || "#fff"
-                      : "rgba(248, 248, 242, 1)",
+                    color: theme?.palette?.text?.primary || "#fff",
                   },
                 }}
               />
@@ -195,10 +181,7 @@ export default function SelectNavigateAccounts({
               sx={{
                 display: "block",
                 mb: 1,
-                color: true
-                  ? theme?.palette?.text?.secondary ||
-                    "rgba(255, 255, 255, 0.7)"
-                  : "rgba(248, 248, 242, 0.7)",
+                color: theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)",
                 fontSize: "0.75rem",
               }}
             >
@@ -209,8 +192,8 @@ export default function SelectNavigateAccounts({
                 display: "flex",
                 flexDirection: "column",
                 gap: 0.5,
-                maxHeight: true ? "120px" : "none",
-                overflowY: true ? "auto" : "visible",
+                maxHeight: "120px",
+                overflowY: "auto",
               }}
             >
               {mostUsedAccounts.map((account) => (
@@ -232,24 +215,15 @@ export default function SelectNavigateAccounts({
                       justifyContent: "flex-start",
                       flex: 1,
                       backgroundColor: "transparent",
-                      borderColor: true
-                        ? theme?.palette?.divider || "rgba(255, 255, 255, 0.23)"
-                        : "rgba(139, 233, 253, 0.5)",
-                      color: true
-                        ? theme?.palette?.text?.primary || "#fff"
-                        : "rgba(248, 248, 242, 1)",
+                      borderColor: theme?.palette?.divider || "rgba(255, 255, 255, 0.23)",
+                      color: theme?.palette?.text?.primary || "#fff",
                       "& .MuiChip-label": {
                         paddingLeft: "8px",
                         paddingRight: "8px",
                       },
                       "&:hover": {
-                        backgroundColor: true
-                          ? theme?.palette?.action?.hover ||
-                            "rgba(255, 255, 255, 0.08)"
-                          : "rgba(139, 233, 253, 0.1)",
-                        borderColor: true
-                          ? theme?.palette?.primary?.main || "#3b82f6"
-                          : "rgba(139, 233, 253, 0.8)",
+                        backgroundColor: theme?.palette?.action?.hover || "rgba(255, 255, 255, 0.08)",
+                        borderColor: theme?.palette?.primary?.main || "#3b82f6",
                       },
                     }}
                   />
@@ -262,10 +236,7 @@ export default function SelectNavigateAccounts({
                       width: "20px",
                       height: "20px",
                       padding: "2px",
-                      color: true
-                        ? theme?.palette?.text?.secondary ||
-                          "rgba(255, 255, 255, 0.7)"
-                        : "rgba(248, 248, 242, 0.7)",
+                      color: theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)",
                       "&:hover": {
                         backgroundColor: "error.light",
                         color: "error.contrastText",

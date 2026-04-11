@@ -210,23 +210,7 @@ export function smartCORSMiddleware(req: NextApiRequest, res: NextApiResponse) {
   return middleware(req, res);
 }
 
-/**
- * CSRF protection utility (works with CORS)
- */
-export function validateCSRFToken(req: NextApiRequest): boolean {
-  if (["POST", "PUT", "DELETE", "PATCH"].includes(req.method || "")) {
-    const csrfToken = req.headers["x-csrf-token"] as string;
-    const sessionToken = req.headers["authorization"] as string;
-
-    // Basic CSRF validation - implement proper token generation/validation
-    if (!csrfToken || !sessionToken) {
-      return false;
-    }
-
-    // Add your CSRF token validation logic here
-    // This is a placeholder - implement based on your auth system
-    return true;
-  }
-
-  return true; // GET requests don't need CSRF protection
-}
+// NOTE: This file uses Pages Router types (NextApiRequest/NextApiResponse).
+// It is not imported by any App Router API route handlers and may be dead code.
+// CSRF token validation for mutation requests is handled in utils/csrf.ts via
+// the double-submit cookie pattern integrated into fetchWithErrorHandling.

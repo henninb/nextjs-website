@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTheme } from "@mui/material";
 import {
   Box,
   Card,
@@ -50,6 +51,7 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
   }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [notesExpanded, setNotesExpanded] = useState(false);
+    const theme = useTheme();
 
     const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
       event.stopPropagation();
@@ -107,9 +109,9 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
     // Determine amount color based on value
     const getAmountColor = () => {
       const amount = transaction.amount ?? 0;
-      if (amount > 0) return "#22c55e"; // Green for income
-      if (amount < 0) return "#ef4444"; // Red for expense
-      return "text.secondary"; // Gray for zero
+      if (amount > 0) return theme.palette.success.main;
+      if (amount < 0) return theme.palette.error.main;
+      return theme.palette.text.secondary;
     };
 
     // Determine state color
@@ -183,8 +185,8 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
 
     const hasNotes = transaction.notes && transaction.notes.trim().length > 0;
     const notesPreview =
-      hasNotes && transaction.notes!.length > 100 && !notesExpanded
-        ? `${transaction.notes!.substring(0, 100)}...`
+      hasNotes && (transaction.notes?.length ?? 0) > 100 && !notesExpanded
+        ? `${transaction.notes?.substring(0, 100)}...`
         : transaction.notes;
 
     return (
@@ -380,7 +382,7 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
                 >
                   Notes
                 </Typography>
-                {transaction.notes!.length > 100 && (
+                {(transaction.notes?.length ?? 0) > 100 && (
                   <IconButton
                     size="small"
                     onClick={toggleNotes}
@@ -399,7 +401,7 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
                   </IconButton>
                 )}
               </Box>
-              <Collapse in={notesExpanded || transaction.notes!.length <= 100}>
+              <Collapse in={notesExpanded || (transaction.notes?.length ?? 0) <= 100}>
                 <Typography variant="body2" color="text.secondary">
                   {notesPreview}
                 </Typography>

@@ -1,4 +1,6 @@
+import { z } from "zod";
 import { getCsrfHeaders, clearCsrfToken } from "./csrf";
+import { logger } from "./logger";
 
 /**
  * Custom error class for fetch operations with enhanced error information
@@ -145,11 +147,8 @@ export async function fetchWithErrorHandling(
   const isMutation =
     options?.method &&
     ["POST", "PUT", "DELETE", "PATCH"].includes(options.method);
-  console.log(
-    `[fetchUtils] ${options?.method || "GET"} ${url}, isMutation:${isMutation}`,
-  );
+  logger.debug(`[fetchUtils] ${options?.method || "GET"} ${url}`, { isMutation });
   const csrfHeaders = isMutation ? await getCsrfHeaders() : {};
-  console.log("[fetchUtils] CSRF headers:", csrfHeaders);
 
   try {
     const finalHeaders = {
@@ -157,10 +156,6 @@ export async function fetchWithErrorHandling(
       ...csrfHeaders,
       ...options?.headers,
     };
-    console.log(
-      "[fetchUtils] Final headers:",
-      Object.keys(finalHeaders).join(", "),
-    );
     const response = await fetch(url, {
       ...DEFAULT_FETCH_OPTIONS,
       ...options,
@@ -177,7 +172,7 @@ export async function fetchWithErrorHandling(
             errorText.includes("CSRF") ||
             errorText.includes("Invalid CSRF token")
           ) {
-            console.warn("[CSRF] Token invalid, clearing cache");
+            logger.warn("[CSRF] Token invalid, clearing cache");
             clearCsrfToken();
           }
         } catch {
@@ -211,26 +206,35 @@ export async function fetchWithErrorHandling(
 
 /**
  * Parse response body with null handling for 204 No Content
- * Safely handles JSON parsing and empty responses
+ * Safely handles JSON parsing and empty responses.
+ * Pass an optional Zod schema to validate the response shape at runtime.
  *
  * @param response - Fetch Response object
- * @returns Parsed JSON data or null for 204 responses
- * @throws {FetchError} On parsing failures
+ * @param schema - Optional Zod schema to validate the parsed JSON
+ * @returns Parsed (and optionally validated) JSON data, or null for 204 responses
+ * @throws {FetchError} On parsing or validation failures
  *
  * @example
  * ```typescript
  * const response = await fetchWithErrorHandling("/api/account");
- * const data = await parseResponse<Account[]>(response);
+ * const data = await parseResponse(response, z.array(AccountSchema));
  * ```
  */
-export async function parseResponse<T>(response: Response): Promise<T | null> {
+export async function parseResponse<T>(
+  response: Response,
+  schema?: z.ZodSchema<T>,
+): Promise<T | null> {
   // HTTP 204 No Content - return null
   if (response.status === 204) {
     return null;
   }
 
   try {
-    return (await response.json()) as T;
+    const json = await response.json();
+    if (schema) {
+      return schema.parse(json);
+    }
+    return json as T;
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Failed to parse response";

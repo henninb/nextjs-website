@@ -4,10 +4,13 @@ import {
   TransactionSchema,
   PaymentSchema,
   TransferSchema,
+  CategorySchema,
+  DescriptionSchema,
   validateSchema,
   ValidationError,
   FINANCIAL_LIMITS,
 } from "./schemas";
+import { logger } from "../logger";
 import { sanitize, SecurityLogger } from "./sanitization";
 import { toErrorResult, ValidationResult, ValidatedData } from "../../types";
 import User from "../../model/User";
@@ -128,15 +131,9 @@ export class DataValidator {
    */
   static validatePayment(data: unknown): ValidationResult<Payment> {
     try {
-      console.log(
-        "[validator.ts] validatePayment INPUT:",
-        JSON.stringify(data),
-      );
+      logger.debug("[validator.ts] validatePayment INPUT", { data });
       const sanitizedData = sanitize.payment(data);
-      console.log(
-        "[validator.ts] validatePayment SANITIZED:",
-        JSON.stringify(sanitizedData),
-      );
+      logger.debug("[validator.ts] validatePayment SANITIZED", { sanitizedData });
 
       // Additional checks for payments
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -145,16 +142,13 @@ export class DataValidator {
       });
 
       if (!financialValidation.success) {
-        console.log(
-          "[validator.ts] Payment financial validation FAILED:",
-          JSON.stringify(financialValidation.errors),
-        );
+        logger.debug("[validator.ts] Payment financial validation FAILED", { errors: financialValidation.errors });
         return financialValidation;
       }
 
       // Ensure source and destination accounts are different
       if (sanitizedData.sourceAccount === sanitizedData.destinationAccount) {
-        console.log("[validator.ts] Payment same account error");
+        logger.debug("[validator.ts] Payment same account error");
         return {
           success: false,
           errors: [
@@ -168,14 +162,10 @@ export class DataValidator {
       }
 
       const result = validateSchema(PaymentSchema, sanitizedData);
-      console.log(
-        "[validator.ts] Payment schema validation result:",
-        JSON.stringify({
-          success: result.success,
-          errors: result.errors,
-          data: result.data,
-        }),
-      );
+      logger.debug("[validator.ts] Payment schema validation result", {
+        success: result.success,
+        errors: result.errors,
+      });
 
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
@@ -184,10 +174,7 @@ export class DataValidator {
       return result as ValidationResult<Payment>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
-      console.error(
-        "[validator.ts] validatePayment EXCEPTION:",
-        errorResult.message,
-      );
+      logger.error("[validator.ts] validatePayment EXCEPTION", error);
       return {
         success: false,
         errors: [
@@ -206,15 +193,9 @@ export class DataValidator {
    */
   static validateTransfer(data: unknown): ValidationResult<Transfer> {
     try {
-      console.log(
-        "[validator.ts] validateTransfer INPUT:",
-        JSON.stringify(data),
-      );
+      logger.debug("[validator.ts] validateTransfer INPUT", { data });
       const sanitizedData = sanitize.transfer(data);
-      console.log(
-        "[validator.ts] validateTransfer SANITIZED:",
-        JSON.stringify(sanitizedData),
-      );
+      logger.debug("[validator.ts] validateTransfer SANITIZED", { sanitizedData });
 
       // Additional checks for transfers
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -223,16 +204,13 @@ export class DataValidator {
       });
 
       if (!financialValidation.success) {
-        console.log(
-          "[validator.ts] Financial validation FAILED:",
-          JSON.stringify(financialValidation.errors),
-        );
+        logger.debug("[validator.ts] Transfer financial validation FAILED", { errors: financialValidation.errors });
         return financialValidation;
       }
 
       // Ensure source and destination accounts are different
       if (sanitizedData.sourceAccount === sanitizedData.destinationAccount) {
-        console.log("[validator.ts] Same account error");
+        logger.debug("[validator.ts] Transfer same account error");
         return {
           success: false,
           errors: [
@@ -246,14 +224,10 @@ export class DataValidator {
       }
 
       const result = validateSchema(TransferSchema, sanitizedData);
-      console.log(
-        "[validator.ts] Schema validation result:",
-        JSON.stringify({
-          success: result.success,
-          errors: result.errors,
-          data: result.data,
-        }),
-      );
+      logger.debug("[validator.ts] Transfer schema validation result", {
+        success: result.success,
+        errors: result.errors,
+      });
 
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
@@ -262,10 +236,7 @@ export class DataValidator {
       return result as ValidationResult<Transfer>;
     } catch (error: unknown) {
       const errorResult = toErrorResult(error);
-      console.error(
-        "[validator.ts] validateTransfer EXCEPTION:",
-        errorResult.message,
-      );
+      logger.error("[validator.ts] validateTransfer EXCEPTION", error);
       return {
         success: false,
         errors: [
@@ -285,8 +256,6 @@ export class DataValidator {
   static validateCategory(data: unknown): ValidationResult<Category> {
     try {
       const sanitizedData = sanitize.category(data);
-      const { validateSchema } = require("./schemas");
-      const { CategorySchema } = require("./schemas");
       const result = validateSchema(CategorySchema, sanitizedData);
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
@@ -313,8 +282,6 @@ export class DataValidator {
   static validateDescription(data: unknown): ValidationResult<Description> {
     try {
       const sanitizedData = sanitize.description(data);
-      const { validateSchema } = require("./schemas");
-      const { DescriptionSchema } = require("./schemas");
       const result = validateSchema(DescriptionSchema, sanitizedData);
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);

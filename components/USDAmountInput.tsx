@@ -110,17 +110,20 @@ export default function USDAmountInput({
   placeholder,
 }: USDAmountInputProps) {
   const [displayValue, setDisplayValue] = useState<string>("");
-  const [showDecimalPlaceholder, setShowDecimalPlaceholder] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Sync displayValue when the external value prop changes
   useEffect(() => {
     const stringValue =
       value === 0 || value === 0.0 || value === "0" || value === "0.0" || !value
         ? ""
         : String(value);
     setDisplayValue(stringValue);
-    setShowDecimalPlaceholder(!stringValue.includes(".") && stringValue !== "");
   }, [value]);
+
+  // Derived: show ".00" hint when the value has no decimal point yet
+  const showDecimalPlaceholder =
+    !displayValue.includes(".") && displayValue !== "" && displayValue !== "-";
 
   const toggleSign = () => {
     const currentValue = displayValue.trim();
@@ -170,7 +173,6 @@ export default function USDAmountInput({
       hasValidNegativePosition
     ) {
       setDisplayValue(inputValue);
-      setShowDecimalPlaceholder(!inputValue.includes(".") && inputValue !== "");
       onChange(inputValue);
     }
   };
@@ -187,7 +189,6 @@ export default function USDAmountInput({
         const formattedValue = numericValue.toFixed(2);
         setDisplayValue(formattedValue);
         onChange(formattedValue);
-        setShowDecimalPlaceholder(false);
       }
     }
     if (onBlur) {

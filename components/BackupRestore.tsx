@@ -125,63 +125,70 @@ const BackupRestore: React.FC = () => {
     setIsRestoring(true);
     setMessage("");
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const content = e.target?.result;
-        if (typeof content !== "string") {
-          setMessage("Invalid file content.");
-          return;
-        }
+      // Wrap FileReader in a Promise so try/catch and finally correctly cover
+      // the async onload callback — reader.readAsText() is synchronous and returns
+      // immediately, so a bare try/catch would not catch errors inside onload.
+      const content = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result;
+          if (typeof result === "string") {
+            resolve(result);
+          } else {
+            reject(new Error("Invalid file content."));
+          }
+        };
+        reader.onerror = () => reject(new Error("File read failed."));
+        reader.readAsText(file);
+      });
 
-        const backupData = JSON.parse(content);
+      const backupData = JSON.parse(content);
 
-        // NOTE: Current strategy inserts backup data without clearing existing records.
-        // If a full restore is desired, implement a pre-clear step per entity type.
+      // NOTE: Current strategy inserts backup data without clearing existing records.
+      // If a full restore is desired, implement a pre-clear step per entity type.
 
-        if (backupData.accounts) {
-          for (const item of backupData.accounts) {
-            await insertAccount({ payload: item });
-          }
+      if (backupData.accounts) {
+        for (const item of backupData.accounts) {
+          await insertAccount({ payload: item });
         }
-        if (backupData.categories) {
-          for (const item of backupData.categories) {
-            await insertCategory({ category: item });
-          }
+      }
+      if (backupData.categories) {
+        for (const item of backupData.categories) {
+          await insertCategory({ category: item });
         }
-        if (backupData.descriptions) {
-          for (const item of backupData.descriptions) {
-            await insertDescription({ descriptionName: item.descriptionName });
-          }
+      }
+      if (backupData.descriptions) {
+        for (const item of backupData.descriptions) {
+          await insertDescription({ descriptionName: item.descriptionName });
         }
-        if (backupData.parameters) {
-          for (const item of backupData.parameters) {
-            await insertParameter({ payload: item });
-          }
+      }
+      if (backupData.parameters) {
+        for (const item of backupData.parameters) {
+          await insertParameter({ payload: item });
         }
-        if (backupData.payments) {
-          for (const item of backupData.payments) {
-            await insertPayment({ payload: item });
-          }
+      }
+      if (backupData.payments) {
+        for (const item of backupData.payments) {
+          await insertPayment({ payload: item });
         }
-        if (backupData.pendingTransactions) {
-          for (const item of backupData.pendingTransactions) {
-            await insertPendingTransaction({ pendingTransaction: item });
-          }
+      }
+      if (backupData.pendingTransactions) {
+        for (const item of backupData.pendingTransactions) {
+          await insertPendingTransaction({ pendingTransaction: item });
         }
-        if (backupData.transactions) {
-          for (const item of backupData.transactions) {
-            await insertTransaction(item);
-          }
+      }
+      if (backupData.transactions) {
+        for (const item of backupData.transactions) {
+          await insertTransaction(item);
         }
-        if (backupData.transfers) {
-          for (const item of backupData.transfers) {
-            await insertTransfer({ payload: item });
-          }
+      }
+      if (backupData.transfers) {
+        for (const item of backupData.transfers) {
+          await insertTransfer({ payload: item });
         }
+      }
 
-        setMessage("Restore successful!");
-      };
-      reader.readAsText(file);
+      setMessage("Restore successful!");
     } catch (error) {
       setMessage("Restore failed.");
       console.error(error);

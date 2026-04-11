@@ -4,10 +4,14 @@ import { styled } from "@mui/material/styles";
 import SportsIcon from "@mui/icons-material/Sports";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
+// Branded gradient colors for the sports card — intentionally outside the app theme
+const SPORTS_CARD_GRADIENT_START = "#667eea";
+const SPORTS_CARD_GRADIENT_END = "#764ba2";
+
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  background: `linear-gradient(135deg, ${SPORTS_CARD_GRADIENT_START} 0%, ${SPORTS_CARD_GRADIENT_END} 100%)`,
   borderRadius: "16px",
-  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",
+  boxShadow: theme.shadows[10],
   overflow: "hidden",
   margin: "20px auto",
   maxWidth: "95vw",

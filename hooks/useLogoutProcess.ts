@@ -23,7 +23,7 @@ export default function useLogoutProcess() {
   const [error, setError] = useState<Error | null>(null);
   const router = useRouter();
 
-  const logoutNow = async () => {
+  const logoutNow = async (): Promise<void> => {
     setLoading(true);
     setError(null);
 

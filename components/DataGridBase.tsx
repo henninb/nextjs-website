@@ -100,7 +100,7 @@ export default function DataGridBase<R extends GridValidRowModel>({
       disableColumnResize={disableColumnResize}
       disableRowSelectionOnClick={disableRowSelectionOnClick}
       density="compact"
-      processRowUpdate={processRowUpdate as any}
+      processRowUpdate={processRowUpdate}
       sx={sx}
       {...rest}
     />

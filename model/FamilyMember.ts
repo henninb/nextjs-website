@@ -12,13 +12,14 @@ export interface FamilyMember {
   dateUpdated?: Date;
 }
 
-export enum FamilyRelationship {
-  Self = "self",
-  Spouse = "spouse",
-  Child = "child",
-  Dependent = "dependent",
-  Other = "other",
-}
+export const FamilyRelationship = {
+  Self: "self",
+  Spouse: "spouse",
+  Child: "child",
+  Dependent: "dependent",
+  Other: "other",
+} as const;
+export type FamilyRelationship = typeof FamilyRelationship[keyof typeof FamilyRelationship];
 
 export interface FamilyMemberCreateRequest {
   memberName: string;

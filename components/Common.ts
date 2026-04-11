@@ -155,10 +155,10 @@ export const noNaN = (n: unknown): number => {
   return isNaN(num) ? 0.0 : num;
 };
 
-export const capitalizeFirstChar = (inString: string) => {
+export const capitalizeFirstChar = (inString: string): string => {
   return inString.charAt(0).toUpperCase() + inString.slice(1);
 };
 
-export function isFloat(n: number) {
+export function isFloat(n: number): boolean {
   return Number(n) === n && n % 1 !== 0;
 }

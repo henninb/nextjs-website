@@ -9,9 +9,10 @@ import {
   ReactNode,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import User from "../model/User";
+import User, { SafeUser } from "../model/User";
 import useLogout from "../hooks/useLogoutProcess";
 import { initCsrfToken } from "../utils/csrf";
+import { logger } from "../utils/logger";
 
 const SESSION_DURATION = 60 * 60 * 1000; // 1 hour
 const SESSION_WARNING_THRESHOLD = 5 * 60 * 1000; // 5 minutes before expiry
@@ -20,7 +21,7 @@ const SESSION_STORAGE_KEY = "sessionExpiresAt";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
+  user: SafeUser | null;
   loading: boolean;
   login: (user: User) => Promise<void>;
   logout: () => void;
@@ -34,7 +35,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const useProvideAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SafeUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [showSessionWarning, setShowSessionWarning] = useState(false);
@@ -124,6 +125,7 @@ const useProvideAuth = () => {
           clearSession();
         }
       } catch (error) {
+        logger.error("Auth fetch failed", error);
         setIsAuthenticated(false);
         setUser(null);
         clearSession();
@@ -176,8 +178,8 @@ const useProvideAuth = () => {
     return () => clearInterval(intervalId);
   }, [isAuthenticated, sessionExpiresAt, performLogout, setSessionExpiry]);
 
-  const login = async (user: User) => {
-    setUser(user);
+  const login = async ({ password: _password, ...safeUser }: User) => {
+    setUser(safeUser);
     setIsAuthenticated(true);
     setSessionExpiry(Date.now() + SESSION_DURATION);
     await initCsrfToken();

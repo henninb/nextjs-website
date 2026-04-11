@@ -6,6 +6,7 @@ import {
   Typography,
   useTheme,
   Chip,
+  alpha,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 
@@ -61,7 +62,7 @@ export default function StatCard({
           boxShadow:
             "0 12px 24px -4px rgba(0, 0, 0, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.3)",
         },
-        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, rgba(${parseInt(cardColor.slice(1, 3), 16)}, ${parseInt(cardColor.slice(3, 5), 16)}, ${parseInt(cardColor.slice(5, 7), 16)}, 0.05) 100%)`,
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${alpha(cardColor, 0.05)} 100%)`,
         border: highlighted
           ? `2px solid ${cardColor}`
           : `1px solid ${theme.palette.divider}`,
@@ -128,7 +129,7 @@ export default function StatCard({
             height: 48,
             borderRadius: "10px",
             flexShrink: 0,
-            background: `rgba(${parseInt(cardColor.slice(1, 3), 16)}, ${parseInt(cardColor.slice(3, 5), 16)}, ${parseInt(cardColor.slice(5, 7), 16)}, 0.1)`,
+            background: alpha(cardColor, 0.1),
             "& > svg": {
               fontSize: "1.75rem",
             },

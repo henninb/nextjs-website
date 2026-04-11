@@ -220,6 +220,9 @@ export default function Layout({ children }: LayoutProps) {
     }
   };
 
+  // Specific text color for the home page hero — no equivalent theme token
+  const HOMEPAGE_HERO_TEXT_COLOR = "#e6f1ff";
+
   // Use the appropriate theme based on page
   const theme = isFinancePage ? modernTheme : globalTheme;
   const menuLinks = isFinancePage ? financeLinks : generalLinks;
@@ -235,12 +238,12 @@ export default function Layout({ children }: LayoutProps) {
           ? "transparent"
           : isFinancePage
             ? theme.palette.background.default
-            : "#fff",
+            : theme.palette.background.paper,
         color: isHomePage
-          ? "#e6f1ff"
+          ? HOMEPAGE_HERO_TEXT_COLOR
           : isFinancePage
             ? theme.palette.text.primary
-            : "#000",
+            : theme.palette.text.primary,
         minHeight: "100vh",
       }}
     >
@@ -272,7 +275,7 @@ export default function Layout({ children }: LayoutProps) {
           >
             <MenuIcon
               sx={{
-                color: "#3b82f6",
+                color: theme.palette.primary.main,
               }}
             />
           </IconButton>

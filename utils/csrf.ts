@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 /**
  * CSRF token utilities for securing mutation requests
  * Implements double-submit cookie pattern with Spring Security
@@ -47,9 +49,9 @@ export async function fetchCsrfToken(): Promise<void> {
       csrfToken = data.token;
       csrfHeaderName = data.headerName || "X-CSRF-TOKEN";
 
-      console.log("[CSRF] Token fetched successfully");
+      logger.debug("[CSRF] Token fetched successfully");
     } catch (error) {
-      console.error("[CSRF] Failed to fetch token:", error);
+      logger.error("[CSRF] Failed to fetch token", error);
       csrfToken = null;
       throw error;
     } finally {
@@ -96,21 +98,14 @@ export async function getCsrfToken(): Promise<string | null> {
  * ```
  */
 export async function getCsrfHeaders(): Promise<Record<string, string>> {
-  console.log("[CSRF] getCsrfHeaders called");
+  logger.debug("[CSRF] getCsrfHeaders called");
   const token = await getCsrfToken();
-  console.log(
-    "[CSRF] Token retrieved:",
-    token ? `${token.substring(0, 20)}...` : "null",
-  );
   if (!token) {
-    console.warn("[CSRF] No token available, returning empty headers");
+    logger.warn("[CSRF] No token available, returning empty headers");
     return {};
   }
-  const headers = {
-    [csrfHeaderName]: token,
-  };
-  console.log("[CSRF] Returning headers with", csrfHeaderName);
-  return headers;
+  logger.debug("[CSRF] Returning headers", { headerName: csrfHeaderName });
+  return { [csrfHeaderName]: token };
 }
 
 /**
@@ -129,7 +124,7 @@ export async function getCsrfHeaders(): Promise<Record<string, string>> {
  */
 export function clearCsrfToken(): void {
   csrfToken = null;
-  console.log("[CSRF] Token cleared");
+  logger.debug("[CSRF] Token cleared");
 }
 
 /**
@@ -151,6 +146,6 @@ export async function initCsrfToken(): Promise<void> {
     await fetchCsrfToken();
   } catch (error) {
     // Non-critical: token will be fetched on first mutation
-    console.warn("[CSRF] Prefetch failed, will retry on first request");
+    logger.warn("[CSRF] Prefetch failed, will retry on first request");
   }
 }
