@@ -5,11 +5,9 @@
 
 // Mock HookValidator
 jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
+  validateInsert: jest.fn((data) => data),
+  validateUpdate: jest.fn((newData) => newData),
+  validateDelete: jest.fn(),
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
       super(message);
@@ -26,6 +24,7 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
+  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 // Mock validation utilities
@@ -40,7 +39,7 @@ import { createFetchMock, createErrorFetchMock } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
 
 import { insertPendingTransaction } from "../../hooks/usePendingTransactionInsert";
-import { HookValidator } from "../../utils/hookValidation";
+import { validateInsert } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -53,7 +52,7 @@ jest.mock("../../components/AuthProvider", () => ({
   }),
 }));
 
-const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
+const mockValidateInsert = validateInsert as jest.Mock;
 
 // Helper function to create test pending transaction data
 const createTestPendingTransaction = (

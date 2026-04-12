@@ -63,16 +63,6 @@ export default function useTransactionByDescriptionFetch(
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched transactions", {
-      descriptionName,
-      count: queryResult.data.length,
-    });
-  }
 
   return queryResult;
 }

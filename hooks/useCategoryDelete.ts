@@ -2,9 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import Category from "../model/Category";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateDelete } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { removeFromList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useCategoryDelete");
@@ -20,7 +20,7 @@ export const deleteCategory = async (
   payload: Category,
 ): Promise<Category | null> => {
   // Validate that category name exists
-  HookValidator.validateDelete(payload, "categoryName", "deleteCategory");
+  validateDelete(payload, "categoryName", "deleteCategory");
 
   // Sanitize category name for URL
   const sanitizedCategoryName = InputSanitizer.sanitizeCategory(
@@ -62,7 +62,7 @@ export default function useCategoryDelete() {
         });
 
         // Remove from cache using categoryName as identifier
-        CacheUpdateStrategies.removeFromList(
+        removeFromList(
           queryClient,
           QueryKeys.category(),
           variables,

@@ -106,7 +106,7 @@ describe("TransactionCard", () => {
       renderWithTheme(<TransactionCard transaction={mockTransaction} />);
 
       const amountElement = screen.getByText("-$50.00");
-      expect(amountElement).toHaveStyle({ color: "#ef4444" });
+      expect(amountElement).toHaveStyle({ color: "rgb(211, 47, 47)" });
     });
 
     it("should display positive amounts in green for income", () => {
@@ -118,7 +118,7 @@ describe("TransactionCard", () => {
       renderWithTheme(<TransactionCard transaction={incomeTransaction} />);
 
       const amountElement = screen.getByText("$100.00");
-      expect(amountElement).toHaveStyle({ color: "#22c55e" });
+      expect(amountElement).toHaveStyle({ color: "rgb(46, 125, 50)" });
     });
 
     it("should display zero amounts with default color", () => {

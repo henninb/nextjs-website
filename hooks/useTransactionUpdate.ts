@@ -5,7 +5,7 @@ import { UpdateTransactionOptions } from "../model/UpdateTransactionOptions";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateUpdate } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
 import { getTotalsKey } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
@@ -28,9 +28,8 @@ export const updateTransaction = async (
   options?: UpdateTransactionOptions,
 ): Promise<Transaction> => {
   // Validate new transaction data
-  const validatedData = HookValidator.validateUpdate(
+  const validatedData = validateUpdate(
     newData,
-    oldData,
     DataValidator.validateTransaction,
     "updateTransaction",
   );

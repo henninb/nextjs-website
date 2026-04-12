@@ -3,8 +3,8 @@ import Account from "../model/Account";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
-import { QueryKeys, CacheUpdateStrategies } from "../utils/cacheUtils";
+import { validateInsert } from "../utils/hookValidation";
+import { QueryKeys, addToList } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -41,7 +41,7 @@ export const insertAccount = async (
   payload: Account,
 ): Promise<Account | null> => {
   // Validate and sanitize the account data
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     payload,
     DataValidator.validateAccount,
     "insertAccount",
@@ -106,7 +106,7 @@ export default function useAccountInsert() {
           });
 
           // Optimistically update cache
-          CacheUpdateStrategies.addToList(
+          addToList(
             queryClient,
             QueryKeys.account(),
             response,

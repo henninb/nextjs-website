@@ -101,13 +101,6 @@ export function useSportsData<T>(apiEndpoint: string): SportsDataHook<T> {
     enabled: !!apiEndpoint, // Only fetch if endpoint is provided
   });
 
-  if (queryResult.isError) {
-    log.error("Query failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Query successful", { count: queryResult.data.length });
-  }
 
   return {
     data: queryResult.data ?? null,

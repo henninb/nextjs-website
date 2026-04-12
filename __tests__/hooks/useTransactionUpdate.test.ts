@@ -6,7 +6,7 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 import { updateTransaction } from "../../hooks/useTransactionUpdate";
-import { HookValidator } from "../../utils/hookValidation";
+import { validateUpdate } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
 
@@ -30,11 +30,9 @@ jest.mock("../../components/AuthProvider", () => ({
 }));
 
 jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn(),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
+  validateInsert: jest.fn(),
+  validateUpdate: jest.fn((newData) => newData),
+  validateDelete: jest.fn(),
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
       super(message);
@@ -53,6 +51,7 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
+    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
   };
 });
 
@@ -62,7 +61,7 @@ jest.mock("../../utils/validation/sanitization", () => ({
   },
 }));
 
-const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
+const mockValidateUpdate = validateUpdate as jest.Mock;
 const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
   __mockLogger: {
     debug: jest.Mock;
@@ -111,7 +110,6 @@ describe("updateTransaction", () => {
     expect(result).toStrictEqual(apiResponse);
     expect(mockValidateUpdate).toHaveBeenCalledWith(
       newTransaction,
-      oldTransaction,
       expect.any(Function),
       "updateTransaction",
     );

@@ -3,9 +3,9 @@ import Category from "../model/Category";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateUpdate } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { updateInList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useCategoryUpdate");
@@ -23,9 +23,8 @@ export const updateCategory = async (
   newCategory: Category,
 ): Promise<Category> => {
   // Validate new category data
-  const validatedData = HookValidator.validateUpdate(
+  const validatedData = validateUpdate(
     newCategory,
-    oldCategory,
     DataValidator.validateCategory,
     "updateCategory",
   );
@@ -80,7 +79,7 @@ export default function useCategoryUpdate() {
         });
 
         // Use categoryId as stable identifier for cache updates
-        CacheUpdateStrategies.updateInList(
+        updateInList(
           queryClient,
           QueryKeys.category(),
           updatedCategory,

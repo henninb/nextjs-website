@@ -2,9 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import Parameter from "../model/Parameter";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateDelete } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { removeFromList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useParameterDelete");
@@ -20,7 +20,7 @@ export const deleteParameter = async (
   payload: Parameter,
 ): Promise<Parameter | null> => {
   // Validate that parameter name exists
-  HookValidator.validateDelete(payload, "parameterName", "deleteParameter");
+  validateDelete(payload, "parameterName", "deleteParameter");
 
   // Sanitize parameter name for URL
   const sanitizedParameterName = InputSanitizer.sanitizeParameterName(
@@ -62,7 +62,7 @@ export default function useParameterDelete() {
         });
 
         // Remove from cache using parameterName as identifier
-        CacheUpdateStrategies.removeFromList(
+        removeFromList(
           queryClient,
           QueryKeys.parameter(),
           variables,

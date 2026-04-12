@@ -33,13 +33,6 @@ export default function useDescriptionFetch() {
     fetchDescriptionData,
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched descriptions", { count: queryResult.data.length });
-  }
 
   return queryResult;
 }

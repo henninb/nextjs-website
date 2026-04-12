@@ -260,7 +260,7 @@ describe("Finance Pages - Accessibility Tests", () => {
       // Check that important elements have proper styling classes
       const addButton = screen.getByRole("button", { name: /add category/i });
       expect(addButton).toHaveClass(/MuiButton/);
-      expect(addButton).toHaveClass(/containedPrimary/);
+      expect(addButton).toHaveClass(/MuiButton-contained/);
     });
   });
 

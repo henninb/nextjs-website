@@ -62,9 +62,6 @@ export default function usePaymentFetchGql() {
     return mapped;
   });
 
-  if (queryResult.isError) {
-    log.error("Query failed", queryResult.error);
-  }
 
   return queryResult;
 }

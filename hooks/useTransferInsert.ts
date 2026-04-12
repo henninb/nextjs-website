@@ -3,8 +3,8 @@ import Transfer from "../model/Transfer";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { validateInsert } from "../utils/hookValidation";
+import { addToList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -37,7 +37,7 @@ export const insertTransfer = async (payload: Transfer): Promise<Transfer> => {
   );
 
   // Validate transfer data
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     payload,
     DataValidator.validateTransfer,
     "insertTransfer",
@@ -101,7 +101,7 @@ export default function useTransferInsert() {
             transferId: newTransfer.transferId,
           });
 
-          CacheUpdateStrategies.addToList(
+          addToList(
             queryClient,
             QueryKeys.transfer(),
             newTransfer,

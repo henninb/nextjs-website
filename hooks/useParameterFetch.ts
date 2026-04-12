@@ -30,13 +30,6 @@ const fetchParameterData = createQueryFn<Parameter[]>("/api/parameter/active", {
 export default function useParameterFetch() {
   const queryResult = usePublicQuery(QueryKeys.parameter(), fetchParameterData);
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched parameters", { count: queryResult.data.length });
-  }
 
   return queryResult;
 }

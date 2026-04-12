@@ -3,8 +3,8 @@ import Category from "../model/Category";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { validateInsert } from "../utils/hookValidation";
+import { addToList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -21,7 +21,7 @@ export const insertCategory = async (
   category: Category,
 ): Promise<Category | null> => {
   // Validate category data
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     category,
     DataValidator.validateCategory,
     "insertCategory",
@@ -69,7 +69,7 @@ export default function useCategoryInsert() {
             categoryName: newCategory.categoryName,
           });
 
-          CacheUpdateStrategies.addToList(
+          addToList(
             queryClient,
             QueryKeys.category(),
             newCategory,

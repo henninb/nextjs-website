@@ -60,7 +60,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log("[AI Categorization] API key check:", {
       hasKey: !!apiKey,
-      keyPrefix: apiKey?.substring(0, 8),
       isConfigured: isApiConfigured,
     });
 

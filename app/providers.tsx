@@ -1,16 +1,29 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import AuthProvider from "../components/AuthProvider";
 import { UIProvider } from "../contexts/UIContext";
 import { setupGlobalAPIs } from "../utils/globalSetup";
 import { getErrorMessage } from "../types";
+import { logger } from "../utils/logger";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        queryCache: new QueryCache({
+          onError: (error, query) => {
+            const key = String(query.queryKey[0] ?? "unknown");
+            logger.error(`[Query Error] ${key}`, error);
+          },
+        }),
+        mutationCache: new MutationCache({
+          onError: (error, _variables, _context, mutation) => {
+            const key = String(mutation.options.mutationKey?.[0] ?? "unknown");
+            logger.error(`[Mutation Error] ${key}`, error);
+          },
+        }),
         defaultOptions: {
           queries: {
             staleTime: 5 * 60 * 1000, // 5 minutes

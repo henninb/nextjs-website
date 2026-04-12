@@ -4,7 +4,7 @@ import { useAuth } from "../components/AuthProvider";
 import { useRouter } from "next/navigation";
 import User from "../model/User";
 import { fetchWithErrorHandling } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateInsert } from "../utils/hookValidation";
 import { DataValidator } from "../utils/validation";
 import { InputSanitizer } from "../utils/validation/sanitization";
 import { createHookLogger } from "../utils/logger";
@@ -21,7 +21,7 @@ const log = createHookLogger("useLoginProcess");
  */
 export const processLogin = async (payload: User): Promise<void> => {
   // Validate login credentials (without full insert validation)
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     payload,
     DataValidator.validateUser,
     "login",

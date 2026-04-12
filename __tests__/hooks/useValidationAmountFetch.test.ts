@@ -5,11 +5,9 @@
 
 // Mock HookValidator
 jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
+  validateInsert: jest.fn((data) => data),
+  validateUpdate: jest.fn((newData) => newData),
+  validateDelete: jest.fn(),
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
       super(message);
@@ -37,7 +35,6 @@ jest.mock("../../utils/validation", () => ({
 }));
 
 import { fetchValidationAmount } from "../../hooks/useValidationAmountFetch";
-import { HookValidator } from "../../utils/hookValidation";
 import ValidationAmount from "../../model/ValidationAmount";
 import {
   createFetchMock,

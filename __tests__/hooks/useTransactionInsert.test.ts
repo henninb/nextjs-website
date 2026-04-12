@@ -7,7 +7,7 @@ import {
   simulateNetworkError,
   createMockValidationUtils,
 } from "../../testHelpers";
-import { HookValidator } from "../../utils/hookValidation";
+import { validateInsert } from "../../utils/hookValidation";
 
 // Mock validation utilities
 // Mock HookValidator
@@ -22,11 +22,9 @@ jest.mock("../../utils/csrf", () => ({
 }));
 
 jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
+  validateInsert: jest.fn((data) => data),
+  validateUpdate: jest.fn((newData) => newData),
+  validateDelete: jest.fn(),
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
       super(message);
@@ -43,6 +41,7 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
+  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 jest.mock("../../utils/validation", () => ({
@@ -101,7 +100,7 @@ describe("Transaction Insert Functions", () => {
     notes: "Test notes",
   });
 
-  const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
+  const mockValidateInsert = validateInsert as jest.Mock;
   const mockGenerateSecureUUID = generateSecureUUID as jest.Mock;
 
   beforeEach(() => {

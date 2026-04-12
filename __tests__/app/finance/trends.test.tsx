@@ -352,9 +352,7 @@ describe("TrendsPage", () => {
     it("should have toggle for stacked category view", () => {
       render(<TrendsPage />, { wrapper: createWrapper() });
 
-      const stackedToggle = screen.getByRole("switch", {
-        name: /stacked view/i,
-      });
+      const stackedToggle = screen.getByLabelText(/stacked view/i);
       expect(stackedToggle).toBeInTheDocument();
 
       // Test toggle functionality
@@ -392,9 +390,7 @@ describe("TrendsPage", () => {
     it("should have toggle for excluding transfers", () => {
       render(<TrendsPage />, { wrapper: createWrapper() });
 
-      const transferToggle = screen.getByRole("switch", {
-        name: /exclude transfers/i,
-      });
+      const transferToggle = screen.getByLabelText(/exclude transfers/i);
       expect(transferToggle).toBeInTheDocument();
       expect(transferToggle).toBeChecked(); // Should be checked by default
     });
@@ -406,9 +402,7 @@ describe("TrendsPage", () => {
       const dateRangeSelect = screen.getByLabelText(/date range/i);
       expect(dateRangeSelect).toBeInTheDocument();
 
-      const transferToggle = screen.getByRole("switch", {
-        name: /exclude transfers/i,
-      });
+      const transferToggle = screen.getByLabelText(/exclude transfers/i);
 
       // Test toggle functionality
       fireEvent.click(transferToggle);

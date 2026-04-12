@@ -31,17 +31,6 @@ export default function useCategoryFetch() {
     fetchCategoryData,
   );
 
-  // Log errors (React Query v5 removed onError from queries)
-  if (queryResult.isError) {
-    log.error("Failed to fetch categories", queryResult.error);
-  }
-
-  // Log success in development
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Categories fetched successfully", {
-      count: queryResult.data.length,
-    });
-  }
 
   return queryResult;
 }

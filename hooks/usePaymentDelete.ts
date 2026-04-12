@@ -2,9 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import Payment from "../model/Payment";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateDelete } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { removeFromList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("usePaymentDelete");
@@ -18,7 +18,7 @@ const log = createHookLogger("usePaymentDelete");
  */
 export const deletePayment = async (payload: Payment): Promise<Payment> => {
   // Validate that payment ID exists
-  HookValidator.validateDelete(payload, "paymentId", "deletePayment");
+  validateDelete(payload, "paymentId", "deletePayment");
 
   // Sanitize payment ID for URL
   const sanitizedPaymentId = InputSanitizer.sanitizeNumericId(
@@ -61,7 +61,7 @@ export default function usePaymentDelete() {
         });
 
         // Remove from cache using paymentId as identifier
-        CacheUpdateStrategies.removeFromList(
+        removeFromList(
           queryClient,
           QueryKeys.payment(),
           variables.oldRow,

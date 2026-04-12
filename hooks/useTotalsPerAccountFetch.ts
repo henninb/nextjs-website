@@ -75,16 +75,6 @@ export default function useTotalsPerAccountFetch(accountNameOwner: string) {
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Query successful", {
-      accountNameOwner,
-      totals: queryResult.data.totals,
-    });
-  }
 
   return queryResult;
 }

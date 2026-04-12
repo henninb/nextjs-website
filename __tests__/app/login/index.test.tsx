@@ -164,7 +164,7 @@ describe("Login Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Invalid email or password."),
+        screen.getAllByText("Invalid email or password.")[0],
       ).toBeInTheDocument();
       // Only /api/login attempted
       expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -191,7 +191,7 @@ describe("Login Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("You don't have access to this account."),
+        screen.getAllByText("You don't have access to this account.")[0],
       ).toBeInTheDocument();
       expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(pushMock).not.toHaveBeenCalled();
@@ -215,9 +215,9 @@ describe("Login Page", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(
+        screen.getAllByText(
           "Unable to connect to the server. Please check your internet connection and try again.",
-        ),
+        )[0],
       ).toBeInTheDocument();
       expect(pushMock).not.toHaveBeenCalled();
     });

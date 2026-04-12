@@ -104,16 +104,6 @@ export default function useValidationAmountFetch(accountNameOwner: string) {
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Query successful", {
-      validationId: queryResult.data.validationId,
-      amount: queryResult.data.amount,
-    });
-  }
 
   return queryResult;
 }

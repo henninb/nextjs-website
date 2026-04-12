@@ -6,7 +6,7 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 import { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
-import { HookValidator } from "../../utils/hookValidation";
+import { validateInsert } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -29,11 +29,9 @@ function createMockLogger() {
 }
 
 jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((updated) => updated),
-    validateDelete: jest.fn(),
-  },
+  validateInsert: jest.fn((data) => data),
+  validateUpdate: jest.fn((updated) => updated),
+  validateDelete: jest.fn(),
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
       super(message);
@@ -47,6 +45,7 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
+    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
   };
 });
 
@@ -56,7 +55,7 @@ jest.mock("../../utils/validation", () => ({
   },
 }));
 
-const mockValidateInsert = HookValidator.validateInsert as jest.Mock;
+const mockValidateInsert = validateInsert as jest.Mock;
 const { __mockLogger: mockLogger } = jest.requireMock("../../utils/logger") as {
   __mockLogger: ReturnType<typeof createMockLogger>;
 };

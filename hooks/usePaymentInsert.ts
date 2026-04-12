@@ -3,9 +3,9 @@ import Payment from "../model/Payment";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateInsert } from "../utils/hookValidation";
 import { formatDateForInput } from "../components/Common";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { addToList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -47,7 +47,7 @@ export const insertPayment = async (payload: Payment): Promise<Payment> => {
   );
 
   // Validate payment data
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     payload,
     DataValidator.validatePayment,
     "insertPayment",
@@ -111,7 +111,7 @@ export default function usePaymentInsert() {
             paymentId: newPayment.paymentId,
           });
 
-          CacheUpdateStrategies.addToList(
+          addToList(
             queryClient,
             QueryKeys.payment(),
             newPayment,

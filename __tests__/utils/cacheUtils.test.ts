@@ -1,6 +1,11 @@
 import { QueryClient } from "@tanstack/react-query";
 import {
-  CacheUpdateStrategies,
+  addToList,
+  updateInList,
+  removeFromList,
+  invalidateRelated,
+  updateTotals,
+  clearCaches,
   QueryKeys,
   getAccountKey,
   getTotalsKey,
@@ -22,7 +27,7 @@ describe("cacheUtils", () => {
     queryClient.clear();
   });
 
-  describe("CacheUpdateStrategies.addToList", () => {
+  describe("addToList", () => {
     it("should add item to start of existing list", () => {
       const existingData = [
         { id: 1, name: "item1" },
@@ -32,7 +37,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.addToList(queryClient, ["test"], newItem, "start");
+      addToList(queryClient, ["test"], newItem, "start");
 
       const updatedData = queryClient.getQueryData(["test"]);
       expect(updatedData).toEqual([newItem, ...existingData]);
@@ -47,7 +52,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.addToList(queryClient, ["test"], newItem, "end");
+      addToList(queryClient, ["test"], newItem, "end");
 
       const updatedData = queryClient.getQueryData(["test"]);
       expect(updatedData).toEqual([...existingData, newItem]);
@@ -59,7 +64,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.addToList(queryClient, ["test"], newItem);
+      addToList(queryClient, ["test"], newItem);
 
       const updatedData = queryClient.getQueryData<typeof existingData>([
         "test",
@@ -70,7 +75,7 @@ describe("cacheUtils", () => {
     it("should create new array when no existing data", () => {
       const newItem = { id: 1, name: "item1" };
 
-      CacheUpdateStrategies.addToList(queryClient, ["test"], newItem);
+      addToList(queryClient, ["test"], newItem);
 
       const updatedData = queryClient.getQueryData(["test"]);
       expect(updatedData).toEqual([newItem]);
@@ -80,14 +85,14 @@ describe("cacheUtils", () => {
       const queryKey = QueryKeys.account();
       const newItem = { id: 1, name: "account1" };
 
-      CacheUpdateStrategies.addToList(queryClient, queryKey, newItem);
+      addToList(queryClient, queryKey, newItem);
 
       const updatedData = queryClient.getQueryData(queryKey);
       expect(updatedData).toEqual([newItem]);
     });
   });
 
-  describe("CacheUpdateStrategies.updateInList", () => {
+  describe("updateInList", () => {
     it("should update matching item in list", () => {
       const existingData = [
         { id: 1, name: "item1" },
@@ -98,7 +103,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.updateInList(
+      updateInList(
         queryClient,
         ["test"],
         updatedItem,
@@ -124,7 +129,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.updateInList(
+      updateInList(
         queryClient,
         ["test"],
         updatedItem,
@@ -141,7 +146,7 @@ describe("cacheUtils", () => {
       const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
       const updatedItem = { id: 1, name: "item1" };
 
-      CacheUpdateStrategies.updateInList(
+      updateInList(
         queryClient,
         ["test"],
         updatedItem,
@@ -160,7 +165,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.updateInList(
+      updateInList(
         queryClient,
         ["test"],
         updatedItem,
@@ -180,7 +185,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(queryKey, existingData);
 
-      CacheUpdateStrategies.updateInList(
+      updateInList(
         queryClient,
         queryKey,
         updatedItem,
@@ -192,7 +197,7 @@ describe("cacheUtils", () => {
     });
   });
 
-  describe("CacheUpdateStrategies.removeFromList", () => {
+  describe("removeFromList", () => {
     it("should remove matching item from list", () => {
       const existingData = [
         { id: 1, name: "item1" },
@@ -203,7 +208,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.removeFromList(
+      removeFromList(
         queryClient,
         ["test"],
         itemToRemove,
@@ -223,7 +228,7 @@ describe("cacheUtils", () => {
     it("should do nothing if no existing data", () => {
       const itemToRemove = { id: 1, name: "item1" };
 
-      CacheUpdateStrategies.removeFromList(
+      removeFromList(
         queryClient,
         ["test"],
         itemToRemove,
@@ -243,7 +248,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.removeFromList(
+      removeFromList(
         queryClient,
         ["test"],
         itemToRemove,
@@ -263,7 +268,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      CacheUpdateStrategies.removeFromList(
+      removeFromList(
         queryClient,
         ["test"],
         itemToRemove,
@@ -278,11 +283,11 @@ describe("cacheUtils", () => {
     });
   });
 
-  describe("CacheUpdateStrategies.invalidateRelated", () => {
+  describe("invalidateRelated", () => {
     it("should invalidate multiple query keys", () => {
       const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
-      CacheUpdateStrategies.invalidateRelated(queryClient, [
+      invalidateRelated(queryClient, [
         ["account"],
         ["category"],
         ["transaction", "chase_brian"],
@@ -299,7 +304,7 @@ describe("cacheUtils", () => {
     it("should handle empty array", () => {
       const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
-      CacheUpdateStrategies.invalidateRelated(queryClient, []);
+      invalidateRelated(queryClient, []);
 
       expect(invalidateSpy).not.toHaveBeenCalled();
     });
@@ -307,7 +312,7 @@ describe("cacheUtils", () => {
     it("should work with QueryKeys", () => {
       const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
-      CacheUpdateStrategies.invalidateRelated(queryClient, [
+      invalidateRelated(queryClient, [
         QueryKeys.account(),
         QueryKeys.category(),
         QueryKeys.totals("chase_brian"),
@@ -317,7 +322,7 @@ describe("cacheUtils", () => {
     });
   });
 
-  describe("CacheUpdateStrategies.updateTotals", () => {
+  describe("updateTotals", () => {
     it("should update existing totals", () => {
       const existingTotals = { total: 1000, count: 10 };
       const updateFn = (old: typeof existingTotals) => ({
@@ -328,7 +333,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["totals"], existingTotals);
 
-      CacheUpdateStrategies.updateTotals(queryClient, ["totals"], updateFn);
+      updateTotals(queryClient, ["totals"], updateFn);
 
       const updatedTotals = queryClient.getQueryData(["totals"]);
       expect(updatedTotals).toEqual({ total: 1100, count: 11 });
@@ -338,7 +343,7 @@ describe("cacheUtils", () => {
       const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
       const updateFn = jest.fn();
 
-      CacheUpdateStrategies.updateTotals(queryClient, ["totals"], updateFn);
+      updateTotals(queryClient, ["totals"], updateFn);
 
       expect(updateFn).not.toHaveBeenCalled();
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["totals"] });
@@ -354,7 +359,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["totals"], existingTotals);
 
-      CacheUpdateStrategies.updateTotals(queryClient, ["totals"], (old) => ({
+      updateTotals(queryClient, ["totals"], (old) => ({
         ...old,
         total: old.total + 100,
       }));
@@ -367,13 +372,13 @@ describe("cacheUtils", () => {
     });
   });
 
-  describe("CacheUpdateStrategies.clearCaches", () => {
+  describe("clearCaches", () => {
     it("should remove queries with specified prefixes", () => {
       queryClient.setQueryData(["account"], []);
       queryClient.setQueryData(["transaction"], []);
       queryClient.setQueryData(["category"], []);
 
-      CacheUpdateStrategies.clearCaches(queryClient, [
+      clearCaches(queryClient, [
         "account",
         "transaction",
       ]);
@@ -386,7 +391,7 @@ describe("cacheUtils", () => {
     it("should handle empty prefix array", () => {
       queryClient.setQueryData(["test"], []);
 
-      CacheUpdateStrategies.clearCaches(queryClient, []);
+      clearCaches(queryClient, []);
 
       expect(queryClient.getQueryData(["test"])).toEqual([]); // Still there
     });
@@ -396,7 +401,7 @@ describe("cacheUtils", () => {
       queryClient.setQueryData(["transaction", "chase_brian"], []);
       queryClient.setQueryData(["transaction", "category", "gas"], []);
 
-      CacheUpdateStrategies.clearCaches(queryClient, ["transaction"]);
+      clearCaches(queryClient, ["transaction"]);
 
       expect(queryClient.getQueryData(["transaction"])).toBeUndefined();
       // Note: removeQueries with prefix removes all nested queries
@@ -555,7 +560,7 @@ describe("cacheUtils", () => {
 
       // Insert new account
       const newAccount = { accountNameOwner: "savings_account", balance: 5000 };
-      CacheUpdateStrategies.addToList(
+      addToList(
         queryClient,
         QueryKeys.account(),
         newAccount,
@@ -584,7 +589,7 @@ describe("cacheUtils", () => {
 
       // Update transaction amount
       const updatedTransaction = { ...transactions[0], amount: 150 };
-      CacheUpdateStrategies.updateInList(
+      updateInList(
         queryClient,
         QueryKeys.transactionByAccount("chase_brian"),
         updatedTransaction,
@@ -592,7 +597,7 @@ describe("cacheUtils", () => {
       );
 
       // Update totals
-      CacheUpdateStrategies.updateTotals(
+      updateTotals(
         queryClient,
         QueryKeys.totals("chase_brian"),
         (old) => ({
@@ -621,7 +626,7 @@ describe("cacheUtils", () => {
 
       // Delete account
       const accountToDelete = accounts[0];
-      CacheUpdateStrategies.removeFromList(
+      removeFromList(
         queryClient,
         QueryKeys.account(),
         accountToDelete,
@@ -629,7 +634,7 @@ describe("cacheUtils", () => {
       );
 
       // Invalidate related queries
-      CacheUpdateStrategies.invalidateRelated(queryClient, [
+      invalidateRelated(queryClient, [
         QueryKeys.transactionByAccount("chase_brian"),
         QueryKeys.totals("chase_brian"),
       ]);

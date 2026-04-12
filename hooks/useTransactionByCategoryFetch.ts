@@ -61,16 +61,6 @@ export default function useTransactionByCategoryFetch(categoryName: string) {
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched transactions", {
-      categoryName,
-      count: queryResult.data.length,
-    });
-  }
 
   return queryResult;
 }

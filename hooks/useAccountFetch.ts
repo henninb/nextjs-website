@@ -31,17 +31,6 @@ export default function useAccountFetch() {
     fetchAccountData,
   );
 
-  // Log errors (React Query v5 removed onError from queries)
-  if (queryResult.isError) {
-    log.error("Failed to fetch accounts", queryResult.error);
-  }
-
-  // Log success in development
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Accounts fetched successfully", {
-      count: queryResult.data.length,
-    });
-  }
 
   return queryResult;
 }

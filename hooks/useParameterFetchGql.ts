@@ -50,9 +50,6 @@ export default function useParameterFetchGql() {
     return mapped;
   });
 
-  if (queryResult.isError) {
-    log.error("Query failed", queryResult.error);
-  }
 
   return queryResult;
 }

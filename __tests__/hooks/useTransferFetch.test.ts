@@ -29,6 +29,7 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
+    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
   };
 });
 
@@ -121,43 +122,4 @@ describe("useTransferFetch Modern Endpoint (unit)", () => {
     expect(result.current.error).toBe(fetchError);
   });
 
-  it("logs success metadata when data is returned", () => {
-    const transfers = [
-      createTestTransfer(),
-      createTestTransfer({ transferId: 2 }),
-    ];
-    mockUseAuthenticatedQuery.mockReturnValue({
-      data: transfers,
-      isLoading: false,
-      isError: false,
-      isSuccess: true,
-      error: null,
-    });
-
-    renderHook(() => useTransferFetch());
-
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      "Fetched transfers",
-      expect.objectContaining({ count: transfers.length }),
-    );
-  });
-
-  it("logs errors when query reports failure", () => {
-    const fetchError = new FetchError(
-      "Internal error",
-      500,
-      "Internal Server Error",
-    );
-    mockUseAuthenticatedQuery.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      isError: true,
-      isSuccess: false,
-      error: fetchError,
-    });
-
-    renderHook(() => useTransferFetch());
-
-    expect(mockLogger.error).toHaveBeenCalledWith("Fetch failed", fetchError);
-  });
 });

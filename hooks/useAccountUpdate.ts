@@ -4,8 +4,8 @@ import { DataValidator } from "../utils/validation";
 import { InputSanitizer } from "../utils/validation/sanitization";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
-import { QueryKeys, CacheUpdateStrategies } from "../utils/cacheUtils";
+import { validateUpdate } from "../utils/hookValidation";
+import { QueryKeys, updateInList } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useAccountUpdate");
@@ -25,9 +25,8 @@ export const updateAccount = async (
   newRow: Account,
 ): Promise<Account> => {
   // Validate new data
-  const validatedData = HookValidator.validateUpdate(
+  const validatedData = validateUpdate(
     newRow,
-    oldRow,
     DataValidator.validateAccount,
     "updateAccount",
   );
@@ -130,7 +129,7 @@ export default function useAccountUpdate() {
         });
 
         // Optimistically update cache using accountId as stable identifier
-        CacheUpdateStrategies.updateInList(
+        updateInList(
           queryClient,
           QueryKeys.account(),
           response,

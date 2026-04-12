@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import User from "../model/User";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateInsert } from "../utils/hookValidation";
 import { DataValidator } from "../utils/validation";
 import { QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
@@ -20,7 +20,7 @@ export const userAccountRegister = async (
   payload: User,
 ): Promise<User | null> => {
   // Validate user registration data
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     payload,
     DataValidator.validateUser,
     "userAccountRegister",

@@ -3,8 +3,8 @@ import Description from "../model/Description";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { validateInsert } from "../utils/hookValidation";
+import { addToList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -25,7 +25,7 @@ export const insertDescription = async (
   const descriptionData = { descriptionName, activeStatus: true, owner };
 
   // Validate description data
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     descriptionData,
     DataValidator.validateDescription,
     "insertDescription",
@@ -71,7 +71,7 @@ export default function useDescriptionInsert() {
             descriptionName: newDescription.descriptionName,
           });
 
-          CacheUpdateStrategies.addToList(
+          addToList(
             queryClient,
             QueryKeys.description(),
             newDescription,

@@ -2,9 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import Description from "../model/Description";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateDelete } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { removeFromList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useDescriptionDelete");
@@ -20,7 +20,7 @@ export const deleteDescription = async (
   oldRow: Description,
 ): Promise<Description | null> => {
   // Validate that description name exists
-  HookValidator.validateDelete(oldRow, "descriptionName", "deleteDescription");
+  validateDelete(oldRow, "descriptionName", "deleteDescription");
 
   // Sanitize description name for URL
   const sanitizedDescriptionName = InputSanitizer.sanitizeDescription(
@@ -64,7 +64,7 @@ export default function useDescriptionDelete() {
         });
 
         // Remove from cache using descriptionName as identifier
-        CacheUpdateStrategies.removeFromList(
+        removeFromList(
           queryClient,
           QueryKeys.description(),
           variables,

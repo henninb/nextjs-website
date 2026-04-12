@@ -10,11 +10,9 @@ jest.mock("../../utils/csrf", () => ({
 }));
 
 jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
+  validateInsert: jest.fn((data) => data),
+  validateUpdate: jest.fn((newData) => newData),
+  validateDelete: jest.fn(),
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
       super(message);
@@ -31,6 +29,7 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
+  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 import Account from "../../model/Account";
@@ -42,7 +41,7 @@ import {
 } from "../../testHelpers";
 
 import { updateAccount } from "../../hooks/useAccountUpdate";
-import { HookValidator } from "../../utils/hookValidation";
+import { validateUpdate } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -79,7 +78,7 @@ describe("updateAccount", () => {
     outstanding: 150,
   });
 
-  const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
+  const mockValidateUpdate = validateUpdate as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();

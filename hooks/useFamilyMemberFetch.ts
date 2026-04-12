@@ -60,13 +60,6 @@ export default function useFamilyMemberFetch() {
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched family members", { count: queryResult.data.length });
-  }
 
   return queryResult;
 }

@@ -50,9 +50,6 @@ export default function useCategoryFetchGql() {
     return mapped;
   });
 
-  if (queryResult.isError) {
-    log.error("Query failed", queryResult.error);
-  }
 
   return queryResult;
 }

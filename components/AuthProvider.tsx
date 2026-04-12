@@ -134,7 +134,7 @@ const useProvideAuth = () => {
       }
     }
     fetchUser();
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pathname, clearSession, setSessionExpiry]);
 
   // Session expiry check interval
   useEffect(() => {

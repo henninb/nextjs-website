@@ -10,11 +10,9 @@ jest.mock("../../utils/csrf", () => ({
 }));
 
 jest.mock("../../utils/hookValidation", () => ({
-  HookValidator: {
-    validateInsert: jest.fn((data) => data),
-    validateUpdate: jest.fn((newData) => newData),
-    validateDelete: jest.fn(),
-  },
+  validateInsert: jest.fn((data) => data),
+  validateUpdate: jest.fn((newData) => newData),
+  validateDelete: jest.fn(),
   HookValidationError: class HookValidationError extends Error {
     constructor(message: string) {
       super(message);
@@ -31,6 +29,7 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
+  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 // Mock validation utilities
@@ -51,7 +50,7 @@ import {
 } from "../../testHelpers";
 
 import { updatePayment } from "../../hooks/usePaymentUpdate";
-import { HookValidator } from "../../utils/hookValidation";
+import { validateUpdate } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -64,7 +63,7 @@ jest.mock("../../components/AuthProvider", () => ({
   }),
 }));
 
-const mockValidateUpdate = HookValidator.validateUpdate as jest.Mock;
+const mockValidateUpdate = validateUpdate as jest.Mock;
 
 // Mock window globally for isolated testing
 (global as any).window = {

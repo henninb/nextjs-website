@@ -106,9 +106,6 @@ export default function useAccountFetchGql() {
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Query failed", queryResult.error);
-  }
 
   return queryResult;
 }

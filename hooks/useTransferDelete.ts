@@ -2,9 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import Transfer from "../model/Transfer";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateDelete } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { removeFromList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useTransferDelete");
@@ -18,7 +18,7 @@ const log = createHookLogger("useTransferDelete");
  */
 export const deleteTransfer = async (payload: Transfer): Promise<Transfer> => {
   // Validate that transfer ID exists
-  HookValidator.validateDelete(payload, "transferId", "deleteTransfer");
+  validateDelete(payload, "transferId", "deleteTransfer");
 
   // Sanitize transfer ID for URL
   const sanitizedTransferId = InputSanitizer.sanitizeNumericId(
@@ -61,7 +61,7 @@ export default function useTransferDelete() {
         });
 
         // Remove from cache using transferId as identifier
-        CacheUpdateStrategies.removeFromList(
+        removeFromList(
           queryClient,
           QueryKeys.transfer(),
           variables.oldRow,

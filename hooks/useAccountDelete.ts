@@ -3,8 +3,8 @@ import Account from "../model/Account";
 import { InputSanitizer } from "../utils/validation/sanitization";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
-import { QueryKeys, CacheUpdateStrategies } from "../utils/cacheUtils";
+import { validateDelete } from "../utils/hookValidation";
+import { QueryKeys, removeFromList } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useAccountDelete");
@@ -22,7 +22,7 @@ export const deleteAccount = async (
   payload: Account,
 ): Promise<Account | null> => {
   // Validate that account identifier exists
-  HookValidator.validateDelete(payload, "accountNameOwner", "deleteAccount");
+  validateDelete(payload, "accountNameOwner", "deleteAccount");
 
   // Sanitize account name for URL
   const sanitizedAccountName = InputSanitizer.sanitizeAccountName(
@@ -79,7 +79,7 @@ export default function useAccountDelete() {
         });
 
         // Optimistically remove from cache
-        CacheUpdateStrategies.removeFromList(
+        removeFromList(
           queryClient,
           QueryKeys.account(),
           variables.oldRow,

@@ -1,197 +1,194 @@
 import { QueryClient } from "@tanstack/react-query";
 
 /**
- * Cache update strategies for React Query
- * Provides reusable patterns for optimistic updates and cache invalidation
+ * Optimistically add item to list cache
+ * Use for: Insert operations
+ *
+ * @param queryClient - React Query client instance
+ * @param queryKey - Cache key for the list
+ * @param newItem - Item to add to the list
+ * @param position - Where to add the item (start or end)
+ *
+ * @example
+ * ```typescript
+ * addToList(
+ *   queryClient,
+ *   ["account"],
+ *   newAccount,
+ *   "start"
+ * );
+ * ```
  */
-export class CacheUpdateStrategies {
-  /**
-   * Optimistically add item to list cache
-   * Use for: Insert operations
-   *
-   * @param queryClient - React Query client instance
-   * @param queryKey - Cache key for the list
-   * @param newItem - Item to add to the list
-   * @param position - Where to add the item (start or end)
-   *
-   * @example
-   * ```typescript
-   * CacheUpdateStrategies.addToList(
-   *   queryClient,
-   *   ["account"],
-   *   newAccount,
-   *   "start"
-   * );
-   * ```
-   */
-  static addToList<T>(
-    queryClient: QueryClient,
-    queryKey: readonly unknown[],
-    newItem: T,
-    position: "start" | "end" = "start",
-  ): void {
-    const oldData = queryClient.getQueryData<T[]>(queryKey);
+export function addToList<T>(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  newItem: T,
+  position: "start" | "end" = "start",
+): void {
+  const oldData = queryClient.getQueryData<T[]>(queryKey);
 
-    if (oldData) {
-      const newData =
-        position === "start" ? [newItem, ...oldData] : [...oldData, newItem];
-      queryClient.setQueryData(queryKey, newData);
-    } else {
-      // No existing data - create new array with single item
-      queryClient.setQueryData(queryKey, [newItem]);
-    }
+  if (oldData) {
+    const newData =
+      position === "start" ? [newItem, ...oldData] : [...oldData, newItem];
+    queryClient.setQueryData(queryKey, newData);
+  } else {
+    // No existing data - create new array with single item
+    queryClient.setQueryData(queryKey, [newItem]);
   }
+}
 
-  /**
-   * Optimistically update item in list cache
-   * Use for: Update operations (same entity)
-   *
-   * @param queryClient - React Query client instance
-   * @param queryKey - Cache key for the list
-   * @param updatedItem - Updated item
-   * @param idKey - Key used to identify items (e.g., "accountId")
-   *
-   * @example
-   * ```typescript
-   * CacheUpdateStrategies.updateInList(
-   *   queryClient,
-   *   ["account"],
-   *   updatedAccount,
-   *   "accountNameOwner"
-   * );
-   * ```
-   */
-  static updateInList<T extends object>(
-    queryClient: QueryClient,
-    queryKey: readonly unknown[],
-    updatedItem: T,
-    idKey: keyof T,
-  ): void {
-    const oldData = queryClient.getQueryData<T[]>(queryKey);
+/**
+ * Optimistically update item in list cache
+ * Use for: Update operations (same entity)
+ *
+ * @param queryClient - React Query client instance
+ * @param queryKey - Cache key for the list
+ * @param updatedItem - Updated item
+ * @param idKey - Key used to identify items (e.g., "accountId")
+ *
+ * @example
+ * ```typescript
+ * updateInList(
+ *   queryClient,
+ *   ["account"],
+ *   updatedAccount,
+ *   "accountNameOwner"
+ * );
+ * ```
+ */
+export function updateInList<T extends object>(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  updatedItem: T,
+  idKey: keyof T,
+): void {
+  const oldData = queryClient.getQueryData<T[]>(queryKey);
 
-    if (oldData) {
-      const newData = oldData.map((item) =>
-        item[idKey] === updatedItem[idKey] ? updatedItem : item,
-      );
-      queryClient.setQueryData(queryKey, newData);
-    } else {
-      // No existing data - invalidate to trigger refetch
-      queryClient.invalidateQueries({ queryKey });
-    }
+  if (oldData) {
+    const newData = oldData.map((item) =>
+      item[idKey] === updatedItem[idKey] ? updatedItem : item,
+    );
+    queryClient.setQueryData(queryKey, newData);
+  } else {
+    // No existing data - invalidate to trigger refetch
+    queryClient.invalidateQueries({ queryKey });
   }
+}
 
-  /**
-   * Optimistically remove item from list cache
-   * Use for: Delete operations
-   *
-   * @param queryClient - React Query client instance
-   * @param queryKey - Cache key for the list
-   * @param itemToRemove - Item to remove
-   * @param idKey - Key used to identify items
-   *
-   * @example
-   * ```typescript
-   * CacheUpdateStrategies.removeFromList(
-   *   queryClient,
-   *   ["account"],
-   *   accountToDelete,
-   *   "accountNameOwner"
-   * );
-   * ```
-   */
-  static removeFromList<T extends object>(
-    queryClient: QueryClient,
-    queryKey: readonly unknown[],
-    itemToRemove: T,
-    idKey: keyof T,
-  ): void {
-    const oldData = queryClient.getQueryData<T[]>(queryKey);
+/**
+ * Optimistically remove item from list cache
+ * Use for: Delete operations
+ *
+ * @param queryClient - React Query client instance
+ * @param queryKey - Cache key for the list
+ * @param itemToRemove - Item to remove
+ * @param idKey - Key used to identify items
+ *
+ * @example
+ * ```typescript
+ * removeFromList(
+ *   queryClient,
+ *   ["account"],
+ *   accountToDelete,
+ *   "accountNameOwner"
+ * );
+ * ```
+ */
+export function removeFromList<T extends object>(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  itemToRemove: T,
+  idKey: keyof T,
+): void {
+  const oldData = queryClient.getQueryData<T[]>(queryKey);
 
-    if (oldData) {
-      const newData = oldData.filter(
-        (item) => item[idKey] !== itemToRemove[idKey],
-      );
-      queryClient.setQueryData(queryKey, newData);
-    }
+  if (oldData) {
+    const newData = oldData.filter(
+      (item) => item[idKey] !== itemToRemove[idKey],
+    );
+    queryClient.setQueryData(queryKey, newData);
   }
+}
 
-  /**
-   * Invalidate related queries
-   * Use for: Cross-entity updates, complex updates
-   *
-   * @param queryClient - React Query client instance
-   * @param queryKeys - Array of query keys to invalidate
-   *
-   * @example
-   * ```typescript
-   * CacheUpdateStrategies.invalidateRelated(queryClient, [
-   *   ["account"],
-   *   ["totals", "chase_brian"],
-   * ]);
-   * ```
-   */
-  static invalidateRelated(
-    queryClient: QueryClient,
-    queryKeys: readonly (readonly unknown[])[],
-  ): void {
-    queryKeys.forEach((key) => {
-      queryClient.invalidateQueries({ queryKey: key });
-    });
+/**
+ * Invalidate related queries
+ * Use for: Cross-entity updates, complex updates
+ *
+ * @param queryClient - React Query client instance
+ * @param queryKeys - Array of query keys to invalidate
+ *
+ * @example
+ * ```typescript
+ * invalidateRelated(queryClient, [
+ *   ["account"],
+ *   ["totals", "chase_brian"],
+ * ]);
+ * ```
+ */
+export function invalidateRelated(
+  queryClient: QueryClient,
+  queryKeys: readonly (readonly unknown[])[],
+): void {
+  queryKeys.forEach((key) => {
+    queryClient.invalidateQueries({ queryKey: key });
+  });
+}
+
+/**
+ * Update aggregate/totals cache
+ * Use for: Financial totals after transaction changes
+ *
+ * @param queryClient - React Query client instance
+ * @param queryKey - Cache key for totals
+ * @param updateFn - Function to update totals (receives old totals)
+ *
+ * @example
+ * ```typescript
+ * updateTotals(
+ *   queryClient,
+ *   ["totals", "chase_brian"],
+ *   (oldTotals) => ({
+ *     ...oldTotals,
+ *     totals: oldTotals.totals + amountDifference,
+ *   })
+ * );
+ * ```
+ */
+export function updateTotals<T>(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  updateFn: (oldTotals: T) => T,
+): void {
+  const oldTotals = queryClient.getQueryData<T>(queryKey);
+
+  if (oldTotals) {
+    const newTotals = updateFn(oldTotals);
+    queryClient.setQueryData(queryKey, newTotals);
+  } else {
+    // No cached data - invalidate to trigger refetch
+    queryClient.invalidateQueries({ queryKey });
   }
+}
 
-  /**
-   * Update aggregate/totals cache
-   * Use for: Financial totals after transaction changes
-   *
-   * @param queryClient - React Query client instance
-   * @param queryKey - Cache key for totals
-   * @param updateFn - Function to update totals (receives old totals)
-   *
-   * @example
-   * ```typescript
-   * CacheUpdateStrategies.updateTotals(
-   *   queryClient,
-   *   ["totals", "chase_brian"],
-   *   (oldTotals) => ({
-   *     ...oldTotals,
-   *     totals: oldTotals.totals + amountDifference,
-   *   })
-   * );
-   * ```
-   */
-  static updateTotals<T>(
-    queryClient: QueryClient,
-    queryKey: readonly unknown[],
-    updateFn: (oldTotals: T) => T,
-  ): void {
-    const oldTotals = queryClient.getQueryData<T>(queryKey);
-
-    if (oldTotals) {
-      const newTotals = updateFn(oldTotals);
-      queryClient.setQueryData(queryKey, newTotals);
-    } else {
-      // No cached data - invalidate to trigger refetch
-      queryClient.invalidateQueries({ queryKey });
-    }
-  }
-
-  /**
-   * Clear all related caches
-   * Use for: Logout, major data changes
-   *
-   * @param queryClient - React Query client instance
-   * @param prefixes - Array of key prefixes to clear (e.g., ["account", "transaction"])
-   *
-   * @example
-   * ```typescript
-   * CacheUpdateStrategies.clearCaches(queryClient, ["account", "transaction"]);
-   * ```
-   */
-  static clearCaches(queryClient: QueryClient, prefixes: string[]): void {
-    prefixes.forEach((prefix) => {
-      queryClient.removeQueries({ queryKey: [prefix] });
-    });
-  }
+/**
+ * Clear all related caches
+ * Use for: Logout, major data changes
+ *
+ * @param queryClient - React Query client instance
+ * @param prefixes - Array of key prefixes to clear (e.g., ["account", "transaction"])
+ *
+ * @example
+ * ```typescript
+ * clearCaches(queryClient, ["account", "transaction"]);
+ * ```
+ */
+export function clearCaches(
+  queryClient: QueryClient,
+  prefixes: string[],
+): void {
+  prefixes.forEach((prefix) => {
+    queryClient.removeQueries({ queryKey: [prefix] });
+  });
 }
 
 /**

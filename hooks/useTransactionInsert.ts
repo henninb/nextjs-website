@@ -5,7 +5,7 @@ import { DataValidator } from "../utils/validation";
 import { generateSecureUUID } from "../utils/security/secureUUID";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateInsert } from "../utils/hookValidation";
 import { getAccountKey, getTotalsKey } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
@@ -84,7 +84,7 @@ export const insertTransaction = async (
   isImportTransaction: boolean,
 ): Promise<Transaction> => {
   // Validate transaction data
-  const validatedData = HookValidator.validateInsert(
+  const validatedData = validateInsert(
     payload,
     DataValidator.validateTransaction,
     "insertTransaction",

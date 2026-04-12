@@ -96,19 +96,6 @@ export default function useTransactionByAccountFetchPaged(
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched paginated transactions", {
-      accountNameOwner,
-      page,
-      size,
-      totalElements: queryResult.data.totalElements,
-      numberOfElements: queryResult.data.numberOfElements,
-    });
-  }
 
   return queryResult;
 }

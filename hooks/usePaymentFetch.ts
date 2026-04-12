@@ -30,13 +30,6 @@ const fetchPaymentData = createQueryFn<Payment[]>("/api/payment/active", {
 export default function usePaymentFetch() {
   const queryResult = usePublicQuery(QueryKeys.payment(), fetchPaymentData);
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched payments", { count: queryResult.data.length });
-  }
 
   return queryResult;
 }

@@ -3,7 +3,7 @@ import Parameter from "../model/Parameter";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { updateInList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useParameterUpdate");
@@ -76,7 +76,7 @@ export default function useParameterUpdate() {
         });
 
         // Use parameterId as stable identifier for cache updates
-        CacheUpdateStrategies.updateInList(
+        updateInList(
           queryClient,
           QueryKeys.parameter(),
           updatedParameter,

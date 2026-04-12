@@ -4,9 +4,9 @@ import Transaction from "../model/Transaction";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateUpdate } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { updateInList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("usePaymentUpdate");
@@ -33,9 +33,8 @@ export const updatePayment = async (
   );
 
   // Validate new payment data
-  const validatedData = HookValidator.validateUpdate(
+  const validatedData = validateUpdate(
     newPayment,
-    oldPayment,
     DataValidator.validatePayment,
     "updatePayment",
   );
@@ -103,7 +102,7 @@ export default function usePaymentUpdate() {
         });
 
         // Update payment in cache using paymentId as stable identifier
-        CacheUpdateStrategies.updateInList(
+        updateInList(
           queryClient,
           QueryKeys.payment(),
           updatedPayment,

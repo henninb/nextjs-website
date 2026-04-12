@@ -3,7 +3,7 @@ import Transaction from "../model/Transaction";
 import Totals from "../model/Totals";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateDelete } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
 import { getAccountKey, getTotalsKey } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
@@ -21,7 +21,7 @@ export const deleteTransaction = async (
   payload: Transaction,
 ): Promise<Transaction> => {
   // Validate that GUID exists
-  HookValidator.validateDelete(payload, "guid", "deleteTransaction");
+  validateDelete(payload, "guid", "deleteTransaction");
 
   // Sanitize GUID for URL
   const sanitizedGuid = InputSanitizer.sanitizeGuid(payload.guid);

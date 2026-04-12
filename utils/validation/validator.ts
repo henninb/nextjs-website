@@ -34,7 +34,7 @@ export class DataValidator {
   static validateUser(data: unknown): ValidationResult<User> {
     try {
       // First sanitize the input
-      const sanitizedData = sanitize.user(data);
+      const sanitizedData = sanitize.user(data as Record<string, unknown>);
 
       // Then validate with schema
       const result = validateSchema(UserSchema, sanitizedData);
@@ -64,7 +64,7 @@ export class DataValidator {
    */
   static validateAccount(data: unknown): ValidationResult<Account> {
     try {
-      const sanitizedData = sanitize.account(data);
+      const sanitizedData = sanitize.account(data as Record<string, unknown>);
       const result = validateSchema(AccountSchema, sanitizedData);
 
       if (!result.success) {
@@ -92,7 +92,7 @@ export class DataValidator {
    */
   static validateTransaction(data: unknown): ValidationResult<Transaction> {
     try {
-      const sanitizedData = sanitize.transaction(data);
+      const sanitizedData = sanitize.transaction(data as Record<string, unknown>);
 
       // Additional financial boundary checks
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -132,7 +132,7 @@ export class DataValidator {
   static validatePayment(data: unknown): ValidationResult<Payment> {
     try {
       logger.debug("[validator.ts] validatePayment INPUT", { data });
-      const sanitizedData = sanitize.payment(data);
+      const sanitizedData = sanitize.payment(data as Record<string, unknown>);
       logger.debug("[validator.ts] validatePayment SANITIZED", { sanitizedData });
 
       // Additional checks for payments
@@ -194,7 +194,7 @@ export class DataValidator {
   static validateTransfer(data: unknown): ValidationResult<Transfer> {
     try {
       logger.debug("[validator.ts] validateTransfer INPUT", { data });
-      const sanitizedData = sanitize.transfer(data);
+      const sanitizedData = sanitize.transfer(data as Record<string, unknown>);
       logger.debug("[validator.ts] validateTransfer SANITIZED", { sanitizedData });
 
       // Additional checks for transfers
@@ -255,7 +255,7 @@ export class DataValidator {
    */
   static validateCategory(data: unknown): ValidationResult<Category> {
     try {
-      const sanitizedData = sanitize.category(data);
+      const sanitizedData = sanitize.category(data as Record<string, unknown>);
       const result = validateSchema(CategorySchema, sanitizedData);
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);
@@ -281,7 +281,7 @@ export class DataValidator {
    */
   static validateDescription(data: unknown): ValidationResult<Description> {
     try {
-      const sanitizedData = sanitize.description(data);
+      const sanitizedData = sanitize.description(data as Record<string, unknown>);
       const result = validateSchema(DescriptionSchema, sanitizedData);
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);

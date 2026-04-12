@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import PendingTransaction from "../model/PendingTransaction";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { addToList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -70,7 +70,7 @@ export default function usePendingTransactionInsert() {
         });
 
         // Add new transaction to start of list
-        CacheUpdateStrategies.addToList(
+        addToList(
           queryClient,
           QueryKeys.pendingTransaction(),
           newTransaction,

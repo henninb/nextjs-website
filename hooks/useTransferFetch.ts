@@ -33,13 +33,6 @@ export default function useTransferFetch() {
     fetchTransferData,
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Fetched transfers", { count: queryResult.data.length });
-  }
 
   return queryResult;
 }

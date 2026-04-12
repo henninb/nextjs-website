@@ -3,9 +3,9 @@ import Transfer from "../model/Transfer";
 import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
+import { validateUpdate } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { updateInList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useTransferUpdate");
@@ -23,9 +23,8 @@ export const updateTransfer = async (
   newTransfer: Transfer,
 ): Promise<Transfer> => {
   // Validate new transfer data
-  const validatedData = HookValidator.validateUpdate(
+  const validatedData = validateUpdate(
     newTransfer,
-    oldTransfer,
     DataValidator.validateTransfer,
     "updateTransfer",
   );
@@ -82,7 +81,7 @@ export default function useTransferUpdate() {
         });
 
         // Update transfer in cache using transferId as stable identifier
-        CacheUpdateStrategies.updateInList(
+        updateInList(
           queryClient,
           QueryKeys.transfer(),
           updatedTransfer,

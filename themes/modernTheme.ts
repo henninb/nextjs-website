@@ -1,6 +1,7 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, Theme } from "@mui/material/styles";
+import type {} from "@mui/x-data-grid/themeAugmentation";
 
-export const modernTheme = createTheme({
+export const modernTheme: Theme = createTheme({
   palette: {
     mode: "dark",
     primary: {

@@ -3,8 +3,8 @@ import Account from "../model/Account";
 import { InputSanitizer } from "../utils/validation/sanitization";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
-import { HookValidator } from "../utils/hookValidation";
-import { QueryKeys, CacheUpdateStrategies } from "../utils/cacheUtils";
+import { validateDelete } from "../utils/hookValidation";
+import { QueryKeys, updateInList } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useAccountDeactivate");
@@ -22,7 +22,7 @@ export const deactivateAccount = async (
   payload: Account,
 ): Promise<Account | null> => {
   // Validate that account identifier exists
-  HookValidator.validateDelete(
+  validateDelete(
     payload,
     "accountNameOwner",
     "deactivateAccount",
@@ -84,7 +84,7 @@ export default function useAccountDeactivate() {
 
         // Update the account in cache with deactivated status
         if (data) {
-          CacheUpdateStrategies.updateInList(
+          updateInList(
             queryClient,
             QueryKeys.account(),
             data,

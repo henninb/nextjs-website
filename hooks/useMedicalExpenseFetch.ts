@@ -64,13 +64,6 @@ export default function useMedicalExpenseFetch() {
     },
   );
 
-  if (queryResult.isError) {
-    log.error("Fetch failed", queryResult.error);
-  }
-
-  if (queryResult.isSuccess && queryResult.data) {
-    log.debug("Query successful", { count: queryResult.data.length });
-  }
 
   return queryResult;
 }

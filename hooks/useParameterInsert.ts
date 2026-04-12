@@ -3,7 +3,7 @@ import Parameter from "../model/Parameter";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { addToList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -71,7 +71,7 @@ export default function useParameterInsert() {
             parameterName: newParameter.parameterName,
           });
 
-          CacheUpdateStrategies.addToList(
+          addToList(
             queryClient,
             QueryKeys.parameter(),
             newParameter,

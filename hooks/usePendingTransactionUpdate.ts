@@ -3,7 +3,7 @@ import PendingTransaction from "../model/PendingTransaction";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { CacheUpdateStrategies, QueryKeys } from "../utils/cacheUtils";
+import { updateInList, QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("usePendingTransactionUpdate");
@@ -73,7 +73,7 @@ export default function usePendingTransactionUpdate() {
         });
 
         // Update transaction in cache
-        CacheUpdateStrategies.updateInList(
+        updateInList(
           queryClient,
           QueryKeys.pendingTransaction(),
           updatedTransaction,

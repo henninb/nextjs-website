@@ -400,7 +400,7 @@ export class InputSanitizer {
    * Sanitize boolean value
    * Converts various truthy/falsy values to boolean
    */
-  static sanitizeBoolean(input: any): boolean {
+  static sanitizeBoolean(input: unknown): boolean {
     if (typeof input === "boolean") return input;
     if (typeof input === "string") {
       const lower = input.toLowerCase().trim();
@@ -415,167 +415,141 @@ export class InputSanitizer {
  * Comprehensive sanitization for different data types
  */
 export const sanitize = {
-  user: (data: any) => ({
-    userId: data.userId ? parseInt(data.userId) : undefined,
-    username: InputSanitizer.sanitizeUsername(data.username),
-    password: InputSanitizer.sanitizePassword(data.password),
+  user: (data: Record<string, unknown>) => ({
+    userId: data.userId ? parseInt(String(data.userId)) : undefined,
+    username: InputSanitizer.sanitizeUsername(String(data.username ?? "")),
+    password: InputSanitizer.sanitizePassword(String(data.password ?? "")),
     firstName: data.firstName
-      ? InputSanitizer.sanitizeText(data.firstName)
+      ? InputSanitizer.sanitizeText(String(data.firstName))
       : undefined,
     lastName: data.lastName
-      ? InputSanitizer.sanitizeText(data.lastName)
+      ? InputSanitizer.sanitizeText(String(data.lastName))
       : undefined,
   }),
 
-  account: (data: any) => ({
-    accountId: data.accountId ? parseInt(data.accountId) : undefined,
-    accountNameOwner: InputSanitizer.sanitizeAccountName(data.accountNameOwner),
-    accountType: InputSanitizer.sanitizeText(data.accountType),
-    activeStatus: Boolean(data.activeStatus),
-    moniker: InputSanitizer.sanitizeText(data.moniker),
-    outstanding: InputSanitizer.sanitizeAmount(data.outstanding),
-    future: InputSanitizer.sanitizeAmount(data.future),
-    cleared: InputSanitizer.sanitizeAmount(data.cleared),
+  account: (data: Record<string, unknown>) => ({
+    accountId: data.accountId ? parseInt(String(data.accountId)) : undefined,
+    accountNameOwner: InputSanitizer.sanitizeAccountName(String(data.accountNameOwner ?? "")),
+    accountType: InputSanitizer.sanitizeText(String(data.accountType ?? "")),
+    activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus),
+    moniker: InputSanitizer.sanitizeText(String(data.moniker ?? "")),
+    outstanding: InputSanitizer.sanitizeAmount(data.outstanding as number | string),
+    future: InputSanitizer.sanitizeAmount(data.future as number | string),
+    cleared: InputSanitizer.sanitizeAmount(data.cleared as number | string),
     dateClosed: data.dateClosed
-      ? InputSanitizer.sanitizeDate(data.dateClosed)
+      ? InputSanitizer.sanitizeDate(data.dateClosed as string | Date)
       : new Date(0).toISOString(), // Default to January 1, 1970 for non-closed accounts
     validationDate: data.validationDate
-      ? InputSanitizer.sanitizeDate(data.validationDate)
+      ? InputSanitizer.sanitizeDate(data.validationDate as string | Date)
       : undefined,
     dateAdded: data.dateAdded
-      ? InputSanitizer.sanitizeDate(data.dateAdded)
+      ? InputSanitizer.sanitizeDate(data.dateAdded as string | Date)
       : undefined,
     dateUpdated: data.dateUpdated
-      ? InputSanitizer.sanitizeDate(data.dateUpdated)
+      ? InputSanitizer.sanitizeDate(data.dateUpdated as string | Date)
       : undefined,
   }),
 
-  transaction: (data: any) => ({
+  transaction: (data: Record<string, unknown>) => ({
     transactionId: data.transactionId
-      ? parseInt(data.transactionId)
+      ? parseInt(String(data.transactionId))
       : undefined,
-    guid: data.guid ? InputSanitizer.sanitizeGuid(data.guid) : undefined,
-    accountId: data.accountId ? parseInt(data.accountId) : undefined,
-    accountType: InputSanitizer.sanitizeText(data.accountType),
-    accountNameOwner: InputSanitizer.sanitizeAccountName(data.accountNameOwner),
-    transactionDate: InputSanitizer.sanitizeDate(data.transactionDate),
-    description: InputSanitizer.sanitizeDescription(data.description),
-    category: InputSanitizer.sanitizeCategory(data.category),
-    amount: InputSanitizer.sanitizeAmount(data.amount),
-    transactionState: InputSanitizer.sanitizeText(data.transactionState),
+    guid: data.guid ? InputSanitizer.sanitizeGuid(String(data.guid)) : undefined,
+    accountId: data.accountId ? parseInt(String(data.accountId)) : undefined,
+    accountType: InputSanitizer.sanitizeText(String(data.accountType ?? "")),
+    accountNameOwner: InputSanitizer.sanitizeAccountName(String(data.accountNameOwner ?? "")),
+    transactionDate: InputSanitizer.sanitizeDate(data.transactionDate as string | Date),
+    description: InputSanitizer.sanitizeDescription(String(data.description ?? "")),
+    category: InputSanitizer.sanitizeCategory(String(data.category ?? "")),
+    amount: InputSanitizer.sanitizeAmount(data.amount as number | string),
+    transactionState: InputSanitizer.sanitizeText(String(data.transactionState ?? "")),
     transactionType:
       data.transactionType !== undefined
-        ? InputSanitizer.sanitizeText(data.transactionType)
+        ? InputSanitizer.sanitizeText(String(data.transactionType))
         : "undefined",
-    activeStatus: Boolean(data.activeStatus),
-    reoccurringType: InputSanitizer.sanitizeText(data.reoccurringType),
-    notes: InputSanitizer.sanitizeNotes(data.notes || ""),
+    activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus),
+    reoccurringType: InputSanitizer.sanitizeText(String(data.reoccurringType ?? "")),
+    notes: InputSanitizer.sanitizeNotes(String(data.notes ?? "")),
     dueDate: data.dueDate
-      ? InputSanitizer.sanitizeDate(data.dueDate)
+      ? InputSanitizer.sanitizeDate(data.dueDate as string | Date)
       : undefined,
   }),
 
-  payment: (data: any) => {
-    console.log(
-      "[sanitization.ts] Payment BEFORE sanitization:",
-      JSON.stringify(data),
-    );
-    const sanitized = {
-      paymentId: data.paymentId ? parseInt(data.paymentId) : undefined,
-      accountNameOwner: data.accountNameOwner
-        ? InputSanitizer.sanitizeAccountName(data.accountNameOwner)
-        : undefined,
-      sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
-      destinationAccount: InputSanitizer.sanitizeAccountName(
-        data.destinationAccount,
-      ),
-      transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate), // Use LocalDate format for backend compatibility
-      amount: InputSanitizer.sanitizeAmount(data.amount),
-      guidSource: data.guidSource
-        ? InputSanitizer.sanitizeGuid(data.guidSource)
-        : undefined,
-      guidDestination: data.guidDestination
-        ? InputSanitizer.sanitizeGuid(data.guidDestination)
-        : undefined,
-      activeStatus: Boolean(data.activeStatus),
-      dateAdded: data.dateAdded
-        ? InputSanitizer.sanitizeDate(data.dateAdded)
-        : undefined,
-      dateUpdated: data.dateUpdated
-        ? InputSanitizer.sanitizeDate(data.dateUpdated)
-        : undefined,
-    };
-    console.log(
-      "[sanitization.ts] Payment AFTER sanitization:",
-      JSON.stringify(sanitized),
-    );
-    return sanitized;
-  },
+  payment: (data: Record<string, unknown>) => ({
+    paymentId: data.paymentId ? parseInt(String(data.paymentId)) : undefined,
+    accountNameOwner: data.accountNameOwner
+      ? InputSanitizer.sanitizeAccountName(String(data.accountNameOwner))
+      : undefined,
+    sourceAccount: InputSanitizer.sanitizeAccountName(String(data.sourceAccount ?? "")),
+    destinationAccount: InputSanitizer.sanitizeAccountName(String(data.destinationAccount ?? "")),
+    transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate as string | Date),
+    amount: InputSanitizer.sanitizeAmount(data.amount as number | string),
+    guidSource: data.guidSource
+      ? InputSanitizer.sanitizeGuid(String(data.guidSource))
+      : undefined,
+    guidDestination: data.guidDestination
+      ? InputSanitizer.sanitizeGuid(String(data.guidDestination))
+      : undefined,
+    activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus),
+    dateAdded: data.dateAdded
+      ? InputSanitizer.sanitizeDate(data.dateAdded as string | Date)
+      : undefined,
+    dateUpdated: data.dateUpdated
+      ? InputSanitizer.sanitizeDate(data.dateUpdated as string | Date)
+      : undefined,
+  }),
 
-  transfer: (data: any) => {
-    console.log(
-      "[sanitization.ts] Transfer BEFORE sanitization:",
-      JSON.stringify(data),
-    );
-    const sanitized = {
-      transferId: data.transferId ? parseInt(data.transferId) : undefined,
-      sourceAccount: InputSanitizer.sanitizeAccountName(data.sourceAccount),
-      destinationAccount: InputSanitizer.sanitizeAccountName(
-        data.destinationAccount,
-      ),
-      transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate), // Use LocalDate format for backend compatibility
-      amount: InputSanitizer.sanitizeAmount(data.amount),
-      guidSource: data.guidSource
-        ? InputSanitizer.sanitizeGuid(data.guidSource)
-        : undefined,
-      guidDestination: data.guidDestination
-        ? InputSanitizer.sanitizeGuid(data.guidDestination)
-        : undefined,
-      activeStatus: Boolean(data.activeStatus),
-      dateAdded: data.dateAdded
-        ? InputSanitizer.sanitizeDate(data.dateAdded)
-        : undefined,
-      dateUpdated: data.dateUpdated
-        ? InputSanitizer.sanitizeDate(data.dateUpdated)
-        : undefined,
-    };
-    console.log(
-      "[sanitization.ts] Transfer AFTER sanitization:",
-      JSON.stringify(sanitized),
-    );
-    return sanitized;
-  },
+  transfer: (data: Record<string, unknown>) => ({
+    transferId: data.transferId ? parseInt(String(data.transferId)) : undefined,
+    sourceAccount: InputSanitizer.sanitizeAccountName(String(data.sourceAccount ?? "")),
+    destinationAccount: InputSanitizer.sanitizeAccountName(String(data.destinationAccount ?? "")),
+    transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate as string | Date),
+    amount: InputSanitizer.sanitizeAmount(data.amount as number | string),
+    guidSource: data.guidSource
+      ? InputSanitizer.sanitizeGuid(String(data.guidSource))
+      : undefined,
+    guidDestination: data.guidDestination
+      ? InputSanitizer.sanitizeGuid(String(data.guidDestination))
+      : undefined,
+    activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus),
+    dateAdded: data.dateAdded
+      ? InputSanitizer.sanitizeDate(data.dateAdded as string | Date)
+      : undefined,
+    dateUpdated: data.dateUpdated
+      ? InputSanitizer.sanitizeDate(data.dateUpdated as string | Date)
+      : undefined,
+  }),
 
-  category: (data: any) => ({
-    categoryId: data.categoryId ? parseInt(data.categoryId) : undefined,
+  category: (data: Record<string, unknown>) => ({
+    categoryId: data.categoryId ? parseInt(String(data.categoryId)) : undefined,
     categoryName: InputSanitizer.sanitizeCategory(
-      data.categoryName ?? data.category ?? "",
+      String(data.categoryName ?? data.category ?? ""),
     ),
-    activeStatus: Boolean(data.activeStatus),
+    activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus),
     dateAdded: data.dateAdded
-      ? InputSanitizer.sanitizeDate(data.dateAdded)
+      ? InputSanitizer.sanitizeDate(data.dateAdded as string | Date)
       : undefined,
     dateUpdated: data.dateUpdated
-      ? InputSanitizer.sanitizeDate(data.dateUpdated)
+      ? InputSanitizer.sanitizeDate(data.dateUpdated as string | Date)
       : undefined,
   }),
 
-  description: (data: any) => ({
+  description: (data: Record<string, unknown>) => ({
     descriptionId: data.descriptionId
-      ? parseInt(data.descriptionId)
+      ? parseInt(String(data.descriptionId))
       : undefined,
-    descriptionName: InputSanitizer.sanitizeCategory(
-      data.descriptionName ?? data.description ?? "",
+    descriptionName: InputSanitizer.sanitizeDescription(
+      String(data.descriptionName ?? data.description ?? ""),
     ),
-    activeStatus: Boolean(data.activeStatus ?? true),
+    activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus ?? true),
     descriptionCount: data.descriptionCount
-      ? parseInt(data.descriptionCount)
+      ? parseInt(String(data.descriptionCount))
       : undefined,
     dateAdded: data.dateAdded
-      ? InputSanitizer.sanitizeDate(data.dateAdded)
+      ? InputSanitizer.sanitizeDate(data.dateAdded as string | Date)
       : undefined,
     dateUpdated: data.dateUpdated
-      ? InputSanitizer.sanitizeDate(data.dateUpdated)
+      ? InputSanitizer.sanitizeDate(data.dateUpdated as string | Date)
       : undefined,
   }),
 };
@@ -586,9 +560,9 @@ export const sanitize = {
 export class SecurityLogger {
   static logSanitizationAttempt(
     field: string,
-    originalValue: any,
-    sanitizedValue: any,
-  ) {
+    originalValue: unknown,
+    sanitizedValue: unknown,
+  ): void {
     if (process.env.NODE_ENV === "development") {
       console.warn(`Sanitization applied to field '${field}':`, {
         original:
@@ -604,7 +578,7 @@ export class SecurityLogger {
     }
   }
 
-  static logValidationFailure(errors: any[], data: any) {
+  static logValidationFailure(errors: { field: string; message: string; code: string }[], data: unknown): void {
     if (process.env.NODE_ENV === "development") {
       console.error("Validation failed:", {
         errors,
@@ -612,8 +586,5 @@ export class SecurityLogger {
         timestamp: new Date().toISOString(),
       });
     }
-
-    // In production, you might want to send this to a security monitoring service
-    // This helps detect potential attack attempts
   }
 }

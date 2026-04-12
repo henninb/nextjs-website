@@ -1,5 +1,12 @@
 import {
-  HookValidator,
+  validateInsert,
+  validateUpdate,
+  validateDelete,
+  validateGuid,
+  validateAccountName,
+  validateNumericId,
+  validateNonEmptyArray,
+  validateDateRange,
   HookValidationError,
   withValidation,
   isValidationError,
@@ -74,11 +81,11 @@ describe("hookValidation", () => {
     });
   });
 
-  describe("HookValidator.validateInsert", () => {
+  describe("validateInsert", () => {
     it("should return validated data on success", () => {
       const testData = { name: "test", value: 123 };
 
-      const result = HookValidator.validateInsert(
+      const result = validateInsert(
         testData,
         mockSuccessValidator,
         "testOperation",
@@ -92,7 +99,7 @@ describe("hookValidation", () => {
       const testData = { name: "invalid" };
 
       expect(() =>
-        HookValidator.validateInsert(
+        validateInsert(
           testData,
           mockFailValidator,
           "testOperation",
@@ -100,7 +107,7 @@ describe("hookValidation", () => {
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateInsert(
+        validateInsert(
           testData,
           mockFailValidator,
           "testOperation",
@@ -112,7 +119,7 @@ describe("hookValidation", () => {
       const testData = { name: "invalid" };
 
       try {
-        HookValidator.validateInsert(
+        validateInsert(
           testData,
           mockFailValidator,
           "testOperation",
@@ -127,14 +134,12 @@ describe("hookValidation", () => {
     });
   });
 
-  describe("HookValidator.validateUpdate", () => {
+  describe("validateUpdate", () => {
     it("should return validated new data on success", () => {
-      const oldData = { name: "old", value: 100 };
       const newData = { name: "new", value: 200 };
 
-      const result = HookValidator.validateUpdate(
+      const result = validateUpdate(
         newData,
-        oldData,
         mockSuccessValidator,
         "updateOperation",
       );
@@ -144,13 +149,11 @@ describe("hookValidation", () => {
     });
 
     it("should throw HookValidationError on validation failure", () => {
-      const oldData = { name: "old" };
       const newData = { name: "invalid" };
 
       expect(() =>
-        HookValidator.validateUpdate(
+        validateUpdate(
           newData,
-          oldData,
           mockFailValidator,
           "updateOperation",
         ),
@@ -158,11 +161,11 @@ describe("hookValidation", () => {
     });
   });
 
-  describe("HookValidator.validateDelete", () => {
+  describe("validateDelete", () => {
     it("should return data when identifier is valid", () => {
       const testData = { id: "valid-id", name: "test" };
 
-      const result = HookValidator.validateDelete(
+      const result = validateDelete(
         testData,
         "id",
         "deleteOperation",
@@ -175,11 +178,11 @@ describe("hookValidation", () => {
       const testData = { name: "test" };
 
       expect(() =>
-        HookValidator.validateDelete(testData, "id", "deleteOperation"),
+        validateDelete(testData, "id", "deleteOperation"),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateDelete(testData, "id", "deleteOperation"),
+        validateDelete(testData, "id", "deleteOperation"),
       ).toThrow("deleteOperation: Invalid id provided");
     });
 
@@ -187,7 +190,7 @@ describe("hookValidation", () => {
       const testData = { id: "", name: "test" };
 
       expect(() =>
-        HookValidator.validateDelete(testData, "id", "deleteOperation"),
+        validateDelete(testData, "id", "deleteOperation"),
       ).toThrow(HookValidationError);
     });
 
@@ -195,7 +198,7 @@ describe("hookValidation", () => {
       const testData = { id: "   ", name: "test" };
 
       expect(() =>
-        HookValidator.validateDelete(testData, "id", "deleteOperation"),
+        validateDelete(testData, "id", "deleteOperation"),
       ).toThrow(HookValidationError);
     });
 
@@ -203,7 +206,7 @@ describe("hookValidation", () => {
       const testData = { name: "test" };
 
       try {
-        HookValidator.validateDelete(testData, "id", "deleteOperation");
+        validateDelete(testData, "id", "deleteOperation");
         fail("Should have thrown");
       } catch (error) {
         expect(error).toBeInstanceOf(HookValidationError);
@@ -218,7 +221,7 @@ describe("hookValidation", () => {
     });
   });
 
-  describe("HookValidator.validateGuid", () => {
+  describe("validateGuid", () => {
     const validGuids = [
       "550e8400-e29b-41d4-a716-446655440000",
       "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
@@ -227,7 +230,7 @@ describe("hookValidation", () => {
     ];
 
     it.each(validGuids)("should accept valid GUID: %s", (guid) => {
-      const result = HookValidator.validateGuid(guid, "testOperation");
+      const result = validateGuid(guid, "testOperation");
       expect(result).toBe(guid);
     });
 
@@ -242,18 +245,18 @@ describe("hookValidation", () => {
     ];
 
     it.each(invalidGuids)("should reject invalid GUID: %s", (guid) => {
-      expect(() => HookValidator.validateGuid(guid, "testOperation")).toThrow(
+      expect(() => validateGuid(guid, "testOperation")).toThrow(
         HookValidationError,
       );
 
-      expect(() => HookValidator.validateGuid(guid, "testOperation")).toThrow(
+      expect(() => validateGuid(guid, "testOperation")).toThrow(
         "testOperation: Invalid GUID format",
       );
     });
 
     it("should include validation error details", () => {
       try {
-        HookValidator.validateGuid("invalid-guid", "testOperation");
+        validateGuid("invalid-guid", "testOperation");
         fail("Should have thrown");
       } catch (error) {
         expect(error).toBeInstanceOf(HookValidationError);
@@ -267,18 +270,18 @@ describe("hookValidation", () => {
     });
   });
 
-  describe("HookValidator.validateAccountName", () => {
+  describe("validateAccountName", () => {
     it("should accept valid account names", () => {
       const validNames = ["chase_brian", "savings_account", "Account123"];
 
       validNames.forEach((name) => {
-        const result = HookValidator.validateAccountName(name, "testOperation");
+        const result = validateAccountName(name, "testOperation");
         expect(result).toBe(name);
       });
     });
 
     it("should trim whitespace from account names", () => {
-      const result = HookValidator.validateAccountName(
+      const result = validateAccountName(
         "  account_name  ",
         "testOperation",
       );
@@ -287,17 +290,17 @@ describe("hookValidation", () => {
 
     it("should throw when account name is empty", () => {
       expect(() =>
-        HookValidator.validateAccountName("", "testOperation"),
+        validateAccountName("", "testOperation"),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateAccountName("", "testOperation"),
+        validateAccountName("", "testOperation"),
       ).toThrow("testOperation: Account name is required");
     });
 
     it("should throw when account name is whitespace-only", () => {
       expect(() =>
-        HookValidator.validateAccountName("   ", "testOperation"),
+        validateAccountName("   ", "testOperation"),
       ).toThrow(HookValidationError);
     });
 
@@ -305,18 +308,18 @@ describe("hookValidation", () => {
       const longName = "a".repeat(101);
 
       expect(() =>
-        HookValidator.validateAccountName(longName, "testOperation"),
+        validateAccountName(longName, "testOperation"),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateAccountName(longName, "testOperation"),
+        validateAccountName(longName, "testOperation"),
       ).toThrow("testOperation: Account name too long");
     });
 
     it("should accept account name of exactly 100 characters", () => {
       const maxLengthName = "a".repeat(100);
 
-      const result = HookValidator.validateAccountName(
+      const result = validateAccountName(
         maxLengthName,
         "testOperation",
       );
@@ -324,110 +327,110 @@ describe("hookValidation", () => {
     });
   });
 
-  describe("HookValidator.validateNumericId", () => {
+  describe("validateNumericId", () => {
     it("should accept valid numeric IDs", () => {
-      expect(HookValidator.validateNumericId(123, "id", "testOp")).toBe(123);
-      expect(HookValidator.validateNumericId(0, "id", "testOp")).toBe(0);
-      expect(HookValidator.validateNumericId("456", "id", "testOp")).toBe(456);
+      expect(validateNumericId(123, "id", "testOp")).toBe(123);
+      expect(validateNumericId(0, "id", "testOp")).toBe(0);
+      expect(validateNumericId("456", "id", "testOp")).toBe(456);
     });
 
     it("should throw on negative IDs", () => {
-      expect(() => HookValidator.validateNumericId(-1, "id", "testOp")).toThrow(
+      expect(() => validateNumericId(-1, "id", "testOp")).toThrow(
         HookValidationError,
       );
 
-      expect(() => HookValidator.validateNumericId(-1, "id", "testOp")).toThrow(
+      expect(() => validateNumericId(-1, "id", "testOp")).toThrow(
         "testOp: Invalid id",
       );
     });
 
     it("should throw on non-integer IDs", () => {
       expect(() =>
-        HookValidator.validateNumericId(12.5, "id", "testOp"),
+        validateNumericId(12.5, "id", "testOp"),
       ).toThrow(HookValidationError);
     });
 
     it("should throw on NaN", () => {
       expect(() =>
-        HookValidator.validateNumericId(NaN, "id", "testOp"),
+        validateNumericId(NaN, "id", "testOp"),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateNumericId("not-a-number", "id", "testOp"),
+        validateNumericId("not-a-number", "id", "testOp"),
       ).toThrow(HookValidationError);
     });
 
     it("should use custom field name in error message", () => {
       expect(() =>
-        HookValidator.validateNumericId(-1, "customId", "testOp"),
+        validateNumericId(-1, "customId", "testOp"),
       ).toThrow("testOp: Invalid customId");
     });
 
     it("should use default field name when not provided", () => {
       expect(() =>
-        HookValidator.validateNumericId(-1, undefined as any, "testOp"),
+        validateNumericId(-1, undefined as any, "testOp"),
       ).toThrow("testOp: Invalid ID");
     });
   });
 
-  describe("HookValidator.validateNonEmptyArray", () => {
+  describe("validateNonEmptyArray", () => {
     it("should accept non-empty arrays", () => {
       const array = [1, 2, 3];
-      const result = HookValidator.validateNonEmptyArray(array, "testOp");
+      const result = validateNonEmptyArray(array, "testOp");
       expect(result).toEqual(array);
     });
 
     it("should accept array with single element", () => {
       const array = ["single"];
-      const result = HookValidator.validateNonEmptyArray(array, "testOp");
+      const result = validateNonEmptyArray(array, "testOp");
       expect(result).toEqual(array);
     });
 
     it("should throw on empty array", () => {
-      expect(() => HookValidator.validateNonEmptyArray([], "testOp")).toThrow(
+      expect(() => validateNonEmptyArray([], "testOp")).toThrow(
         HookValidationError,
       );
 
-      expect(() => HookValidator.validateNonEmptyArray([], "testOp")).toThrow(
+      expect(() => validateNonEmptyArray([], "testOp")).toThrow(
         "testOp: Array cannot be empty",
       );
     });
 
     it("should throw on non-array values", () => {
       expect(() =>
-        HookValidator.validateNonEmptyArray(null as any, "testOp"),
+        validateNonEmptyArray(null as any, "testOp"),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateNonEmptyArray("not-array" as any, "testOp"),
+        validateNonEmptyArray("not-array" as any, "testOp"),
       ).toThrow(HookValidationError);
     });
   });
 
-  describe("HookValidator.validateDateRange", () => {
+  describe("validateDateRange", () => {
     const now = new Date();
 
     it("should accept valid dates within default range", () => {
       const validDate = new Date();
-      const result = HookValidator.validateDateRange(validDate, "testOp");
+      const result = validateDateRange(validDate, "testOp");
       expect(result).toEqual(validDate);
     });
 
     it("should accept date strings", () => {
       // Use a date within the last year (default pastYears: 1)
       const dateString = "2025-06-15";
-      const result = HookValidator.validateDateRange(dateString, "testOp");
+      const result = validateDateRange(dateString, "testOp");
       expect(result).toBeInstanceOf(Date);
       expect(result.toISOString()).toContain("2025-06-15");
     });
 
     it("should throw on invalid date strings", () => {
       expect(() =>
-        HookValidator.validateDateRange("invalid-date", "testOp"),
+        validateDateRange("invalid-date", "testOp"),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateDateRange("invalid-date", "testOp"),
+        validateDateRange("invalid-date", "testOp"),
       ).toThrow("testOp: Invalid date");
     });
 
@@ -439,11 +442,11 @@ describe("hookValidation", () => {
       );
 
       expect(() =>
-        HookValidator.validateDateRange(pastDate, "testOp", { pastYears: 1 }),
+        validateDateRange(pastDate, "testOp", { pastYears: 1 }),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateDateRange(pastDate, "testOp", { pastYears: 1 }),
+        validateDateRange(pastDate, "testOp", { pastYears: 1 }),
       ).toThrow("testOp: Date too far in the past");
     });
 
@@ -455,13 +458,13 @@ describe("hookValidation", () => {
       );
 
       expect(() =>
-        HookValidator.validateDateRange(futureDate, "testOp", {
+        validateDateRange(futureDate, "testOp", {
           futureYears: 1,
         }),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        HookValidator.validateDateRange(futureDate, "testOp", {
+        validateDateRange(futureDate, "testOp", {
           futureYears: 1,
         }),
       ).toThrow("testOp: Date too far in the future");
@@ -476,11 +479,11 @@ describe("hookValidation", () => {
 
       // Should fail with 2 years
       expect(() =>
-        HookValidator.validateDateRange(pastDate, "testOp", { pastYears: 2 }),
+        validateDateRange(pastDate, "testOp", { pastYears: 2 }),
       ).toThrow(HookValidationError);
 
       // Should pass with 5 years
-      const result = HookValidator.validateDateRange(pastDate, "testOp", {
+      const result = validateDateRange(pastDate, "testOp", {
         pastYears: 5,
       });
       expect(result).toEqual(pastDate);
@@ -495,13 +498,13 @@ describe("hookValidation", () => {
 
       // Should fail with 2 years
       expect(() =>
-        HookValidator.validateDateRange(futureDate, "testOp", {
+        validateDateRange(futureDate, "testOp", {
           futureYears: 2,
         }),
       ).toThrow(HookValidationError);
 
       // Should pass with 5 years
-      const result = HookValidator.validateDateRange(futureDate, "testOp", {
+      const result = validateDateRange(futureDate, "testOp", {
         futureYears: 5,
       });
       expect(result).toEqual(futureDate);

@@ -53,16 +53,20 @@ export function useAuthenticatedQuery<TData = unknown, TError = Error>(
 ) {
   const { isAuthenticated, loading } = useAuth();
 
+  // Extract caller-supplied enabled flag before spreading to prevent it from
+  // overriding the auth gate computed below.
+  const { enabled: callerEnabled = true, ...restOptions } = options ?? {};
+
   return useQuery<TData, TError>({
     ...DEFAULT_QUERY_CONFIG,
+    ...restOptions,
     queryKey,
     queryFn,
     // Only enable query when:
     // 1. Auth loading is complete
     // 2. User is authenticated
     // 3. Additional enabled condition (if provided) is true
-    enabled: !loading && isAuthenticated && (options?.enabled ?? true),
-    ...options,
+    enabled: !loading && isAuthenticated && callerEnabled,
   });
 }
 
