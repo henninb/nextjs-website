@@ -17,15 +17,8 @@ import {
 } from "../utils/security/hostValidation";
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Mock fetch for testing UUID generation
-global.fetch = jest.fn();
-
 describe("Security Implementations", () => {
   describe("Secure UUID Generation", () => {
-    beforeEach(() => {
-      (fetch as jest.Mock).mockClear();
-    });
-
     it("should validate UUID format correctly", () => {
       const validUUID = "123e4567-e89b-42d3-a456-426614174000"; // Valid UUID v4
       const invalidUUID = "not-a-uuid";
@@ -34,44 +27,28 @@ describe("Security Implementations", () => {
       expect(isValidUUID(invalidUUID)).toBe(false);
     });
 
-    it("should generate fallback UUID when server call fails", async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
-
+    it("should return a valid UUID v4 using crypto.randomUUID", async () => {
       const uuid = await generateSecureUUID();
 
       expect(typeof uuid).toBe("string");
       expect(uuid.length).toBe(36);
-      expect(uuid).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      );
+      expect(isValidUUID(uuid)).toBe(true);
     });
 
-    it("should handle rate limiting gracefully", async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 429,
-        json: jest.fn().mockResolvedValue({ error: "Rate limited" }),
-      });
+    it("should generate unique UUIDs on repeated calls", async () => {
+      const uuid1 = await generateSecureUUID();
+      const uuid2 = await generateSecureUUID();
 
-      const uuid = await generateSecureUUID();
-
-      expect(typeof uuid).toBe("string");
-      expect(uuid.length).toBe(36);
+      expect(uuid1).not.toBe(uuid2);
     });
 
-    it("should use server response when successful", async () => {
-      const mockUUID = "550e8400-e29b-41d4-a716-446655440000";
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue({
-          uuid: mockUUID,
-          timestamp: Date.now(),
-        }),
-      });
+    it("should not make any network requests", async () => {
+      const fetchSpy = jest.spyOn(global, "fetch");
 
-      const uuid = await generateSecureUUID();
+      await generateSecureUUID();
 
-      expect(uuid).toBe(mockUUID);
+      expect(fetchSpy).not.toHaveBeenCalled();
+      fetchSpy.mockRestore();
     });
   });
 

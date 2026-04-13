@@ -267,6 +267,31 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
+// Polyfill Request.prototype.json() — the custom Request polyfill in this file stores
+// the body as a plain string in this.body but does not implement text() or json().
+// Edge route handlers call request.json() so we add it here.
+if (typeof global.Request !== "undefined" && !global.Request.prototype.json) {
+  global.Request.prototype.json = async function () {
+    // The custom polyfill stores body as a string; fall back to the property directly.
+    if (typeof this.body === "string") return JSON.parse(this.body);
+    if (this.body === null || this.body === undefined) return null;
+    return this.body;
+  };
+}
+
+// Polyfill Response.json() static — required by NextResponse.json() which delegates to it.
+// The custom Response polyfill has an instance json() but is missing the static factory.
+if (typeof global.Response !== "undefined" && !global.Response.json) {
+  global.Response.json = function (data, init) {
+    const body = JSON.stringify(data);
+    const headers = Object.assign(
+      { "content-type": "application/json" },
+      (init && init.headers) ? init.headers : {},
+    );
+    return new global.Response(body, { ...init, headers });
+  };
+}
+
 // Suppress React 18 console errors/warnings
 const originalConsoleError = console.error;
 console.error = (...args) => {
