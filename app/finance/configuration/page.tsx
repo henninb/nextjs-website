@@ -30,7 +30,6 @@ import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
-import { generateSecureUUID } from "../../../utils/security/secureUUID";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 
 const CONFIGURATION_CACHE_ENABLED_KEY = "finance_cache_enabled_configuration";
@@ -196,9 +195,8 @@ export default function Configuration() {
           JSON.stringify(newData),
         );
       }
-      const secureId = await generateSecureUUID();
-      setParameterData((prev: Parameter) =>
-        prev?.parameterId ? prev : { ...newData, parameterId: secureId },
+      setParameterData((prev: Parameter | null) =>
+        prev?.parameterId ? prev : { ...newData, parameterId: 0 },
       );
       setShowModalAdd(false);
       handleSuccess("Configuration added successfully.");
@@ -211,8 +209,7 @@ export default function Configuration() {
         (getErrorMessage(error) &&
           getErrorMessage(error).includes("Failed to fetch"))
       ) {
-        const offlineId = await generateSecureUUID();
-        const newOfflineRow = { ...newData, parameterId: offlineId };
+        const newOfflineRow = { ...newData, parameterId: 0 };
         const updatedOfflineRows = [...offlineRows, newOfflineRow];
 
         setOfflineRows(updatedOfflineRows as [Parameter]); // 🔹 Ensure UI updates immediately
