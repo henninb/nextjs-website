@@ -212,31 +212,6 @@ const nextConfig = {
             value: "1; mode=block",
           },
 
-          // CORS headers (basic - will be enhanced per route)
-          {
-            key: "Access-Control-Allow-Origin",
-            value:
-              process.env.NODE_ENV === "production"
-                ? "https://vercel.bhenning.com"
-                : "http://dev.finance.bhenning.com:3000", // Development domain for JWT cookies
-          },
-
-          {
-            key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, DELETE, OPTIONS",
-          },
-
-          {
-            key: "Access-Control-Allow-Headers",
-            value:
-              "Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN",
-          },
-
-          {
-            key: "Access-Control-Allow-Credentials",
-            value: "true",
-          },
-
           // Custom security headers (X-Powered-By disabled via poweredByHeader)
         ],
       },

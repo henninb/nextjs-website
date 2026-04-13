@@ -340,7 +340,7 @@ export default async function proxy(request) {
       }
 
       return new NextResponse(
-        JSON.stringify({ error: "Proxy error", message: error.message }),
+        JSON.stringify({ error: "Bad Gateway" }),
         {
           status: 502,
           headers: { "Content-Type": "application/json" },

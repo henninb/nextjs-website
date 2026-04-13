@@ -921,7 +921,7 @@ const WatchPage: NextPage = () => {
                   setTimeout(() => {
                     const div = document.createElement("div");
                     div.style.display = "none";
-                    div.innerHTML = `test-${i}`;
+                    div.textContent = `test-${i}`;
                     document.body.appendChild(div);
                     setTimeout(() => div.remove(), 100);
                   }, i * 50);
@@ -1063,7 +1063,7 @@ const WatchPage: NextPage = () => {
                 for (let i = 0; i < 50; i++) {
                   setTimeout(() => {
                     const div = document.createElement("div");
-                    div.innerHTML = `aggressive-test-${i}`;
+                    div.textContent = `aggressive-test-${i}`;
                     document.body.appendChild(div);
                     setTimeout(() => div.remove(), 50);
                   }, i * 10);

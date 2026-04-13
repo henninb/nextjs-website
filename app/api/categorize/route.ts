@@ -11,6 +11,23 @@ import { isSessionValid } from "../../../utils/security/edgeAuth";
 
 export const runtime = "edge";
 
+// Inbound rate limiter: 20 requests per IP per 60-second window
+const ipCounters = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 20;
+const WINDOW_MS = 60_000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipCounters.get(ip);
+  if (!entry || now > entry.resetAt) {
+    ipCounters.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 // Request validation schema
 const CategorizationRequestSchema = z.object({
   description: z.string().min(1).max(500),
@@ -38,6 +55,17 @@ interface CategorizationResponse {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!(await isSessionValid(request))) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    request.headers.get("cf-connecting-ip") ??
+    "unknown";
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json(
+      { success: false, error: "Rate limit exceeded" },
+      { status: 429 },
+    );
   }
 
   try {
