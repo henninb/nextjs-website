@@ -43,6 +43,17 @@ import {
 } from "../../../components/Common";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { z } from "zod";
+
+const TransferCacheSchema = z.object({
+  transactionDate: z.union([z.string(), z.date()]).transform((v) =>
+    typeof v === "string" ? new Date(v) : v,
+  ),
+  sourceAccount: z.string().max(100),
+  destinationAccount: z.string().max(100),
+  activeStatus: z.boolean(),
+  amount: z.number().finite(),
+});
 
 const LAST_TRANSFER_STORAGE_KEY = "finance_last_transfer";
 const TRANSFERS_CACHE_ENABLED_KEY = "finance_cache_enabled_transfers";
@@ -62,12 +73,13 @@ const getLastTransferFromStorage = (): Transfer | null => {
   try {
     const stored = localStorage.getItem(LAST_TRANSFER_STORAGE_KEY);
     if (!stored) return null;
-    const parsed = JSON.parse(stored);
-    // Convert stored date string back to Date object
-    if (parsed.transactionDate) {
-      parsed.transactionDate = new Date(parsed.transactionDate);
+    const result = TransferCacheSchema.safeParse(JSON.parse(stored));
+    if (!result.success) {
+      console.warn("Discarding invalid transfer cache:", result.error.issues);
+      localStorage.removeItem(LAST_TRANSFER_STORAGE_KEY);
+      return null;
     }
-    return parsed;
+    return result.data as Transfer;
   } catch (error) {
     console.error("Error reading last transfer from localStorage:", error);
     return null;

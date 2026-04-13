@@ -12,9 +12,9 @@ interface CORSConfig {
 }
 
 const PRODUCTION_ORIGINS = [
-  "https://yourdomain.com",
-  "https://www.yourdomain.com",
   "https://finance.bhenning.com",
+  "https://vercel.bhenning.com",
+  "https://www.bhenning.com",
 ];
 
 const DEVELOPMENT_ORIGINS = [

@@ -7,6 +7,7 @@ import {
 } from "../../../utils/ai/categorization";
 import { getCategoryFromDescription } from "../../../utils/categoryMapping";
 import TransactionCategoryMetadata from "../../../model/TransactionCategoryMetadata";
+import { isSessionValid } from "../../../utils/security/edgeAuth";
 
 export const runtime = "edge";
 
@@ -35,6 +36,10 @@ interface CategorizationResponse {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!(await isSessionValid(request))) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 
@@ -213,7 +218,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(result, {
       status: 200,
       headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        "Cache-Control": "private, no-store",
       },
     });
   } catch (error) {
@@ -223,7 +228,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       {
         success: false,
         error: "Internal server error",
-        message: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
     );

@@ -45,6 +45,17 @@ import {
 } from "../../../components/Common";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { z } from "zod";
+
+const PaymentCacheSchema = z.object({
+  transactionDate: z.union([z.string(), z.date()]).transform((v) =>
+    typeof v === "string" ? new Date(v) : v,
+  ),
+  destinationAccount: z.string().max(100),
+  sourceAccount: z.string().max(100),
+  activeStatus: z.boolean(),
+  amount: z.number().finite(),
+});
 
 const LAST_PAYMENT_STORAGE_KEY = "finance_last_payment";
 const PAYMENTS_CACHE_ENABLED_KEY = "finance_cache_enabled_payments";
@@ -66,12 +77,13 @@ const getLastPaymentFromStorage = (): Payment | null => {
   try {
     const stored = localStorage.getItem(LAST_PAYMENT_STORAGE_KEY);
     if (!stored) return null;
-    const parsed = JSON.parse(stored);
-    // Convert stored date string back to Date object
-    if (parsed.transactionDate) {
-      parsed.transactionDate = new Date(parsed.transactionDate);
+    const result = PaymentCacheSchema.safeParse(JSON.parse(stored));
+    if (!result.success) {
+      console.warn("Discarding invalid payment cache:", result.error.issues);
+      localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);
+      return null;
     }
-    return parsed;
+    return result.data as Payment;
   } catch (error) {
     console.error("Error reading last payment from localStorage:", error);
     return null;

@@ -332,6 +332,12 @@ export default function TransactionImporter() {
   };
 
   const parseTransactions = () => {
+    if (!accountFilter) {
+      setMessage("Please select an account before importing.");
+      setShowSnackbar(true);
+      return;
+    }
+
     const lines = inputText.split("\n").filter((line) => line.trim() !== "");
     console.log(`Total lines found: ${lines.length}`);
 
@@ -354,7 +360,7 @@ export default function TransactionImporter() {
 
         return {
           transactionDate: new Date(parts[1]),
-          accountNameOwner: "testing_brian",
+          accountNameOwner: accountFilter,
           reoccurringType: "onetime",
           amount: parseFloat(parts[3]),
           transactionState: "outstanding",

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isSessionValid } from "../../../utils/security/edgeAuth";
 
 export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
+  if (!(await isSessionValid(req))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q");
 

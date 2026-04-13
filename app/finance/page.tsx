@@ -54,6 +54,13 @@ import StatCardSkeleton from "../../components/StatCardSkeleton";
 import AccountCardSkeleton from "../../components/AccountCardSkeleton";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
+import { z } from "zod";
+
+const AccountCacheSchema = z.object({
+  accountNameOwner: z.string().regex(/^[a-zA-Z0-9_-]+$/),
+  accountType: z.enum(["debit", "credit"]),
+  moniker: z.string().regex(/^[a-zA-Z0-9]+$/),
+});
 
 const ACCOUNTS_CACHE_ENABLED_KEY = "finance_cache_enabled_accounts";
 const ACCOUNTS_CACHE_DATA_KEY = "finance_cached_data_accounts";
@@ -369,7 +376,12 @@ export default function Accounts() {
     if (cacheEnabled && typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem(ACCOUNTS_CACHE_DATA_KEY);
-        setAccountData(stored ? JSON.parse(stored) : null);
+        if (stored) {
+          const parsed = AccountCacheSchema.safeParse(JSON.parse(stored));
+          setAccountData(parsed.success ? (parsed.data as Account) : null);
+        } else {
+          setAccountData(null);
+        }
       } catch {
         setAccountData(null);
       }
