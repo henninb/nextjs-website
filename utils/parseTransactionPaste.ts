@@ -12,33 +12,51 @@ export interface ParsedTransactionRow {
   parseErrors: string[];
 }
 
-// ─── Format patterns ──────────────────────────────────────────────────────────
+// ─── Supported formats ────────────────────────────────────────────────────────
 //
 // Format A — labeled row header (credit card detail view):
 //   Transaction Details for Row N    MM/DD/YY    DESCRIPTION
 //   #...1193
 //   $60.21
 //
-// Format B — plain date header (checking/debit statement view):
+// Format B — plain double-date header (checking/debit statement):
 //   MM/DD/YY    MM/DD/YY    DESCRIPTION
 //   #2444500FP8PT1TKK2
-//   $50.00    $16,896.48    ← first amount = charge, second = running balance
+//   $50.00    $16,896.48    ← first = charge, second = running balance (ignored)
 //
-// Both formats:
-//   • Reference lines (starting with #) are ignored.
-//   • Only the FIRST dollar amount on the amount line is used.
+// Format C — mobile/app card view (month-name date, description on its own line):
+//   Apr 16
+//   Pending              ← optional status line
+//   ALDI
+//
+//   MH                   ← cardholder initials — exactly 2 uppercase letters
+//   $1.89
+//
+//   Show Transaction     ← block footer
+//
+// Rules shared by all formats:
+//   • Reference / suffix lines starting with '#' are ignored.
+//   • Only the FIRST dollar amount on an amount line is captured.
 //   • Negative amounts (refunds) are preserved.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FORMAT_A = /^Transaction Details for Row \d+/i;
 const FORMAT_B = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\S/;
+const FORMAT_C = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i;
 
-/** Returns true if the line is the start of a new transaction block in either format. */
+const MONTH_IDX: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+
+/** Returns true when a line begins a new transaction block in any format. */
 function isTransactionHeader(line: string): boolean {
-  return FORMAT_A.test(line) || FORMAT_B.test(line);
+  return FORMAT_A.test(line) || FORMAT_B.test(line) || FORMAT_C.test(line);
 }
 
-/** Parse MM/DD/YY or MM/DD/YYYY, push to errors and return null on failure. */
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+
+/** Parse MM/DD/YY or MM/DD/YYYY into a Date; appends to errors on failure. */
 function parseDateStr(dateStr: string, errors: string[]): Date | null {
   const parts = dateStr.split('/');
   if (parts.length !== 3) {
@@ -47,43 +65,63 @@ function parseDateStr(dateStr: string, errors: string[]): Date | null {
   }
   let year = parseInt(parts[2], 10);
   if (year < 100) year += 2000; // 26 → 2026
-  const candidate = new Date(year, parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
-  if (!isNaN(candidate.getTime())) return candidate;
+  const d = new Date(year, parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
+  if (!isNaN(d.getTime())) return d;
   errors.push(`Cannot parse date: "${dateStr}"`);
   return null;
 }
 
 /**
+ * Parse a "MMM DD" date (e.g. "Apr 16") and infer the year.
+ * Uses the current year unless the resulting date is more than 30 days in the
+ * future, in which case it falls back to the previous year (handles Dec→Jan
+ * paste sessions).
+ */
+function parseMonthDay(line: string, errors: string[]): Date | null {
+  const m = line.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})$/i);
+  if (!m) {
+    errors.push(`Cannot parse date: "${line}"`);
+    return null;
+  }
+  const month = MONTH_IDX[m[1].toLowerCase()];
+  const day = parseInt(m[2], 10);
+  const now = new Date();
+  const year = new Date(now.getFullYear(), month, day) >
+    new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+    ? now.getFullYear() - 1
+    : now.getFullYear();
+  return new Date(year, month, day);
+}
+
+// ─── Amount helper ────────────────────────────────────────────────────────────
+
+/**
  * Extract the FIRST dollar amount from a line that may contain multiple values.
  *
- * Examples:
- *   "$60.21"              → 60.21
- *   "-$60.21"             → -60.21
- *   "$-60.21"             → -60.21
- *   "$50.00    $16,896.48"→ 50.00  (running balance ignored)
- *   "60.21"               → 60.21
+ *   "$60.21"               → 60.21
+ *   "-$60.21"              → -60.21
+ *   "$-60.21"              → -60.21
+ *   "$50.00    $16,896.48" → 50   (running balance ignored)
+ *   "60.21"                → 60.21
  */
 function parseFirstAmount(line: string): number | null {
   const trimmed = line.trim();
-
-  // Match the first occurrence of an optional sign + $ + optional sign + digits
   const match = trimmed.match(/(-?\$-?|-?\$|^-?)([\d,]+\.?\d*)/);
   if (!match) return null;
-
-  const signPart = match[1]; // e.g. "-$", "$-", "-", ""
   const digits = match[2].replace(/,/g, '');
   const num = parseFloat(digits);
   if (isNaN(num)) return null;
-
-  const isNegative = signPart.includes('-');
-  return isNegative ? -Math.abs(num) : num;
+  return match[1].includes('-') ? -Math.abs(num) : num;
 }
+
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Parse raw bank statement text into transaction rows.
- * Supports both Format A (labeled row header) and Format B (plain date header).
- * Blocks may be separated by blank lines; unknown lines between blocks are ignored.
- * A row with parseErrors.length > 0 is flagged for manual review before inserting.
+ *
+ * Supports Format A, Format B, and Format C — all three may appear in a single
+ * paste. Blocks may be separated by blank lines; unrecognised lines are ignored.
+ * Rows with parseErrors.length > 0 are flagged for manual review before inserting.
  */
 export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
   const lines = raw.split('\n').map((l) => l.trim());
@@ -99,14 +137,14 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
     }
 
     const errors: string[] = [];
-    let date: Date | null = null;
-    let description = '';
 
+    // ── Format A ────────────────────────────────────────────────────────────
     if (FORMAT_A.test(line)) {
-      // "Transaction Details for Row N    MM/DD/YY    DESCRIPTION"
       const m = line.match(
         /^Transaction Details for Row \d+[\s\t]+(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*?)$/i,
       );
+      let date: Date | null = null;
+      let description = '';
       if (m) {
         date = parseDateStr(m[1], errors);
         description = m[2].trim();
@@ -114,11 +152,23 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       } else {
         errors.push('Header did not match expected format');
       }
-    } else {
-      // "MM/DD/YY    MM/DD/YY    DESCRIPTION" — use first (posted) date
+
+      i++;
+      const amount = scanForAmount(lines, i, errors, (next) => {
+        if (/^#/.test(next)) return 'skip'; // card-suffix line
+        return 'try';
+      });
+      i = amount.nextIndex;
+
+      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+
+    // ── Format B ────────────────────────────────────────────────────────────
+    } else if (FORMAT_B.test(line)) {
       const m = line.match(
         /^(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+(.*?)$/,
       );
+      let date: Date | null = null;
+      let description = '';
       if (m) {
         date = parseDateStr(m[1], errors);
         description = m[2].trim();
@@ -126,36 +176,80 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       } else {
         errors.push('Header did not match expected format');
       }
-    }
 
-    // Advance and scan for the first amount, stopping at the next block header
-    i++;
-    let amount: number | null = null;
+      i++;
+      const amount = scanForAmount(lines, i, errors, (next) => {
+        if (/^#/.test(next)) return 'skip'; // reference line
+        return 'try';
+      });
+      i = amount.nextIndex;
 
-    while (i < lines.length && !isTransactionHeader(lines[i])) {
-      const next = lines[i].trim();
+      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+
+    // ── Format C ────────────────────────────────────────────────────────────
+    } else {
+      const date = parseMonthDay(line, errors);
       i++;
 
-      if (!next) continue;
-      if (/^#/.test(next)) continue; // reference / card-suffix line — skip
+      // Skip optional status line ("Pending", "Posted", etc.)
+      if (i < lines.length && /^(Pending|Posted)\s*$/i.test(lines[i])) {
+        i++;
+      }
 
-      const parsed = parseFirstAmount(next);
-      if (parsed !== null) {
-        amount = parsed;
+      // Read description: first non-empty, non-footer line
+      let description = '';
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next || /^Show Transaction$/i.test(next)) continue;
+        description = next;
         break;
       }
+      if (!description) errors.push('Description is empty');
+
+      // Scan for amount: skip cardholder initials (exactly 2 uppercase) and "Show Transaction"
+      const amount = scanForAmount(lines, i, errors, (next) => {
+        if (/^Show Transaction$/i.test(next)) return 'stop';
+        if (/^[A-Z]{2}$/.test(next)) return 'skip'; // MH, LH, etc.
+        return 'try';
+      });
+      i = amount.nextIndex;
+
+      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
     }
-
-    if (amount === null) errors.push('No amount found');
-
-    rows.push({
-      id: crypto.randomUUID(),
-      date,
-      description,
-      amount,
-      parseErrors: errors,
-    });
   }
 
   return rows;
+}
+
+// ─── Internal scanner ─────────────────────────────────────────────────────────
+
+type LineDecision = 'try' | 'skip' | 'stop';
+
+/**
+ * Advance through lines starting at index `start`, stopping at the next
+ * transaction header or when the classifier returns 'stop'.
+ * Returns the first parsed amount found (or null) and the new line index.
+ */
+function scanForAmount(
+  lines: string[],
+  start: number,
+  errors: string[],
+  classify: (line: string) => LineDecision,
+): { value: number | null; nextIndex: number } {
+  let i = start;
+  while (i < lines.length && !isTransactionHeader(lines[i])) {
+    const next = lines[i].trim();
+    i++;
+    if (!next) continue;
+
+    const decision = classify(next);
+    if (decision === 'stop') break;
+    if (decision === 'skip') continue;
+
+    const parsed = parseFirstAmount(next);
+    if (parsed !== null) return { value: parsed, nextIndex: i };
+  }
+  errors.push('No amount found');
+  return { value: null, nextIndex: i };
 }
