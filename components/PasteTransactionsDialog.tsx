@@ -179,7 +179,9 @@ export default function PasteTransactionsDialog({
       const row = activeRows[idx];
       try {
         const transaction: Transaction = {
-          guid: 'pending', // replaced server-side via setupNewTransaction
+          // crypto.randomUUID() satisfies the UUID format check in validateInsert;
+          // setupNewTransaction will replace it with a server-generated secure UUID.
+          guid: crypto.randomUUID(),
           accountNameOwner,
           accountType,
           transactionDate: normalizeTransactionDate(row.date),
@@ -210,6 +212,11 @@ export default function PasteTransactionsDialog({
       setInsertProgress(idx + 1);
       setInsertedCount(inserted);
       setFailedCount(failed);
+
+      // Brief pause between inserts to avoid back-end rate limiting
+      if (idx < activeRows.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 400));
+      }
     }
 
     setStep('done');
