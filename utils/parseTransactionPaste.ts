@@ -12,16 +12,78 @@ export interface ParsedTransactionRow {
   parseErrors: string[];
 }
 
+// ─── Format patterns ──────────────────────────────────────────────────────────
+//
+// Format A — labeled row header (credit card detail view):
+//   Transaction Details for Row N    MM/DD/YY    DESCRIPTION
+//   #...1193
+//   $60.21
+//
+// Format B — plain date header (checking/debit statement view):
+//   MM/DD/YY    MM/DD/YY    DESCRIPTION
+//   #2444500FP8PT1TKK2
+//   $50.00    $16,896.48    ← first amount = charge, second = running balance
+//
+// Both formats:
+//   • Reference lines (starting with #) are ignored.
+//   • Only the FIRST dollar amount on the amount line is used.
+//   • Negative amounts (refunds) are preserved.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FORMAT_A = /^Transaction Details for Row \d+/i;
+const FORMAT_B = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\S/;
+
+/** Returns true if the line is the start of a new transaction block in either format. */
+function isTransactionHeader(line: string): boolean {
+  return FORMAT_A.test(line) || FORMAT_B.test(line);
+}
+
+/** Parse MM/DD/YY or MM/DD/YYYY, push to errors and return null on failure. */
+function parseDateStr(dateStr: string, errors: string[]): Date | null {
+  const parts = dateStr.split('/');
+  if (parts.length !== 3) {
+    errors.push(`Cannot parse date: "${dateStr}"`);
+    return null;
+  }
+  let year = parseInt(parts[2], 10);
+  if (year < 100) year += 2000; // 26 → 2026
+  const candidate = new Date(year, parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
+  if (!isNaN(candidate.getTime())) return candidate;
+  errors.push(`Cannot parse date: "${dateStr}"`);
+  return null;
+}
+
 /**
- * Parse raw bank statement text (copied from a web banking UI) into transaction rows.
+ * Extract the FIRST dollar amount from a line that may contain multiple values.
  *
- * Expected block format per transaction:
- *   Transaction Details for Row N    MM/DD/YY    DESCRIPTION
- *   #...XXXX        ← card suffix line, ignored
- *   $60.21          ← amount; negative amounts (-$12.00) are preserved
- *
- * Blocks are separated only by newlines; blank lines are tolerated.
- * A row is marked ambiguous (parseErrors.length > 0) when any field fails to parse.
+ * Examples:
+ *   "$60.21"              → 60.21
+ *   "-$60.21"             → -60.21
+ *   "$-60.21"             → -60.21
+ *   "$50.00    $16,896.48"→ 50.00  (running balance ignored)
+ *   "60.21"               → 60.21
+ */
+function parseFirstAmount(line: string): number | null {
+  const trimmed = line.trim();
+
+  // Match the first occurrence of an optional sign + $ + optional sign + digits
+  const match = trimmed.match(/(-?\$-?|-?\$|^-?)([\d,]+\.?\d*)/);
+  if (!match) return null;
+
+  const signPart = match[1]; // e.g. "-$", "$-", "-", ""
+  const digits = match[2].replace(/,/g, '');
+  const num = parseFloat(digits);
+  if (isNaN(num)) return null;
+
+  const isNegative = signPart.includes('-');
+  return isNegative ? -Math.abs(num) : num;
+}
+
+/**
+ * Parse raw bank statement text into transaction rows.
+ * Supports both Format A (labeled row header) and Format B (plain date header).
+ * Blocks may be separated by blank lines; unknown lines between blocks are ignored.
+ * A row with parseErrors.length > 0 is flagged for manual review before inserting.
  */
 export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
   const lines = raw.split('\n').map((l) => l.trim());
@@ -31,67 +93,60 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
   while (i < lines.length) {
     const line = lines[i];
 
-    if (!line || !/^Transaction Details for Row \d+/i.test(line)) {
+    if (!line || !isTransactionHeader(line)) {
       i++;
       continue;
     }
 
     const errors: string[] = [];
-
-    // Header pattern: "Transaction Details for Row N<whitespace>MM/DD/YY<whitespace>DESCRIPTION"
-    const headerMatch = line.match(
-      /^Transaction Details for Row \d+[\s\t]+(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*?)$/i,
-    );
-
     let date: Date | null = null;
     let description = '';
 
-    if (headerMatch) {
-      const [, dateStr, rawDesc] = headerMatch;
-      description = rawDesc.trim();
-
-      const parts = dateStr.split('/');
-      let year = parseInt(parts[2], 10);
-      // 2-digit years: 26 → 2026
-      if (year < 100) year += 2000;
-      const candidate = new Date(year, parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
-      if (!isNaN(candidate.getTime())) {
-        date = candidate;
+    if (FORMAT_A.test(line)) {
+      // "Transaction Details for Row N    MM/DD/YY    DESCRIPTION"
+      const m = line.match(
+        /^Transaction Details for Row \d+[\s\t]+(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*?)$/i,
+      );
+      if (m) {
+        date = parseDateStr(m[1], errors);
+        description = m[2].trim();
+        if (!description) errors.push('Description is empty');
       } else {
-        errors.push(`Cannot parse date: "${dateStr}"`);
+        errors.push('Header did not match expected format');
       }
-
-      if (!description) errors.push('Description is empty');
     } else {
-      errors.push('Header did not match expected format');
+      // "MM/DD/YY    MM/DD/YY    DESCRIPTION" — use first (posted) date
+      const m = line.match(
+        /^(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+(.*?)$/,
+      );
+      if (m) {
+        date = parseDateStr(m[1], errors);
+        description = m[2].trim();
+        if (!description) errors.push('Description is empty');
+      } else {
+        errors.push('Header did not match expected format');
+      }
     }
 
-    // Advance past the header line and scan for the amount
+    // Advance and scan for the first amount, stopping at the next block header
     i++;
     let amount: number | null = null;
 
-    while (i < lines.length && !/^Transaction Details for Row \d+/i.test(lines[i])) {
+    while (i < lines.length && !isTransactionHeader(lines[i])) {
       const next = lines[i].trim();
       i++;
 
       if (!next) continue;
-      if (/^#\.\.\./.test(next)) continue; // card suffix like "#...1193" — skip
+      if (/^#/.test(next)) continue; // reference / card-suffix line — skip
 
-      // Amount line: $60.21 | -$60.21 | $-60.21 | 60.21 | -60.21
-      if (/^-?\$/.test(next) || /^\$-/.test(next) || /^-?\d/.test(next)) {
-        const stripped = next.replace(/[$,\s]/g, '');
-        const parsed = parseFloat(stripped);
-        if (!isNaN(parsed)) {
-          amount = parsed;
-          break;
-        }
-        errors.push(`Cannot parse amount: "${next}"`);
+      const parsed = parseFirstAmount(next);
+      if (parsed !== null) {
+        amount = parsed;
+        break;
       }
     }
 
-    if (amount === null && !errors.some((e) => e.includes('amount'))) {
-      errors.push('No amount found');
-    }
+    if (amount === null) errors.push('No amount found');
 
     rows.push({
       id: crypto.randomUUID(),
