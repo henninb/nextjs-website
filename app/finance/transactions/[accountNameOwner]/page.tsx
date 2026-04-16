@@ -88,6 +88,7 @@ import TransactionFilterBar, {
 import TransactionCard from "../../../../components/TransactionCard";
 import TransactionCardSkeleton from "../../../../components/TransactionCardSkeleton";
 import ViewToggle from "../../../../components/ViewToggle";
+import PasteTransactionsDialog from "../../../../components/PasteTransactionsDialog";
 
 import { useAuth } from "../../../../components/AuthProvider";
 import { useUI } from "../../../../contexts/UIContext";
@@ -114,6 +115,7 @@ export default function TransactionsByAccount({
   const [adjustmentMode, setAdjustmentMode] = useState<boolean>(false);
   const [showModalClone, setShowModalClone] = useState<boolean>(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
+  const [showModalPaste, setShowModalPaste] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
@@ -1129,6 +1131,15 @@ export default function TransactionsByAccount({
               </Fade>
               <Fade in={true} timeout={700}>
                 <Button
+                  variant="outlined"
+                  onClick={() => setShowModalPaste(true)}
+                  sx={{ borderColor: "primary.main", color: "primary.main" }}
+                >
+                  Paste Transactions
+                </Button>
+              </Fade>
+              <Fade in={true} timeout={750}>
+                <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenAddModal()}
@@ -1946,6 +1957,21 @@ export default function TransactionsByAccount({
             />
           </Box>
         </FormDialog>
+
+        <PasteTransactionsDialog
+          open={showModalPaste}
+          onClose={() => setShowModalPaste(false)}
+          accountNameOwner={validAccountNameOwner}
+          accountType={currentAccount?.accountType ?? "debit"}
+          categories={
+            isSuccessCategories ? fetchedCategories.map((c) => c.categoryName) : []
+          }
+          onComplete={() => {
+            setPaginationModel({ ...paginationModel, page: 0 });
+            refetchTransactions();
+            refetchTotals();
+          }}
+        />
 
         <FormDialog
           open={showModalMove}
