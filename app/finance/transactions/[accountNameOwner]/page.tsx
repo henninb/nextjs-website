@@ -1131,9 +1131,9 @@ export default function TransactionsByAccount({
               </Fade>
               <Fade in={true} timeout={700}>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   onClick={() => setShowModalPaste(true)}
-                  sx={{ borderColor: "primary.main", color: "primary.main" }}
+                  sx={{ backgroundColor: "primary.main" }}
                 >
                   Paste Transactions
                 </Button>
