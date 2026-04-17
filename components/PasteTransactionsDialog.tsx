@@ -5,6 +5,7 @@ import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -51,6 +52,7 @@ interface EditableRow {
   /** Parse warnings — row should be reviewed but can still be inserted if fields are valid. */
   parseErrors: string[];
   removed: boolean;
+  selected: boolean;
   insertError?: string;
 }
 
@@ -118,6 +120,7 @@ export default function PasteTransactionsDialog({
       category: '',
       parseErrors: p.parseErrors,
       removed: false,
+      selected: true,
     }));
 
     setRows(editable);
@@ -164,8 +167,7 @@ export default function PasteTransactionsDialog({
   }, []);
 
   const handleInsert = async (): Promise<void> => {
-    const activeRows = rows.filter((r) => !r.removed);
-    const total = activeRows.length;
+    const toInsert = rows.filter((r) => !r.removed && r.selected);
 
     setStep('inserting');
     setInsertProgress(0);
@@ -175,8 +177,8 @@ export default function PasteTransactionsDialog({
     let inserted = 0;
     let failed = 0;
 
-    for (let idx = 0; idx < activeRows.length; idx++) {
-      const row = activeRows[idx];
+    for (let idx = 0; idx < toInsert.length; idx++) {
+      const row = toInsert[idx];
       try {
         const transaction: Transaction = {
           // crypto.randomUUID() satisfies the UUID format check in validateInsert;
@@ -214,7 +216,7 @@ export default function PasteTransactionsDialog({
       setFailedCount(failed);
 
       // Brief pause between inserts to avoid back-end rate limiting
-      if (idx < activeRows.length - 1) {
+      if (idx < toInsert.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, 400));
       }
     }
@@ -225,11 +227,22 @@ export default function PasteTransactionsDialog({
 
   // Derived state for review step
   const activeRows = rows.filter((r) => !r.removed);
-  const ambiguousCount = activeRows.filter((r) => r.parseErrors.length > 0).length;
-  const invalidRows = activeRows.filter(
+  const selectedRows = activeRows.filter((r) => r.selected);
+  const allSelected = activeRows.length > 0 && selectedRows.length === activeRows.length;
+  const someSelected = selectedRows.length > 0 && selectedRows.length < activeRows.length;
+  const ambiguousCount = selectedRows.filter((r) => r.parseErrors.length > 0).length;
+  const invalidRows = selectedRows.filter(
     (r) => !r.date || !r.description.trim() || isNaN(parseFloat(r.amount)),
   );
-  const canInsert = invalidRows.length === 0 && activeRows.length > 0;
+  const canInsert = invalidRows.length === 0 && selectedRows.length > 0;
+
+  const handleSelectAll = useCallback((checked: boolean) => {
+    setRows((prev) => prev.map((r) => (r.removed ? r : { ...r, selected: checked })));
+  }, []);
+
+  const handleToggleSelect = useCallback((id: string, checked: boolean) => {
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, selected: checked } : r)));
+  }, []);
 
   const dialogTitle: Record<DialogStep, string> = {
     paste: 'Paste Transactions',
@@ -308,6 +321,13 @@ export default function PasteTransactionsDialog({
               <Table size="small">
                 <TableHead>
                   <TableRow>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={allSelected}
+                        indeterminate={someSelected}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                      />
+                    </TableCell>
                     <TableCell sx={{ width: 32 }} />
                     <TableCell>Date</TableCell>
                     <TableCell>Description</TableCell>
@@ -347,6 +367,14 @@ export default function PasteTransactionsDialog({
                             },
                           }}
                         >
+                          {/* Select */}
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={row.selected}
+                              onChange={(e) => handleToggleSelect(row.id, e.target.checked)}
+                            />
+                          </TableCell>
+
                           {/* Status icon */}
                           <TableCell>
                             {hasFieldError ? (
@@ -455,11 +483,11 @@ export default function PasteTransactionsDialog({
           <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <CircularProgress />
             <Typography>
-              {insertProgress} / {activeRows.length} inserted
+              {insertProgress} / {selectedRows.length} inserted
             </Typography>
             <LinearProgress
               variant="determinate"
-              value={activeRows.length > 0 ? (insertProgress / activeRows.length) * 100 : 0}
+              value={selectedRows.length > 0 ? (insertProgress / selectedRows.length) * 100 : 0}
               sx={{ width: '100%' }}
             />
           </Box>
@@ -511,13 +539,14 @@ export default function PasteTransactionsDialog({
 
         {step === 'review' && (
           <>
+            <Button onClick={handleClose}>Cancel</Button>
             <Button onClick={() => setStep('paste')}>Back</Button>
             <Typography variant="body2" color="text.secondary" sx={{ flex: 1, px: 1 }}>
-              {activeRows.length} transaction{activeRows.length !== 1 ? 's' : ''}
+              {selectedRows.length} of {activeRows.length} selected
               {ambiguousCount > 0 && ` · ${ambiguousCount} need review`}
             </Typography>
             <Button variant="contained" onClick={handleInsert} disabled={!canInsert}>
-              Insert {activeRows.length} Transaction{activeRows.length !== 1 ? 's' : ''}
+              Insert {selectedRows.length} Transaction{selectedRows.length !== 1 ? 's' : ''}
             </Button>
           </>
         )}
