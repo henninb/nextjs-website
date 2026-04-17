@@ -34,6 +34,15 @@ export interface ParsedTransactionRow {
 //
 //   Show Transaction     ← block footer
 //
+// Format D — tabular single-line export (MM-DD-YYYY date, all fields on one data line):
+//   03-10-2026
+//
+//   TARGET 1144 COON RAPIDS MN    Sale    **3370    $23.69
+//   03-09-2026
+//
+//   TARGET.COM 800-591- CREDIT    Return        -$2.25
+//   ↑ description                 ↑ type  ↑card  ↑ amount (first $ field)
+//
 // Rules shared by all formats:
 //   • Reference / suffix lines starting with '#' are ignored.
 //   • Only the FIRST dollar amount on an amount line is captured.
@@ -43,6 +52,8 @@ export interface ParsedTransactionRow {
 const FORMAT_A = /^Transaction Details for Row \d+/i;
 const FORMAT_B = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\S/;
 const FORMAT_C = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i;
+/** MM-DD-YYYY with dashes and a 4-digit year — distinct from Formats A/B/C. */
+const FORMAT_D = /^\d{2}-\d{2}-\d{4}$/;
 
 const MONTH_IDX: Record<string, number> = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
@@ -51,7 +62,7 @@ const MONTH_IDX: Record<string, number> = {
 
 /** Returns true when a line begins a new transaction block in any format. */
 function isTransactionHeader(line: string): boolean {
-  return FORMAT_A.test(line) || FORMAT_B.test(line) || FORMAT_C.test(line);
+  return FORMAT_A.test(line) || FORMAT_B.test(line) || FORMAT_C.test(line) || FORMAT_D.test(line);
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
@@ -91,6 +102,19 @@ function parseMonthDay(line: string, errors: string[]): Date | null {
     ? now.getFullYear() - 1
     : now.getFullYear();
   return new Date(year, month, day);
+}
+
+/** Parse MM-DD-YYYY (dashes, 4-digit year) into a Date; appends to errors on failure. */
+function parseDateDashed(dateStr: string, errors: string[]): Date | null {
+  const m = dateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!m) {
+    errors.push(`Cannot parse date: "${dateStr}"`);
+    return null;
+  }
+  const d = new Date(parseInt(m[3], 10), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+  if (!isNaN(d.getTime())) return d;
+  errors.push(`Cannot parse date: "${dateStr}"`);
+  return null;
 }
 
 // ─── Amount helper ────────────────────────────────────────────────────────────
@@ -185,6 +209,35 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       i = amount.nextIndex;
 
       rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+
+    // ── Format D ────────────────────────────────────────────────────────────
+    } else if (FORMAT_D.test(line)) {
+      const date = parseDateDashed(line, errors);
+      i++;
+
+      // Skip the blank/space separator line, then read the single data line
+      let description = '';
+      let amount: number | null = null;
+
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue; // blank separator — skip
+
+        // Data line: "DESCRIPTION    Sale/Return    **XXXX    $AMOUNT"
+        // Description = everything before the first 2+-space separator
+        const firstField = next.match(/^(.+?)\s{2,}/);
+        description = firstField ? firstField[1].trim() : next.trim();
+
+        // Amount = first dollar-sign value anywhere on the line
+        amount = parseFirstAmount(next);
+        break; // entire block is on this one line
+      }
+
+      if (!description) errors.push('Description is empty');
+      if (amount === null) errors.push('No amount found');
+
+      rows.push({ id: crypto.randomUUID(), date, description, amount, parseErrors: errors });
 
     // ── Format C ────────────────────────────────────────────────────────────
     } else {

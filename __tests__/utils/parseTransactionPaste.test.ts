@@ -12,6 +12,23 @@ function blockB(date: string, desc: string, ref: string, amount: string): string
   return `${date}    ${date}    ${desc}\n${ref}\n${amount}`;
 }
 
+/**
+ * Format D block: MM-DD-YYYY date, blank line, single data line.
+ * type defaults to "Sale". Card suffix is optional.
+ */
+function blockD(
+  date: string,
+  desc: string,
+  amount: string,
+  type = 'Sale',
+  cardSuffix = '**3370',
+): string {
+  const dataLine = cardSuffix
+    ? `${desc}    ${type}    ${cardSuffix}    ${amount}`
+    : `${desc}    ${type}        ${amount}`;
+  return `${date}\n \n${dataLine}`;
+}
+
 /** Format C block with optional "Pending" status line and 2-letter initials. */
 function blockC(
   date: string,
@@ -259,6 +276,116 @@ describe('parseTransactionPaste', () => {
     });
   });
 
+  // ── Format D ─────────────────────────────────────────────────────────────
+
+  describe('Format D — tabular single-line export', () => {
+    it('should parse a single Sale transaction', () => {
+      const [row] = parseTransactionPaste(
+        blockD('03-10-2026', 'TARGET 1144 COON RAPIDS MN', '$23.69'),
+      );
+      expect(row.description).toBe('TARGET 1144 COON RAPIDS MN');
+      expect(row.amount).toBe(23.69);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it('should parse the date from MM-DD-YYYY format', () => {
+      const [row] = parseTransactionPaste(
+        blockD('03-10-2026', 'TARGET 1144 COON RAPIDS MN', '$23.69'),
+      );
+      expect(row.date).toBeInstanceOf(Date);
+      expect(row.date!.getFullYear()).toBe(2026);
+      expect(row.date!.getMonth()).toBe(2); // March (0-indexed)
+      expect(row.date!.getDate()).toBe(10);
+    });
+
+    it('should parse a Return (negative amount)', () => {
+      const [row] = parseTransactionPaste(
+        blockD('03-09-2026', 'TARGET.COM 800-591- CREDIT', '-$2.25', 'Return', ''),
+      );
+      expect(row.description).toBe('TARGET.COM 800-591- CREDIT');
+      expect(row.amount).toBe(-2.25);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it('should ignore the card suffix (**XXXX) and transaction type field', () => {
+      const [row] = parseTransactionPaste(
+        blockD('03-10-2026', 'TARGET 1144 COON RAPIDS MN', '$2.51', 'Sale', '**3370'),
+      );
+      expect(row.description).toBe('TARGET 1144 COON RAPIDS MN');
+      expect(row.description).not.toContain('**');
+      expect(row.description).not.toContain('Sale');
+    });
+
+    it('should extract the description as the first field before the 2+-space separator', () => {
+      const raw = '03-10-2026\n \nTARGET 1144 COON RAPIDS MN    Sale    **3370    $23.69';
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe('TARGET 1144 COON RAPIDS MN');
+    });
+
+    it('should tolerate the blank/space separator line between date and data line', () => {
+      // Space-only separator (as seen in the real paste)
+      const raw = '03-10-2026\n \nTARGET 1144 COON RAPIDS MN    Sale    **3370    $23.69';
+      expect(parseTransactionPaste(raw)[0].parseErrors).toHaveLength(0);
+
+      // Blank separator
+      const raw2 = '03-10-2026\n\nTARGET 1144 COON RAPIDS MN    Sale    **3370    $23.69';
+      expect(parseTransactionPaste(raw2)[0].parseErrors).toHaveLength(0);
+    });
+
+    it('should parse multiple consecutive Format D blocks', () => {
+      const raw = [
+        blockD('03-10-2026', 'TARGET 1144 COON RAPIDS MN', '$23.69'),
+        blockD('03-10-2026', 'TARGET 1144 COON RAPIDS MN', '$2.51'),
+        blockD('03-09-2026', 'TARGET.COM 800-591- CREDIT', '-$2.25', 'Return', ''),
+        blockD('03-09-2026', 'TARGET 1144 COON RAPIDS MN', '$18.17'),
+      ].join('\n');
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(4);
+      expect(rows[0]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 23.69 });
+      expect(rows[1]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 2.51 });
+      expect(rows[2]).toMatchObject({ description: 'TARGET.COM 800-591- CREDIT', amount: -2.25 });
+      expect(rows[3]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 18.17 });
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+
+    it('should flag a row when the data line is missing', () => {
+      const raw = '03-10-2026\n \n03-11-2026'; // second date immediately follows
+      const [row] = parseTransactionPaste(raw);
+      expect(row.amount).toBeNull();
+      expect(row.parseErrors.some((e) => e.toLowerCase().includes('amount'))).toBe(true);
+    });
+
+    it('should parse the real-world 4-row Format D sample', () => {
+      const raw = `03-10-2026
+
+TARGET 1144 COON RAPIDS MN    Sale    **3370    $23.69
+03-10-2026
+
+TARGET 1144 COON RAPIDS MN    Sale    **3370    $2.51
+03-09-2026
+
+TARGET.COM 800-591- CREDIT    Return        -$2.25
+03-09-2026
+
+TARGET 1144 COON RAPIDS MN    Sale    **3370    $18.17    `;
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(4);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+
+      expect(rows[0]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 23.69 });
+      expect(rows[1]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 2.51 });
+      expect(rows[2]).toMatchObject({ description: 'TARGET.COM 800-591- CREDIT', amount: -2.25 });
+      expect(rows[3]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 18.17 });
+
+      // Dates
+      expect(rows[0].date!.getMonth()).toBe(2); // March
+      expect(rows[0].date!.getDate()).toBe(10);
+      expect(rows[2].date!.getDate()).toBe(9);
+    });
+  });
+
   // ── Mixed formats ─────────────────────────────────────────────────────────
 
   describe('mixed formats in one paste', () => {
@@ -298,6 +425,23 @@ describe('parseTransactionPaste', () => {
       expect(rows[0].amount).toBe(60.21);
       expect(rows[1].amount).toBe(41.03);
       expect(rows[2].amount).toBe(7.37);
+    });
+
+    it('should parse all four formats in the same paste', () => {
+      const raw = [
+        blockA(1, '04/16/26', 'ALDI 72086', '#...1193', '$60.21'),
+        blockB('04/13/26', 'TIRES PLUS COON RAPIDS MN', '#REF', '$41.03    $200.00'),
+        blockC('Apr 12', "BILL'S SUPERETTE #8 RAMSEY MN", '$7.37', 'MH', false),
+        blockD('03-10-2026', 'TARGET 1144 COON RAPIDS MN', '$23.69'),
+      ].join('\n');
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(4);
+      expect(rows[0].amount).toBe(60.21);
+      expect(rows[1].amount).toBe(41.03);
+      expect(rows[2].amount).toBe(7.37);
+      expect(rows[3].amount).toBe(23.69);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
   });
 
