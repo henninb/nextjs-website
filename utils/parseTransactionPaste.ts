@@ -43,6 +43,14 @@ export interface ParsedTransactionRow {
 //   TARGET.COM 800-591- CREDIT    Return        -$2.25
 //   ↑ description                 ↑ type  ↑card  ↑ amount (first $ field)
 //
+// Format E — Citi-style card view (MMM DD, YYYY date, cardholder on own line):
+//   Apr 12, 2026
+//   KARI HENNING               ← cardholder name — skip
+//   COSTCO WHSE #0372 COON RAPIDS MN
+//   Eligible for Citi® Flex Pay  ← optional promo text — skip
+//   $122.84                    ← transaction amount
+//   $1,110.74                  ← running balance — ignore (only first $ taken)
+//
 // Rules shared by all formats:
 //   • Reference / suffix lines starting with '#' are ignored.
 //   • Only the FIRST dollar amount on an amount line is captured.
@@ -54,6 +62,8 @@ const FORMAT_B = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\
 const FORMAT_C = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i;
 /** MM-DD-YYYY with dashes and a 4-digit year — distinct from Formats A/B/C. */
 const FORMAT_D = /^\d{2}-\d{2}-\d{4}$/;
+/** "MMM DD, YYYY" — comma + full year distinguishes it from Format C's "MMM DD". */
+const FORMAT_E = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s*\d{4}$/i;
 
 const MONTH_IDX: Record<string, number> = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
@@ -62,7 +72,13 @@ const MONTH_IDX: Record<string, number> = {
 
 /** Returns true when a line begins a new transaction block in any format. */
 function isTransactionHeader(line: string): boolean {
-  return FORMAT_A.test(line) || FORMAT_B.test(line) || FORMAT_C.test(line) || FORMAT_D.test(line);
+  return (
+    FORMAT_A.test(line) ||
+    FORMAT_B.test(line) ||
+    FORMAT_E.test(line) || // must precede FORMAT_C — both start with month abbreviation
+    FORMAT_C.test(line) ||
+    FORMAT_D.test(line)
+  );
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
@@ -102,6 +118,21 @@ function parseMonthDay(line: string, errors: string[]): Date | null {
     ? now.getFullYear() - 1
     : now.getFullYear();
   return new Date(year, month, day);
+}
+
+/** Parse "MMM DD, YYYY" (e.g. "Apr 12, 2026") into a Date; appends to errors on failure. */
+function parseDateMonthDayYear(line: string, errors: string[]): Date | null {
+  const m = line.match(
+    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),\s*(\d{4})$/i,
+  );
+  if (!m) {
+    errors.push(`Cannot parse date: "${line}"`);
+    return null;
+  }
+  const d = new Date(parseInt(m[3], 10), MONTH_IDX[m[1].toLowerCase()], parseInt(m[2], 10));
+  if (!isNaN(d.getTime())) return d;
+  errors.push(`Cannot parse date: "${line}"`);
+  return null;
 }
 
 /** Parse MM-DD-YYYY (dashes, 4-digit year) into a Date; appends to errors on failure. */
@@ -238,6 +269,38 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       if (amount === null) errors.push('No amount found');
 
       rows.push({ id: crypto.randomUUID(), date, description, amount, parseErrors: errors });
+
+    // ── Format E ────────────────────────────────────────────────────────────
+    } else if (FORMAT_E.test(line)) {
+      const date = parseDateMonthDayYear(line, errors);
+      i++;
+
+      // Skip cardholder name — always the first non-empty line after the date
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        break; // consumed
+      }
+
+      // Read description — next non-empty line
+      let description = '';
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        description = next;
+        break;
+      }
+      if (!description) errors.push('Description is empty');
+
+      // Scan for first line that starts with $ or -$ (skips promo text and stops after amount)
+      const amount = scanForAmount(lines, i, errors, (next) =>
+        /^-?\$/.test(next) ? 'try' : 'skip',
+      );
+      i = amount.nextIndex;
+
+      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
 
     // ── Format C ────────────────────────────────────────────────────────────
     } else {
