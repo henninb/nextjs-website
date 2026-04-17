@@ -253,7 +253,7 @@ export default function PasteTransactionsDialog({
   };
 
   return (
-    <Dialog open={open} onClose={step === 'paste' || step === 'done' ? handleClose : undefined} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={step === 'paste' || step === 'review' || step === 'done' ? handleClose : undefined} maxWidth="md" fullWidth>
       <DialogTitle>{dialogTitle[step]}</DialogTitle>
 
       <DialogContent>
