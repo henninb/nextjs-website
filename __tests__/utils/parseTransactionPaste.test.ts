@@ -151,9 +151,9 @@ describe('parseTransactionPaste', () => {
   describe('Format B — plain double-date header', () => {
     it('should parse a single transaction', () => {
       const [row] = parseTransactionPaste(
-        blockB('04/13/26', 'WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 MN', '#1234567FXXYYZZ001', '$50.00    $12,345.67'),
+        blockB('04/13/26', 'WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 XX', '#1234567FXXYYZZ001', '$50.00    $12,345.67'),
       );
-      expect(row.description).toBe('WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 MN');
+      expect(row.description).toBe('WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 XX');
       expect(row.amount).toBe(50);
       expect(row.parseErrors).toHaveLength(0);
     });
@@ -166,15 +166,15 @@ describe('parseTransactionPaste', () => {
 
     it('should ignore the alphanumeric reference line', () => {
       const [row] = parseTransactionPaste(
-        blockB('04/13/26', "JOHN'S DISCOUNT FOODS RIVERSIDE MN", '#9876543FAABBCC002', '$44.55    $12,295.67'),
+        blockB('04/13/26', "JOHN'S DISCOUNT FOODS RIVERSIDE XX", '#9876543FAABBCC002', '$44.55    $12,295.67'),
       );
-      expect(row.description).toBe("JOHN'S DISCOUNT FOODS RIVERSIDE MN");
+      expect(row.description).toBe("JOHN'S DISCOUNT FOODS RIVERSIDE XX");
       expect(row.parseErrors).toHaveLength(0);
     });
 
     it('should extract only the first (charge) amount and ignore the running balance', () => {
       const [row] = parseTransactionPaste(
-        blockB('04/13/26', 'BRAKES PLUS 112233 SPRINGFIELD MN', '#REF', '$41.03    $12,245.27'),
+        blockB('04/13/26', 'BRAKES PLUS 112233 SPRINGFIELD XX', '#REF', '$41.03    $12,245.27'),
       );
       expect(row.amount).toBe(41.03);
       expect(row.amount).not.toBe(12245.27);
@@ -206,10 +206,10 @@ describe('parseTransactionPaste', () => {
     });
 
     it('should parse a posted (non-pending) transaction', () => {
-      const raw = blockC("Apr 13", "SAM'S CORNER MART #5 RIVERSIDE MN", '$44.45', 'MH', false);
+      const raw = blockC("Apr 13", "SAM'S CORNER MART #5 RIVERSIDE XX", '$44.45', 'MH', false);
       const [row] = parseTransactionPaste(raw);
 
-      expect(row.description).toBe("SAM'S CORNER MART #5 RIVERSIDE MN");
+      expect(row.description).toBe("SAM'S CORNER MART #5 RIVERSIDE XX");
       expect(row.amount).toBe(44.45);
       expect(row.parseErrors).toHaveLength(0);
     });
@@ -251,7 +251,7 @@ describe('parseTransactionPaste', () => {
     });
 
     it('should skip the cardholder initials line (LH)', () => {
-      const [row] = parseTransactionPaste(blockC('Apr 12', 'GENERAL STORE 011445SPRINGFIELD MN', '$5.40', 'LH'));
+      const [row] = parseTransactionPaste(blockC('Apr 12', 'GENERAL STORE 011445SPRINGFIELD XX', '$5.40', 'LH'));
       expect(row.amount).toBe(5.40);
       expect(row.parseErrors).toHaveLength(0);
     });
@@ -268,14 +268,14 @@ describe('parseTransactionPaste', () => {
       const raw = [
         blockC('Apr 16', 'FOOD MART', '$1.89', 'MH', true),
         blockC('Apr 16', 'GENERAL STORE T9999', '$17.28', 'MH', true),
-        blockC('Apr 13', "SAM'S CORNER MART #5 RIVERSIDE MN", '$44.45', 'MH', false),
+        blockC('Apr 13', "SAM'S CORNER MART #5 RIVERSIDE XX", '$44.45', 'MH', false),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(3);
       expect(rows[0]).toMatchObject({ description: 'FOOD MART', amount: 1.89 });
       expect(rows[1]).toMatchObject({ description: 'GENERAL STORE T9999', amount: 17.28 });
-      expect(rows[2]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE MN", amount: 44.45 });
+      expect(rows[2]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE XX", amount: 44.45 });
     });
 
     it('should handle all months of the year', () => {
@@ -299,16 +299,16 @@ describe('parseTransactionPaste', () => {
   describe('Format D — tabular single-line export', () => {
     it('should parse a single Sale transaction', () => {
       const [row] = parseTransactionPaste(
-        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$23.69'),
+        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$23.69'),
       );
-      expect(row.description).toBe('GENERAL STORE 9999 SPRINGFIELD MN');
+      expect(row.description).toBe('GENERAL STORE 9999 SPRINGFIELD XX');
       expect(row.amount).toBe(23.69);
       expect(row.parseErrors).toHaveLength(0);
     });
 
     it('should parse the date from MM-DD-YYYY format', () => {
       const [row] = parseTransactionPaste(
-        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$23.69'),
+        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$23.69'),
       );
       expect(row.date).toBeInstanceOf(Date);
       expect(row.date!.getFullYear()).toBe(2026);
@@ -327,43 +327,43 @@ describe('parseTransactionPaste', () => {
 
     it('should ignore the card suffix (**XXXX) and transaction type field', () => {
       const [row] = parseTransactionPaste(
-        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$2.51', 'Sale', '**9999'),
+        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$2.51', 'Sale', '**9999'),
       );
-      expect(row.description).toBe('GENERAL STORE 9999 SPRINGFIELD MN');
+      expect(row.description).toBe('GENERAL STORE 9999 SPRINGFIELD XX');
       expect(row.description).not.toContain('**');
       expect(row.description).not.toContain('Sale');
     });
 
     it('should extract the description as the first field before the 2+-space separator', () => {
-      const raw = '03-10-2026\n \nGENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $23.69';
+      const raw = '03-10-2026\n \nGENERAL STORE 9999 SPRINGFIELD XX    Sale    **9999    $23.69';
       const [row] = parseTransactionPaste(raw);
-      expect(row.description).toBe('GENERAL STORE 9999 SPRINGFIELD MN');
+      expect(row.description).toBe('GENERAL STORE 9999 SPRINGFIELD XX');
     });
 
     it('should tolerate the blank/space separator line between date and data line', () => {
       // Space-only separator (as seen in the real paste)
-      const raw = '03-10-2026\n \nGENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $23.69';
+      const raw = '03-10-2026\n \nGENERAL STORE 9999 SPRINGFIELD XX    Sale    **9999    $23.69';
       expect(parseTransactionPaste(raw)[0].parseErrors).toHaveLength(0);
 
       // Blank separator
-      const raw2 = '03-10-2026\n\nGENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $23.69';
+      const raw2 = '03-10-2026\n\nGENERAL STORE 9999 SPRINGFIELD XX    Sale    **9999    $23.69';
       expect(parseTransactionPaste(raw2)[0].parseErrors).toHaveLength(0);
     });
 
     it('should parse multiple consecutive Format D blocks', () => {
       const raw = [
-        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$23.69'),
-        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$2.51'),
+        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$23.69'),
+        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$2.51'),
         blockD('03-09-2026', 'GENERAL STORE.COM 800-555- CREDIT', '-$2.25', 'Return', ''),
-        blockD('03-09-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$18.17'),
+        blockD('03-09-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$18.17'),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(4);
-      expect(rows[0]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD MN', amount: 23.69 });
-      expect(rows[1]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD MN', amount: 2.51 });
+      expect(rows[0]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD XX', amount: 23.69 });
+      expect(rows[1]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD XX', amount: 2.51 });
       expect(rows[2]).toMatchObject({ description: 'GENERAL STORE.COM 800-555- CREDIT', amount: -2.25 });
-      expect(rows[3]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD MN', amount: 18.17 });
+      expect(rows[3]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD XX', amount: 18.17 });
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
 
@@ -377,25 +377,25 @@ describe('parseTransactionPaste', () => {
     it('should parse the real-world 4-row Format D sample', () => {
       const raw = `03-10-2026
 
-GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $23.69
+GENERAL STORE 9999 SPRINGFIELD XX    Sale    **9999    $23.69
 03-10-2026
 
-GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $2.51
+GENERAL STORE 9999 SPRINGFIELD XX    Sale    **9999    $2.51
 03-09-2026
 
 GENERAL STORE.COM 800-555- CREDIT    Return        -$2.25
 03-09-2026
 
-GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $18.17    `;
+GENERAL STORE 9999 SPRINGFIELD XX    Sale    **9999    $18.17    `;
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(4);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
 
-      expect(rows[0]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD MN', amount: 23.69 });
-      expect(rows[1]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD MN', amount: 2.51 });
+      expect(rows[0]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD XX', amount: 23.69 });
+      expect(rows[1]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD XX', amount: 2.51 });
       expect(rows[2]).toMatchObject({ description: 'GENERAL STORE.COM 800-555- CREDIT', amount: -2.25 });
-      expect(rows[3]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD MN', amount: 18.17 });
+      expect(rows[3]).toMatchObject({ description: 'GENERAL STORE 9999 SPRINGFIELD XX', amount: 18.17 });
 
       // Dates
       expect(rows[0].date!.getMonth()).toBe(2); // March
@@ -409,9 +409,9 @@ GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $18.17    `;
   describe('Format E — Citi-style card view (MMM DD, YYYY)', () => {
     it('should parse a transaction without a promo line', () => {
       const [row] = parseTransactionPaste(
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$3.23'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23'),
       );
-      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD MN');
+      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD XX');
       expect(row.amount).toBe(3.23);
       expect(row.parseErrors).toHaveLength(0);
     });
@@ -421,20 +421,20 @@ GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $18.17    `;
         blockE(
           'Apr 12, 2026',
           'JANE DOE',
-          'WAREHOUSE CLUB #1234 SPRINGFIELD MN',
+          'WAREHOUSE CLUB #1234 SPRINGFIELD XX',
           '$122.84',
           '$5,678.90',
           'Eligible for Citi® Flex Pay',
         ),
       );
-      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD MN');
+      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD XX');
       expect(row.amount).toBe(122.84);
       expect(row.parseErrors).toHaveLength(0);
     });
 
     it('should parse the date from "MMM DD, YYYY" format', () => {
       const [row] = parseTransactionPaste(
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$3.23'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23'),
       );
       expect(row.date).toBeInstanceOf(Date);
       expect(row.date!.getFullYear()).toBe(2026);
@@ -451,29 +451,29 @@ GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $18.17    `;
 
     it('should skip the cardholder name line', () => {
       const [row] = parseTransactionPaste(
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$3.23'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23'),
       );
       expect(row.description).not.toContain('JANE');
-      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD MN');
+      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD XX');
     });
 
     it('should skip optional promo text and still find the amount', () => {
       const raw = [
         'Apr 12, 2026',
         'JANE DOE',
-        'WAREHOUSE CLUB #1234 SPRINGFIELD MN',
+        'WAREHOUSE CLUB #1234 SPRINGFIELD XX',
         'Eligible for Citi® Flex Pay',
         '$122.84',
         '$5,678.90',
       ].join('\n');
       const [row] = parseTransactionPaste(raw);
       expect(row.amount).toBe(122.84);
-      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD MN');
+      expect(row.description).toBe('WAREHOUSE CLUB #1234 SPRINGFIELD XX');
     });
 
     it('should take the first dollar amount and ignore the running balance', () => {
       const [row] = parseTransactionPaste(
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$122.84', '$5,678.90'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$122.84', '$5,678.90'),
       );
       expect(row.amount).toBe(122.84);
       expect(row.amount).not.toBe(5678.90);
@@ -481,7 +481,7 @@ GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $18.17    `;
 
     it('should not be confused by a # in the description', () => {
       const [row] = parseTransactionPaste(
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$3.23'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23'),
       );
       expect(row.description).toContain('#1234');
       expect(row.parseErrors).toHaveLength(0);
@@ -489,28 +489,28 @@ GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $18.17    `;
 
     it('should parse multiple consecutive blocks', () => {
       const raw = [
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$122.84', '$5,678.90', 'Eligible for Citi® Flex Pay'),
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$3.23', '$5,555.06'),
-        blockE('Apr 07, 2026', 'JANE DOE', '7890 PARKWAY AVE CENTERVILLE MN', '$15.98', '$5,551.83'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$122.84', '$5,678.90', 'Eligible for Citi® Flex Pay'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23', '$5,555.06'),
+        blockE('Apr 07, 2026', 'JANE DOE', '7890 PARKWAY AVE CENTERVILLE XX', '$15.98', '$5,551.83'),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(3);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
-      expect(rows[0]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', amount: 122.84 });
-      expect(rows[1]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', amount: 3.23 });
-      expect(rows[2]).toMatchObject({ description: '7890 PARKWAY AVE CENTERVILLE MN', amount: 15.98 });
+      expect(rows[0]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', amount: 122.84 });
+      expect(rows[1]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', amount: 3.23 });
+      expect(rows[2]).toMatchObject({ description: '7890 PARKWAY AVE CENTERVILLE XX', amount: 15.98 });
     });
 
     it('should not confuse Format E ("Apr 12, 2026") with Format C ("Apr 16")', () => {
       const raw = [
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$3.23'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23'),
         blockC('Apr 16', 'FOOD MART', '$1.89', 'MH', false),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(2);
-      expect(rows[0]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', amount: 3.23 });
+      expect(rows[0]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', amount: 3.23 });
       expect(rows[0].date!.getFullYear()).toBe(2026);
       expect(rows[1]).toMatchObject({ description: 'FOOD MART', amount: 1.89 });
     });
@@ -518,18 +518,18 @@ GENERAL STORE 9999 SPRINGFIELD MN    Sale    **9999    $18.17    `;
     it('should parse the real-world 3-row Format E sample', () => {
       const raw = `Apr 12, 2026
 JANE DOE
-WAREHOUSE CLUB #1234 SPRINGFIELD MN
+WAREHOUSE CLUB #1234 SPRINGFIELD XX
 Eligible for Citi® Flex Pay
 $122.84
 $5,678.90
 Apr 12, 2026
 JANE DOE
-WAREHOUSE CLUB #1234 SPRINGFIELD MN
+WAREHOUSE CLUB #1234 SPRINGFIELD XX
 $3.23
 $5,555.06
 Apr 07, 2026
 JANE DOE
-7890 PARKWAY AVE CENTERVILLE MN
+7890 PARKWAY AVE CENTERVILLE XX
 $15.98
 $5,551.83`;
 
@@ -537,9 +537,9 @@ $5,551.83`;
       expect(rows).toHaveLength(3);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
 
-      expect(rows[0]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', amount: 122.84 });
-      expect(rows[1]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', amount: 3.23 });
-      expect(rows[2]).toMatchObject({ description: '7890 PARKWAY AVE CENTERVILLE MN', amount: 15.98 });
+      expect(rows[0]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', amount: 122.84 });
+      expect(rows[1]).toMatchObject({ description: 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', amount: 3.23 });
+      expect(rows[2]).toMatchObject({ description: '7890 PARKWAY AVE CENTERVILLE XX', amount: 15.98 });
 
       expect(rows[0].date!.getFullYear()).toBe(2026);
       expect(rows[0].date!.getMonth()).toBe(3); // April
@@ -565,8 +565,8 @@ $5,551.83`;
 
     it('should parse Format B and Format C in the same paste', () => {
       const raw = [
-        blockB('04/13/26', 'WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 MN', '#REF1', '$50.00    $12,345.67'),
-        blockC('Apr 13', "SAM'S CORNER MART #5 RIVERSIDE MN", '$44.45', 'MH', false),
+        blockB('04/13/26', 'WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 XX', '#REF1', '$50.00    $12,345.67'),
+        blockC('Apr 13', "SAM'S CORNER MART #5 RIVERSIDE XX", '$44.45', 'MH', false),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
@@ -578,8 +578,8 @@ $5,551.83`;
     it('should parse all three formats in the same paste', () => {
       const raw = [
         blockA(1, '04/16/26', 'FOOD MART 55555', '#...9999', '$60.21'),
-        blockB('04/13/26', 'BRAKES PLUS SPRINGFIELD MN', '#REF', '$41.03    $200.00'),
-        blockC('Apr 12', "SAM'S CORNER MART #5 RIVERSIDE MN", '$7.37', 'MH', false),
+        blockB('04/13/26', 'BRAKES PLUS SPRINGFIELD XX', '#REF', '$41.03    $200.00'),
+        blockC('Apr 12', "SAM'S CORNER MART #5 RIVERSIDE XX", '$7.37', 'MH', false),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
@@ -592,9 +592,9 @@ $5,551.83`;
     it('should parse all four formats in the same paste', () => {
       const raw = [
         blockA(1, '04/16/26', 'FOOD MART 55555', '#...9999', '$60.21'),
-        blockB('04/13/26', 'BRAKES PLUS SPRINGFIELD MN', '#REF', '$41.03    $200.00'),
-        blockC('Apr 12', "SAM'S CORNER MART #5 RIVERSIDE MN", '$7.37', 'MH', false),
-        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$23.69'),
+        blockB('04/13/26', 'BRAKES PLUS SPRINGFIELD XX', '#REF', '$41.03    $200.00'),
+        blockC('Apr 12', "SAM'S CORNER MART #5 RIVERSIDE XX", '$7.37', 'MH', false),
+        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$23.69'),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
@@ -609,10 +609,10 @@ $5,551.83`;
     it('should parse all five formats in the same paste', () => {
       const raw = [
         blockA(1, '04/16/26', 'FOOD MART 55555', '#...9999', '$60.21'),
-        blockB('04/13/26', 'BRAKES PLUS SPRINGFIELD MN', '#REF', '$41.03    $200.00'),
-        blockC('Apr 12', "SAM'S CORNER MART #5 RIVERSIDE MN", '$7.37', 'MH', false),
-        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD MN', '$23.69'),
-        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD MN', '$3.23'),
+        blockB('04/13/26', 'BRAKES PLUS SPRINGFIELD XX', '#REF', '$41.03    $200.00'),
+        blockC('Apr 12', "SAM'S CORNER MART #5 RIVERSIDE XX", '$7.37', 'MH', false),
+        blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$23.69'),
+        blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23'),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
@@ -762,28 +762,28 @@ $29.73`;
     });
 
     it('should parse the 5-row Format B sample', () => {
-      const raw = `04/13/26    04/13/26    WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 MN
+      const raw = `04/13/26    04/13/26    WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 XX
 #1234567FXXYYZZ001
 $50.00    $12,345.67
-04/13/26    04/13/26    JOHN 'S DISCOUNT FOODS RIVERSIDE MN
+04/13/26    04/13/26    JOHN 'S DISCOUNT FOODS RIVERSIDE XX
 #9876543FAABBCC002
 $44.55    $12,295.67
 04/13/26    04/13/26    PAYPAL *GLOBALPAYINC 800-555-1234 CA
 #5544332FDDEEFF003
 $4.95    $12,250.22
-04/12/26    04/12/26    BRAKES PLUS 112233 SPRINGFIELD MN
+04/12/26    04/12/26    BRAKES PLUS 112233 SPRINGFIELD XX
 #7788990FGGHHIJ004
 $41.03    $12,245.27
-04/12/26    04/12/26    BRAKES PLUS 112233 SPRINGFIELD MN
+04/12/26    04/12/26    BRAKES PLUS 112233 SPRINGFIELD XX
 #6655441FKKLLMM005
 $36.45    $12,204.24`;
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(5);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
-      expect(rows[0]).toMatchObject({ description: 'WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 MN', amount: 50 });
-      expect(rows[1]).toMatchObject({ description: "JOHN 'S DISCOUNT FOODS RIVERSIDE MN", amount: 44.55 });
-      expect(rows[4]).toMatchObject({ description: 'BRAKES PLUS 112233 SPRINGFIELD MN', amount: 36.45 });
+      expect(rows[0]).toMatchObject({ description: 'WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 XX', amount: 50 });
+      expect(rows[1]).toMatchObject({ description: "JOHN 'S DISCOUNT FOODS RIVERSIDE XX", amount: 44.55 });
+      expect(rows[4]).toMatchObject({ description: 'BRAKES PLUS 112233 SPRINGFIELD XX', amount: 36.45 });
     });
 
     it('should parse the 7-row Format C sample', () => {
@@ -812,28 +812,28 @@ $34.72
 
 Show Transaction
 Apr 13
-SAM'S CORNER MART #5 RIVERSIDE MN
+SAM'S CORNER MART #5 RIVERSIDE XX
 
 MH
 $44.45
 
 Show Transaction
 Apr 12
-SAM'S CORNER MART #5 RIVERSIDE MN
+SAM'S CORNER MART #5 RIVERSIDE XX
 
 MH
 $7.37
 
 Show Transaction
 Apr 12
-GENERAL STORE 011445SPRINGFIELD MN
+GENERAL STORE 011445SPRINGFIELD XX
 
 LH
 $5.40
 
 Show Transaction
 Apr 11
-SAM'S CORNER MART #5 RIVERSIDE MN
+SAM'S CORNER MART #5 RIVERSIDE XX
 
 MH
 $0.49
@@ -847,10 +847,10 @@ Show Transaction`;
       expect(rows[0]).toMatchObject({ description: 'FOOD MART', amount: 1.89 });
       expect(rows[1]).toMatchObject({ description: 'GENERAL STORE T9999', amount: 17.28 });
       expect(rows[2]).toMatchObject({ description: 'FOOD MART', amount: 34.72 });
-      expect(rows[3]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE MN", amount: 44.45 });
-      expect(rows[4]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE MN", amount: 7.37 });
-      expect(rows[5]).toMatchObject({ description: 'GENERAL STORE 011445SPRINGFIELD MN', amount: 5.40 });
-      expect(rows[6]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE MN", amount: 0.49 });
+      expect(rows[3]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE XX", amount: 44.45 });
+      expect(rows[4]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE XX", amount: 7.37 });
+      expect(rows[5]).toMatchObject({ description: 'GENERAL STORE 011445SPRINGFIELD XX', amount: 5.40 });
+      expect(rows[6]).toMatchObject({ description: "SAM'S CORNER MART #5 RIVERSIDE XX", amount: 0.49 });
 
       // Verify months and days
       expect(rows[0].date!.getMonth()).toBe(3); // April
