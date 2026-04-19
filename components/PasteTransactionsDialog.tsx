@@ -276,7 +276,7 @@ export default function PasteTransactionsDialog({
               maxRows={20}
               fullWidth
               placeholder={
-                'Transaction Details for Row 1    04/16/26    ALDI 72086\n#...1193\n$60.21\nTransaction Details for Row 2    04/16/26    SAVERS - 1202\n#...1193\n$60.47'
+                'Transaction Details for Row 1    04/16/26    ALDI 00000\n#...4567\n$60.21\nTransaction Details for Row 2    04/16/26    SAVERS - 0000\n#...4567\n$60.47'
               }
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}

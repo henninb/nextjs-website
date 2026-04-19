@@ -331,6 +331,10 @@ export default function TransactionImporter() {
     }, 500);
   };
 
+  const cleanDescription = (description: string): string => {
+    return description.replace(/(\s+[A-Z]{2})+$/, "").trim();
+  };
+
   const parseTransactions = () => {
     if (!accountFilter) {
       setMessage("Please select an account before importing.");
@@ -356,7 +360,8 @@ export default function TransactionImporter() {
           return null;
         }
 
-        const category = getCategoryFromDescription(parts[2]);
+        const description = cleanDescription(parts[2]);
+        const category = getCategoryFromDescription(description);
 
         return {
           transactionDate: new Date(parts[1]),
@@ -366,7 +371,7 @@ export default function TransactionImporter() {
           transactionState: "outstanding",
           transactionType: undefined as unknown as TransactionType,
           guid: "pending-uuid", // Will be replaced with server-generated UUID during insertion
-          description: parts[2],
+          description: description,
           category: category,
           accountType: "debit",
           activeStatus: true,
