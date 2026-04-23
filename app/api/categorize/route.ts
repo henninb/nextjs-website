@@ -9,7 +9,10 @@ import { getCategoryFromDescription } from "../../../utils/categoryMapping";
 import TransactionCategoryMetadata from "../../../model/TransactionCategoryMetadata";
 import { isSessionValid } from "../../../utils/security/edgeAuth";
 
-export const runtime = "edge";
+// nodejs runtime keeps the Map alive across warm invocations on the same instance.
+// For multi-region or multi-instance deployments, replace ipCounters with a
+// distributed store (e.g. @upstash/ratelimit + Redis) to enforce limits globally.
+export const runtime = "nodejs";
 
 // Inbound rate limiter: 20 requests per IP per 60-second window
 const ipCounters = new Map<string, { count: number; resetAt: number }>();
@@ -26,6 +29,19 @@ function checkRateLimit(ip: string): boolean {
   if (entry.count >= RATE_LIMIT) return false;
   entry.count++;
   return true;
+}
+
+// Resolve the real client IP. On Cloudflare, cf-connecting-ip is set by
+// infrastructure and cannot be spoofed by clients. x-forwarded-for is the
+// next best option but is user-controllable behind untrusted proxies — only
+// the first (leftmost) address is taken to avoid IP appending attacks.
+function getClientIp(request: NextRequest): string {
+  return (
+    request.headers.get("cf-connecting-ip") ??
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    "unknown"
+  );
 }
 
 // Request validation schema
@@ -57,10 +73,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    request.headers.get("cf-connecting-ip") ??
-    "unknown";
+  const ip = getClientIp(request);
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
       { success: false, error: "Rate limit exceeded" },

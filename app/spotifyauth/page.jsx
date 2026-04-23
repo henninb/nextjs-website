@@ -21,7 +21,7 @@ const SpotifyAuth = () => {
     if (code) {
       exchangeToken(code);
     } else {
-      const storedAccessToken = localStorage.getItem("access_token");
+      const storedAccessToken = sessionStorage.getItem("access_token");
       if (storedAccessToken) {
         setAccessToken(storedAccessToken);
       }
@@ -29,13 +29,11 @@ const SpotifyAuth = () => {
   }, [code]);
 
   const generateRandomString = (length) => {
-    let text = "";
-    const possible =
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    const chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (let i = 0; i < length; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
+    return Array.from(array, (byte) => chars[byte % chars.length]).join("");
   };
 
   const generateCodeChallenge = async (codeVerifier) => {
@@ -52,7 +50,7 @@ const SpotifyAuth = () => {
   const redirectToAuthorizeEndpoint = () => {
     const codeVerifier = generateRandomString(64);
     generateCodeChallenge(codeVerifier).then((code_challenge) => {
-      window.localStorage.setItem("code_verifier", codeVerifier);
+      window.sessionStorage.setItem("code_verifier", codeVerifier);
       window.location = `${authorize_endpoint}?${new URLSearchParams({
         response_type: "code",
         client_id,
@@ -65,7 +63,7 @@ const SpotifyAuth = () => {
   };
 
   const exchangeToken = (code) => {
-    const code_verifier = localStorage.getItem("code_verifier");
+    const code_verifier = sessionStorage.getItem("code_verifier");
     fetch(exchange_token_endpoint, {
       method: "POST",
       headers: {
@@ -82,8 +80,8 @@ const SpotifyAuth = () => {
       .then((response) => response.json())
       .then((data) => {
         setAccessToken(data.access_token);
-        localStorage.setItem("access_token", data.access_token);
-        localStorage.setItem(
+        sessionStorage.setItem("access_token", data.access_token);
+        sessionStorage.setItem(
           "expires_at",
           new Date().getTime() + data.expires_in * 1000,
         );
@@ -93,7 +91,9 @@ const SpotifyAuth = () => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("expires_at");
+    sessionStorage.removeItem("code_verifier");
     setAccessToken(null);
   };
 
@@ -133,9 +133,21 @@ const SpotifyAuth = () => {
   );
 };
 
+function safeText(str) {
+  const node = document.createTextNode(String(str ?? ""));
+  return node;
+}
+
+function makeElement(tag, children) {
+  const el = document.createElement(tag);
+  children.forEach((child) =>
+    el.appendChild(typeof child === "string" ? safeText(child) : child),
+  );
+  return el;
+}
+
 const getPlayLists = () => {
-  const access_token = localStorage.getItem("access_token");
-  console.log(access_token);
+  const access_token = sessionStorage.getItem("access_token");
   fetch("https://api.spotify.com/v1/me/playlists", {
     headers: {
       Authorization: `Bearer ${access_token}`,
@@ -144,32 +156,30 @@ const getPlayLists = () => {
     .then((response) => response.json())
     .then((data) => {
       const trackDiv = document.getElementById("current-track");
-      console.log(JSON.stringify(data));
+      trackDiv.replaceChildren();
       if (data.items && data.items.length > 0) {
-        const playlists = data.items
-          .map(
-            (playlist) => `
-          <div>
-            <h1>Playlist ID: ${playlist.id}</h1>
-            <h2>Owner Display Name: ${playlist.owner.display_name}</h2>
-          </div>
-        `,
-          )
-          .join("");
-        trackDiv.innerHTML = playlists;
+        data.items.forEach((playlist) => {
+          const div = makeElement("div", [
+            makeElement("h1", [`Playlist ID: ${playlist.id}`]),
+            makeElement("h2", [
+              `Owner Display Name: ${playlist.owner.display_name}`,
+            ]),
+          ]);
+          trackDiv.appendChild(div);
+        });
       } else {
-        trackDiv.innerHTML = "<p>No playlists found</p>";
+        trackDiv.appendChild(makeElement("p", ["No playlists found"]));
       }
     })
     .catch((error) => {
       console.error("Error fetching playlists:", error);
       const trackDiv = document.getElementById("current-track");
-      trackDiv.innerHTML = "<p>Could not fetch playlists</p>";
+      trackDiv.replaceChildren(makeElement("p", ["Could not fetch playlists"]));
     });
 };
 
 const getPlaylistTracks = () => {
-  const access_token = localStorage.getItem("access_token");
+  const access_token = sessionStorage.getItem("access_token");
   const playlist_id = "1IdWEGOcOIvIQNf664qSvL";
 
   fetch(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, {
@@ -180,31 +190,29 @@ const getPlaylistTracks = () => {
     .then((response) => response.json())
     .then((data) => {
       const trackDiv = document.getElementById("current-track");
-      console.log(JSON.stringify(data));
+      trackDiv.replaceChildren();
       if (data.items && data.items.length > 0) {
-        const tracks = data.items
-          .map((item) => {
-            const track = item.track;
-            const artists = track.artists
-              .map((artist) => artist.name)
-              .join(", ");
-            return `
-            <div>
-              <h1>Song: ${track.name}</h1>
-              <h2>Artists: ${artists}</h2>
-            </div>
-          `;
-          })
-          .join("");
-        trackDiv.innerHTML = tracks;
+        data.items.forEach((item) => {
+          const track = item.track;
+          const artists = track.artists.map((a) => a.name).join(", ");
+          const div = makeElement("div", [
+            makeElement("h1", [`Song: ${track.name}`]),
+            makeElement("h2", [`Artists: ${artists}`]),
+          ]);
+          trackDiv.appendChild(div);
+        });
       } else {
-        trackDiv.innerHTML = "<p>No tracks found in this playlist</p>";
+        trackDiv.appendChild(
+          makeElement("p", ["No tracks found in this playlist"]),
+        );
       }
     })
     .catch((error) => {
       console.error("Error fetching playlist tracks:", error);
       const trackDiv = document.getElementById("current-track");
-      trackDiv.innerHTML = "<p>Could not fetch playlist tracks</p>";
+      trackDiv.replaceChildren(
+        makeElement("p", ["Could not fetch playlist tracks"]),
+      );
     });
 };
 

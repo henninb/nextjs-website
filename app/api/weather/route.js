@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
+// nodejs runtime keeps the Map alive across warm invocations on the same instance.
+// For multi-region or multi-instance deployments, replace rateLimitMap with a
+// distributed store (e.g. @upstash/ratelimit + Redis) to enforce limits globally.
+export const runtime = "nodejs";
 
 // Simple in-memory rate limiting
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 60; // per IP per window
 
+// Resolve the real client IP. cf-connecting-ip (Cloudflare) is infrastructure-set
+// and cannot be spoofed. x-forwarded-for is user-controllable behind untrusted proxies.
 function rateLimitKey(req) {
   return (
-    req.headers.get("x-forwarded-for") ||
+    req.headers.get("cf-connecting-ip") ||
     req.headers.get("x-real-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     "unknown"
   );
 }
