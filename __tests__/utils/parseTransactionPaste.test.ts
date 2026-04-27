@@ -776,8 +776,8 @@ TARGET 1144 COON RAPIDS MN    Sale    **3370    $59.83`;
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
       expect(rows[0]).toMatchObject({ description: 'TGT.COM 912003433044748', amount: 54.97 });
       expect(rows[1]).toMatchObject({ description: 'TGT PLUS 912003433044749', amount: 86.67 });
-      expect(rows[2]).toMatchObject({ description: 'E-PAYMENT - THANK YOU * MN', amount: -348.00 });
-      expect(rows[3]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 59.83 });
+      expect(rows[2]).toMatchObject({ description: 'E-PAYMENT - THANK YOU *', amount: -348.00 });
+      expect(rows[3]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS', amount: 59.83 });
       expect(rows[0].date!.getDate()).toBe(27);
       expect(rows[2].date!.getDate()).toBe(24);
       expect(rows[3].date!.getDate()).toBe(8);
@@ -891,6 +891,33 @@ Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97`;
       expect(rows[6].amount).toBe(10.88);
 
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+  });
+
+  // ── State stripping ───────────────────────────────────────────────────────
+
+  describe('trailing US state stripping', () => {
+    it('should strip a trailing state abbreviation from the description', () => {
+      const [row] = parseTransactionPaste(blockA(1, '04/16/26', 'COSTCO WHSE #0372 COON RAPIDS MN', '#...9999', '$122.84'));
+      expect(row.description).toBe('COSTCO WHSE #0372 COON RAPIDS');
+    });
+
+    it('should strip different state codes', () => {
+      const states = ['MN', 'CA', 'TX', 'FL', 'NY', 'WA', 'CO'];
+      for (const st of states) {
+        const [row] = parseTransactionPaste(blockA(1, '04/16/26', `SOME MERCHANT ${st}`, '#...9999', '$10.00'));
+        expect(row.description).toBe('SOME MERCHANT');
+      }
+    });
+
+    it('should not strip a non-state two-letter suffix', () => {
+      const [row] = parseTransactionPaste(blockA(1, '04/16/26', 'MERCHANT XX', '#...9999', '$10.00'));
+      expect(row.description).toBe('MERCHANT XX');
+    });
+
+    it('should not strip a state abbreviation that is part of the merchant name', () => {
+      const [row] = parseTransactionPaste(blockA(1, '04/16/26', 'PAYPAL *GLOBALPAYINC 800-555-1234 INTL', '#...9999', '$4.95'));
+      expect(row.description).toBe('PAYPAL *GLOBALPAYINC 800-555-1234 INTL');
     });
   });
 
