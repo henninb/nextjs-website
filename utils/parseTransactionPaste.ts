@@ -219,8 +219,8 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       if (m) {
         date = parseDateStr(m[1], errors);
         const descTail = m[2].trim();
-        // Format F: "DESCRIPTION    $26.78" — amount on same line, 2+ spaces before $
-        const inlineAmtMatch = descTail.match(/^(.*?)\s{2,}(-?\$[\d,]+\.?\d*)\s*$/);
+        // Format F: "DESCRIPTION\t$26.78" or "DESCRIPTION    $26.78" — amount on same line
+        const inlineAmtMatch = descTail.match(/^(.*?)\s+(-?\$[\d,]+\.?\d*)\s*$/);
         if (inlineAmtMatch) {
           description = inlineAmtMatch[1].trim();
           inlineAmount = parseFirstAmount(inlineAmtMatch[2]);
@@ -281,7 +281,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
         date = parseDateStr(m[1], errors);
         const rest = m[2];
         // Description is everything before the first 2+-space-delimited $AMOUNT
-        const amtMatch = rest.match(/^(.*?)\s{2,}(-?\$[\d,]+\.?\d*)/);
+        const amtMatch = rest.match(/^(.*?)\s+(-?\$[\d,]+\.?\d*)/);
         if (amtMatch) {
           description = amtMatch[1].trim();
           amount = parseFirstAmount(amtMatch[2]);

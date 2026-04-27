@@ -592,6 +592,14 @@ $5,551.83`;
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
 
+    it('should parse inline amount when separated by a single tab', () => {
+      const raw = `Transaction Details for Row 2\t04/27/26\tONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ\t$26.78`;
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe('ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ');
+      expect(row.amount).toBe(26.78);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
     it('should not confuse Format F (inline $) with Format A (follow-on $ line)', () => {
       const raw = [
         blockF(1, '04/27/26', 'INLINE AMOUNT TRANSFER', '$26.78'),
@@ -637,6 +645,14 @@ $5,551.83`;
       expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING L REF #IB0XSH2Q35 WAY2SAVE SAVINGS TRADER JOES', amount: 10.88 });
       expect(rows[2]).toMatchObject({ description: 'WELLS FARGO REWARDS', amount: 164.16 });
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+
+    it('should parse amount when separated by a single tab', () => {
+      const raw = `04/24/26\tONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES\t$21.76`;
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe('ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES');
+      expect(row.amount).toBe(21.76);
+      expect(row.parseErrors).toHaveLength(0);
     });
 
     it('should ignore trailing text after the amount', () => {
