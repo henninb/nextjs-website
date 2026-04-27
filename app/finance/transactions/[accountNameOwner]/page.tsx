@@ -78,7 +78,6 @@ import ChecklistIcon from "@mui/icons-material/Checklist";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AlarmIcon from "@mui/icons-material/Alarm";
-import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import PaymentIcon from "@mui/icons-material/Payment";
 import Fade from "@mui/material/Fade";
 import Grow from "@mui/material/Grow";
@@ -497,13 +496,6 @@ export default function TransactionsByAccount({
     const daysUntil = (d: Date) =>
       Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-    const gracePeriod =
-      nextClose && nextDue
-        ? Math.ceil(
-            (nextDue.getTime() - nextClose.getTime()) / (1000 * 60 * 60 * 24),
-          )
-        : currentAccount.billingGracePeriodDays ?? null;
-
     const formatDate = (d: Date) =>
       d.toLocaleDateString("en-US", {
         month: "short",
@@ -516,7 +508,6 @@ export default function TransactionsByAccount({
     return {
       nextClose,
       nextDue,
-      gracePeriod,
       daysUntilClose: nextClose ? daysUntil(nextClose) : null,
       daysUntilDue: nextDue ? daysUntil(nextDue) : null,
       nextCloseFormatted: nextClose ? formatDate(nextClose) : null,
@@ -1331,7 +1322,7 @@ export default function TransactionsByAccount({
                       gridTemplateColumns: {
                         xs: "1fr",
                         sm: "repeat(2, 1fr)",
-                        md: "repeat(3, 1fr)",
+                        md: "repeat(4, 1fr)",
                       },
                       gap: 2,
                     }}
@@ -1380,19 +1371,6 @@ export default function TransactionsByAccount({
                       </Grow>
                     )}
 
-                    {/* Grace Period */}
-                    {creditCardDates.gracePeriod != null && (
-                      <Grow in={true} timeout={1100}>
-                        <Box>
-                          <StatCard
-                            icon={<HourglassBottomIcon />}
-                            label="Grace Period"
-                            value={`${creditCardDates.gracePeriod} days`}
-                            color="success"
-                          />
-                        </Box>
-                      </Grow>
-                    )}
 
                     {/* Current Statement Due (previous cycle due date still in the future) */}
                     {creditCardDates.prevDueFormatted && (
