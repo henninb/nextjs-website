@@ -4,8 +4,10 @@ export interface ParsedTransactionRow {
   id: string;
   /** Parsed date, or null if the date field could not be read. */
   date: Date | null;
-  /** Merchant / description text from the header line. */
+  /** Merchant / description text from the header line. "ONLINE TRANSFER" descriptions are trimmed to those two words. */
   description: string;
+  /** Remainder of an "ONLINE TRANSFER" description, or empty string. */
+  notes: string;
   /** Dollar amount (negative for refunds/credits), or null if unparseable. */
   amount: number | null;
   /** Non-empty means the row needs manual review before inserting. */
@@ -235,14 +237,14 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
 
       i++;
       if (inlineAmount !== undefined) {
-        rows.push({ id: crypto.randomUUID(), date, description, amount: inlineAmount, parseErrors: errors });
+        rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: inlineAmount, parseErrors: errors });
       } else {
         const amount = scanForAmount(lines, i, errors, (next) => {
           if (/^#/.test(next)) return 'skip'; // card-suffix line
           return 'try';
         });
         i = amount.nextIndex;
-        rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+        rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
       }
 
     // ── Format B ────────────────────────────────────────────────────────────
@@ -267,7 +269,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       });
       i = amount.nextIndex;
 
-      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
 
     // ── Format G ────────────────────────────────────────────────────────────
     } else if (FORMAT_G.test(line)) {
@@ -295,7 +297,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       }
 
       i++;
-      rows.push({ id: crypto.randomUUID(), date, description, amount, parseErrors: errors });
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
 
     // ── Format D ────────────────────────────────────────────────────────────
     } else if (FORMAT_D.test(line)) {
@@ -324,7 +326,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       if (!description) errors.push('Description is empty');
       if (amount === null) errors.push('No amount found');
 
-      rows.push({ id: crypto.randomUUID(), date, description, amount, parseErrors: errors });
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
 
     // ── Format E ────────────────────────────────────────────────────────────
     } else if (FORMAT_E.test(line)) {
@@ -356,7 +358,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       );
       i = amount.nextIndex;
 
-      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
 
     // ── Format C ────────────────────────────────────────────────────────────
     } else {
@@ -387,7 +389,15 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       });
       i = amount.nextIndex;
 
-      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+    }
+  }
+
+  // Trim "ONLINE TRANSFER" descriptions: keep those two words, move the rest to notes.
+  for (const row of rows) {
+    if (/^ONLINE TRANSFER\b/i.test(row.description)) {
+      row.notes = row.description.slice('ONLINE TRANSFER'.length).trim();
+      row.description = 'ONLINE TRANSFER';
     }
   }
 

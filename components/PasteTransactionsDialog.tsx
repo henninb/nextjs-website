@@ -45,6 +45,7 @@ interface EditableRow {
   /** 'YYYY-MM-DD' string for <input type="date"> */
   date: string;
   description: string;
+  notes: string;
   /** Kept as string during editing to allow partial input like "-" or "." */
   amount: string;
   category: string;
@@ -116,6 +117,7 @@ export default function PasteTransactionsDialog({
       id: p.id,
       date: p.date ? formatDateForInput(p.date) : '',
       description: p.description,
+      notes: p.notes,
       amount: p.amount !== null ? String(p.amount) : '',
       category: '',
       parseErrors: p.parseErrors,
@@ -195,7 +197,7 @@ export default function PasteTransactionsDialog({
           transactionType: 'expense' as TransactionType,
           reoccurringType: 'onetime' as ReoccurringType,
           activeStatus: true,
-          notes: '',
+          notes: row.notes,
         };
 
         await insertTransaction({
