@@ -19,10 +19,19 @@ export interface ParsedTransactionRow {
 //   #...1193
 //   $60.21
 //
+// Format F — labeled row header with inline amount (debit account detail view):
+//   Transaction Details for Row N    MM/DD/YY    DESCRIPTION    $26.78
+//   (amount is on the same header line, separated by 2+ spaces — no follow-on lines)
+//   Detected as Format A by header regex; handler checks for inline amount.
+//
 // Format B — plain double-date header (checking/debit statement):
 //   MM/DD/YY    MM/DD/YY    DESCRIPTION
 //   #2444500FP8PT1TKK2
 //   $50.00    $16,896.48    ← first = charge, second = running balance (ignored)
+//
+// Format G — single-date single-line debit:
+//   MM/DD/YY    DESCRIPTION    $AMOUNT    [optional trailing text]
+//   Everything is on one line; amount is the first $XX.XX preceded by 2+ spaces.
 //
 // Format C — mobile/app card view (month-name date, description on its own line):
 //   Apr 16
@@ -59,6 +68,8 @@ export interface ParsedTransactionRow {
 
 const FORMAT_A = /^Transaction Details for Row \d+/i;
 const FORMAT_B = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\S/;
+/** Single-date single-line debit: "MM/DD/YY    DESCRIPTION    $AMOUNT". Must come after FORMAT_B. */
+const FORMAT_G = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+(?!\d{1,2}\/\d{1,2}\/\d)\S/;
 const FORMAT_C = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i;
 /** MM-DD-YYYY with dashes and a 4-digit year — distinct from Formats A/B/C. */
 const FORMAT_D = /^\d{2}-\d{2}-\d{4}$/;
@@ -75,6 +86,7 @@ function isTransactionHeader(line: string): boolean {
   return (
     FORMAT_A.test(line) ||
     FORMAT_B.test(line) ||
+    FORMAT_G.test(line) || // single-date debit — must come after FORMAT_B (two-date)
     FORMAT_E.test(line) || // must precede FORMAT_C — both start with month abbreviation
     FORMAT_C.test(line) ||
     FORMAT_D.test(line)
@@ -193,29 +205,45 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
 
     const errors: string[] = [];
 
-    // ── Format A ────────────────────────────────────────────────────────────
+    // ── Format A / Format F ──────────────────────────────────────────────────
+    // Format A: amount on a follow-on line.  Format F: amount on the header line.
     if (FORMAT_A.test(line)) {
       const m = line.match(
         /^Transaction Details for Row \d+[\s\t]+(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*?)$/i,
       );
       let date: Date | null = null;
       let description = '';
+      // undefined = not detected (scan follow-on lines); null/number = inline amount
+      let inlineAmount: number | null | undefined = undefined;
+
       if (m) {
         date = parseDateStr(m[1], errors);
-        description = m[2].trim();
+        const descTail = m[2].trim();
+        // Format F: "DESCRIPTION    $26.78" — amount on same line, 2+ spaces before $
+        const inlineAmtMatch = descTail.match(/^(.*?)\s{2,}(-?\$[\d,]+\.?\d*)\s*$/);
+        if (inlineAmtMatch) {
+          description = inlineAmtMatch[1].trim();
+          inlineAmount = parseFirstAmount(inlineAmtMatch[2]);
+          if (inlineAmount === null) errors.push('No amount found');
+        } else {
+          description = descTail;
+        }
         if (!description) errors.push('Description is empty');
       } else {
         errors.push('Header did not match expected format');
       }
 
       i++;
-      const amount = scanForAmount(lines, i, errors, (next) => {
-        if (/^#/.test(next)) return 'skip'; // card-suffix line
-        return 'try';
-      });
-      i = amount.nextIndex;
-
-      rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+      if (inlineAmount !== undefined) {
+        rows.push({ id: crypto.randomUUID(), date, description, amount: inlineAmount, parseErrors: errors });
+      } else {
+        const amount = scanForAmount(lines, i, errors, (next) => {
+          if (/^#/.test(next)) return 'skip'; // card-suffix line
+          return 'try';
+        });
+        i = amount.nextIndex;
+        rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+      }
 
     // ── Format B ────────────────────────────────────────────────────────────
     } else if (FORMAT_B.test(line)) {
@@ -240,6 +268,34 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       i = amount.nextIndex;
 
       rows.push({ id: crypto.randomUUID(), date, description, amount: amount.value, parseErrors: errors });
+
+    // ── Format G ────────────────────────────────────────────────────────────
+    } else if (FORMAT_G.test(line)) {
+      // "MM/DD/YY    DESCRIPTION    $AMOUNT    [optional trailing text]"
+      const m = line.match(/^(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*)/);
+      let date: Date | null = null;
+      let description = '';
+      let amount: number | null = null;
+
+      if (m) {
+        date = parseDateStr(m[1], errors);
+        const rest = m[2];
+        // Description is everything before the first 2+-space-delimited $AMOUNT
+        const amtMatch = rest.match(/^(.*?)\s{2,}(-?\$[\d,]+\.?\d*)/);
+        if (amtMatch) {
+          description = amtMatch[1].trim();
+          amount = parseFirstAmount(amtMatch[2]);
+        } else {
+          description = rest.trim();
+          errors.push('No amount found');
+        }
+        if (!description) errors.push('Description is empty');
+      } else {
+        errors.push('Header did not match expected format');
+      }
+
+      i++;
+      rows.push({ id: crypto.randomUUID(), date, description, amount, parseErrors: errors });
 
     // ── Format D ────────────────────────────────────────────────────────────
     } else if (FORMAT_D.test(line)) {
