@@ -54,6 +54,10 @@ export interface ParsedTransactionRow {
 //   TARGET.COM 800-591- CREDIT    Return        -$2.25
 //   ↑ description                 ↑ type  ↑card  ↑ amount (first $ field)
 //
+// Format H — Target pending transaction (date embedded in parens, all fields on one line):
+//   Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97
+//   ↑ status  ↑ date           ↑ description             ↑ type     ↑ amount
+//
 // Format E — Citi-style card view (MMM DD, YYYY date, cardholder on own line):
 //   Apr 12, 2026
 //   KARI HENNING               ← cardholder name — skip
@@ -75,6 +79,8 @@ const FORMAT_G = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+(?!\d{1,2}\/\d{1,2}\/\d)\S/;
 const FORMAT_C = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i;
 /** MM-DD-YYYY with dashes and a 4-digit year — distinct from Formats A/B/C. */
 const FORMAT_D = /^\d{2}-\d{2}-\d{4}$/;
+/** "Pending (MM-DD-YYYY)" pending transaction — Target card statement. */
+const FORMAT_H = /^Pending\s*\(\d{2}-\d{2}-\d{4}\)/i;
 /** "MMM DD, YYYY" — comma + full year distinguishes it from Format C's "MMM DD". */
 const FORMAT_E = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s*\d{4}$/i;
 
@@ -91,7 +97,8 @@ function isTransactionHeader(line: string): boolean {
     FORMAT_G.test(line) || // single-date debit — must come after FORMAT_B (two-date)
     FORMAT_E.test(line) || // must precede FORMAT_C — both start with month abbreviation
     FORMAT_C.test(line) ||
-    FORMAT_D.test(line)
+    FORMAT_D.test(line) ||
+    FORMAT_H.test(line)
   );
 }
 
@@ -359,6 +366,30 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       i = amount.nextIndex;
 
       rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+
+    // ── Format H ────────────────────────────────────────────────────────────
+    } else if (FORMAT_H.test(line)) {
+      // "Pending (MM-DD-YYYY)     DESCRIPTION    TYPE    [CARD]    $AMOUNT"
+      const dateMatch = line.match(/\((\d{2}-\d{2}-\d{4})\)/);
+      const date = dateMatch ? parseDateDashed(dateMatch[1], errors) : null;
+      if (!dateMatch) errors.push('No date found');
+
+      // Everything after the closing paren is the data portion
+      const rest = line.replace(/^Pending\s*\(\d{2}-\d{2}-\d{4}\)\s*/i, '');
+      let description = '';
+      let amount: number | null = null;
+
+      if (rest) {
+        const firstField = rest.match(/^(.+?)\s{2,}/);
+        description = firstField ? firstField[1].trim() : rest.trim();
+        amount = parseFirstAmount(rest);
+      }
+
+      if (!description) errors.push('Description is empty');
+      if (amount === null) errors.push('No amount found');
+
+      i++;
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
 
     // ── Format C ────────────────────────────────────────────────────────────
     } else {

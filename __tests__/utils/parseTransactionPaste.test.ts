@@ -53,6 +53,12 @@ function blockG(date: string, desc: string, amount: string): string {
   return `${date}    ${desc}    ${amount}`;
 }
 
+/** Format H: Target pending — "Pending (MM-DD-YYYY)     DESCRIPTION    TYPE    [CARD]    $AMOUNT". */
+function blockH(date: string, desc: string, amount: string, type = 'Sale', cardSuffix = ''): string {
+  const card = cardSuffix ? `    ${cardSuffix}` : '       ';
+  return `Pending (${date})     ${desc}    ${type}${card}    ${amount}`;
+}
+
 /**
  * Format E block: "MMM DD, YYYY" date, cardholder name, description,
  * optional promo line, transaction amount, running balance.
@@ -715,6 +721,74 @@ Posted Transactions
       const [row] = parseTransactionPaste(raw);
       expect(row.amount).toBeNull();
       expect(row.parseErrors.some((e) => e.toLowerCase().includes('amount'))).toBe(true);
+    });
+  });
+
+  // ── Format H ─────────────────────────────────────────────────────────────
+
+  describe('Format H — Target pending transaction', () => {
+    it('should parse a pending Sale transaction', () => {
+      const [row] = parseTransactionPaste(blockH('04-27-2026', 'TGT.COM 912003433044748', '$54.97'));
+      expect(row.description).toBe('TGT.COM 912003433044748');
+      expect(row.amount).toBe(54.97);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it('should parse the date from the parenthesised MM-DD-YYYY', () => {
+      const [row] = parseTransactionPaste(blockH('04-27-2026', 'TGT.COM 912003433044748', '$54.97'));
+      expect(row.date).toBeInstanceOf(Date);
+      expect(row.date!.getFullYear()).toBe(2026);
+      expect(row.date!.getMonth()).toBe(3); // April (0-indexed)
+      expect(row.date!.getDate()).toBe(27);
+    });
+
+    it('should parse a pending transaction without a card suffix', () => {
+      const [row] = parseTransactionPaste(blockH('04-27-2026', 'TGT PLUS 912003433044749', '$86.67'));
+      expect(row.description).toBe('TGT PLUS 912003433044749');
+      expect(row.amount).toBe(86.67);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it('should parse multiple consecutive Format H blocks', () => {
+      const raw = [
+        blockH('04-27-2026', 'TGT.COM 912003433044748', '$54.97'),
+        blockH('04-27-2026', 'TGT PLUS 912003433044749', '$86.67'),
+      ].join('\n');
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({ description: 'TGT.COM 912003433044748', amount: 54.97 });
+      expect(rows[1]).toMatchObject({ description: 'TGT PLUS 912003433044749', amount: 86.67 });
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+
+    it('should parse Format H mixed with Format D in the same paste', () => {
+      const raw = `Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97
+Pending (04-27-2026)     TGT PLUS 912003433044749    Sale        $86.67
+04-24-2026
+
+E-PAYMENT - THANK YOU * MN    Payment        -$348.00
+04-08-2026
+
+TARGET 1144 COON RAPIDS MN    Sale    **3370    $59.83`;
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(4);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows[0]).toMatchObject({ description: 'TGT.COM 912003433044748', amount: 54.97 });
+      expect(rows[1]).toMatchObject({ description: 'TGT PLUS 912003433044749', amount: 86.67 });
+      expect(rows[2]).toMatchObject({ description: 'E-PAYMENT - THANK YOU * MN', amount: -348.00 });
+      expect(rows[3]).toMatchObject({ description: 'TARGET 1144 COON RAPIDS MN', amount: 59.83 });
+      expect(rows[0].date!.getDate()).toBe(27);
+      expect(rows[2].date!.getDate()).toBe(24);
+      expect(rows[3].date!.getDate()).toBe(8);
+    });
+
+    it('should ignore the table header line from Target.com', () => {
+      const raw = `Date Sort    Description    Type Sort    Card    Amount Sort
+Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97`;
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].description).toBe('TGT.COM 912003433044748');
     });
   });
 
