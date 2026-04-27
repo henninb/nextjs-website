@@ -563,16 +563,16 @@ $5,551.83`;
   describe('Format F — labeled row header with inline amount', () => {
     it('should parse a single transaction with inline amount', () => {
       const [row] = parseTransactionPaste(
-        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ', '$26.78'),
+        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', '$26.78'),
       );
-      expect(row.description).toBe('ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ');
+      expect(row.description).toBe('ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX');
       expect(row.amount).toBe(26.78);
       expect(row.parseErrors).toHaveLength(0);
     });
 
     it('should parse the date correctly', () => {
       const [row] = parseTransactionPaste(
-        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ', '$26.78'),
+        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', '$26.78'),
       );
       expect(row.date).toBeInstanceOf(Date);
       expect(row.date!.getFullYear()).toBe(2026);
@@ -582,20 +582,20 @@ $5,551.83`;
 
     it('should parse multiple consecutive Format F blocks', () => {
       const raw = [
-        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ', '$26.78'),
-        blockF(3, '04/27/26', 'ONLINE TRANSFER FROM HENNING L REF #IB0XTKMMR5', '$20.09'),
+        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', '$26.78'),
+        blockF(3, '04/27/26', 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY', '$20.09'),
       ].join('\n');
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(2);
-      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ', amount: 26.78 });
-      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING L REF #IB0XTKMMR5', amount: 20.09 });
+      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', amount: 26.78 });
+      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY', amount: 20.09 });
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
 
     it('should parse inline amount when separated by a single tab', () => {
-      const raw = `Transaction Details for Row 2\t04/27/26\tONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ\t$26.78`;
+      const raw = `Transaction Details for Row 2\t04/27/26\tONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX\t$26.78`;
       const [row] = parseTransactionPaste(raw);
-      expect(row.description).toBe('ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ');
+      expect(row.description).toBe('ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX');
       expect(row.amount).toBe(26.78);
       expect(row.parseErrors).toHaveLength(0);
     });
@@ -618,15 +618,15 @@ $5,551.83`;
   describe('Format G — single-date single-line debit', () => {
     it('should parse a single transaction', () => {
       const [row] = parseTransactionPaste(
-        blockG('04/24/26', 'ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES', '$21.76'),
+        blockG('04/24/26', 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A', '$21.76'),
       );
-      expect(row.description).toBe('ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES');
+      expect(row.description).toBe('ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A');
       expect(row.amount).toBe(21.76);
       expect(row.parseErrors).toHaveLength(0);
     });
 
     it('should parse the date correctly', () => {
-      const [row] = parseTransactionPaste(blockG('04/24/26', 'WELLS FARGO REWARDS', '$164.16'));
+      const [row] = parseTransactionPaste(blockG('04/24/26', 'BANK REWARDS CREDIT', '$164.16'));
       expect(row.date).toBeInstanceOf(Date);
       expect(row.date!.getFullYear()).toBe(2026);
       expect(row.date!.getMonth()).toBe(3); // April
@@ -635,30 +635,30 @@ $5,551.83`;
 
     it('should parse multiple consecutive Format G blocks', () => {
       const raw = [
-        blockG('04/24/26', 'ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES', '$21.76'),
-        blockG('04/24/26', 'ONLINE TRANSFER FROM HENNING L REF #IB0XSH2Q35 WAY2SAVE SAVINGS TRADER JOES', '$10.88'),
-        blockG('04/21/26', 'WELLS FARGO REWARDS', '$164.16'),
+        blockG('04/24/26', 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A', '$21.76'),
+        blockG('04/24/26', 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B', '$10.88'),
+        blockG('04/21/26', 'BANK REWARDS CREDIT', '$164.16'),
       ].join('\n');
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(3);
-      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES', amount: 21.76 });
-      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING L REF #IB0XSH2Q35 WAY2SAVE SAVINGS TRADER JOES', amount: 10.88 });
-      expect(rows[2]).toMatchObject({ description: 'WELLS FARGO REWARDS', amount: 164.16 });
+      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A', amount: 21.76 });
+      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B', amount: 10.88 });
+      expect(rows[2]).toMatchObject({ description: 'BANK REWARDS CREDIT', amount: 164.16 });
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
 
     it('should parse amount when separated by a single tab', () => {
-      const raw = `04/24/26\tONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES\t$21.76`;
+      const raw = `04/24/26\tONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A\t$21.76`;
       const [row] = parseTransactionPaste(raw);
-      expect(row.description).toBe('ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES');
+      expect(row.description).toBe('ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A');
       expect(row.amount).toBe(21.76);
       expect(row.parseErrors).toHaveLength(0);
     });
 
     it('should ignore trailing text after the amount', () => {
-      const raw = '04/21/26    WELLS FARGO REWARDS    $164.16     here is some example text.';
+      const raw = '04/21/26    BANK REWARDS CREDIT    $164.16     here is some example text.';
       const [row] = parseTransactionPaste(raw);
-      expect(row.description).toBe('WELLS FARGO REWARDS');
+      expect(row.description).toBe('BANK REWARDS CREDIT');
       expect(row.amount).toBe(164.16);
       expect(row.parseErrors).toHaveLength(0);
     });
@@ -666,29 +666,29 @@ $5,551.83`;
     it('should ignore a "Posted Transactions" section header between blocks', () => {
       const raw = [
         'Posted Transactions',
-        blockG('04/24/26', 'ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES', '$21.76'),
-        blockG('04/21/26', 'WELLS FARGO REWARDS', '$164.16'),
+        blockG('04/24/26', 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A', '$21.76'),
+        blockG('04/21/26', 'BANK REWARDS CREDIT', '$164.16'),
       ].join('\n');
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(2);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
 
-    it('should parse the real-world debit account sample', () => {
-      const raw = `Transaction Details for Row 2    04/27/26    ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ    $26.78
-Transaction Details for Row 3    04/27/26    ONLINE TRANSFER FROM HENNING L REF #IB0XTKMMR5    $20.09
+    it('should parse a debit account sample with inline-amount and single-line rows', () => {
+      const raw = `Transaction Details for Row 2    04/27/26    ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX    $26.78
+Transaction Details for Row 3    04/27/26    ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY    $20.09
 Posted Transactions
-04/24/26    ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES    $21.76
-04/24/26    ONLINE TRANSFER FROM HENNING L REF #IB0XSH2Q35 WAY2SAVE SAVINGS TRADER JOES    $10.88
-04/21/26    WELLS FARGO REWARDS    $164.16`;
+04/24/26    ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A    $21.76
+04/24/26    ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B    $10.88
+04/21/26    BANK REWARDS CREDIT    $164.16`;
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(5);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
-      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ', amount: 26.78 });
-      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING L REF #IB0XTKMMR5', amount: 20.09 });
-      expect(rows[2]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING M REF #IB0XSH2W26 PLATINUM SAVINGS TRADER JOES', amount: 21.76 });
-      expect(rows[3]).toMatchObject({ description: 'ONLINE TRANSFER FROM HENNING L REF #IB0XSH2Q35 WAY2SAVE SAVINGS TRADER JOES', amount: 10.88 });
-      expect(rows[4]).toMatchObject({ description: 'WELLS FARGO REWARDS', amount: 164.16 });
+      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', amount: 26.78 });
+      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY', amount: 20.09 });
+      expect(rows[2]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A', amount: 21.76 });
+      expect(rows[3]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B', amount: 10.88 });
+      expect(rows[4]).toMatchObject({ description: 'BANK REWARDS CREDIT', amount: 164.16 });
       expect(rows[0].date!.getMonth()).toBe(3); // April
       expect(rows[0].date!.getDate()).toBe(27);
       expect(rows[4].date!.getDate()).toBe(21);
@@ -707,7 +707,7 @@ Posted Transactions
     });
 
     it('should flag a row when no amount is found', () => {
-      const raw = '04/24/26    WELLS FARGO REWARDS';
+      const raw = '04/24/26    BANK REWARDS CREDIT';
       const [row] = parseTransactionPaste(raw);
       expect(row.amount).toBeNull();
       expect(row.parseErrors.some((e) => e.toLowerCase().includes('amount'))).toBe(true);
@@ -798,8 +798,8 @@ Posted Transactions
         blockC('Apr 12', "SAM'S CORNER MART #5 RIVERSIDE XX", '$7.37', 'MH', false),
         blockD('03-10-2026', 'GENERAL STORE 9999 SPRINGFIELD XX', '$23.69'),
         blockE('Apr 12, 2026', 'JANE DOE', 'WAREHOUSE CLUB #1234 SPRINGFIELD XX', '$3.23'),
-        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM HENNING M REF #IB0XTKMSQQ', '$26.78'),
-        blockG('04/24/26', 'ONLINE TRANSFER FROM HENNING L REF #IB0XSH2Q35 WAY2SAVE SAVINGS', '$10.88'),
+        blockF(2, '04/27/26', 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', '$26.78'),
+        blockG('04/24/26', 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS', '$10.88'),
       ].join('\n');
 
       const rows = parseTransactionPaste(raw);
@@ -811,6 +811,7 @@ Posted Transactions
       expect(rows[4].amount).toBe(3.23);
       expect(rows[5].amount).toBe(26.78);
       expect(rows[6].amount).toBe(10.88);
+
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
   });
@@ -1045,6 +1046,52 @@ Show Transaction`;
       expect(rows[0].date!.getMonth()).toBe(3); // April
       expect(rows[0].date!.getDate()).toBe(16);
       expect(rows[6].date!.getDate()).toBe(11);
+    });
+
+    it('should parse a 7-row Format F + G debit sample (space-separated)', () => {
+      const raw = `Transaction Details for Row 1    04/27/26    ONLINE TRANSFER FROM PREMIER CHECKING    $1,905.48
+Transaction Details for Row 2    04/27/26    ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX    $26.78
+Transaction Details for Row 3    04/27/26    ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY    $20.09
+Posted Transactions
+04/24/26    ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A    $21.76
+04/24/26    ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B    $10.88
+04/21/26    BANK REWARDS CREDIT    $164.16
+04/20/26    ONLINE TRANSFER REF #ZZZZZZZZZZ TO VISA CARD XXXXXXXXXXXX1111 ON 04/18/26        $169.00`;
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(7);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM PREMIER CHECKING', amount: 1905.48 });
+      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', amount: 26.78 });
+      expect(rows[2]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY', amount: 20.09 });
+      expect(rows[3]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A', amount: 21.76 });
+      expect(rows[4]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B', amount: 10.88 });
+      expect(rows[5]).toMatchObject({ description: 'BANK REWARDS CREDIT', amount: 164.16 });
+      expect(rows[6]).toMatchObject({ description: 'ONLINE TRANSFER REF #ZZZZZZZZZZ TO VISA CARD XXXXXXXXXXXX1111 ON 04/18/26', amount: 169.00 });
+      expect(rows[0].date!.getMonth()).toBe(3); // April
+      expect(rows[0].date!.getDate()).toBe(27);
+    });
+
+    it('should parse a 7-row Format F + G debit sample (tab-separated)', () => {
+      const raw = [
+        'Transaction Details for Row 1\t04/27/26\tONLINE TRANSFER FROM PREMIER CHECKING\t$1,905.48',
+        'Transaction Details for Row 2\t04/27/26\tONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX\t$26.78',
+        'Transaction Details for Row 3\t04/27/26\tONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY\t$20.09',
+        'Posted Transactions',
+        '04/24/26\tONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A\t$21.76',
+        '04/24/26\tONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B\t$10.88',
+        '04/21/26\tBANK REWARDS CREDIT\t$164.16',
+        '04/20/26\tONLINE TRANSFER REF #ZZZZZZZZZZ TO VISA CARD XXXXXXXXXXXX1111 ON 04/18/26\t$169.00',
+      ].join('\n');
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(7);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows[0]).toMatchObject({ description: 'ONLINE TRANSFER FROM PREMIER CHECKING', amount: 1905.48 });
+      expect(rows[1]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX', amount: 26.78 });
+      expect(rows[2]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY', amount: 20.09 });
+      expect(rows[3]).toMatchObject({ description: 'ONLINE TRANSFER FROM SAVINGS REF #XXXXXXXXXX PLATINUM SAVINGS STORE A', amount: 21.76 });
+      expect(rows[4]).toMatchObject({ description: 'ONLINE TRANSFER FROM CHECKING REF #YYYYYYYYYY WAY2SAVE SAVINGS STORE B', amount: 10.88 });
+      expect(rows[5]).toMatchObject({ description: 'BANK REWARDS CREDIT', amount: 164.16 });
+      expect(rows[6]).toMatchObject({ description: 'ONLINE TRANSFER REF #ZZZZZZZZZZ TO VISA CARD XXXXXXXXXXXX1111 ON 04/18/26', amount: 169.00 });
     });
   });
 });
