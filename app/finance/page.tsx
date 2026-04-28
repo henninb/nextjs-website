@@ -100,7 +100,7 @@ export default function Accounts() {
       | "hasFuture"
       | "hasCleared"
       | "zeroBalance";
-    accountNamePattern: "all" | "checking";
+    accountNamePattern: "all" | "checking" | "banking";
   }>({
     accountType: "all",
     activeStatus: "all",
@@ -215,11 +215,15 @@ export default function Accounts() {
           account.future === 0 &&
           account.cleared === 0);
 
-      // Account name pattern filter (e.g., checking accounts)
+      // Account name pattern filter
       const matchesAccountNamePattern =
         activeFilters.accountNamePattern === "all" ||
         (activeFilters.accountNamePattern === "checking" &&
-          account.accountNameOwner.toLowerCase().includes("checking"));
+          account.accountNameOwner.toLowerCase().includes("checking")) ||
+        (activeFilters.accountNamePattern === "banking" &&
+          (account.accountNameOwner.toLowerCase().includes("checking") ||
+            account.accountNameOwner.toLowerCase().includes("savings") ||
+            account.accountNameOwner.toLowerCase().includes("mmarket")));
 
       return (
         matchesSearch &&

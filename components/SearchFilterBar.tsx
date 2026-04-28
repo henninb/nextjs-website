@@ -31,7 +31,7 @@ type FilterState = {
     | "hasFuture"
     | "hasCleared"
     | "zeroBalance";
-  accountNamePattern: "all" | "checking";
+  accountNamePattern: "all" | "checking" | "banking";
 };
 
 type SearchFilterBarProps = {
@@ -98,6 +98,17 @@ export default function SearchFilterBar({
       },
       color: theme.palette.info.main,
     },
+    {
+      label: "Banking",
+      icon: <AccountBalanceIcon sx={{ fontSize: "1rem" }} />,
+      filters: {
+        accountType: "all" as const,
+        activeStatus: "all" as const,
+        balanceStatus: "all" as const,
+        accountNamePattern: "banking" as const,
+      },
+      color: theme.palette.success.main,
+    },
   ];
 
   const isQuickFilterActive = (preset: (typeof quickFilters)[0]) => {
@@ -139,13 +150,6 @@ export default function SearchFilterBar({
     onFilterChange({
       ...activeFilters,
       balanceStatus: status,
-    });
-  };
-
-  const handleAccountNamePatternFilter = (pattern: "all" | "checking") => {
-    onFilterChange({
-      ...activeFilters,
-      accountNamePattern: pattern,
     });
   };
 
@@ -298,35 +302,6 @@ export default function SearchFilterBar({
           }
           variant={
             activeFilters.balanceStatus === "zeroBalance"
-              ? "filled"
-              : "outlined"
-          }
-          size="small"
-          sx={{
-            borderRadius: "6px",
-            fontWeight: 500,
-            height: "28px",
-          }}
-        />
-
-        {/* Checking Accounts Filter */}
-        <Chip
-          icon={<AccountBalanceIcon sx={{ fontSize: "1rem" }} />}
-          label="Checking"
-          onClick={() =>
-            handleAccountNamePatternFilter(
-              activeFilters.accountNamePattern === "checking"
-                ? "all"
-                : "checking",
-            )
-          }
-          color={
-            activeFilters.accountNamePattern === "checking"
-              ? "success"
-              : "default"
-          }
-          variant={
-            activeFilters.accountNamePattern === "checking"
               ? "filled"
               : "outlined"
           }
