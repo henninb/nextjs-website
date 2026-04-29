@@ -25,6 +25,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Transaction from "../model/Transaction";
 import { TransactionState } from "../model/TransactionState";
 import { currencyFormat, formatDateForDisplay } from "./Common";
+import ReceiptLightbox, { buildImageSrc } from "./ReceiptLightbox";
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -51,6 +52,7 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
   }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [notesExpanded, setNotesExpanded] = useState(false);
+    const [receiptOpen, setReceiptOpen] = useState(false);
     const theme = useTheme();
 
     const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -364,6 +366,38 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
             />
           </Stack>
 
+          {/* Receipt Thumbnail */}
+          {transaction.receiptImage?.thumbnail && (
+            <Box sx={{ mb: 2 }}>
+              <Box
+                component="img"
+                src={buildImageSrc(
+                  transaction.receiptImage.thumbnail,
+                  transaction.receiptImage.imageFormatType,
+                )}
+                alt="Receipt thumbnail"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  setReceiptOpen(true);
+                }}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 1,
+                  objectFit: "cover",
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  transition: "all 0.2s ease",
+                  "&:hover": { opacity: 0.75, borderColor: "primary.main" },
+                }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </Box>
+          )}
+
           {/* Notes Section */}
           {hasNotes && (
             <Box sx={{ mt: "auto" }}>
@@ -436,6 +470,14 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
             </MenuItem>
           )}
         </Menu>
+
+        {transaction.receiptImage && receiptOpen && (
+          <ReceiptLightbox
+            open={true}
+            onClose={() => setReceiptOpen(false)}
+            transaction={transaction}
+          />
+        )}
       </Card>
     );
   },

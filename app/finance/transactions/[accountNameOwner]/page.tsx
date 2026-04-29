@@ -64,6 +64,7 @@ import {
 } from "../../../../components/Common";
 import PageHeader from "../../../../components/PageHeader";
 import DataGridBase from "../../../../components/DataGridBase";
+import ReceiptLightbox, { buildImageSrc } from "../../../../components/ReceiptLightbox";
 import ConfirmDialog from "../../../../components/ConfirmDialog";
 import FormDialog from "../../../../components/FormDialog";
 import Totals from "../../../../model/Totals";
@@ -116,6 +117,8 @@ export default function TransactionsByAccount({
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [showModalPaste, setShowModalPaste] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
+  const [receiptLightboxTransaction, setReceiptLightboxTransaction] =
     useState<Transaction | null>(null);
   const [originalRow, setOriginalRow] = useState<Transaction | null>(null);
   const [paginationModel, setPaginationModel] = useState({
@@ -794,7 +797,39 @@ export default function TransactionsByAccount({
         flex: 1.5,
         minWidth: 150,
         editable: true,
-        renderCell: (params) => <div>{params.value}</div>,
+        renderCell: (params: GridRenderCellParams<Transaction>) => {
+          const receipt = params.row.receiptImage;
+          if (!receipt?.thumbnail) return <div>{params.value}</div>;
+          return (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%", overflow: "hidden" }}>
+              <Box
+                component="img"
+                src={buildImageSrc(receipt.thumbnail, receipt.imageFormatType)}
+                alt="Receipt thumbnail"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  setReceiptLightboxTransaction(params.row);
+                }}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 1,
+                  objectFit: "cover",
+                  flexShrink: 0,
+                  cursor: "pointer",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  transition: "all 0.2s ease",
+                  "&:hover": { opacity: 0.75, borderColor: "primary.main" },
+                }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <Typography variant="body2" noWrap>{params.value}</Typography>
+            </Box>
+          );
+        },
       },
       {
         field: "category",
@@ -1935,6 +1970,14 @@ export default function TransactionsByAccount({
             />
           </Box>
         </FormDialog>
+
+        {receiptLightboxTransaction && (
+          <ReceiptLightbox
+            open={true}
+            onClose={() => setReceiptLightboxTransaction(null)}
+            transaction={receiptLightboxTransaction}
+          />
+        )}
 
         <PasteTransactionsDialog
           open={showModalPaste}
