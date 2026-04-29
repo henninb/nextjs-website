@@ -802,31 +802,25 @@ export default function TransactionsByAccount({
           if (!receipt?.thumbnail) return <div>{params.value}</div>;
           return (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%", overflow: "hidden" }}>
-              <Box
-                component="img"
-                src={buildImageSrc(receipt.thumbnail, receipt.imageFormatType)}
-                alt="Receipt thumbnail"
+              <Typography variant="body2" noWrap>{params.value}</Typography>
+              <Typography
+                variant="caption"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   setReceiptLightboxTransaction(params.row);
                 }}
                 sx={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 1,
-                  objectFit: "cover",
                   flexShrink: 0,
                   cursor: "pointer",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  transition: "all 0.2s ease",
-                  "&:hover": { opacity: 0.75, borderColor: "primary.main" },
+                  color: "primary.main",
+                  fontWeight: 600,
+                  letterSpacing: "0.03em",
+                  textTransform: "uppercase",
+                  "&:hover": { textDecoration: "underline", opacity: 0.8 },
                 }}
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-              <Typography variant="body2" noWrap>{params.value}</Typography>
+              >
+                receipt
+              </Typography>
             </Box>
           );
         },
