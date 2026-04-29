@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { useTheme } from "@mui/material";
 import {

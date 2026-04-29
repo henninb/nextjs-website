@@ -811,8 +811,8 @@ export default function TransactionsByAccount({
                   setReceiptLightboxTransaction(params.row);
                 }}
                 sx={{
-                  width: 40,
-                  height: 40,
+                  width: 24,
+                  height: 24,
                   borderRadius: 1,
                   objectFit: "cover",
                   flexShrink: 0,
