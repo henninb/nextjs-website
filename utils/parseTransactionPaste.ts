@@ -58,6 +58,13 @@ export interface ParsedTransactionRow {
 //   Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97
 //   ↑ status  ↑ date           ↑ description             ↑ type     ↑ amount
 //
+// Format I — Weekday+date section header with ACH deposit detail lines:
+//   Tuesday, Apr 28 -
+//   Deposit ACH PAYCO TYPE: PAYROLL ID: 9000000013 CO: ACME CORPORATION Entry Class Code: PPD ACH Trace Number: 021000000000084
+//   , Amount:$1,009.16
+//   , Balance:$1,098.99      ← running balance — ignored
+//   arrow_drop_down          ← UI toggle artifact — ignored
+//
 // Format E — Citi-style card view (MMM DD, YYYY date, cardholder on own line):
 //   Apr 12, 2026
 //   KARI HENNING               ← cardholder name — skip
@@ -81,6 +88,8 @@ const FORMAT_C = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/
 const FORMAT_D = /^\d{2}-\d{2}-\d{4}$/;
 /** "Pending (MM-DD-YYYY)" pending transaction — Target card statement. */
 const FORMAT_H = /^Pending\s*\(\d{2}-\d{2}-\d{4}\)/i;
+/** "Tuesday, Apr 28 -" — weekday+date day-section header with amount on follow-on lines. */
+const FORMAT_I = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s*-?$/i;
 /** "MMM DD, YYYY" — comma + full year distinguishes it from Format C's "MMM DD". */
 const FORMAT_E = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s*\d{4}$/i;
 
@@ -98,7 +107,8 @@ function isTransactionHeader(line: string): boolean {
     FORMAT_E.test(line) || // must precede FORMAT_C — both start with month abbreviation
     FORMAT_C.test(line) ||
     FORMAT_D.test(line) ||
-    FORMAT_H.test(line)
+    FORMAT_H.test(line) ||
+    FORMAT_I.test(line)
   );
 }
 
@@ -154,6 +164,38 @@ function parseDateMonthDayYear(line: string, errors: string[]): Date | null {
   if (!isNaN(d.getTime())) return d;
   errors.push(`Cannot parse date: "${line}"`);
   return null;
+}
+
+/**
+ * Parse "Tuesday, Apr 28 -" into a Date using the month+day portion.
+ * Year is inferred like Format C (current year unless result would be >30 days in the future).
+ */
+function parseDateWeekdayMonthDay(line: string, errors: string[]): Date | null {
+  const m = line.match(/,\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/i);
+  if (!m) {
+    errors.push(`Cannot parse date: "${line}"`);
+    return null;
+  }
+  const month = MONTH_IDX[m[1].toLowerCase()];
+  const day = parseInt(m[2], 10);
+  const now = new Date();
+  const year =
+    new Date(now.getFullYear(), month, day) >
+    new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+      ? now.getFullYear() - 1
+      : now.getFullYear();
+  return new Date(year, month, day);
+}
+
+/**
+ * Shorten a verbose ACH description to the "CO:" company name.
+ * E.g. "Deposit ACH PAYCO TYPE: PAYROLL ID: ... CO: ACME CORPORATION Entry Class Code: PPD ..."
+ * → "ACME CORPORATION"
+ */
+function cleanACHDescription(desc: string): string {
+  const coMatch = desc.match(/\bCO:\s+(.+?)\s+Entry Class Code:/i);
+  if (coMatch) return coMatch[1].trim();
+  return desc;
 }
 
 /** Parse MM-DD-YYYY (dashes, 4-digit year) into a Date; appends to errors on failure. */
@@ -389,6 +431,39 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       if (amount === null) errors.push('No amount found');
 
       i++;
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
+
+    // ── Format I ────────────────────────────────────────────────────────────
+    } else if (FORMAT_I.test(line)) {
+      const date = parseDateWeekdayMonthDay(line, errors);
+      i++;
+
+      // Read description: next non-empty, non-header line
+      let rawDescription = '';
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        rawDescription = next;
+        break;
+      }
+
+      const description = cleanACHDescription(rawDescription) || rawDescription;
+      if (!description) errors.push('Description is empty');
+
+      // Find ", Amount:$X.XX" line; skip ", Balance:..." and "arrow_drop_down"
+      let amount: number | null = null;
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next || /^arrow_drop_down$/i.test(next) || /^,\s*Balance:/i.test(next)) continue;
+        if (/^,\s*Amount:/i.test(next)) {
+          amount = parseFirstAmount(next.replace(/^,\s*Amount:\s*/i, ''));
+          break;
+        }
+      }
+      if (amount === null) errors.push('No amount found');
+
       rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
 
     // ── Format C ────────────────────────────────────────────────────────────

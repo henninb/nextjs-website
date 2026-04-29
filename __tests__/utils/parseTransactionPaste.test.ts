@@ -792,6 +792,51 @@ Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97`;
     });
   });
 
+  // ── Format I ─────────────────────────────────────────────────────────────
+
+  /** Format I block: "Weekday, Mon DD -" date, ACH description, Amount/Balance lines, arrow_drop_down. */
+  function blockI(weekday: string, monthDay: string, desc: string, amount: string, balance = '$1,000.00'): string {
+    return `${weekday}, ${monthDay} -\n${desc}\n, Amount:${amount}\n, Balance:${balance}\narrow_drop_down`;
+  }
+
+  describe('Format I — weekday+date section header with ACH deposit lines', () => {
+    it('should parse a single Format I block', () => {
+      const raw = blockI(
+        'Tuesday',
+        'Apr 28',
+        'Deposit ACH PAYCO TYPE: PAYROLL ID: 9000000013 CO: ACME CORPORATION Entry Class Code: PPD ACH Trace Number: 021000000000084',
+        '$1,009.16',
+      );
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe('ACME CORPORATION');
+      expect(row.amount).toBe(1009.16);
+      expect(row.parseErrors).toHaveLength(0);
+      expect(row.date!.getMonth()).toBe(3); // April = 3
+      expect(row.date!.getDate()).toBe(28);
+    });
+
+    it('should parse multiple consecutive Format I blocks', () => {
+      const raw = [
+        blockI('Tuesday', 'Apr 28', 'Deposit ACH PAYCO TYPE: PAYROLL ID: 9000000013 CO: ACME CORPORATION Entry Class Code: PPD ACH Trace Number: 021000000000084', '$1,009.16'),
+        blockI('Tuesday', 'Apr 28', 'Deposit ACH PAYCO TYPE: PAYROLL ID: 9000000013 CO: ACME CORPORATION Entry Class Code: PPD ACH Trace Number: 021000000000085', '$54.91'),
+        blockI('Tuesday', 'Apr 28', 'Deposit ACH PAYCO TYPE: PAYROLL ID: 9000000013 CO: ACME CORPORATION Entry Class Code: PPD ACH Trace Number: 021000000000086', '$125.00'),
+      ].join('\n');
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(3);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows[0]).toMatchObject({ description: 'ACME CORPORATION', amount: 1009.16 });
+      expect(rows[1]).toMatchObject({ description: 'ACME CORPORATION', amount: 54.91 });
+      expect(rows[2]).toMatchObject({ description: 'ACME CORPORATION', amount: 125.00 });
+    });
+
+    it('should fall back to full description when no CO: field is present', () => {
+      const raw = blockI('Monday', 'Mar 10', 'Deposit Wire Transfer ACME CORP', '$500.00');
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe('Deposit Wire Transfer ACME CORP');
+      expect(row.amount).toBe(500);
+    });
+  });
+
   // ── Mixed formats ─────────────────────────────────────────────────────────
 
   describe('mixed formats in one paste', () => {
