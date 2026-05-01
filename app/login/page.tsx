@@ -45,6 +45,12 @@ export default function LoginPage() {
     }
     return false;
   });
+  const [stayLoggedIn, setStayLoggedIn] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("stayLoggedIn") === "true";
+    }
+    return false;
+  });
 
   const { login } = useAuth();
   const router = useRouter();
@@ -151,15 +157,13 @@ export default function LoginPage() {
         });
         if (userResponse.ok) {
           const userData = await userResponse.json();
-          login(userData);
+          login(userData, stayLoggedIn);
         } else {
-          // Fallback if user data fetch fails
-          login({ username: email, password: "", firstName: "", lastName: "" });
+          login({ username: email, password: "", firstName: "", lastName: "" }, stayLoggedIn);
         }
       } catch (userError) {
         console.error("Error fetching user data:", userError);
-        // Fallback if user data fetch fails
-        login({ username: email, password: "", firstName: "", lastName: "" });
+        login({ username: email, password: "", firstName: "", lastName: "" }, stayLoggedIn);
       }
       router.push("/finance");
     } catch (error: unknown) {
@@ -256,6 +260,18 @@ export default function LoginPage() {
             }
             label="Remember username"
             sx={{ mt: 1 }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={stayLoggedIn}
+                onChange={(e) => setStayLoggedIn(e.target.checked)}
+                disabled={isLoading}
+                color="primary"
+              />
+            }
+            label="Stay logged in"
+            sx={{ display: "block" }}
           />
           {errorMessage && (
             <Box sx={{ mt: 2 }}>

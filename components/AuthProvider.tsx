@@ -18,17 +18,19 @@ const SESSION_DURATION = 60 * 60 * 1000; // 1 hour
 const SESSION_WARNING_THRESHOLD = 5 * 60 * 1000; // 5 minutes before expiry
 const SESSION_CHECK_INTERVAL = 30 * 1000; // check every 30 seconds
 const SESSION_STORAGE_KEY = "sessionExpiresAt";
+const STAY_LOGGED_IN_KEY = "stayLoggedIn";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: SafeUser | null;
   loading: boolean;
-  login: (user: User) => Promise<void>;
+  login: (user: User, keepLoggedIn?: boolean) => Promise<void>;
   logout: () => void;
   showSessionWarning: boolean;
   sessionMinutesRemaining: number;
   dismissSessionWarning: () => void;
   extendSession: () => void;
+  stayLoggedIn: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,6 +42,13 @@ const useProvideAuth = () => {
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [showSessionWarning, setShowSessionWarning] = useState(false);
   const [sessionMinutesRemaining, setSessionMinutesRemaining] = useState(0);
+  const [stayLoggedIn, setStayLoggedInState] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(STAY_LOGGED_IN_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
   const router = useRouter();
   const pathname = usePathname();
   const { logoutNow } = useLogout();
@@ -62,8 +71,10 @@ const useProvideAuth = () => {
     setSessionExpiresAt(null);
     setShowSessionWarning(false);
     setSessionMinutesRemaining(0);
+    setStayLoggedInState(false);
     try {
       localStorage.removeItem(SESSION_STORAGE_KEY);
+      localStorage.removeItem(STAY_LOGGED_IN_KEY);
     } catch {
       // localStorage may not be available
     }
@@ -86,6 +97,23 @@ const useProvideAuth = () => {
     }
   }, []);
 
+  const extendSession = useCallback(async () => {
+    try {
+      const res = await fetch("/api/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setSessionExpiry(Date.now() + SESSION_DURATION);
+        setShowSessionWarning(false);
+      } else {
+        await performLogout();
+      }
+    } catch {
+      await performLogout();
+    }
+  }, [performLogout, setSessionExpiry]);
+
   useEffect(() => {
     async function fetchUser() {
       if (!requiresAuth(pathname)) {
@@ -103,7 +131,7 @@ const useProvideAuth = () => {
           setIsAuthenticated(true);
           await initCsrfToken();
 
-          // Restore session expiry from localStorage if available
+          // Restore or initialize session expiry
           try {
             const stored = localStorage.getItem(SESSION_STORAGE_KEY);
             if (stored) {
@@ -111,13 +139,15 @@ const useProvideAuth = () => {
               if (storedExpiry > Date.now()) {
                 setSessionExpiresAt(storedExpiry);
               } else {
-                // Stored time has passed but session is still valid on backend
-                // Set a new expiry from now
                 setSessionExpiry(Date.now() + SESSION_DURATION);
               }
+            } else {
+              // No stored expiry (fresh session) — initialize now so the timer starts
+              setSessionExpiry(Date.now() + SESSION_DURATION);
             }
           } catch {
-            // localStorage may not be available
+            // localStorage unavailable — still initialize the in-memory timer
+            setSessionExpiresAt(Date.now() + SESSION_DURATION);
           }
         } else {
           setIsAuthenticated(false);
@@ -147,14 +177,13 @@ const useProvideAuth = () => {
       const timeRemaining = sessionExpiresAt - now;
 
       if (timeRemaining <= 0) {
-        // Session expired - verify with backend
+        // Frontend timer expired — verify with backend before logging out
         try {
           const res = await fetch("/api/me", { credentials: "include" });
           if (!res.ok) {
             await performLogout();
             return;
           }
-          // Backend still accepts the session, push expiry forward
           setSessionExpiry(Date.now() + SESSION_DURATION);
           setShowSessionWarning(false);
         } catch {
@@ -164,10 +193,15 @@ const useProvideAuth = () => {
       }
 
       if (timeRemaining <= SESSION_WARNING_THRESHOLD) {
-        setShowSessionWarning(true);
-        setSessionMinutesRemaining(
-          Math.max(1, Math.ceil(timeRemaining / 60000)),
-        );
+        if (stayLoggedIn) {
+          // Silently refresh JWT — no dialog shown
+          await extendSession();
+        } else {
+          setShowSessionWarning(true);
+          setSessionMinutesRemaining(
+            Math.max(1, Math.ceil(timeRemaining / 60000)),
+          );
+        }
       } else {
         setShowSessionWarning(false);
       }
@@ -176,12 +210,22 @@ const useProvideAuth = () => {
     checkSession();
     const intervalId = setInterval(checkSession, SESSION_CHECK_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [isAuthenticated, sessionExpiresAt, performLogout, setSessionExpiry]);
+  }, [isAuthenticated, sessionExpiresAt, stayLoggedIn, extendSession, performLogout, setSessionExpiry]);
 
-  const login = async ({ password: _password, ...safeUser }: User) => {
+  const login = async ({ password: _password, ...safeUser }: User, keepLoggedIn = false) => {
     setUser(safeUser);
     setIsAuthenticated(true);
     setSessionExpiry(Date.now() + SESSION_DURATION);
+    setStayLoggedInState(keepLoggedIn);
+    try {
+      if (keepLoggedIn) {
+        localStorage.setItem(STAY_LOGGED_IN_KEY, "true");
+      } else {
+        localStorage.removeItem(STAY_LOGGED_IN_KEY);
+      }
+    } catch {
+      // localStorage may not be available
+    }
     await initCsrfToken();
   };
 
@@ -193,20 +237,6 @@ const useProvideAuth = () => {
     setShowSessionWarning(false);
   }, []);
 
-  const extendSession = useCallback(async () => {
-    try {
-      const res = await fetch("/api/me", { credentials: "include" });
-      if (res.ok) {
-        setSessionExpiry(Date.now() + SESSION_DURATION);
-        setShowSessionWarning(false);
-      } else {
-        await performLogout();
-      }
-    } catch {
-      await performLogout();
-    }
-  }, [performLogout, setSessionExpiry]);
-
   return {
     isAuthenticated,
     user,
@@ -217,6 +247,7 @@ const useProvideAuth = () => {
     sessionMinutesRemaining,
     dismissSessionWarning,
     extendSession,
+    stayLoggedIn,
   };
 };
 
