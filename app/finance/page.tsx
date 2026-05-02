@@ -56,6 +56,79 @@ import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 import { z } from "zod";
 
+function computeCurrentDueDate(account: Account): Date | null {
+  if (account.accountType !== "credit") return null;
+
+  const {
+    billingStatementCloseDay,
+    billingDueDaySameMonth,
+    billingDueDayNextMonth,
+    billingCycleWeekendShift,
+  } = account;
+
+  if (!billingStatementCloseDay) return null;
+  if (!billingDueDaySameMonth && !billingDueDayNextMonth) return null;
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const day = today.getDate();
+
+  let closeYear = year;
+  let closeMonth = month;
+  if (day < billingStatementCloseDay) {
+    closeMonth = month - 1;
+    if (closeMonth < 0) {
+      closeMonth = 11;
+      closeYear = year - 1;
+    }
+  }
+
+  function buildDueDate(cYear: number, cMonth: number): Date {
+    let dYear: number, dMonth: number, dDay: number;
+    if (billingDueDaySameMonth) {
+      dYear = cYear;
+      dMonth = cMonth;
+      dDay = billingDueDaySameMonth;
+    } else {
+      dMonth = cMonth + 1;
+      dYear = cYear;
+      if (dMonth > 11) {
+        dMonth = 0;
+        dYear = cYear + 1;
+      }
+      dDay = billingDueDayNextMonth!;
+    }
+    const d = new Date(dYear, dMonth, dDay);
+    if (billingCycleWeekendShift) {
+      const dow = d.getDay();
+      if (dow === 0) {
+        d.setDate(
+          d.getDate() + (billingCycleWeekendShift === "forward" ? 1 : -2),
+        );
+      } else if (dow === 6) {
+        d.setDate(
+          d.getDate() + (billingCycleWeekendShift === "forward" ? 2 : -1),
+        );
+      }
+    }
+    return d;
+  }
+
+  let dueDate = buildDueDate(closeYear, closeMonth);
+  if (dueDate < today) {
+    let nextCloseMonth = closeMonth + 1;
+    let nextCloseYear = closeYear;
+    if (nextCloseMonth > 11) {
+      nextCloseMonth = 0;
+      nextCloseYear = closeYear + 1;
+    }
+    dueDate = buildDueDate(nextCloseYear, nextCloseMonth);
+  }
+
+  return dueDate;
+}
+
 const AccountCacheSchema = z.object({
   accountNameOwner: z.string().regex(/^[a-zA-Z0-9_-]+$/),
   accountType: z.enum(["debit", "credit"]),
@@ -464,6 +537,18 @@ export default function Accounts() {
       valueGetter: (params) => new Date(params),
       renderCell: (params) => {
         return params?.value?.toLocaleDateString("en-US");
+      },
+    },
+    {
+      field: "currentDueDate",
+      headerName: "Due Date",
+      width: 150,
+      sortable: false,
+      headerAlign: "left",
+      align: "left",
+      renderCell: (params) => {
+        const dueDate = computeCurrentDueDate(params.row as Account);
+        return dueDate ? dueDate.toLocaleDateString("en-US") : "";
       },
     },
     {
