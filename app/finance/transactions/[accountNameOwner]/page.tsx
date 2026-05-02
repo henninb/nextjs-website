@@ -17,6 +17,8 @@ import {
   Switch,
   FormControlLabel,
   Checkbox,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -909,8 +911,17 @@ export default function TransactionsByAccount({
         headerName: "Type",
         flex: 0.8,
         minWidth: 100,
+        type: "singleSelect",
+        valueOptions: [
+          { value: "undefined", label: "Undefined" },
+          { value: "expense", label: "Expense" },
+          { value: "income", label: "Income" },
+          { value: "transfer", label: "Transfer" },
+        ],
+        editable: true,
+        valueGetter: (value: string | null | undefined) => value || "undefined",
         renderCell: (params: GridRenderCellParams<Transaction>) =>
-          params.value || "undefined",
+          params.row.transactionType || "undefined",
       },
       {
         field: "reoccurringType",
@@ -1869,61 +1880,66 @@ export default function TransactionsByAccount({
             }
           />
 
-          <Select
-            label="Transaction State"
-            value={transactionData?.transactionState || ""}
-            onChange={(e) =>
-              setTransactionData((prev: Transaction) => ({
-                ...prev,
-                transactionState: e.target.value,
-              }))
-            }
-            fullWidth
-          >
-            {transactionStates.map((state) => (
-              <MenuItem key={state} value={state}>
-                {state}
-              </MenuItem>
-            ))}
-          </Select>
+          <FormControl fullWidth>
+            <InputLabel>Transaction State</InputLabel>
+            <Select
+              label="Transaction State"
+              value={transactionData?.transactionState || ""}
+              onChange={(e) =>
+                setTransactionData((prev: Transaction) => ({
+                  ...prev,
+                  transactionState: e.target.value,
+                }))
+              }
+            >
+              {transactionStates.map((state) => (
+                <MenuItem key={state} value={state}>
+                  {state}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-          <Select
-            label="Reoccurring Type"
-            value={transactionData?.reoccurringType || "onetime"}
-            onChange={(e) =>
-              setTransactionData((prev: Transaction) => ({
-                ...prev,
-                reoccurringType: e.target.value,
-              }))
-            }
-            fullWidth
-          >
-            <MenuItem value="onetime">One-Time</MenuItem>
-            <MenuItem value="weekly">Weekly</MenuItem>
-            <MenuItem value="fortnightly">Fortnightly</MenuItem>
-            <MenuItem value="monthly">Monthly</MenuItem>
-            <MenuItem value="quarterly">Quarterly</MenuItem>
-            <MenuItem value="bi_annually">Bi-Annually</MenuItem>
-            <MenuItem value="annually">Annually</MenuItem>
-          </Select>
+          <FormControl fullWidth style={{ marginTop: 16 }}>
+            <InputLabel>Reoccurring Type</InputLabel>
+            <Select
+              label="Reoccurring Type"
+              value={transactionData?.reoccurringType || "onetime"}
+              onChange={(e) =>
+                setTransactionData((prev: Transaction) => ({
+                  ...prev,
+                  reoccurringType: e.target.value,
+                }))
+              }
+            >
+              <MenuItem value="onetime">One-Time</MenuItem>
+              <MenuItem value="weekly">Weekly</MenuItem>
+              <MenuItem value="fortnightly">Fortnightly</MenuItem>
+              <MenuItem value="monthly">Monthly</MenuItem>
+              <MenuItem value="quarterly">Quarterly</MenuItem>
+              <MenuItem value="bi_annually">Bi-Annually</MenuItem>
+              <MenuItem value="annually">Annually</MenuItem>
+            </Select>
+          </FormControl>
 
-          <Select
-            label="Transaction Type"
-            value={transactionData?.transactionType || ""}
-            onChange={(e) =>
-              setTransactionData((prev: Transaction) => ({
-                ...prev,
-                transactionType: e.target.value,
-              }))
-            }
-            fullWidth
-            style={{ marginTop: 16 }}
-          >
-            <MenuItem value="">Undefined</MenuItem>
-            <MenuItem value="expense">Expense</MenuItem>
-            <MenuItem value="income">Income</MenuItem>
-            <MenuItem value="transfer">Transfer</MenuItem>
-          </Select>
+          <FormControl fullWidth style={{ marginTop: 16 }}>
+            <InputLabel>Transaction Type</InputLabel>
+            <Select
+              label="Transaction Type"
+              value={transactionData?.transactionType || ""}
+              onChange={(e) =>
+                setTransactionData((prev: Transaction) => ({
+                  ...prev,
+                  transactionType: e.target.value,
+                }))
+              }
+            >
+              <MenuItem value="">Undefined</MenuItem>
+              <MenuItem value="expense">Expense</MenuItem>
+              <MenuItem value="income">Income</MenuItem>
+              <MenuItem value="transfer">Transfer</MenuItem>
+            </Select>
+          </FormControl>
 
           <TextField
             label="Notes"
