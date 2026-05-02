@@ -63,11 +63,12 @@ function computeCurrentDueDate(account: Account): Date | null {
     billingStatementCloseDay,
     billingDueDaySameMonth,
     billingDueDayNextMonth,
+    billingGracePeriodDays,
     billingCycleWeekendShift,
   } = account;
 
   if (!billingStatementCloseDay) return null;
-  if (!billingDueDaySameMonth && !billingDueDayNextMonth) return null;
+  if (!billingDueDaySameMonth && !billingDueDayNextMonth && !billingGracePeriodDays) return null;
 
   const today = new Date();
   const year = today.getFullYear();
@@ -84,45 +85,41 @@ function computeCurrentDueDate(account: Account): Date | null {
     }
   }
 
-  function buildDueDate(cYear: number, cMonth: number): Date {
-    let dYear: number, dMonth: number, dDay: number;
-    if (billingDueDaySameMonth) {
-      dYear = cYear;
-      dMonth = cMonth;
-      dDay = billingDueDaySameMonth;
-    } else {
-      dMonth = cMonth + 1;
-      dYear = cYear;
-      if (dMonth > 11) {
-        dMonth = 0;
-        dYear = cYear + 1;
-      }
-      dDay = billingDueDayNextMonth!;
-    }
-    const d = new Date(dYear, dMonth, dDay);
-    if (billingCycleWeekendShift) {
-      const dow = d.getDay();
-      if (dow === 0) {
-        d.setDate(
-          d.getDate() + (billingCycleWeekendShift === "forward" ? 1 : -2),
-        );
-      } else if (dow === 6) {
-        d.setDate(
-          d.getDate() + (billingCycleWeekendShift === "forward" ? 2 : -1),
-        );
-      }
+  function applyWeekendShift(d: Date): Date {
+    if (!billingCycleWeekendShift) return d;
+    const shift = billingCycleWeekendShift.toLowerCase();
+    const dow = d.getDay();
+    if (dow === 6) {
+      if (shift === "back" || shift === "back_sat_only") d.setDate(d.getDate() - 1);
+      else if (shift === "forward" || shift === "forward_sat_only") d.setDate(d.getDate() + 2);
+    } else if (dow === 0) {
+      if (shift === "back" || shift === "back_sun_only") d.setDate(d.getDate() - 2);
+      else if (shift === "forward" || shift === "forward_sun_only") d.setDate(d.getDate() + 1);
     }
     return d;
+  }
+
+  function buildDueDate(cYear: number, cMonth: number): Date {
+    let d: Date;
+    if (billingGracePeriodDays) {
+      d = new Date(cYear, cMonth, billingStatementCloseDay!);
+      d.setDate(d.getDate() + billingGracePeriodDays);
+    } else if (billingDueDaySameMonth) {
+      d = new Date(cYear, cMonth, billingDueDaySameMonth);
+    } else {
+      let dMonth = cMonth + 1;
+      let dYear = cYear;
+      if (dMonth > 11) { dMonth = 0; dYear = cYear + 1; }
+      d = new Date(dYear, dMonth, billingDueDayNextMonth!);
+    }
+    return applyWeekendShift(d);
   }
 
   let dueDate = buildDueDate(closeYear, closeMonth);
   if (dueDate < today) {
     let nextCloseMonth = closeMonth + 1;
     let nextCloseYear = closeYear;
-    if (nextCloseMonth > 11) {
-      nextCloseMonth = 0;
-      nextCloseYear = closeYear + 1;
-    }
+    if (nextCloseMonth > 11) { nextCloseMonth = 0; nextCloseYear = closeYear + 1; }
     dueDate = buildDueDate(nextCloseYear, nextCloseMonth);
   }
 
