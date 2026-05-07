@@ -14,6 +14,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -50,6 +52,7 @@ interface EditableRow {
   amount: string;
   category: string;
   categoryMetadata?: TransactionCategoryMetadata;
+  transactionType: TransactionType;
   /** Parse warnings — row should be reviewed but can still be inserted if fields are valid. */
   parseErrors: string[];
   removed: boolean;
@@ -120,6 +123,7 @@ export default function PasteTransactionsDialog({
       notes: p.notes,
       amount: p.amount !== null ? String(p.amount) : '',
       category: '',
+      transactionType: 'expense' as TransactionType,
       parseErrors: p.parseErrors,
       removed: false,
       selected: true,
@@ -194,7 +198,7 @@ export default function PasteTransactionsDialog({
           categoryMetadata: row.categoryMetadata,
           amount: parseFloat(row.amount),
           transactionState: 'outstanding' as TransactionState,
-          transactionType: 'expense' as TransactionType,
+          transactionType: row.transactionType,
           reoccurringType: 'onetime' as ReoccurringType,
           activeStatus: true,
           notes: row.notes,
@@ -204,7 +208,7 @@ export default function PasteTransactionsDialog({
           accountNameOwner,
           newRow: transaction,
           isFutureTransaction: false,
-          isImportTransaction: false,
+          isImportTransaction: true,
         });
         inserted++;
       } catch (error) {
@@ -335,6 +339,7 @@ export default function PasteTransactionsDialog({
                     <TableCell>Description</TableCell>
                     <TableCell>Category</TableCell>
                     <TableCell align="right">Amount</TableCell>
+                    <TableCell>Type</TableCell>
                     <TableCell sx={{ width: 40 }} />
                   </TableRow>
                 </TableHead>
@@ -461,6 +466,22 @@ export default function PasteTransactionsDialog({
                               }}
                               sx={{ width: 110 }}
                             />
+                          </TableCell>
+
+                          {/* Type */}
+                          <TableCell>
+                            <Select
+                              size="small"
+                              value={row.transactionType}
+                              onChange={(e) =>
+                                handleRowChange(row.id, 'transactionType', e.target.value as TransactionType)
+                              }
+                              sx={{ minWidth: 100 }}
+                            >
+                              <MenuItem value="expense">Expense</MenuItem>
+                              <MenuItem value="income">Income</MenuItem>
+                              <MenuItem value="transfer">Transfer</MenuItem>
+                            </Select>
                           </TableCell>
 
                           {/* Remove */}
