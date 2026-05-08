@@ -109,6 +109,7 @@ describe("SearchFilterBar", () => {
     expect(screen.getByText("Payment Required")).toBeInTheDocument();
     expect(screen.getByText("Needs Attention")).toBeInTheDocument();
     expect(screen.getByText("Future Scheduled")).toBeInTheDocument();
+    expect(screen.getByText("Banking")).toBeInTheDocument();
   });
 
   it("renders zero balance filter chip", () => {
@@ -256,7 +257,7 @@ describe("SearchFilterBar", () => {
       <SearchFilterBar
         searchTerm=""
         onSearchChange={mockOnSearchChange}
-        activeFilters={{ ...defaultFilters, accountNamePattern: "checking" }}
+        activeFilters={{ ...defaultFilters, accountNamePattern: "banking" }}
         onFilterChange={mockOnFilterChange}
         onClearFilters={mockOnClearFilters}
       />,
@@ -265,7 +266,7 @@ describe("SearchFilterBar", () => {
     expect(screen.getByText("Clear All")).toBeInTheDocument();
   });
 
-  it("renders checking accounts filter chip", () => {
+  it("renders banking accounts filter chip", () => {
     render(
       <SearchFilterBar
         searchTerm=""
@@ -276,10 +277,10 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    expect(screen.getByText("Checking")).toBeInTheDocument();
+    expect(screen.getByText("Banking")).toBeInTheDocument();
   });
 
-  it("handles checking accounts filter toggle", () => {
+  it("handles banking accounts filter toggle", () => {
     render(
       <SearchFilterBar
         searchTerm=""
@@ -290,10 +291,10 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Checking"));
+    fireEvent.click(screen.getByText("Banking"));
     expect(mockOnFilterChange).toHaveBeenCalledWith({
       ...defaultFilters,
-      accountNamePattern: "checking",
+      accountNamePattern: "banking",
     });
   });
 
