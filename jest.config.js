@@ -43,6 +43,7 @@ module.exports = {
       },
     ],
   },
+  coverageProvider: "v8",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(tsx?|jsx?)$",
   transformIgnorePatterns: [

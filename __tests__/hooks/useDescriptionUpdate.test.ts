@@ -1,65 +1,76 @@
-/**
- * TDD Tests for Modern useDescriptionUpdate
- * Modern endpoint: PUT /api/description/{descriptionName}
- *
- * Key differences from legacy:
- * - Endpoint: /api/description/{descriptionName} (vs /api/description/update/{descriptionName})
- * - Uses descriptionName instead of descriptionId
- * - Sends newDescription in request body
- * - Uses ServiceResult pattern for errors
- */
-
-import { ConsoleSpy } from "../../testHelpers";
-import { createModernFetchMock } from "../../testHelpers";
+import { updateDescription } from "../../hooks/useDescriptionUpdate";
 import Description from "../../model/Description";
 
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Modern implementation to test
-const updateDescriptionModern = async (
-  oldDescription: Description,
-  newDescription: Description,
-): Promise<Description> => {
-  const endpoint = `/api/description/${oldDescription.descriptionName}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newDescription),
-    });
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeDescription: jest.fn((value: string) => value),
+  },
+}));
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
+jest.mock("../../utils/hookValidation", () => ({
+  validateUpdate: jest.fn((data: unknown) => data),
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
     }
+  },
+}));
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateDescription: jest.fn((data: unknown) => data),
+  },
+}));
 
-// Helper function to create test description data
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    description: jest.fn(() => ["description"]),
+  },
+  updateInList: jest.fn(),
+}));
+
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
+
+import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
+import { InputSanitizer } from "../../utils/validation/sanitization";
+import { validateUpdate } from "../../utils/hookValidation";
+
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockParseResponse = parseResponse as jest.MockedFunction<
+  typeof parseResponse
+>;
+const mockSanitizeDescription =
+  InputSanitizer.sanitizeDescription as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeDescription
+  >;
+const mockValidateUpdate = validateUpdate as jest.MockedFunction<
+  typeof validateUpdate
+>;
+
 const createTestDescription = (
   overrides: Partial<Description> = {},
 ): Description => ({
@@ -69,572 +80,237 @@ const createTestDescription = (
   ...overrides,
 });
 
-describe("useDescriptionUpdate Modern Endpoint (TDD)", () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("useDescriptionUpdate - updateDescription", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockSanitizeDescription.mockImplementation((value: string) => value);
+    mockValidateUpdate.mockImplementation((data: unknown) => data as Description);
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
-  });
+  describe("endpoint construction", () => {
+    it("should use old description name in PUT endpoint URL", async () => {
+      const oldDesc = createTestDescription({ descriptionName: "old_store" });
+      const newDesc = createTestDescription({ descriptionName: "new_store" });
+      mockParseResponse.mockResolvedValue(newDesc);
 
-  describe("Modern endpoint behavior", () => {
-    it("should use modern endpoint /api/description/{descriptionName}", async () => {
-      const oldDescription = createTestDescription({
-        descriptionId: 123,
-        descriptionName: "test_desc_123",
-      });
-      const newDescription = createTestDescription({
-        descriptionId: 123,
-        descriptionName: "test_desc_123_updated",
-      });
+      await updateDescription(oldDesc, newDesc);
 
-      global.fetch = createModernFetchMock(newDescription);
-
-      await updateDescriptionModern(oldDescription, newDescription);
-
-      expect(fetch).toHaveBeenCalledWith("/api/description/test_desc_123", {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(newDescription),
-      });
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/description/old_store");
     });
 
-    it("should update description successfully", async () => {
-      const oldDescription = createTestDescription({
-        descriptionId: 1,
-        descriptionName: "old_name",
-      });
-      const newDescription = createTestDescription({
-        descriptionId: 1,
-        descriptionName: "new_name",
-      });
+    it("should sanitize old description name for URL", async () => {
+      const oldDesc = createTestDescription({ descriptionName: "amazon" });
+      const newDesc = createTestDescription({ descriptionName: "amazon_prime" });
+      mockParseResponse.mockResolvedValue(newDesc);
 
-      global.fetch = createModernFetchMock(newDescription);
+      await updateDescription(oldDesc, newDesc);
 
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
+      expect(mockSanitizeDescription).toHaveBeenCalledWith("amazon");
+    });
+
+    it("should use sanitized name in endpoint", async () => {
+      mockSanitizeDescription.mockReturnValue("sanitized_old");
+      const oldDesc = createTestDescription({ descriptionName: "raw_old" });
+      const newDesc = createTestDescription({ descriptionName: "new_name" });
+      mockParseResponse.mockResolvedValue(newDesc);
+
+      await updateDescription(oldDesc, newDesc);
+
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/description/sanitized_old");
+    });
+
+    it("should validate the new description with validateUpdate", async () => {
+      const oldDesc = createTestDescription({ descriptionName: "old" });
+      const newDesc = createTestDescription({ descriptionName: "new" });
+      mockParseResponse.mockResolvedValue(newDesc);
+
+      await updateDescription(oldDesc, newDesc);
+
+      expect(mockValidateUpdate).toHaveBeenCalledWith(
+        newDesc,
+        expect.any(Function),
+        "updateDescription",
       );
+    });
+  });
 
-      expect(result).toStrictEqual(newDescription);
-      expect(result.descriptionName).toBe("new_name");
+  describe("successful update", () => {
+    it("should call fetchWithErrorHandling with PUT method", async () => {
+      const oldDesc = createTestDescription({ descriptionName: "old" });
+      const newDesc = createTestDescription({ descriptionName: "new" });
+      mockParseResponse.mockResolvedValue(newDesc);
+
+      await updateDescription(oldDesc, newDesc);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ method: "PUT" }),
+      );
     });
 
-    it("should send newDescription in request body", async () => {
-      const oldDescription = createTestDescription({ descriptionId: 1 });
-      const newDescription = createTestDescription({
-        descriptionId: 1,
-        descriptionName: "updated_name",
-      });
+    it("should send the validated new description as JSON body", async () => {
+      const oldDesc = createTestDescription({ descriptionName: "old_name" });
+      const newDesc = createTestDescription({ descriptionName: "new_name" });
+      mockValidateUpdate.mockReturnValue(newDesc);
+      mockParseResponse.mockResolvedValue(newDesc);
 
-      global.fetch = createModernFetchMock(newDescription);
+      await updateDescription(oldDesc, newDesc);
 
-      await updateDescriptionModern(oldDescription, newDescription);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.body).toBe(JSON.stringify(newDescription));
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      const body = JSON.parse(options?.body as string);
+      expect(body.descriptionName).toBe("new_name");
     });
 
-    it("should use descriptionName from oldDescription in URL", async () => {
-      const oldDescription = createTestDescription({
-        descriptionId: 999,
-        descriptionName: "test_desc_999",
+    it("should return the updated description", async () => {
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({
+        descriptionName: "updated_desc",
+        activeStatus: false,
       });
-      const newDescription = createTestDescription({
-        descriptionId: 999,
-        descriptionName: "test_desc_999_new",
-      });
+      mockParseResponse.mockResolvedValue(newDesc);
 
-      global.fetch = createModernFetchMock(newDescription);
+      const result = await updateDescription(oldDesc, newDesc);
 
-      await updateDescriptionModern(oldDescription, newDescription);
+      expect(result).toStrictEqual(newDesc);
+    });
 
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/description/test_desc_999",
+    it("should call parseResponse with the fetch response", async () => {
+      const mockResponse = { status: 200 } as Response;
+      mockFetchWithErrorHandling.mockResolvedValue(mockResponse);
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({ descriptionName: "updated" });
+      mockParseResponse.mockResolvedValue(newDesc);
+
+      await updateDescription(oldDesc, newDesc);
+
+      expect(mockParseResponse).toHaveBeenCalledWith(mockResponse);
+    });
+
+    it("should update amazon to amazon_prime", async () => {
+      const oldDesc = createTestDescription({ descriptionName: "amazon" });
+      const newDesc = createTestDescription({ descriptionName: "amazon_prime" });
+      mockParseResponse.mockResolvedValue(newDesc);
+
+      const result = await updateDescription(oldDesc, newDesc);
+
+      expect(result.descriptionName).toBe("amazon_prime");
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/description/amazon",
         expect.any(Object),
       );
     });
+
+    it("should update activeStatus field", async () => {
+      const oldDesc = createTestDescription({ activeStatus: true });
+      const newDesc = createTestDescription({ activeStatus: false });
+      mockParseResponse.mockResolvedValue(newDesc);
+
+      const result = await updateDescription(oldDesc, newDesc);
+
+      expect(result.activeStatus).toBe(false);
+    });
   });
 
-  describe("Modern error handling with ServiceResult pattern", () => {
-    it("should handle 404 not found with modern error format", async () => {
-      const oldDescription = createTestDescription({ descriptionId: 999 });
-      const newDescription = createTestDescription({ descriptionId: 999 });
+  describe("error handling", () => {
+    it("should propagate 404 not found error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Description not found", 404),
+      );
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({ descriptionName: "updated" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        json: async () => ({ error: "Description not found" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("Description not found");
-    });
-
-    it("should handle validation errors with modern format", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription({ descriptionName: "" });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({
-          errors: [
-            "descriptionName is required",
-            "descriptionName must be non-empty",
-          ],
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow(
-        "descriptionName is required, descriptionName must be non-empty",
+      await expect(updateDescription(oldDesc, newDesc)).rejects.toThrow(
+        "Description not found",
       );
     });
 
-    it("should handle 401 unauthorized", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
+    it("should propagate 409 conflict error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Description name already exists", 409),
+      );
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({ descriptionName: "existing" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        json: async () => ({ error: "Unauthorized" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("Unauthorized");
+      await expect(updateDescription(oldDesc, newDesc)).rejects.toThrow(
+        "Description name already exists",
+      );
     });
 
-    it("should handle 403 forbidden", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({ descriptionName: "updated" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: async () => ({ error: "Forbidden" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("Forbidden");
+      await expect(updateDescription(oldDesc, newDesc)).rejects.toThrow(
+        "Network request failed",
+      );
     });
 
-    it("should handle 500 server error", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: "Internal server error" }),
+    it("should propagate validation errors from validateUpdate", async () => {
+      const { HookValidationError } = jest.requireMock(
+        "../../utils/hookValidation",
+      );
+      mockValidateUpdate.mockImplementation(() => {
+        throw new HookValidationError("descriptionName is required");
       });
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({ descriptionName: "" });
 
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("Internal server error");
+      await expect(updateDescription(oldDesc, newDesc)).rejects.toThrow(
+        "descriptionName is required",
+      );
     });
 
-    it("should handle error response without error field", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
+      );
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({ descriptionName: "updated" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({}),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("HTTP error! Status: 400");
-    });
-
-    it("should handle invalid JSON in error response", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("HTTP error! Status: 500");
+      await expect(updateDescription(oldDesc, newDesc)).rejects.toThrow(
+        "Internal server error",
+      );
     });
   });
 
-  describe("Network and connectivity errors", () => {
-    it("should handle network errors", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("Network error");
-
-      const calls = consoleSpy.getCalls();
-      expect(
-        calls.error.some((call) => call[0].includes("An error occurred:")),
-      ).toBe(true);
-    });
-
-    it("should handle timeout errors", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("Timeout");
-    });
-
-    it("should handle connection refused", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Connection refused"));
-
-      consoleSpy.start();
-
-      await expect(
-        updateDescriptionModern(oldDescription, newDescription),
-      ).rejects.toThrow("Connection refused");
-    });
-  });
-
-  describe("Request configuration", () => {
+  describe("request format", () => {
     it("should use PUT method", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
+      const oldDesc = createTestDescription();
+      const newDesc = createTestDescription({ descriptionName: "updated" });
+      mockParseResponse.mockResolvedValue(newDesc);
 
-      global.fetch = createModernFetchMock(newDescription);
+      await updateDescription(oldDesc, newDesc);
 
-      await updateDescriptionModern(oldDescription, newDescription);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.method).toBe("PUT");
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("PUT");
     });
 
-    it("should include credentials", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      await updateDescriptionModern(oldDescription, newDescription);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.credentials).toBe("include");
-    });
-
-    it("should include correct headers", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription();
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      await updateDescriptionModern(oldDescription, newDescription);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toStrictEqual({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      });
-    });
-  });
-
-  describe("Description name updates", () => {
-    it("should update description name", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "old_store",
-      });
-      const newDescription = createTestDescription({
-        descriptionName: "new_store",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("new_store");
-    });
-
-    it("should update activeStatus", async () => {
-      const oldDescription = createTestDescription({ activeStatus: true });
-      const newDescription = createTestDescription({ activeStatus: false });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.activeStatus).toBe(false);
-    });
-
-    it("should update multiple fields simultaneously", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "old_name",
-        activeStatus: true,
-      });
-      const newDescription = createTestDescription({
-        descriptionName: "new_name",
-        activeStatus: false,
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("new_name");
-      expect(result.activeStatus).toBe(false);
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should handle descriptions with special characters", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription({
-        descriptionName: "store-with_special.chars",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("store-with_special.chars");
-    });
-
-    it("should handle descriptions with Unicode characters", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription({
-        descriptionName: "店舗 🏪",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("店舗 🏪");
-    });
-
-    it("should handle descriptions with whitespace", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription({
-        descriptionName: "  store with spaces  ",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("  store with spaces  ");
-    });
-
-    it("should handle descriptions with very long names", async () => {
-      const longName = "a".repeat(500);
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription({
-        descriptionName: longName,
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe(longName);
-      expect(result.descriptionName.length).toBe(500);
-    });
-  });
-
-  describe("Common update scenarios", () => {
-    it("should update retail store description", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "amazon_old",
-      });
-      const newDescription = createTestDescription({
-        descriptionName: "amazon",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("amazon");
-    });
-
-    it("should update service provider description", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "grocery_old",
-      });
-      const newDescription = createTestDescription({
-        descriptionName: "grocery_store",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("grocery_store");
-    });
-
-    it("should deactivate description", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "old_store",
-        activeStatus: true,
-      });
-      const newDescription = createTestDescription({
-        descriptionName: "old_store",
-        activeStatus: false,
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.activeStatus).toBe(false);
-    });
-
-    it("should update gas station description", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "gas_station_old",
-      });
-      const newDescription = createTestDescription({
-        descriptionName: "gas_station",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("gas_station");
-    });
-
-    it("should rename store description", async () => {
-      const oldDescription = createTestDescription({
-        descriptionName: "walmart_old",
-      });
-      const newDescription = createTestDescription({
-        descriptionName: "walmart",
-      });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionName).toBe("walmart");
-    });
-  });
-
-  describe("Data integrity", () => {
-    it("should preserve descriptionId", async () => {
-      const oldDescription = createTestDescription({ descriptionId: 123 });
-      const newDescription = createTestDescription({ descriptionId: 123 });
-
-      global.fetch = createModernFetchMock(newDescription);
-
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result.descriptionId).toBe(123);
-    });
-
-    it("should return updated description exactly as received from API", async () => {
-      const oldDescription = createTestDescription();
-      const newDescription = createTestDescription({
+    it("should include new description data in body", async () => {
+      const oldDesc = createTestDescription({ descriptionName: "old" });
+      const newDesc = createTestDescription({
         descriptionId: 1,
-        descriptionName: "updated_desc",
+        descriptionName: "new_name",
         activeStatus: true,
       });
+      mockValidateUpdate.mockReturnValue(newDesc);
+      mockParseResponse.mockResolvedValue(newDesc);
 
-      global.fetch = createModernFetchMock(newDescription);
+      await updateDescription(oldDesc, newDesc);
 
-      const result = await updateDescriptionModern(
-        oldDescription,
-        newDescription,
-      );
-
-      expect(result).toStrictEqual(newDescription);
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.body).toBeDefined();
+      const body = JSON.parse(options?.body as string);
+      expect(body.descriptionId).toBe(1);
+      expect(body.descriptionName).toBe("new_name");
     });
   });
 });

@@ -1,616 +1,285 @@
-/**
- * TDD Tests for Modern useParameterUpdate
- * Modern endpoint: PUT /api/parameter/{parameterName}
- *
- * Key differences from legacy:
- * - Endpoint: /api/parameter/{parameterName} (vs /api/parameter/update/{parameterName})
- * - Uses parameterName instead of parameterId
- * - Sends newParameter in request body
- * - Uses ServiceResult pattern for errors
- */
-
-import { ConsoleSpy } from "../../testHelpers";
-import { createModernFetchMock } from "../../testHelpers";
+import { updateParameter } from "../../hooks/useParameterUpdate";
 import Parameter from "../../model/Parameter";
 
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Modern implementation to test
-const updateParameterModern = async (
-  oldParameter: Parameter,
-  newParameter: Parameter,
-): Promise<Parameter> => {
-  const endpoint = `/api/parameter/${oldParameter.parameterName}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newParameter),
-    });
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeParameterName: jest.fn((value: string) => value),
+  },
+}));
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    parameter: jest.fn(() => ["parameter"]),
+  },
+  updateInList: jest.fn(),
+}));
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
 
-// Helper function to create test parameter data
-const createTestParameter = (
-  overrides: Partial<Parameter> = {},
-): Parameter => ({
+import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
+import { InputSanitizer } from "../../utils/validation/sanitization";
+
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockParseResponse = parseResponse as jest.MockedFunction<
+  typeof parseResponse
+>;
+const mockSanitizeParameterName =
+  InputSanitizer.sanitizeParameterName as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeParameterName
+  >;
+
+const createTestParameter = (overrides: Partial<Parameter> = {}): Parameter => ({
   parameterId: 1,
-  parameterName: "test_parameter",
-  parameterValue: "test_value",
+  parameterName: "payment_account",
+  parameterValue: "checking_john",
   activeStatus: true,
   ...overrides,
 });
 
-describe("useParameterUpdate Modern Endpoint (TDD)", () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("useParameterUpdate - updateParameter", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockSanitizeParameterName.mockImplementation((value: string) => value);
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
-  });
+  describe("endpoint construction", () => {
+    it("should use old parameter name in PUT endpoint URL", async () => {
+      const oldParam = createTestParameter({ parameterName: "old_param" });
+      const newParam = createTestParameter({ parameterName: "new_param" });
+      mockParseResponse.mockResolvedValue(newParam);
 
-  describe("Modern endpoint behavior", () => {
-    it("should use modern endpoint /api/parameter/{parameterName}", async () => {
-      const oldParameter = createTestParameter({
-        parameterId: 123,
-        parameterName: "test_param_123",
-      });
-      const newParameter = createTestParameter({
-        parameterId: 123,
-        parameterName: "test_param_123",
-        parameterValue: "updated_value",
-      });
+      await updateParameter(oldParam, newParam);
 
-      global.fetch = createModernFetchMock(newParameter);
-
-      await updateParameterModern(oldParameter, newParameter);
-
-      expect(fetch).toHaveBeenCalledWith("/api/parameter/test_param_123", {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(newParameter),
-      });
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/parameter/old_param");
     });
 
-    it("should update parameter successfully", async () => {
-      const oldParameter = createTestParameter({
-        parameterId: 1,
-        parameterValue: "old_value",
-      });
-      const newParameter = createTestParameter({
-        parameterId: 1,
+    it("should sanitize old parameter name for URL", async () => {
+      const oldParam = createTestParameter({ parameterName: "payment_account" });
+      const newParam = createTestParameter({ parameterName: "checking" });
+      mockParseResponse.mockResolvedValue(newParam);
+
+      await updateParameter(oldParam, newParam);
+
+      expect(mockSanitizeParameterName).toHaveBeenCalledWith("payment_account");
+    });
+
+    it("should sanitize new parameter name for body", async () => {
+      const oldParam = createTestParameter({ parameterName: "old" });
+      const newParam = createTestParameter({ parameterName: "new_name" });
+      mockParseResponse.mockResolvedValue(newParam);
+
+      await updateParameter(oldParam, newParam);
+
+      expect(mockSanitizeParameterName).toHaveBeenCalledWith("new_name");
+    });
+
+    it("should use sanitized old name in endpoint", async () => {
+      mockSanitizeParameterName
+        .mockReturnValueOnce("sanitized_old")
+        .mockReturnValueOnce("sanitized_new");
+      const oldParam = createTestParameter({ parameterName: "old" });
+      const newParam = createTestParameter({ parameterName: "new" });
+      mockParseResponse.mockResolvedValue(newParam);
+
+      await updateParameter(oldParam, newParam);
+
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/parameter/sanitized_old");
+    });
+  });
+
+  describe("successful update", () => {
+    it("should return the updated parameter", async () => {
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({
+        parameterName: "updated_param",
         parameterValue: "new_value",
       });
+      mockParseResponse.mockResolvedValue(newParam);
 
-      global.fetch = createModernFetchMock(newParameter);
+      const result = await updateParameter(oldParam, newParam);
 
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result).toStrictEqual(newParameter);
-      expect(result.parameterValue).toBe("new_value");
+      expect(result).toStrictEqual(newParam);
     });
 
-    it("should send newParameter in request body", async () => {
-      const oldParameter = createTestParameter({ parameterId: 1 });
-      const newParameter = createTestParameter({
-        parameterId: 1,
-        parameterValue: "updated_value",
+    it("should send sanitized new parameter as JSON body", async () => {
+      mockSanitizeParameterName
+        .mockReturnValueOnce("old_sanitized")
+        .mockReturnValueOnce("new_sanitized");
+      const oldParam = createTestParameter({ parameterName: "old" });
+      const newParam = createTestParameter({
+        parameterName: "new",
+        parameterValue: "val",
       });
+      mockParseResponse.mockResolvedValue(newParam);
 
-      global.fetch = createModernFetchMock(newParameter);
+      await updateParameter(oldParam, newParam);
 
-      await updateParameterModern(oldParameter, newParameter);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.body).toBe(JSON.stringify(newParameter));
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      const body = JSON.parse(options?.body as string);
+      expect(body.parameterName).toBe("new_sanitized");
     });
 
-    it("should use parameterName from oldParameter in URL", async () => {
-      const oldParameter = createTestParameter({
-        parameterId: 999,
-        parameterName: "test_param_999",
+    it("should call parseResponse with the fetch response", async () => {
+      const mockResponse = { status: 200 } as Response;
+      mockFetchWithErrorHandling.mockResolvedValue(mockResponse);
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({ parameterName: "updated" });
+      mockParseResponse.mockResolvedValue(newParam);
+
+      await updateParameter(oldParam, newParam);
+
+      expect(mockParseResponse).toHaveBeenCalledWith(mockResponse);
+    });
+
+    it("should update parameter value", async () => {
+      const oldParam = createTestParameter({ parameterValue: "checking_old" });
+      const newParam = createTestParameter({ parameterValue: "checking_new" });
+      mockParseResponse.mockResolvedValue(newParam);
+
+      const result = await updateParameter(oldParam, newParam);
+
+      expect(result.parameterValue).toBe("checking_new");
+    });
+
+    it("should update boolean string value", async () => {
+      const oldParam = createTestParameter({
+        parameterName: "enable_feature",
+        parameterValue: "false",
       });
-      const newParameter = createTestParameter({
-        parameterId: 999,
-        parameterName: "test_param_999",
+      const newParam = createTestParameter({
+        parameterName: "enable_feature",
+        parameterValue: "true",
       });
+      mockParseResponse.mockResolvedValue(newParam);
 
-      global.fetch = createModernFetchMock(newParameter);
+      const result = await updateParameter(oldParam, newParam);
 
-      await updateParameterModern(oldParameter, newParameter);
+      expect(result.parameterValue).toBe("true");
+    });
 
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/parameter/test_param_999",
+    it("should handle update with same name but different value", async () => {
+      const oldParam = createTestParameter({
+        parameterName: "max_retries",
+        parameterValue: "3",
+      });
+      const newParam = createTestParameter({
+        parameterName: "max_retries",
+        parameterValue: "5",
+      });
+      mockParseResponse.mockResolvedValue(newParam);
+
+      await updateParameter(oldParam, newParam);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/parameter/max_retries",
         expect.any(Object),
       );
     });
   });
 
-  describe("Modern error handling with ServiceResult pattern", () => {
-    it("should handle 404 not found with modern error format", async () => {
-      const oldParameter = createTestParameter({ parameterId: 999 });
-      const newParameter = createTestParameter({ parameterId: 999 });
+  describe("error handling", () => {
+    it("should propagate 404 not found error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Parameter not found", 404),
+      );
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({ parameterName: "updated" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        json: async () => ({ error: "Parameter not found" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("Parameter not found");
-    });
-
-    it("should handle validation errors with modern format", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter({ parameterValue: "" });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({
-          errors: [
-            "parameterValue is required",
-            "parameterValue must be non-empty",
-          ],
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow(
-        "parameterValue is required, parameterValue must be non-empty",
+      await expect(updateParameter(oldParam, newParam)).rejects.toThrow(
+        "Parameter not found",
       );
     });
 
-    it("should handle 401 unauthorized", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
+    it("should propagate 409 conflict error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Parameter name already exists", 409),
+      );
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({ parameterName: "existing" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        json: async () => ({ error: "Unauthorized" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("Unauthorized");
+      await expect(updateParameter(oldParam, newParam)).rejects.toThrow(
+        "Parameter name already exists",
+      );
     });
 
-    it("should handle 403 forbidden", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({ parameterName: "updated" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: async () => ({ error: "Forbidden" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("Forbidden");
+      await expect(updateParameter(oldParam, newParam)).rejects.toThrow(
+        "Network request failed",
+      );
     });
 
-    it("should handle 500 server error", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
+      );
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({ parameterName: "updated" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: "Internal server error" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("Internal server error");
-    });
-
-    it("should handle error response without error field", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({}),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("HTTP error! Status: 400");
-    });
-
-    it("should handle invalid JSON in error response", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-      });
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("HTTP error! Status: 500");
+      await expect(updateParameter(oldParam, newParam)).rejects.toThrow(
+        "Internal server error",
+      );
     });
   });
 
-  describe("Network and connectivity errors", () => {
-    it("should handle network errors", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("Network error");
-
-      const calls = consoleSpy.getCalls();
-      expect(
-        calls.error.some((call) => call[0].includes("An error occurred:")),
-      ).toBe(true);
-    });
-
-    it("should handle timeout errors", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("Timeout");
-    });
-
-    it("should handle connection refused", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Connection refused"));
-
-      consoleSpy.start();
-
-      await expect(
-        updateParameterModern(oldParameter, newParameter),
-      ).rejects.toThrow("Connection refused");
-    });
-  });
-
-  describe("Request configuration", () => {
+  describe("request format", () => {
     it("should use PUT method", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({ parameterName: "updated" });
+      mockParseResponse.mockResolvedValue(newParam);
 
-      global.fetch = createModernFetchMock(newParameter);
+      await updateParameter(oldParam, newParam);
 
-      await updateParameterModern(oldParameter, newParameter);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.method).toBe("PUT");
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("PUT");
     });
 
-    it("should include credentials", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      await updateParameterModern(oldParameter, newParameter);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.credentials).toBe("include");
-    });
-
-    it("should include correct headers", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter();
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      await updateParameterModern(oldParameter, newParameter);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toStrictEqual({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      });
-    });
-  });
-
-  describe("Parameter value updates", () => {
-    it("should update parameter value", async () => {
-      const oldParameter = createTestParameter({
-        parameterValue: "old_value",
-      });
-      const newParameter = createTestParameter({
-        parameterValue: "new_value",
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe("new_value");
-    });
-
-    it("should update parameter name", async () => {
-      const oldParameter = createTestParameter({
-        parameterName: "old_name",
-      });
-      const newParameter = createTestParameter({
-        parameterName: "new_name",
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterName).toBe("new_name");
-    });
-
-    it("should update activeStatus", async () => {
-      const oldParameter = createTestParameter({ activeStatus: true });
-      const newParameter = createTestParameter({ activeStatus: false });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.activeStatus).toBe(false);
-    });
-
-    it("should update multiple fields simultaneously", async () => {
-      const oldParameter = createTestParameter({
-        parameterName: "old_name",
-        parameterValue: "old_value",
-        activeStatus: true,
-      });
-      const newParameter = createTestParameter({
+    it("should include new parameter data as JSON in body", async () => {
+      const oldParam = createTestParameter();
+      const newParam = createTestParameter({
         parameterName: "new_name",
         parameterValue: "new_value",
-        activeStatus: false,
       });
+      mockParseResponse.mockResolvedValue(newParam);
 
-      global.fetch = createModernFetchMock(newParameter);
+      await updateParameter(oldParam, newParam);
 
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterName).toBe("new_name");
-      expect(result.parameterValue).toBe("new_value");
-      expect(result.activeStatus).toBe(false);
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should handle parameters with special characters", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter({
-        parameterValue: "value!@#$%^&*()",
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe("value!@#$%^&*()");
-    });
-
-    it("should handle parameters with Unicode characters", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter({
-        parameterValue: "Hello 世界 🌍",
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe("Hello 世界 🌍");
-    });
-
-    it("should handle parameters with empty values", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter({ parameterValue: "" });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe("");
-    });
-
-    it("should handle parameters with very long values", async () => {
-      const longValue = "a".repeat(10000);
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter({ parameterValue: longValue });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe(longValue);
-      expect(result.parameterValue.length).toBe(10000);
-    });
-
-    it("should handle parameters with JSON values", async () => {
-      const jsonValue = '{"key": "value", "nested": {"data": 123}}';
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter({ parameterValue: jsonValue });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe(jsonValue);
-    });
-  });
-
-  describe("Common update scenarios", () => {
-    it("should update payment account parameter", async () => {
-      const oldParameter = createTestParameter({
-        parameterName: "payment_account",
-        parameterValue: "checking_old",
-      });
-      const newParameter = createTestParameter({
-        parameterName: "payment_account",
-        parameterValue: "checking_new",
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterName).toBe("payment_account");
-      expect(result.parameterValue).toBe("checking_new");
-    });
-
-    it("should update configuration parameter", async () => {
-      const oldParameter = createTestParameter({
-        parameterName: "default_category",
-        parameterValue: "groceries",
-      });
-      const newParameter = createTestParameter({
-        parameterName: "default_category",
-        parameterValue: "dining",
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe("dining");
-    });
-
-    it("should deactivate parameter", async () => {
-      const oldParameter = createTestParameter({
-        parameterName: "old_feature_flag",
-        activeStatus: true,
-      });
-      const newParameter = createTestParameter({
-        parameterName: "old_feature_flag",
-        activeStatus: false,
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.activeStatus).toBe(false);
-    });
-
-    it("should update numeric parameter value", async () => {
-      const oldParameter = createTestParameter({
-        parameterName: "max_amount",
-        parameterValue: "1000",
-      });
-      const newParameter = createTestParameter({
-        parameterName: "max_amount",
-        parameterValue: "2000",
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterValue).toBe("2000");
-    });
-  });
-
-  describe("Data integrity", () => {
-    it("should preserve parameterId", async () => {
-      const oldParameter = createTestParameter({ parameterId: 123 });
-      const newParameter = createTestParameter({ parameterId: 123 });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result.parameterId).toBe(123);
-    });
-
-    it("should return updated parameter exactly as received from API", async () => {
-      const oldParameter = createTestParameter();
-      const newParameter = createTestParameter({
-        parameterId: 1,
-        parameterName: "updated_param",
-        parameterValue: "updated_value",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(newParameter);
-
-      const result = await updateParameterModern(oldParameter, newParameter);
-
-      expect(result).toStrictEqual(newParameter);
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.body).toBeDefined();
     });
   });
 });

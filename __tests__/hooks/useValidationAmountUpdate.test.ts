@@ -1,63 +1,56 @@
-/**
- * Isolated tests for useValidationAmountUpdate business logic
- * Tests updateValidationAmount function without React Query overhead
- */
-
-import {
-  createModernFetchMock as createFetchMock,
-  createModernErrorFetchMock as createErrorFetchMock,
-  ConsoleSpy,
-} from "../../testHelpers";
+import { updateValidationAmount } from "../../hooks/useValidationAmountUpdate";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Extract the business logic function from useValidationAmountUpdate
-const updateValidationAmount = async (
-  oldValidationAmount: ValidationAmount,
-  newValidationAmount: ValidationAmount,
-): Promise<ValidationAmount> => {
-  const endpoint = `/api/validation/amount/${oldValidationAmount.validationId}`;
-  try {
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(newValidationAmount),
-    });
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value: number) => value),
+  },
+}));
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    validationAmount: jest.fn(() => ["validationAmount"]),
+  },
+}));
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`Error updating validation amount: ${error.message}`);
-    throw error;
-  }
-};
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
 
-// Helper function to create test validation amount data
+import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
+import { InputSanitizer } from "../../utils/validation/sanitization";
+
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockParseResponse = parseResponse as jest.MockedFunction<
+  typeof parseResponse
+>;
+const mockSanitizeNumericId =
+  InputSanitizer.sanitizeNumericId as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeNumericId
+  >;
+
 const createTestValidationAmount = (
   overrides: Partial<ValidationAmount> = {},
 ): ValidationAmount => ({
@@ -72,429 +65,233 @@ const createTestValidationAmount = (
   ...overrides,
 });
 
-describe("useValidationAmountUpdate Business Logic", () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("useValidationAmountUpdate - updateValidationAmount", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
+  describe("endpoint and sanitization", () => {
+    it("should sanitize old validationId for endpoint", async () => {
+      const oldVal = createTestValidationAmount({ validationId: 42 });
+      const newVal = createTestValidationAmount({ validationId: 42, amount: 2000 });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      await updateValidationAmount(oldVal, newVal);
+
+      expect(mockSanitizeNumericId).toHaveBeenCalledWith(42, "validationId");
+    });
+
+    it("should call fetchWithErrorHandling with correct PUT endpoint", async () => {
+      const oldVal = createTestValidationAmount({ validationId: 42 });
+      const newVal = createTestValidationAmount({ validationId: 42, amount: 2000 });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      await updateValidationAmount(oldVal, newVal);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/validation/amount/42",
+        expect.objectContaining({ method: "PUT" }),
+      );
+    });
+
+    it("should use sanitized ID in endpoint URL", async () => {
+      mockSanitizeNumericId.mockReturnValue(77);
+      const oldVal = createTestValidationAmount({ validationId: 77 });
+      const newVal = createTestValidationAmount({ amount: 500 });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      await updateValidationAmount(oldVal, newVal);
+
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/validation/amount/77");
+    });
   });
 
-  describe("updateValidationAmount", () => {
-    describe("Successful validation amount update", () => {
-      it("should update validation amount successfully", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount({
-          amount: 2000.0,
-        });
+  describe("successful update", () => {
+    it("should return the updated validation amount", async () => {
+      const oldVal = createTestValidationAmount({ validationId: 1 });
+      const newVal = createTestValidationAmount({ amount: 2500 });
+      mockParseResponse.mockResolvedValue(newVal);
 
-        global.fetch = createFetchMock(newValidationAmount);
+      const result = await updateValidationAmount(oldVal, newVal);
 
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result).toStrictEqual(newValidationAmount);
-        expect(fetch).toHaveBeenCalledWith(
-          `/api/validation/amount/${oldValidationAmount.validationId}`,
-          {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(newValidationAmount),
-          },
-        );
-      });
-
-      it("should use correct endpoint with validation ID", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          validationId: 12345,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          validationId: 12345,
-          amount: 5000.0,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        await updateValidationAmount(oldValidationAmount, newValidationAmount);
-
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/12345",
-          expect.any(Object),
-        );
-      });
-
-      it("should update amount field", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          amount: 1000.0,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          amount: 1500.0,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.amount).toBe(1500.0);
-      });
-
-      it("should update transaction state field", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          transactionState: "cleared" as TransactionState,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          transactionState: "outstanding" as TransactionState,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.transactionState).toBe("outstanding");
-      });
-
-      it("should update active status field", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          activeStatus: true,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          activeStatus: false,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.activeStatus).toBe(false);
-      });
-
-      it("should update validation date field", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          validationDate: new Date("2024-01-01T00:00:00.000Z"),
-        });
-        const newValidationDate = new Date("2024-06-15T00:00:00.000Z");
-        const newValidationAmount = createTestValidationAmount({
-          validationDate: newValidationDate,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.validationDate).toStrictEqual(newValidationDate);
-      });
+      expect(result).toStrictEqual(newVal);
     });
 
-    describe("API error handling", () => {
-      it("should handle 400 error with error message", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount({
-          amount: 2000.0,
-        });
+    it("should send new validation amount as JSON body", async () => {
+      const oldVal = createTestValidationAmount({ validationId: 5 });
+      const newVal = createTestValidationAmount({ validationId: 5, amount: 3000 });
+      mockParseResponse.mockResolvedValue(newVal);
 
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest
-            .fn()
-            .mockResolvedValue({ error: "Invalid validation amount data" }),
-        });
-        consoleSpy.start();
+      await updateValidationAmount(oldVal, newVal);
 
-        await expect(
-          updateValidationAmount(oldValidationAmount, newValidationAmount),
-        ).rejects.toThrow("Invalid validation amount data");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Error updating validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle 404 not found error", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          validationId: 99999,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          validationId: 99999,
-        });
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-          json: jest
-            .fn()
-            .mockResolvedValue({ error: "Validation amount not found" }),
-        });
-        consoleSpy.start();
-
-        await expect(
-          updateValidationAmount(oldValidationAmount, newValidationAmount),
-        ).rejects.toThrow("Validation amount not found");
-      });
-
-      it("should handle 500 server error", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
-        });
-        consoleSpy.start();
-
-        await expect(
-          updateValidationAmount(oldValidationAmount, newValidationAmount),
-        ).rejects.toThrow("Internal server error");
-      });
-
-      it("should handle network errors", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-        consoleSpy.start();
-
-        await expect(
-          updateValidationAmount(oldValidationAmount, newValidationAmount),
-        ).rejects.toThrow("Network error");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Error updating validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      const body = JSON.parse(options?.body as string);
+      expect(body.amount).toBe(3000);
     });
 
-    describe("Request format validation", () => {
-      it("should send correct headers", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount({
-          amount: 2000.0,
-        });
+    it("should call parseResponse with the fetch response", async () => {
+      const mockResponse = { status: 200 } as Response;
+      mockFetchWithErrorHandling.mockResolvedValue(mockResponse);
+      const oldVal = createTestValidationAmount();
+      const newVal = createTestValidationAmount({ amount: 1500 });
+      mockParseResponse.mockResolvedValue(newVal);
 
-        global.fetch = createFetchMock(newValidationAmount);
+      await updateValidationAmount(oldVal, newVal);
 
-        await updateValidationAmount(oldValidationAmount, newValidationAmount);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          }),
-        );
-      });
-
-      it("should use PUT method", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount();
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        await updateValidationAmount(oldValidationAmount, newValidationAmount);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ method: "PUT" }),
-        );
-      });
-
-      it("should include credentials", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount();
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        await updateValidationAmount(oldValidationAmount, newValidationAmount);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ credentials: "include" }),
-        );
-      });
-
-      it("should stringify the new validation amount data", async () => {
-        const oldValidationAmount = createTestValidationAmount();
-        const newValidationAmount = createTestValidationAmount({
-          amount: 2500.0,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        await updateValidationAmount(oldValidationAmount, newValidationAmount);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: JSON.stringify(newValidationAmount),
-          }),
-        );
-      });
+      expect(mockParseResponse).toHaveBeenCalledWith(mockResponse);
     });
 
-    describe("Business logic scenarios", () => {
-      it("should handle updating multiple fields at once", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          amount: 1000.0,
-          transactionState: "cleared" as TransactionState,
-          activeStatus: true,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          amount: 3000.0,
-          transactionState: "outstanding" as TransactionState,
-          activeStatus: false,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.amount).toBe(3000.0);
-        expect(result.transactionState).toBe("outstanding");
-        expect(result.activeStatus).toBe(false);
+    it("should update transaction state from cleared to outstanding", async () => {
+      const oldVal = createTestValidationAmount({
+        transactionState: "cleared" as TransactionState,
       });
-
-      it("should handle deactivating a validation amount", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          activeStatus: true,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          activeStatus: false,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.activeStatus).toBe(false);
+      const newVal = createTestValidationAmount({
+        transactionState: "outstanding" as TransactionState,
       });
+      mockParseResponse.mockResolvedValue(newVal);
 
-      it("should handle changing transaction state workflow", async () => {
-        const transactionStates: TransactionState[] = [
-          "cleared",
-          "outstanding",
-          "pending",
-          "future",
-        ];
+      const result = await updateValidationAmount(oldVal, newVal);
 
-        for (let i = 0; i < transactionStates.length - 1; i++) {
-          const oldValidationAmount = createTestValidationAmount({
-            transactionState: transactionStates[i],
-          });
-          const newValidationAmount = createTestValidationAmount({
-            transactionState: transactionStates[i + 1],
-          });
-
-          global.fetch = createFetchMock(newValidationAmount);
-
-          const result = await updateValidationAmount(
-            oldValidationAmount,
-            newValidationAmount,
-          );
-
-          expect(result.transactionState).toBe(transactionStates[i + 1]);
-        }
-      });
+      expect(result.transactionState).toBe("outstanding");
     });
 
-    describe("Edge cases", () => {
-      it("should handle zero amount update", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          amount: 1000.0,
-        });
-        const newValidationAmount = createTestValidationAmount({ amount: 0 });
+    it("should update amount value", async () => {
+      const oldVal = createTestValidationAmount({ amount: 1000 });
+      const newVal = createTestValidationAmount({ amount: 2000 });
+      mockParseResponse.mockResolvedValue(newVal);
 
-        global.fetch = createFetchMock(newValidationAmount);
+      const result = await updateValidationAmount(oldVal, newVal);
 
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.amount).toBe(0);
-      });
-
-      it("should handle negative amount update", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          amount: 1000.0,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          amount: -500.0,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.amount).toBe(-500.0);
-      });
-
-      it("should handle high precision decimal amounts", async () => {
-        const oldValidationAmount = createTestValidationAmount({
-          amount: 1000.0,
-        });
-        const newValidationAmount = createTestValidationAmount({
-          amount: 1234.5678,
-        });
-
-        global.fetch = createFetchMock(newValidationAmount);
-
-        const result = await updateValidationAmount(
-          oldValidationAmount,
-          newValidationAmount,
-        );
-
-        expect(result.amount).toBe(1234.5678);
-      });
+      expect(result.amount).toBe(2000);
     });
+
+    it("should update activeStatus", async () => {
+      const oldVal = createTestValidationAmount({ activeStatus: true });
+      const newVal = createTestValidationAmount({ activeStatus: false });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      const result = await updateValidationAmount(oldVal, newVal);
+
+      expect(result.activeStatus).toBe(false);
+    });
+
+    it("should handle zero amount update", async () => {
+      const oldVal = createTestValidationAmount({ amount: 1000 });
+      const newVal = createTestValidationAmount({ amount: 0 });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      const result = await updateValidationAmount(oldVal, newVal);
+
+      expect(result.amount).toBe(0);
+    });
+
+    it("should handle large amount update", async () => {
+      const oldVal = createTestValidationAmount({ amount: 100 });
+      const newVal = createTestValidationAmount({ amount: 999999.99 });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      const result = await updateValidationAmount(oldVal, newVal);
+
+      expect(result.amount).toBe(999999.99);
+    });
+  });
+
+  describe("error handling", () => {
+    it("should propagate 404 not found error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Validation amount not found", 404),
+      );
+      const oldVal = createTestValidationAmount();
+      const newVal = createTestValidationAmount({ amount: 2000 });
+
+      await expect(updateValidationAmount(oldVal, newVal)).rejects.toThrow(
+        "Validation amount not found",
+      );
+    });
+
+    it("should propagate 400 bad request error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Invalid validation amount data", 400),
+      );
+      const oldVal = createTestValidationAmount();
+      const newVal = createTestValidationAmount({ amount: -1 });
+
+      await expect(updateValidationAmount(oldVal, newVal)).rejects.toThrow(
+        "Invalid validation amount data",
+      );
+    });
+
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
+      );
+      const oldVal = createTestValidationAmount();
+      const newVal = createTestValidationAmount();
+
+      await expect(updateValidationAmount(oldVal, newVal)).rejects.toThrow(
+        "Internal server error",
+      );
+    });
+
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+      const oldVal = createTestValidationAmount();
+      const newVal = createTestValidationAmount({ amount: 2000 });
+
+      await expect(updateValidationAmount(oldVal, newVal)).rejects.toThrow(
+        "Network request failed",
+      );
+    });
+  });
+
+  describe("request format", () => {
+    it("should use PUT method", async () => {
+      const oldVal = createTestValidationAmount();
+      const newVal = createTestValidationAmount({ amount: 2000 });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      await updateValidationAmount(oldVal, newVal);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("PUT");
+    });
+
+    it("should include new validation amount data in body", async () => {
+      const oldVal = createTestValidationAmount();
+      const newVal = createTestValidationAmount({
+        amount: 1500,
+        transactionState: "outstanding" as TransactionState,
+      });
+      mockParseResponse.mockResolvedValue(newVal);
+
+      await updateValidationAmount(oldVal, newVal);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.body).toBeDefined();
+    });
+  });
+
+  describe("various IDs", () => {
+    it.each([1, 10, 100, 1000, 99999])(
+      "should construct correct endpoint for ID %d",
+      async (id) => {
+        const oldVal = createTestValidationAmount({ validationId: id });
+        const newVal = createTestValidationAmount({ amount: 2000 });
+        mockParseResponse.mockResolvedValue(newVal);
+
+        await updateValidationAmount(oldVal, newVal);
+
+        const [url] = mockFetchWithErrorHandling.mock.calls[0];
+        expect(url).toBe(`/api/validation/amount/${id}`);
+      },
+    );
   });
 });

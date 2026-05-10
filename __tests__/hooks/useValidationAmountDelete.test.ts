@@ -1,62 +1,47 @@
-/**
- * Isolated tests for useValidationAmountDelete business logic
- * Tests deleteValidationAmount function without React Query overhead
- */
-
-import {
-  createModernFetchMock as createFetchMock,
-  createModernErrorFetchMock as createErrorFetchMock,
-  ConsoleSpy,
-} from "../../testHelpers";
+import { deleteValidationAmount } from "../../hooks/useValidationAmountDelete";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Extract the business logic function from useValidationAmountDelete
-const deleteValidationAmount = async (
-  payload: ValidationAmount,
-): Promise<ValidationAmount | null> => {
-  try {
-    const endpoint = `/api/validation/amount/${payload.validationId}`;
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value: number) => value),
+  },
+}));
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
-    }
+import { fetchWithErrorHandling } from "../../utils/fetchUtils";
+import { InputSanitizer } from "../../utils/validation/sanitization";
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error(`Error deleting validation amount: ${error.message}`);
-    throw error;
-  }
-};
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockSanitizeNumericId =
+  InputSanitizer.sanitizeNumericId as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeNumericId
+  >;
 
-// Helper function to create test validation amount data
 const createTestValidationAmount = (
   overrides: Partial<ValidationAmount> = {},
 ): ValidationAmount => ({
@@ -71,446 +56,212 @@ const createTestValidationAmount = (
   ...overrides,
 });
 
-describe("useValidationAmountDelete Business Logic", () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("useValidationAmountDelete - deleteValidationAmount", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
+  describe("endpoint and sanitization", () => {
+    it("should sanitize validationId before constructing endpoint", async () => {
+      const payload = createTestValidationAmount({ validationId: 42 });
+
+      await deleteValidationAmount(payload);
+
+      expect(mockSanitizeNumericId).toHaveBeenCalledWith(42, "validationId");
+    });
+
+    it("should call fetchWithErrorHandling with correct DELETE endpoint", async () => {
+      const payload = createTestValidationAmount({ validationId: 42 });
+
+      await deleteValidationAmount(payload);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/validation/amount/42",
+        { method: "DELETE" },
+      );
+    });
+
+    it("should use sanitized ID in endpoint URL", async () => {
+      mockSanitizeNumericId.mockReturnValue(99);
+      const payload = createTestValidationAmount({ validationId: 99 });
+
+      await deleteValidationAmount(payload);
+
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/validation/amount/99");
+    });
   });
 
-  describe("deleteValidationAmount", () => {
-    describe("Successful validation amount deletion", () => {
-      it("should delete validation amount successfully with 200 response", async () => {
-        const testPayload = createTestValidationAmount();
+  describe("successful deletion", () => {
+    it("should return void (undefined) on success", async () => {
+      const payload = createTestValidationAmount();
 
-        global.fetch = createFetchMock(testPayload);
+      const result = await deleteValidationAmount(payload);
 
-        const result = await deleteValidationAmount(testPayload);
+      expect(result).toBeUndefined();
+    });
 
-        expect(result).toStrictEqual(testPayload);
-        expect(fetch).toHaveBeenCalledWith(
-          `/api/validation/amount/${testPayload.validationId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          },
-        );
+    it("should delete cleared validation amount", async () => {
+      const payload = createTestValidationAmount({
+        validationId: 10,
+        transactionState: "cleared" as TransactionState,
       });
 
-      it("should delete validation amount successfully with 204 response", async () => {
-        const testPayload = createTestValidationAmount();
+      await deleteValidationAmount(payload);
 
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/validation/amount/10",
+        expect.any(Object),
+      );
+    });
 
-        const result = await deleteValidationAmount(testPayload);
+    it("should delete outstanding validation amount", async () => {
+      const payload = createTestValidationAmount({
+        validationId: 20,
+        transactionState: "outstanding" as TransactionState,
+      });
 
-        expect(result).toBeNull();
-        expect(fetch).toHaveBeenCalledWith(
-          `/api/validation/amount/${testPayload.validationId}`,
+      await deleteValidationAmount(payload);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/validation/amount/20",
+        expect.any(Object),
+      );
+    });
+
+    it("should delete inactive validation amount", async () => {
+      const payload = createTestValidationAmount({
+        validationId: 5,
+        activeStatus: false,
+      });
+
+      await deleteValidationAmount(payload);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/validation/amount/5",
+        expect.any(Object),
+      );
+    });
+
+    it("should delete validation amount with zero amount", async () => {
+      const payload = createTestValidationAmount({ validationId: 3, amount: 0 });
+
+      await deleteValidationAmount(payload);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/validation/amount/3",
+        expect.any(Object),
+      );
+    });
+
+    it("should delete validation amount with large ID", async () => {
+      const payload = createTestValidationAmount({ validationId: 999999 });
+
+      await deleteValidationAmount(payload);
+
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/validation/amount/999999",
+        expect.any(Object),
+      );
+    });
+  });
+
+  describe("error handling", () => {
+    it("should propagate 404 not found error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Validation amount not found", 404),
+      );
+      const payload = createTestValidationAmount();
+
+      await expect(deleteValidationAmount(payload)).rejects.toThrow(
+        "Validation amount not found",
+      );
+    });
+
+    it("should propagate 400 bad request error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Invalid request", 400),
+      );
+      const payload = createTestValidationAmount();
+
+      await expect(deleteValidationAmount(payload)).rejects.toThrow(
+        "Invalid request",
+      );
+    });
+
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
+      );
+      const payload = createTestValidationAmount();
+
+      await expect(deleteValidationAmount(payload)).rejects.toThrow(
+        "Internal server error",
+      );
+    });
+
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+      const payload = createTestValidationAmount();
+
+      await expect(deleteValidationAmount(payload)).rejects.toThrow(
+        "Network request failed",
+      );
+    });
+
+    it("should propagate 409 conflict error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Cannot delete validation amount with dependencies", 409),
+      );
+      const payload = createTestValidationAmount();
+
+      await expect(deleteValidationAmount(payload)).rejects.toThrow(
+        "Cannot delete validation amount with dependencies",
+      );
+    });
+  });
+
+  describe("request format", () => {
+    it("should use DELETE method", async () => {
+      const payload = createTestValidationAmount();
+
+      await deleteValidationAmount(payload);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("DELETE");
+    });
+
+    it("should not send a body in DELETE request", async () => {
+      const payload = createTestValidationAmount();
+
+      await deleteValidationAmount(payload);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.body).toBeUndefined();
+    });
+  });
+
+  describe("various IDs", () => {
+    it.each([1, 10, 100, 1000, 99999])(
+      "should construct correct endpoint for ID %d",
+      async (id) => {
+        const payload = createTestValidationAmount({ validationId: id });
+
+        await deleteValidationAmount(payload);
+
+        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+          `/api/validation/amount/${id}`,
           expect.any(Object),
         );
-      });
-
-      it("should use correct endpoint with validation ID", async () => {
-        const testPayload = createTestValidationAmount({
-          validationId: 12345,
-        });
-
-        global.fetch = createFetchMock(testPayload);
-
-        await deleteValidationAmount(testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/12345",
-          expect.any(Object),
-        );
-      });
-
-      it("should handle deletion of different validation IDs", async () => {
-        const validationIds = [1, 100, 999, 12345, 99999];
-
-        for (const validationId of validationIds) {
-          const testPayload = createTestValidationAmount({ validationId });
-
-          global.fetch = createFetchMock(testPayload);
-
-          await deleteValidationAmount(testPayload);
-
-          expect(fetch).toHaveBeenCalledWith(
-            `/api/validation/amount/${validationId}`,
-            expect.any(Object),
-          );
-        }
-      });
-    });
-
-    describe("API error handling", () => {
-      it("should handle 400 error with error message", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValue({ error: "Invalid request" }),
-        });
-        consoleSpy.start();
-
-        await expect(deleteValidationAmount(testPayload)).rejects.toThrow(
-          "Invalid request",
-        );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Error deleting validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle 404 not found error", async () => {
-        const testPayload = createTestValidationAmount({
-          validationId: 99999,
-        });
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-          json: jest
-            .fn()
-            .mockResolvedValue({ error: "Validation amount not found" }),
-        });
-        consoleSpy.start();
-
-        await expect(deleteValidationAmount(testPayload)).rejects.toThrow(
-          "Validation amount not found",
-        );
-      });
-
-      it("should handle 409 conflict error", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 409,
-          json: jest.fn().mockResolvedValue({
-            error: "Cannot delete validation amount with dependencies",
-          }),
-        });
-        consoleSpy.start();
-
-        await expect(deleteValidationAmount(testPayload)).rejects.toThrow(
-          "Cannot delete validation amount with dependencies",
-        );
-      });
-
-      it("should handle 500 server error", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
-        });
-        consoleSpy.start();
-
-        await expect(deleteValidationAmount(testPayload)).rejects.toThrow(
-          "Internal server error",
-        );
-      });
-
-      it("should handle error response without message", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValue({}),
-        });
-        consoleSpy.start();
-
-        await expect(deleteValidationAmount(testPayload)).rejects.toThrow(
-          "HTTP error! Status: 400",
-        );
-      });
-
-      it("should handle malformed error response", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-        });
-        consoleSpy.start();
-
-        await expect(deleteValidationAmount(testPayload)).rejects.toThrow(
-          "HTTP error! Status: 400",
-        );
-      });
-
-      it("should handle network errors", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-        consoleSpy.start();
-
-        await expect(deleteValidationAmount(testPayload)).rejects.toThrow(
-          "Network error",
-        );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Error deleting validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-    });
-
-    describe("Request format validation", () => {
-      it("should send correct headers", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = createFetchMock(testPayload);
-
-        await deleteValidationAmount(testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          }),
-        );
-      });
-
-      it("should use DELETE method", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = createFetchMock(testPayload);
-
-        await deleteValidationAmount(testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ method: "DELETE" }),
-        );
-      });
-
-      it("should include credentials", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = createFetchMock(testPayload);
-
-        await deleteValidationAmount(testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ credentials: "include" }),
-        );
-      });
-
-      it("should use validation ID in endpoint", async () => {
-        const testPayload = createTestValidationAmount({
-          validationId: 54321,
-        });
-
-        global.fetch = createFetchMock(testPayload);
-
-        await deleteValidationAmount(testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/54321",
-          expect.any(Object),
-        );
-      });
-    });
-
-    describe("Business logic scenarios", () => {
-      it("should handle deletion of cleared validation amount", async () => {
-        const testPayload = createTestValidationAmount({
-          transactionState: "cleared" as TransactionState,
-        });
-
-        global.fetch = createFetchMock(testPayload);
-
-        const result = await deleteValidationAmount(testPayload);
-
-        expect(result).toStrictEqual(testPayload);
-      });
-
-      it("should handle deletion of outstanding validation amount", async () => {
-        const testPayload = createTestValidationAmount({
-          transactionState: "outstanding" as TransactionState,
-        });
-
-        global.fetch = createFetchMock(testPayload);
-
-        const result = await deleteValidationAmount(testPayload);
-
-        expect(result).toStrictEqual(testPayload);
-      });
-
-      it("should handle deletion of inactive validation amount", async () => {
-        const testPayload = createTestValidationAmount({
-          activeStatus: false,
-        });
-
-        global.fetch = createFetchMock(testPayload);
-
-        const result = await deleteValidationAmount(testPayload);
-
-        expect(result).toStrictEqual(testPayload);
-      });
-
-      it("should handle deletion of old validation amounts", async () => {
-        const oldDate = new Date("2020-01-01T00:00:00.000Z");
-        const testPayload = createTestValidationAmount({
-          validationDate: oldDate,
-        });
-
-        global.fetch = createFetchMock(testPayload);
-
-        const result = await deleteValidationAmount(testPayload);
-
-        expect(result).toStrictEqual(testPayload);
-      });
-    });
-
-    describe("Edge cases", () => {
-      it("should handle deletion with various response codes", async () => {
-        const testPayload = createTestValidationAmount();
-
-        // Test 200 OK with body
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 200,
-          json: jest.fn().mockResolvedValue(testPayload),
-        });
-
-        let result = await deleteValidationAmount(testPayload);
-        expect(result).toStrictEqual(testPayload);
-
-        // Test 204 No Content
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
-
-        result = await deleteValidationAmount(testPayload);
-        expect(result).toBeNull();
-      });
-
-      it("should handle deletion of validation amount with large ID", async () => {
-        const testPayload = createTestValidationAmount({
-          validationId: 999999999,
-        });
-
-        global.fetch = createFetchMock(testPayload);
-
-        await deleteValidationAmount(testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount/999999999",
-          expect.any(Object),
-        );
-      });
-
-      it("should handle deletion of validation amount with zero amount", async () => {
-        const testPayload = createTestValidationAmount({ amount: 0 });
-
-        global.fetch = createFetchMock(testPayload);
-
-        const result = await deleteValidationAmount(testPayload);
-
-        expect(result).toStrictEqual(testPayload);
-      });
-
-      it("should handle deletion of validation amount with negative amount", async () => {
-        const testPayload = createTestValidationAmount({ amount: -1000.0 });
-
-        global.fetch = createFetchMock(testPayload);
-
-        const result = await deleteValidationAmount(testPayload);
-
-        expect(result).toStrictEqual(testPayload);
-      });
-    });
-
-    describe("Console logging", () => {
-      it("should log API error messages", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = createErrorFetchMock("Deletion failed", 400);
-        consoleSpy.start();
-
-        try {
-          await deleteValidationAmount(testPayload);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes(
-                "Error deleting validation amount: Deletion failed",
-              ),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should log network errors", async () => {
-        const testPayload = createTestValidationAmount();
-
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Connection failed"));
-        consoleSpy.start();
-
-        try {
-          await deleteValidationAmount(testPayload);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes(
-                "Error deleting validation amount: Connection failed",
-              ),
-            ),
-          ),
-        ).toBe(true);
-      });
-    });
+      },
+    );
   });
 });
