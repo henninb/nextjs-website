@@ -34,7 +34,6 @@ import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
-import { dummyTransfers } from "../../../data/dummyTransfers";
 import {
   currencyFormat,
   normalizeTransactionDate,
