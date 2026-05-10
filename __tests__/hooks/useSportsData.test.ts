@@ -247,7 +247,6 @@ describe("useSportsData", () => {
 
       expect(result.current.error).toContain("Custom server message");
     });
-  });
 
     it("should handle JSON parse failure when reading error response body", async () => {
       global.fetch = jest.fn().mockResolvedValue({
