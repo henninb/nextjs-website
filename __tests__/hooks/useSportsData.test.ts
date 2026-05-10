@@ -249,6 +249,52 @@ describe("useSportsData", () => {
     });
   });
 
+    it("should handle JSON parse failure when reading error response body", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: jest.fn().mockRejectedValue(new Error("JSON parse error")),
+      });
+
+      const queryClient = createTestQueryClient();
+      const { result } = renderHook(() => useSportsData("/api/nfl"), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error).toBe("Failed to fetch sports data");
+    });
+
+    it("should use timeout message when AbortError is thrown", async () => {
+      const abortError = new Error("The operation was aborted.");
+      abortError.name = "AbortError";
+      global.fetch = jest.fn().mockRejectedValue(abortError);
+
+      const queryClient = createTestQueryClient();
+      const { result } = renderHook(() => useSportsData("/api/nfl"), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error).toContain("Connection timeout");
+    });
+
+    it("should use fallback message for non-Error exceptions", async () => {
+      global.fetch = jest.fn().mockRejectedValue("string error");
+
+      const queryClient = createTestQueryClient();
+      const { result } = renderHook(() => useSportsData("/api/nfl"), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.error).toContain("Failed to fetch sports data");
+    });
+  });
+
   describe("disabled state", () => {
     it("should not fetch when endpoint is empty string", () => {
       global.fetch = jest.fn();
