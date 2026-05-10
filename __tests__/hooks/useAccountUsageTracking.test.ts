@@ -330,4 +330,21 @@ describe("useAccountUsageTracking", () => {
       expect(mostUsed.length).toBeLessThanOrEqual(6);
     });
   });
+
+  describe("saveToStorage error handling", () => {
+    it("should handle localStorage.setItem throwing an error gracefully", () => {
+      jest.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+        throw new Error("Storage quota exceeded");
+      });
+
+      const { result } = renderHook(() => useAccountUsageTracking());
+
+      // Should not throw even when setItem fails
+      expect(() => {
+        act(() => {
+          result.current.trackAccountVisit("checking_john");
+        });
+      }).not.toThrow();
+    });
+  });
 });

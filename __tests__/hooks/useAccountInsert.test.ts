@@ -672,6 +672,14 @@ describe("useAccountInsert hook - renderHook tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (validateInsert as jest.Mock).mockImplementation((data) => data);
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testuser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   afterEach(() => {
@@ -725,5 +733,28 @@ describe("useAccountInsert hook - renderHook tests", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createHookQueryClient();
+    const { result } = renderHook(() => useAccountInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate({ payload: createTestAccount() });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });
