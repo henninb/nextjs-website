@@ -3,6 +3,26 @@
  * Tests updatePendingTransaction function without React Query overhead
  */
 
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import usePendingTransactionUpdate from "../../hooks/usePendingTransactionUpdate";
+
+// Mock cacheUtils
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    pendingTransaction: jest.fn(() => ["pendingTransaction"]),
+  },
+  updateInList: jest.fn(),
+}));
+
+// Mock sanitization
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value: number) => value),
+  },
+}));
+
 // Mock HookValidator
 
 // Mock CSRF utilities
@@ -930,5 +950,95 @@ describe("usePendingTransactionUpdate Business Logic", () => {
         );
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePendingTransactionUpdate default export
+// ---------------------------------------------------------------------------
+
+const createPendingTxUpdateHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPendingTxUpdateHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePendingTransactionUpdate hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("onSuccess calls updateInList with the updated pending transaction", async () => {
+    const queryClient = createPendingTxUpdateHookQueryClient();
+    const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 1 });
+    const updatedPendingTransaction = createTestPendingTransaction({
+      pendingTransactionId: 1,
+      description: "Updated transaction",
+      amount: 200.0,
+    });
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(updatedPendingTransaction),
+    });
+
+    const { result } = renderHook(() => usePendingTransactionUpdate(), {
+      wrapper: createPendingTxUpdateHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        oldPendingTransaction,
+        newPendingTransaction: updatedPendingTransaction,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { updateInList } = jest.requireMock("../../utils/cacheUtils");
+    expect(updateInList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["pendingTransaction"],
+      expect.objectContaining({ pendingTransactionId: 1 }),
+      "pendingTransactionId",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createPendingTxUpdateHookQueryClient();
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: jest.fn().mockResolvedValue({ response: "Update failed" }),
+    });
+
+    const { result } = renderHook(() => usePendingTransactionUpdate(), {
+      wrapper: createPendingTxUpdateHookWrapper(queryClient),
+    });
+
+    const oldPendingTransaction = createTestPendingTransaction();
+    const newPendingTransaction = createTestPendingTransaction({ description: "Updated" });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldPendingTransaction, newPendingTransaction });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

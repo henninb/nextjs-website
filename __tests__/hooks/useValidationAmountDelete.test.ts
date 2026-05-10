@@ -1,4 +1,8 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { deleteValidationAmount } from "../../hooks/useValidationAmountDelete";
+import useValidationAmountDelete from "../../hooks/useValidationAmountDelete";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
@@ -263,5 +267,66 @@ describe("useValidationAmountDelete - deleteValidationAmount", () => {
         );
       },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useValidationAmountDelete default export
+// ---------------------------------------------------------------------------
+
+const createHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useValidationAmountDelete hook - renderHook tests", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
+  });
+
+  it("onSuccess invalidates validationAmount queries", async () => {
+    const queryClient = createHookQueryClient();
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useValidationAmountDelete(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync(createTestValidationAmount({ validationId: 42 }));
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["validationAmount"] }),
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createHookQueryClient();
+    const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Delete failed", 400));
+
+    const { result } = renderHook(() => useValidationAmountDelete(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(createTestValidationAmount());
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

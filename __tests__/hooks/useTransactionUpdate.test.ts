@@ -1,11 +1,15 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Transaction from "../../model/Transaction";
+import Totals from "../../model/Totals";
 import {
   createFetchMock,
   createErrorFetchMock,
   createTestTransaction,
   simulateNetworkError,
 } from "../../testHelpers";
-import { updateTransaction } from "../../hooks/useTransactionUpdate";
+import useTransactionUpdate, { updateTransaction } from "../../hooks/useTransactionUpdate";
 import { validateUpdate } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
@@ -173,5 +177,277 @@ describe("updateTransaction", () => {
     await expect(
       updateTransaction(newTransaction, oldTransaction),
     ).rejects.toThrow("Network error");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useTransactionUpdate default export
+// ---------------------------------------------------------------------------
+
+const createHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+const makeUpdateTx = (overrides: Partial<Transaction> = {}): Transaction =>
+  createTestTransaction({
+    guid: "upd-guid-123",
+    accountNameOwner: "checking",
+    amount: 100,
+    transactionState: "cleared",
+    ...overrides,
+  }) as Transaction;
+
+const makeInitialTotals = (overrides: Partial<Totals> = {}): Totals => ({
+  totals: 500,
+  totalsCleared: 200,
+  totalsOutstanding: 150,
+  totalsFuture: 150,
+  ...overrides,
+});
+
+describe("useTransactionUpdate hook - renderHook tests", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    InputSanitizer.sanitizeGuid.mockImplementation((v) => v);
+    mockValidateUpdate.mockImplementation((data: Transaction) => data);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(makeUpdateTx()),
+      text: jest.fn().mockResolvedValue(JSON.stringify(makeUpdateTx())),
+    });
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess same account: amount change for cleared transaction", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+    const newRow = makeUpdateTx({ amount: 150, transactionState: "cleared" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(550);
+    expect(updated?.totalsCleared).toBe(250);
+    expect(updated?.totalsOutstanding).toBe(150);
+    expect(updated?.totalsFuture).toBe(150);
+  });
+
+  it("onSuccess same account: amount change for outstanding transaction", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "outstanding" });
+    const newRow = makeUpdateTx({ amount: 80, transactionState: "outstanding" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(480);
+    expect(updated?.totalsCleared).toBe(200);
+    expect(updated?.totalsOutstanding).toBe(130);
+    expect(updated?.totalsFuture).toBe(150);
+  });
+
+  it("onSuccess same account: amount change for future transaction", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "future" });
+    const newRow = makeUpdateTx({ amount: 120, transactionState: "future" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(520);
+    expect(updated?.totalsCleared).toBe(200);
+    expect(updated?.totalsOutstanding).toBe(150);
+    expect(updated?.totalsFuture).toBe(170);
+  });
+
+  it("onSuccess same account: state change from outstanding to cleared", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "outstanding" });
+    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(500);
+    expect(updated?.totalsCleared).toBe(300);
+    expect(updated?.totalsOutstanding).toBe(50);
+    expect(updated?.totalsFuture).toBe(150);
+  });
+
+  it("onSuccess same account: state change from cleared to future", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 50, transactionState: "cleared" });
+    const newRow = makeUpdateTx({ amount: 50, transactionState: "future" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(500);
+    expect(updated?.totalsCleared).toBe(150);
+    expect(updated?.totalsOutstanding).toBe(150);
+    expect(updated?.totalsFuture).toBe(200);
+  });
+
+  it("onSuccess same account: no change in amount or state", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(500);
+    expect(updated?.totalsCleared).toBe(200);
+    expect(updated?.totalsOutstanding).toBe(150);
+    expect(updated?.totalsFuture).toBe(150);
+  });
+
+  it("onSuccess cross-account: deducts cleared amount from old account and invalidates new account totals", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "checking" });
+    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "savings" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updatedOld = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updatedOld?.totals).toBe(400);
+    expect(updatedOld?.totalsCleared).toBe(100);
+
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["totals", "savings"] }),
+    );
+  });
+
+  it("onSuccess invalidates transaction paged and exact queries", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["transaction", "checking", "paged"] }),
+    );
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["transaction", "checking"], exact: true }),
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createHookQueryClient();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: jest.fn().mockResolvedValue({ response: "Update failed" }),
+      text: jest.fn().mockResolvedValue(JSON.stringify({ response: "Update failed" })),
+    });
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldRow: makeUpdateTx(), newRow: makeUpdateTx({ amount: 200 }) });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

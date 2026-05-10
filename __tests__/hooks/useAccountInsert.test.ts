@@ -1,3 +1,6 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Account from "../../model/Account";
 import {
   createFetchMock,
@@ -48,19 +51,19 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
-import { setupNewAccount, insertAccount } from "../../hooks/useAccountInsert";
+import useAccountInsert, { setupNewAccount, insertAccount } from "../../hooks/useAccountInsert";
 import { validateInsert } from "../../utils/hookValidation";
 import { DataValidator } from "../../utils/validation";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 
 describe("Account Insert Functions", () => {
@@ -646,5 +649,81 @@ describe("Account Insert Functions", () => {
         );
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useAccountInsert default export
+// ---------------------------------------------------------------------------
+
+const createHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useAccountInsert hook - renderHook tests", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (validateInsert as jest.Mock).mockImplementation((data) => data);
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess calls addToList adding the new account to the cache", async () => {
+    const queryClient = createHookQueryClient();
+    const existingAccount = createTestAccount({ accountNameOwner: "existing" });
+    queryClient.setQueryData(["account"], [existingAccount]);
+
+    const newAccount = createTestAccount({ accountNameOwner: "new_account", accountId: 999 });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: jest.fn().mockResolvedValue(newAccount),
+    });
+
+    const { result } = renderHook(() => useAccountInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ payload: createTestAccount({ accountNameOwner: "new_account" }) });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const cached = queryClient.getQueryData<Account[]>(["account"]);
+    expect(cached).toContainEqual(expect.objectContaining({ accountNameOwner: "new_account" }));
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createHookQueryClient();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: jest.fn().mockResolvedValue({ response: "Insert failed" }),
+    });
+
+    const { result } = renderHook(() => useAccountInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ payload: createTestAccount() });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

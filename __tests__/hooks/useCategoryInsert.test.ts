@@ -1,5 +1,8 @@
-import { insertCategory } from "../../hooks/useCategoryInsert";
+import useCategoryInsert, { insertCategory } from "../../hooks/useCategoryInsert";
 import Category from "../../model/Category";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -240,5 +243,73 @@ describe("useCategoryInsert - insertCategory", () => {
         "categoryName is required",
       );
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useCategoryInsert default export
+// ---------------------------------------------------------------------------
+
+const createCatInsertHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createCatInsertHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useCategoryInsert hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockParseResponse.mockResolvedValue(createTestCategory());
+    mockValidateInsert.mockImplementation((data: unknown) => data as Category);
+  });
+
+  it("onSuccess calls addToList with the new category", async () => {
+    const queryClient = createCatInsertHookQueryClient();
+    const newCategory = createTestCategory({ categoryName: "dining" });
+    mockParseResponse.mockResolvedValue(newCategory);
+
+    const { result } = renderHook(() => useCategoryInsert(), {
+      wrapper: createCatInsertHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ category: newCategory });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { addToList } = jest.requireMock("../../utils/cacheUtils");
+    expect(addToList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["category"],
+      newCategory,
+      "start",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createCatInsertHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Insert failed"));
+
+    const { result } = renderHook(() => useCategoryInsert(), {
+      wrapper: createCatInsertHookWrapper(queryClient),
+    });
+
+    const category = createTestCategory();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ category });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

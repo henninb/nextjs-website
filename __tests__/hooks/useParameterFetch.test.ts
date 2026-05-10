@@ -8,9 +8,13 @@
  * - Uses ServiceResult pattern for errors
  */
 
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Parameter from "../../model/Parameter";
+import useParameterFetch from "../../hooks/useParameterFetch";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -21,6 +25,35 @@ jest.mock("../../components/AuthProvider", () => ({
     login: jest.fn(),
     logout: jest.fn(),
   }),
+}));
+
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+  logger: {
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  },
+}));
+
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    parameter: jest.fn(() => ["parameter"]),
+  },
+}));
+
+jest.mock("../../utils/csrf", () => ({
+  getCsrfHeaders: jest.fn().mockResolvedValue({}),
+  getCsrfToken: jest.fn().mockResolvedValue(null),
+  fetchCsrfToken: jest.fn().mockResolvedValue(undefined),
+  clearCsrfToken: jest.fn(),
+  initCsrfToken: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Modern implementation to test
@@ -474,5 +507,76 @@ describe("useParameterFetch Modern Endpoint (TDD)", () => {
         result.find((p) => p.parameterName === "date_format")?.parameterValue,
       ).toBe("MM/DD/YYYY");
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useParameterFetch default export
+// ---------------------------------------------------------------------------
+
+const createParamQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+      mutations: { retry: false },
+    },
+  });
+
+const createParamWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useParameterFetch hook - renderHook tests", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns parameter data on successful fetch", async () => {
+    const testParameters: Parameter[] = [
+      { parameterId: 1, parameterName: "payment_account", parameterValue: "checking_main", activeStatus: true },
+      { parameterId: 2, parameterName: "currency", parameterValue: "USD", activeStatus: true },
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(testParameters),
+    });
+
+    const queryClient = createParamQueryClient();
+    const { result } = renderHook(() => useParameterFetch(), {
+      wrapper: createParamWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toStrictEqual(testParameters);
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: jest.fn().mockResolvedValue({ error: "Server error" }),
+    });
+
+    const queryClient = createParamQueryClient();
+    const { result } = renderHook(() => useParameterFetch(), {
+      wrapper: createParamWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

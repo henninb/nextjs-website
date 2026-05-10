@@ -1,5 +1,8 @@
-import { updateDescription } from "../../hooks/useDescriptionUpdate";
+import useDescriptionUpdate, { updateDescription } from "../../hooks/useDescriptionUpdate";
 import Description from "../../model/Description";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -312,5 +315,74 @@ describe("useDescriptionUpdate - updateDescription", () => {
       expect(body.descriptionId).toBe(1);
       expect(body.descriptionName).toBe("new_name");
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useDescriptionUpdate default export
+// ---------------------------------------------------------------------------
+
+const createDescUpdateHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createDescUpdateHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useDescriptionUpdate hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockValidateUpdate.mockImplementation((data: unknown) => data as Description);
+  });
+
+  it("onSuccess calls updateInList with the updated description", async () => {
+    const queryClient = createDescUpdateHookQueryClient();
+    const oldDesc = createTestDescription({ descriptionName: "old_store" });
+    const updatedDesc = createTestDescription({ descriptionId: 1, descriptionName: "new_store" });
+    mockParseResponse.mockResolvedValue(updatedDesc);
+
+    const { result } = renderHook(() => useDescriptionUpdate(), {
+      wrapper: createDescUpdateHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldDescription: oldDesc, newDescription: updatedDesc });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { updateInList } = jest.requireMock("../../utils/cacheUtils");
+    expect(updateInList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["description"],
+      updatedDesc,
+      "descriptionId",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createDescUpdateHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Update failed"));
+
+    const { result } = renderHook(() => useDescriptionUpdate(), {
+      wrapper: createDescUpdateHookWrapper(queryClient),
+    });
+
+    const oldDesc = createTestDescription();
+    const newDesc = createTestDescription({ descriptionName: "updated" });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldDescription: oldDesc, newDescription: newDesc });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

@@ -1,5 +1,8 @@
-import { insertDescription } from "../../hooks/useDescriptionInsert";
+import useDescriptionInsert, { insertDescription } from "../../hooks/useDescriptionInsert";
 import Description from "../../model/Description";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -265,5 +268,70 @@ describe("useDescriptionInsert - insertDescription", () => {
       const [, options] = mockFetchWithErrorHandling.mock.calls[0];
       expect(options?.body).toBeDefined();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useDescriptionInsert default export
+// ---------------------------------------------------------------------------
+
+const createDescInsertHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createDescInsertHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useDescriptionInsert hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockParseResponse.mockResolvedValue(createTestDescription());
+  });
+
+  it("onSuccess calls addToList with the new description", async () => {
+    const queryClient = createDescInsertHookQueryClient();
+    const newDesc = createTestDescription({ descriptionName: "amazon" });
+    mockParseResponse.mockResolvedValue(newDesc);
+
+    const { result } = renderHook(() => useDescriptionInsert(), {
+      wrapper: createDescInsertHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ descriptionName: "amazon" });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { addToList } = jest.requireMock("../../utils/cacheUtils");
+    expect(addToList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["description"],
+      newDesc,
+      "start",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createDescInsertHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Insert failed"));
+
+    const { result } = renderHook(() => useDescriptionInsert(), {
+      wrapper: createDescInsertHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ descriptionName: "amazon" });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

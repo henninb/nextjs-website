@@ -1,9 +1,12 @@
-import { insertFamilyMember } from "../../hooks/useFamilyMemberInsert";
+import useFamilyMemberInsert, { insertFamilyMember } from "../../hooks/useFamilyMemberInsert";
 import {
   FamilyMember,
   FamilyMemberCreateRequest,
   FamilyRelationship,
 } from "../../model/FamilyMember";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -246,5 +249,71 @@ describe("useFamilyMemberInsert - insertFamilyMember", () => {
       const [url] = mockFetchWithErrorHandling.mock.calls[0];
       expect(url).toBe("/api/family-members");
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useFamilyMemberInsert default export
+// ---------------------------------------------------------------------------
+
+const createFamilyMemberInsertHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createFamilyMemberInsertHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useFamilyMemberInsert hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
+    mockParseResponse.mockResolvedValue(createTestFamilyMember());
+  });
+
+  it("onSuccess calls invalidateQueries for family member cache", async () => {
+    const queryClient = createFamilyMemberInsertHookQueryClient();
+    const invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
+    const newMember = createTestFamilyMember({ familyMemberId: 5, memberName: "Bob Smith" });
+    mockParseResponse.mockResolvedValue(newMember);
+
+    const { result } = renderHook(() => useFamilyMemberInsert(), {
+      wrapper: createFamilyMemberInsertHookWrapper(queryClient),
+    });
+
+    const request = createTestRequest({ memberName: "Bob Smith" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ payload: request });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: ["familyMember"],
+    });
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createFamilyMemberInsertHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Insert failed"));
+
+    const { result } = renderHook(() => useFamilyMemberInsert(), {
+      wrapper: createFamilyMemberInsertHookWrapper(queryClient),
+    });
+
+    const request = createTestRequest();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ payload: request });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

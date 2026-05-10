@@ -3,12 +3,16 @@
  * Tests fetchPendingTransactions function without React Query overhead
  */
 
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createFetchMock,
   createErrorFetchMock,
   ConsoleSpy,
 } from "../../testHelpers";
 import PendingTransaction from "../../model/PendingTransaction";
+import usePendingTransactionFetch from "../../hooks/usePendingTransactionFetch";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -19,6 +23,27 @@ jest.mock("../../components/AuthProvider", () => ({
     login: jest.fn(),
     logout: jest.fn(),
   }),
+}));
+
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+  logger: {
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  },
+}));
+
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    pendingTransaction: jest.fn(() => ["pendingTransaction"]),
+  },
 }));
 
 // Import the function we need to test
@@ -297,5 +322,81 @@ describe("usePendingTransactionFetch Business Logic", () => {
         expect(result[2].reviewStatus).toBe("rejected");
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePendingTransactionFetch default export
+// ---------------------------------------------------------------------------
+
+const createPendingQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+      mutations: { retry: false },
+    },
+  });
+
+const createPendingWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePendingTransactionFetch hook - renderHook tests", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns pending transactions on successful fetch", async () => {
+    const testTransactions: PendingTransaction[] = [
+      {
+        pendingTransactionId: 1,
+        accountNameOwner: "checking_john",
+        transactionDate: new Date("2024-01-01T00:00:00.000Z"),
+        description: "Test transaction",
+        amount: 100.5,
+        reviewStatus: "pending",
+      },
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(testTransactions),
+    });
+
+    const queryClient = createPendingQueryClient();
+    const { result } = renderHook(() => usePendingTransactionFetch(), {
+      wrapper: createPendingWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toStrictEqual(testTransactions);
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({}),
+    });
+
+    const queryClient = createPendingQueryClient();
+    const { result } = renderHook(() => usePendingTransactionFetch(), {
+      wrapper: createPendingWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

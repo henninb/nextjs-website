@@ -1,4 +1,8 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { updateParameter } from "../../hooks/useParameterUpdate";
+import useParameterUpdate from "../../hooks/useParameterUpdate";
 import Parameter from "../../model/Parameter";
 
 jest.mock("../../utils/fetchUtils", () => ({
@@ -281,5 +285,78 @@ describe("useParameterUpdate - updateParameter", () => {
       const [, options] = mockFetchWithErrorHandling.mock.calls[0];
       expect(options?.body).toBeDefined();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useParameterUpdate default export
+// ---------------------------------------------------------------------------
+
+const createHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useParameterUpdate hook - renderHook tests", () => {
+  const mockUpdateInList = jest.requireMock("../../utils/cacheUtils").updateInList as jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockSanitizeParameterName.mockImplementation((value: string) => value);
+  });
+
+  it("onSuccess calls updateInList with the updated parameter", async () => {
+    const queryClient = createHookQueryClient();
+    const updatedParam = createTestParameter({ parameterName: "new_name", parameterValue: "new_value" });
+    mockParseResponse.mockResolvedValue(updatedParam);
+
+    const { result } = renderHook(() => useParameterUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        oldParameter: createTestParameter(),
+        newParameter: updatedParam,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockUpdateInList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["parameter"],
+      updatedParam,
+      "parameterId",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createHookQueryClient();
+    const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Update failed", 404));
+
+    const { result } = renderHook(() => useParameterUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({
+          oldParameter: createTestParameter(),
+          newParameter: createTestParameter({ parameterName: "new" }),
+        });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

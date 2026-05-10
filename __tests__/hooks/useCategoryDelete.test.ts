@@ -1,5 +1,8 @@
-import { deleteCategory } from "../../hooks/useCategoryDelete";
+import useCategoryDelete, { deleteCategory } from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -263,5 +266,73 @@ describe("useCategoryDelete - deleteCategory", () => {
       const [, options] = mockFetchWithErrorHandling.mock.calls[0];
       expect(options?.body).toBeUndefined();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useCategoryDelete default export
+// ---------------------------------------------------------------------------
+
+const createCatDeleteHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createCatDeleteHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useCategoryDelete hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockParseResponse.mockResolvedValue(null);
+    mockSanitizeCategory.mockImplementation((value: string) => value);
+    mockValidateDelete.mockImplementation(() => {});
+  });
+
+  it("onSuccess calls removeFromList with the deleted category", async () => {
+    const queryClient = createCatDeleteHookQueryClient();
+    const category = createTestCategory({ categoryName: "groceries" });
+
+    const { result } = renderHook(() => useCategoryDelete(), {
+      wrapper: createCatDeleteHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync(category);
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { removeFromList } = jest.requireMock("../../utils/cacheUtils");
+    expect(removeFromList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["category"],
+      category,
+      "categoryName",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createCatDeleteHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete failed"));
+
+    const { result } = renderHook(() => useCategoryDelete(), {
+      wrapper: createCatDeleteHookWrapper(queryClient),
+    });
+
+    const category = createTestCategory();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(category);
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

@@ -3,6 +3,19 @@
  * Tests insertPendingTransaction function without React Query overhead
  */
 
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import usePendingTransactionInsert from "../../hooks/usePendingTransactionInsert";
+
+// Mock cacheUtils
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    pendingTransaction: jest.fn(() => ["pendingTransaction"]),
+  },
+  addToList: jest.fn(),
+}));
+
 // Mock HookValidator
 jest.mock("../../utils/hookValidation", () => ({
   validateInsert: jest.fn((data) => data),
@@ -43,13 +56,13 @@ import { validateInsert } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testUser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 
 const mockValidateInsert = validateInsert as jest.Mock;
@@ -632,5 +645,86 @@ describe("usePendingTransactionInsert Business Logic", () => {
         ).rejects.toThrow("Duplicate pending transaction detected");
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePendingTransactionInsert default export
+// ---------------------------------------------------------------------------
+
+const createPendingTxInsertHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPendingTxInsertHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePendingTransactionInsert hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("onSuccess calls addToList with the new pending transaction", async () => {
+    const queryClient = createPendingTxInsertHookQueryClient();
+    const newTransaction = createTestPendingTransaction({ pendingTransactionId: 42 });
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: jest.fn().mockResolvedValue(newTransaction),
+    });
+
+    const { result } = renderHook(() => usePendingTransactionInsert(), {
+      wrapper: createPendingTxInsertHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ pendingTransaction: newTransaction });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { addToList } = jest.requireMock("../../utils/cacheUtils");
+    expect(addToList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["pendingTransaction"],
+      expect.objectContaining({ pendingTransactionId: 42 }),
+      "start",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createPendingTxInsertHookQueryClient();
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: jest.fn().mockResolvedValue({ response: "Insert failed" }),
+    });
+
+    const { result } = renderHook(() => usePendingTransactionInsert(), {
+      wrapper: createPendingTxInsertHookWrapper(queryClient),
+    });
+
+    const transaction = createTestPendingTransaction();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ pendingTransaction: transaction });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

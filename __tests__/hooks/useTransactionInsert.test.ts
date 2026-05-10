@@ -1,3 +1,6 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Transaction from "../../model/Transaction";
 import Totals from "../../model/Totals";
 import {
@@ -59,7 +62,7 @@ jest.mock("../../utils/security/secureUUID", () => ({
   generateSecureUUID: jest.fn(),
 }));
 
-import {
+import useTransactionInsert, {
   setupNewTransaction,
   insertTransaction,
   TransactionInsertType,
@@ -69,13 +72,13 @@ import { generateSecureUUID } from "../../utils/security/secureUUID";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
-    user: null,
+    user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 
 describe("Transaction Insert Functions", () => {
@@ -731,5 +734,264 @@ describe("Transaction Insert Functions", () => {
         );
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useTransactionInsert default export
+// ---------------------------------------------------------------------------
+
+const createHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+const makeInsertTx = (overrides: Partial<Transaction> = {}): Transaction =>
+  createTestTransaction({
+    guid: "insert-guid-123",
+    accountNameOwner: "checking",
+    amount: 100,
+    transactionState: "cleared",
+    ...overrides,
+  }) as Transaction;
+
+const makeInitialTotals = (overrides: Partial<Totals> = {}): Totals => ({
+  totals: 500,
+  totalsCleared: 200,
+  totalsOutstanding: 150,
+  totalsFuture: 150,
+  ...overrides,
+});
+
+describe("useTransactionInsert hook - renderHook tests", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (generateSecureUUID as jest.Mock).mockResolvedValue("hook-test-uuid");
+    (validateInsert as jest.Mock).mockImplementation((data: Transaction) => data);
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess for cleared transaction: adds amount to totals and totalsCleared", async () => {
+    const queryClient = createHookQueryClient();
+    const response = makeInsertTx({ transactionState: "cleared", amount: 75, accountNameOwner: "checking" });
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(response),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx({ transactionState: "cleared", amount: 75 }),
+        isFutureTransaction: false,
+        isImportTransaction: false,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(575);
+    expect(updated?.totalsCleared).toBe(275);
+    expect(updated?.totalsOutstanding).toBe(150);
+    expect(updated?.totalsFuture).toBe(150);
+  });
+
+  it("onSuccess for outstanding transaction: adds amount to totalsOutstanding", async () => {
+    const queryClient = createHookQueryClient();
+    const response = makeInsertTx({ transactionState: "outstanding", amount: 50, accountNameOwner: "checking" });
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true, status: 200,
+      json: jest.fn().mockResolvedValue(response),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx({ transactionState: "outstanding", amount: 50 }),
+        isFutureTransaction: false,
+        isImportTransaction: false,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(550);
+    expect(updated?.totalsCleared).toBe(200);
+    expect(updated?.totalsOutstanding).toBe(200);
+    expect(updated?.totalsFuture).toBe(150);
+  });
+
+  it("onSuccess for future transaction: adds amount to totalsFuture", async () => {
+    const queryClient = createHookQueryClient();
+    const response = makeInsertTx({ transactionState: "future", amount: 40, accountNameOwner: "checking" });
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true, status: 200,
+      json: jest.fn().mockResolvedValue(response),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx({ transactionState: "future", amount: 40 }),
+        isFutureTransaction: true,
+        isImportTransaction: false,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(540);
+    expect(updated?.totalsCleared).toBe(200);
+    expect(updated?.totalsOutstanding).toBe(150);
+    expect(updated?.totalsFuture).toBe(190);
+  });
+
+  it("onSuccess skips cache update for import transactions", async () => {
+    const queryClient = createHookQueryClient();
+    const response = makeInsertTx({ transactionState: "cleared", amount: 100, accountNameOwner: "checking" });
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true, status: 200,
+      json: jest.fn().mockResolvedValue(response),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx({ transactionState: "cleared", amount: 100 }),
+        isFutureTransaction: false,
+        isImportTransaction: true,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(500);
+    expect(updated?.totalsCleared).toBe(200);
+  });
+
+  it("onSuccess with unknown transactionState: adds to totals but not state buckets", async () => {
+    const queryClient = createHookQueryClient();
+    const response = makeInsertTx({ transactionState: "undefined" as any, amount: 20, accountNameOwner: "checking" });
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true, status: 200,
+      json: jest.fn().mockResolvedValue(response),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx({ transactionState: "undefined" as any, amount: 20 }),
+        isFutureTransaction: false,
+        isImportTransaction: false,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(520);
+    expect(updated?.totalsCleared).toBe(200);
+    expect(updated?.totalsOutstanding).toBe(150);
+    expect(updated?.totalsFuture).toBe(150);
+  });
+
+  it("onSuccess invalidates transaction paged and exact queries", async () => {
+    const queryClient = createHookQueryClient();
+    const response = makeInsertTx({ transactionState: "cleared", amount: 50, accountNameOwner: "checking" });
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true, status: 200,
+      json: jest.fn().mockResolvedValue(response),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx({ transactionState: "cleared", amount: 50 }),
+        isFutureTransaction: false,
+        isImportTransaction: false,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["transaction", "checking", "paged"] }),
+    );
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["transaction", "checking"], exact: true }),
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createHookQueryClient();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false, status: 400,
+      json: jest.fn().mockResolvedValue({ response: "Insert failed" }),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({
+          accountNameOwner: "checking",
+          newRow: makeInsertTx(),
+          isFutureTransaction: false,
+          isImportTransaction: false,
+        });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

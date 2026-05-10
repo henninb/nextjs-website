@@ -1,5 +1,8 @@
-import { updateCategory } from "../../hooks/useCategoryUpdate";
+import useCategoryUpdate, { updateCategory } from "../../hooks/useCategoryUpdate";
 import Category from "../../model/Category";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -302,5 +305,75 @@ describe("useCategoryUpdate - updateCategory", () => {
       const [, options] = mockFetchWithErrorHandling.mock.calls[0];
       expect(options?.body).toBeDefined();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useCategoryUpdate default export
+// ---------------------------------------------------------------------------
+
+const createCatUpdateHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createCatUpdateHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useCategoryUpdate hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockSanitizeCategory.mockImplementation((value: string) => value);
+    mockValidateUpdate.mockImplementation((data: unknown) => data as Category);
+  });
+
+  it("onSuccess calls updateInList with the updated category", async () => {
+    const queryClient = createCatUpdateHookQueryClient();
+    const oldCat = createTestCategory({ categoryName: "old_groceries" });
+    const updatedCat = createTestCategory({ categoryId: 1, categoryName: "new_groceries" });
+    mockParseResponse.mockResolvedValue(updatedCat);
+
+    const { result } = renderHook(() => useCategoryUpdate(), {
+      wrapper: createCatUpdateHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldCategory: oldCat, newCategory: updatedCat });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { updateInList } = jest.requireMock("../../utils/cacheUtils");
+    expect(updateInList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["category"],
+      updatedCat,
+      "categoryId",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createCatUpdateHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Update failed"));
+
+    const { result } = renderHook(() => useCategoryUpdate(), {
+      wrapper: createCatUpdateHookWrapper(queryClient),
+    });
+
+    const oldCat = createTestCategory();
+    const newCat = createTestCategory({ categoryName: "updated" });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldCategory: oldCat, newCategory: newCat });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

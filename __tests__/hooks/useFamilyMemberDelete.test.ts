@@ -1,5 +1,8 @@
-import { deleteFamilyMember } from "../../hooks/useFamilyMemberDelete";
+import useFamilyMemberDelete, { deleteFamilyMember } from "../../hooks/useFamilyMemberDelete";
 import { FamilyMember, FamilyRelationship } from "../../model/FamilyMember";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -253,5 +256,68 @@ describe("useFamilyMemberDelete - deleteFamilyMember", () => {
         );
       },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useFamilyMemberDelete default export
+// ---------------------------------------------------------------------------
+
+const createFamilyMemberDeleteHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createFamilyMemberDeleteHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useFamilyMemberDelete hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
+  });
+
+  it("onSuccess calls invalidateQueries for family member cache", async () => {
+    const queryClient = createFamilyMemberDeleteHookQueryClient();
+    const invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
+    const member = createTestFamilyMember({ familyMemberId: 42 });
+
+    const { result } = renderHook(() => useFamilyMemberDelete(), {
+      wrapper: createFamilyMemberDeleteHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow: member });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: ["familyMember"],
+    });
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createFamilyMemberDeleteHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete failed"));
+
+    const { result } = renderHook(() => useFamilyMemberDelete(), {
+      wrapper: createFamilyMemberDeleteHookWrapper(queryClient),
+    });
+
+    const member = createTestFamilyMember();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldRow: member });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

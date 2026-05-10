@@ -1,4 +1,8 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { updateValidationAmount } from "../../hooks/useValidationAmountUpdate";
+import useValidationAmountUpdate from "../../hooks/useValidationAmountUpdate";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
@@ -293,5 +297,72 @@ describe("useValidationAmountUpdate - updateValidationAmount", () => {
         expect(url).toBe(`/api/validation/amount/${id}`);
       },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useValidationAmountUpdate default export
+// ---------------------------------------------------------------------------
+
+const createHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useValidationAmountUpdate hook - renderHook tests", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
+  });
+
+  it("onSuccess invalidates validationAmount queries", async () => {
+    const queryClient = createHookQueryClient();
+    const oldVal = createTestValidationAmount({ validationId: 1 });
+    const newVal = createTestValidationAmount({ amount: 2000 });
+    mockParseResponse.mockResolvedValue(newVal);
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useValidationAmountUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldValidationAmount: oldVal, newValidationAmount: newVal });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["validationAmount"] }),
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createHookQueryClient();
+    const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Update failed", 400));
+
+    const { result } = renderHook(() => useValidationAmountUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({
+          oldValidationAmount: createTestValidationAmount(),
+          newValidationAmount: createTestValidationAmount({ amount: 2000 }),
+        });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

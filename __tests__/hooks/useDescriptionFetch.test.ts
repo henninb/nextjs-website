@@ -8,9 +8,13 @@
  * - Error format: { error: "message" }
  */
 
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConsoleSpy } from "../../testHelpers";
 import { createModernFetchMock } from "../../testHelpers";
 import Description from "../../model/Description";
+import useDescriptionFetch from "../../hooks/useDescriptionFetch";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -21,6 +25,35 @@ jest.mock("../../components/AuthProvider", () => ({
     login: jest.fn(),
     logout: jest.fn(),
   }),
+}));
+
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+  logger: {
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  },
+}));
+
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    description: jest.fn(() => ["description"]),
+  },
+}));
+
+jest.mock("../../utils/csrf", () => ({
+  getCsrfHeaders: jest.fn().mockResolvedValue({}),
+  getCsrfToken: jest.fn().mockResolvedValue(null),
+  fetchCsrfToken: jest.fn().mockResolvedValue(undefined),
+  clearCsrfToken: jest.fn(),
+  initCsrfToken: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Modern implementation to test
@@ -404,5 +437,76 @@ describe("useDescriptionFetch Modern Endpoint (TDD)", () => {
         result.find((d) => d.descriptionName === "gas_station"),
       ).toBeDefined();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useDescriptionFetch default export
+// ---------------------------------------------------------------------------
+
+const createDescQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        retryOnMount: false,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+      mutations: { retry: false },
+    },
+  });
+
+const createDescWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useDescriptionFetch hook - renderHook tests", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns description data on successful fetch", async () => {
+    const testDescriptions: Description[] = [
+      { descriptionId: 1, descriptionName: "amazon", activeStatus: true },
+      { descriptionId: 2, descriptionName: "walmart", activeStatus: true },
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(testDescriptions),
+    });
+
+    const queryClient = createDescQueryClient();
+    const { result } = renderHook(() => useDescriptionFetch(), {
+      wrapper: createDescWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toStrictEqual(testDescriptions);
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: jest.fn().mockResolvedValue({ error: "Server error" }),
+    });
+
+    const queryClient = createDescQueryClient();
+    const { result } = renderHook(() => useDescriptionFetch(), {
+      wrapper: createDescWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

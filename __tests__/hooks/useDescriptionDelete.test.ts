@@ -1,5 +1,8 @@
-import { deleteDescription } from "../../hooks/useDescriptionDelete";
+import useDescriptionDelete, { deleteDescription } from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -298,5 +301,71 @@ describe("useDescriptionDelete - deleteDescription", () => {
         expect.any(Object),
       );
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useDescriptionDelete default export
+// ---------------------------------------------------------------------------
+
+const createDescDeleteHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createDescDeleteHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useDescriptionDelete hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockParseResponse.mockResolvedValue(null);
+  });
+
+  it("onSuccess calls removeFromList with the deleted description", async () => {
+    const queryClient = createDescDeleteHookQueryClient();
+    const desc = createTestDescription({ descriptionName: "amazon" });
+
+    const { result } = renderHook(() => useDescriptionDelete(), {
+      wrapper: createDescDeleteHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync(desc);
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { removeFromList } = jest.requireMock("../../utils/cacheUtils");
+    expect(removeFromList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["description"],
+      desc,
+      "descriptionName",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createDescDeleteHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete failed"));
+
+    const { result } = renderHook(() => useDescriptionDelete(), {
+      wrapper: createDescDeleteHookWrapper(queryClient),
+    });
+
+    const desc = createTestDescription();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(desc);
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

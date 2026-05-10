@@ -1,4 +1,7 @@
-import { deletePendingTransaction } from "../../hooks/usePendingTransactionDelete";
+import usePendingTransactionDelete, { deletePendingTransaction } from "../../hooks/usePendingTransactionDelete";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -162,5 +165,71 @@ describe("usePendingTransactionDelete - deletePendingTransaction", () => {
       const [, options] = mockFetchWithErrorHandling.mock.calls[0];
       expect(options?.body).toBeUndefined();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePendingTransactionDelete default export
+// ---------------------------------------------------------------------------
+
+const createPendingTxDeleteHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPendingTxDeleteHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePendingTransactionDelete hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
+  });
+
+  it("onSuccess sets query data removing the deleted transaction", async () => {
+    const queryClient = createPendingTxDeleteHookQueryClient();
+    const { QueryKeys } = jest.requireMock("../../utils/cacheUtils");
+    queryClient.setQueryData(QueryKeys.pendingTransaction(), [
+      { pendingTransactionId: 42, accountNameOwner: "test", amount: 10, description: "tx", transactionDate: new Date(), reviewStatus: "pending" },
+      { pendingTransactionId: 99, accountNameOwner: "test", amount: 20, description: "other", transactionDate: new Date(), reviewStatus: "pending" },
+    ]);
+
+    const { result } = renderHook(() => usePendingTransactionDelete(), {
+      wrapper: createPendingTxDeleteHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync(42);
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const cached = queryClient.getQueryData<{ pendingTransactionId: number }[]>(
+      QueryKeys.pendingTransaction(),
+    );
+    expect(cached?.find((t) => t.pendingTransactionId === 42)).toBeUndefined();
+    expect(cached?.find((t) => t.pendingTransactionId === 99)).toBeDefined();
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createPendingTxDeleteHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete failed"));
+
+    const { result } = renderHook(() => usePendingTransactionDelete(), {
+      wrapper: createPendingTxDeleteHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(42);
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

@@ -1,4 +1,7 @@
-import { deleteAllPendingTransactions } from "../../hooks/usePendingTransactionDeleteAll";
+import usePendingTransactionDeleteAll, { deleteAllPendingTransactions } from "../../hooks/usePendingTransactionDeleteAll";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -144,5 +147,67 @@ describe("usePendingTransactionDeleteAll - deleteAllPendingTransactions", () => 
 
       expect(mockFetchWithErrorHandling).toHaveBeenCalledTimes(3);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePendingTransactionDeleteAll default export
+// ---------------------------------------------------------------------------
+
+const createPendingTxDeleteAllHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPendingTxDeleteAllHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePendingTransactionDeleteAll hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+  });
+
+  it("onSuccess clears the pending transactions cache to empty array", async () => {
+    const queryClient = createPendingTxDeleteAllHookQueryClient();
+    const { QueryKeys } = jest.requireMock("../../utils/cacheUtils");
+    queryClient.setQueryData(QueryKeys.pendingTransaction(), [
+      { pendingTransactionId: 1, description: "tx1" },
+      { pendingTransactionId: 2, description: "tx2" },
+    ]);
+
+    const { result } = renderHook(() => usePendingTransactionDeleteAll(), {
+      wrapper: createPendingTxDeleteAllHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const cached = queryClient.getQueryData(QueryKeys.pendingTransaction());
+    expect(cached).toEqual([]);
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createPendingTxDeleteAllHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete all failed"));
+
+    const { result } = renderHook(() => usePendingTransactionDeleteAll(), {
+      wrapper: createPendingTxDeleteAllHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync();
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

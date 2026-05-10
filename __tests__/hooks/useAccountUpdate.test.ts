@@ -32,6 +32,9 @@ jest.mock("../../utils/logger", () => ({
   logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Account from "../../model/Account";
 import {
   createFetchMock,
@@ -40,7 +43,7 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 
-import { updateAccount } from "../../hooks/useAccountUpdate";
+import useAccountUpdate, { updateAccount } from "../../hooks/useAccountUpdate";
 import { validateUpdate } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
@@ -488,5 +491,114 @@ describe("updateAccount", () => {
 
       expect(result.accountId).toBe(mockOldAccount.accountId);
     });
+  });
+
+  describe("Null result handling", () => {
+    it("throws when rename returns no data", async () => {
+      const renamedAccount = createTestAccount({
+        ...mockOldAccount,
+        accountNameOwner: "renamed_account",
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+        json: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(updateAccount(mockOldAccount, renamedAccount)).rejects.toThrow(
+        "Rename failed: No data returned",
+      );
+    });
+
+    it("throws when standard update returns no data", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+        json: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
+        "Update failed: No data returned",
+      );
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useAccountUpdate default export
+// ---------------------------------------------------------------------------
+
+const createHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useAccountUpdate hook - renderHook tests", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (validateUpdate as jest.Mock).mockImplementation((data) => data);
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess calls updateInList updating the account in cache", async () => {
+    const queryClient = createHookQueryClient();
+    const existing = createTestAccount({ accountId: 123, accountNameOwner: "test_account", moniker: "0000" });
+    queryClient.setQueryData(["account"], [existing]);
+
+    const updated = createTestAccount({ accountId: 123, accountNameOwner: "test_account", moniker: "9999" });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(updated),
+    });
+
+    const { result } = renderHook(() => useAccountUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow: existing, newRow: updated });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const cached = queryClient.getQueryData<Account[]>(["account"]);
+    expect(cached).toContainEqual(expect.objectContaining({ moniker: "9999" }));
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createHookQueryClient();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: jest.fn().mockResolvedValue({ response: "Update failed" }),
+    });
+
+    const { result } = renderHook(() => useAccountUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = createTestAccount({ accountId: 1, accountNameOwner: "test_account" });
+    const newRow = createTestAccount({ accountId: 1, accountNameOwner: "test_account", moniker: "new" });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldRow, newRow });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

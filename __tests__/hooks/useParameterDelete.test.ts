@@ -1,5 +1,8 @@
-import { deleteParameter } from "../../hooks/useParameterDelete";
+import useParameterDelete, { deleteParameter } from "../../hooks/useParameterDelete";
 import Parameter from "../../model/Parameter";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 jest.mock("../../utils/fetchUtils", () => ({
   fetchWithErrorHandling: jest.fn(),
@@ -280,5 +283,73 @@ describe("useParameterDelete - deleteParameter", () => {
         );
       },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useParameterDelete default export
+// ---------------------------------------------------------------------------
+
+const createParamDeleteHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createParamDeleteHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useParameterDelete hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockParseResponse.mockResolvedValue(null);
+    mockSanitizeParameterName.mockImplementation((value: string) => value);
+    mockValidateDelete.mockImplementation(() => {});
+  });
+
+  it("onSuccess calls removeFromList with the deleted parameter", async () => {
+    const queryClient = createParamDeleteHookQueryClient();
+    const param = createTestParameter({ parameterName: "payment_account" });
+
+    const { result } = renderHook(() => useParameterDelete(), {
+      wrapper: createParamDeleteHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync(param);
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { removeFromList } = jest.requireMock("../../utils/cacheUtils");
+    expect(removeFromList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["parameter"],
+      param,
+      "parameterName",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createParamDeleteHookQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete failed"));
+
+    const { result } = renderHook(() => useParameterDelete(), {
+      wrapper: createParamDeleteHookWrapper(queryClient),
+    });
+
+    const param = createTestParameter();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(param);
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

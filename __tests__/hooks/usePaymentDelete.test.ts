@@ -5,8 +5,28 @@ import {
   createTestPayment,
   simulateNetworkError,
 } from "../../testHelpers";
-import { deletePayment } from "../../hooks/usePaymentDelete";
+import usePaymentDelete, { deletePayment } from "../../hooks/usePaymentDelete";
 import { validateDelete } from "../../utils/hookValidation";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Mock cacheUtils
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    payment: jest.fn(() => ["payment"]),
+  },
+  removeFromList: jest.fn(),
+}));
+
+// Mock CSRF utilities
+jest.mock("../../utils/csrf", () => ({
+  getCsrfHeaders: jest.fn().mockResolvedValue({}),
+  getCsrfToken: jest.fn().mockResolvedValue(null),
+  fetchCsrfToken: jest.fn().mockResolvedValue(undefined),
+  clearCsrfToken: jest.fn(),
+  initCsrfToken: jest.fn().mockResolvedValue(undefined),
+}));
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -150,5 +170,83 @@ describe("deletePayment", () => {
     global.fetch = simulateNetworkError();
 
     await expect(deletePayment(payment)).rejects.toThrow("Network error");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePaymentDelete default export
+// ---------------------------------------------------------------------------
+
+const createPaymentDeleteHookQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPaymentDeleteHookWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePaymentDelete hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (validateDelete as jest.Mock).mockImplementation(() => ({}));
+    const { InputSanitizer: sanitizer } = jest.requireMock("../../utils/validation/sanitization") as {
+      InputSanitizer: { sanitizeNumericId: jest.Mock };
+    };
+    sanitizer.sanitizeNumericId.mockImplementation((value: number) => value);
+  });
+
+  it("onSuccess calls removeFromList with the deleted payment", async () => {
+    const queryClient = createPaymentDeleteHookQueryClient();
+    const testPayment = createTestPayment({ paymentId: 99, sourceAccount: "checking", destinationAccount: "credit" });
+
+    global.fetch = createFetchMock({ ...testPayment }, { status: 200 });
+
+    const { result } = renderHook(() => usePaymentDelete(), {
+      wrapper: createPaymentDeleteHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow: testPayment as Payment });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { removeFromList } = jest.requireMock("../../utils/cacheUtils");
+    expect(removeFromList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["payment"],
+      expect.objectContaining({ paymentId: 99 }),
+      "paymentId",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createPaymentDeleteHookQueryClient();
+    global.fetch = createErrorFetchMock("Delete failed", 400);
+
+    const { result } = renderHook(() => usePaymentDelete(), {
+      wrapper: createPaymentDeleteHookWrapper(queryClient),
+    });
+
+    const testPayment = createTestPayment({ paymentId: 99 }) as Payment;
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldRow: testPayment });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
