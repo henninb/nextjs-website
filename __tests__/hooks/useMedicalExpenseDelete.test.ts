@@ -1,4 +1,7 @@
-import { deleteMedicalExpense } from "../../hooks/useMedicalExpenseDelete";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import useMedicalExpenseDelete, { deleteMedicalExpense } from "../../hooks/useMedicalExpenseDelete";
 import { MedicalExpense, ClaimStatus } from "../../model/MedicalExpense";
 
 jest.mock("../../utils/fetchUtils", () => ({
@@ -248,5 +251,67 @@ describe("useMedicalExpenseDelete - deleteMedicalExpense", () => {
         );
       },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useMedicalExpenseDelete default export
+// ---------------------------------------------------------------------------
+
+const createMedExpDeleteQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createMedExpDeleteWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useMedicalExpenseDelete hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
+  });
+
+  it("onSuccess invalidates medicalExpense queries", async () => {
+    const queryClient = createMedExpDeleteQueryClient();
+    const expense = createTestMedicalExpense({ medicalExpenseId: 42 });
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useMedicalExpenseDelete(), {
+      wrapper: createMedExpDeleteWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow: expense });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["medicalExpense"] }),
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createMedExpDeleteQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete failed"));
+
+    const { result } = renderHook(() => useMedicalExpenseDelete(), {
+      wrapper: createMedExpDeleteWrapper(queryClient),
+    });
+
+    const expense = createTestMedicalExpense();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldRow: expense });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

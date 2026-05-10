@@ -1,3 +1,6 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Payment from "../../model/Payment";
 import {
   createFetchMock,
@@ -5,7 +8,7 @@ import {
   createTestPayment,
   simulateNetworkError,
 } from "../../testHelpers";
-import { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
+import usePaymentInsert, { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
 import { validateInsert } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
@@ -175,5 +178,87 @@ describe("usePaymentInsert business logic", () => {
 
       await expect(insertPayment(basePayment)).rejects.toThrow("Network error");
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePaymentInsert default export
+// ---------------------------------------------------------------------------
+
+const createPaymentInsertQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPaymentInsertWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePaymentInsert hook", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockValidateInsert.mockImplementation((data: unknown) => data);
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess puts mutation into success state", async () => {
+    const payment = createTestPayment({
+      sourceAccount: "checking",
+      destinationAccount: "credit",
+      transactionDate: new Date("2025-01-15T12:00:00Z"),
+      amount: 100,
+    });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(payment),
+    });
+
+    const queryClient = createPaymentInsertQueryClient();
+    const { result } = renderHook(() => usePaymentInsert(), {
+      wrapper: createPaymentInsertWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ payload: payment });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  });
+
+  it("onError puts mutation into error state", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: jest.fn().mockResolvedValue({ response: "Insert failed" }),
+    });
+
+    const queryClient = createPaymentInsertQueryClient();
+    const { result } = renderHook(() => usePaymentInsert(), {
+      wrapper: createPaymentInsertWrapper(queryClient),
+    });
+
+    const payment = createTestPayment({
+      sourceAccount: "checking",
+      destinationAccount: "credit",
+      transactionDate: new Date("2025-01-15T12:00:00Z"),
+      amount: 100,
+    });
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ payload: payment });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

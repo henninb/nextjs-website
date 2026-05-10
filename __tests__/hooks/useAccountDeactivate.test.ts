@@ -1,4 +1,7 @@
-import { deactivateAccount } from "../../hooks/useAccountDeactivate";
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import useAccountDeactivate, { deactivateAccount } from "../../hooks/useAccountDeactivate";
 import Account from "../../model/Account";
 
 jest.mock("../../utils/fetchUtils", () => ({
@@ -307,5 +310,75 @@ describe("useAccountDeactivate - deactivateAccount", () => {
         );
       },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useAccountDeactivate default export
+// ---------------------------------------------------------------------------
+
+const createAcctDeactivateQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createAcctDeactivateWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useAccountDeactivate hook", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
+    mockParseResponse.mockResolvedValue(createTestAccount({ activeStatus: false }));
+    mockSanitizeAccountName.mockImplementation((v: string) => v);
+    mockValidateDelete.mockImplementation(() => {});
+  });
+
+  it("onSuccess calls updateInList with the deactivated account", async () => {
+    const queryClient = createAcctDeactivateQueryClient();
+    const account = createTestAccount({ accountId: 5 });
+    const deactivated = { ...account, activeStatus: false };
+    mockParseResponse.mockResolvedValue(deactivated);
+
+    const { result } = renderHook(() => useAccountDeactivate(), {
+      wrapper: createAcctDeactivateWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow: account });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const { updateInList } = jest.requireMock("../../utils/cacheUtils");
+    expect(updateInList).toHaveBeenCalledWith(
+      expect.anything(),
+      ["account"],
+      deactivated,
+      "accountId",
+    );
+  });
+
+  it("onError puts mutation into error state", async () => {
+    const queryClient = createAcctDeactivateQueryClient();
+    mockFetchWithErrorHandling.mockRejectedValue(new Error("Deactivate failed"));
+
+    const { result } = renderHook(() => useAccountDeactivate(), {
+      wrapper: createAcctDeactivateWrapper(queryClient),
+    });
+
+    const account = createTestAccount();
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync({ oldRow: account });
+      } catch {
+        // expected
+      }
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

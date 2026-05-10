@@ -42,8 +42,11 @@ jest.mock("../../utils/validation/sanitization", () => ({
   },
 }));
 
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Account from "../../model/Account";
-import { deleteAccount } from "../../hooks/useAccountDelete";
+import useAccountDelete, { deleteAccount } from "../../hooks/useAccountDelete";
 import {
   InputSanitizer,
   SecurityLogger,
@@ -248,4 +251,83 @@ describe("deleteAccount", () => {
       expect.any(Object),
     );
   });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useAccountDelete default export
+// ---------------------------------------------------------------------------
+
+const createAcctDeleteQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createAcctDeleteWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useAccountDelete hook", () => {
+  const originalFetch = global.fetch;
+
+  const hookTestAccount: Account = {
+    accountId: 99,
+    accountNameOwner: "hook_test_account",
+    accountType: "debit",
+    activeStatus: true,
+    moniker: "9999",
+    outstanding: 0,
+    future: 0,
+    cleared: 0,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    const { InputSanitizer: san } = jest.requireMock("../../utils/validation/sanitization");
+    (san.sanitizeAccountName as jest.Mock).mockImplementation((v: string) => v);
+    (validateDelete as jest.Mock).mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess puts mutation into success state", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: jest.fn().mockResolvedValue(null),
+    });
+    const queryClient = createAcctDeleteQueryClient();
+
+    const { result } = renderHook(() => useAccountDelete(), {
+      wrapper: createAcctDeleteWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow: hookTestAccount });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  });
+
+  it("onError puts mutation into error state", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: jest.fn().mockResolvedValue({ error: "Delete failed" }),
+    });
+    const queryClient = createAcctDeleteQueryClient();
+
+    const { result } = renderHook(() => useAccountDelete(), {
+      wrapper: createAcctDeleteWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate({ oldRow: hookTestAccount });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 4000 });
+  }, 8000);
 });
