@@ -1,324 +1,166 @@
-/**
- * Isolated tests for usePendingTransactionDelete business logic
- * Tests deletePendingTransaction function without React Query overhead
- */
+import { deletePendingTransaction } from "../../hooks/usePendingTransactionDelete";
 
-import { createFetchMock, ConsoleSpy } from "../../testHelpers";
-
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Copy the function to test
-const deletePendingTransaction = async (id: number): Promise<void> => {
-  try {
-    const endpoint = `/api/pending/transaction/${id}`;
-    console.log(`Deleting pending transaction with id: ${id}`);
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeNumericId: jest.fn((value: number) => value),
+  },
+}));
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-    });
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    pendingTransaction: jest.fn(() => ["pendingTransaction"]),
+  },
+  removeFromList: jest.fn(),
+}));
 
-    if (!response.ok) {
-      let errorMessage = "";
-      try {
-        const errorBody = await response.json();
-        if (errorBody && errorBody.response) {
-          errorMessage = `${errorBody.response}`;
-        } else {
-          throw new Error("No error message returned.");
-        }
-      } catch (error: any) {
-        console.log(`Failed to parse error response: ${error.message}`);
-        throw new Error(`Failed to parse error response: ${error.message}`);
-      }
-      console.log(errorMessage || "Unknown error");
-      throw new Error(errorMessage || "Unknown error");
-    }
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
 
-    return;
-  } catch (error: any) {
-    throw error;
-  }
-};
+import { fetchWithErrorHandling } from "../../utils/fetchUtils";
+import { InputSanitizer } from "../../utils/validation/sanitization";
 
-describe("usePendingTransactionDelete Business Logic", () => {
-  const originalFetch = global.fetch;
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockSanitizeNumericId =
+  InputSanitizer.sanitizeNumericId as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeNumericId
+  >;
 
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("usePendingTransactionDelete - deletePendingTransaction", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockSanitizeNumericId.mockImplementation((value: number) => value);
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
+  describe("sanitization", () => {
+    it("should sanitize the transaction ID before building endpoint", async () => {
+      await deletePendingTransaction(42);
+
+      expect(mockSanitizeNumericId).toHaveBeenCalledWith(42, "pendingTransactionId");
+    });
+
+    it("should use sanitized ID in endpoint URL", async () => {
+      mockSanitizeNumericId.mockReturnValue(99);
+
+      await deletePendingTransaction(42);
+
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/pending/transaction/99");
+    });
   });
 
-  describe("deletePendingTransaction", () => {
-    describe("Successful delete operations", () => {
-      it("should delete pending transaction successfully", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
+  describe("successful deletion", () => {
+    it("should call fetchWithErrorHandling with correct DELETE endpoint", async () => {
+      await deletePendingTransaction(42);
 
-        consoleSpy.start();
-
-        await deletePendingTransaction(42);
-
-        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/42", {
-          method: "DELETE",
-          credentials: "include",
-        });
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0][0]).toBe(
-          "Deleting pending transaction with id: 42",
-        );
-      });
-
-      it("should handle deletion of different transaction IDs", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
-
-        const testIds = [1, 100, 999, 12345];
-
-        for (const id of testIds) {
-          await deletePendingTransaction(id);
-          expect(fetch).toHaveBeenCalledWith(`/api/pending/transaction/${id}`, {
-            method: "DELETE",
-            credentials: "include",
-          });
-        }
-
-        expect(fetch).toHaveBeenCalledTimes(testIds.length);
-      });
-
-      it("should log the transaction ID being deleted", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
-
-        consoleSpy.start();
-
-        await deletePendingTransaction(123);
-
-        const calls = consoleSpy.getCalls();
-        expect(calls.log[0]).toStrictEqual([
-          "Deleting pending transaction with id: 123",
-        ]);
-      });
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/pending/transaction/42",
+        { method: "DELETE" },
+      );
     });
 
-    describe("Error handling", () => {
-      it("should throw error when deletion fails with error message in response", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue({
-            response: "Database error",
-          }),
-        });
+    it("should return void on success", async () => {
+      const result = await deletePendingTransaction(42);
 
-        consoleSpy.start();
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow(
-          "Database error",
-        );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.log.some((call) => call[0].includes("Database error")),
-        ).toBe(true);
-      });
-
-      it("should handle error when no error message is returned", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue({}),
-        });
-
-        consoleSpy.start();
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow(
-          "No error message returned.",
-        );
-      });
-
-      it("should handle 404 not found error", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-          json: jest.fn().mockResolvedValue({
-            response: "Transaction not found",
-          }),
-        });
-
-        consoleSpy.start();
-
-        await expect(deletePendingTransaction(999)).rejects.toThrow(
-          "Transaction not found",
-        );
-      });
-
-      it("should handle 401 unauthorized error", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 401,
-          json: jest.fn().mockResolvedValue({
-            response: "Unauthorized",
-          }),
-        });
-
-        consoleSpy.start();
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow(
-          "Unauthorized",
-        );
-      });
-
-      it("should handle 403 forbidden error", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 403,
-          json: jest.fn().mockResolvedValue({
-            response: "Forbidden",
-          }),
-        });
-
-        consoleSpy.start();
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow("Forbidden");
-      });
-
-      it("should handle failed JSON parsing in error response", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-        });
-
-        consoleSpy.start();
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow(
-          "Failed to parse error response: Invalid JSON",
-        );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.log.some((call) =>
-            call[0].includes("Failed to parse error response: Invalid JSON"),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle network errors", async () => {
-        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow(
-          "Network error",
-        );
-      });
-
-      it("should handle fetch timeout", async () => {
-        global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow("Timeout");
-      });
-
-      it("should handle error when response is null", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue(null),
-        });
-
-        consoleSpy.start();
-
-        await expect(deletePendingTransaction(42)).rejects.toThrow(
-          "No error message returned.",
-        );
-      });
+      expect(result).toBeUndefined();
     });
 
-    describe("Edge cases", () => {
-      it("should handle deletion with ID 0", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
+    it("should handle deletion of different transaction IDs", async () => {
+      const testIds = [1, 100, 999, 12345];
 
-        await deletePendingTransaction(0);
+      for (const id of testIds) {
+        jest.clearAllMocks();
+        mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+        mockSanitizeNumericId.mockImplementation((value: number) => value);
 
-        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/0", {
-          method: "DELETE",
-          credentials: "include",
-        });
-      });
+        await deletePendingTransaction(id);
 
-      it("should handle deletion with very large ID", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
-
-        const largeId = 2147483647; // Max 32-bit integer
-
-        await deletePendingTransaction(largeId);
-
-        expect(fetch).toHaveBeenCalledWith(
-          `/api/pending/transaction/${largeId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          },
+        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+          `/api/pending/transaction/${id}`,
+          expect.any(Object),
         );
-      });
+      }
+    });
+  });
 
-      it("should handle deletion with negative ID", async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
+  describe("error handling", () => {
+    it("should propagate 404 not found error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Transaction not found", 404),
+      );
 
-        await deletePendingTransaction(-1);
+      await expect(deletePendingTransaction(42)).rejects.toThrow(
+        "Transaction not found",
+      );
+    });
 
-        expect(fetch).toHaveBeenCalledWith("/api/pending/transaction/-1", {
-          method: "DELETE",
-          credentials: "include",
-        });
-      });
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
+      );
 
-      it("should preserve error stack trace", async () => {
-        const testError = new Error("Test error");
-        global.fetch = jest.fn().mockRejectedValue(testError);
+      await expect(deletePendingTransaction(42)).rejects.toThrow(
+        "Internal server error",
+      );
+    });
 
-        try {
-          await deletePendingTransaction(42);
-          fail("Should have thrown an error");
-        } catch (error: any) {
-          expect(error).toBe(testError);
-          expect(error.message).toBe("Test error");
-        }
-      });
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+
+      await expect(deletePendingTransaction(42)).rejects.toThrow(
+        "Network request failed",
+      );
+    });
+
+    it("should propagate 403 forbidden error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Forbidden", 403),
+      );
+
+      await expect(deletePendingTransaction(42)).rejects.toThrow("Forbidden");
+    });
+  });
+
+  describe("request format", () => {
+    it("should use DELETE method", async () => {
+      await deletePendingTransaction(42);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("DELETE");
+    });
+
+    it("should not send a body in DELETE request", async () => {
+      await deletePendingTransaction(42);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.body).toBeUndefined();
     });
   });
 });

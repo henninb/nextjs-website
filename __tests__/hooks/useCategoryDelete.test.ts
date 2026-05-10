@@ -1,821 +1,267 @@
-/**
- * TDD Tests for Modern useCategoryDelete
- * Modern endpoint: DELETE /api/category/{categoryName}
- *
- * Key differences from legacy:
- * - Endpoint: /api/category/{categoryName} (vs /api/category/delete/{categoryId})
- * - Uses categoryName instead of categoryId in URL path
- * - Uses ServiceResult pattern for errors
- * - Returns null for 204, category data for 200
- */
-
-import { ConsoleSpy } from "../../testHelpers";
-import { createModernFetchMock } from "../../testHelpers";
+import { deleteCategory } from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Modern implementation to test
-const deleteCategoryModern = async (
-  payload: Category,
-): Promise<Category | null> => {
-  try {
-    const endpoint = `/api/category/${payload.categoryName}`;
+jest.mock("../../utils/validation/sanitization", () => ({
+  InputSanitizer: {
+    sanitizeCategory: jest.fn((value: string) => value),
+  },
+}));
 
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
+jest.mock("../../utils/hookValidation", () => ({
+  validateDelete: jest.fn(),
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
     }
+  },
+}));
 
-    return response.status !== 204 ? await response.json() : null;
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    category: jest.fn(() => ["category"]),
+  },
+  removeFromList: jest.fn(),
+}));
 
-// Helper function to create test category data
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
+
+import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
+import { InputSanitizer } from "../../utils/validation/sanitization";
+import { validateDelete } from "../../utils/hookValidation";
+
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockParseResponse = parseResponse as jest.MockedFunction<
+  typeof parseResponse
+>;
+const mockSanitizeCategory =
+  InputSanitizer.sanitizeCategory as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeCategory
+  >;
+const mockValidateDelete = validateDelete as jest.MockedFunction<
+  typeof validateDelete
+>;
+
 const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
   categoryId: 1,
-  categoryName: "test_category",
+  categoryName: "groceries",
   activeStatus: true,
   ...overrides,
 });
 
-describe("useCategoryDelete Modern Endpoint (TDD)", () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("useCategoryDelete - deleteCategory", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+    mockParseResponse.mockResolvedValue(null);
+    mockSanitizeCategory.mockImplementation((value: string) => value);
+    mockValidateDelete.mockImplementation(() => {});
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
-  });
+  describe("validation and sanitization", () => {
+    it("should call validateDelete with categoryName field", async () => {
+      const category = createTestCategory({ categoryName: "groceries" });
 
-  describe("Modern endpoint behavior", () => {
-    it("should use modern endpoint /api/category/{categoryName}", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 123,
-        categoryName: "groceries",
-      });
+      await deleteCategory(category);
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      expect(fetch).toHaveBeenCalledWith("/api/category/groceries", {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-    });
-
-    it("should delete category successfully with 204 response", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-
-    it("should delete category successfully with 200 response", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toStrictEqual(testCategory);
-    });
-
-    it("should use categoryName from payload in URL", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 999,
-        categoryName: "entertainment",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/category/entertainment",
-        expect.any(Object),
+      expect(mockValidateDelete).toHaveBeenCalledWith(
+        category,
+        "categoryName",
+        "deleteCategory",
       );
+    });
+
+    it("should sanitize categoryName before building endpoint", async () => {
+      const category = createTestCategory({ categoryName: "groceries" });
+
+      await deleteCategory(category);
+
+      expect(mockSanitizeCategory).toHaveBeenCalledWith("groceries");
+    });
+
+    it("should use sanitized name in endpoint URL", async () => {
+      mockSanitizeCategory.mockReturnValue("sanitized_cat");
+      const category = createTestCategory({ categoryName: "raw_cat" });
+
+      await deleteCategory(category);
+
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/category/sanitized_cat");
     });
   });
 
-  describe("Modern error handling with ServiceResult pattern", () => {
-    it("should handle 404 not found with modern error format", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 999,
-        categoryName: "nonexistent",
-      });
+  describe("successful deletion", () => {
+    it("should call fetchWithErrorHandling with correct DELETE endpoint", async () => {
+      const category = createTestCategory({ categoryName: "groceries" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        json: async () => ({ error: "Category not found" }),
-      });
+      await deleteCategory(category);
 
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Category not found",
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/category/groceries",
+        { method: "DELETE" },
       );
     });
 
-    it("should handle 401 unauthorized", async () => {
-      const testCategory = createTestCategory();
+    it("should return null for 204 response", async () => {
+      mockParseResponse.mockResolvedValue(null);
+      const category = createTestCategory();
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        json: async () => ({ error: "Unauthorized" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Unauthorized",
-      );
-    });
-
-    it("should handle 403 forbidden", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: async () => ({ error: "Forbidden" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Forbidden",
-      );
-    });
-
-    it("should handle 409 conflict (category in use)", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "groceries",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 409,
-        json: async () => ({
-          error: "Cannot delete category groceries - in use by transactions",
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Cannot delete category groceries - in use by transactions",
-      );
-    });
-
-    it("should handle 500 server error", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: "Internal server error" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Internal server error",
-      );
-    });
-
-    it("should handle error response without error field", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({}),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "HTTP error! Status: 400",
-      );
-    });
-
-    it("should handle invalid JSON in error response", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "HTTP error! Status: 500",
-      );
-    });
-
-    it("should handle validation errors with modern format", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({
-          errors: [
-            "categoryId is required",
-            "categoryId must be a valid number",
-          ],
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "categoryId is required, categoryId must be a valid number",
-      );
-    });
-  });
-
-  describe("Network and connectivity errors", () => {
-    it("should handle network errors", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Network error",
-      );
-
-      const calls = consoleSpy.getCalls();
-      expect(
-        calls.error.some((call) => call[0].includes("An error occurred:")),
-      ).toBe(true);
-    });
-
-    it("should handle timeout errors", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Timeout",
-      );
-    });
-
-    it("should handle connection refused", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Connection refused"));
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Connection refused",
-      );
-    });
-  });
-
-  describe("Request configuration", () => {
-    it("should use DELETE method", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.method).toBe("DELETE");
-    });
-
-    it("should include credentials", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.credentials).toBe("include");
-    });
-
-    it("should include correct headers", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toStrictEqual({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      });
-    });
-
-    it("should not send body in DELETE request", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.body).toBeUndefined();
-    });
-  });
-
-  describe("Response handling", () => {
-    it("should return null for 204 No Content", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
+      const result = await deleteCategory(category);
 
       expect(result).toBeNull();
     });
 
     it("should return category data for 200 OK", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 123,
-        categoryName: "deleted_category",
-      });
+      const category = createTestCategory({ categoryName: "dining" });
+      mockParseResponse.mockResolvedValue(category);
 
-      global.fetch = createModernFetchMock(testCategory);
+      const result = await deleteCategory(category);
 
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toStrictEqual(testCategory);
+      expect(result).toStrictEqual(category);
     });
 
-    it("should handle different categoryName values", async () => {
-      const categoryNames = [
-        "groceries",
-        "dining",
-        "entertainment",
-        "shopping",
-      ];
+    it("should call parseResponse with the fetch response", async () => {
+      const mockResponse = { status: 200 } as Response;
+      mockFetchWithErrorHandling.mockResolvedValue(mockResponse);
+      const category = createTestCategory();
 
-      for (const name of categoryNames) {
-        const testCategory = createTestCategory({ categoryName: name });
+      await deleteCategory(category);
 
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: true,
-          status: 204,
-        });
+      expect(mockParseResponse).toHaveBeenCalledWith(mockResponse);
+    });
 
-        await deleteCategoryModern(testCategory);
+    it.each(["groceries", "dining", "entertainment", "transportation", "utilities"])(
+      "should delete category '%s'",
+      async (name) => {
+        const category = createTestCategory({ categoryName: name });
 
-        expect(fetch).toHaveBeenCalledWith(
+        await deleteCategory(category);
+
+        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
           `/api/category/${name}`,
           expect.any(Object),
         );
-      }
-    });
-  });
-
-  describe("Common deletion scenarios", () => {
-    it("should delete groceries category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 1,
-        categoryName: "groceries",
-        activeStatus: true,
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/category/groceries",
-        expect.any(Object),
-      );
-    });
-
-    it("should delete dining category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 2,
-        categoryName: "dining",
-        activeStatus: true,
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-
-    it("should delete entertainment category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 3,
-        categoryName: "entertainment",
-        activeStatus: true,
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-
-    it("should delete transportation category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 4,
-        categoryName: "transportation",
-        activeStatus: true,
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
+      },
+    );
 
     it("should delete inactive category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 5,
+      const category = createTestCategory({
         categoryName: "archived",
         activeStatus: false,
       });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
+      await deleteCategory(category);
 
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-
-    it("should delete utilities category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 6,
-        categoryName: "utilities",
-        activeStatus: true,
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-
-    it("should delete healthcare category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 7,
-        categoryName: "healthcare",
-        activeStatus: true,
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-
-    it("should delete shopping category", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 8,
-        categoryName: "shopping",
-        activeStatus: true,
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should handle deletion of category with special characters in name", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 100,
-        categoryName: "category-with_special.chars",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/category/category-with_special.chars",
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/category/archived",
         expect.any(Object),
       );
     });
+  });
 
-    it("should handle deletion of category with Unicode characters", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 101,
-        categoryName: "食品 🍔",
-      });
+  describe("error handling", () => {
+    it("should propagate 404 not found error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Category not found", 404),
+      );
+      const category = createTestCategory();
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/category/食品 🍔",
-        expect.any(Object),
+      await expect(deleteCategory(category)).rejects.toThrow(
+        "Category not found",
       );
     });
 
-    it("should handle deletion of category with long name", async () => {
-      const longName = "a".repeat(255);
-      const testCategory = createTestCategory({
-        categoryId: 102,
-        categoryName: longName,
-      });
+    it("should propagate 409 conflict error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Cannot delete category - in use by transactions", 409),
+      );
+      const category = createTestCategory({ categoryName: "groceries" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-    });
-
-    it("should handle deletion of category with empty name", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 103,
-        categoryName: "",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
-      expect(fetch).toHaveBeenCalledWith("/api/category/", expect.any(Object));
-    });
-
-    it("should handle deletion of category with spaces in name", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 104,
-        categoryName: "dining out",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      await deleteCategoryModern(testCategory);
-
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/category/dining out",
-        expect.any(Object),
+      await expect(deleteCategory(category)).rejects.toThrow(
+        "Cannot delete category - in use by transactions",
       );
     });
 
-    it("should handle deletion of category with numbers in name", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 105,
-        categoryName: "category_123",
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
+      );
+      const category = createTestCategory();
+
+      await expect(deleteCategory(category)).rejects.toThrow(
+        "Internal server error",
+      );
+    });
+
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+      const category = createTestCategory();
+
+      await expect(deleteCategory(category)).rejects.toThrow(
+        "Network request failed",
+      );
+    });
+
+    it("should propagate validation errors from validateDelete", async () => {
+      mockValidateDelete.mockImplementation(() => {
+        const { HookValidationError } = jest.requireMock(
+          "../../utils/hookValidation",
+        );
+        throw new HookValidationError("categoryName is required");
       });
+      const category = createTestCategory({ categoryName: "" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
-
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toBeNull();
+      await expect(deleteCategory(category)).rejects.toThrow(
+        "categoryName is required",
+      );
     });
   });
 
-  describe("Data integrity", () => {
-    it("should use correct categoryName from payload", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 456,
-        categoryName: "test",
-      });
+  describe("request format", () => {
+    it("should use DELETE method", async () => {
+      const category = createTestCategory();
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
+      await deleteCategory(category);
 
-      await deleteCategoryModern(testCategory);
-
-      const url = (fetch as jest.Mock).mock.calls[0][0];
-      expect(url).toBe("/api/category/test");
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("DELETE");
     });
 
-    it("should return exact category data when API returns 200", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 789,
-        categoryName: "exact_category",
-        activeStatus: true,
-      });
+    it("should not send body in DELETE request", async () => {
+      const category = createTestCategory();
 
-      global.fetch = createModernFetchMock(testCategory);
+      await deleteCategory(category);
 
-      const result = await deleteCategoryModern(testCategory);
-
-      expect(result).toStrictEqual(testCategory);
-    });
-  });
-
-  describe("Error logging", () => {
-    it("should log error message to console", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Test error"));
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow();
-
-      const calls = consoleSpy.getCalls();
-      expect(
-        calls.error.some((call) =>
-          call[0].includes("An error occurred: Test error"),
-        ),
-      ).toBe(true);
-    });
-  });
-
-  describe("Conflict scenarios", () => {
-    it("should handle conflict when deleting category with active transactions", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "groceries",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 409,
-        json: async () => ({
-          error:
-            "Cannot delete category groceries - 25 transactions reference this category",
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Cannot delete category groceries - 25 transactions reference this category",
-      );
-    });
-
-    it("should handle conflict when deleting system category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "uncategorized",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 409,
-        json: async () => ({
-          error: "Cannot delete system category uncategorized",
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Cannot delete system category uncategorized",
-      );
-    });
-
-    it("should handle conflict when deleting default category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "default",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 409,
-        json: async () => ({
-          error: "Cannot delete default category",
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(deleteCategoryModern(testCategory)).rejects.toThrow(
-        "Cannot delete default category",
-      );
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.body).toBeUndefined();
     });
   });
 });

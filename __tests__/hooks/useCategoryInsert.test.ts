@@ -1,600 +1,244 @@
-/**
- * TDD Tests for Modern useCategoryInsert
- * Modern endpoint: POST /api/category
- *
- * Key differences from legacy:
- * - Endpoint: /api/category (vs /api/category/insert)
- * - Uses ServiceResult pattern for errors
- * - Error format: { error: "message" } or { errors: [...] }
- */
-
-import { ConsoleSpy } from "../../testHelpers";
-import { createModernFetchMock } from "../../testHelpers";
+import { insertCategory } from "../../hooks/useCategoryInsert";
 import Category from "../../model/Category";
 
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Modern implementation to test
-const insertCategoryModern = async (payload: Category): Promise<Category> => {
-  try {
-    const endpoint = "/api/category";
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error ||
-        errorBody.errors?.join(", ") ||
-        `HTTP error! Status: ${response.status}`;
-      throw new Error(errorMessage);
+jest.mock("../../utils/hookValidation", () => ({
+  validateInsert: jest.fn((data: unknown) => data),
+  HookValidationError: class HookValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "HookValidationError";
     }
+  },
+}));
 
-    return response.status !== 204 ? await response.json() : payload;
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+jest.mock("../../utils/validation", () => ({
+  DataValidator: {
+    validateCategory: jest.fn((data: unknown) => data),
+  },
+}));
 
-// Helper function to create test category data
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    category: jest.fn(() => ["category"]),
+  },
+  addToList: jest.fn(),
+}));
+
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
+
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: jest.fn(() => ({
+    isAuthenticated: true,
+    loading: false,
+    user: { username: "john" },
+    login: jest.fn(),
+    logout: jest.fn(),
+  })),
+}));
+
+import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
+import { validateInsert } from "../../utils/hookValidation";
+
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockParseResponse = parseResponse as jest.MockedFunction<
+  typeof parseResponse
+>;
+const mockValidateInsert = validateInsert as jest.MockedFunction<
+  typeof validateInsert
+>;
+
 const createTestCategory = (overrides: Partial<Category> = {}): Category => ({
   categoryId: 1,
-  categoryName: "test_category",
+  categoryName: "groceries",
   activeStatus: true,
   ...overrides,
 });
 
-describe("useCategoryInsert Modern Endpoint (TDD)", () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("useCategoryInsert - insertCategory", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
+    mockValidateInsert.mockImplementation((data: unknown) => data as Category);
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
-  });
+  describe("validation", () => {
+    it("should call validateInsert with the category data", async () => {
+      const category = createTestCategory({ categoryName: "dining" });
+      mockParseResponse.mockResolvedValue(category);
 
-  describe("Modern endpoint behavior", () => {
-    it("should use modern endpoint /api/category", async () => {
-      const testCategory = createTestCategory();
-      global.fetch = createModernFetchMock(testCategory);
+      await insertCategory(category);
 
-      await insertCategoryModern(testCategory);
-
-      expect(fetch).toHaveBeenCalledWith("/api/category", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(testCategory),
-      });
+      expect(mockValidateInsert).toHaveBeenCalledWith(
+        category,
+        expect.any(Function),
+        "insertCategory",
+      );
     });
 
-    it("should insert category successfully", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "groceries",
-        activeStatus: true,
-      });
+    it("should use validated data in request body", async () => {
+      const category = createTestCategory({ categoryName: "dining" });
+      const validatedCategory = { ...category, categoryName: "validated_dining" };
+      mockValidateInsert.mockReturnValue(validatedCategory);
+      mockParseResponse.mockResolvedValue(validatedCategory);
 
-      global.fetch = createModernFetchMock(testCategory);
+      await insertCategory(category);
 
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result).toStrictEqual(testCategory);
-    });
-
-    it("should handle 204 No Content response", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 204,
-        json: async () => {
-          throw new Error("No content");
-        },
-      });
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result).toStrictEqual(testCategory);
-    });
-
-    it("should return category with 201 Created status", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 1,
-        categoryName: "dining",
-      });
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 201,
-        json: async () => testCategory,
-      });
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result).toStrictEqual(testCategory);
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      const body = JSON.parse(options?.body as string);
+      expect(body.categoryName).toBe("validated_dining");
     });
   });
 
-  describe("Modern error handling with ServiceResult pattern", () => {
-    it("should handle validation errors with modern format", async () => {
-      const testCategory = createTestCategory();
+  describe("successful insertion", () => {
+    it("should POST to /api/category", async () => {
+      const category = createTestCategory();
+      mockParseResponse.mockResolvedValue(category);
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({
-          errors: [
-            "categoryName is required",
-            "categoryName must be non-empty",
-          ],
-        }),
-      });
+      await insertCategory(category);
 
-      consoleSpy.start();
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/category");
+    });
 
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "categoryName is required, categoryName must be non-empty",
+    it("should use POST method", async () => {
+      const category = createTestCategory();
+      mockParseResponse.mockResolvedValue(category);
+
+      await insertCategory(category);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("POST");
+    });
+
+    it("should return the created category", async () => {
+      const category = createTestCategory({ categoryId: 5, categoryName: "sports" });
+      mockParseResponse.mockResolvedValue(category);
+
+      const result = await insertCategory(category);
+
+      expect(result).toStrictEqual(category);
+    });
+
+    it("should call parseResponse with the fetch response", async () => {
+      const mockResponse = { status: 201 } as Response;
+      mockFetchWithErrorHandling.mockResolvedValue(mockResponse);
+      const category = createTestCategory();
+      mockParseResponse.mockResolvedValue(category);
+
+      await insertCategory(category);
+
+      expect(mockParseResponse).toHaveBeenCalledWith(mockResponse);
+    });
+
+    it("should return null when API returns null (204)", async () => {
+      mockParseResponse.mockResolvedValue(null);
+      const category = createTestCategory();
+
+      const result = await insertCategory(category);
+
+      expect(result).toBeNull();
+    });
+
+    it.each(["groceries", "dining", "entertainment", "utilities", "healthcare"])(
+      "should insert '%s' category",
+      async (name) => {
+        const category = createTestCategory({ categoryName: name });
+        mockParseResponse.mockResolvedValue(category);
+
+        const result = await insertCategory(category);
+
+        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+          "/api/category",
+          expect.objectContaining({ method: "POST" }),
+        );
+        expect(result?.categoryName).toBe(name);
+      },
+    );
+  });
+
+  describe("error handling", () => {
+    it("should propagate 400 bad request error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Invalid category data", 400),
+      );
+      const category = createTestCategory();
+
+      await expect(insertCategory(category)).rejects.toThrow(
+        "Invalid category data",
       );
     });
 
-    it("should handle duplicate category error", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "groceries",
-      });
+    it("should propagate 409 conflict error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Category already exists", 409),
+      );
+      const category = createTestCategory({ categoryName: "groceries" });
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 409,
-        json: async () => ({
-          error: "Category groceries already exists",
-        }),
-      });
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "Category groceries already exists",
+      await expect(insertCategory(category)).rejects.toThrow(
+        "Category already exists",
       );
     });
 
-    it("should handle 401 unauthorized", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        json: async () => ({ error: "Unauthorized" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "Unauthorized",
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
       );
-    });
+      const category = createTestCategory();
 
-    it("should handle 403 forbidden", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: async () => ({ error: "Forbidden" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "Forbidden",
-      );
-    });
-
-    it("should handle 500 server error", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: async () => ({ error: "Internal server error" }),
-      });
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
+      await expect(insertCategory(category)).rejects.toThrow(
         "Internal server error",
       );
     });
 
-    it("should handle error response without error field", async () => {
-      const testCategory = createTestCategory();
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+      const category = createTestCategory();
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: async () => ({}),
-      });
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "HTTP error! Status: 400",
+      await expect(insertCategory(category)).rejects.toThrow(
+        "Network request failed",
       );
     });
 
-    it("should handle invalid JSON in error response", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-      });
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "HTTP error! Status: 500",
+    it("should propagate validation errors", async () => {
+      const { HookValidationError } = jest.requireMock(
+        "../../utils/hookValidation",
       );
-    });
-  });
+      mockValidateInsert.mockImplementation(() => {
+        throw new HookValidationError("categoryName is required");
+      });
+      const category = createTestCategory({ categoryName: "" });
 
-  describe("Network and connectivity errors", () => {
-    it("should handle network errors", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "Network error",
+      await expect(insertCategory(category)).rejects.toThrow(
+        "categoryName is required",
       );
-
-      const calls = consoleSpy.getCalls();
-      expect(
-        calls.error.some((call) => call[0].includes("An error occurred:")),
-      ).toBe(true);
-    });
-
-    it("should handle timeout errors", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest.fn().mockRejectedValue(new Error("Timeout"));
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "Timeout",
-      );
-    });
-
-    it("should handle connection refused", async () => {
-      const testCategory = createTestCategory();
-
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Connection refused"));
-
-      consoleSpy.start();
-
-      await expect(insertCategoryModern(testCategory)).rejects.toThrow(
-        "Connection refused",
-      );
-    });
-  });
-
-  describe("Request body and headers", () => {
-    it("should use POST method", async () => {
-      const testCategory = createTestCategory();
-      global.fetch = createModernFetchMock(testCategory);
-
-      await insertCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.method).toBe("POST");
-    });
-
-    it("should include credentials", async () => {
-      const testCategory = createTestCategory();
-      global.fetch = createModernFetchMock(testCategory);
-
-      await insertCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.credentials).toBe("include");
-    });
-
-    it("should include correct headers", async () => {
-      const testCategory = createTestCategory();
-      global.fetch = createModernFetchMock(testCategory);
-
-      await insertCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.headers).toStrictEqual({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      });
-    });
-
-    it("should send category as JSON in request body", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "entertainment",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      await insertCategoryModern(testCategory);
-
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
-      expect(callArgs.body).toBe(JSON.stringify(testCategory));
-    });
-  });
-
-  describe("Data integrity and validation", () => {
-    it("should preserve all category fields", async () => {
-      const testCategory = createTestCategory({
-        categoryId: 999,
-        categoryName: "complete_category",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result).toStrictEqual(testCategory);
-      expect(result.categoryId).toBe(999);
-      expect(result.categoryName).toBe("complete_category");
-      expect(result.activeStatus).toBe(true);
-    });
-
-    it("should handle active categories", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "groceries",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.activeStatus).toBe(true);
-    });
-
-    it("should handle inactive categories", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "archived",
-        activeStatus: false,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.activeStatus).toBe(false);
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should handle categories with special characters", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "category-with_special.chars",
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("category-with_special.chars");
-    });
-
-    it("should handle categories with Unicode characters", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "食品 🍔",
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("食品 🍔");
-    });
-
-    it("should handle categories with empty values", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "",
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("");
-    });
-
-    it("should handle categories with long names", async () => {
-      const longName = "a".repeat(255);
-      const testCategory = createTestCategory({
-        categoryName: longName,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe(longName);
-      expect(result.categoryName.length).toBe(255);
-    });
-
-    it("should handle categories with whitespace", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "  category with spaces  ",
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("  category with spaces  ");
-    });
-
-    it("should handle categories with numbers", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "category_123",
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("category_123");
-    });
-  });
-
-  describe("Common category scenarios", () => {
-    it("should insert groceries category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "groceries",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("groceries");
-      expect(result.activeStatus).toBe(true);
-    });
-
-    it("should insert dining category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "dining",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("dining");
-    });
-
-    it("should insert entertainment category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "entertainment",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("entertainment");
-    });
-
-    it("should insert transportation category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "transportation",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("transportation");
-    });
-
-    it("should insert utilities category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "utilities",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("utilities");
-    });
-
-    it("should insert healthcare category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "healthcare",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("healthcare");
-    });
-
-    it("should insert shopping category", async () => {
-      const testCategory = createTestCategory({
-        categoryName: "shopping",
-        activeStatus: true,
-      });
-
-      global.fetch = createModernFetchMock(testCategory);
-
-      const result = await insertCategoryModern(testCategory);
-
-      expect(result.categoryName).toBe("shopping");
-    });
-
-    it("should insert multiple expense categories", async () => {
-      const expenseCategories = [
-        { categoryName: "groceries" },
-        { categoryName: "dining" },
-        { categoryName: "entertainment" },
-        { categoryName: "transportation" },
-      ];
-
-      for (const config of expenseCategories) {
-        const testCategory = createTestCategory(config);
-        global.fetch = createModernFetchMock(testCategory);
-
-        const result = await insertCategoryModern(testCategory);
-
-        expect(result.categoryName).toBe(config.categoryName);
-        expect(result.activeStatus).toBe(true);
-      }
     });
   });
 });

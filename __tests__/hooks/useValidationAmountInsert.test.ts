@@ -1,64 +1,57 @@
-/**
- * Isolated tests for useValidationAmountInsert business logic
- * Tests insertValidationAmount function without React Query overhead
- */
-
-import {
-  createModernFetchMock as createFetchMock,
-  createModernErrorFetchMock as createErrorFetchMock,
-  ConsoleSpy,
-} from "../../testHelpers";
-import { simulateNetworkError, simulateTimeoutError } from "../../testHelpers";
+import { insertValidationAmount } from "../../hooks/useValidationAmountInsert";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
-// Mock the useAuth hook
-jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    loading: false,
-    user: null,
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
+jest.mock("../../utils/fetchUtils", () => ({
+  fetchWithErrorHandling: jest.fn(),
+  parseResponse: jest.fn(),
+  FetchError: class FetchError extends Error {
+    constructor(
+      message: string,
+      public status?: number,
+    ) {
+      super(message);
+      this.name = "FetchError";
+    }
+  },
 }));
 
-// Extract the business logic function from useValidationAmountInsert
-const insertValidationAmount = async (
-  accountNameOwner: string,
-  payload: ValidationAmount,
-): Promise<ValidationAmount> => {
-  const endpoint = `/api/validation/amount`;
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    validationAmount: jest.fn((account: string) => ["validationAmount", account]),
+    validationAmountAll: jest.fn((account: string) => ["validationAmountAll", account]),
+  },
+  addToList: jest.fn(),
+}));
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+jest.mock("../../utils/logger", () => ({
+  createHookLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  })),
+}));
 
-    if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ error: `HTTP error! Status: ${response.status}` }));
-      const errorMessage =
-        errorBody.error || `HTTP error! Status: ${response.status}`;
-      console.error(`Failed to insert validation amount: ${errorMessage}`);
-      throw new Error(errorMessage);
-    }
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: jest.fn(() => ({
+    isAuthenticated: true,
+    loading: false,
+    user: { username: "john" },
+    login: jest.fn(),
+    logout: jest.fn(),
+  })),
+}));
 
-    return await response.json();
-  } catch (error: any) {
-    console.error(`An error occurred: ${error.message}`);
-    throw error;
-  }
-};
+import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 
-// Helper function to create test validation amount data
+const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
+  typeof fetchWithErrorHandling
+>;
+const mockParseResponse = parseResponse as jest.MockedFunction<
+  typeof parseResponse
+>;
+
 const createTestValidationAmount = (
   overrides: Partial<ValidationAmount> = {},
 ): ValidationAmount => ({
@@ -73,851 +66,174 @@ const createTestValidationAmount = (
   ...overrides,
 });
 
-describe("useValidationAmountInsert Business Logic", () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  let consoleSpy: ConsoleSpy;
-
+describe("useValidationAmountInsert - insertValidationAmount", () => {
   beforeEach(() => {
-    consoleSpy = new ConsoleSpy();
     jest.clearAllMocks();
+    mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
   });
 
-  afterEach(() => {
-    consoleSpy.stop();
+  describe("successful insertion", () => {
+    it("should POST to /api/validation/amount", async () => {
+      const payload = createTestValidationAmount();
+      mockParseResponse.mockResolvedValue(payload);
+
+      await insertValidationAmount("checking_john", payload);
+
+      const [url] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(url).toBe("/api/validation/amount");
+    });
+
+    it("should use POST method", async () => {
+      const payload = createTestValidationAmount();
+      mockParseResponse.mockResolvedValue(payload);
+
+      await insertValidationAmount("checking_john", payload);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.method).toBe("POST");
+    });
+
+    it("should return the created validation amount", async () => {
+      const payload = createTestValidationAmount({ validationId: 5 });
+      mockParseResponse.mockResolvedValue(payload);
+
+      const result = await insertValidationAmount("checking_john", payload);
+
+      expect(result).toStrictEqual(payload);
+    });
+
+    it("should call parseResponse with the fetch response", async () => {
+      const mockResponse = { status: 201 } as Response;
+      mockFetchWithErrorHandling.mockResolvedValue(mockResponse);
+      const payload = createTestValidationAmount();
+      mockParseResponse.mockResolvedValue(payload);
+
+      await insertValidationAmount("checking_john", payload);
+
+      expect(mockParseResponse).toHaveBeenCalledWith(mockResponse);
+    });
+
+    it("should send validation amount as JSON body", async () => {
+      const payload = createTestValidationAmount({ amount: 2500.75 });
+      mockParseResponse.mockResolvedValue(payload);
+
+      await insertValidationAmount("checking_john", payload);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      const body = JSON.parse(options?.body as string);
+      expect(body.amount).toBe(2500.75);
+    });
+
+    it("should handle different transaction states", async () => {
+      const states: TransactionState[] = ["cleared", "outstanding", "future"];
+
+      for (const transactionState of states) {
+        jest.clearAllMocks();
+        mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
+        const payload = createTestValidationAmount({ transactionState });
+        mockParseResponse.mockResolvedValue(payload);
+
+        const result = await insertValidationAmount("checking_john", payload);
+
+        expect(result.transactionState).toBe(transactionState);
+      }
+    });
+
+    it("should handle high-value amounts", async () => {
+      const payload = createTestValidationAmount({ amount: 999999.99 });
+      mockParseResponse.mockResolvedValue(payload);
+
+      const result = await insertValidationAmount("checking_john", payload);
+
+      expect(result.amount).toBe(999999.99);
+    });
   });
 
-  describe("insertValidationAmount", () => {
-    describe("Successful validation amount creation", () => {
-      it("should create validation amount successfully with 200 response", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-        const expectedResponse = {
-          ...testPayload,
-          validationId: 42,
-        };
+  describe("error handling", () => {
+    it("should propagate 400 bad request error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Invalid validation amount data", 400),
+      );
+      const payload = createTestValidationAmount();
 
-        global.fetch = createFetchMock(expectedResponse);
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result).toStrictEqual(expectedResponse);
-        expect(fetch).toHaveBeenCalledWith("/api/validation/amount", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(testPayload),
-        });
-      });
-
-      it("should use correct modern endpoint", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "specialAccount";
-
-        global.fetch = createFetchMock({ validationId: 1 });
-
-        await insertValidationAmount(accountNameOwner, testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount",
-          expect.any(Object),
-        );
-      });
-
-      it("should handle different transaction states", async () => {
-        const transactionStates: TransactionState[] = [
-          "cleared",
-          "outstanding",
-          "future",
-        ];
-
-        for (const transactionState of transactionStates) {
-          const testPayload = createTestValidationAmount({ transactionState });
-          const accountNameOwner = "testAccount";
-
-          global.fetch = createFetchMock({ ...testPayload });
-
-          const result = await insertValidationAmount(
-            accountNameOwner,
-            testPayload,
-          );
-
-          expect(result!.transactionState).toBe(transactionState);
-        }
-      });
-
-      it("should preserve all validation amount properties", async () => {
-        const testPayload = createTestValidationAmount({
-          validationId: 999,
-          validationDate: new Date("2024-06-15T14:30:00.000Z"),
-          accountId: 555,
-          amount: 2500.75,
-          transactionState: "outstanding" as TransactionState,
-          activeStatus: false,
-        });
-        const accountNameOwner = "detailedAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result).toStrictEqual(testPayload);
-      });
+      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
+        "Invalid validation amount data",
+      );
     });
 
-    describe("API error handling", () => {
-      it("should handle 400 error with error message", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
+    it("should propagate 409 conflict error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Validation amount already exists", 409),
+      );
+      const payload = createTestValidationAmount();
 
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest
-            .fn()
-            .mockResolvedValue({ error: "Invalid validation amount data" }),
-        });
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("Invalid validation amount data");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Failed to insert validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle 409 conflict error", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 409,
-          json: jest
-            .fn()
-            .mockResolvedValue({ error: "Validation amount already exists" }),
-        });
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("Validation amount already exists");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Failed to insert validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle 500 server error", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue({ error: "Internal server error" }),
-        });
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("Internal server error");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Failed to insert validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle error response without message", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockResolvedValue({}),
-        });
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("HTTP error! Status: 400");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Failed to insert validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle malformed error response", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-        });
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("HTTP error! Status: 400");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Failed to insert validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle network errors", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("Network error");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle timeout errors", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Request timeout"));
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("Request timeout");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
+      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
+        "Validation amount already exists",
+      );
     });
 
-    describe("Request format validation", () => {
-      it("should send correct headers", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
+    it("should propagate 500 server error", async () => {
+      const { FetchError } = jest.requireMock("../../utils/fetchUtils");
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new FetchError("Internal server error", 500),
+      );
+      const payload = createTestValidationAmount();
 
-        global.fetch = createFetchMock({ validationId: 1 });
+      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
+        "Internal server error",
+      );
+    });
 
-        await insertValidationAmount(accountNameOwner, testPayload);
+    it("should propagate network errors", async () => {
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
+      const payload = createTestValidationAmount();
 
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          }),
-        );
-      });
+      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
+        "Network request failed",
+      );
+    });
+  });
 
-      it("should use correct endpoint pattern", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "mySpecialAccount";
+  describe("request format", () => {
+    it("should include validation amount data in body", async () => {
+      const payload = createTestValidationAmount();
+      mockParseResponse.mockResolvedValue(payload);
 
-        global.fetch = createFetchMock({ validationId: 1 });
+      await insertValidationAmount("checking_john", payload);
 
-        await insertValidationAmount(accountNameOwner, testPayload);
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(options?.body).toBeDefined();
+    });
 
-        expect(fetch).toHaveBeenCalledWith(
+    it("should serialize body as JSON", async () => {
+      const payload = createTestValidationAmount({ amount: 1234.56 });
+      mockParseResponse.mockResolvedValue(payload);
+
+      await insertValidationAmount("checking_john", payload);
+
+      const [, options] = mockFetchWithErrorHandling.mock.calls[0];
+      expect(() => JSON.parse(options?.body as string)).not.toThrow();
+    });
+  });
+
+  describe("various account names", () => {
+    it.each(["checking_john", "savings_jane", "visa_bob", "amex_alice"])(
+      "should insert validation amount for account '%s'",
+      async (accountNameOwner) => {
+        const payload = createTestValidationAmount();
+        mockParseResponse.mockResolvedValue(payload);
+
+        await insertValidationAmount(accountNameOwner, payload);
+
+        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
           "/api/validation/amount",
-          expect.any(Object),
-        );
-      });
-
-      it("should send POST method", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = createFetchMock({ validationId: 1 });
-
-        await insertValidationAmount(accountNameOwner, testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
           expect.objectContaining({ method: "POST" }),
         );
-      });
-
-      it("should include credentials", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = createFetchMock({ validationId: 1 });
-
-        await insertValidationAmount(accountNameOwner, testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({ credentials: "include" }),
-        );
-      });
-
-      it("should stringify the validation amount data", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = createFetchMock({ validationId: 1 });
-
-        await insertValidationAmount(accountNameOwner, testPayload);
-
-        expect(fetch).toHaveBeenCalledWith(
-          expect.any(String),
-          expect.objectContaining({
-            body: JSON.stringify(testPayload),
-          }),
-        );
-      });
-    });
-
-    describe("Business logic scenarios", () => {
-      it("should handle account balance validation scenarios", async () => {
-        const testPayload = createTestValidationAmount({
-          amount: 5000.0,
-          transactionState: "cleared" as TransactionState,
-          validationDate: new Date("2024-01-31T23:59:59.000Z"),
-        });
-        const accountNameOwner = "checkingAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.amount).toBe(5000.0);
-        expect(result!.transactionState).toBe("cleared");
-        expect(result!.validationDate).toStrictEqual(
-          new Date("2024-01-31T23:59:59.000Z"),
-        );
-      });
-
-      it("should handle outstanding transaction validations", async () => {
-        const testPayload = createTestValidationAmount({
-          amount: -250.5, // Negative amount for outstanding transactions
-          transactionState: "outstanding" as TransactionState,
-          activeStatus: true,
-        });
-        const accountNameOwner = "creditAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.amount).toBe(-250.5);
-        expect(result!.transactionState).toBe("outstanding");
-        expect(result!.activeStatus).toBe(true);
-      });
-
-      it("should handle future transaction validations", async () => {
-        const futureDate = new Date("2025-12-31T00:00:00.000Z");
-        const testPayload = createTestValidationAmount({
-          amount: 1000.0,
-          transactionState: "future" as TransactionState,
-          validationDate: futureDate,
-        });
-        const accountNameOwner = "savingsAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.amount).toBe(1000.0);
-        expect(result!.transactionState).toBe("future");
-        expect(result!.validationDate).toStrictEqual(futureDate);
-      });
-
-      it("should handle validation for different account types", async () => {
-        const accountTypes = [
-          "checking",
-          "savings",
-          "credit",
-          "investment",
-          "business-checking",
-          "money-market",
-        ];
-
-        for (const accountType of accountTypes) {
-          const testPayload = createTestValidationAmount({
-            amount: 1500.25,
-            accountId: Math.floor(Math.random() * 1000),
-          });
-
-          global.fetch = createFetchMock({ ...testPayload });
-
-          const result = await insertValidationAmount(accountType, testPayload);
-
-          expect(result!.amount).toBe(1500.25);
-          expect(fetch).toHaveBeenCalledWith(
-            `/api/validation/amount`,
-            expect.any(Object),
-          );
-        }
-      });
-
-      it("should handle high-value validation amounts", async () => {
-        const testPayload = createTestValidationAmount({
-          amount: 999999.99,
-          transactionState: "cleared" as TransactionState,
-          activeStatus: true,
-        });
-        const accountNameOwner = "highValueAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.amount).toBe(999999.99);
-        expect(result!.transactionState).toBe("cleared");
-      });
-
-      it("should handle micro-amount validations", async () => {
-        const testPayload = createTestValidationAmount({
-          amount: 0.01,
-          transactionState: "cleared" as TransactionState,
-        });
-        const accountNameOwner = "microPaymentAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.amount).toBe(0.01);
-      });
-
-      it("should handle validation business rules", async () => {
-        const testPayload = createTestValidationAmount({
-          validationId: 12345,
-          validationDate: new Date("2024-03-15T12:00:00.000Z"),
-          accountId: 789,
-          amount: 2750.5,
-          transactionState: "outstanding" as TransactionState,
-          activeStatus: true,
-        });
-        const accountNameOwner = "businessRulesAccount";
-
-        global.fetch = createFetchMock({
-          ...testPayload,
-          validationId: 67890, // Server-assigned ID
-        });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.validationId).toBe(67890);
-        expect(result!.amount).toBe(2750.5);
-        expect(result!.transactionState).toBe("outstanding");
-      });
-    });
-
-    describe("Edge cases", () => {
-      it("should handle special characters in account names", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "Account & Co: 2024!";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result).toStrictEqual(testPayload);
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount",
-          expect.any(Object),
-        );
-      });
-
-      it("should handle unicode characters in account names", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "验证账户 Validation Account 💰";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result).toStrictEqual(testPayload);
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/validation/amount",
-          expect.any(Object),
-        );
-      });
-
-      it("should handle very long account names", async () => {
-        const testPayload = createTestValidationAmount();
-        const longAccountName = "A".repeat(500);
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          longAccountName,
-          testPayload,
-        );
-
-        expect(result).toStrictEqual(testPayload);
-        expect(fetch).toHaveBeenCalledWith(
-          `/api/validation/amount`,
-          expect.any(Object),
-        );
-      });
-
-      it("should handle zero amounts", async () => {
-        const testPayload = createTestValidationAmount({ amount: 0 });
-        const accountNameOwner = "zeroAmountAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.amount).toBe(0);
-      });
-
-      it("should handle decimal precision amounts", async () => {
-        const preciseAmount = 123.456789;
-        const testPayload = createTestValidationAmount({
-          amount: preciseAmount,
-        });
-        const accountNameOwner = "precisionAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.amount).toBe(preciseAmount);
-      });
-
-      it("should handle inactive validation amounts", async () => {
-        const testPayload = createTestValidationAmount({ activeStatus: false });
-        const accountNameOwner = "inactiveAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.activeStatus).toBe(false);
-      });
-
-      it("should handle missing optional fields", async () => {
-        const testPayload = createTestValidationAmount({
-          accountId: undefined,
-          dateAdded: undefined,
-          dateUpdated: undefined,
-        });
-        const accountNameOwner = "minimalFieldsAccount";
-
-        global.fetch = createFetchMock({ ...testPayload });
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result!.accountId).toBeUndefined();
-        expect(result!.dateAdded).toBeUndefined();
-        expect(result!.dateUpdated).toBeUndefined();
-      });
-    });
-
-    describe("Console logging", () => {
-      it("should log API error messages", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = createErrorFetchMock("Validation failed", 400);
-        consoleSpy.start();
-
-        try {
-          await insertValidationAmount(accountNameOwner, testPayload);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes(
-                "Failed to insert validation amount: Validation failed",
-              ),
-            ),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
-
-      it("should log parsing errors", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 400,
-          json: jest.fn().mockRejectedValue(new Error("JSON parse error")),
-        });
-        consoleSpy.start();
-
-        try {
-          await insertValidationAmount(accountNameOwner, testPayload);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Failed to insert validation amount:"),
-            ),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
-
-      it("should log network errors", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error("Connection failed"));
-        consoleSpy.start();
-
-        try {
-          await insertValidationAmount(accountNameOwner, testPayload);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
-
-      it("should log unknown error fallback", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "testAccount";
-
-        global.fetch = jest.fn().mockResolvedValue({
-          ok: false,
-          status: 500,
-          json: jest.fn().mockResolvedValue({}), // No error field
-        });
-        consoleSpy.start();
-
-        try {
-          await insertValidationAmount(accountNameOwner, testPayload);
-        } catch (error) {
-          // Expected error
-        }
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("HTTP error! Status: 500")),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
-    });
-
-    describe("Integration scenarios", () => {
-      it("should handle complete validation amount creation workflow", async () => {
-        const testPayload = createTestValidationAmount({
-          validationDate: new Date("2024-06-30T18:00:00.000Z"),
-          accountId: 987654,
-          amount: 15750.25,
-          transactionState: "cleared" as TransactionState,
-          activeStatus: true,
-        });
-        const accountNameOwner = "integrationTestAccount";
-
-        const expectedResponse = {
-          validationId: 555555,
-          validationDate: new Date("2024-06-30T18:00:00.000Z"),
-          accountId: 987654,
-          amount: 15750.25,
-          transactionState: "cleared" as TransactionState,
-          activeStatus: true,
-          dateAdded: new Date("2024-06-30T18:05:00.000Z"),
-          dateUpdated: new Date("2024-06-30T18:05:00.000Z"),
-        };
-
-        global.fetch = createFetchMock(expectedResponse);
-
-        const result = await insertValidationAmount(
-          accountNameOwner,
-          testPayload,
-        );
-
-        expect(result).toStrictEqual(expectedResponse);
-        expect(result!.validationId).toBe(555555);
-        expect(result!.amount).toBe(15750.25);
-      });
-
-      it("should handle validation amount creation to API error chain", async () => {
-        const testPayload = createTestValidationAmount({
-          amount: -999999, // Invalid large negative amount
-        });
-        const accountNameOwner = "errorChainAccount";
-
-        global.fetch = createErrorFetchMock(
-          "Amount exceeds allowed negative limit",
-          400,
-        );
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow("Amount exceeds allowed negative limit");
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes("Amount exceeds allowed negative limit"),
-            ),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
-
-      it("should handle duplicate validation amount detection", async () => {
-        const testPayload = createTestValidationAmount();
-        const accountNameOwner = "duplicateTestAccount";
-
-        global.fetch = createErrorFetchMock(
-          "Duplicate validation amount for this account and date",
-          409,
-        );
-        consoleSpy.start();
-
-        await expect(
-          insertValidationAmount(accountNameOwner, testPayload),
-        ).rejects.toThrow(
-          "Duplicate validation amount for this account and date",
-        );
-
-        const calls = consoleSpy.getCalls();
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) =>
-              String(arg).includes(
-                "Duplicate validation amount for this account and date",
-              ),
-            ),
-          ),
-        ).toBe(true);
-        expect(
-          calls.error.some((call) =>
-            call.some((arg) => String(arg).includes("An error occurred:")),
-          ),
-        ).toBe(true);
-      });
-    });
+      },
+    );
   });
 });
