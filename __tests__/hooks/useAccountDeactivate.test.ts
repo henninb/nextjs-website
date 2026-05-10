@@ -381,4 +381,29 @@ describe("useAccountDeactivate hook", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
+
+  it("onSuccess invalidates transaction and totals queries via predicate", async () => {
+    const queryClient = createAcctDeactivateQueryClient();
+    const account = createTestAccount({ accountId: 7 });
+    mockParseResponse.mockResolvedValue({ ...account, activeStatus: false });
+
+    // Pre-populate queries so the predicates in onSuccess are actually invoked
+    queryClient.setQueryData(["transaction", "checking", "paged"], []);
+    queryClient.setQueryData(["totals", "checking"], { totals: 0, totalsCleared: 0, totalsFuture: 0, totalsOutstanding: 0 });
+
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useAccountDeactivate(), {
+      wrapper: createAcctDeactivateWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow: account });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Verify both predicate-based invalidations were called
+    expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ predicate: expect.any(Function) }));
+  });
 });
