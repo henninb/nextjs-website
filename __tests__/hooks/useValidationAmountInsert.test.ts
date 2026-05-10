@@ -260,6 +260,14 @@ describe("useValidationAmountInsert hook - renderHook tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testUser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   it("onSuccess sets validationAmount cache and invalidates all-list for the account", async () => {
@@ -308,5 +316,31 @@ describe("useValidationAmountInsert hook - renderHook tests", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createHookQueryClient();
+    const { result } = renderHook(() => useValidationAmountInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate({
+        accountNameOwner: "checking_john",
+        payload: createTestValidationAmount(),
+      });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

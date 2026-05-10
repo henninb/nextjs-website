@@ -266,6 +266,14 @@ describe("useCategoryInsert hook", () => {
     mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
     mockParseResponse.mockResolvedValue(createTestCategory());
     mockValidateInsert.mockImplementation((data: unknown) => data as Category);
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testUser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   it("onSuccess calls addToList with the new category", async () => {
@@ -311,5 +319,28 @@ describe("useCategoryInsert hook", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createCatInsertHookQueryClient();
+    const { result } = renderHook(() => useCategoryInsert(), {
+      wrapper: createCatInsertHookWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate({ category: createTestCategory() });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

@@ -775,6 +775,14 @@ describe("useTransactionInsert hook - renderHook tests", () => {
     jest.clearAllMocks();
     (generateSecureUUID as jest.Mock).mockResolvedValue("hook-test-uuid");
     (validateInsert as jest.Mock).mockImplementation((data: Transaction) => data);
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testuser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   afterEach(() => {
@@ -993,5 +1001,63 @@ describe("useTransactionInsert hook - renderHook tests", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createHookQueryClient();
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    act(() => {
+      result.current.mutate({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx(),
+        isFutureTransaction: false,
+        isImportTransaction: false,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
+  });
+
+  it("onSuccess uses default totals when none are cached", async () => {
+    const queryClient = createHookQueryClient();
+    // No totals pre-populated — forces the || { totals: 0, ... } fallback
+    const response = makeInsertTx({ transactionState: "cleared", amount: 100, accountNameOwner: "checking" });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(response),
+    });
+
+    const { result } = renderHook(() => useTransactionInsert(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        accountNameOwner: "checking",
+        newRow: makeInsertTx({ transactionState: "cleared", amount: 100 }),
+        isFutureTransaction: false,
+        isImportTransaction: false,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    // Totals should be created from scratch (default zeroes + amount)
+    const totals = queryClient.getQueryData<any>(["totals", "checking"]);
+    expect(totals?.totals).toBe(100);
+    expect(totals?.totalsCleared).toBe(100);
   });
 });

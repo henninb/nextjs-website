@@ -450,4 +450,133 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
+
+  it("onSuccess same account: uses default totals when none cached", async () => {
+    const queryClient = createHookQueryClient();
+    // No totals pre-populated — forces lines 129-132 default fallback
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    // Started from zero totals, no amount/state change → totals stay at 0
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totals).toBe(0);
+  });
+
+  it("onSuccess same account: state change from future covers totalsFuture deduction", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    // future → cleared: deducts totalsFuture (line 172), adds totalsCleared
+    const oldRow = makeUpdateTx({ amount: 50, transactionState: "future" });
+    const newRow = makeUpdateTx({ amount: 50, transactionState: "cleared" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totalsFuture).toBe(100);  // 150 - 50
+    expect(updated?.totalsCleared).toBe(250); // 200 + 50
+  });
+
+  it("onSuccess same account: state change TO outstanding covers totalsOutstanding addition", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    // cleared → outstanding: deducts totalsCleared, adds totalsOutstanding (lines 185-186)
+    const oldRow = makeUpdateTx({ amount: 50, transactionState: "cleared" });
+    const newRow = makeUpdateTx({ amount: 50, transactionState: "outstanding" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(updated?.totalsCleared).toBe(150);     // 200 - 50
+    expect(updated?.totalsOutstanding).toBe(200);  // 150 + 50
+  });
+
+  it("onSuccess cross-account: uses default totals when none cached", async () => {
+    const queryClient = createHookQueryClient();
+    // No old account totals cached — forces lines 208-211 default fallback
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "checking" });
+    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "savings" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const oldAccountTotals = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(oldAccountTotals?.totals).toBe(-100); // 0 - 100
+  });
+
+  it("onSuccess cross-account: deducts future amount when old state is future", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    // Cross-account with old state=future covers line 220
+    const oldRow = makeUpdateTx({ amount: 75, transactionState: "future", accountNameOwner: "checking" });
+    const newRow = makeUpdateTx({ amount: 75, transactionState: "future", accountNameOwner: "savings" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const oldAccountTotals = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(oldAccountTotals?.totalsFuture).toBe(75);  // 150 - 75
+    expect(oldAccountTotals?.totals).toBe(425);       // 500 - 75
+  });
+
+  it("onSuccess cross-account: deducts outstanding amount when old state is outstanding", async () => {
+    const queryClient = createHookQueryClient();
+    queryClient.setQueryData(["totals", "checking"], makeInitialTotals());
+
+    const { result } = renderHook(() => useTransactionUpdate(), {
+      wrapper: createHookWrapper(queryClient),
+    });
+
+    // Cross-account with old state=outstanding covers lines 224-225
+    const oldRow = makeUpdateTx({ amount: 60, transactionState: "outstanding", accountNameOwner: "checking" });
+    const newRow = makeUpdateTx({ amount: 60, transactionState: "outstanding", accountNameOwner: "savings" });
+
+    await act(async () => {
+      await result.current.mutateAsync({ oldRow, newRow });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const oldAccountTotals = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    expect(oldAccountTotals?.totalsOutstanding).toBe(90);  // 150 - 60
+    expect(oldAccountTotals?.totals).toBe(440);            // 500 - 60
+  });
 });

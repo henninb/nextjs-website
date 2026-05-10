@@ -26,7 +26,7 @@ function createMockLogger() {
 }
 
 // Import the actual implementation
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useTransferInsert from "../../hooks/useTransferInsert";
 
@@ -42,13 +42,13 @@ jest.mock("../../utils/csrf", () => ({
 }));
 
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
     user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 
 jest.mock("../../utils/hookValidation", () => ({
@@ -110,6 +110,14 @@ describe("useTransferInsert Modern Endpoint (TDD)", () => {
     jest.clearAllMocks();
     mockLogger.debug.mockClear();
     mockLogger.error.mockClear();
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testuser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   describe("Modern endpoint behavior", () => {
@@ -352,5 +360,29 @@ describe("useTransferInsert Modern Endpoint (TDD)", () => {
       expect(cacheData?.[0]).toStrictEqual(newTransfer); // New transfer prepended
       expect(cacheData?.[1]).toStrictEqual(existingTransfers[0]);
     });
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const { result } = renderHook(() => useTransferInsert(), {
+      wrapper: createWrapper(),
+    });
+
+    const transfer = createTestTransfer({ transferId: 99 });
+
+    act(() => {
+      result.current.mutate({ payload: transfer });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

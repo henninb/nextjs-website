@@ -1,5 +1,5 @@
 import React from "react";
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useDescriptionInsertGql from "../../hooks/useDescriptionInsertGql";
 import Description from "../../model/Description";
@@ -13,13 +13,13 @@ import { graphqlRequest } from "../../utils/graphqlClient";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
     user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
   typeof graphqlRequest
@@ -50,6 +50,14 @@ const createWrapper = (queryClient: QueryClient) =>
 describe("useDescriptionInsertGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testuser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   it("should insert a description successfully", async () => {
@@ -260,5 +268,34 @@ describe("useDescriptionInsertGql", () => {
         },
       },
     });
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createTestQueryClient();
+    const { result } = renderHook(() => useDescriptionInsertGql(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    const description: Description = {
+      descriptionId: 0,
+      descriptionName: "test",
+      activeStatus: true,
+    };
+
+    act(() => {
+      result.current.mutate({ description });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

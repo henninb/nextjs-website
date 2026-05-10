@@ -1,5 +1,5 @@
 import React from "react";
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useCategoryInsertGql from "../../hooks/useCategoryInsertGql";
 import Category from "../../model/Category";
@@ -13,13 +13,13 @@ import { graphqlRequest } from "../../utils/graphqlClient";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
     user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
   typeof graphqlRequest
@@ -50,6 +50,14 @@ const createWrapper = (queryClient: QueryClient) =>
 describe("useCategoryInsertGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testuser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   it("should insert a category successfully", async () => {
@@ -216,5 +224,35 @@ describe("useCategoryInsertGql", () => {
         },
       },
     });
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createTestQueryClient();
+    const { result } = renderHook(() => useCategoryInsertGql(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    const category: Category = {
+      categoryId: 0,
+      categoryName: "test",
+      activeStatus: true,
+      categoryCount: 0,
+    };
+
+    act(() => {
+      result.current.mutate({ category });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import useMedicalExpenseInsert from "../../hooks/useMedicalExpenseInsert";
+import useMedicalExpenseInsert, { insertMedicalExpense } from "../../hooks/useMedicalExpenseInsert";
 import {
   MedicalExpense,
   MedicalExpenseCreateRequest,
@@ -10,13 +10,13 @@ import {
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
     user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 
 // Mock fetch globally
@@ -59,6 +59,14 @@ describe("useMedicalExpenseInsert", () => {
   beforeEach(() => {
     queryClient = createTestQueryClient();
     jest.clearAllMocks();
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testuser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   const mockCreateRequest: MedicalExpenseCreateRequest = {
@@ -411,5 +419,40 @@ describe("useMedicalExpenseInsert", () => {
     });
 
     expect(error?.message).toContain("Unauthorized");
+  });
+
+  it("throws when financial validation fails", async () => {
+    // billedAmount (100) < totalAllocated (insurancePaid 80 + insuranceDiscount 50 + patientResponsibility 30 = 160)
+    const invalidRequest: MedicalExpenseCreateRequest = {
+      ...mockCreateRequest,
+      billedAmount: 100,
+      insurancePaid: 80,
+      insuranceDiscount: 50,
+      patientResponsibility: 30,
+      owner: "testuser",
+    };
+
+    await expect(insertMedicalExpense(invalidRequest)).rejects.toThrow("cannot exceed billed amount");
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const wrapper = createWrapper(queryClient);
+    const { result } = renderHook(() => useMedicalExpenseInsert(), { wrapper });
+
+    act(() => {
+      result.current.mutate({ payload: mockCreateRequest });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

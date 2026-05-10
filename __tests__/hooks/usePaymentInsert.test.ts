@@ -13,13 +13,13 @@ import { validateInsert } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
-  useAuth: () => ({
+  useAuth: jest.fn(() => ({
     isAuthenticated: true,
     loading: false,
     user: { username: "testuser" },
     login: jest.fn(),
     logout: jest.fn(),
-  }),
+  })),
 }));
 
 function createMockLogger() {
@@ -201,6 +201,14 @@ describe("usePaymentInsert hook", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockValidateInsert.mockImplementation((data: unknown) => data);
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testuser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   afterEach(() => {
@@ -260,5 +268,35 @@ describe("usePaymentInsert hook", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createPaymentInsertQueryClient();
+    const { result } = renderHook(() => usePaymentInsert(), {
+      wrapper: createPaymentInsertWrapper(queryClient),
+    });
+
+    const payment = createTestPayment({
+      sourceAccount: "checking",
+      destinationAccount: "credit",
+      transactionDate: new Date("2025-01-15T12:00:00Z"),
+      amount: 100,
+    });
+
+    act(() => {
+      result.current.mutate({ payload: payment });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });
