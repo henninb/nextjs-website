@@ -3,6 +3,16 @@
  * Tests the fetchValidationAmount function without React Query/React overhead
  */
 
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    validationAmount: jest.fn((account: string) => ["validationAmount", account]),
+  },
+}));
+
+jest.mock("../../utils/queryConfig", () =>
+  jest.requireActual("../../utils/queryConfig"),
+);
+
 // Mock HookValidator
 jest.mock("../../utils/hookValidation", () => ({
   validateInsert: jest.fn((data) => data),
@@ -34,7 +44,11 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fetchValidationAmount } from "../../hooks/useValidationAmountFetch";
+import useValidationAmountFetch from "../../hooks/useValidationAmountFetch";
 import ValidationAmount from "../../model/ValidationAmount";
 import {
   createFetchMock,
@@ -398,5 +412,67 @@ describe("fetchValidationAmount", () => {
       result = await fetchValidationAmount("inactiveAccount");
       expect(result.activeStatus).toBe(false);
     });
+  });
+});
+
+const createValidationFetchQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createValidationFetchWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useValidationAmountFetch hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns validation amount on successful fetch", async () => {
+    const mockAmount = { validationId: 1, amount: 250, transactionState: "cleared", activeStatus: true, validationDate: "2024-01-01" };
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue([mockAmount]),
+    });
+
+    const queryClient = createValidationFetchQueryClient();
+    const { result } = renderHook(() => useValidationAmountFetch("checking_john"), {
+      wrapper: createValidationFetchWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toMatchObject({ validationId: 1, amount: 250 });
+  });
+
+  it("enters error state when fetch returns server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({}),
+    });
+
+    const queryClient = createValidationFetchQueryClient();
+    const { result } = renderHook(() => useValidationAmountFetch("checking_john"), {
+      wrapper: createValidationFetchWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+  });
+
+  it("is disabled when accountNameOwner is empty", () => {
+    global.fetch = jest.fn();
+
+    const queryClient = createValidationFetchQueryClient();
+    const { result } = renderHook(() => useValidationAmountFetch(""), {
+      wrapper: createValidationFetchWrapper(queryClient),
+    });
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(result.current.isLoading).toBe(false);
   });
 });

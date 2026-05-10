@@ -1,4 +1,8 @@
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fetchAllValidationAmounts } from "../../hooks/useValidationAmountsFetchAll";
+import useValidationAmountsFetchAll from "../../hooks/useValidationAmountsFetchAll";
 import ValidationAmount from "../../model/ValidationAmount";
 import { TransactionState } from "../../model/TransactionState";
 
@@ -17,8 +21,18 @@ jest.mock("../../utils/cacheUtils", () => ({
   },
 }));
 
-jest.mock("../../utils/queryConfig", () => ({
-  useAuthenticatedQuery: jest.fn(),
+jest.mock("../../utils/queryConfig", () =>
+  jest.requireActual("../../utils/queryConfig"),
+);
+
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
 }));
 
 jest.mock("../../utils/logger", () => ({
@@ -272,5 +286,69 @@ describe("useValidationAmountsFetchAll - fetchAllValidationAmounts", () => {
       const [url] = (global.fetch as jest.Mock).mock.calls[0];
       expect(url).toContain("account%20with%20spaces");
     });
+  });
+});
+
+const createValidationAllQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createValidationAllWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useValidationAmountsFetchAll hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns validation amounts on successful fetch", async () => {
+    const mockAmounts = [
+      { validationId: 1, amount: 500, transactionState: "cleared", activeStatus: true },
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(mockAmounts),
+    });
+
+    const queryClient = createValidationAllQueryClient();
+    const { result } = renderHook(() => useValidationAmountsFetchAll("checking_john"), {
+      wrapper: createValidationAllWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toStrictEqual(mockAmounts);
+  });
+
+  it("enters error state when fetch returns server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({}),
+    });
+
+    const queryClient = createValidationAllQueryClient();
+    const { result } = renderHook(() => useValidationAmountsFetchAll("checking_john"), {
+      wrapper: createValidationAllWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+  });
+
+  it("is disabled when accountNameOwner is empty", () => {
+    global.fetch = jest.fn();
+
+    const queryClient = createValidationAllQueryClient();
+    const { result } = renderHook(() => useValidationAmountsFetchAll(""), {
+      wrapper: createValidationAllWrapper(queryClient),
+    });
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(result.current.isLoading).toBe(false);
   });
 });

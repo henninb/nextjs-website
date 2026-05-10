@@ -269,4 +269,21 @@ describe("useFamilyMemberFetch", () => {
     // Should only call fetch once due to caching
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
+
+  it("should return empty array for 404 response", async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+    } as Response);
+
+    const wrapper = createWrapper(queryClient);
+    const { result } = renderHook(() => useFamilyMemberFetch(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(result.current.data).toStrictEqual([]);
+  });
 });

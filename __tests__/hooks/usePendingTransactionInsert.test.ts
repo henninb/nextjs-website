@@ -671,6 +671,15 @@ describe("usePendingTransactionInsert hook", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Restore the default useAuth mock implementation after any per-test overrides
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: true,
+      loading: false,
+      user: { username: "testUser" },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
   });
 
   it("onSuccess calls addToList with the new pending transaction", async () => {
@@ -726,5 +735,30 @@ describe("usePendingTransactionInsert hook", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it("throws when user is not logged in", async () => {
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    mockUseAuth.mockImplementation(() => ({
+      isAuthenticated: false,
+      loading: false,
+      user: null,
+      login: jest.fn(),
+      logout: jest.fn(),
+    }));
+
+    const queryClient = createPendingTxInsertHookQueryClient();
+    const { result } = renderHook(() => usePendingTransactionInsert(), {
+      wrapper: createPendingTxInsertHookWrapper(queryClient),
+    });
+
+    const transaction = createTestPendingTransaction();
+
+    act(() => {
+      result.current.mutate({ pendingTransaction: transaction });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.error?.message).toContain("User must be logged in");
   });
 });
