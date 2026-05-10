@@ -10,11 +10,20 @@ import {
 import { processLogin } from "../../hooks/useLoginProcess";
 import useLoginProcess from "../../hooks/useLoginProcess";
 import { validateInsert } from "../../utils/hookValidation";
-import * as fetchUtils from "../../utils/fetchUtils";
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
 }));
+
+jest.mock("../../utils/fetchUtils", () => {
+  const actual = jest.requireActual("../../utils/fetchUtils");
+  return {
+    ...actual,
+    fetchWithErrorHandling: jest.fn((...args: Parameters<typeof actual.fetchWithErrorHandling>) =>
+      actual.fetchWithErrorHandling(...args),
+    ),
+  };
+});
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -203,13 +212,16 @@ describe("processLogin", () => {
   });
 
   it("throws when fetchWithErrorHandling returns non-204 success response", async () => {
-    // fetchWithErrorHandling returns (ok: true, status: 200) — not caught by its internal error handler
+    // fetchWithErrorHandling returns ok:true, status:200 — not caught by its internal error handler
     // This exercises processLogin lines 46-53: the defensive non-204 success branch
-    jest.spyOn(fetchUtils, "fetchWithErrorHandling").mockResolvedValueOnce({
+    const { fetchWithErrorHandling } = jest.requireMock("../../utils/fetchUtils") as {
+      fetchWithErrorHandling: jest.Mock;
+    };
+    fetchWithErrorHandling.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: jest.fn().mockResolvedValue({ error: "Unexpected success format" }),
-    } as unknown as Response);
+    });
 
     await expect(processLogin(baseUser)).rejects.toThrow("Unexpected success format");
   });
