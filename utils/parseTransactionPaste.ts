@@ -221,15 +221,19 @@ function parseDateDashed(dateStr: string, errors: string[]): Date | null {
  *   "$-60.21"              → -60.21
  *   "$50.00    $16,896.48" → 50   (running balance ignored)
  *   "60.21"                → 60.21
+ *   "+$135.19" (credit acct) → -135.19  (credit/refund on a credit account)
  */
-function parseFirstAmount(line: string): number | null {
+function parseFirstAmount(line: string, isCreditAccount = false): number | null {
   const trimmed = line.trim();
-  const match = trimmed.match(/(-?\$-?|-?\$|^-?)([\d,]+\.?\d*)/);
+  const match = trimmed.match(/([+]?-?\$-?|[+]?-?\$|^[+]?-?)([\d,]+\.?\d*)/);
   if (!match) return null;
   const digits = match[2].replace(/,/g, '');
   const num = parseFloat(digits);
   if (isNaN(num)) return null;
-  return match[1].includes('-') ? -Math.abs(num) : num;
+  const sign = match[1];
+  if (sign.includes('-')) return -Math.abs(num);
+  if (sign.includes('+') && isCreditAccount) return -Math.abs(num);
+  return num;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -240,9 +244,16 @@ function parseFirstAmount(line: string): number | null {
  * Supports Format A, Format B, and Format C — all three may appear in a single
  * paste. Blocks may be separated by blank lines; unrecognised lines are ignored.
  * Rows with parseErrors.length > 0 are flagged for manual review before inserting.
+ *
+ * Pass `accountType: 'credit'` so that amounts prefixed with `+$` (credits /
+ * refunds on credit-card statements) are stored as negative numbers.
  */
-export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
+export function parseTransactionPaste(raw: string, accountType?: string): ParsedTransactionRow[] {
+  const isCreditAccount = accountType === 'credit';
+  const isDebitAccount = accountType === 'debit';
   const lines = raw.split('\n').map((l) => l.trim());
+  // Preserve original lines (strip only \r, keep trailing spaces) for deposit/withdrawal detection
+  const rawLines = raw.split('\n').map((l) => l.replace(/\r$/, ''));
   const rows: ParsedTransactionRow[] = [];
   let i = 0;
 
@@ -274,7 +285,11 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
         const inlineAmtMatch = descTail.match(/^(.*?)\s+(-?\$[\d,]+\.?\d*)\s*$/);
         if (inlineAmtMatch) {
           description = inlineAmtMatch[1].trim();
-          inlineAmount = parseFirstAmount(inlineAmtMatch[2]);
+          inlineAmount = parseFirstAmount(inlineAmtMatch[2], isCreditAccount);
+          if (isDebitAccount && inlineAmount !== null) {
+            // Trailing 2+ spaces after amount → deposit column (positive); none → withdrawal (negative)
+            if (!/\$[\d,]+\.?\d*\s{2,}/.test(rawLines[i])) inlineAmount = -Math.abs(inlineAmount);
+          }
           if (inlineAmount === null) errors.push('No amount found');
         } else {
           description = descTail;
@@ -291,7 +306,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
         const amount = scanForAmount(lines, i, errors, (next) => {
           if (/^#/.test(next)) return 'skip'; // card-suffix line
           return 'try';
-        });
+        }, isCreditAccount);
         i = amount.nextIndex;
         rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
       }
@@ -315,7 +330,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       const amount = scanForAmount(lines, i, errors, (next) => {
         if (/^#/.test(next)) return 'skip'; // reference line
         return 'try';
-      });
+      }, isCreditAccount);
       i = amount.nextIndex;
 
       rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
@@ -335,7 +350,11 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
         const amtMatch = rest.match(/^(.*?)\s+(-?\$[\d,]+\.?\d*)/);
         if (amtMatch) {
           description = amtMatch[1].trim();
-          amount = parseFirstAmount(amtMatch[2]);
+          amount = parseFirstAmount(amtMatch[2], isCreditAccount);
+          if (isDebitAccount && amount !== null) {
+            // Trailing 2+ spaces after amount → deposit column (positive); none → withdrawal (negative)
+            if (!/\$[\d,]+\.?\d*\s{2,}/.test(rawLines[i])) amount = -Math.abs(amount);
+          }
         } else {
           description = rest.trim();
           errors.push('No amount found');
@@ -368,7 +387,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
         description = firstField ? firstField[1].trim() : next.trim();
 
         // Amount = first dollar-sign value anywhere on the line
-        amount = parseFirstAmount(next);
+        amount = parseFirstAmount(next, isCreditAccount);
         break; // entire block is on this one line
       }
 
@@ -403,7 +422,8 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
 
       // Scan for first line that starts with $ or -$ (skips promo text and stops after amount)
       const amount = scanForAmount(lines, i, errors, (next) =>
-        /^-?\$/.test(next) ? 'try' : 'skip',
+        /^[+]?-?\$/.test(next) ? 'try' : 'skip',
+        isCreditAccount,
       );
       i = amount.nextIndex;
 
@@ -424,7 +444,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
       if (rest) {
         const firstField = rest.match(/^(.+?)\s{2,}/);
         description = firstField ? firstField[1].trim() : rest.trim();
-        amount = parseFirstAmount(rest);
+        amount = parseFirstAmount(rest, isCreditAccount);
       }
 
       if (!description) errors.push('Description is empty');
@@ -458,7 +478,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
         i++;
         if (!next || /^arrow_drop_down$/i.test(next) || /^,\s*Balance:/i.test(next)) continue;
         if (/^,\s*Amount:/i.test(next)) {
-          amount = parseFirstAmount(next.replace(/^,\s*Amount:\s*/i, ''));
+          amount = parseFirstAmount(next.replace(/^,\s*Amount:\s*/i, ''), isCreditAccount);
           break;
         }
       }
@@ -492,7 +512,7 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
         if (/^Show Transaction$/i.test(next)) return 'stop';
         if (/^[A-Z]{2}$/.test(next)) return 'skip'; // MH, LH, etc.
         return 'try';
-      });
+      }, isCreditAccount);
       i = amount.nextIndex;
 
       rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
@@ -504,11 +524,16 @@ export function parseTransactionPaste(raw: string): ParsedTransactionRow[] {
 
   // Trim "ONLINE TRANSFER" descriptions: keep those two words, move the rest to notes.
   // Strip trailing US state abbreviations from all descriptions.
+  // Remove bank website UI artifacts ("Show image for X, Opens a dialog").
   for (const row of rows) {
     if (/^ONLINE TRANSFER\b/i.test(row.description)) {
       row.notes = row.description.slice('ONLINE TRANSFER'.length).trim();
       row.description = 'ONLINE TRANSFER';
     }
+    row.description = row.description
+      .replace(/Show image for[^,]+,\s*Opens a dialog/gi, '')
+      .replace(/,\s*Opens a dialog\b[^,]*/gi, '')
+      .trim();
     row.description = row.description.replace(US_STATE_SUFFIX, '');
   }
 
@@ -529,6 +554,7 @@ function scanForAmount(
   start: number,
   errors: string[],
   classify: (line: string) => LineDecision,
+  isCreditAccount = false,
 ): { value: number | null; nextIndex: number } {
   let i = start;
   while (i < lines.length && !isTransactionHeader(lines[i])) {
@@ -540,7 +566,7 @@ function scanForAmount(
     if (decision === 'stop') break;
     if (decision === 'skip') continue;
 
-    const parsed = parseFirstAmount(next);
+    const parsed = parseFirstAmount(next, isCreditAccount);
     if (parsed !== null) return { value: parsed, nextIndex: i };
   }
   errors.push('No amount found');

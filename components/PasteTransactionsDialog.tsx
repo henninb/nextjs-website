@@ -109,7 +109,7 @@ export default function PasteTransactionsDialog({
 
   const handleParse = useCallback(async () => {
     setParseErrorMessage('');
-    const parsed = parseTransactionPaste(rawText);
+    const parsed = parseTransactionPaste(rawText, accountType);
 
     if (parsed.length === 0) {
       setParseErrorMessage('No transactions found. Make sure the text matches the expected format.');
@@ -221,9 +221,9 @@ export default function PasteTransactionsDialog({
       setInsertedCount(inserted);
       setFailedCount(failed);
 
-      // Brief pause between inserts to avoid back-end rate limiting
+      // Pause between inserts to avoid back-end rate limiting
       if (idx < toInsert.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
