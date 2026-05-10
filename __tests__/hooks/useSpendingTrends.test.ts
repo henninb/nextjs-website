@@ -3,11 +3,15 @@
  * Tests both API logic and data transformation following TDD principles
  */
 
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   fetchAllTransactionsForTrends,
   transformToTrendsData,
   TrendsFilters,
 } from "../../hooks/useSpendingTrends";
+import useSpendingTrends, { useCurrentMonthKPIs } from "../../hooks/useSpendingTrends";
 import Transaction from "../../model/Transaction";
 import {
   createFetchMock,
@@ -578,5 +582,107 @@ describe("useSpendingTrends", () => {
       );
       expect(originalTransactions.length).toBe(transactionsCopy.length);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useSpendingTrends and useCurrentMonthKPIs exports
+// ---------------------------------------------------------------------------
+
+const createSpendingQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createSpendingWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useSpendingTrends hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns spending trends data on successful fetch", async () => {
+    const transactions: Transaction[] = [
+      {
+        transactionId: 1,
+        transactionDate: new Date("2024-01-15"),
+        accountNameOwner: "credit_john",
+        accountType: "credit",
+        description: "Grocery store",
+        category: "Food",
+        amount: -75.5,
+        transactionState: "cleared",
+        transactionType: "expense",
+        reoccurringType: "onetime",
+        activeStatus: true,
+        notes: "",
+        guid: "guid-1",
+      },
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(transactions),
+    });
+    const queryClient = createSpendingQueryClient();
+    const { result } = renderHook(() => useSpendingTrends(), {
+      wrapper: createSpendingWrapper(queryClient),
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toBeDefined();
+    expect(result.current.data?.monthlySpending).toBeDefined();
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({}),
+    });
+    const queryClient = createSpendingQueryClient();
+    const { result } = renderHook(() => useSpendingTrends(), {
+      wrapper: createSpendingWrapper(queryClient),
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+  });
+});
+
+describe("useCurrentMonthKPIs hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns null data when no transactions", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue([]),
+    });
+    const queryClient = createSpendingQueryClient();
+    const { result } = renderHook(() => useCurrentMonthKPIs(), {
+      wrapper: createSpendingWrapper(queryClient),
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toBeDefined();
+  });
+
+  it("enters error state when fetch fails", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({}),
+    });
+    const queryClient = createSpendingQueryClient();
+    const { result } = renderHook(() => useCurrentMonthKPIs(), {
+      wrapper: createSpendingWrapper(queryClient),
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

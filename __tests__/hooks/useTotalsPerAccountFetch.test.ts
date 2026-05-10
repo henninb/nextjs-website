@@ -3,6 +3,12 @@
  * Tests the fetchTotalsPerAccount function without React Query/React overhead
  */
 
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    totals: jest.fn((accountName: string) => ["totals", accountName]),
+  },
+}));
+
 // Mock HookValidator
 jest.mock("../../utils/hookValidation", () => ({
   validateInsert: jest.fn((data) => data),
@@ -34,7 +40,11 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fetchTotalsPerAccount } from "../../hooks/useTotalsPerAccountFetch";
+import useTotalsPerAccountFetch from "../../hooks/useTotalsPerAccountFetch";
 import Totals from "../../model/Totals";
 import {
   createFetchMock,
@@ -619,5 +629,61 @@ describe("fetchTotalsPerAccount", () => {
         expect.any(Object),
       );
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useTotalsPerAccountFetch default export
+// ---------------------------------------------------------------------------
+
+const createTotalsPerAcctQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createTotalsPerAcctWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useTotalsPerAccountFetch hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns totals data on successful fetch", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        totals: 1000,
+        totalsFuture: 300,
+        totalsCleared: 500,
+        totalsOutstanding: 200,
+      }),
+    });
+    const queryClient = createTotalsPerAcctQueryClient();
+    const { result } = renderHook(
+      () => useTotalsPerAccountFetch("checking_john"),
+      { wrapper: createTotalsPerAcctWrapper(queryClient) },
+    );
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(expect.objectContaining({ totals: 1000 }));
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({}),
+    });
+    const queryClient = createTotalsPerAcctQueryClient();
+    const { result } = renderHook(
+      () => useTotalsPerAccountFetch("checking_john"),
+      { wrapper: createTotalsPerAcctWrapper(queryClient) },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

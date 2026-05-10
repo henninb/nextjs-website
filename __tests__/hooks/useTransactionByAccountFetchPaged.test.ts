@@ -1,4 +1,8 @@
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fetchTransactionsByAccountPaged } from "../../hooks/useTransactionByAccountFetchPaged";
+import useTransactionByAccountFetchPaged from "../../hooks/useTransactionByAccountFetchPaged";
 
 jest.mock("../../utils/validation/sanitization", () => ({
   InputSanitizer: {
@@ -10,8 +14,18 @@ jest.mock("../../utils/cacheUtils", () => ({
   getAccountKey: jest.fn((account: string) => ["transaction", account]),
 }));
 
-jest.mock("../../utils/queryConfig", () => ({
-  useAuthenticatedQuery: jest.fn(),
+jest.mock("../../utils/queryConfig", () =>
+  jest.requireActual("../../utils/queryConfig"),
+);
+
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
 }));
 
 jest.mock("../../utils/logger", () => ({
@@ -242,5 +256,57 @@ describe("useTransactionByAccountFetchPaged - fetchTransactionsByAccountPaged", 
         expect(url).toContain(`size=${size}`);
       }
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useTransactionByAccountFetchPaged default export
+// ---------------------------------------------------------------------------
+
+const createPagedQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPagedWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useTransactionByAccountFetchPaged hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns paged transaction data on successful fetch", async () => {
+    const page = createPageResponse([createTestTransaction()]);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(page),
+    });
+    const queryClient = createPagedQueryClient();
+    const { result } = renderHook(
+      () => useTransactionByAccountFetchPaged("checking_john", 0, 50),
+      { wrapper: createPagedWrapper(queryClient) },
+    );
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toStrictEqual(page);
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+    });
+    const queryClient = createPagedQueryClient();
+    const { result } = renderHook(
+      () => useTransactionByAccountFetchPaged("checking_john", 0, 50),
+      { wrapper: createPagedWrapper(queryClient) },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

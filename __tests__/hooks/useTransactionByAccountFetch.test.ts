@@ -3,6 +3,10 @@
  * Tests the fetchTransactionsByAccount function without React Query/React overhead
  */
 
+jest.mock("../../utils/cacheUtils", () => ({
+  getAccountKey: jest.fn((accountName: string) => ["transaction", accountName]),
+}));
+
 // Mock HookValidator
 jest.mock("../../utils/hookValidation", () => ({
   validateInsert: jest.fn((data) => data),
@@ -34,7 +38,11 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fetchTransactionsByAccount } from "../../hooks/useTransactionByAccountFetch";
+import useTransactionByAccountFetch from "../../hooks/useTransactionByAccountFetch";
 import Transaction from "../../model/Transaction";
 import {
   createFetchMock,
@@ -500,5 +508,60 @@ describe("fetchTransactionsByAccount", () => {
       expect(result![0].activeStatus).toBe(true);
       expect(result![1].activeStatus).toBe(false);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useTransactionByAccountFetch default export
+// ---------------------------------------------------------------------------
+
+const createTransactionByAcctQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createTransactionByAcctWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useTransactionByAccountFetch hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns transactions on successful fetch", async () => {
+    const transactions = [
+      createTestTransaction({ transactionId: 1, accountNameOwner: "checking_john" }),
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(transactions),
+    });
+    const queryClient = createTransactionByAcctQueryClient();
+    const { result } = renderHook(
+      () => useTransactionByAccountFetch("checking_john"),
+      { wrapper: createTransactionByAcctWrapper(queryClient) },
+    );
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toStrictEqual(transactions);
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: jest.fn().mockResolvedValue({}),
+    });
+    const queryClient = createTransactionByAcctQueryClient();
+    const { result } = renderHook(
+      () => useTransactionByAccountFetch("checking_john"),
+      { wrapper: createTransactionByAcctWrapper(queryClient) },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

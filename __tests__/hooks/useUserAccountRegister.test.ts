@@ -1,3 +1,6 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import User from "../../model/User";
 import {
   createFetchMock,
@@ -5,7 +8,14 @@ import {
   simulateNetworkError,
 } from "../../testHelpers";
 import { userAccountRegister } from "../../hooks/useUserAccountRegister";
+import useUserAccountRegister from "../../hooks/useUserAccountRegister";
 import { validateInsert } from "../../utils/hookValidation";
+
+jest.mock("../../utils/cacheUtils", () => ({
+  QueryKeys: {
+    user: jest.fn(() => ["user"]),
+  },
+}));
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -148,4 +158,69 @@ describe("userAccountRegister", () => {
       expect.objectContaining({ username: newUser.username }),
     );
   });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useUserAccountRegister default export
+// ---------------------------------------------------------------------------
+
+const createUserRegisterQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createUserRegisterWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useUserAccountRegister hook", () => {
+  const originalFetch = global.fetch;
+
+  const hookTestUser = createTestUser({
+    username: "hook_test_user",
+    password: "TestP@ss1!",
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockValidateInsert.mockImplementation((data: User) => data);
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess puts mutation into success state", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: jest.fn().mockResolvedValue(null),
+    });
+    const queryClient = createUserRegisterQueryClient();
+    const { result } = renderHook(() => useUserAccountRegister(), {
+      wrapper: createUserRegisterWrapper(queryClient),
+    });
+    await act(async () => {
+      await result.current.mutateAsync({ payload: hookTestUser });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  });
+
+  it("onError puts mutation into error state", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: jest.fn().mockResolvedValue({}),
+    });
+    const queryClient = createUserRegisterQueryClient();
+    const { result } = renderHook(() => useUserAccountRegister(), {
+      wrapper: createUserRegisterWrapper(queryClient),
+    });
+    act(() => {
+      result.current.mutate({ payload: hookTestUser });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 4000 });
+  }, 8000);
 });

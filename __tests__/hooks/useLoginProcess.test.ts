@@ -1,3 +1,6 @@
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import User from "../../model/User";
 import {
   createFetchMock,
@@ -5,7 +8,12 @@ import {
   createTestUser,
 } from "../../testHelpers";
 import { processLogin } from "../../hooks/useLoginProcess";
+import useLoginProcess from "../../hooks/useLoginProcess";
 import { validateInsert } from "../../utils/hookValidation";
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+}));
 
 // Mock the useAuth hook
 jest.mock("../../components/AuthProvider", () => ({
@@ -191,5 +199,79 @@ describe("processLogin", () => {
     });
 
     await expect(processLogin(baseUser)).rejects.toThrow("HTTP 500: undefined");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for useLoginProcess default export
+// ---------------------------------------------------------------------------
+
+const createLoginQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createLoginWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("useLoginProcess hook", () => {
+  const originalFetch = global.fetch;
+
+  const hookLoginUser = createTestUser({
+    username: "hook_test_login",
+    password: "TestP@ss1!",
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockValidateInsert.mockImplementation((data: User) => data);
+    const { InputSanitizer: san } = jest.requireMock(
+      "../../utils/validation/sanitization",
+    );
+    san.sanitizeUsername.mockImplementation((v: string) => v.trim());
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("onSuccess puts loginMutation into success state", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: jest.fn().mockResolvedValue(null),
+    });
+    const queryClient = createLoginQueryClient();
+    const { result } = renderHook(() => useLoginProcess(), {
+      wrapper: createLoginWrapper(queryClient),
+    });
+    await act(async () => {
+      await result.current.loginMutation.mutateAsync(hookLoginUser);
+    });
+    await waitFor(() => expect(result.current.loginMutation.isSuccess).toBe(true));
+  });
+
+  it("onError puts loginMutation into error state and sets errorMessage", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      statusText: "Unauthorized",
+      json: jest.fn().mockResolvedValue({ error: "Invalid credentials" }),
+    });
+    const queryClient = createLoginQueryClient();
+    const { result } = renderHook(() => useLoginProcess(), {
+      wrapper: createLoginWrapper(queryClient),
+    });
+    await act(async () => {
+      try {
+        await result.current.loginMutation.mutateAsync(hookLoginUser);
+      } catch {
+        // expected
+      }
+    });
+    await waitFor(() => expect(result.current.loginMutation.isError).toBe(true));
+    expect(result.current.errorMessage).toBe("Invalid credentials");
   });
 });

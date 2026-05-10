@@ -1,4 +1,8 @@
+import React from "react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fetchPaymentRequiredData } from "../../hooks/usePaymentRequiredFetch";
+import usePaymentRequiredFetch from "../../hooks/usePaymentRequiredFetch";
 import PaymentRequired from "../../model/PaymentRequired";
 
 jest.mock("../../utils/cacheUtils", () => ({
@@ -7,8 +11,18 @@ jest.mock("../../utils/cacheUtils", () => ({
   },
 }));
 
-jest.mock("../../utils/queryConfig", () => ({
-  useAuthenticatedQuery: jest.fn(),
+jest.mock("../../utils/queryConfig", () =>
+  jest.requireActual("../../utils/queryConfig"),
+);
+
+jest.mock("../../components/AuthProvider", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    loading: false,
+    user: null,
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
 }));
 
 jest.mock("../../utils/logger", () => ({
@@ -201,5 +215,57 @@ describe("usePaymentRequiredFetch - fetchPaymentRequiredData", () => {
         expect(result[0].accountNameOwner).toBe(accountNameOwner);
       },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderHook tests for usePaymentRequiredFetch default export
+// ---------------------------------------------------------------------------
+
+const createPaymentRequiredQueryClient = () =>
+  new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+const createPaymentRequiredWrapper = (queryClient: QueryClient) =>
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+
+describe("usePaymentRequiredFetch hook", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns payment required data on successful fetch", async () => {
+    const payments = [
+      { accountNameOwner: "visa_john", accountType: "credit", moniker: "0001", outstanding: 250, future: 0, cleared: 0 },
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue(payments),
+    });
+    const queryClient = createPaymentRequiredQueryClient();
+    const { result } = renderHook(() => usePaymentRequiredFetch(), {
+      wrapper: createPaymentRequiredWrapper(queryClient),
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toStrictEqual(payments);
+  });
+
+  it("enters error state when fetch returns a server error", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: jest.fn().mockResolvedValue({}),
+    });
+    const queryClient = createPaymentRequiredQueryClient();
+    const { result } = renderHook(() => usePaymentRequiredFetch(), {
+      wrapper: createPaymentRequiredWrapper(queryClient),
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
   });
 });

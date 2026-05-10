@@ -89,7 +89,56 @@ describe("useUser", () => {
     // Verify the request was made with credentials: 'include'
     expect(result.current.user).toBeDefined();
     expect(fetchCall.options.credentials).toBe("include");
+  });
 
-    // Restore original fetch
+  it("should return null user for 401 unauthorized", async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(null), { status: 401 }),
+      );
+
+    const { result } = renderHook(() => useUser(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.user).toBeNull();
+    expect(result.current.isError).toBeNull();
+  });
+
+  it("should return null user for 403 forbidden", async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(null), { status: 403 }),
+      );
+
+    const { result } = renderHook(() => useUser(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.user).toBeNull();
+    expect(result.current.isError).toBeNull();
+  });
+
+  it("should set isError when fetch returns server error", async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "Server error" }), { status: 500 }),
+      );
+
+    const { result } = renderHook(() => useUser(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.isError).not.toBeNull();
+    expect(result.current.user).toBeUndefined();
   });
 });
