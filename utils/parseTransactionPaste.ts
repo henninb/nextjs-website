@@ -537,7 +537,27 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
     row.description = row.description.replace(US_STATE_SUFFIX, '');
   }
 
-  return rows;
+  // On debit accounts these descriptions are always withdrawals — override any positive amount
+  // that whitespace-column detection may have assigned incorrectly.
+  if (isDebitAccount) {
+    const DEBIT_WITHDRAWAL_PATTERNS = [
+      /^CHECK\s*#/i,
+      /^Foreign Currency Purchase\b/i,
+    ];
+    for (const row of rows) {
+      if (row.amount !== null && row.amount > 0 &&
+          DEBIT_WITHDRAWAL_PATTERNS.some((p) => p.test(row.description))) {
+        row.amount = -row.amount;
+      }
+    }
+  }
+
+  // Descriptions that should never be imported (internal transfers, reimbursements, etc.)
+  const SKIP_PATTERNS = [
+    /^NAVAN,?\s*INC\b/i,
+  ];
+
+  return rows.filter((row) => !SKIP_PATTERNS.some((p) => p.test(row.description)));
 }
 
 // ─── Internal scanner ─────────────────────────────────────────────────────────
