@@ -542,12 +542,7 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
     }
   }
 
-  // Descriptions that should never be imported (internal transfers, reimbursements, etc.)
-  const SKIP_PATTERNS = [
-    /^NAVAN,?\s*INC\b/i,
-  ];
-
-  return rows.filter((row) => !SKIP_PATTERNS.some((p) => p.test(row.description)));
+  return rows;
 }
 
 // ─── Internal scanner ─────────────────────────────────────────────────────────

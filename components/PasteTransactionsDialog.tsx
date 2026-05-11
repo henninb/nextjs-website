@@ -133,6 +133,12 @@ export default function PasteTransactionsDialog({
     setStep('categorizing');
     setCategorizingProgress(0);
 
+    // Description-based category overrides — applied after AI so they always win
+    const CATEGORY_OVERRIDES: Array<{ pattern: RegExp; category: string }> = [
+      { pattern: /^NAVAN,?\s*INC\b/i, category: 'banking' },
+      { pattern: /^Foreign Currency Purchase\b/i, category: 'banking' },
+    ];
+
     // AI categorize sequentially to stay well under the 50 RPM limit
     const categorized = [...editable];
     for (let idx = 0; idx < categorized.length; idx++) {
@@ -152,6 +158,14 @@ export default function PasteTransactionsDialog({
           };
         } catch {
           // Leave category blank; user can fill it in during review
+        }
+        const override = CATEGORY_OVERRIDES.find((o) => o.pattern.test(row.description));
+        if (override) {
+          categorized[idx] = {
+            ...categorized[idx],
+            category: override.category,
+            categoryMetadata: createManualMetadata(),
+          };
         }
       }
       setCategorizingProgress(idx + 1);
