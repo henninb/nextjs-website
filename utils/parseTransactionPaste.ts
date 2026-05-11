@@ -252,8 +252,6 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
   const isCreditAccount = accountType === 'credit';
   const isDebitAccount = accountType === 'debit';
   const lines = raw.split('\n').map((l) => l.trim());
-  // Preserve original lines (strip only \r, keep trailing spaces) for deposit/withdrawal detection
-  const rawLines = raw.split('\n').map((l) => l.replace(/\r$/, ''));
   const rows: ParsedTransactionRow[] = [];
   let i = 0;
 
@@ -286,10 +284,6 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         if (inlineAmtMatch) {
           description = inlineAmtMatch[1].trim();
           inlineAmount = parseFirstAmount(inlineAmtMatch[2], isCreditAccount);
-          if (isDebitAccount && inlineAmount !== null) {
-            // Trailing 2+ spaces after amount → deposit column (positive); none → withdrawal (negative)
-            if (!/\$[\d,]+\.?\d*\s{2,}/.test(rawLines[i])) inlineAmount = -Math.abs(inlineAmount);
-          }
           if (inlineAmount === null) errors.push('No amount found');
         } else {
           description = descTail;
@@ -351,10 +345,6 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         if (amtMatch) {
           description = amtMatch[1].trim();
           amount = parseFirstAmount(amtMatch[2], isCreditAccount);
-          if (isDebitAccount && amount !== null) {
-            // Trailing 2+ spaces after amount → deposit column (positive); none → withdrawal (negative)
-            if (!/\$[\d,]+\.?\d*\s{2,}/.test(rawLines[i])) amount = -Math.abs(amount);
-          }
         } else {
           description = rest.trim();
           errors.push('No amount found');
