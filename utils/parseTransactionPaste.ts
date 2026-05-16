@@ -65,6 +65,13 @@ export interface ParsedTransactionRow {
 //   , Balance:$1,098.99      ← running balance — ignored
 //   arrow_drop_down          ← UI toggle artifact — ignored
 //
+// Format J — Amex-style: date + reward/status on same header line, full cardholder name below:
+//   320261330792487268        ← transaction ID — ignored (not a format header)
+//   May 11    3% Cash Back    ← date + reward type on the same line
+//   BILL'S SUPERETTE #8 RAMSEY MN
+//   Margaret J Henning        ← cardholder full name — skipped (not 2-letter initials)
+//   $46.37
+//
 // Format E — Citi-style card view (MMM DD, YYYY date, cardholder on own line):
 //   Apr 12, 2026
 //   KARI HENNING               ← cardholder name — skip
@@ -92,6 +99,8 @@ const FORMAT_H = /^Pending\s*\(\d{2}-\d{2}-\d{4}\)/i;
 const FORMAT_I = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s*-?$/i;
 /** "MMM DD, YYYY" — comma + full year distinguishes it from Format C's "MMM DD". */
 const FORMAT_E = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s*\d{4}$/i;
+/** "MMM DD    STATUS" — Amex-style: date + reward/status on same line (must precede FORMAT_C). */
+const FORMAT_J = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}[\s\t]+\S/i;
 
 const MONTH_IDX: Record<string, number> = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
@@ -105,6 +114,7 @@ function isTransactionHeader(line: string): boolean {
     FORMAT_B.test(line) ||
     FORMAT_G.test(line) || // single-date debit — must come after FORMAT_B (two-date)
     FORMAT_E.test(line) || // must precede FORMAT_C — both start with month abbreviation
+    FORMAT_J.test(line) || // must precede FORMAT_C — both start with month abbreviation
     FORMAT_C.test(line) ||
     FORMAT_D.test(line) ||
     FORMAT_H.test(line) ||
@@ -475,6 +485,33 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
       if (amount === null) errors.push('No amount found');
 
       rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
+
+    // ── Format J ────────────────────────────────────────────────────────────
+    } else if (FORMAT_J.test(line)) {
+      // Header is "MMM DD    STATUS" — extract just the date prefix
+      const datePrefix = line.match(/^((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2})/i)![1];
+      const date = parseMonthDay(datePrefix, errors);
+      i++;
+
+      // Read description: first non-empty, non-footer line
+      let description = '';
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next || /^Show Transaction$/i.test(next)) continue;
+        description = next;
+        break;
+      }
+      if (!description) errors.push('Description is empty');
+
+      // Scan for amount; cardholder full name will fail to parse and be skipped naturally
+      const amount = scanForAmount(lines, i, errors, (next) => {
+        if (/^Show Transaction$/i.test(next)) return 'stop';
+        return 'try';
+      }, isCreditAccount);
+      i = amount.nextIndex;
+
+      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
 
     // ── Format C ────────────────────────────────────────────────────────────
     } else {

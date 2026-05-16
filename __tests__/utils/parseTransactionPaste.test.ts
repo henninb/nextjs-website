@@ -837,6 +837,52 @@ Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97`;
     });
   });
 
+  // ── Format J ─────────────────────────────────────────────────────────────
+
+  /** Format J block: "MMM DD    STATUS" header, description, cardholder full name, amount. */
+  function blockJ(
+    monthDay: string,
+    status: string,
+    desc: string,
+    cardholder: string,
+    amount: string,
+    transactionId = '111122223333444455',
+  ): string {
+    return `${transactionId}\n${monthDay}    ${status}\n${desc}\n${cardholder}\n${amount}`;
+  }
+
+  describe('Format J — Amex-style date+status header with full cardholder name', () => {
+    it('should parse a single Format J block', () => {
+      const raw = blockJ('May 11', '3% Cash Back', 'ACME GROCERY #8 SPRINGFIELD', 'Jane A Doe', '$46.37');
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe('ACME GROCERY #8 SPRINGFIELD');
+      expect(row.amount).toBe(46.37);
+      expect(row.parseErrors).toHaveLength(0);
+      expect(row.date!.getMonth()).toBe(4); // May = 4
+      expect(row.date!.getDate()).toBe(11);
+    });
+
+    it('should parse multiple consecutive Format J blocks', () => {
+      const raw = [
+        blockJ('May 11', '3% Cash Back', 'ACME GROCERY #8 SPRINGFIELD', 'Jane A Doe', '$46.37'),
+        blockJ('May 10', '1% Cash Back', 'GENERAL STORE 1234 SPRINGFIELD', 'John Q Smith', '$23.99'),
+      ].join('\n');
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({ description: 'ACME GROCERY #8 SPRINGFIELD', amount: 46.37 });
+      expect(rows[1]).toMatchObject({ description: 'GENERAL STORE 1234 SPRINGFIELD', amount: 23.99 });
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+
+    it('should handle Pending status in Format J', () => {
+      const raw = blockJ('May 12', 'Pending', 'ONLINE SHOP 987654321', 'Robert B Jones', '$19.99');
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe('ONLINE SHOP 987654321');
+      expect(row.amount).toBe(19.99);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+  });
+
   // ── Mixed formats ─────────────────────────────────────────────────────────
 
   describe('mixed formats in one paste', () => {
