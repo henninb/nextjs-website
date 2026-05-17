@@ -96,11 +96,12 @@ export default function LoginPage() {
     const endpoint = "/api/login";
 
     // Map the form's "email" value to the "username" key expected by the API.
-    const loginPayload: User = {
+    const loginPayload = {
       username: payload.email,
       password: payload.password,
       firstName: "Joe",
       lastName: "User",
+      keepLoggedIn: stayLoggedIn,
     };
 
     const response = await fetch(endpoint, {
