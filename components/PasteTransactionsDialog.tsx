@@ -296,7 +296,7 @@ export default function PasteTransactionsDialog({
               maxRows={20}
               fullWidth
               placeholder={
-                'Transaction Details for Row 1    04/16/26    ALDI 00000\n#...4567\n$60.21\nTransaction Details for Row 2    04/16/26    SAVERS - 0000\n#...4567\n$60.47'
+                'Transaction Details for Row 1    04/16/26    ALDI 00000\n#...4567\n$60.21\nTransaction Details for Row 2    04/16/26    SAVERS - 0000\n#...4567\n$60.47\n\n— or Discover Card format —\nTue\nMay 19\nInvalid Date May 19\nSTONE ARCH SAINT PAUL MN\n$66.08\nRestaurants\n$204.82'
               }
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}

@@ -80,6 +80,15 @@ export interface ParsedTransactionRow {
 //   $122.84                    ← transaction amount
 //   $1,110.74                  ← running balance — ignore (only first $ taken)
 //
+// Format K — Discover Card website copy-paste:
+//   Tue                        ← abbreviated day-of-week (Mon/Tue/.../Sun)
+//   May 19                     ← Month Day
+//   Invalid Date May 19        ← Discover artifact — skip
+//   STONE ARCH SAINT PAUL MN  ← description
+//   $66.08                     ← transaction amount
+//   Restaurants                ← category shown on site — ignored (AI will categorize)
+//   $204.82                    ← running balance — ignored
+//
 // Rules shared by all formats:
 //   • Reference / suffix lines starting with '#' are ignored.
 //   • Only the FIRST dollar amount on an amount line is captured.
@@ -101,6 +110,8 @@ const FORMAT_I = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s
 const FORMAT_E = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s*\d{4}$/i;
 /** "MMM DD    STATUS" — Amex-style: date + reward/status on same line (must precede FORMAT_C). */
 const FORMAT_J = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}[\s\t]+\S/i;
+/** Discover Card: abbreviated day-of-week on its own line, followed by "Month Day" then "Invalid Date Month Day" artifact. */
+const FORMAT_K = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i;
 
 const MONTH_IDX: Record<string, number> = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
@@ -118,7 +129,8 @@ function isTransactionHeader(line: string): boolean {
     FORMAT_C.test(line) ||
     FORMAT_D.test(line) ||
     FORMAT_H.test(line) ||
-    FORMAT_I.test(line)
+    FORMAT_I.test(line) ||
+    FORMAT_K.test(line)
   );
 }
 
@@ -512,6 +524,52 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
       i = amount.nextIndex;
 
       rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+
+    // ── Format K — Discover Card ─────────────────────────────────────────────
+    } else if (FORMAT_K.test(line)) {
+      // Skip the abbreviated day-of-week line; next line is "Month Day"
+      i++;
+
+      let date: Date | null = null;
+      if (i < lines.length && FORMAT_C.test(lines[i])) {
+        date = parseMonthDay(lines[i], errors);
+        i++;
+      } else {
+        errors.push('Expected Month Day line after day-of-week');
+      }
+
+      // Skip "Invalid Date Month Day" artifact produced by Discover's website
+      if (i < lines.length && /^Invalid Date\b/i.test(lines[i])) {
+        i++;
+      }
+
+      // Read description
+      let descriptionK = '';
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        descriptionK = next;
+        break;
+      }
+      if (!descriptionK) errors.push('Description is empty');
+
+      // First $ amount is the transaction amount; category and running balance lines that
+      // follow are naturally skipped once scanForAmount returns.
+      const amountK = scanForAmount(lines, i, errors, () => 'try', isCreditAccount);
+      i = amountK.nextIndex;
+
+      // Consume the non-$ category name line and running balance line so the main
+      // loop does not stumble on them as malformed headers.
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        // Stop after we've passed both the category and the balance line
+        if (/^\$/.test(next)) break; // running balance consumed
+      }
+
+      rows.push({ id: crypto.randomUUID(), date, description: descriptionK, notes: '', amount: amountK.value, parseErrors: errors });
 
     // ── Format C ────────────────────────────────────────────────────────────
     } else {
