@@ -19,7 +19,6 @@ import {
   TableRow,
   TableCell,
   TableContainer,
-  Checkbox,
   IconButton,
   Chip,
   Stack,
@@ -28,6 +27,7 @@ import {
   Select,
   MenuItem,
   LinearProgress,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -66,30 +66,29 @@ function toObserved(d: Date): Date {
   return d;
 }
 
-function getUSFederalHolidays(year: number): Set<string> {
-  const holidays = [
-    new Date(Date.UTC(year, 0, 1)),    // New Year's Day
-    new Date(Date.UTC(year, 5, 19)),   // Juneteenth
-    new Date(Date.UTC(year, 6, 4)),    // Independence Day
-    new Date(Date.UTC(year, 10, 11)),  // Veterans Day
-    new Date(Date.UTC(year, 11, 25)),  // Christmas Day
-    getNthWeekday(year, 0, 1, 3),      // MLK Day: 3rd Mon Jan
-    getNthWeekday(year, 1, 1, 3),      // Presidents' Day: 3rd Mon Feb
-    getLastWeekday(year, 4, 1),        // Memorial Day: last Mon May
-    getNthWeekday(year, 8, 1, 1),      // Labor Day: 1st Mon Sep
-    getNthWeekday(year, 9, 1, 2),      // Columbus Day: 2nd Mon Oct
-    getNthWeekday(year, 10, 4, 4),     // Thanksgiving: 4th Thu Nov
-  ].map(toObserved);
-
-  return new Set(
-    holidays
-      .filter((d) => !isNaN(d.getTime()))
-      .map((d) => d.toISOString().slice(0, 10)),
-  );
+function buildHolidayMap(year: number): Map<string, string> {
+  const raw: [Date, string][] = [
+    [new Date(Date.UTC(year, 0, 1)),   "New Year's Day"],
+    [new Date(Date.UTC(year, 5, 19)),  "Juneteenth"],
+    [new Date(Date.UTC(year, 6, 4)),   "Independence Day"],
+    [new Date(Date.UTC(year, 10, 11)), "Veterans Day"],
+    [new Date(Date.UTC(year, 11, 25)), "Christmas Day"],
+    [getNthWeekday(year, 0, 1, 3),     "MLK Day"],
+    [getNthWeekday(year, 1, 1, 3),     "Presidents' Day"],
+    [getLastWeekday(year, 4, 1),       "Memorial Day"],
+    [getNthWeekday(year, 8, 1, 1),     "Labor Day"],
+    [getNthWeekday(year, 9, 1, 2),     "Columbus Day"],
+    [getNthWeekday(year, 10, 4, 4),    "Thanksgiving"],
+  ];
+  const map = new Map<string, string>();
+  for (const [d, name] of raw) {
+    const obs = toObserved(d);
+    if (!isNaN(obs.getTime())) map.set(obs.toISOString().slice(0, 10), name);
+  }
+  return map;
 }
 
-function getBusinessDays(year: number, month: number): Date[] {
-  const holidays = getUSFederalHolidays(year);
+function getBusinessDays(year: number, month: number, holidays: Map<string, string>): Date[] {
   const days: Date[] = [];
   for (let d = 1; d <= 31; d++) {
     const date = new Date(Date.UTC(year, month, d));
@@ -123,7 +122,7 @@ const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
-const DOW_ABBR = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DOW_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const STEPS = ["Configure", "Select Days", "Preview & Submit"];
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -168,10 +167,31 @@ export default function BatchPaymentModal({
     return [y - 1, y, y + 1, y + 2];
   }, []);
 
+  const holidayMap = useMemo(() => buildHolidayMap(selectedYear), [selectedYear]);
+
   const businessDays = useMemo(
-    () => getBusinessDays(selectedYear, selectedMonth),
-    [selectedYear, selectedMonth],
+    () => getBusinessDays(selectedYear, selectedMonth, holidayMap),
+    [selectedYear, selectedMonth, holidayMap],
   );
+
+  // Calendar grid: weeks of day-numbers (null = empty cell)
+  const calendarWeeks = useMemo<(number | null)[][]>(() => {
+    const firstDow = new Date(Date.UTC(selectedYear, selectedMonth, 1)).getUTCDay();
+    const daysInMonth = new Date(Date.UTC(selectedYear, selectedMonth + 1, 0)).getUTCDate();
+    const cells: (number | null)[] = Array(firstDow).fill(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    while (cells.length % 7 !== 0) cells.push(null);
+    const weeks: (number | null)[][] = [];
+    for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+    return weeks;
+  }, [selectedYear, selectedMonth]);
+
+  // Fast lookup: day-number -> DayEntry
+  const dayEntryMap = useMemo(() => {
+    const map = new Map<number, DayEntry>();
+    days.forEach((d) => map.set(d.date.getUTCDate(), d));
+    return map;
+  }, [days]);
 
   const canProceedStep0 =
     !!sourceAccount &&
@@ -203,6 +223,16 @@ export default function BatchPaymentModal({
       setStep(2);
     }
   };
+
+  const toggleAllDays = (selected: boolean) =>
+    setDays((prev) => prev.map((d) => ({ ...d, selected })));
+
+  const toggleDay = (dayNum: number) =>
+    setDays((prev) =>
+      prev.map((d) =>
+        d.date.getUTCDate() === dayNum ? { ...d, selected: !d.selected } : d,
+      ),
+    );
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -236,21 +266,6 @@ export default function BatchPaymentModal({
     onBatchSuccess(successCount, totalInserted);
   };
 
-  const toggleAllDays = (selected: boolean) =>
-    setDays((prev) => prev.map((d) => ({ ...d, selected })));
-
-  const updateDayAmount = (dayIdx: number, amtIdx: number, value: number) =>
-    setDays((prev) =>
-      prev.map((d, i) =>
-        i === dayIdx
-          ? { ...d, amounts: d.amounts.map((a, j) => (j === amtIdx ? value : a)) }
-          : d,
-      ),
-    );
-
-  const formatDayLabel = (date: Date) =>
-    `${DOW_ABBR[date.getUTCDay()]}, ${MONTH_NAMES[date.getUTCMonth()].slice(0, 3)} ${date.getUTCDate()}`;
-
   return (
     <Dialog
       open={open}
@@ -282,9 +297,7 @@ export default function BatchPaymentModal({
                   onChange={(e) => setSelectedMonth(Number(e.target.value))}
                 >
                   {MONTH_NAMES.map((m, i) => (
-                    <MenuItem key={m} value={i}>
-                      {m}
-                    </MenuItem>
+                    <MenuItem key={m} value={i}>{m}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -297,9 +310,7 @@ export default function BatchPaymentModal({
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                 >
                   {yearOptions.map((y) => (
-                    <MenuItem key={y} value={y}>
-                      {y}
-                    </MenuItem>
+                    <MenuItem key={y} value={y}>{y}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -381,86 +392,146 @@ export default function BatchPaymentModal({
           </Stack>
         )}
 
-        {/* ── Step 1: Select Days ── */}
+        {/* ── Step 1: Select Days (calendar) ── */}
         {step === 1 && (
           <Box>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1.5, gap: 1 }}>
+            {/* Summary row */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                {selectedDays.length} of {days.length} days selected &nbsp;·&nbsp;
+                {selectedDays.length} of {days.length} days &nbsp;·&nbsp;
                 {previewPayments.length} payments &nbsp;·&nbsp;
                 {currencyFormat(totalAmount)} total
               </Typography>
               <Box sx={{ flex: 1 }} />
-              <Button size="small" onClick={() => toggleAllDays(true)}>
-                Select All
-              </Button>
-              <Button size="small" onClick={() => toggleAllDays(false)}>
-                Deselect All
-              </Button>
+              <Button size="small" onClick={() => toggleAllDays(true)}>Select All</Button>
+              <Button size="small" onClick={() => toggleAllDays(false)}>Deselect All</Button>
             </Box>
-            <TableContainer sx={{ maxHeight: 420 }}>
-              <Table size="small" stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell padding="checkbox" />
-                    <TableCell>Date</TableCell>
-                    {defaultAmounts.map((_, i) => (
-                      <TableCell key={i} align="right">
-                        Amt {i + 1}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {days.map((day, di) => (
-                    <TableRow key={di} hover selected={day.selected}>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={day.selected}
-                          size="small"
-                          onChange={(e) =>
-                            setDays((prev) =>
-                              prev.map((d, j) =>
-                                j === di ? { ...d, selected: e.target.checked } : d,
-                              ),
-                            )
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ opacity: day.selected ? 1 : 0.38 }}
-                        >
-                          {formatDayLabel(day.date)}
-                        </Typography>
-                      </TableCell>
-                      {day.amounts.map((amt, ai) => (
-                        <TableCell key={ai} align="right">
-                          <TextField
-                            type="number"
-                            value={amt}
-                            size="small"
-                            disabled={!day.selected}
-                            slotProps={{
-                              htmlInput: {
-                                min: 0.01,
-                                step: 0.01,
-                                style: { textAlign: "right", width: 64 },
-                              },
-                            }}
-                            onChange={(e) =>
-                              updateDayAmount(di, ai, parseFloat(e.target.value) || 0)
+
+            {/* Month + Year label */}
+            <Typography variant="subtitle2" align="center" sx={{ mb: 1.5, fontWeight: 600 }}>
+              {MONTH_NAMES[selectedMonth]} {selectedYear}
+            </Typography>
+
+            {/* Day-of-week headers */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(7, 1fr)",
+                mb: 0.5,
+              }}
+            >
+              {DOW_HEADERS.map((h) => (
+                <Typography
+                  key={h}
+                  variant="caption"
+                  align="center"
+                  sx={{ fontWeight: 600, color: "text.secondary", py: 0.5 }}
+                >
+                  {h}
+                </Typography>
+              ))}
+            </Box>
+
+            {/* Calendar weeks */}
+            {calendarWeeks.map((week, wi) => (
+              <Box
+                key={wi}
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(7, 1fr)",
+                  gap: 0.5,
+                  mb: 0.5,
+                }}
+              >
+                {week.map((dayNum, ci) => {
+                  if (dayNum === null) return <Box key={ci} />;
+
+                  const isoDate = new Date(Date.UTC(selectedYear, selectedMonth, dayNum))
+                    .toISOString()
+                    .slice(0, 10);
+                  const dow = new Date(Date.UTC(selectedYear, selectedMonth, dayNum)).getUTCDay();
+                  const isWeekend = dow === 0 || dow === 6;
+                  const holidayName = holidayMap.get(isoDate);
+                  const isBusiness = !isWeekend && !holidayName;
+                  const entry = dayEntryMap.get(dayNum);
+                  const isSelected = entry?.selected ?? false;
+
+                  let tooltip = "";
+                  if (holidayName) tooltip = holidayName;
+                  else if (isWeekend) tooltip = "Weekend";
+
+                  const cell = (
+                    <Box
+                      key={ci}
+                      onClick={() => isBusiness && toggleDay(dayNum)}
+                      sx={{
+                        height: 44,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 1,
+                        cursor: isBusiness ? "pointer" : "default",
+                        bgcolor: isSelected
+                          ? "primary.main"
+                          : holidayName
+                          ? "warning.light"
+                          : isWeekend
+                          ? "action.disabledBackground"
+                          : "transparent",
+                        color: isSelected
+                          ? "primary.contrastText"
+                          : isBusiness
+                          ? "text.primary"
+                          : "text.disabled",
+                        border: isBusiness && !isSelected ? "1px solid" : "none",
+                        borderColor: "divider",
+                        transition: "background-color 0.15s, color 0.15s",
+                        "&:hover": isBusiness
+                          ? {
+                              bgcolor: isSelected ? "primary.dark" : "action.selected",
                             }
-                            variant="standard"
-                          />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                          : {},
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: isSelected ? 700 : 400, lineHeight: 1 }}
+                      >
+                        {dayNum}
+                      </Typography>
+                    </Box>
+                  );
+
+                  return tooltip ? (
+                    <Tooltip key={ci} title={tooltip} placement="top">
+                      {cell}
+                    </Tooltip>
+                  ) : (
+                    <React.Fragment key={ci}>{cell}</React.Fragment>
+                  );
+                })}
+              </Box>
+            ))}
+
+            {/* Legend */}
+            <Box sx={{ display: "flex", gap: 2, mt: 2, flexWrap: "wrap" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: "primary.main" }} />
+                <Typography variant="caption" color="text.secondary">Selected</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, border: "1px solid", borderColor: "divider" }} />
+                <Typography variant="caption" color="text.secondary">Available</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: "warning.light" }} />
+                <Typography variant="caption" color="text.secondary">Holiday</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: "action.disabledBackground" }} />
+                <Typography variant="caption" color="text.secondary">Weekend</Typography>
+              </Box>
+            </Box>
           </Box>
         )}
 
