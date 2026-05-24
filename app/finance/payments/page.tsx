@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EventRepeatIcon from "@mui/icons-material/EventRepeat";
 import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
@@ -37,6 +38,7 @@ import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
+import BatchPaymentModal from "../../../components/BatchPaymentModal";
 import {
   currencyFormat,
   normalizeTransactionDate,
@@ -123,6 +125,7 @@ export default function Payments() {
     setShowSnackbar,
     setSnackbarSeverity,
   } = useFinancePageState(PAYMENTS_CACHE_ENABLED_KEY);
+  const [showBatchModal, setShowBatchModal] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment>(initialPaymentData);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [formErrors, setFormErrors] = useState<{
@@ -436,23 +439,32 @@ export default function Payments() {
           title="Payment Management"
           subtitle="Track and manage payments between accounts with automated transaction processing"
           actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setPaymentData(
-                  cacheEnabled
-                    ? lastSubmittedPayment || initialPaymentData
-                    : initialPaymentData,
-                );
-                setFormErrors({});
-                setPaymentMode("payBill");
-                setShowModalAdd(true);
-              }}
-              sx={{ backgroundColor: "primary.main" }}
-            >
-              Add Payment
-            </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="outlined"
+                startIcon={<EventRepeatIcon />}
+                onClick={() => setShowBatchModal(true)}
+              >
+                Batch
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setPaymentData(
+                    cacheEnabled
+                      ? lastSubmittedPayment || initialPaymentData
+                      : initialPaymentData,
+                  );
+                  setFormErrors({});
+                  setPaymentMode("payBill");
+                  setShowModalAdd(true);
+                }}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Payment
+              </Button>
+            </Box>
           }
         />
         {showSpinner ? (
@@ -563,6 +575,19 @@ export default function Payments() {
           )}
           confirmText="Delete"
           cancelText="Cancel"
+        />
+
+        <BatchPaymentModal
+          open={showBatchModal}
+          onClose={() => setShowBatchModal(false)}
+          accounts={isSuccessAccounts ? fetchedAccounts : []}
+          defaultSourceAccount={defaultPaymentMethod}
+          onBatchSuccess={(count, total) =>
+            handleSuccess(
+              `Batch complete: ${count} payment${count !== 1 ? "s" : ""} totaling ${currencyFormat(total)} submitted.`,
+            )
+          }
+          onBatchError={(error, msg) => handleError(error, msg, false)}
         />
 
         <FormDialog
