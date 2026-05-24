@@ -272,7 +272,7 @@ export default function BatchPaymentModal({
       onClose={submitting ? undefined : onClose}
       fullWidth
       maxWidth="md"
-      PaperProps={{ sx: { maxHeight: "90vh" } }}
+      slotProps={{ paper: { sx: { maxHeight: "90vh" } } }}
       aria-labelledby="batch-payment-dialog-title"
     >
       <DialogTitle id="batch-payment-dialog-title">Batch Payments</DialogTitle>
