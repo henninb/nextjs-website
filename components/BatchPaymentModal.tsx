@@ -272,10 +272,11 @@ export default function BatchPaymentModal({
       onClose={submitting ? undefined : onClose}
       fullWidth
       maxWidth="md"
+      PaperProps={{ sx: { maxHeight: "90vh" } }}
       aria-labelledby="batch-payment-dialog-title"
     >
       <DialogTitle id="batch-payment-dialog-title">Batch Payments</DialogTitle>
-      <DialogContent dividers>
+      <DialogContent dividers sx={{ overflowY: "auto" }}>
         <Stepper activeStep={step} sx={{ mb: 3 }}>
           {STEPS.map((label) => (
             <Step key={label}>
@@ -556,8 +557,8 @@ export default function BatchPaymentModal({
                 </Typography>
               </Box>
             )}
-            <TableContainer sx={{ maxHeight: 420 }}>
-              <Table size="small" stickyHeader>
+            <TableContainer>
+              <Table size="small">
                 <TableHead>
                   <TableRow>
                     <TableCell>Date</TableCell>
