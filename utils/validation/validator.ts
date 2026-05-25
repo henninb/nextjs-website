@@ -483,20 +483,7 @@ export const hookValidators = {
     validator: (item: T) => ValidationResult<R>,
     hookName: string,
   ): { isValid: boolean; validatedData?: R; errors?: ValidationError[] } {
-    // Rate limiting check
-    if (!DataValidator.validateRateLimit("user", hookName)) {
-      return {
-        isValid: false,
-        errors: [
-          {
-            field: "rateLimit",
-            message: "Too many requests. Please wait before trying again.",
-            code: "RATE_LIMIT_EXCEEDED",
-          },
-        ],
-      };
-    }
-
+    void hookName;
     const result = validator(data);
 
     return {
