@@ -62,6 +62,5 @@ export default function useTransferFetchGql() {
     return mapped;
   });
 
-
   return queryResult;
 }

@@ -38,9 +38,8 @@ jest.mock("../../utils/logger", () => ({
 import { fetchWithErrorHandling } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockSanitizeNumericId =
   InputSanitizer.sanitizeNumericId as jest.MockedFunction<
     typeof InputSanitizer.sanitizeNumericId
@@ -150,7 +149,10 @@ describe("useValidationAmountDelete - deleteValidationAmount", () => {
     });
 
     it("should delete validation amount with zero amount", async () => {
-      const payload = createTestValidationAmount({ validationId: 3, amount: 0 });
+      const payload = createTestValidationAmount({
+        validationId: 3,
+        amount: 0,
+      });
 
       await deleteValidationAmount(payload);
 
@@ -223,7 +225,10 @@ describe("useValidationAmountDelete - deleteValidationAmount", () => {
     it("should propagate 409 conflict error", async () => {
       const { FetchError } = jest.requireMock("../../utils/fetchUtils");
       mockFetchWithErrorHandling.mockRejectedValue(
-        new FetchError("Cannot delete validation amount with dependencies", 409),
+        new FetchError(
+          "Cannot delete validation amount with dependencies",
+          409,
+        ),
       );
       const payload = createTestValidationAmount();
 
@@ -281,7 +286,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useValidationAmountDelete hook - renderHook tests", () => {
@@ -300,7 +309,9 @@ describe("useValidationAmountDelete hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync(createTestValidationAmount({ validationId: 42 }));
+      await result.current.mutateAsync(
+        createTestValidationAmount({ validationId: 42 }),
+      );
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -313,7 +324,9 @@ describe("useValidationAmountDelete hook - renderHook tests", () => {
   it("onError puts mutation into error state", async () => {
     const queryClient = createHookQueryClient();
     const { FetchError } = jest.requireMock("../../utils/fetchUtils");
-    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Delete failed", 400));
+    mockFetchWithErrorHandling.mockRejectedValue(
+      new FetchError("Delete failed", 400),
+    );
 
     const { result } = renderHook(() => useValidationAmountDelete(), {
       wrapper: createHookWrapper(queryClient),

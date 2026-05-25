@@ -1,7 +1,9 @@
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import useMedicalExpenseDelete, { deleteMedicalExpense } from "../../hooks/useMedicalExpenseDelete";
+import useMedicalExpenseDelete, {
+  deleteMedicalExpense,
+} from "../../hooks/useMedicalExpenseDelete";
 import { MedicalExpense, ClaimStatus } from "../../model/MedicalExpense";
 
 jest.mock("../../utils/fetchUtils", () => ({
@@ -42,12 +44,12 @@ jest.mock("../../utils/logger", () => ({
 import { fetchWithErrorHandling } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
-const mockSanitizeNumericId = InputSanitizer.sanitizeNumericId as jest.MockedFunction<
-  typeof InputSanitizer.sanitizeNumericId
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
+const mockSanitizeNumericId =
+  InputSanitizer.sanitizeNumericId as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeNumericId
+  >;
 
 const createTestMedicalExpense = (
   overrides: Partial<MedicalExpense> = {},
@@ -90,7 +92,10 @@ describe("useMedicalExpenseDelete - deleteMedicalExpense", () => {
 
       await deleteMedicalExpense(expense);
 
-      expect(mockSanitizeNumericId).toHaveBeenCalledWith(99, "medicalExpenseId");
+      expect(mockSanitizeNumericId).toHaveBeenCalledWith(
+        99,
+        "medicalExpenseId",
+      );
     });
 
     it("should return void (undefined) on success", async () => {
@@ -213,7 +218,9 @@ describe("useMedicalExpenseDelete - deleteMedicalExpense", () => {
       );
       const expense = createTestMedicalExpense();
 
-      await expect(deleteMedicalExpense(expense)).rejects.toThrow("Unauthorized");
+      await expect(deleteMedicalExpense(expense)).rejects.toThrow(
+        "Unauthorized",
+      );
     });
   });
 
@@ -265,7 +272,11 @@ const createMedExpDeleteQueryClient = () =>
 
 const createMedExpDeleteWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useMedicalExpenseDelete hook", () => {

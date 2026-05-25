@@ -54,7 +54,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -171,7 +176,11 @@ const createUserRegisterQueryClient = () =>
 
 const createUserRegisterWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useUserAccountRegister hook", () => {
@@ -221,6 +230,8 @@ describe("useUserAccountRegister hook", () => {
     act(() => {
       result.current.mutate({ payload: hookTestUser });
     });
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 4000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 4000,
+    });
   }, 8000);
 });

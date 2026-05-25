@@ -29,7 +29,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -121,5 +126,4 @@ describe("useTransferFetch Modern Endpoint (unit)", () => {
     expect(result.current.isError).toBe(true);
     expect(result.current.error).toBe(fetchError);
   });
-
 });

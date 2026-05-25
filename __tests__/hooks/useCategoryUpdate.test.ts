@@ -1,4 +1,6 @@
-import useCategoryUpdate, { updateCategory } from "../../hooks/useCategoryUpdate";
+import useCategoryUpdate, {
+  updateCategory,
+} from "../../hooks/useCategoryUpdate";
 import Category from "../../model/Category";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -60,9 +62,8 @@ import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 import { validateUpdate } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -297,7 +298,10 @@ describe("useCategoryUpdate - updateCategory", () => {
 
     it("should include category data in body", async () => {
       const oldCat = createTestCategory();
-      const newCat = createTestCategory({ categoryName: "updated", activeStatus: false });
+      const newCat = createTestCategory({
+        categoryName: "updated",
+        activeStatus: false,
+      });
       mockParseResponse.mockResolvedValue(newCat);
 
       await updateCategory(oldCat, newCat);
@@ -319,7 +323,11 @@ const createCatUpdateHookQueryClient = () =>
 
 const createCatUpdateHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useCategoryUpdate hook", () => {
@@ -333,7 +341,10 @@ describe("useCategoryUpdate hook", () => {
   it("onSuccess calls updateInList with the updated category", async () => {
     const queryClient = createCatUpdateHookQueryClient();
     const oldCat = createTestCategory({ categoryName: "old_groceries" });
-    const updatedCat = createTestCategory({ categoryId: 1, categoryName: "new_groceries" });
+    const updatedCat = createTestCategory({
+      categoryId: 1,
+      categoryName: "new_groceries",
+    });
     mockParseResponse.mockResolvedValue(updatedCat);
 
     const { result } = renderHook(() => useCategoryUpdate(), {
@@ -341,7 +352,10 @@ describe("useCategoryUpdate hook", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldCategory: oldCat, newCategory: updatedCat });
+      await result.current.mutateAsync({
+        oldCategory: oldCat,
+        newCategory: updatedCat,
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -368,7 +382,10 @@ describe("useCategoryUpdate hook", () => {
 
     await act(async () => {
       try {
-        await result.current.mutateAsync({ oldCategory: oldCat, newCategory: newCat });
+        await result.current.mutateAsync({
+          oldCategory: oldCat,
+          newCategory: newCat,
+        });
       } catch {
         // expected
       }

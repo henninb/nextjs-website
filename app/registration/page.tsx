@@ -191,41 +191,44 @@ export default function ContactForm() {
         }
         error={!!errorText}
         helperText={errorText || ""}
-        slotProps={{ formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: (() => {
-          if (isPassword) {
-            return {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={() => setShowPassword((p) => !p)}
-                    edge="end"
-                    size="small"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            } as const;
-          }
-          if (isConfirmPassword) {
-            return {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle confirm password visibility"
-                    onClick={() => setShowConfirmPassword((p) => !p)}
-                    edge="end"
-                    size="small"
-                  >
-                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            } as const;
-          }
-          return undefined;
-        })() }}
+        slotProps={{
+          formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } },
+          input: (() => {
+            if (isPassword) {
+              return {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword((p) => !p)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              } as const;
+            }
+            if (isConfirmPassword) {
+              return {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      onClick={() => setShowConfirmPassword((p) => !p)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              } as const;
+            }
+            return undefined;
+          })(),
+        }}
       />
     );
   };

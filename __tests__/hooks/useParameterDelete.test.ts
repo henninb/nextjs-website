@@ -1,4 +1,6 @@
-import useParameterDelete, { deleteParameter } from "../../hooks/useParameterDelete";
+import useParameterDelete, {
+  deleteParameter,
+} from "../../hooks/useParameterDelete";
 import Parameter from "../../model/Parameter";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -54,9 +56,8 @@ import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 import { validateDelete } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -68,7 +69,9 @@ const mockValidateDelete = validateDelete as jest.MockedFunction<
   typeof validateDelete
 >;
 
-const createTestParameter = (overrides: Partial<Parameter> = {}): Parameter => ({
+const createTestParameter = (
+  overrides: Partial<Parameter> = {},
+): Parameter => ({
   parameterId: 1,
   parameterName: "payment_account",
   parameterValue: "checking_john",
@@ -297,7 +300,11 @@ const createParamDeleteHookQueryClient = () =>
 
 const createParamDeleteHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useParameterDelete hook", () => {

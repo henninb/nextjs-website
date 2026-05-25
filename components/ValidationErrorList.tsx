@@ -132,10 +132,12 @@ function ErrorItem({
             error.message
           )
         }
-        slotProps={{ primary: {
-          variant: "body2",
-          component: "span",
-        } }}
+        slotProps={{
+          primary: {
+            variant: "body2",
+            component: "span",
+          },
+        }}
       />
     </ListItem>
   );

@@ -61,6 +61,5 @@ export default function useTransactionByCategoryFetch(categoryName: string) {
     },
   );
 
-
   return queryResult;
 }

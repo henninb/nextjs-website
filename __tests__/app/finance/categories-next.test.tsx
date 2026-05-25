@@ -283,7 +283,9 @@ describe("app/finance/categories-next/page", () => {
     fireEvent.click(screen.getAllByText("Delete Card")[0]);
     fireEvent.click(screen.getByText("Confirm Delete"));
 
-    await waitFor(() => expect(mockDelete).toHaveBeenCalledWith(mockCategories[0]));
+    await waitFor(() =>
+      expect(mockDelete).toHaveBeenCalledWith(mockCategories[0]),
+    );
   });
 
   it("updates a category from table view and reports failures", async () => {
@@ -375,6 +377,8 @@ describe("app/finance/categories-next/page", () => {
     expect(localStorage.getItem("finance_cache_enabled_categories_next")).toBe(
       "false",
     );
-    expect(localStorage.getItem("finance_cached_data_categories_next")).toBeNull();
+    expect(
+      localStorage.getItem("finance_cached_data_categories_next"),
+    ).toBeNull();
   });
 });

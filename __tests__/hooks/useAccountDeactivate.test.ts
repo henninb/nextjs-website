@@ -1,7 +1,9 @@
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import useAccountDeactivate, { deactivateAccount } from "../../hooks/useAccountDeactivate";
+import useAccountDeactivate, {
+  deactivateAccount,
+} from "../../hooks/useAccountDeactivate";
 import Account from "../../model/Account";
 
 jest.mock("../../utils/fetchUtils", () => ({
@@ -54,9 +56,8 @@ import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 import { validateDelete } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -226,7 +227,10 @@ describe("useAccountDeactivate - deactivateAccount", () => {
     it("should propagate 409 conflict error", async () => {
       const { FetchError } = jest.requireMock("../../utils/fetchUtils");
       mockFetchWithErrorHandling.mockRejectedValue(
-        new FetchError("Cannot deactivate account with pending transactions", 409),
+        new FetchError(
+          "Cannot deactivate account with pending transactions",
+          409,
+        ),
       );
       const account = createTestAccount();
 
@@ -324,14 +328,20 @@ const createAcctDeactivateQueryClient = () =>
 
 const createAcctDeactivateWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useAccountDeactivate hook", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
-    mockParseResponse.mockResolvedValue(createTestAccount({ activeStatus: false }));
+    mockParseResponse.mockResolvedValue(
+      createTestAccount({ activeStatus: false }),
+    );
     mockSanitizeAccountName.mockImplementation((v: string) => v);
     mockValidateDelete.mockImplementation(() => {});
   });
@@ -363,7 +373,9 @@ describe("useAccountDeactivate hook", () => {
 
   it("onError puts mutation into error state", async () => {
     const queryClient = createAcctDeactivateQueryClient();
-    mockFetchWithErrorHandling.mockRejectedValue(new Error("Deactivate failed"));
+    mockFetchWithErrorHandling.mockRejectedValue(
+      new Error("Deactivate failed"),
+    );
 
     const { result } = renderHook(() => useAccountDeactivate(), {
       wrapper: createAcctDeactivateWrapper(queryClient),
@@ -389,7 +401,12 @@ describe("useAccountDeactivate hook", () => {
 
     // Pre-populate queries so the predicates in onSuccess are actually invoked
     queryClient.setQueryData(["transaction", "checking", "paged"], []);
-    queryClient.setQueryData(["totals", "checking"], { totals: 0, totalsCleared: 0, totalsFuture: 0, totalsOutstanding: 0 });
+    queryClient.setQueryData(["totals", "checking"], {
+      totals: 0,
+      totalsCleared: 0,
+      totalsFuture: 0,
+      totalsOutstanding: 0,
+    });
 
     const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
@@ -404,6 +421,8 @@ describe("useAccountDeactivate hook", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     // Verify both predicate-based invalidations were called
-    expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ predicate: expect.any(Function) }));
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ predicate: expect.any(Function) }),
+    );
   });
 });

@@ -129,7 +129,9 @@ describe("useUser", () => {
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: "Server error" }), { status: 500 }),
+        new Response(JSON.stringify({ error: "Server error" }), {
+          status: 500,
+        }),
       );
 
     const { result } = renderHook(() => useUser(), {

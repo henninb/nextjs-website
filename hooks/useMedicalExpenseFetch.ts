@@ -64,6 +64,5 @@ export default function useMedicalExpenseFetch() {
     },
   );
 
-
   return queryResult;
 }

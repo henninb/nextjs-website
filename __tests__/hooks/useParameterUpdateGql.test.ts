@@ -19,7 +19,9 @@ jest.mock("../../utils/logger", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -31,10 +33,16 @@ const createTestQueryClient = () =>
 
 const createWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children as any);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
   };
 
-const createTestParameter = (overrides: Partial<Parameter> = {}): Parameter => ({
+const createTestParameter = (
+  overrides: Partial<Parameter> = {},
+): Parameter => ({
   parameterId: 1,
   parameterName: "test_param",
   parameterValue: "test_value",
@@ -59,8 +67,15 @@ describe("useParameterUpdateGql", () => {
 
   it("should update a parameter successfully", async () => {
     const queryClient = createTestQueryClient();
-    const oldParam = createTestParameter({ parameterId: 1, parameterName: "old_name" });
-    const newParam = createTestParameter({ parameterId: 1, parameterName: "new_name", parameterValue: "new_value" });
+    const oldParam = createTestParameter({
+      parameterId: 1,
+      parameterName: "old_name",
+    });
+    const newParam = createTestParameter({
+      parameterId: 1,
+      parameterName: "new_name",
+      parameterValue: "new_value",
+    });
 
     mockGraphqlRequest.mockResolvedValue({
       updateParameter: createGqlParameterResponse(newParam),
@@ -83,12 +98,20 @@ describe("useParameterUpdateGql", () => {
   it("should update cache on success", async () => {
     const queryClient = createTestQueryClient();
     const existingParams = [
-      createTestParameter({ parameterId: 1, parameterName: "param1", parameterValue: "old_val" }),
+      createTestParameter({
+        parameterId: 1,
+        parameterName: "param1",
+        parameterValue: "old_val",
+      }),
       createTestParameter({ parameterId: 2, parameterName: "param2" }),
     ];
     queryClient.setQueryData(["parameterGQL"], existingParams);
 
-    const updatedParam = createTestParameter({ parameterId: 1, parameterName: "param1", parameterValue: "new_val" });
+    const updatedParam = createTestParameter({
+      parameterId: 1,
+      parameterName: "param1",
+      parameterValue: "new_val",
+    });
     mockGraphqlRequest.mockResolvedValue({
       updateParameter: createGqlParameterResponse(updatedParam),
     });
@@ -119,7 +142,10 @@ describe("useParameterUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldParameter: param, newParameter: param });
+    await result.current.mutateAsync({
+      oldParameter: param,
+      newParameter: param,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Parameter[]>(["parameterGQL"]);
@@ -143,7 +169,11 @@ describe("useParameterUpdateGql", () => {
   it("should send old parameter ID with new parameter values", async () => {
     const queryClient = createTestQueryClient();
     const oldParam = createTestParameter({ parameterId: 42 });
-    const newParam = createTestParameter({ parameterId: 42, parameterName: "updated", parameterValue: "new_val" });
+    const newParam = createTestParameter({
+      parameterId: 42,
+      parameterName: "updated",
+      parameterValue: "new_val",
+    });
 
     mockGraphqlRequest.mockResolvedValue({
       updateParameter: createGqlParameterResponse(newParam),
@@ -153,7 +183,10 @@ describe("useParameterUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldParameter: oldParam, newParameter: newParam });
+    await result.current.mutateAsync({
+      oldParameter: oldParam,
+      newParameter: newParam,
+    });
 
     expect(mockGraphqlRequest).toHaveBeenCalledWith(
       expect.objectContaining({

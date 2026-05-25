@@ -436,7 +436,9 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
                   </IconButton>
                 )}
               </Box>
-              <Collapse in={notesExpanded || (transaction.notes?.length ?? 0) <= 100}>
+              <Collapse
+                in={notesExpanded || (transaction.notes?.length ?? 0) <= 100}
+              >
                 <Typography variant="body2" color="text.secondary">
                   {notesPreview}
                 </Typography>

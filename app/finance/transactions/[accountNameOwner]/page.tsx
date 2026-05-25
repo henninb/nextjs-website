@@ -66,7 +66,9 @@ import {
 } from "../../../../components/Common";
 import PageHeader from "../../../../components/PageHeader";
 import DataGridBase from "../../../../components/DataGridBase";
-import ReceiptLightbox, { buildImageSrc } from "../../../../components/ReceiptLightbox";
+import ReceiptLightbox, {
+  buildImageSrc,
+} from "../../../../components/ReceiptLightbox";
 import ConfirmDialog from "../../../../components/ConfirmDialog";
 import FormDialog from "../../../../components/FormDialog";
 import Totals from "../../../../model/Totals";
@@ -419,10 +421,12 @@ export default function TransactionsByAccount({
       const result = new Date(d);
       const day = result.getDay();
       if (shift === "forward") {
-        if (day === 6) result.setDate(result.getDate() + 2); // Sat → Mon
+        if (day === 6)
+          result.setDate(result.getDate() + 2); // Sat → Mon
         else if (day === 0) result.setDate(result.getDate() + 1); // Sun → Mon
       } else if (shift === "back") {
-        if (day === 6) result.setDate(result.getDate() - 1); // Sat → Fri
+        if (day === 6)
+          result.setDate(result.getDate() - 1); // Sat → Fri
         else if (day === 0) result.setDate(result.getDate() - 2); // Sun → Fri
       } else if (shift === "back_sat_only") {
         if (day === 6) result.setDate(result.getDate() - 1); // Sat → Fri only
@@ -445,13 +449,27 @@ export default function TransactionsByAccount({
       );
       if (thisMonth > today) {
         nextClose = thisMonth;
-        prevClose = new Date(today.getFullYear(), today.getMonth() - 1, closeDay);
+        prevClose = new Date(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          closeDay,
+        );
       } else {
-        nextClose = new Date(today.getFullYear(), today.getMonth() + 1, closeDay);
+        nextClose = new Date(
+          today.getFullYear(),
+          today.getMonth() + 1,
+          closeDay,
+        );
         prevClose = thisMonth;
       }
-      nextClose = applyWeekendShift(nextClose, currentAccount.billingCycleWeekendShift);
-      prevClose = applyWeekendShift(prevClose, currentAccount.billingCycleWeekendShift);
+      nextClose = applyWeekendShift(
+        nextClose,
+        currentAccount.billingCycleWeekendShift,
+      );
+      prevClose = applyWeekendShift(
+        prevClose,
+        currentAccount.billingCycleWeekendShift,
+      );
     }
 
     let nextDue: Date | null = null;
@@ -460,7 +478,11 @@ export default function TransactionsByAccount({
       const closeYear = nextClose.getFullYear();
       if (currentAccount.billingDueDaySameMonth != null) {
         nextDue = applyWeekendShift(
-          new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth),
+          new Date(
+            closeYear,
+            closeMonth,
+            currentAccount.billingDueDaySameMonth,
+          ),
           currentAccount.billingCycleWeekendShift,
         );
       } else if (currentAccount.billingDueDayNextMonth != null) {
@@ -474,7 +496,9 @@ export default function TransactionsByAccount({
         );
       } else if (currentAccount.billingGracePeriodDays != null) {
         nextDue = new Date(nextClose);
-        nextDue.setDate(nextDue.getDate() + currentAccount.billingGracePeriodDays);
+        nextDue.setDate(
+          nextDue.getDate() + currentAccount.billingGracePeriodDays,
+        );
       }
     }
 
@@ -484,17 +508,27 @@ export default function TransactionsByAccount({
       const closeYear = prevClose.getFullYear();
       if (currentAccount.billingDueDaySameMonth != null) {
         prevDue = applyWeekendShift(
-          new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth),
+          new Date(
+            closeYear,
+            closeMonth,
+            currentAccount.billingDueDaySameMonth,
+          ),
           currentAccount.billingCycleWeekendShift,
         );
       } else if (currentAccount.billingDueDayNextMonth != null) {
         prevDue = applyWeekendShift(
-          new Date(closeYear, closeMonth + 1, currentAccount.billingDueDayNextMonth),
+          new Date(
+            closeYear,
+            closeMonth + 1,
+            currentAccount.billingDueDayNextMonth,
+          ),
           currentAccount.billingCycleWeekendShift,
         );
       } else if (currentAccount.billingGracePeriodDays != null) {
         prevDue = new Date(prevClose);
-        prevDue.setDate(prevDue.getDate() + currentAccount.billingGracePeriodDays);
+        prevDue.setDate(
+          prevDue.getDate() + currentAccount.billingGracePeriodDays,
+        );
       }
     }
 
@@ -803,8 +837,18 @@ export default function TransactionsByAccount({
           const receipt = params.row.receiptImage;
           if (!receipt?.thumbnail) return <div>{params.value}</div>;
           return (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%", overflow: "hidden" }}>
-              <Typography variant="body2" noWrap>{params.value}</Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                width: "100%",
+                overflow: "hidden",
+              }}
+            >
+              <Typography variant="body2" noWrap>
+                {params.value}
+              </Typography>
               <Typography
                 variant="caption"
                 onClick={(e: React.MouseEvent) => {
@@ -1411,7 +1455,6 @@ export default function TransactionsByAccount({
                       </Grow>
                     )}
 
-
                     {/* Current Statement Due (previous cycle due date still in the future) */}
                     {creditCardDates.prevDueFormatted && (
                       <Grow in={true} timeout={1200}>
@@ -1995,7 +2038,9 @@ export default function TransactionsByAccount({
           accountNameOwner={validAccountNameOwner}
           accountType={currentAccount?.accountType ?? "debit"}
           categories={
-            isSuccessCategories ? fetchedCategories.map((c) => c.categoryName) : []
+            isSuccessCategories
+              ? fetchedCategories.map((c) => c.categoryName)
+              : []
           }
           onComplete={() => {
             setPaginationModel({ ...paginationModel, page: 0 });

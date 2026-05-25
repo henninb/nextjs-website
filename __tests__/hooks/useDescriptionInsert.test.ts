@@ -1,4 +1,6 @@
-import useDescriptionInsert, { insertDescription } from "../../hooks/useDescriptionInsert";
+import useDescriptionInsert, {
+  insertDescription,
+} from "../../hooks/useDescriptionInsert";
 import Description from "../../model/Description";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -63,9 +65,8 @@ jest.mock("../../components/AuthProvider", () => ({
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { validateInsert } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -86,7 +87,9 @@ describe("useDescriptionInsert - insertDescription", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
-    mockValidateInsert.mockImplementation((data: unknown) => data as Description);
+    mockValidateInsert.mockImplementation(
+      (data: unknown) => data as Description,
+    );
   });
 
   describe("validation", () => {
@@ -104,9 +107,15 @@ describe("useDescriptionInsert - insertDescription", () => {
     });
 
     it("should use validated data in request body", async () => {
-      const validatedData = { descriptionName: "validated_amazon", activeStatus: true, owner: "" };
+      const validatedData = {
+        descriptionName: "validated_amazon",
+        activeStatus: true,
+        owner: "",
+      };
       mockValidateInsert.mockReturnValue(validatedData);
-      mockParseResponse.mockResolvedValue(createTestDescription({ descriptionName: "validated_amazon" }));
+      mockParseResponse.mockResolvedValue(
+        createTestDescription({ descriptionName: "validated_amazon" }),
+      );
 
       await insertDescription("amazon");
 
@@ -136,7 +145,10 @@ describe("useDescriptionInsert - insertDescription", () => {
     });
 
     it("should return the created description", async () => {
-      const desc = createTestDescription({ descriptionId: 5, descriptionName: "target" });
+      const desc = createTestDescription({
+        descriptionId: 5,
+        descriptionName: "target",
+      });
       mockParseResponse.mockResolvedValue(desc);
 
       const result = await insertDescription("target");
@@ -176,20 +188,25 @@ describe("useDescriptionInsert - insertDescription", () => {
       expect(body.owner).toBe("test_user");
     });
 
-    it.each(["groceries", "dining", "entertainment", "utilities", "healthcare"])(
-      "should insert '%s' description",
-      async (name) => {
-        mockParseResponse.mockResolvedValue(createTestDescription({ descriptionName: name }));
+    it.each([
+      "groceries",
+      "dining",
+      "entertainment",
+      "utilities",
+      "healthcare",
+    ])("should insert '%s' description", async (name) => {
+      mockParseResponse.mockResolvedValue(
+        createTestDescription({ descriptionName: name }),
+      );
 
-        const result = await insertDescription(name);
+      const result = await insertDescription(name);
 
-        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
-          "/api/description",
-          expect.objectContaining({ method: "POST" }),
-        );
-        expect(result?.descriptionName).toBe(name);
-      },
-    );
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/description",
+        expect.objectContaining({ method: "POST" }),
+      );
+      expect(result?.descriptionName).toBe(name);
+    });
   });
 
   describe("error handling", () => {
@@ -282,7 +299,11 @@ const createDescInsertHookQueryClient = () =>
 
 const createDescInsertHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useDescriptionInsert hook", () => {

@@ -38,7 +38,12 @@ import usePaymentInsert from "../hooks/usePaymentInsert";
 
 // ── US Federal Holiday helpers ──────────────────────────────────────────────
 
-function getNthWeekday(year: number, month: number, weekday: number, n: number): Date {
+function getNthWeekday(
+  year: number,
+  month: number,
+  weekday: number,
+  n: number,
+): Date {
   let count = 0;
   for (let d = 1; d <= 31; d++) {
     const date = new Date(Date.UTC(year, month, d));
@@ -61,24 +66,30 @@ function getLastWeekday(year: number, month: number, weekday: number): Date {
 function toObserved(d: Date): Date {
   if (isNaN(d.getTime())) return d;
   const dow = d.getUTCDay();
-  if (dow === 6) return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - 1));
-  if (dow === 0) return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1));
+  if (dow === 6)
+    return new Date(
+      Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - 1),
+    );
+  if (dow === 0)
+    return new Date(
+      Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1),
+    );
   return d;
 }
 
 function buildHolidayMap(year: number): Map<string, string> {
   const raw: [Date, string][] = [
-    [new Date(Date.UTC(year, 0, 1)),   "New Year's Day"],
-    [new Date(Date.UTC(year, 5, 19)),  "Juneteenth"],
-    [new Date(Date.UTC(year, 6, 4)),   "Independence Day"],
+    [new Date(Date.UTC(year, 0, 1)), "New Year's Day"],
+    [new Date(Date.UTC(year, 5, 19)), "Juneteenth"],
+    [new Date(Date.UTC(year, 6, 4)), "Independence Day"],
     [new Date(Date.UTC(year, 10, 11)), "Veterans Day"],
     [new Date(Date.UTC(year, 11, 25)), "Christmas Day"],
-    [getNthWeekday(year, 0, 1, 3),     "MLK Day"],
-    [getNthWeekday(year, 1, 1, 3),     "Presidents' Day"],
-    [getLastWeekday(year, 4, 1),       "Memorial Day"],
-    [getNthWeekday(year, 8, 1, 1),     "Labor Day"],
-    [getNthWeekday(year, 9, 1, 2),     "Columbus Day"],
-    [getNthWeekday(year, 10, 4, 4),    "Thanksgiving"],
+    [getNthWeekday(year, 0, 1, 3), "MLK Day"],
+    [getNthWeekday(year, 1, 1, 3), "Presidents' Day"],
+    [getLastWeekday(year, 4, 1), "Memorial Day"],
+    [getNthWeekday(year, 8, 1, 1), "Labor Day"],
+    [getNthWeekday(year, 9, 1, 2), "Columbus Day"],
+    [getNthWeekday(year, 10, 4, 4), "Thanksgiving"],
   ];
   const map = new Map<string, string>();
   for (const [d, name] of raw) {
@@ -88,13 +99,21 @@ function buildHolidayMap(year: number): Map<string, string> {
   return map;
 }
 
-function getBusinessDays(year: number, month: number, holidays: Map<string, string>): Date[] {
+function getBusinessDays(
+  year: number,
+  month: number,
+  holidays: Map<string, string>,
+): Date[] {
   const days: Date[] = [];
   for (let d = 1; d <= 31; d++) {
     const date = new Date(Date.UTC(year, month, d));
     if (date.getUTCMonth() !== month) break;
     const dow = date.getUTCDay();
-    if (dow !== 0 && dow !== 6 && !holidays.has(date.toISOString().slice(0, 10))) {
+    if (
+      dow !== 0 &&
+      dow !== 6 &&
+      !holidays.has(date.toISOString().slice(0, 10))
+    ) {
       days.push(date);
     }
   }
@@ -119,8 +138,18 @@ export type BatchPaymentModalProps = {
 };
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 const DOW_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const STEPS = ["Configure", "Select Days", "Preview & Submit"];
@@ -141,8 +170,12 @@ export default function BatchPaymentModal({
   const [submitting, setSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(() =>
+    new Date().getFullYear(),
+  );
+  const [selectedMonth, setSelectedMonth] = useState(() =>
+    new Date().getMonth(),
+  );
   const [sourceAccount, setSourceAccount] = useState("");
   const [destinationAccount, setDestinationAccount] = useState("");
   const [defaultAmounts, setDefaultAmounts] = useState<number[]>([1.0, 2.0]);
@@ -167,7 +200,10 @@ export default function BatchPaymentModal({
     return [y - 1, y, y + 1, y + 2];
   }, []);
 
-  const holidayMap = useMemo(() => buildHolidayMap(selectedYear), [selectedYear]);
+  const holidayMap = useMemo(
+    () => buildHolidayMap(selectedYear),
+    [selectedYear],
+  );
 
   const businessDays = useMemo(
     () => getBusinessDays(selectedYear, selectedMonth, holidayMap),
@@ -176,8 +212,12 @@ export default function BatchPaymentModal({
 
   // Calendar grid: weeks of day-numbers (null = empty cell)
   const calendarWeeks = useMemo<(number | null)[][]>(() => {
-    const firstDow = new Date(Date.UTC(selectedYear, selectedMonth, 1)).getUTCDay();
-    const daysInMonth = new Date(Date.UTC(selectedYear, selectedMonth + 1, 0)).getUTCDate();
+    const firstDow = new Date(
+      Date.UTC(selectedYear, selectedMonth, 1),
+    ).getUTCDay();
+    const daysInMonth = new Date(
+      Date.UTC(selectedYear, selectedMonth + 1, 0),
+    ).getUTCDate();
     const cells: (number | null)[] = Array(firstDow).fill(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     while (cells.length % 7 !== 0) cells.push(null);
@@ -203,7 +243,10 @@ export default function BatchPaymentModal({
   const selectedDays = days.filter((d) => d.selected);
 
   const previewPayments = useMemo<{ date: Date; amount: number }[]>(
-    () => selectedDays.flatMap((day) => day.amounts.map((amount) => ({ date: day.date, amount }))),
+    () =>
+      selectedDays.flatMap((day) =>
+        day.amounts.map((amount) => ({ date: day.date, amount })),
+      ),
     [selectedDays],
   );
 
@@ -256,7 +299,10 @@ export default function BatchPaymentModal({
         successCount++;
         totalInserted += amount;
       } catch (error) {
-        onBatchError(error, `Failed on ${formatDateForDisplay(date)}: ${currencyFormat(amount)}`);
+        onBatchError(
+          error,
+          `Failed on ${formatDateForDisplay(date)}: ${currencyFormat(amount)}`,
+        );
       }
       setProgress(Math.round(((i + 1) / previewPayments.length) * 100));
     }
@@ -298,7 +344,9 @@ export default function BatchPaymentModal({
                   onChange={(e) => setSelectedMonth(Number(e.target.value))}
                 >
                   {MONTH_NAMES.map((m, i) => (
-                    <MenuItem key={m} value={i}>{m}</MenuItem>
+                    <MenuItem key={m} value={i}>
+                      {m}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -311,7 +359,9 @@ export default function BatchPaymentModal({
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                 >
                   {yearOptions.map((y) => (
-                    <MenuItem key={y} value={y}>{y}</MenuItem>
+                    <MenuItem key={y} value={y}>
+                      {y}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -320,8 +370,13 @@ export default function BatchPaymentModal({
             <Autocomplete
               options={accounts.filter((a) => a.accountType === "debit")}
               getOptionLabel={(a: Account) => a.accountNameOwner || ""}
-              isOptionEqualToValue={(o, v) => o.accountNameOwner === v?.accountNameOwner}
-              value={accounts.find((a) => a.accountNameOwner === sourceAccount) || null}
+              isOptionEqualToValue={(o, v) =>
+                o.accountNameOwner === v?.accountNameOwner
+              }
+              value={
+                accounts.find((a) => a.accountNameOwner === sourceAccount) ||
+                null
+              }
               onChange={(_, v) => setSourceAccount(v?.accountNameOwner || "")}
               renderInput={(params) => (
                 <TextField {...params} label="Source Account (Debit)" />
@@ -330,12 +385,22 @@ export default function BatchPaymentModal({
 
             <Autocomplete
               options={accounts.filter(
-                (a) => a.accountType === "credit" && a.accountNameOwner !== sourceAccount,
+                (a) =>
+                  a.accountType === "credit" &&
+                  a.accountNameOwner !== sourceAccount,
               )}
               getOptionLabel={(a: Account) => a.accountNameOwner || ""}
-              isOptionEqualToValue={(o, v) => o.accountNameOwner === v?.accountNameOwner}
-              value={accounts.find((a) => a.accountNameOwner === destinationAccount) || null}
-              onChange={(_, v) => setDestinationAccount(v?.accountNameOwner || "")}
+              isOptionEqualToValue={(o, v) =>
+                o.accountNameOwner === v?.accountNameOwner
+              }
+              value={
+                accounts.find(
+                  (a) => a.accountNameOwner === destinationAccount,
+                ) || null
+              }
+              onChange={(_, v) =>
+                setDestinationAccount(v?.accountNameOwner || "")
+              }
               renderInput={(params) => (
                 <TextField {...params} label="Destination Account (Credit)" />
               )}
@@ -347,7 +412,10 @@ export default function BatchPaymentModal({
               </Typography>
               <Stack spacing={1}>
                 {defaultAmounts.map((amt, i) => (
-                  <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    key={i}
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
                     <TextField
                       label={`Amount ${i + 1}`}
                       type="number"
@@ -357,7 +425,9 @@ export default function BatchPaymentModal({
                       onChange={(e) => {
                         const val = parseFloat(e.target.value);
                         setDefaultAmounts((prev) =>
-                          prev.map((a, j) => (j === i ? (isNaN(val) ? 0 : val) : a)),
+                          prev.map((a, j) =>
+                            j === i ? (isNaN(val) ? 0 : val) : a,
+                          ),
                         );
                       }}
                       sx={{ width: 140 }}
@@ -367,7 +437,9 @@ export default function BatchPaymentModal({
                         size="small"
                         aria-label={`Remove amount ${i + 1}`}
                         onClick={() =>
-                          setDefaultAmounts((prev) => prev.filter((_, j) => j !== i))
+                          setDefaultAmounts((prev) =>
+                            prev.filter((_, j) => j !== i),
+                          )
                         }
                       >
                         <DeleteIcon fontSize="small" />
@@ -387,7 +459,8 @@ export default function BatchPaymentModal({
             </Box>
 
             <Typography variant="caption" color="text.secondary">
-              {businessDays.length} business days in {MONTH_NAMES[selectedMonth]} {selectedYear}
+              {businessDays.length} business days in{" "}
+              {MONTH_NAMES[selectedMonth]} {selectedYear}
               {" — "}weekends &amp; US federal holidays excluded
             </Typography>
           </Stack>
@@ -404,12 +477,20 @@ export default function BatchPaymentModal({
                 {currencyFormat(totalAmount)} total
               </Typography>
               <Box sx={{ flex: 1 }} />
-              <Button size="small" onClick={() => toggleAllDays(true)}>Select All</Button>
-              <Button size="small" onClick={() => toggleAllDays(false)}>Deselect All</Button>
+              <Button size="small" onClick={() => toggleAllDays(true)}>
+                Select All
+              </Button>
+              <Button size="small" onClick={() => toggleAllDays(false)}>
+                Deselect All
+              </Button>
             </Box>
 
             {/* Month + Year label */}
-            <Typography variant="subtitle2" align="center" sx={{ mb: 1.5, fontWeight: 600 }}>
+            <Typography
+              variant="subtitle2"
+              align="center"
+              sx={{ mb: 1.5, fontWeight: 600 }}
+            >
               {MONTH_NAMES[selectedMonth]} {selectedYear}
             </Typography>
 
@@ -447,10 +528,14 @@ export default function BatchPaymentModal({
                 {week.map((dayNum, ci) => {
                   if (dayNum === null) return <Box key={ci} />;
 
-                  const isoDate = new Date(Date.UTC(selectedYear, selectedMonth, dayNum))
+                  const isoDate = new Date(
+                    Date.UTC(selectedYear, selectedMonth, dayNum),
+                  )
                     .toISOString()
                     .slice(0, 10);
-                  const dow = new Date(Date.UTC(selectedYear, selectedMonth, dayNum)).getUTCDay();
+                  const dow = new Date(
+                    Date.UTC(selectedYear, selectedMonth, dayNum),
+                  ).getUTCDay();
                   const isWeekend = dow === 0 || dow === 6;
                   const holidayName = holidayMap.get(isoDate);
                   const isBusiness = !isWeekend && !holidayName;
@@ -475,28 +560,34 @@ export default function BatchPaymentModal({
                         bgcolor: isSelected
                           ? "primary.main"
                           : holidayName
-                          ? "warning.light"
-                          : isWeekend
-                          ? "action.disabledBackground"
-                          : "transparent",
+                            ? "warning.light"
+                            : isWeekend
+                              ? "action.disabledBackground"
+                              : "transparent",
                         color: isSelected
                           ? "primary.contrastText"
                           : isBusiness
-                          ? "text.primary"
-                          : "text.disabled",
-                        border: isBusiness && !isSelected ? "1px solid" : "none",
+                            ? "text.primary"
+                            : "text.disabled",
+                        border:
+                          isBusiness && !isSelected ? "1px solid" : "none",
                         borderColor: "divider",
                         transition: "background-color 0.15s, color 0.15s",
                         "&:hover": isBusiness
                           ? {
-                              bgcolor: isSelected ? "primary.dark" : "action.selected",
+                              bgcolor: isSelected
+                                ? "primary.dark"
+                                : "action.selected",
                             }
                           : {},
                       }}
                     >
                       <Typography
                         variant="body2"
-                        sx={{ fontWeight: isSelected ? 700 : 400, lineHeight: 1 }}
+                        sx={{
+                          fontWeight: isSelected ? 700 : 400,
+                          lineHeight: 1,
+                        }}
                       >
                         {dayNum}
                       </Typography>
@@ -517,20 +608,57 @@ export default function BatchPaymentModal({
             {/* Legend */}
             <Box sx={{ display: "flex", gap: 2, mt: 2, flexWrap: "wrap" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: "primary.main" }} />
-                <Typography variant="caption" color="text.secondary">Selected</Typography>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 0.5,
+                    bgcolor: "primary.main",
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  Selected
+                </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, border: "1px solid", borderColor: "divider" }} />
-                <Typography variant="caption" color="text.secondary">Available</Typography>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 0.5,
+                    border: "1px solid",
+                    borderColor: "divider",
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  Available
+                </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: "warning.light" }} />
-                <Typography variant="caption" color="text.secondary">Holiday</Typography>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 0.5,
+                    bgcolor: "warning.light",
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  Holiday
+                </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: "action.disabledBackground" }} />
-                <Typography variant="caption" color="text.secondary">Weekend</Typography>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 0.5,
+                    bgcolor: "action.disabledBackground",
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  Weekend
+                </Typography>
               </Box>
             </Box>
           </Box>
@@ -541,7 +669,10 @@ export default function BatchPaymentModal({
           <Box>
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
               <Chip label={`${previewPayments.length} payments`} />
-              <Chip label={`Total: ${currencyFormat(totalAmount)}`} color="primary" />
+              <Chip
+                label={`Total: ${currencyFormat(totalAmount)}`}
+                color="primary"
+              />
               <Chip
                 label={`${sourceAccount} → ${destinationAccount}`}
                 variant="outlined"
@@ -552,7 +683,11 @@ export default function BatchPaymentModal({
             {submitting && (
               <Box sx={{ mb: 2 }}>
                 <LinearProgress variant="determinate" value={progress} />
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: 0.5, display: "block" }}
+                >
                   Submitting... {progress}%
                 </Typography>
               </Box>
@@ -573,7 +708,9 @@ export default function BatchPaymentModal({
                       <TableCell>{formatDateForDisplay(p.date)}</TableCell>
                       <TableCell>{sourceAccount}</TableCell>
                       <TableCell>{destinationAccount}</TableCell>
-                      <TableCell align="right">{currencyFormat(p.amount)}</TableCell>
+                      <TableCell align="right">
+                        {currencyFormat(p.amount)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

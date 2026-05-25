@@ -70,7 +70,10 @@ interface CategorizationResponse {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!(await isSessionValid(request))) {
-    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 },
+    );
   }
 
   const ip = getClientIp(request);

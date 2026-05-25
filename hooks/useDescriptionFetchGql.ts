@@ -50,6 +50,5 @@ export default function useDescriptionFetchGql() {
     return mapped;
   });
 
-
   return queryResult;
 }

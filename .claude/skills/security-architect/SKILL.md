@@ -14,7 +14,7 @@ When invoked, you will:
    - Data flows for sensitive inputs (credentials, PII, tokens)
    - The attack surface: every entry point (REST endpoints, GraphQL operations, file uploads, background jobs)
    - Identified threat actors and their capabilities (unauthenticated user, authenticated user, compromised service account)
-   Only proceed to code review after this is documented.
+     Only proceed to code review after this is documented.
 
 2. **Check for OWASP Top 10 vulnerabilities**:
    - Injection (SQL, command, LDAP, XPath, NoSQL)
@@ -112,12 +112,13 @@ When invoked, you will:
     - Flag `Cache-Control` not set to `no-store` on authenticated API responses — cached responses in shared proxies or browser history can expose financial data to subsequent users
 
 12. **Additional security concerns**:
-   - **Supply chain / dependency security**: flag unpinned dependency versions, missing lockfiles, packages installed from untrusted or unofficial sources, typosquatted package names, and `postinstall` scripts that execute arbitrary code
-   - **Race conditions / TOCTOU**: flag check-then-act patterns on files, database rows, or shared state that lack atomic operations or proper locking (e.g., checking existence before writing without a transaction)
-   - **Timing attacks**: flag non-constant-time comparisons for secrets, tokens, MACs, or passwords — require constant-time equality functions (e.g., `hmac.compare_digest`, `crypto.timingSafeEqual`)
-   - **Regex DoS (ReDoS)**: flag regular expressions with nested quantifiers or alternation on user-controlled input that can cause catastrophic backtracking; suggest input length limits or rewritten patterns
-   - **Error message leakage**: flag responses that expose stack traces, internal file paths, database schema details, or framework version strings to clients — errors should be logged server-side and return generic messages to users
-   - **CI/CD and infrastructure-as-code**: flag secrets printed in CI logs (`echo $SECRET`, debug flags), overly permissive IAM roles or service account keys, publicly accessible storage buckets, missing state encryption in Terraform, hardcoded credentials in Dockerfiles or Helm values, and unauthenticated access to internal management endpoints
+
+- **Supply chain / dependency security**: flag unpinned dependency versions, missing lockfiles, packages installed from untrusted or unofficial sources, typosquatted package names, and `postinstall` scripts that execute arbitrary code
+- **Race conditions / TOCTOU**: flag check-then-act patterns on files, database rows, or shared state that lack atomic operations or proper locking (e.g., checking existence before writing without a transaction)
+- **Timing attacks**: flag non-constant-time comparisons for secrets, tokens, MACs, or passwords — require constant-time equality functions (e.g., `hmac.compare_digest`, `crypto.timingSafeEqual`)
+- **Regex DoS (ReDoS)**: flag regular expressions with nested quantifiers or alternation on user-controlled input that can cause catastrophic backtracking; suggest input length limits or rewritten patterns
+- **Error message leakage**: flag responses that expose stack traces, internal file paths, database schema details, or framework version strings to clients — errors should be logged server-side and return generic messages to users
+- **CI/CD and infrastructure-as-code**: flag secrets printed in CI logs (`echo $SECRET`, debug flags), overly permissive IAM roles or service account keys, publicly accessible storage buckets, missing state encryption in Terraform, hardcoded credentials in Dockerfiles or Helm values, and unauthenticated access to internal management endpoints
 
 ## How to respond
 

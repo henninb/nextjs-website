@@ -30,7 +30,7 @@ export const ClaimStatus = {
   Paid: "paid",
   Closed: "closed",
 } as const;
-export type ClaimStatus = typeof ClaimStatus[keyof typeof ClaimStatus];
+export type ClaimStatus = (typeof ClaimStatus)[keyof typeof ClaimStatus];
 
 export interface MedicalExpenseCreateRequest {
   owner?: string;

@@ -147,7 +147,9 @@ export async function fetchWithErrorHandling(
   const isMutation =
     options?.method &&
     ["POST", "PUT", "DELETE", "PATCH"].includes(options.method);
-  logger.debug(`[fetchUtils] ${options?.method || "GET"} ${url}`, { isMutation });
+  logger.debug(`[fetchUtils] ${options?.method || "GET"} ${url}`, {
+    isMutation,
+  });
   const csrfHeaders = isMutation ? await getCsrfHeaders() : {};
 
   try {

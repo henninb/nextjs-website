@@ -19,7 +19,9 @@ jest.mock("../../utils/logger", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -31,7 +33,11 @@ const createTestQueryClient = () =>
 
 const createWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children as any);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
   };
 
 const createTestPayment = (overrides: Partial<Payment> = {}): Payment => ({
@@ -96,7 +102,9 @@ describe("usePaymentDeleteGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldRow: createTestPayment({ paymentId: 99 }) });
+    await result.current.mutateAsync({
+      oldRow: createTestPayment({ paymentId: 99 }),
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Payment[]>(["paymentGQL"]);
@@ -124,7 +132,9 @@ describe("usePaymentDeleteGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    const deleteResult = await result.current.mutateAsync({ oldRow: createTestPayment({ paymentId: 1 }) });
+    const deleteResult = await result.current.mutateAsync({
+      oldRow: createTestPayment({ paymentId: 1 }),
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(deleteResult.id).toBe(1);
   });

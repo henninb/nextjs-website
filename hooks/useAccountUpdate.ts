@@ -129,12 +129,7 @@ export default function useAccountUpdate() {
         });
 
         // Optimistically update cache using accountId as stable identifier
-        updateInList(
-          queryClient,
-          QueryKeys.account(),
-          response,
-          "accountId",
-        );
+        updateInList(queryClient, QueryKeys.account(), response, "accountId");
       },
     },
   );

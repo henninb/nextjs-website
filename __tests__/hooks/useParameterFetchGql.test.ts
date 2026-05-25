@@ -32,7 +32,9 @@ jest.mock("../../components/AuthProvider", () => ({
 import { graphqlRequest } from "../../utils/graphqlClient";
 import useParameterFetchGql from "../../hooks/useParameterFetchGql";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createParameterGqlQueryClient = () =>
   new QueryClient({
@@ -41,7 +43,11 @@ const createParameterGqlQueryClient = () =>
 
 const createParameterGqlWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useParameterFetchGql", () => {
@@ -146,13 +152,18 @@ describe("useParameterFetchGql", () => {
       wrapper: createParameterGqlWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
     expect(result.current.error?.message).toBe("GraphQL network error");
   });
 
   it("starts in loading state", () => {
     mockGraphqlRequest.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({ parameters: [] } as any), 1000)),
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ parameters: [] } as any), 1000),
+        ),
     );
 
     const queryClient = createParameterGqlQueryClient();

@@ -86,7 +86,11 @@ describe("/api/categorize", () => {
     });
 
     it("returns 400 when availableCategories is empty", async () => {
-      const req = makeRequest({ description: "Starbucks", amount: 5.0, availableCategories: [] });
+      const req = makeRequest({
+        description: "Starbucks",
+        amount: 5.0,
+        availableCategories: [],
+      });
       const res = await POST(req as any);
 
       expect(res.status).toBe(400);
@@ -110,7 +114,8 @@ describe("/api/categorize", () => {
 
       // Create a request whose json() throws a parse error (e.g. malformed body)
       const badRequest = {
-        json: () => Promise.reject(new SyntaxError("Unexpected token X at position 0")),
+        json: () =>
+          Promise.reject(new SyntaxError("Unexpected token X at position 0")),
         headers: { get: () => null },
       };
 

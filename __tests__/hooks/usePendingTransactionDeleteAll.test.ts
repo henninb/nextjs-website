@@ -1,4 +1,6 @@
-import usePendingTransactionDeleteAll, { deleteAllPendingTransactions } from "../../hooks/usePendingTransactionDeleteAll";
+import usePendingTransactionDeleteAll, {
+  deleteAllPendingTransactions,
+} from "../../hooks/usePendingTransactionDeleteAll";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -34,9 +36,8 @@ jest.mock("../../utils/logger", () => ({
 
 import { fetchWithErrorHandling } from "../../utils/fetchUtils";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 
 describe("usePendingTransactionDeleteAll - deleteAllPendingTransactions", () => {
   beforeEach(() => {
@@ -92,7 +93,9 @@ describe("usePendingTransactionDeleteAll - deleteAllPendingTransactions", () => 
         new FetchError("Unauthorized", 401),
       );
 
-      await expect(deleteAllPendingTransactions()).rejects.toThrow("Unauthorized");
+      await expect(deleteAllPendingTransactions()).rejects.toThrow(
+        "Unauthorized",
+      );
     });
 
     it("should propagate 403 forbidden error", async () => {
@@ -161,7 +164,11 @@ const createPendingTxDeleteAllHookQueryClient = () =>
 
 const createPendingTxDeleteAllHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("usePendingTransactionDeleteAll hook", () => {
@@ -194,7 +201,9 @@ describe("usePendingTransactionDeleteAll hook", () => {
 
   it("onError puts mutation into error state", async () => {
     const queryClient = createPendingTxDeleteAllHookQueryClient();
-    mockFetchWithErrorHandling.mockRejectedValue(new Error("Delete all failed"));
+    mockFetchWithErrorHandling.mockRejectedValue(
+      new Error("Delete all failed"),
+    );
 
     const { result } = renderHook(() => usePendingTransactionDeleteAll(), {
       wrapper: createPendingTxDeleteAllHookWrapper(queryClient),

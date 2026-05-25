@@ -87,13 +87,17 @@ describe("cspReporting", () => {
       recommendation: "Do not add to CSP - review code for safer alternatives",
     });
 
-    expect(CSPManager.assessBlockedResource("http://cdn.example.com/file.js")).toEqual({
+    expect(
+      CSPManager.assessBlockedResource("http://cdn.example.com/file.js"),
+    ).toEqual({
       risk: "medium",
       reason: "Non-HTTPS resource could be intercepted",
       recommendation: "Use HTTPS version if available",
     });
 
-    expect(CSPManager.assessBlockedResource("https://unknown.example/file.js")).toEqual({
+    expect(
+      CSPManager.assessBlockedResource("https://unknown.example/file.js"),
+    ).toEqual({
       risk: "medium",
       reason: "Domain not in trusted list",
       recommendation: "Verify domain legitimacy before adding to CSP",

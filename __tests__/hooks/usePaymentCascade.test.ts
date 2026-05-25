@@ -52,7 +52,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 

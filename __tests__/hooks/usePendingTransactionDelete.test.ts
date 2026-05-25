@@ -1,4 +1,6 @@
-import usePendingTransactionDelete, { deletePendingTransaction } from "../../hooks/usePendingTransactionDelete";
+import usePendingTransactionDelete, {
+  deletePendingTransaction,
+} from "../../hooks/usePendingTransactionDelete";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -42,9 +44,8 @@ jest.mock("../../utils/logger", () => ({
 import { fetchWithErrorHandling } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockSanitizeNumericId =
   InputSanitizer.sanitizeNumericId as jest.MockedFunction<
     typeof InputSanitizer.sanitizeNumericId
@@ -61,7 +62,10 @@ describe("usePendingTransactionDelete - deletePendingTransaction", () => {
     it("should sanitize the transaction ID before building endpoint", async () => {
       await deletePendingTransaction(42);
 
-      expect(mockSanitizeNumericId).toHaveBeenCalledWith(42, "pendingTransactionId");
+      expect(mockSanitizeNumericId).toHaveBeenCalledWith(
+        42,
+        "pendingTransactionId",
+      );
     });
 
     it("should use sanitized ID in endpoint URL", async () => {
@@ -95,7 +99,9 @@ describe("usePendingTransactionDelete - deletePendingTransaction", () => {
 
       for (const id of testIds) {
         jest.clearAllMocks();
-        mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+        mockFetchWithErrorHandling.mockResolvedValue({
+          status: 204,
+        } as Response);
         mockSanitizeNumericId.mockImplementation((value: number) => value);
 
         await deletePendingTransaction(id);
@@ -179,7 +185,11 @@ const createPendingTxDeleteHookQueryClient = () =>
 
 const createPendingTxDeleteHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("usePendingTransactionDelete hook", () => {
@@ -193,8 +203,22 @@ describe("usePendingTransactionDelete hook", () => {
     const queryClient = createPendingTxDeleteHookQueryClient();
     const { QueryKeys } = jest.requireMock("../../utils/cacheUtils");
     queryClient.setQueryData(QueryKeys.pendingTransaction(), [
-      { pendingTransactionId: 42, accountNameOwner: "test", amount: 10, description: "tx", transactionDate: new Date(), reviewStatus: "pending" },
-      { pendingTransactionId: 99, accountNameOwner: "test", amount: 20, description: "other", transactionDate: new Date(), reviewStatus: "pending" },
+      {
+        pendingTransactionId: 42,
+        accountNameOwner: "test",
+        amount: 10,
+        description: "tx",
+        transactionDate: new Date(),
+        reviewStatus: "pending",
+      },
+      {
+        pendingTransactionId: 99,
+        accountNameOwner: "test",
+        amount: 20,
+        description: "other",
+        transactionDate: new Date(),
+        reviewStatus: "pending",
+      },
     ]);
 
     const { result } = renderHook(() => usePendingTransactionDelete(), {

@@ -63,6 +63,5 @@ export default function useTransactionByDescriptionFetch(
     },
   );
 
-
   return queryResult;
 }

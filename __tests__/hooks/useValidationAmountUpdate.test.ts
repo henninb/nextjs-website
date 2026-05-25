@@ -44,9 +44,8 @@ jest.mock("../../utils/logger", () => ({
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -79,7 +78,10 @@ describe("useValidationAmountUpdate - updateValidationAmount", () => {
   describe("endpoint and sanitization", () => {
     it("should sanitize old validationId for endpoint", async () => {
       const oldVal = createTestValidationAmount({ validationId: 42 });
-      const newVal = createTestValidationAmount({ validationId: 42, amount: 2000 });
+      const newVal = createTestValidationAmount({
+        validationId: 42,
+        amount: 2000,
+      });
       mockParseResponse.mockResolvedValue(newVal);
 
       await updateValidationAmount(oldVal, newVal);
@@ -89,7 +91,10 @@ describe("useValidationAmountUpdate - updateValidationAmount", () => {
 
     it("should call fetchWithErrorHandling with correct PUT endpoint", async () => {
       const oldVal = createTestValidationAmount({ validationId: 42 });
-      const newVal = createTestValidationAmount({ validationId: 42, amount: 2000 });
+      const newVal = createTestValidationAmount({
+        validationId: 42,
+        amount: 2000,
+      });
       mockParseResponse.mockResolvedValue(newVal);
 
       await updateValidationAmount(oldVal, newVal);
@@ -126,7 +131,10 @@ describe("useValidationAmountUpdate - updateValidationAmount", () => {
 
     it("should send new validation amount as JSON body", async () => {
       const oldVal = createTestValidationAmount({ validationId: 5 });
-      const newVal = createTestValidationAmount({ validationId: 5, amount: 3000 });
+      const newVal = createTestValidationAmount({
+        validationId: 5,
+        amount: 3000,
+      });
       mockParseResponse.mockResolvedValue(newVal);
 
       await updateValidationAmount(oldVal, newVal);
@@ -311,7 +319,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useValidationAmountUpdate hook - renderHook tests", () => {
@@ -333,7 +345,10 @@ describe("useValidationAmountUpdate hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldValidationAmount: oldVal, newValidationAmount: newVal });
+      await result.current.mutateAsync({
+        oldValidationAmount: oldVal,
+        newValidationAmount: newVal,
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -346,7 +361,9 @@ describe("useValidationAmountUpdate hook - renderHook tests", () => {
   it("onError puts mutation into error state", async () => {
     const queryClient = createHookQueryClient();
     const { FetchError } = jest.requireMock("../../utils/fetchUtils");
-    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Update failed", 400));
+    mockFetchWithErrorHandling.mockRejectedValue(
+      new FetchError("Update failed", 400),
+    );
 
     const { result } = renderHook(() => useValidationAmountUpdate(), {
       wrapper: createHookWrapper(queryClient),

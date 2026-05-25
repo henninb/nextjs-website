@@ -17,7 +17,6 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -28,7 +27,6 @@ import useCategoryDelete from "../../../hooks/useCategoryDelete";
 import Category from "../../../model/Category";
 import useCategoryUpdate from "../../../hooks/useCategoryUpdate";
 import useCategoryMerge from "../../../hooks/useCategoryMerge";
-import FinanceLayout from "../../../layouts/FinanceLayout";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -149,7 +147,6 @@ export default function Categories() {
     }
 
     try {
-      console.log("from handleAddRow: " + JSON.stringify(newData));
       await insertCategory({ category: newData });
 
       if (cacheEnabled && typeof window !== "undefined") {
@@ -165,12 +162,6 @@ export default function Categories() {
         `Add Category error: ${getErrorMessage(error)}`,
         false,
       );
-      if (
-        !navigator.onLine ||
-        (getErrorMessage(error) &&
-          getErrorMessage(error).includes("Failed to fetch"))
-      ) {
-      }
     } finally {
       setShowModalAdd(false);
     }
@@ -280,9 +271,11 @@ export default function Categories() {
         <Checkbox
           checked={isRowSelected(getRowId(params.row))}
           onChange={() => handleRowToggle(getRowId(params.row))}
-          slotProps={{ input: {
-            "aria-label": `Select category ${params.row?.categoryName ?? ""}`,
-          } }}
+          slotProps={{
+            input: {
+              "aria-label": `Select category ${params.row?.categoryName ?? ""}`,
+            },
+          }}
         />
       ),
     },
@@ -359,233 +352,231 @@ export default function Categories() {
   }
 
   return (
-    <div>
-      <>
-        <PageHeader
-          title="Category Management"
-          subtitle="Organize your transactions by creating and managing categories for better financial tracking"
-          actions={
-            <Box sx={{ display: "flex", gap: 1 }}>
+    <>
+      <PageHeader
+        title="Category Management"
+        subtitle="Organize your transactions by creating and managing categories for better financial tracking"
+        actions={
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenAddModal()}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Category
+            </Button>
+            {rowSelection.length > 0 && (
               <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => handleOpenAddModal()}
-                sx={{ backgroundColor: "primary.main" }}
+                variant="outlined"
+                onClick={() => setShowModalMerge(true)}
               >
-                Add Category
+                Merge
               </Button>
-              {rowSelection.length > 0 && (
-                <Button
-                  variant="outlined"
-                  onClick={() => setShowModalMerge(true)}
-                >
-                  Merge
-                </Button>
-              )}
-            </Box>
-          }
-        />
-        {showSpinner ? (
-          <LoadingState variant="card" message="Loading categories..." />
-        ) : (
-          <div>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-                {fetchedCategories && fetchedCategories.length > 0 ? (
-                  <DataGridBase
-                    rows={fetchedCategories?.filter((row) => row != null) || []}
-                    columns={columns}
-                    getRowId={getRowId}
-                    paginationModel={paginationModel}
-                    onPaginationModelChange={(newModel) =>
-                      setPaginationModel(newModel)
-                    }
-                    pageSizeOptions={[25, 50, 100]}
-                    autoHeight
-                    disableColumnResize={false}
-                    sx={{
-                      "& .MuiDataGrid-cell": {
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      },
-                      // Hide separators to the right of the select checkbox column
-                      "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-iconSeparator":
-                        {
-                          display: "none",
-                        },
-                      "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-columnSeparator":
-                        {
-                          display: "none",
-                        },
-                      "& .MuiDataGrid-cell[data-field='select']": {
-                        borderRight: "none",
-                      },
-                    }}
-                    processRowUpdate={async (
-                      newRow: Category,
-                      oldRow: Category,
-                    ): Promise<Category> => {
-                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                        return oldRow;
-                      }
-                      try {
-                        await updateCategory({
-                          oldCategory: oldRow,
-                          newCategory: newRow,
-                        });
-                        handleSuccess("Category updated successfully.");
-                        return { ...newRow };
-                      } catch (error) {
-                        handleError(error, "Update Category failure.", false);
-                        return oldRow;
-                      }
-                    }}
-                  />
-                ) : (
-                  <EmptyState
-                    title="No Categories Found"
-                    message="You haven't created any categories yet. Create your first category to organize your transactions."
-                    dataType="categories"
-                    variant="create"
-                    actionLabel="Add Category"
-                    onAction={() => handleOpenAddModal()}
-                    onRefresh={() => refetch()}
-                  />
-                )}
-              </Box>
-            </Box>
-          </div>
-        )}
-
-        <SnackbarBaseline
-          message={message}
-          state={showSnackbar}
-          handleSnackbarClose={handleSnackbarClose}
-          severity={snackbarSeverity}
-        />
-
-        <ConfirmDialog
-          open={showModalDelete}
-          onClose={() => setShowModalDelete(false)}
-          onConfirm={handleDeleteRow}
-          title={modalTitles.confirmDeletion}
-          message={modalBodies.confirmDeletion(
-            "category",
-            selectedCategory?.categoryName ?? "",
-          )}
-          confirmText="Delete"
-          cancelText="Cancel"
-        />
-
-        <FormDialog
-          open={showModalMerge}
-          onClose={() => {
-            setShowModalMerge(false);
-            setMergeError(undefined);
-            setMergeName("");
-          }}
-          onSubmit={handleMerge}
-          title="Merge Categories"
-          submitText="Merge"
-          disabled={!!validateName(mergeName)}
-        >
-          <TextField
-            label="New Name"
-            fullWidth
-            margin="normal"
-            value={mergeName}
-            error={!!mergeError}
-            helperText={mergeError}
-            onChange={(e) => {
-              const next = e.target.value;
-              setMergeName(next);
-              setMergeError(validateName(next));
-            }}
-          />
-        </FormDialog>
-
-        <FormDialog
-          open={showModalAdd}
-          onClose={() => setShowModalAdd(false)}
-          onSubmit={() => {
-            if (categoryData) {
-              handleAddRow(categoryData);
-            } else {
-              handleAddRow({
-                categoryName: "",
-                activeStatus: true,
-              } as Category);
-            }
-          }}
-          title={modalTitles.addNew("category")}
-          submitText="Add"
-        >
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={categoryData?.categoryName || ""}
-            error={!!formErrors.categoryName}
-            helperText={formErrors.categoryName}
-            onChange={(e) =>
-              setCategoryData((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      categoryName: e.target.value,
-                    }
-                  : null,
-              )
-            }
-          />
-          <Box sx={{ mt: 1 }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={!!categoryData?.activeStatus}
-                  onChange={(e) =>
-                    setCategoryData((prev: Category) => ({
-                      ...prev,
-                      activeStatus: e.target.checked,
-                    }))
-                  }
-                />
-              }
-              label="Status"
-            />
-            {formErrors.activeStatus && (
-              <Typography color="error" variant="caption">
-                {formErrors.activeStatus}
-              </Typography>
             )}
           </Box>
-          <Box sx={{ mt: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={cacheEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setCacheEnabled(checked);
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem(
-                        CATEGORIES_CACHE_ENABLED_KEY,
-                        String(checked),
-                      );
-                      if (!checked) {
-                        localStorage.removeItem(CATEGORIES_CACHE_DATA_KEY);
-                      }
+        }
+      />
+      {showSpinner ? (
+        <LoadingState variant="card" message="Loading categories..." />
+      ) : (
+        <div>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
+              {fetchedCategories && fetchedCategories.length > 0 ? (
+                <DataGridBase
+                  rows={fetchedCategories?.filter((row) => row != null) || []}
+                  columns={columns}
+                  getRowId={getRowId}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  autoHeight
+                  disableColumnResize={false}
+                  sx={{
+                    "& .MuiDataGrid-cell": {
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                    // Hide separators to the right of the select checkbox column
+                    "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-iconSeparator":
+                      {
+                        display: "none",
+                      },
+                    "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-columnSeparator":
+                      {
+                        display: "none",
+                      },
+                    "& .MuiDataGrid-cell[data-field='select']": {
+                      borderRight: "none",
+                    },
+                  }}
+                  processRowUpdate={async (
+                    newRow: Category,
+                    oldRow: Category,
+                  ): Promise<Category> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateCategory({
+                        oldCategory: oldRow,
+                        newCategory: newRow,
+                      });
+                      handleSuccess("Category updated successfully.");
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(error, "Update Category failure.", false);
+                      return oldRow;
                     }
                   }}
-                  size="small"
                 />
-              }
-              label="Remember field data"
-            />
+              ) : (
+                <EmptyState
+                  title="No Categories Found"
+                  message="You haven't created any categories yet. Create your first category to organize your transactions."
+                  dataType="categories"
+                  variant="create"
+                  actionLabel="Add Category"
+                  onAction={() => handleOpenAddModal()}
+                  onRefresh={() => refetch()}
+                />
+              )}
+            </Box>
           </Box>
-        </FormDialog>
-      </>
-    </div>
+        </div>
+      )}
+
+      <SnackbarBaseline
+        message={message}
+        state={showSnackbar}
+        handleSnackbarClose={handleSnackbarClose}
+        severity={snackbarSeverity}
+      />
+
+      <ConfirmDialog
+        open={showModalDelete}
+        onClose={() => setShowModalDelete(false)}
+        onConfirm={handleDeleteRow}
+        title={modalTitles.confirmDeletion}
+        message={modalBodies.confirmDeletion(
+          "category",
+          selectedCategory?.categoryName ?? "",
+        )}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <FormDialog
+        open={showModalMerge}
+        onClose={() => {
+          setShowModalMerge(false);
+          setMergeError(undefined);
+          setMergeName("");
+        }}
+        onSubmit={handleMerge}
+        title="Merge Categories"
+        submitText="Merge"
+        disabled={!!validateName(mergeName)}
+      >
+        <TextField
+          label="New Name"
+          fullWidth
+          margin="normal"
+          value={mergeName}
+          error={!!mergeError}
+          helperText={mergeError}
+          onChange={(e) => {
+            const next = e.target.value;
+            setMergeName(next);
+            setMergeError(validateName(next));
+          }}
+        />
+      </FormDialog>
+
+      <FormDialog
+        open={showModalAdd}
+        onClose={() => setShowModalAdd(false)}
+        onSubmit={() => {
+          if (categoryData) {
+            handleAddRow(categoryData);
+          } else {
+            handleAddRow({
+              categoryName: "",
+              activeStatus: true,
+            } as Category);
+          }
+        }}
+        title={modalTitles.addNew("category")}
+        submitText="Add"
+      >
+        <TextField
+          label="Name"
+          fullWidth
+          margin="normal"
+          value={categoryData?.categoryName || ""}
+          error={!!formErrors.categoryName}
+          helperText={formErrors.categoryName}
+          onChange={(e) =>
+            setCategoryData((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    categoryName: e.target.value,
+                  }
+                : null,
+            )
+          }
+        />
+        <Box sx={{ mt: 1 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={!!categoryData?.activeStatus}
+                onChange={(e) =>
+                  setCategoryData((prev: Category) => ({
+                    ...prev,
+                    activeStatus: e.target.checked,
+                  }))
+                }
+              />
+            }
+            label="Status"
+          />
+          {formErrors.activeStatus && (
+            <Typography color="error" variant="caption">
+              {formErrors.activeStatus}
+            </Typography>
+          )}
+        </Box>
+        <Box sx={{ mt: 2 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={cacheEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCacheEnabled(checked);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem(
+                      CATEGORIES_CACHE_ENABLED_KEY,
+                      String(checked),
+                    );
+                    if (!checked) {
+                      localStorage.removeItem(CATEGORIES_CACHE_DATA_KEY);
+                    }
+                  }
+                }}
+                size="small"
+              />
+            }
+            label="Remember field data"
+          />
+        </Box>
+      </FormDialog>
+    </>
   );
 }

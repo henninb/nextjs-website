@@ -75,6 +75,5 @@ export default function useTotalsPerAccountFetch(accountNameOwner: string) {
     },
   );
 
-
   return queryResult;
 }

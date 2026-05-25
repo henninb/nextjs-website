@@ -10,7 +10,11 @@ jest.mock("../../utils/validation/sanitization", () => ({
 
 jest.mock("../../utils/cacheUtils", () => ({
   QueryKeys: {
-    transactionByDescription: jest.fn((desc: string) => ["transaction", "description", desc]),
+    transactionByDescription: jest.fn((desc: string) => [
+      "transaction",
+      "description",
+      desc,
+    ]),
   },
 }));
 

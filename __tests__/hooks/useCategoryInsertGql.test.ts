@@ -50,7 +50,8 @@ const createWrapper = (queryClient: QueryClient) =>
 describe("useCategoryInsertGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: true,
       loading: false,
@@ -227,7 +228,8 @@ describe("useCategoryInsertGql", () => {
   });
 
   it("throws when user is not logged in", async () => {
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: false,
       loading: false,
@@ -252,7 +254,9 @@ describe("useCategoryInsertGql", () => {
       result.current.mutate({ category });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

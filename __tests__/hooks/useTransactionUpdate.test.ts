@@ -9,7 +9,9 @@ import {
   createTestTransaction,
   simulateNetworkError,
 } from "../../testHelpers";
-import useTransactionUpdate, { updateTransaction } from "../../hooks/useTransactionUpdate";
+import useTransactionUpdate, {
+  updateTransaction,
+} from "../../hooks/useTransactionUpdate";
 import { validateUpdate } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
@@ -55,7 +57,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -191,7 +198,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 const makeUpdateTx = (overrides: Partial<Transaction> = {}): Transaction =>
@@ -262,8 +273,14 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
       wrapper: createHookWrapper(queryClient),
     });
 
-    const oldRow = makeUpdateTx({ amount: 100, transactionState: "outstanding" });
-    const newRow = makeUpdateTx({ amount: 80, transactionState: "outstanding" });
+    const oldRow = makeUpdateTx({
+      amount: 100,
+      transactionState: "outstanding",
+    });
+    const newRow = makeUpdateTx({
+      amount: 80,
+      transactionState: "outstanding",
+    });
 
     await act(async () => {
       await result.current.mutateAsync({ oldRow, newRow });
@@ -310,7 +327,10 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
       wrapper: createHookWrapper(queryClient),
     });
 
-    const oldRow = makeUpdateTx({ amount: 100, transactionState: "outstanding" });
+    const oldRow = makeUpdateTx({
+      amount: 100,
+      transactionState: "outstanding",
+    });
     const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared" });
 
     await act(async () => {
@@ -383,8 +403,16 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
       wrapper: createHookWrapper(queryClient),
     });
 
-    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "checking" });
-    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "savings" });
+    const oldRow = makeUpdateTx({
+      amount: 100,
+      transactionState: "cleared",
+      accountNameOwner: "checking",
+    });
+    const newRow = makeUpdateTx({
+      amount: 100,
+      transactionState: "cleared",
+      accountNameOwner: "savings",
+    });
 
     await act(async () => {
       await result.current.mutateAsync({ oldRow, newRow });
@@ -420,10 +448,15 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["transaction", "checking", "paged"] }),
+      expect.objectContaining({
+        queryKey: ["transaction", "checking", "paged"],
+      }),
     );
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["transaction", "checking"], exact: true }),
+      expect.objectContaining({
+        queryKey: ["transaction", "checking"],
+        exact: true,
+      }),
     );
   });
 
@@ -433,7 +466,9 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
       ok: false,
       status: 400,
       json: jest.fn().mockResolvedValue({ response: "Update failed" }),
-      text: jest.fn().mockResolvedValue(JSON.stringify({ response: "Update failed" })),
+      text: jest
+        .fn()
+        .mockResolvedValue(JSON.stringify({ response: "Update failed" })),
     });
 
     const { result } = renderHook(() => useTransactionUpdate(), {
@@ -442,7 +477,10 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
 
     await act(async () => {
       try {
-        await result.current.mutateAsync({ oldRow: makeUpdateTx(), newRow: makeUpdateTx({ amount: 200 }) });
+        await result.current.mutateAsync({
+          oldRow: makeUpdateTx(),
+          newRow: makeUpdateTx({ amount: 200 }),
+        });
       } catch {
         // expected
       }
@@ -490,7 +528,7 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
-    expect(updated?.totalsFuture).toBe(100);  // 150 - 50
+    expect(updated?.totalsFuture).toBe(100); // 150 - 50
     expect(updated?.totalsCleared).toBe(250); // 200 + 50
   });
 
@@ -504,7 +542,10 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
 
     // cleared → outstanding: deducts totalsCleared, adds totalsOutstanding (lines 185-186)
     const oldRow = makeUpdateTx({ amount: 50, transactionState: "cleared" });
-    const newRow = makeUpdateTx({ amount: 50, transactionState: "outstanding" });
+    const newRow = makeUpdateTx({
+      amount: 50,
+      transactionState: "outstanding",
+    });
 
     await act(async () => {
       await result.current.mutateAsync({ oldRow, newRow });
@@ -512,8 +553,8 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     const updated = queryClient.getQueryData<Totals>(["totals", "checking"]);
-    expect(updated?.totalsCleared).toBe(150);     // 200 - 50
-    expect(updated?.totalsOutstanding).toBe(200);  // 150 + 50
+    expect(updated?.totalsCleared).toBe(150); // 200 - 50
+    expect(updated?.totalsOutstanding).toBe(200); // 150 + 50
   });
 
   it("onSuccess cross-account: uses default totals when none cached", async () => {
@@ -524,15 +565,26 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
       wrapper: createHookWrapper(queryClient),
     });
 
-    const oldRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "checking" });
-    const newRow = makeUpdateTx({ amount: 100, transactionState: "cleared", accountNameOwner: "savings" });
+    const oldRow = makeUpdateTx({
+      amount: 100,
+      transactionState: "cleared",
+      accountNameOwner: "checking",
+    });
+    const newRow = makeUpdateTx({
+      amount: 100,
+      transactionState: "cleared",
+      accountNameOwner: "savings",
+    });
 
     await act(async () => {
       await result.current.mutateAsync({ oldRow, newRow });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    const oldAccountTotals = queryClient.getQueryData<Totals>(["totals", "checking"]);
+    const oldAccountTotals = queryClient.getQueryData<Totals>([
+      "totals",
+      "checking",
+    ]);
     expect(oldAccountTotals?.totals).toBe(-100); // 0 - 100
   });
 
@@ -545,17 +597,28 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
     });
 
     // Cross-account with old state=future covers line 220
-    const oldRow = makeUpdateTx({ amount: 75, transactionState: "future", accountNameOwner: "checking" });
-    const newRow = makeUpdateTx({ amount: 75, transactionState: "future", accountNameOwner: "savings" });
+    const oldRow = makeUpdateTx({
+      amount: 75,
+      transactionState: "future",
+      accountNameOwner: "checking",
+    });
+    const newRow = makeUpdateTx({
+      amount: 75,
+      transactionState: "future",
+      accountNameOwner: "savings",
+    });
 
     await act(async () => {
       await result.current.mutateAsync({ oldRow, newRow });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    const oldAccountTotals = queryClient.getQueryData<Totals>(["totals", "checking"]);
-    expect(oldAccountTotals?.totalsFuture).toBe(75);  // 150 - 75
-    expect(oldAccountTotals?.totals).toBe(425);       // 500 - 75
+    const oldAccountTotals = queryClient.getQueryData<Totals>([
+      "totals",
+      "checking",
+    ]);
+    expect(oldAccountTotals?.totalsFuture).toBe(75); // 150 - 75
+    expect(oldAccountTotals?.totals).toBe(425); // 500 - 75
   });
 
   it("onSuccess cross-account: deducts outstanding amount when old state is outstanding", async () => {
@@ -567,16 +630,27 @@ describe("useTransactionUpdate hook - renderHook tests", () => {
     });
 
     // Cross-account with old state=outstanding covers lines 224-225
-    const oldRow = makeUpdateTx({ amount: 60, transactionState: "outstanding", accountNameOwner: "checking" });
-    const newRow = makeUpdateTx({ amount: 60, transactionState: "outstanding", accountNameOwner: "savings" });
+    const oldRow = makeUpdateTx({
+      amount: 60,
+      transactionState: "outstanding",
+      accountNameOwner: "checking",
+    });
+    const newRow = makeUpdateTx({
+      amount: 60,
+      transactionState: "outstanding",
+      accountNameOwner: "savings",
+    });
 
     await act(async () => {
       await result.current.mutateAsync({ oldRow, newRow });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    const oldAccountTotals = queryClient.getQueryData<Totals>(["totals", "checking"]);
-    expect(oldAccountTotals?.totalsOutstanding).toBe(90);  // 150 - 60
-    expect(oldAccountTotals?.totals).toBe(440);            // 500 - 60
+    const oldAccountTotals = queryClient.getQueryData<Totals>([
+      "totals",
+      "checking",
+    ]);
+    expect(oldAccountTotals?.totalsOutstanding).toBe(90); // 150 - 60
+    expect(oldAccountTotals?.totals).toBe(440); // 500 - 60
   });
 });

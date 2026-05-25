@@ -19,7 +19,9 @@ jest.mock("../../utils/logger", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -31,10 +33,16 @@ const createTestQueryClient = () =>
 
 const createWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children as any);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
   };
 
-const createTestParameter = (overrides: Partial<Parameter> = {}): Parameter => ({
+const createTestParameter = (
+  overrides: Partial<Parameter> = {},
+): Parameter => ({
   parameterId: 1,
   parameterName: "test_param",
   parameterValue: "test_value",
@@ -107,7 +115,9 @@ describe("useParameterDeleteGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldRow: createTestParameter({ parameterId: 99 }) });
+    await result.current.mutateAsync({
+      oldRow: createTestParameter({ parameterId: 99 }),
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Parameter[]>(["parameterGQL"]);

@@ -60,6 +60,5 @@ export default function usePaymentRequiredFetch() {
     },
   );
 
-
   return queryResult;
 }

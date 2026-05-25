@@ -68,7 +68,12 @@ function computeCurrentDueDate(account: Account): Date | null {
   } = account;
 
   if (!billingStatementCloseDay) return null;
-  if (!billingDueDaySameMonth && !billingDueDayNextMonth && !billingGracePeriodDays) return null;
+  if (
+    !billingDueDaySameMonth &&
+    !billingDueDayNextMonth &&
+    !billingGracePeriodDays
+  )
+    return null;
 
   const today = new Date();
   const year = today.getFullYear();
@@ -90,11 +95,15 @@ function computeCurrentDueDate(account: Account): Date | null {
     const shift = billingCycleWeekendShift.toLowerCase();
     const dow = d.getDay();
     if (dow === 6) {
-      if (shift === "back" || shift === "back_sat_only") d.setDate(d.getDate() - 1);
-      else if (shift === "forward" || shift === "forward_sat_only") d.setDate(d.getDate() + 2);
+      if (shift === "back" || shift === "back_sat_only")
+        d.setDate(d.getDate() - 1);
+      else if (shift === "forward" || shift === "forward_sat_only")
+        d.setDate(d.getDate() + 2);
     } else if (dow === 0) {
-      if (shift === "back" || shift === "back_sun_only") d.setDate(d.getDate() - 2);
-      else if (shift === "forward" || shift === "forward_sun_only") d.setDate(d.getDate() + 1);
+      if (shift === "back" || shift === "back_sun_only")
+        d.setDate(d.getDate() - 2);
+      else if (shift === "forward" || shift === "forward_sun_only")
+        d.setDate(d.getDate() + 1);
     }
     return d;
   }
@@ -109,7 +118,10 @@ function computeCurrentDueDate(account: Account): Date | null {
     } else {
       let dMonth = cMonth + 1;
       let dYear = cYear;
-      if (dMonth > 11) { dMonth = 0; dYear = cYear + 1; }
+      if (dMonth > 11) {
+        dMonth = 0;
+        dYear = cYear + 1;
+      }
       d = new Date(dYear, dMonth, billingDueDayNextMonth!);
     }
     return applyWeekendShift(d);
@@ -119,7 +131,10 @@ function computeCurrentDueDate(account: Account): Date | null {
   if (dueDate < today) {
     let nextCloseMonth = closeMonth + 1;
     let nextCloseYear = closeYear;
-    if (nextCloseMonth > 11) { nextCloseMonth = 0; nextCloseYear = closeYear + 1; }
+    if (nextCloseMonth > 11) {
+      nextCloseMonth = 0;
+      nextCloseYear = closeYear + 1;
+    }
     dueDate = buildDueDate(nextCloseYear, nextCloseMonth);
   }
 

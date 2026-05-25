@@ -1,4 +1,6 @@
-import useCategoryInsert, { insertCategory } from "../../hooks/useCategoryInsert";
+import useCategoryInsert, {
+  insertCategory,
+} from "../../hooks/useCategoryInsert";
 import Category from "../../model/Category";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -63,9 +65,8 @@ jest.mock("../../components/AuthProvider", () => ({
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { validateInsert } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -103,7 +104,10 @@ describe("useCategoryInsert - insertCategory", () => {
 
     it("should use validated data in request body", async () => {
       const category = createTestCategory({ categoryName: "dining" });
-      const validatedCategory = { ...category, categoryName: "validated_dining" };
+      const validatedCategory = {
+        ...category,
+        categoryName: "validated_dining",
+      };
       mockValidateInsert.mockReturnValue(validatedCategory);
       mockParseResponse.mockResolvedValue(validatedCategory);
 
@@ -137,7 +141,10 @@ describe("useCategoryInsert - insertCategory", () => {
     });
 
     it("should return the created category", async () => {
-      const category = createTestCategory({ categoryId: 5, categoryName: "sports" });
+      const category = createTestCategory({
+        categoryId: 5,
+        categoryName: "sports",
+      });
       mockParseResponse.mockResolvedValue(category);
 
       const result = await insertCategory(category);
@@ -165,21 +172,24 @@ describe("useCategoryInsert - insertCategory", () => {
       expect(result).toBeNull();
     });
 
-    it.each(["groceries", "dining", "entertainment", "utilities", "healthcare"])(
-      "should insert '%s' category",
-      async (name) => {
-        const category = createTestCategory({ categoryName: name });
-        mockParseResponse.mockResolvedValue(category);
+    it.each([
+      "groceries",
+      "dining",
+      "entertainment",
+      "utilities",
+      "healthcare",
+    ])("should insert '%s' category", async (name) => {
+      const category = createTestCategory({ categoryName: name });
+      mockParseResponse.mockResolvedValue(category);
 
-        const result = await insertCategory(category);
+      const result = await insertCategory(category);
 
-        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
-          "/api/category",
-          expect.objectContaining({ method: "POST" }),
-        );
-        expect(result?.categoryName).toBe(name);
-      },
-    );
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        "/api/category",
+        expect.objectContaining({ method: "POST" }),
+      );
+      expect(result?.categoryName).toBe(name);
+    });
   });
 
   describe("error handling", () => {
@@ -257,7 +267,11 @@ const createCatInsertHookQueryClient = () =>
 
 const createCatInsertHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useCategoryInsert hook", () => {
@@ -266,7 +280,8 @@ describe("useCategoryInsert hook", () => {
     mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
     mockParseResponse.mockResolvedValue(createTestCategory());
     mockValidateInsert.mockImplementation((data: unknown) => data as Category);
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: true,
       loading: false,
@@ -322,7 +337,8 @@ describe("useCategoryInsert hook", () => {
   });
 
   it("throws when user is not logged in", async () => {
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: false,
       loading: false,
@@ -340,7 +356,9 @@ describe("useCategoryInsert hook", () => {
       result.current.mutate({ category: createTestCategory() });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

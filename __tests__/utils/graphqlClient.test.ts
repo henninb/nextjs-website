@@ -30,7 +30,8 @@ describe("graphqlClient", () => {
   });
 
   it("sends a GraphQL request and returns response data", async () => {
-    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT = "https://api.example.com/graphql/";
+    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT =
+      "https://api.example.com/graphql/";
 
     const signal = new AbortController().signal;
     fetchMock.mockResolvedValue({

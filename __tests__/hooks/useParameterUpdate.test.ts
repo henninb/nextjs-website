@@ -44,9 +44,8 @@ jest.mock("../../utils/logger", () => ({
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -55,7 +54,9 @@ const mockSanitizeParameterName =
     typeof InputSanitizer.sanitizeParameterName
   >;
 
-const createTestParameter = (overrides: Partial<Parameter> = {}): Parameter => ({
+const createTestParameter = (
+  overrides: Partial<Parameter> = {},
+): Parameter => ({
   parameterId: 1,
   parameterName: "payment_account",
   parameterValue: "checking_john",
@@ -83,7 +84,9 @@ describe("useParameterUpdate - updateParameter", () => {
     });
 
     it("should sanitize old parameter name for URL", async () => {
-      const oldParam = createTestParameter({ parameterName: "payment_account" });
+      const oldParam = createTestParameter({
+        parameterName: "payment_account",
+      });
       const newParam = createTestParameter({ parameterName: "checking" });
       mockParseResponse.mockResolvedValue(newParam);
 
@@ -299,11 +302,16 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useParameterUpdate hook - renderHook tests", () => {
-  const mockUpdateInList = jest.requireMock("../../utils/cacheUtils").updateInList as jest.Mock;
+  const mockUpdateInList = jest.requireMock("../../utils/cacheUtils")
+    .updateInList as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -313,7 +321,10 @@ describe("useParameterUpdate hook - renderHook tests", () => {
 
   it("onSuccess calls updateInList with the updated parameter", async () => {
     const queryClient = createHookQueryClient();
-    const updatedParam = createTestParameter({ parameterName: "new_name", parameterValue: "new_value" });
+    const updatedParam = createTestParameter({
+      parameterName: "new_name",
+      parameterValue: "new_value",
+    });
     mockParseResponse.mockResolvedValue(updatedParam);
 
     const { result } = renderHook(() => useParameterUpdate(), {
@@ -340,7 +351,9 @@ describe("useParameterUpdate hook - renderHook tests", () => {
   it("onError puts mutation into error state", async () => {
     const queryClient = createHookQueryClient();
     const { FetchError } = jest.requireMock("../../utils/fetchUtils");
-    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Update failed", 404));
+    mockFetchWithErrorHandling.mockRejectedValue(
+      new FetchError("Update failed", 404),
+    );
 
     const { result } = renderHook(() => useParameterUpdate(), {
       wrapper: createHookWrapper(queryClient),

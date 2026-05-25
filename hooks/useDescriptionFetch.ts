@@ -33,6 +33,5 @@ export default function useDescriptionFetch() {
     fetchDescriptionData,
   );
 
-
   return queryResult;
 }

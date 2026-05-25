@@ -563,9 +563,11 @@ export default function ValidationAmounts() {
                 validationDate: new Date(e.target.value),
               }))
             }
-            slotProps={{ inputLabel: {
-              shrink: true,
-            } }}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+            }}
           />
           <TextField
             label="Amount"
@@ -581,9 +583,11 @@ export default function ValidationAmounts() {
                 amount: parseFloat(e.target.value),
               }))
             }
-            slotProps={{ htmlInput: {
-              step: "0.01",
-            } }}
+            slotProps={{
+              htmlInput: {
+                step: "0.01",
+              },
+            }}
           />
           <FormControl
             fullWidth

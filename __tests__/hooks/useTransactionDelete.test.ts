@@ -9,7 +9,9 @@ import {
   createTestTransaction,
   simulateNetworkError,
 } from "../../testHelpers";
-import useTransactionDelete, { deleteTransaction } from "../../hooks/useTransactionDelete";
+import useTransactionDelete, {
+  deleteTransaction,
+} from "../../hooks/useTransactionDelete";
 import { validateDelete } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
@@ -49,7 +51,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -169,7 +176,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 const makeDeleteTx = (overrides: Partial<Transaction> = {}): Transaction =>
@@ -218,16 +229,23 @@ describe("useTransactionDelete hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldRow: makeDeleteTx({ transactionState: "cleared", amount: 50 }) });
+      await result.current.mutateAsync({
+        oldRow: makeDeleteTx({ transactionState: "cleared", amount: 50 }),
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["transaction", "checking", "paged"] }),
+      expect.objectContaining({
+        queryKey: ["transaction", "checking", "paged"],
+      }),
     );
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["transaction", "checking"], exact: true }),
+      expect.objectContaining({
+        queryKey: ["transaction", "checking"],
+        exact: true,
+      }),
     );
   });
 
@@ -240,7 +258,9 @@ describe("useTransactionDelete hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldRow: makeDeleteTx({ transactionState: "cleared", amount: 50 }) });
+      await result.current.mutateAsync({
+        oldRow: makeDeleteTx({ transactionState: "cleared", amount: 50 }),
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -261,7 +281,9 @@ describe("useTransactionDelete hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldRow: makeDeleteTx({ transactionState: "outstanding", amount: 30 }) });
+      await result.current.mutateAsync({
+        oldRow: makeDeleteTx({ transactionState: "outstanding", amount: 30 }),
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -282,7 +304,9 @@ describe("useTransactionDelete hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldRow: makeDeleteTx({ transactionState: "future", amount: 40 }) });
+      await result.current.mutateAsync({
+        oldRow: makeDeleteTx({ transactionState: "future", amount: 40 }),
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -303,7 +327,12 @@ describe("useTransactionDelete hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldRow: makeDeleteTx({ transactionState: "undefined" as any, amount: 20 }) });
+      await result.current.mutateAsync({
+        oldRow: makeDeleteTx({
+          transactionState: "undefined" as any,
+          amount: 20,
+        }),
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -324,7 +353,9 @@ describe("useTransactionDelete hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldRow: makeDeleteTx({ transactionState: "cleared", amount: 50 }) });
+      await result.current.mutateAsync({
+        oldRow: makeDeleteTx({ transactionState: "cleared", amount: 50 }),
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -340,7 +371,9 @@ describe("useTransactionDelete hook - renderHook tests", () => {
       ok: false,
       status: 400,
       json: jest.fn().mockResolvedValue({ response: "Delete failed" }),
-      text: jest.fn().mockResolvedValue(JSON.stringify({ response: "Delete failed" })),
+      text: jest
+        .fn()
+        .mockResolvedValue(JSON.stringify({ response: "Delete failed" })),
     });
 
     const { result } = renderHook(() => useTransactionDelete(), {

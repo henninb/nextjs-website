@@ -1,4 +1,6 @@
-import useFamilyMemberInsert, { insertFamilyMember } from "../../hooks/useFamilyMemberInsert";
+import useFamilyMemberInsert, {
+  insertFamilyMember,
+} from "../../hooks/useFamilyMemberInsert";
 import {
   FamilyMember,
   FamilyMemberCreateRequest,
@@ -39,9 +41,8 @@ jest.mock("../../utils/logger", () => ({
 
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -263,7 +264,11 @@ const createFamilyMemberInsertHookQueryClient = () =>
 
 const createFamilyMemberInsertHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useFamilyMemberInsert hook", () => {
@@ -276,7 +281,10 @@ describe("useFamilyMemberInsert hook", () => {
   it("onSuccess calls invalidateQueries for family member cache", async () => {
     const queryClient = createFamilyMemberInsertHookQueryClient();
     const invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
-    const newMember = createTestFamilyMember({ familyMemberId: 5, memberName: "Bob Smith" });
+    const newMember = createTestFamilyMember({
+      familyMemberId: 5,
+      memberName: "Bob Smith",
+    });
     mockParseResponse.mockResolvedValue(newMember);
 
     const { result } = renderHook(() => useFamilyMemberInsert(), {

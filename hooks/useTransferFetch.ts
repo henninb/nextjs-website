@@ -33,6 +33,5 @@ export default function useTransferFetch() {
     fetchTransferData,
   );
 
-
   return queryResult;
 }

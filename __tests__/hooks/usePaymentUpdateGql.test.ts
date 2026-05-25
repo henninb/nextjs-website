@@ -19,7 +19,9 @@ jest.mock("../../utils/logger", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -31,7 +33,11 @@ const createTestQueryClient = () =>
 
 const createWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children as any);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
   };
 
 const createTestPayment = (overrides: Partial<Payment> = {}): Payment => ({
@@ -76,7 +82,10 @@ describe("usePaymentUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    const updated = await result.current.mutateAsync({ oldPayment, newPayment });
+    const updated = await result.current.mutateAsync({
+      oldPayment,
+      newPayment,
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(updated.amount).toBe(750);
@@ -104,7 +113,10 @@ describe("usePaymentUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldPayment: existingPayments[0], newPayment });
+    await result.current.mutateAsync({
+      oldPayment: existingPayments[0],
+      newPayment,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Payment[]>(["paymentGQL"]);
@@ -123,7 +135,10 @@ describe("usePaymentUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldPayment: payment, newPayment: payment });
+    await result.current.mutateAsync({
+      oldPayment: payment,
+      newPayment: payment,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Payment[]>(["paymentGQL"]);
@@ -146,7 +161,9 @@ describe("usePaymentUpdateGql", () => {
 
   it("should convert transactionDate to YYYY-MM-DD format", async () => {
     const queryClient = createTestQueryClient();
-    const payment = createTestPayment({ transactionDate: new Date("2024-06-15T12:00:00Z") });
+    const payment = createTestPayment({
+      transactionDate: new Date("2024-06-15T12:00:00Z"),
+    });
     mockGraphqlRequest.mockResolvedValue({
       updatePayment: createGqlPaymentResponse(payment),
     });
@@ -155,7 +172,10 @@ describe("usePaymentUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldPayment: payment, newPayment: payment });
+    await result.current.mutateAsync({
+      oldPayment: payment,
+      newPayment: payment,
+    });
 
     expect(mockGraphqlRequest).toHaveBeenCalledWith(
       expect.objectContaining({

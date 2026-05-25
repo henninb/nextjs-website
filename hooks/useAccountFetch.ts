@@ -31,6 +31,5 @@ export default function useAccountFetch() {
     fetchAccountData,
   );
 
-
   return queryResult;
 }

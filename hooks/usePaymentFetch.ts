@@ -30,6 +30,5 @@ const fetchPaymentData = createQueryFn<Payment[]>("/api/payment/active", {
 export default function usePaymentFetch() {
   const queryResult = usePublicQuery(QueryKeys.payment(), fetchPaymentData);
 
-
   return queryResult;
 }

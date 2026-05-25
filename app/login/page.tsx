@@ -101,7 +101,7 @@ export default function LoginPage() {
       password: payload.password,
       firstName: "Joe",
       lastName: "User",
-      keepLoggedIn: stayLoggedIn,
+      ...(stayLoggedIn && { keepLoggedIn: true }),
     };
 
     const response = await fetch(endpoint, {
@@ -160,11 +160,17 @@ export default function LoginPage() {
           const userData = await userResponse.json();
           login(userData, stayLoggedIn);
         } else {
-          login({ username: email, password: "", firstName: "", lastName: "" }, stayLoggedIn);
+          login(
+            { username: email, password: "", firstName: "", lastName: "" },
+            stayLoggedIn,
+          );
         }
       } catch (userError) {
         console.error("Error fetching user data:", userError);
-        login({ username: email, password: "", firstName: "", lastName: "" }, stayLoggedIn);
+        login(
+          { username: email, password: "", firstName: "", lastName: "" },
+          stayLoggedIn,
+        );
       }
       router.push("/finance");
     } catch (error: unknown) {
@@ -209,13 +215,16 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
-            slotProps={{ formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailIcon />
-                </InputAdornment>
-              ),
-            } }}
+            slotProps={{
+              formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon />
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <TextField
             margin="normal"
@@ -229,26 +238,29 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
-            slotProps={{ formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockIcon />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleTogglePassword}
-                    disabled={isLoading}
-                    edge="end"
-                    size="small"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            } }}
+            slotProps={{
+              formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleTogglePassword}
+                      disabled={isLoading}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <FormControlLabel
             control={

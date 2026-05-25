@@ -81,6 +81,5 @@ export default function useValidationAmountsFetchAll(accountNameOwner: string) {
     },
   );
 
-
   return queryResult;
 }

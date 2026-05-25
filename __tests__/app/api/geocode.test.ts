@@ -51,7 +51,8 @@ describe("/api/geocode", () => {
       mockIsSessionValid.mockResolvedValueOnce(true);
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve([{ display_name: "Central Park, New York" }]),
+        json: () =>
+          Promise.resolve([{ display_name: "Central Park, New York" }]),
       });
 
       const res = await GET(makeRequest("Central Park", "token=abc123") as any);
@@ -107,7 +108,9 @@ describe("/api/geocode", () => {
     });
 
     it("returns 500 on network failure without leaking details", async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error("DNS resolution failed"));
+      (fetch as jest.Mock).mockRejectedValueOnce(
+        new Error("DNS resolution failed"),
+      );
 
       const res = await GET(makeRequest("Central Park", "token=abc123") as any);
 

@@ -530,7 +530,11 @@ const createParamQueryClient = () =>
 
 const createParamWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useParameterFetch hook - renderHook tests", () => {
@@ -546,8 +550,18 @@ describe("useParameterFetch hook - renderHook tests", () => {
 
   it("returns parameter data on successful fetch", async () => {
     const testParameters: Parameter[] = [
-      { parameterId: 1, parameterName: "payment_account", parameterValue: "checking_main", activeStatus: true },
-      { parameterId: 2, parameterName: "currency", parameterValue: "USD", activeStatus: true },
+      {
+        parameterId: 1,
+        parameterName: "payment_account",
+        parameterValue: "checking_main",
+        activeStatus: true,
+      },
+      {
+        parameterId: 2,
+        parameterName: "currency",
+        parameterValue: "USD",
+        activeStatus: true,
+      },
     ];
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -577,6 +591,8 @@ describe("useParameterFetch hook - renderHook tests", () => {
       wrapper: createParamWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

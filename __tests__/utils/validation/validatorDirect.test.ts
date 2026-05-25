@@ -1,4 +1,7 @@
-import { DataValidator, hookValidators } from "../../../utils/validation/validator";
+import {
+  DataValidator,
+  hookValidators,
+} from "../../../utils/validation/validator";
 import { FINANCIAL_LIMITS } from "../../../utils/validation/schemas";
 import { SecurityLogger } from "../../../utils/validation/sanitization";
 
@@ -206,30 +209,16 @@ describe("validator direct coverage", () => {
       });
     });
 
-    it("returns a rate-limit error when validateRateLimit fails", () => {
+    it("always calls the validator regardless of rate limit state", () => {
       const rateSpy = jest
         .spyOn(DataValidator, "validateRateLimit")
         .mockReturnValue(false);
-      const validator = jest.fn();
+      const validator = jest.fn().mockReturnValue({ success: true, data: {} });
 
-      const result = hookValidators.validateApiPayload(
-        { input: true },
-        validator,
-        "hook-name",
-      );
+      hookValidators.validateApiPayload({ input: true }, validator, "hook-name");
 
-      expect(rateSpy).toHaveBeenCalledWith("user", "hook-name");
-      expect(validator).not.toHaveBeenCalled();
-      expect(result).toEqual({
-        isValid: false,
-        errors: [
-          {
-            field: "rateLimit",
-            message: "Too many requests. Please wait before trying again.",
-            code: "RATE_LIMIT_EXCEEDED",
-          },
-        ],
-      });
+      expect(rateSpy).not.toHaveBeenCalled();
+      expect(validator).toHaveBeenCalled();
     });
   });
 });

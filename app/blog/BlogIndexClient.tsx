@@ -216,7 +216,9 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
                     sx={{ display: "flex", flexDirection: "column", flex: 1 }}
                   >
                     <CardContent sx={{ flex: 1, p: 4 }}>
-                      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                      >
                         <CalendarToday
                           sx={{
                             mr: 1,
@@ -300,7 +302,11 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
                       )}
 
                       <Box
-                        sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
                       >
                         <Button
                           endIcon={<ArrowForward />}
@@ -382,7 +388,13 @@ export default function BlogIndexClient({ posts }: BlogIndexClientProps) {
                         )}
 
                         <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 2,
+                            }}
+                          >
                             <CalendarToday
                               sx={{
                                 mr: 1,

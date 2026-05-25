@@ -1,4 +1,6 @@
-import useCategoryDelete, { deleteCategory } from "../../hooks/useCategoryDelete";
+import useCategoryDelete, {
+  deleteCategory,
+} from "../../hooks/useCategoryDelete";
 import Category from "../../model/Category";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -54,9 +56,8 @@ import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 import { validateDelete } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -156,19 +157,22 @@ describe("useCategoryDelete - deleteCategory", () => {
       expect(mockParseResponse).toHaveBeenCalledWith(mockResponse);
     });
 
-    it.each(["groceries", "dining", "entertainment", "transportation", "utilities"])(
-      "should delete category '%s'",
-      async (name) => {
-        const category = createTestCategory({ categoryName: name });
+    it.each([
+      "groceries",
+      "dining",
+      "entertainment",
+      "transportation",
+      "utilities",
+    ])("should delete category '%s'", async (name) => {
+      const category = createTestCategory({ categoryName: name });
 
-        await deleteCategory(category);
+      await deleteCategory(category);
 
-        expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
-          `/api/category/${name}`,
-          expect.any(Object),
-        );
-      },
-    );
+      expect(mockFetchWithErrorHandling).toHaveBeenCalledWith(
+        `/api/category/${name}`,
+        expect.any(Object),
+      );
+    });
 
     it("should delete inactive category", async () => {
       const category = createTestCategory({
@@ -280,7 +284,11 @@ const createCatDeleteHookQueryClient = () =>
 
 const createCatDeleteHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useCategoryDelete hook", () => {

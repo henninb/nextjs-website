@@ -22,11 +22,7 @@ export const deactivateAccount = async (
   payload: Account,
 ): Promise<Account | null> => {
   // Validate that account identifier exists
-  validateDelete(
-    payload,
-    "accountNameOwner",
-    "deactivateAccount",
-  );
+  validateDelete(payload, "accountNameOwner", "deactivateAccount");
 
   // Sanitize account name for URL
   const sanitizedAccountName = InputSanitizer.sanitizeAccountName(
@@ -84,12 +80,7 @@ export default function useAccountDeactivate() {
 
         // Update the account in cache with deactivated status
         if (data) {
-          updateInList(
-            queryClient,
-            QueryKeys.account(),
-            data,
-            "accountId",
-          );
+          updateInList(queryClient, QueryKeys.account(), data, "accountId");
         }
 
         // Invalidate all transaction-related queries to reflect cascade

@@ -103,12 +103,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      updateInList(
-        queryClient,
-        ["test"],
-        updatedItem,
-        "id",
-      );
+      updateInList(queryClient, ["test"], updatedItem, "id");
 
       const updatedData = queryClient.getQueryData<typeof existingData>([
         "test",
@@ -129,12 +124,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      updateInList(
-        queryClient,
-        ["test"],
-        updatedItem,
-        "id",
-      );
+      updateInList(queryClient, ["test"], updatedItem, "id");
 
       const updatedData = queryClient.getQueryData<typeof existingData>([
         "test",
@@ -146,12 +136,7 @@ describe("cacheUtils", () => {
       const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
       const updatedItem = { id: 1, name: "item1" };
 
-      updateInList(
-        queryClient,
-        ["test"],
-        updatedItem,
-        "id",
-      );
+      updateInList(queryClient, ["test"], updatedItem, "id");
 
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["test"] });
     });
@@ -165,12 +150,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      updateInList(
-        queryClient,
-        ["test"],
-        updatedItem,
-        "guid",
-      );
+      updateInList(queryClient, ["test"], updatedItem, "guid");
 
       const updatedData = queryClient.getQueryData<typeof existingData>([
         "test",
@@ -185,12 +165,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(queryKey, existingData);
 
-      updateInList(
-        queryClient,
-        queryKey,
-        updatedItem,
-        "id",
-      );
+      updateInList(queryClient, queryKey, updatedItem, "id");
 
       const updatedData = queryClient.getQueryData(queryKey);
       expect(updatedData).toEqual([updatedItem]);
@@ -208,12 +183,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      removeFromList(
-        queryClient,
-        ["test"],
-        itemToRemove,
-        "id",
-      );
+      removeFromList(queryClient, ["test"], itemToRemove, "id");
 
       const updatedData = queryClient.getQueryData<typeof existingData>([
         "test",
@@ -228,12 +198,7 @@ describe("cacheUtils", () => {
     it("should do nothing if no existing data", () => {
       const itemToRemove = { id: 1, name: "item1" };
 
-      removeFromList(
-        queryClient,
-        ["test"],
-        itemToRemove,
-        "id",
-      );
+      removeFromList(queryClient, ["test"], itemToRemove, "id");
 
       const updatedData = queryClient.getQueryData(["test"]);
       expect(updatedData).toBeUndefined();
@@ -248,12 +213,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      removeFromList(
-        queryClient,
-        ["test"],
-        itemToRemove,
-        "id",
-      );
+      removeFromList(queryClient, ["test"], itemToRemove, "id");
 
       const updatedData = queryClient.getQueryData(["test"]);
       expect(updatedData).toEqual(existingData);
@@ -268,12 +228,7 @@ describe("cacheUtils", () => {
 
       queryClient.setQueryData(["test"], existingData);
 
-      removeFromList(
-        queryClient,
-        ["test"],
-        itemToRemove,
-        "accountName",
-      );
+      removeFromList(queryClient, ["test"], itemToRemove, "accountName");
 
       const updatedData = queryClient.getQueryData<typeof existingData>([
         "test",
@@ -378,10 +333,7 @@ describe("cacheUtils", () => {
       queryClient.setQueryData(["transaction"], []);
       queryClient.setQueryData(["category"], []);
 
-      clearCaches(queryClient, [
-        "account",
-        "transaction",
-      ]);
+      clearCaches(queryClient, ["account", "transaction"]);
 
       expect(queryClient.getQueryData(["account"])).toBeUndefined();
       expect(queryClient.getQueryData(["transaction"])).toBeUndefined();
@@ -560,12 +512,7 @@ describe("cacheUtils", () => {
 
       // Insert new account
       const newAccount = { accountNameOwner: "savings_account", balance: 5000 };
-      addToList(
-        queryClient,
-        QueryKeys.account(),
-        newAccount,
-        "start",
-      );
+      addToList(queryClient, QueryKeys.account(), newAccount, "start");
 
       const accounts = queryClient.getQueryData(QueryKeys.account());
       expect(accounts).toHaveLength(2);
@@ -597,14 +544,10 @@ describe("cacheUtils", () => {
       );
 
       // Update totals
-      updateTotals(
-        queryClient,
-        QueryKeys.totals("chase_brian"),
-        (old) => ({
-          ...old,
-          total: old.total + 50, // Difference from 100 to 150
-        }),
-      );
+      updateTotals(queryClient, QueryKeys.totals("chase_brian"), (old) => ({
+        ...old,
+        total: old.total + 50, // Difference from 100 to 150
+      }));
 
       const updatedTransactions = queryClient.getQueryData(
         QueryKeys.transactionByAccount("chase_brian"),

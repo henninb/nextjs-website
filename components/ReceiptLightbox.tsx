@@ -51,12 +51,20 @@ const ReceiptLightbox: React.FC<ReceiptLightboxProps> = ({
               <Typography variant="body2" color="text.secondary">
                 {formatDateForDisplay(transaction.transactionDate)}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontWeight: 600 }}
+              >
                 {currencyFormat(transaction.amount ?? 0)}
               </Typography>
             </Stack>
           </Box>
-          <IconButton onClick={onClose} size="small" sx={{ mt: -0.5, mr: -0.5 }}>
+          <IconButton
+            onClick={onClose}
+            size="small"
+            sx={{ mt: -0.5, mr: -0.5 }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>

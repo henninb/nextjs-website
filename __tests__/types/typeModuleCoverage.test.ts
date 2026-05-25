@@ -99,9 +99,17 @@ describe("type module coverage", () => {
       venue: "Arena",
     };
     const nflGame: NFLGame = { ...sportsGame, week: 1, season: 2026 };
-    const nbaGame: NBAGame = { ...sportsGame, quarter: 4, timeRemaining: "2:15" };
+    const nbaGame: NBAGame = {
+      ...sportsGame,
+      quarter: 4,
+      timeRemaining: "2:15",
+    };
     const mlbGame: MLBGame = { ...sportsGame, inning: 7 };
-    const nhlGame: NHLGame = { ...sportsGame, period: 3, timeRemaining: "1:01" };
+    const nhlGame: NHLGame = {
+      ...sportsGame,
+      period: 3,
+      timeRemaining: "1:01",
+    };
     const sportsFetcher: SportsDataFetcher = async () => [sportsGame];
 
     type SampleRow = GridValidRowModel & { id: GridRowId; amount: number };
@@ -151,7 +159,7 @@ describe("type module coverage", () => {
       arrayBuffer: async () => new ArrayBuffer(0),
       blob: async () => new Blob(),
       formData: async () => new FormData(),
-      json: async <T>() => ({ ok: true } as T),
+      json: async <T>() => ({ ok: true }) as T,
       text: async () => "text",
     };
     const renderOptions: CustomRenderOptions = {};

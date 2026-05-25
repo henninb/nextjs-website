@@ -68,7 +68,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -110,7 +115,8 @@ describe("useTransferInsert Modern Endpoint (TDD)", () => {
     jest.clearAllMocks();
     mockLogger.debug.mockClear();
     mockLogger.error.mockClear();
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: true,
       loading: false,
@@ -363,7 +369,8 @@ describe("useTransferInsert Modern Endpoint (TDD)", () => {
   });
 
   it("throws when user is not logged in", async () => {
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: false,
       loading: false,
@@ -382,7 +389,9 @@ describe("useTransferInsert Modern Endpoint (TDD)", () => {
       result.current.mutate({ payload: transfer });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

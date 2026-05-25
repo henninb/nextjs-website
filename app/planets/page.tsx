@@ -749,18 +749,20 @@ export default function PlanetsPage() {
                 onFocus={() =>
                   suggestions.length > 0 && setShowSuggestions(true)
                 }
-                slotProps={{ input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: geocoding ? (
-                    <InputAdornment position="end">
-                      <CircularProgress size={18} />
-                    </InputAdornment>
-                  ) : null,
-                } }}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search sx={{ color: "text.secondary" }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: geocoding ? (
+                      <InputAdornment position="end">
+                        <CircularProgress size={18} />
+                      </InputAdornment>
+                    ) : null,
+                  },
+                }}
               />
               {showSuggestions && suggestions.length > 0 && (
                 <Paper
@@ -791,7 +793,13 @@ export default function PlanetsPage() {
                           <ListItemText
                             primary={getPlaceName(s)}
                             secondary={`${parseFloat(s.lat).toFixed(4)}°, ${parseFloat(s.lon).toFixed(4)}°`}
-                            slotProps={{ primary: { variant: "body2", sx: { fontWeight: 500 } }, secondary: { variant: "caption" } }}
+                            slotProps={{
+                              primary: {
+                                variant: "body2",
+                                sx: { fontWeight: 500 },
+                              },
+                              secondary: { variant: "caption" },
+                            }}
                           />
                         </ListItemButton>
                       </ListItem>
@@ -811,7 +819,10 @@ export default function PlanetsPage() {
               label="Date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: "2053-12-31", min: "1900-01-01" } }}
+              slotProps={{
+                inputLabel: { shrink: true },
+                htmlInput: { max: "2053-12-31", min: "1900-01-01" },
+              }}
             />
           </Grid>
 
@@ -942,7 +953,11 @@ export default function PlanetsPage() {
               alignItems: "center",
             }}
           >
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontWeight: 600 }}
+            >
               Timeline legend:
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
@@ -990,7 +1005,11 @@ export default function PlanetsPage() {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
               >
                 <Visibility sx={{ color: "success.main" }} />
-                <Typography variant="h5" sx={{ fontWeight: 700 }} color="success.main">
+                <Typography
+                  variant="h5"
+                  sx={{ fontWeight: 700 }}
+                  color="success.main"
+                >
                   Visible Now
                 </Typography>
                 <Chip
@@ -1018,7 +1037,11 @@ export default function PlanetsPage() {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
               >
                 <NightsStay sx={{ color: "warning.main" }} />
-                <Typography variant="h5" sx={{ fontWeight: 700 }} color="warning.main">
+                <Typography
+                  variant="h5"
+                  sx={{ fontWeight: 700 }}
+                  color="warning.main"
+                >
                   Visible Tonight
                 </Typography>
                 <Chip
@@ -1046,7 +1069,11 @@ export default function PlanetsPage() {
                 sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
               >
                 <VisibilityOff sx={{ color: "text.disabled" }} />
-                <Typography variant="h5" sx={{ fontWeight: 700 }} color="text.disabled">
+                <Typography
+                  variant="h5"
+                  sx={{ fontWeight: 700 }}
+                  color="text.disabled"
+                >
                   Not Visible
                 </Typography>
                 <Chip

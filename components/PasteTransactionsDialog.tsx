@@ -1,46 +1,49 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import LinearProgress from '@mui/material/LinearProgress';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import DeleteIcon from '@mui/icons-material/DeleteRounded';
-import ErrorIcon from '@mui/icons-material/Error';
-import WarningIcon from '@mui/icons-material/Warning';
+import React, { useState, useCallback } from "react";
+import Alert from "@mui/material/Alert";
+import Autocomplete from "@mui/material/Autocomplete";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import LinearProgress from "@mui/material/LinearProgress";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
+import ErrorIcon from "@mui/icons-material/Error";
+import WarningIcon from "@mui/icons-material/Warning";
 
-import { AccountType } from '../model/AccountType';
-import { ReoccurringType } from '../model/ReoccurringType';
-import Transaction from '../model/Transaction';
-import TransactionCategoryMetadata from '../model/TransactionCategoryMetadata';
-import { TransactionState } from '../model/TransactionState';
-import { TransactionType } from '../model/TransactionType';
-import { getCategoryWithAI, createManualMetadata } from '../utils/ai/categorization';
-import { parseTransactionPaste } from '../utils/parseTransactionPaste';
-import useTransactionInsert from '../hooks/useTransactionInsert';
-import { normalizeTransactionDate, formatDateForInput } from './Common';
+import { AccountType } from "../model/AccountType";
+import { ReoccurringType } from "../model/ReoccurringType";
+import Transaction from "../model/Transaction";
+import TransactionCategoryMetadata from "../model/TransactionCategoryMetadata";
+import { TransactionState } from "../model/TransactionState";
+import { TransactionType } from "../model/TransactionType";
+import {
+  getCategoryWithAI,
+  createManualMetadata,
+} from "../utils/ai/categorization";
+import { parseTransactionPaste } from "../utils/parseTransactionPaste";
+import useTransactionInsert from "../hooks/useTransactionInsert";
+import { normalizeTransactionDate, formatDateForInput } from "./Common";
 
-type DialogStep = 'paste' | 'categorizing' | 'review' | 'inserting' | 'done';
+type DialogStep = "paste" | "categorizing" | "review" | "inserting" | "done";
 
 interface EditableRow {
   id: string;
@@ -80,26 +83,26 @@ export default function PasteTransactionsDialog({
   categories,
   onComplete,
 }: PasteTransactionsDialogProps): React.ReactElement {
-  const [step, setStep] = useState<DialogStep>('paste');
-  const [rawText, setRawText] = useState('');
+  const [step, setStep] = useState<DialogStep>("paste");
+  const [rawText, setRawText] = useState("");
   const [rows, setRows] = useState<EditableRow[]>([]);
   const [categorizingProgress, setCategorizingProgress] = useState(0);
   const [insertProgress, setInsertProgress] = useState(0);
   const [insertedCount, setInsertedCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
-  const [parseErrorMessage, setParseErrorMessage] = useState('');
+  const [parseErrorMessage, setParseErrorMessage] = useState("");
 
   const { mutateAsync: insertTransaction } = useTransactionInsert();
 
   const resetState = useCallback(() => {
-    setStep('paste');
-    setRawText('');
+    setStep("paste");
+    setRawText("");
     setRows([]);
     setCategorizingProgress(0);
     setInsertProgress(0);
     setInsertedCount(0);
     setFailedCount(0);
-    setParseErrorMessage('');
+    setParseErrorMessage("");
   }, []);
 
   const handleClose = useCallback(() => {
@@ -108,35 +111,37 @@ export default function PasteTransactionsDialog({
   }, [resetState, onClose]);
 
   const handleParse = useCallback(async () => {
-    setParseErrorMessage('');
+    setParseErrorMessage("");
     const parsed = parseTransactionPaste(rawText, accountType);
 
     if (parsed.length === 0) {
-      setParseErrorMessage('No transactions found. Make sure the text matches the expected format.');
+      setParseErrorMessage(
+        "No transactions found. Make sure the text matches the expected format.",
+      );
       return;
     }
 
     const editable: EditableRow[] = parsed.map((p) => ({
       id: p.id,
-      date: p.date ? formatDateForInput(p.date) : '',
+      date: p.date ? formatDateForInput(p.date) : "",
       description: p.description,
       notes: p.notes,
-      amount: p.amount !== null ? String(p.amount) : '',
-      category: '',
-      transactionType: 'expense' as TransactionType,
+      amount: p.amount !== null ? String(p.amount) : "",
+      category: "",
+      transactionType: "expense" as TransactionType,
       parseErrors: p.parseErrors,
       removed: false,
       selected: true,
     }));
 
     setRows(editable);
-    setStep('categorizing');
+    setStep("categorizing");
     setCategorizingProgress(0);
 
     // Description-based category overrides — applied after AI so they always win
     const CATEGORY_OVERRIDES: Array<{ pattern: RegExp; category: string }> = [
-      { pattern: /^NAVAN,?\s*INC\b/i, category: 'banking' },
-      { pattern: /^Foreign Currency Purchase\b/i, category: 'banking' },
+      { pattern: /^NAVAN,?\s*INC\b/i, category: "banking" },
+      { pattern: /^Foreign Currency Purchase\b/i, category: "banking" },
     ];
 
     // AI categorize sequentially to stay well under the 50 RPM limit
@@ -159,7 +164,9 @@ export default function PasteTransactionsDialog({
         } catch {
           // Leave category blank; user can fill it in during review
         }
-        const override = CATEGORY_OVERRIDES.find((o) => o.pattern.test(row.description));
+        const override = CATEGORY_OVERRIDES.find((o) =>
+          o.pattern.test(row.description),
+        );
         if (override) {
           categorized[idx] = {
             ...categorized[idx],
@@ -172,24 +179,28 @@ export default function PasteTransactionsDialog({
     }
 
     setRows(categorized);
-    setStep('review');
+    setStep("review");
   }, [rawText, categories, accountNameOwner]);
 
   const handleRowChange = useCallback(
     (id: string, field: keyof EditableRow, value: unknown) => {
-      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+      setRows((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
+      );
     },
     [],
   );
 
   const handleRemoveRow = useCallback((id: string) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, removed: true } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, removed: true } : r)),
+    );
   }, []);
 
   const handleInsert = async (): Promise<void> => {
     const toInsert = rows.filter((r) => !r.removed && r.selected);
 
-    setStep('inserting');
+    setStep("inserting");
     setInsertProgress(0);
     setInsertedCount(0);
     setFailedCount(0);
@@ -211,9 +222,9 @@ export default function PasteTransactionsDialog({
           category: row.category,
           categoryMetadata: row.categoryMetadata,
           amount: parseFloat(row.amount),
-          transactionState: 'outstanding' as TransactionState,
+          transactionState: "outstanding" as TransactionState,
           transactionType: row.transactionType,
-          reoccurringType: 'onetime' as ReoccurringType,
+          reoccurringType: "onetime" as ReoccurringType,
           activeStatus: true,
           notes: row.notes,
         };
@@ -228,7 +239,9 @@ export default function PasteTransactionsDialog({
       } catch (error) {
         failed++;
         const msg = error instanceof Error ? error.message : String(error);
-        setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, insertError: msg } : r)));
+        setRows((prev) =>
+          prev.map((r) => (r.id === row.id ? { ...r, insertError: msg } : r)),
+        );
       }
 
       setInsertProgress(idx + 1);
@@ -241,49 +254,66 @@ export default function PasteTransactionsDialog({
       }
     }
 
-    setStep('done');
+    setStep("done");
     if (inserted > 0) onComplete();
   };
 
   // Derived state for review step
   const activeRows = rows.filter((r) => !r.removed);
   const selectedRows = activeRows.filter((r) => r.selected);
-  const allSelected = activeRows.length > 0 && selectedRows.length === activeRows.length;
-  const someSelected = selectedRows.length > 0 && selectedRows.length < activeRows.length;
-  const ambiguousCount = selectedRows.filter((r) => r.parseErrors.length > 0).length;
+  const allSelected =
+    activeRows.length > 0 && selectedRows.length === activeRows.length;
+  const someSelected =
+    selectedRows.length > 0 && selectedRows.length < activeRows.length;
+  const ambiguousCount = selectedRows.filter(
+    (r) => r.parseErrors.length > 0,
+  ).length;
   const invalidRows = selectedRows.filter(
     (r) => !r.date || !r.description.trim() || isNaN(parseFloat(r.amount)),
   );
   const canInsert = invalidRows.length === 0 && selectedRows.length > 0;
 
   const handleSelectAll = useCallback((checked: boolean) => {
-    setRows((prev) => prev.map((r) => (r.removed ? r : { ...r, selected: checked })));
+    setRows((prev) =>
+      prev.map((r) => (r.removed ? r : { ...r, selected: checked })),
+    );
   }, []);
 
   const handleToggleSelect = useCallback((id: string, checked: boolean) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, selected: checked } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, selected: checked } : r)),
+    );
   }, []);
 
   const dialogTitle: Record<DialogStep, string> = {
-    paste: 'Paste Transactions',
-    categorizing: 'Categorizing with AI…',
-    review: `Review ${activeRows.length} Transaction${activeRows.length !== 1 ? 's' : ''}`,
-    inserting: 'Inserting…',
-    done: 'Done',
+    paste: "Paste Transactions",
+    categorizing: "Categorizing with AI…",
+    review: `Review ${activeRows.length} Transaction${activeRows.length !== 1 ? "s" : ""}`,
+    inserting: "Inserting…",
+    done: "Done",
   };
 
   return (
-    <Dialog open={open} onClose={step === 'paste' || step === 'review' || step === 'done' ? handleClose : undefined} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={
+        step === "paste" || step === "review" || step === "done"
+          ? handleClose
+          : undefined
+      }
+      maxWidth="md"
+      fullWidth
+    >
       <DialogTitle>{dialogTitle[step]}</DialogTitle>
 
       <DialogContent>
         {/* ── Step: paste ─────────────────────────────────────────────── */}
-        {step === 'paste' && (
+        {step === "paste" && (
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Copy transaction text from your bank statement and paste below. Each transaction block
-              should include a header line with the date and merchant, a card suffix line, and an
-              amount line.
+              Copy transaction text from your bank statement and paste below.
+              Each transaction block should include a header line with the date
+              and merchant, a card suffix line, and an amount line.
             </Typography>
             {parseErrorMessage && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -296,48 +326,61 @@ export default function PasteTransactionsDialog({
               maxRows={20}
               fullWidth
               placeholder={
-                'Transaction Details for Row 1    04/16/26    ALDI 00000\n#...4567\n$60.21\nTransaction Details for Row 2    04/16/26    SAVERS - 0000\n#...4567\n$60.47\n\n— or Discover Card format —\nTue\nMay 19\nInvalid Date May 19\nSTONE ARCH SAINT PAUL MN\n$66.08\nRestaurants\n$204.82'
+                "Transaction Details for Row 1    04/16/26    ALDI 00000\n#...4567\n$60.21\nTransaction Details for Row 2    04/16/26    SAVERS - 0000\n#...4567\n$60.47\n\n— or Discover Card format —\nTue\nMay 19\nInvalid Date May 19\nSTONE ARCH SAINT PAUL MN\n$66.08\nRestaurants\n$204.82"
               }
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
               autoFocus
-              sx={{ '& textarea': { fontFamily: 'monospace', fontSize: '0.82rem' } }}
+              sx={{
+                "& textarea": { fontFamily: "monospace", fontSize: "0.82rem" },
+              }}
             />
           </Box>
         )}
 
         {/* ── Step: categorizing ──────────────────────────────────────── */}
-        {step === 'categorizing' && (
-          <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        {step === "categorizing" && (
+          <Box
+            sx={{
+              py: 5,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
             <CircularProgress />
             <Typography>
               {categorizingProgress} / {rows.length} categorized
             </Typography>
             <LinearProgress
               variant="determinate"
-              value={rows.length > 0 ? (categorizingProgress / rows.length) * 100 : 0}
-              sx={{ width: '100%' }}
+              value={
+                rows.length > 0 ? (categorizingProgress / rows.length) * 100 : 0
+              }
+              sx={{ width: "100%" }}
             />
           </Box>
         )}
 
         {/* ── Step: review ────────────────────────────────────────────── */}
-        {step === 'review' && (
+        {step === "review" && (
           <Box>
             {ambiguousCount > 0 && (
               <Alert severity="warning" sx={{ mb: 2 }}>
-                {ambiguousCount} row{ambiguousCount !== 1 ? 's' : ''} could not be fully parsed —
-                review the highlighted fields before inserting.
+                {ambiguousCount} row{ambiguousCount !== 1 ? "s" : ""} could not
+                be fully parsed — review the highlighted fields before
+                inserting.
               </Alert>
             )}
             {invalidRows.length > 0 && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {invalidRows.length} row{invalidRows.length !== 1 ? 's' : ''} still have invalid
-                fields. Fix or remove them before inserting.
+                {invalidRows.length} row{invalidRows.length !== 1 ? "s" : ""}{" "}
+                still have invalid fields. Fix or remove them before inserting.
               </Alert>
             )}
 
-            <Box sx={{ overflowX: 'auto' }}>
+            <Box sx={{ overflowX: "auto" }}>
               <Table size="small">
                 <TableHead>
                   <TableRow>
@@ -362,10 +405,12 @@ export default function PasteTransactionsDialog({
                     .filter((r) => !r.removed)
                     .map((row) => {
                       const amountNum = parseFloat(row.amount);
-                      const isAmountInvalid = row.amount !== '' && isNaN(amountNum);
+                      const isAmountInvalid =
+                        row.amount !== "" && isNaN(amountNum);
                       const isDateInvalid = !row.date;
                       const isDescInvalid = !row.description.trim();
-                      const hasFieldError = isAmountInvalid || isDateInvalid || isDescInvalid;
+                      const hasFieldError =
+                        isAmountInvalid || isDateInvalid || isDescInvalid;
                       const hasParseWarning = row.parseErrors.length > 0;
 
                       return (
@@ -373,18 +418,21 @@ export default function PasteTransactionsDialog({
                           key={row.id}
                           sx={{
                             backgroundColor: hasFieldError
-                              ? 'error.main'
+                              ? "error.main"
                               : hasParseWarning
-                                ? 'warning.main'
-                                : 'inherit',
-                            backgroundBlendMode: 'overlay',
-                            opacity: hasFieldError || hasParseWarning ? undefined : undefined,
-                            '& td': {
+                                ? "warning.main"
+                                : "inherit",
+                            backgroundBlendMode: "overlay",
+                            opacity:
+                              hasFieldError || hasParseWarning
+                                ? undefined
+                                : undefined,
+                            "& td": {
                               backgroundColor: hasFieldError
-                                ? 'rgba(211,47,47,0.08)'
+                                ? "rgba(211,47,47,0.08)"
                                 : hasParseWarning
-                                  ? 'rgba(237,108,2,0.08)'
-                                  : 'inherit',
+                                  ? "rgba(237,108,2,0.08)"
+                                  : "inherit",
                             },
                           }}
                         >
@@ -392,7 +440,9 @@ export default function PasteTransactionsDialog({
                           <TableCell padding="checkbox">
                             <Checkbox
                               checked={row.selected}
-                              onChange={(e) => handleToggleSelect(row.id, e.target.checked)}
+                              onChange={(e) =>
+                                handleToggleSelect(row.id, e.target.checked)
+                              }
                             />
                           </TableCell>
 
@@ -403,11 +453,16 @@ export default function PasteTransactionsDialog({
                                 <ErrorIcon fontSize="small" color="error" />
                               </Tooltip>
                             ) : hasParseWarning ? (
-                              <Tooltip title={`Parse issues: ${row.parseErrors.join('; ')}`}>
+                              <Tooltip
+                                title={`Parse issues: ${row.parseErrors.join("; ")}`}
+                              >
                                 <WarningIcon fontSize="small" color="warning" />
                               </Tooltip>
                             ) : (
-                              <CheckCircleIcon fontSize="small" color="success" />
+                              <CheckCircleIcon
+                                fontSize="small"
+                                color="success"
+                              />
                             )}
                           </TableCell>
 
@@ -417,7 +472,9 @@ export default function PasteTransactionsDialog({
                               type="date"
                               size="small"
                               value={row.date}
-                              onChange={(e) => handleRowChange(row.id, 'date', e.target.value)}
+                              onChange={(e) =>
+                                handleRowChange(row.id, "date", e.target.value)
+                              }
                               error={isDateInvalid}
                               slotProps={{ inputLabel: { shrink: true } }}
                               sx={{ minWidth: 150 }}
@@ -430,7 +487,11 @@ export default function PasteTransactionsDialog({
                               size="small"
                               value={row.description}
                               onChange={(e) =>
-                                handleRowChange(row.id, 'description', e.target.value)
+                                handleRowChange(
+                                  row.id,
+                                  "description",
+                                  e.target.value,
+                                )
                               }
                               error={isDescInvalid}
                               sx={{ minWidth: 180 }}
@@ -444,10 +505,14 @@ export default function PasteTransactionsDialog({
                               options={categories}
                               value={row.category}
                               onChange={(_, newValue) => {
-                                handleRowChange(row.id, 'category', newValue ?? '');
                                 handleRowChange(
                                   row.id,
-                                  'categoryMetadata',
+                                  "category",
+                                  newValue ?? "",
+                                );
+                                handleRowChange(
+                                  row.id,
+                                  "categoryMetadata",
                                   createManualMetadata(),
                                 );
                               }}
@@ -457,7 +522,11 @@ export default function PasteTransactionsDialog({
                                   size="small"
                                   sx={{ minWidth: 160 }}
                                   onChange={(e) =>
-                                    handleRowChange(row.id, 'category', e.target.value)
+                                    handleRowChange(
+                                      row.id,
+                                      "category",
+                                      e.target.value,
+                                    )
                                   }
                                 />
                               )}
@@ -469,12 +538,20 @@ export default function PasteTransactionsDialog({
                             <TextField
                               size="small"
                               value={row.amount}
-                              onChange={(e) => handleRowChange(row.id, 'amount', e.target.value)}
+                              onChange={(e) =>
+                                handleRowChange(
+                                  row.id,
+                                  "amount",
+                                  e.target.value,
+                                )
+                              }
                               error={isAmountInvalid}
                               slotProps={{
                                 input: {
                                   startAdornment: (
-                                    <InputAdornment position="start">$</InputAdornment>
+                                    <InputAdornment position="start">
+                                      $
+                                    </InputAdornment>
                                   ),
                                 },
                               }}
@@ -488,7 +565,11 @@ export default function PasteTransactionsDialog({
                               size="small"
                               value={row.transactionType}
                               onChange={(e) =>
-                                handleRowChange(row.id, 'transactionType', e.target.value as TransactionType)
+                                handleRowChange(
+                                  row.id,
+                                  "transactionType",
+                                  e.target.value as TransactionType,
+                                )
                               }
                               sx={{ minWidth: 100 }}
                             >
@@ -501,7 +582,10 @@ export default function PasteTransactionsDialog({
                           {/* Remove */}
                           <TableCell>
                             <Tooltip title="Remove this row">
-                              <IconButton size="small" onClick={() => handleRemoveRow(row.id)}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleRemoveRow(row.id)}
+                              >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
@@ -516,30 +600,46 @@ export default function PasteTransactionsDialog({
         )}
 
         {/* ── Step: inserting ─────────────────────────────────────────── */}
-        {step === 'inserting' && (
-          <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        {step === "inserting" && (
+          <Box
+            sx={{
+              py: 5,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
             <CircularProgress />
             <Typography>
               {insertProgress} / {selectedRows.length} inserted
             </Typography>
             <LinearProgress
               variant="determinate"
-              value={selectedRows.length > 0 ? (insertProgress / selectedRows.length) * 100 : 0}
-              sx={{ width: '100%' }}
+              value={
+                selectedRows.length > 0
+                  ? (insertProgress / selectedRows.length) * 100
+                  : 0
+              }
+              sx={{ width: "100%" }}
             />
           </Box>
         )}
 
         {/* ── Step: done ──────────────────────────────────────────────── */}
-        {step === 'done' && (
+        {step === "done" && (
           <Box sx={{ py: 2 }}>
-            <Alert severity={failedCount === 0 ? 'success' : 'warning'} sx={{ mb: 2 }}>
-              {insertedCount} transaction{insertedCount !== 1 ? 's' : ''} inserted successfully.
+            <Alert
+              severity={failedCount === 0 ? "success" : "warning"}
+              sx={{ mb: 2 }}
+            >
+              {insertedCount} transaction{insertedCount !== 1 ? "s" : ""}{" "}
+              inserted successfully.
               {failedCount > 0 && ` ${failedCount} failed — see below.`}
             </Alert>
 
             {failedCount > 0 && (
-              <Box sx={{ overflowX: 'auto' }}>
+              <Box sx={{ overflowX: "auto" }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -553,7 +653,9 @@ export default function PasteTransactionsDialog({
                       .map((r) => (
                         <TableRow key={r.id}>
                           <TableCell>{r.description}</TableCell>
-                          <TableCell sx={{ color: 'error.main' }}>{r.insertError}</TableCell>
+                          <TableCell sx={{ color: "error.main" }}>
+                            {r.insertError}
+                          </TableCell>
                         </TableRow>
                       ))}
                   </TableBody>
@@ -565,34 +667,47 @@ export default function PasteTransactionsDialog({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        {step === 'paste' && (
+        {step === "paste" && (
           <>
             <Button onClick={handleClose}>Cancel</Button>
-            <Button variant="contained" onClick={handleParse} disabled={!rawText.trim()}>
+            <Button
+              variant="contained"
+              onClick={handleParse}
+              disabled={!rawText.trim()}
+            >
               Parse &amp; Categorize
             </Button>
           </>
         )}
 
-        {step === 'review' && (
+        {step === "review" && (
           <>
             <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={() => setStep('paste')}>Back</Button>
-            <Typography variant="body2" color="text.secondary" sx={{ flex: 1, px: 1 }}>
+            <Button onClick={() => setStep("paste")}>Back</Button>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ flex: 1, px: 1 }}
+            >
               {selectedRows.length} of {activeRows.length} selected
               {ambiguousCount > 0 && ` · ${ambiguousCount} need review`}
             </Typography>
-            <Button variant="contained" onClick={handleInsert} disabled={!canInsert}>
-              Insert {selectedRows.length} Transaction{selectedRows.length !== 1 ? 's' : ''}
+            <Button
+              variant="contained"
+              onClick={handleInsert}
+              disabled={!canInsert}
+            >
+              Insert {selectedRows.length} Transaction
+              {selectedRows.length !== 1 ? "s" : ""}
             </Button>
           </>
         )}
 
-        {(step === 'categorizing' || step === 'inserting') && (
+        {(step === "categorizing" || step === "inserting") && (
           <Button disabled>Please wait…</Button>
         )}
 
-        {step === 'done' && (
+        {step === "done" && (
           <Button variant="contained" onClick={handleClose}>
             Close
           </Button>

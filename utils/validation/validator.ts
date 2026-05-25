@@ -92,7 +92,9 @@ export class DataValidator {
    */
   static validateTransaction(data: unknown): ValidationResult<Transaction> {
     try {
-      const sanitizedData = sanitize.transaction(data as Record<string, unknown>);
+      const sanitizedData = sanitize.transaction(
+        data as Record<string, unknown>,
+      );
 
       // Additional financial boundary checks
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -133,7 +135,9 @@ export class DataValidator {
     try {
       logger.debug("[validator.ts] validatePayment INPUT", { data });
       const sanitizedData = sanitize.payment(data as Record<string, unknown>);
-      logger.debug("[validator.ts] validatePayment SANITIZED", { sanitizedData });
+      logger.debug("[validator.ts] validatePayment SANITIZED", {
+        sanitizedData,
+      });
 
       // Additional checks for payments
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -142,7 +146,9 @@ export class DataValidator {
       });
 
       if (!financialValidation.success) {
-        logger.debug("[validator.ts] Payment financial validation FAILED", { errors: financialValidation.errors });
+        logger.debug("[validator.ts] Payment financial validation FAILED", {
+          errors: financialValidation.errors,
+        });
         return financialValidation;
       }
 
@@ -195,7 +201,9 @@ export class DataValidator {
     try {
       logger.debug("[validator.ts] validateTransfer INPUT", { data });
       const sanitizedData = sanitize.transfer(data as Record<string, unknown>);
-      logger.debug("[validator.ts] validateTransfer SANITIZED", { sanitizedData });
+      logger.debug("[validator.ts] validateTransfer SANITIZED", {
+        sanitizedData,
+      });
 
       // Additional checks for transfers
       const financialValidation = DataValidator.validateFinancialBoundaries({
@@ -204,7 +212,9 @@ export class DataValidator {
       });
 
       if (!financialValidation.success) {
-        logger.debug("[validator.ts] Transfer financial validation FAILED", { errors: financialValidation.errors });
+        logger.debug("[validator.ts] Transfer financial validation FAILED", {
+          errors: financialValidation.errors,
+        });
         return financialValidation;
       }
 
@@ -281,7 +291,9 @@ export class DataValidator {
    */
   static validateDescription(data: unknown): ValidationResult<Description> {
     try {
-      const sanitizedData = sanitize.description(data as Record<string, unknown>);
+      const sanitizedData = sanitize.description(
+        data as Record<string, unknown>,
+      );
       const result = validateSchema(DescriptionSchema, sanitizedData);
       if (!result.success) {
         SecurityLogger.logValidationFailure(result.errors || [], data);

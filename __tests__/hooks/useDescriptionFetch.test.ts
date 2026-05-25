@@ -460,7 +460,11 @@ const createDescQueryClient = () =>
 
 const createDescWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useDescriptionFetch hook - renderHook tests", () => {
@@ -507,6 +511,8 @@ describe("useDescriptionFetch hook - renderHook tests", () => {
       wrapper: createDescWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

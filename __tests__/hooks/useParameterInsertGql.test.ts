@@ -29,7 +29,9 @@ jest.mock("../../components/AuthProvider", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -41,10 +43,16 @@ const createTestQueryClient = () =>
 
 const createWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children as any);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
   };
 
-const createTestParameter = (overrides: Partial<Parameter> = {}): Parameter => ({
+const createTestParameter = (
+  overrides: Partial<Parameter> = {},
+): Parameter => ({
   parameterId: 1,
   parameterName: "test_param",
   parameterValue: "test_value",
@@ -77,7 +85,10 @@ describe("useParameterInsertGql", () => {
 
   it("should insert a parameter successfully", async () => {
     const queryClient = createTestQueryClient();
-    const param = createTestParameter({ parameterId: 5, parameterName: "new_param" });
+    const param = createTestParameter({
+      parameterId: 5,
+      parameterName: "new_param",
+    });
     mockGraphqlRequest.mockResolvedValue({
       createParameter: createGqlParameterResponse(param),
     });
@@ -104,10 +115,15 @@ describe("useParameterInsertGql", () => {
 
   it("should add new parameter to cache on success", async () => {
     const queryClient = createTestQueryClient();
-    const existingParams = [createTestParameter({ parameterId: 1, parameterName: "param1" })];
+    const existingParams = [
+      createTestParameter({ parameterId: 1, parameterName: "param1" }),
+    ];
     queryClient.setQueryData(["parameterGQL"], existingParams);
 
-    const newParam = createTestParameter({ parameterId: 2, parameterName: "param2" });
+    const newParam = createTestParameter({
+      parameterId: 2,
+      parameterName: "param2",
+    });
     mockGraphqlRequest.mockResolvedValue({
       createParameter: createGqlParameterResponse(newParam),
     });

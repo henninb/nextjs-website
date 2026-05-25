@@ -250,12 +250,14 @@ export default function MedicalExpenseForm({
               errors.transactionId || "Optional: Link to existing transaction"
             }
             placeholder="Leave empty if no transaction yet"
-            slotProps={{ htmlInput: {
-              min: 1,
-              "aria-describedby": errors.transactionId
-                ? "transaction-id-error"
-                : undefined,
-            } }}
+            slotProps={{
+              htmlInput: {
+                min: 1,
+                "aria-describedby": errors.transactionId
+                  ? "transaction-id-error"
+                  : undefined,
+              },
+            }}
           />
         </Grid>
 

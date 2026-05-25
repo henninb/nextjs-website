@@ -106,12 +106,7 @@ export default function useAccountInsert() {
           });
 
           // Optimistically update cache
-          addToList(
-            queryClient,
-            QueryKeys.account(),
-            response,
-            "start",
-          );
+          addToList(queryClient, QueryKeys.account(), response, "start");
         }
       },
     },

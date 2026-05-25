@@ -54,7 +54,12 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
-  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 // Mock validation utilities
@@ -964,7 +969,11 @@ const createPendingTxUpdateHookQueryClient = () =>
 
 const createPendingTxUpdateHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("usePendingTransactionUpdate hook", () => {
@@ -980,7 +989,9 @@ describe("usePendingTransactionUpdate hook", () => {
 
   it("onSuccess calls updateInList with the updated pending transaction", async () => {
     const queryClient = createPendingTxUpdateHookQueryClient();
-    const oldPendingTransaction = createTestPendingTransaction({ pendingTransactionId: 1 });
+    const oldPendingTransaction = createTestPendingTransaction({
+      pendingTransactionId: 1,
+    });
     const updatedPendingTransaction = createTestPendingTransaction({
       pendingTransactionId: 1,
       description: "Updated transaction",
@@ -1029,11 +1040,16 @@ describe("usePendingTransactionUpdate hook", () => {
     });
 
     const oldPendingTransaction = createTestPendingTransaction();
-    const newPendingTransaction = createTestPendingTransaction({ description: "Updated" });
+    const newPendingTransaction = createTestPendingTransaction({
+      description: "Updated",
+    });
 
     await act(async () => {
       try {
-        await result.current.mutateAsync({ oldPendingTransaction, newPendingTransaction });
+        await result.current.mutateAsync({
+          oldPendingTransaction,
+          newPendingTransaction,
+        });
       } catch {
         // expected
       }

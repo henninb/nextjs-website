@@ -30,6 +30,5 @@ const fetchParameterData = createQueryFn<Parameter[]>("/api/parameter/active", {
 export default function useParameterFetch() {
   const queryResult = usePublicQuery(QueryKeys.parameter(), fetchParameterData);
 
-
   return queryResult;
 }

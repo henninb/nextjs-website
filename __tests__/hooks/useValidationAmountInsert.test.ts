@@ -22,8 +22,14 @@ jest.mock("../../utils/fetchUtils", () => ({
 
 jest.mock("../../utils/cacheUtils", () => ({
   QueryKeys: {
-    validationAmount: jest.fn((account: string) => ["validationAmount", account]),
-    validationAmountAll: jest.fn((account: string) => ["validationAmountAll", account]),
+    validationAmount: jest.fn((account: string) => [
+      "validationAmount",
+      account,
+    ]),
+    validationAmountAll: jest.fn((account: string) => [
+      "validationAmountAll",
+      account,
+    ]),
   },
   addToList: jest.fn(),
 }));
@@ -49,9 +55,8 @@ jest.mock("../../components/AuthProvider", () => ({
 
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -133,7 +138,9 @@ describe("useValidationAmountInsert - insertValidationAmount", () => {
 
       for (const transactionState of states) {
         jest.clearAllMocks();
-        mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
+        mockFetchWithErrorHandling.mockResolvedValue({
+          status: 201,
+        } as Response);
         const payload = createTestValidationAmount({ transactionState });
         mockParseResponse.mockResolvedValue(payload);
 
@@ -161,9 +168,9 @@ describe("useValidationAmountInsert - insertValidationAmount", () => {
       );
       const payload = createTestValidationAmount();
 
-      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
-        "Invalid validation amount data",
-      );
+      await expect(
+        insertValidationAmount("checking_john", payload),
+      ).rejects.toThrow("Invalid validation amount data");
     });
 
     it("should propagate 409 conflict error", async () => {
@@ -173,9 +180,9 @@ describe("useValidationAmountInsert - insertValidationAmount", () => {
       );
       const payload = createTestValidationAmount();
 
-      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
-        "Validation amount already exists",
-      );
+      await expect(
+        insertValidationAmount("checking_john", payload),
+      ).rejects.toThrow("Validation amount already exists");
     });
 
     it("should propagate 500 server error", async () => {
@@ -185,9 +192,9 @@ describe("useValidationAmountInsert - insertValidationAmount", () => {
       );
       const payload = createTestValidationAmount();
 
-      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
-        "Internal server error",
-      );
+      await expect(
+        insertValidationAmount("checking_john", payload),
+      ).rejects.toThrow("Internal server error");
     });
 
     it("should propagate network errors", async () => {
@@ -196,9 +203,9 @@ describe("useValidationAmountInsert - insertValidationAmount", () => {
       );
       const payload = createTestValidationAmount();
 
-      await expect(insertValidationAmount("checking_john", payload)).rejects.toThrow(
-        "Network request failed",
-      );
+      await expect(
+        insertValidationAmount("checking_john", payload),
+      ).rejects.toThrow("Network request failed");
     });
   });
 
@@ -253,14 +260,19 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useValidationAmountInsert hook - renderHook tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetchWithErrorHandling.mockResolvedValue({ status: 201 } as Response);
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: true,
       loading: false,
@@ -272,7 +284,10 @@ describe("useValidationAmountInsert hook - renderHook tests", () => {
 
   it("onSuccess sets validationAmount cache and invalidates all-list for the account", async () => {
     const queryClient = createHookQueryClient();
-    const returned = createTestValidationAmount({ validationId: 10, amount: 500 });
+    const returned = createTestValidationAmount({
+      validationId: 10,
+      amount: 500,
+    });
     mockParseResponse.mockResolvedValue(returned);
     const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
@@ -289,16 +304,22 @@ describe("useValidationAmountInsert hook - renderHook tests", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(queryClient.getQueryData(["validationAmount", "checking_john"])).toStrictEqual(returned);
+    expect(
+      queryClient.getQueryData(["validationAmount", "checking_john"]),
+    ).toStrictEqual(returned);
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ["validationAmountAll", "checking_john"] }),
+      expect.objectContaining({
+        queryKey: ["validationAmountAll", "checking_john"],
+      }),
     );
   });
 
   it("onError puts mutation into error state", async () => {
     const queryClient = createHookQueryClient();
     const { FetchError } = jest.requireMock("../../utils/fetchUtils");
-    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Insert failed", 400));
+    mockFetchWithErrorHandling.mockRejectedValue(
+      new FetchError("Insert failed", 400),
+    );
 
     const { result } = renderHook(() => useValidationAmountInsert(), {
       wrapper: createHookWrapper(queryClient),
@@ -319,7 +340,8 @@ describe("useValidationAmountInsert hook - renderHook tests", () => {
   });
 
   it("throws when user is not logged in", async () => {
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: false,
       loading: false,
@@ -340,7 +362,9 @@ describe("useValidationAmountInsert hook - renderHook tests", () => {
       });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

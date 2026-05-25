@@ -29,7 +29,9 @@ jest.mock("../../components/AuthProvider", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -41,7 +43,11 @@ const createTestQueryClient = () =>
 
 const createWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children as any);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
   };
 
 const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
@@ -159,7 +165,9 @@ describe("useTransferInsertGql", () => {
 
   it("should convert transactionDate to YYYY-MM-DD format", async () => {
     const queryClient = createTestQueryClient();
-    const transfer = createTestTransfer({ transactionDate: new Date("2024-06-15T12:00:00Z") });
+    const transfer = createTestTransfer({
+      transactionDate: new Date("2024-06-15T12:00:00Z"),
+    });
     mockGraphqlRequest.mockResolvedValue({
       createTransfer: createGqlTransferResponse(transfer),
     });

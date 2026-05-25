@@ -522,7 +522,11 @@ const createTransactionByAcctQueryClient = () =>
 
 const createTransactionByAcctWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useTransactionByAccountFetch hook", () => {
@@ -534,7 +538,10 @@ describe("useTransactionByAccountFetch hook", () => {
 
   it("returns transactions on successful fetch", async () => {
     const transactions = [
-      createTestTransaction({ transactionId: 1, accountNameOwner: "checking_john" }),
+      createTestTransaction({
+        transactionId: 1,
+        accountNameOwner: "checking_john",
+      }),
     ];
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -562,6 +569,8 @@ describe("useTransactionByAccountFetch hook", () => {
       () => useTransactionByAccountFetch("checking_john"),
       { wrapper: createTransactionByAcctWrapper(queryClient) },
     );
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

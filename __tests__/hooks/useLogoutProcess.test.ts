@@ -39,9 +39,8 @@ jest.mock("next/navigation", () => ({
 
 import { fetchWithErrorHandling } from "../../utils/fetchUtils";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 
 describe("useLogoutProcess", () => {
   beforeEach(() => {

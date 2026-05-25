@@ -61,6 +61,5 @@ export default function useTotalsFetch() {
     },
   );
 
-
   return queryResult;
 }

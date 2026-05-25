@@ -429,11 +429,15 @@ export const sanitize = {
 
   account: (data: Record<string, unknown>) => ({
     accountId: data.accountId ? parseInt(String(data.accountId)) : undefined,
-    accountNameOwner: InputSanitizer.sanitizeAccountName(String(data.accountNameOwner ?? "")),
+    accountNameOwner: InputSanitizer.sanitizeAccountName(
+      String(data.accountNameOwner ?? ""),
+    ),
     accountType: InputSanitizer.sanitizeText(String(data.accountType ?? "")),
     activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus),
     moniker: InputSanitizer.sanitizeText(String(data.moniker ?? "")),
-    outstanding: InputSanitizer.sanitizeAmount(data.outstanding as number | string),
+    outstanding: InputSanitizer.sanitizeAmount(
+      data.outstanding as number | string,
+    ),
     future: InputSanitizer.sanitizeAmount(data.future as number | string),
     cleared: InputSanitizer.sanitizeAmount(data.cleared as number | string),
     dateClosed: data.dateClosed
@@ -454,21 +458,33 @@ export const sanitize = {
     transactionId: data.transactionId
       ? parseInt(String(data.transactionId))
       : undefined,
-    guid: data.guid ? InputSanitizer.sanitizeGuid(String(data.guid)) : undefined,
+    guid: data.guid
+      ? InputSanitizer.sanitizeGuid(String(data.guid))
+      : undefined,
     accountId: data.accountId ? parseInt(String(data.accountId)) : undefined,
     accountType: InputSanitizer.sanitizeText(String(data.accountType ?? "")),
-    accountNameOwner: InputSanitizer.sanitizeAccountName(String(data.accountNameOwner ?? "")),
-    transactionDate: InputSanitizer.sanitizeDate(data.transactionDate as string | Date),
-    description: InputSanitizer.sanitizeDescription(String(data.description ?? "")),
+    accountNameOwner: InputSanitizer.sanitizeAccountName(
+      String(data.accountNameOwner ?? ""),
+    ),
+    transactionDate: InputSanitizer.sanitizeDate(
+      data.transactionDate as string | Date,
+    ),
+    description: InputSanitizer.sanitizeDescription(
+      String(data.description ?? ""),
+    ),
     category: InputSanitizer.sanitizeCategory(String(data.category ?? "")),
     amount: InputSanitizer.sanitizeAmount(data.amount as number | string),
-    transactionState: InputSanitizer.sanitizeText(String(data.transactionState ?? "")),
+    transactionState: InputSanitizer.sanitizeText(
+      String(data.transactionState ?? ""),
+    ),
     transactionType:
       data.transactionType !== undefined
         ? InputSanitizer.sanitizeText(String(data.transactionType))
         : "undefined",
     activeStatus: InputSanitizer.sanitizeBoolean(data.activeStatus),
-    reoccurringType: InputSanitizer.sanitizeText(String(data.reoccurringType ?? "")),
+    reoccurringType: InputSanitizer.sanitizeText(
+      String(data.reoccurringType ?? ""),
+    ),
     notes: InputSanitizer.sanitizeNotes(String(data.notes ?? "")),
     dueDate: data.dueDate
       ? InputSanitizer.sanitizeDate(data.dueDate as string | Date)
@@ -480,9 +496,15 @@ export const sanitize = {
     accountNameOwner: data.accountNameOwner
       ? InputSanitizer.sanitizeAccountName(String(data.accountNameOwner))
       : undefined,
-    sourceAccount: InputSanitizer.sanitizeAccountName(String(data.sourceAccount ?? "")),
-    destinationAccount: InputSanitizer.sanitizeAccountName(String(data.destinationAccount ?? "")),
-    transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate as string | Date),
+    sourceAccount: InputSanitizer.sanitizeAccountName(
+      String(data.sourceAccount ?? ""),
+    ),
+    destinationAccount: InputSanitizer.sanitizeAccountName(
+      String(data.destinationAccount ?? ""),
+    ),
+    transactionDate: InputSanitizer.sanitizeLocalDate(
+      data.transactionDate as string | Date,
+    ),
     amount: InputSanitizer.sanitizeAmount(data.amount as number | string),
     guidSource: data.guidSource
       ? InputSanitizer.sanitizeGuid(String(data.guidSource))
@@ -501,9 +523,15 @@ export const sanitize = {
 
   transfer: (data: Record<string, unknown>) => ({
     transferId: data.transferId ? parseInt(String(data.transferId)) : undefined,
-    sourceAccount: InputSanitizer.sanitizeAccountName(String(data.sourceAccount ?? "")),
-    destinationAccount: InputSanitizer.sanitizeAccountName(String(data.destinationAccount ?? "")),
-    transactionDate: InputSanitizer.sanitizeLocalDate(data.transactionDate as string | Date),
+    sourceAccount: InputSanitizer.sanitizeAccountName(
+      String(data.sourceAccount ?? ""),
+    ),
+    destinationAccount: InputSanitizer.sanitizeAccountName(
+      String(data.destinationAccount ?? ""),
+    ),
+    transactionDate: InputSanitizer.sanitizeLocalDate(
+      data.transactionDate as string | Date,
+    ),
     amount: InputSanitizer.sanitizeAmount(data.amount as number | string),
     guidSource: data.guidSource
       ? InputSanitizer.sanitizeGuid(String(data.guidSource))
@@ -578,7 +606,10 @@ export class SecurityLogger {
     }
   }
 
-  static logValidationFailure(errors: { field: string; message: string; code: string }[], data: unknown): void {
+  static logValidationFailure(
+    errors: { field: string; message: string; code: string }[],
+    data: unknown,
+  ): void {
     if (process.env.NODE_ENV === "development") {
       console.error("Validation failed:", {
         errors,

@@ -1,4 +1,6 @@
-import useDescriptionUpdate, { updateDescription } from "../../hooks/useDescriptionUpdate";
+import useDescriptionUpdate, {
+  updateDescription,
+} from "../../hooks/useDescriptionUpdate";
 import Description from "../../model/Description";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -60,9 +62,8 @@ import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 import { validateUpdate } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -88,7 +89,9 @@ describe("useDescriptionUpdate - updateDescription", () => {
     jest.clearAllMocks();
     mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
     mockSanitizeDescription.mockImplementation((value: string) => value);
-    mockValidateUpdate.mockImplementation((data: unknown) => data as Description);
+    mockValidateUpdate.mockImplementation(
+      (data: unknown) => data as Description,
+    );
   });
 
   describe("endpoint construction", () => {
@@ -105,7 +108,9 @@ describe("useDescriptionUpdate - updateDescription", () => {
 
     it("should sanitize old description name for URL", async () => {
       const oldDesc = createTestDescription({ descriptionName: "amazon" });
-      const newDesc = createTestDescription({ descriptionName: "amazon_prime" });
+      const newDesc = createTestDescription({
+        descriptionName: "amazon_prime",
+      });
       mockParseResponse.mockResolvedValue(newDesc);
 
       await updateDescription(oldDesc, newDesc);
@@ -194,7 +199,9 @@ describe("useDescriptionUpdate - updateDescription", () => {
 
     it("should update amazon to amazon_prime", async () => {
       const oldDesc = createTestDescription({ descriptionName: "amazon" });
-      const newDesc = createTestDescription({ descriptionName: "amazon_prime" });
+      const newDesc = createTestDescription({
+        descriptionName: "amazon_prime",
+      });
       mockParseResponse.mockResolvedValue(newDesc);
 
       const result = await updateDescription(oldDesc, newDesc);
@@ -329,20 +336,29 @@ const createDescUpdateHookQueryClient = () =>
 
 const createDescUpdateHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useDescriptionUpdate hook", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
-    mockValidateUpdate.mockImplementation((data: unknown) => data as Description);
+    mockValidateUpdate.mockImplementation(
+      (data: unknown) => data as Description,
+    );
   });
 
   it("onSuccess calls updateInList with the updated description", async () => {
     const queryClient = createDescUpdateHookQueryClient();
     const oldDesc = createTestDescription({ descriptionName: "old_store" });
-    const updatedDesc = createTestDescription({ descriptionId: 1, descriptionName: "new_store" });
+    const updatedDesc = createTestDescription({
+      descriptionId: 1,
+      descriptionName: "new_store",
+    });
     mockParseResponse.mockResolvedValue(updatedDesc);
 
     const { result } = renderHook(() => useDescriptionUpdate(), {
@@ -350,7 +366,10 @@ describe("useDescriptionUpdate hook", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ oldDescription: oldDesc, newDescription: updatedDesc });
+      await result.current.mutateAsync({
+        oldDescription: oldDesc,
+        newDescription: updatedDesc,
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -377,7 +396,10 @@ describe("useDescriptionUpdate hook", () => {
 
     await act(async () => {
       try {
-        await result.current.mutateAsync({ oldDescription: oldDesc, newDescription: newDesc });
+        await result.current.mutateAsync({
+          oldDescription: oldDesc,
+          newDescription: newDesc,
+        });
       } catch {
         // expected
       }

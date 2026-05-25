@@ -104,6 +104,5 @@ export default function useValidationAmountFetch(accountNameOwner: string) {
     },
   );
 
-
   return queryResult;
 }

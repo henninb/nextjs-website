@@ -43,12 +43,12 @@ describe("sanitization additional coverage", () => {
     });
 
     it("sanitizes dates and local dates with detailed validation", () => {
-      expect(InputSanitizer.sanitizeDate(new Date("2025-01-15T00:00:00.000Z"))).toBe(
-        "2025-01-15T00:00:00.000Z",
-      );
-      expect(InputSanitizer.sanitizeLocalDate(new Date("2025-01-15T00:00:00.000Z"))).toBe(
-        "2025-01-15",
-      );
+      expect(
+        InputSanitizer.sanitizeDate(new Date("2025-01-15T00:00:00.000Z")),
+      ).toBe("2025-01-15T00:00:00.000Z");
+      expect(
+        InputSanitizer.sanitizeLocalDate(new Date("2025-01-15T00:00:00.000Z")),
+      ).toBe("2025-01-15");
       expect(() => InputSanitizer.sanitizeDate("2025/01/15")).not.toThrow();
       expect(() => InputSanitizer.sanitizeDate("bad")).toThrow(
         "recognizable format",
@@ -59,9 +59,9 @@ describe("sanitization additional coverage", () => {
       expect(() => InputSanitizer.sanitizeLocalDate("2025/01/15")).toThrow(
         "Use hyphens",
       );
-      expect(() => InputSanitizer.sanitizeLocalDate("2025-01-15T10:30:00")).toThrow(
-        "without time component",
-      );
+      expect(() =>
+        InputSanitizer.sanitizeLocalDate("2025-01-15T10:30:00"),
+      ).toThrow("without time component");
     });
 
     it("sanitizes GUIDs with friendly errors", () => {
@@ -69,7 +69,9 @@ describe("sanitization additional coverage", () => {
         InputSanitizer.sanitizeGuid("123E4567-E89B-12D3-A456-426614174000"),
       ).toBe("123e4567-e89b-12d3-a456-426614174000");
 
-      expect(() => InputSanitizer.sanitizeGuid("")).toThrow("GUID cannot be empty");
+      expect(() => InputSanitizer.sanitizeGuid("")).toThrow(
+        "GUID cannot be empty",
+      );
       expect(() => InputSanitizer.sanitizeGuid("short")).toThrow("Too short");
       expect(() =>
         InputSanitizer.sanitizeGuid(
@@ -124,7 +126,7 @@ describe("sanitization additional coverage", () => {
           accountType: " checking ",
           accountNameOwner: "Owner One",
           transactionDate: "2025-01-15T00:00:00.000Z",
-          description: '<b>Coffee</b>',
+          description: "<b>Coffee</b>",
           category: "Food & Dining",
           amount: "$4.556",
           transactionState: " outstanding ",
@@ -219,7 +221,9 @@ describe("sanitization additional coverage", () => {
 
     it("logs validation failures in development", () => {
       process.env.NODE_ENV = "development";
-      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       SecurityLogger.logValidationFailure(
         [{ field: "amount", message: "bad", code: "BAD" }],
@@ -232,7 +236,9 @@ describe("sanitization additional coverage", () => {
     it("does not log outside development", () => {
       process.env.NODE_ENV = "test";
       const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
-      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       SecurityLogger.logSanitizationAttempt("notes", "<bad>", "bad");
       SecurityLogger.logValidationFailure(

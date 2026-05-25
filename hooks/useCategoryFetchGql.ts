@@ -50,6 +50,5 @@ export default function useCategoryFetchGql() {
     return mapped;
   });
 
-
   return queryResult;
 }

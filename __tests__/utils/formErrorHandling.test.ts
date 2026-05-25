@@ -106,7 +106,9 @@ describe("formErrorHandling", () => {
         sampleValidationErrors,
       );
 
-      expect(getValidationErrorsArray(hookError)).toEqual(sampleValidationErrors);
+      expect(getValidationErrorsArray(hookError)).toEqual(
+        sampleValidationErrors,
+      );
       expect(
         getValidationErrorsArray({ validationErrors: sampleValidationErrors }),
       ).toEqual(sampleValidationErrors);

@@ -210,9 +210,19 @@ const useProvideAuth = () => {
     checkSession();
     const intervalId = setInterval(checkSession, SESSION_CHECK_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [isAuthenticated, sessionExpiresAt, stayLoggedIn, extendSession, performLogout, setSessionExpiry]);
+  }, [
+    isAuthenticated,
+    sessionExpiresAt,
+    stayLoggedIn,
+    extendSession,
+    performLogout,
+    setSessionExpiry,
+  ]);
 
-  const login = async ({ password: _password, ...safeUser }: User, keepLoggedIn = false) => {
+  const login = async (
+    { password: _password, ...safeUser }: User,
+    keepLoggedIn = false,
+  ) => {
     setUser(safeUser);
     setIsAuthenticated(true);
     setSessionExpiry(Date.now() + SESSION_DURATION);

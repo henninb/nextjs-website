@@ -62,14 +62,22 @@ jest.mock("../../utils/logger", () => ({
   })),
 }));
 
-import useParameterInsert, { insertParameter } from "../../hooks/useParameterInsert";
+import useParameterInsert, {
+  insertParameter,
+} from "../../hooks/useParameterInsert";
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 import { addToList } from "../../utils/cacheUtils";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
-const mockParseResponse = parseResponse as jest.MockedFunction<typeof parseResponse>;
-const mockSanitizeParameterName = InputSanitizer.sanitizeParameterName as jest.MockedFunction<typeof InputSanitizer.sanitizeParameterName>;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
+const mockParseResponse = parseResponse as jest.MockedFunction<
+  typeof parseResponse
+>;
+const mockSanitizeParameterName =
+  InputSanitizer.sanitizeParameterName as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeParameterName
+  >;
 const mockAddToList = addToList as jest.Mock;
 
 // Modern implementation to test
@@ -635,7 +643,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useParameterInsert hook - renderHook tests", () => {
@@ -671,7 +683,9 @@ describe("useParameterInsert hook - renderHook tests", () => {
   it("onError puts mutation into error state", async () => {
     const queryClient = createHookQueryClient();
     const { FetchError } = jest.requireMock("../../utils/fetchUtils");
-    mockFetchWithErrorHandling.mockRejectedValue(new FetchError("Insert failed", 400));
+    mockFetchWithErrorHandling.mockRejectedValue(
+      new FetchError("Insert failed", 400),
+    );
 
     const { result } = renderHook(() => useParameterInsert(), {
       wrapper: createHookWrapper(queryClient),

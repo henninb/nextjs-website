@@ -101,7 +101,6 @@ export function useSportsData<T>(apiEndpoint: string): SportsDataHook<T> {
     enabled: !!apiEndpoint, // Only fetch if endpoint is provided
   });
 
-
   return {
     data: queryResult.data ?? null,
     loading: queryResult.isLoading,

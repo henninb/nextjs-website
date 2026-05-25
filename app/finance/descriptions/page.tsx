@@ -16,7 +16,6 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -27,7 +26,6 @@ import useDescriptionDelete from "../../../hooks/useDescriptionDelete";
 import Description from "../../../model/Description";
 import useDescriptionUpdate from "../../../hooks/useDescriptionUpdate";
 import useDescriptionMerge from "../../../hooks/useDescriptionMerge";
-import FinanceLayout from "../../../layouts/FinanceLayout";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -161,12 +159,6 @@ export default function Descriptions() {
         `Add Description error: ${getErrorMessage(error)}`,
         false,
       );
-      if (
-        !navigator.onLine ||
-        (getErrorMessage(error) &&
-          getErrorMessage(error).includes("Failed to fetch"))
-      ) {
-      }
     } finally {
       setShowModalAdd(false);
     }
@@ -189,6 +181,9 @@ export default function Descriptions() {
 
   const isRowSelected = (rowId: string | number) =>
     rowSelection.includes(rowId);
+
+  const getRowId = (row: Description) =>
+    row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
 
   const handleRowToggle = (rowId: string | number) => {
     setRowSelection((prev) =>
@@ -274,9 +269,6 @@ export default function Descriptions() {
     },
   ];
 
-  const getRowId = (row: Description) =>
-    row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
-
   const validateName = (name: string): string | undefined => {
     const trimmed = (name || "").trim();
     if (!trimmed) return "Name is required";
@@ -340,221 +332,215 @@ export default function Descriptions() {
   }
 
   return (
-    <div>
-      <>
-        <PageHeader
-          title="Description Management"
-          subtitle="Create and manage transaction descriptions to standardize your records"
-          actions={
-            <Box sx={{ display: "flex", gap: 1 }}>
+    <>
+      <PageHeader
+        title="Description Management"
+        subtitle="Create and manage transaction descriptions to standardize your records"
+        actions={
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenAddModal()}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Description
+            </Button>
+            {rowSelection.length > 0 && (
               <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => handleOpenAddModal()}
-                sx={{ backgroundColor: "primary.main" }}
+                variant="outlined"
+                onClick={() => setShowModalMerge(true)}
               >
-                Add Description
+                Merge
               </Button>
-              {rowSelection.length > 0 && (
-                <Button
-                  variant="outlined"
-                  onClick={() => setShowModalMerge(true)}
-                >
-                  Merge
-                </Button>
-              )}
-            </Box>
-          }
-        />
-        {showSpinner ? (
-          <LoadingState variant="card" message="Loading descriptions..." />
-        ) : (
-          <div>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-                {fetchedDescrptions && fetchedDescrptions.length > 0 ? (
-                  <DataGridBase
-                    rows={
-                      fetchedDescrptions?.filter((row) => row != null) || []
-                    }
-                    columns={columns}
-                    getRowId={getRowId}
-                    paginationModel={paginationModel}
-                    onPaginationModelChange={(newModel) =>
-                      setPaginationModel(newModel)
-                    }
-                    pageSizeOptions={[25, 50, 100]}
-                    autoHeight
-                    disableColumnResize={false}
-                    processRowUpdate={async (
-                      newRow: Description,
-                      oldRow: Description,
-                    ): Promise<Description> => {
-                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                        return oldRow;
-                      }
-                      try {
-                        await updateDescription({
-                          oldDescription: oldRow,
-                          newDescription: newRow,
-                        });
-                        handleSuccess("Description updated successfully.");
-                        return { ...newRow };
-                      } catch (error) {
-                        handleError(
-                          error,
-                          `Update Description error: ${getErrorMessage(error)}`,
-                          false,
-                        );
-                        return oldRow;
-                      }
-                    }}
-                  />
-                ) : (
-                  <EmptyState
-                    title="No Descriptions Found"
-                    message="You haven't created any descriptions yet. Create your first description to standardize your transaction records."
-                    dataType="descriptions"
-                    variant="create"
-                    actionLabel="Add Description"
-                    onAction={() => handleOpenAddModal()}
-                    onRefresh={() => refetchDescriptions()}
-                  />
-                )}
-              </Box>
-            </Box>
-            <div>
-              <SnackbarBaseline
-                message={message}
-                state={showSnackbar}
-                handleSnackbarClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-              />
-            </div>
-          </div>
-        )}
-
-        <ConfirmDialog
-          open={showModalDelete}
-          onClose={() => setShowModalDelete(false)}
-          onConfirm={handleDeleteRow}
-          title={modalTitles.confirmDeletion}
-          message={modalBodies.confirmDeletion(
-            "description",
-            selectedDescription?.descriptionName ?? "",
-          )}
-          confirmText="Delete"
-          cancelText="Cancel"
-        />
-
-        <FormDialog
-          open={showModalAdd}
-          onClose={() => setShowModalAdd(false)}
-          onSubmit={() => {
-            if (descriptionData) {
-              handleAddRow(descriptionData);
-            } else {
-              handleAddRow({
-                descriptionName: "",
-                activeStatus: true,
-              } as Description);
-            }
-          }}
-          title={modalTitles.addNew("description")}
-          submitText="Add"
-        >
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={descriptionData?.descriptionName || ""}
-            error={!!formErrors.descriptionName}
-            helperText={formErrors.descriptionName}
-            onChange={(e) =>
-              setDescriptionData((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      descriptionName: e.target.value,
-                    }
-                  : null,
-              )
-            }
-          />
-          <Box sx={{ mt: 1 }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={!!descriptionData?.activeStatus}
-                  onChange={(e) =>
-                    setDescriptionData((prev: Description) => ({
-                      ...prev,
-                      activeStatus: e.target.checked,
-                    }))
-                  }
-                />
-              }
-              label="Status"
-            />
-            {formErrors.activeStatus && (
-              <Typography color="error" variant="caption">
-                {formErrors.activeStatus}
-              </Typography>
             )}
           </Box>
-          <Box sx={{ mt: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={cacheEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setCacheEnabled(checked);
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem(
-                        DESCRIPTIONS_CACHE_ENABLED_KEY,
-                        String(checked),
+        }
+      />
+      {showSpinner ? (
+        <LoadingState variant="card" message="Loading descriptions..." />
+      ) : (
+        <>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
+              {fetchedDescrptions && fetchedDescrptions.length > 0 ? (
+                <DataGridBase
+                  rows={fetchedDescrptions?.filter((row) => row != null) || []}
+                  columns={columns}
+                  getRowId={getRowId}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  autoHeight
+                  disableColumnResize={false}
+                  processRowUpdate={async (
+                    newRow: Description,
+                    oldRow: Description,
+                  ): Promise<Description> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+                    try {
+                      await updateDescription({
+                        oldDescription: oldRow,
+                        newDescription: newRow,
+                      });
+                      handleSuccess("Description updated successfully.");
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        `Update Description error: ${getErrorMessage(error)}`,
+                        false,
                       );
-                      if (!checked) {
-                        localStorage.removeItem(DESCRIPTIONS_CACHE_DATA_KEY);
-                      }
+                      return oldRow;
                     }
                   }}
-                  size="small"
                 />
-              }
-              label="Remember field data"
-            />
+              ) : (
+                <EmptyState
+                  title="No Descriptions Found"
+                  message="You haven't created any descriptions yet. Create your first description to standardize your transaction records."
+                  dataType="descriptions"
+                  variant="create"
+                  actionLabel="Add Description"
+                  onAction={() => handleOpenAddModal()}
+                  onRefresh={() => refetchDescriptions()}
+                />
+              )}
+            </Box>
           </Box>
-        </FormDialog>
-
-        <FormDialog
-          open={showModalMerge}
-          onClose={() => {
-            setShowModalMerge(false);
-            setMergeError(undefined);
-            setMergeName("");
-          }}
-          onSubmit={handleMerge}
-          title="Merge Descriptions"
-          submitText="Merge"
-          disabled={!!validateName(mergeName)}
-        >
-          <TextField
-            label="New Name"
-            fullWidth
-            margin="normal"
-            value={mergeName}
-            error={!!mergeError}
-            helperText={mergeError}
-            onChange={(e) => {
-              const next = e.target.value;
-              setMergeName(next);
-              setMergeError(validateName(next));
-            }}
+          <SnackbarBaseline
+            message={message}
+            state={showSnackbar}
+            handleSnackbarClose={handleSnackbarClose}
+            severity={snackbarSeverity}
           />
-        </FormDialog>
-      </>
-    </div>
+        </>
+      )}
+
+      <ConfirmDialog
+        open={showModalDelete}
+        onClose={() => setShowModalDelete(false)}
+        onConfirm={handleDeleteRow}
+        title={modalTitles.confirmDeletion}
+        message={modalBodies.confirmDeletion(
+          "description",
+          selectedDescription?.descriptionName ?? "",
+        )}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <FormDialog
+        open={showModalAdd}
+        onClose={() => setShowModalAdd(false)}
+        onSubmit={() => {
+          if (descriptionData) {
+            handleAddRow(descriptionData);
+          } else {
+            handleAddRow({
+              descriptionName: "",
+              activeStatus: true,
+            } as Description);
+          }
+        }}
+        title={modalTitles.addNew("description")}
+        submitText="Add"
+      >
+        <TextField
+          label="Name"
+          fullWidth
+          margin="normal"
+          value={descriptionData?.descriptionName || ""}
+          error={!!formErrors.descriptionName}
+          helperText={formErrors.descriptionName}
+          onChange={(e) =>
+            setDescriptionData((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    descriptionName: e.target.value,
+                  }
+                : null,
+            )
+          }
+        />
+        <Box sx={{ mt: 1 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={!!descriptionData?.activeStatus}
+                onChange={(e) =>
+                  setDescriptionData((prev: Description) => ({
+                    ...prev,
+                    activeStatus: e.target.checked,
+                  }))
+                }
+              />
+            }
+            label="Status"
+          />
+          {formErrors.activeStatus && (
+            <Typography color="error" variant="caption">
+              {formErrors.activeStatus}
+            </Typography>
+          )}
+        </Box>
+        <Box sx={{ mt: 2 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={cacheEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCacheEnabled(checked);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem(
+                      DESCRIPTIONS_CACHE_ENABLED_KEY,
+                      String(checked),
+                    );
+                    if (!checked) {
+                      localStorage.removeItem(DESCRIPTIONS_CACHE_DATA_KEY);
+                    }
+                  }
+                }}
+                size="small"
+              />
+            }
+            label="Remember field data"
+          />
+        </Box>
+      </FormDialog>
+
+      <FormDialog
+        open={showModalMerge}
+        onClose={() => {
+          setShowModalMerge(false);
+          setMergeError(undefined);
+          setMergeName("");
+        }}
+        onSubmit={handleMerge}
+        title="Merge Descriptions"
+        submitText="Merge"
+        disabled={!!validateName(mergeName)}
+      >
+        <TextField
+          label="New Name"
+          fullWidth
+          margin="normal"
+          value={mergeName}
+          error={!!mergeError}
+          helperText={mergeError}
+          onChange={(e) => {
+            const next = e.target.value;
+            setMergeName(next);
+            setMergeError(validateName(next));
+          }}
+        />
+      </FormDialog>
+    </>
   );
 }

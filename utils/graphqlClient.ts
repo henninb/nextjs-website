@@ -86,7 +86,11 @@ export async function graphqlRequest<T>({
     }
 
     if (res.status === 403) {
-      if (text.includes("CSRF") || text.includes("Invalid CSRF token") || text === "") {
+      if (
+        text.includes("CSRF") ||
+        text.includes("Invalid CSRF token") ||
+        text === ""
+      ) {
         console.warn("[CSRF] Token invalid or missing, clearing cache");
         clearCsrfToken();
       }

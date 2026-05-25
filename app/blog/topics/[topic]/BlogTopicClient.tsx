@@ -279,7 +279,9 @@ export default function BlogTopicClient({
                       )}
 
                       <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                        >
                           <CalendarToday
                             sx={{
                               mr: 1,

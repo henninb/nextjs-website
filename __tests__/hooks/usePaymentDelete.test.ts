@@ -65,7 +65,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -184,7 +189,11 @@ const createPaymentDeleteHookQueryClient = () =>
 
 const createPaymentDeleteHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("usePaymentDelete hook", () => {
@@ -198,7 +207,9 @@ describe("usePaymentDelete hook", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (validateDelete as jest.Mock).mockImplementation(() => ({}));
-    const { InputSanitizer: sanitizer } = jest.requireMock("../../utils/validation/sanitization") as {
+    const { InputSanitizer: sanitizer } = jest.requireMock(
+      "../../utils/validation/sanitization",
+    ) as {
       InputSanitizer: { sanitizeNumericId: jest.Mock };
     };
     sanitizer.sanitizeNumericId.mockImplementation((value: number) => value);
@@ -206,7 +217,11 @@ describe("usePaymentDelete hook", () => {
 
   it("onSuccess calls removeFromList with the deleted payment", async () => {
     const queryClient = createPaymentDeleteHookQueryClient();
-    const testPayment = createTestPayment({ paymentId: 99, sourceAccount: "checking", destinationAccount: "credit" });
+    const testPayment = createTestPayment({
+      paymentId: 99,
+      sourceAccount: "checking",
+      destinationAccount: "credit",
+    });
 
     global.fetch = createFetchMock({ ...testPayment }, { status: 200 });
 

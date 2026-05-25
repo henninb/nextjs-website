@@ -10,7 +10,11 @@ jest.mock("../../utils/validation/sanitization", () => ({
 
 jest.mock("../../utils/cacheUtils", () => ({
   QueryKeys: {
-    transactionByCategory: jest.fn((cat: string) => ["transaction", "category", cat]),
+    transactionByCategory: jest.fn((cat: string) => [
+      "transaction",
+      "category",
+      cat,
+    ]),
   },
 }));
 

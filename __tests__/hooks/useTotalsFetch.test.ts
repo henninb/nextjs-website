@@ -523,7 +523,11 @@ const createTotalsFetchQueryClient = () =>
 
 const createTotalsFetchWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useTotalsFetch hook", () => {
@@ -549,7 +553,9 @@ describe("useTotalsFetch hook", () => {
       wrapper: createTotalsFetchWrapper(queryClient),
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(expect.objectContaining({ totals: 1500 }));
+    expect(result.current.data).toEqual(
+      expect.objectContaining({ totals: 1500 }),
+    );
   });
 
   it("enters error state when fetch returns a server error", async () => {
@@ -562,6 +568,8 @@ describe("useTotalsFetch hook", () => {
     const { result } = renderHook(() => useTotalsFetch(), {
       wrapper: createTotalsFetchWrapper(queryClient),
     });
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

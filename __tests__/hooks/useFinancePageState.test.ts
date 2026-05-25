@@ -70,7 +70,9 @@ describe("useFinancePageState", () => {
 
       renderHook(() => useFinancePageState());
 
-      await waitFor(() => expect(mockRouterReplace).toHaveBeenCalledWith("/login"));
+      await waitFor(() =>
+        expect(mockRouterReplace).toHaveBeenCalledWith("/login"),
+      );
     });
 
     it("does not redirect when still loading", async () => {
@@ -113,7 +115,11 @@ describe("useFinancePageState", () => {
       const { result } = renderHook(() => useFinancePageState());
 
       act(() => {
-        result.current.handleError(new Error("Something went wrong"), "TestModule", false);
+        result.current.handleError(
+          new Error("Something went wrong"),
+          "TestModule",
+          false,
+        );
       });
 
       expect(result.current.message).toBe("TestModule: Something went wrong");

@@ -62,6 +62,5 @@ export default function usePaymentFetchGql() {
     return mapped;
   });
 
-
   return queryResult;
 }

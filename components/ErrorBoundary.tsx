@@ -76,7 +76,12 @@ class ErrorBoundary extends Component<Props, State> {
           }}
         >
           <Box
-            sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
           >
             <ErrorOutlined sx={{ fontSize: 48, color: "error.main" }} />
 

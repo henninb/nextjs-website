@@ -1,6 +1,11 @@
 "use client";
 
-import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryCache,
+  MutationCache,
+} from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import AuthProvider from "../components/AuthProvider";
 import { UIProvider } from "../contexts/UIContext";

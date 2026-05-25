@@ -208,9 +208,9 @@ describe("useValidationAmountsFetchAll - fetchAllValidationAmounts", () => {
         status: 404,
       });
 
-      await expect(
-        fetchAllValidationAmounts("new_account"),
-      ).resolves.toEqual([]);
+      await expect(fetchAllValidationAmounts("new_account")).resolves.toEqual(
+        [],
+      );
     });
   });
 
@@ -246,17 +246,17 @@ describe("useValidationAmountsFetchAll - fetchAllValidationAmounts", () => {
         json: jest.fn().mockResolvedValue({}),
       });
 
-      await expect(
-        fetchAllValidationAmounts("checking_john"),
-      ).rejects.toThrow("503");
+      await expect(fetchAllValidationAmounts("checking_john")).rejects.toThrow(
+        "503",
+      );
     });
 
     it("should handle network errors", async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
 
-      await expect(
-        fetchAllValidationAmounts("checking_john"),
-      ).rejects.toThrow("Network failure");
+      await expect(fetchAllValidationAmounts("checking_john")).rejects.toThrow(
+        "Network failure",
+      );
     });
 
     it("should handle JSON parse failure in error response gracefully", async () => {
@@ -296,7 +296,11 @@ const createValidationAllQueryClient = () =>
 
 const createValidationAllWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useValidationAmountsFetchAll hook", () => {
@@ -308,7 +312,12 @@ describe("useValidationAmountsFetchAll hook", () => {
 
   it("returns validation amounts on successful fetch", async () => {
     const mockAmounts = [
-      { validationId: 1, amount: 500, transactionState: "cleared", activeStatus: true },
+      {
+        validationId: 1,
+        amount: 500,
+        transactionState: "cleared",
+        activeStatus: true,
+      },
     ];
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -317,9 +326,12 @@ describe("useValidationAmountsFetchAll hook", () => {
     });
 
     const queryClient = createValidationAllQueryClient();
-    const { result } = renderHook(() => useValidationAmountsFetchAll("checking_john"), {
-      wrapper: createValidationAllWrapper(queryClient),
-    });
+    const { result } = renderHook(
+      () => useValidationAmountsFetchAll("checking_john"),
+      {
+        wrapper: createValidationAllWrapper(queryClient),
+      },
+    );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toStrictEqual(mockAmounts);
@@ -333,11 +345,16 @@ describe("useValidationAmountsFetchAll hook", () => {
     });
 
     const queryClient = createValidationAllQueryClient();
-    const { result } = renderHook(() => useValidationAmountsFetchAll("checking_john"), {
-      wrapper: createValidationAllWrapper(queryClient),
-    });
+    const { result } = renderHook(
+      () => useValidationAmountsFetchAll("checking_john"),
+      {
+        wrapper: createValidationAllWrapper(queryClient),
+      },
+    );
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 
   it("is disabled when accountNameOwner is empty", () => {

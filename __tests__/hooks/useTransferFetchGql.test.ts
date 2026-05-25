@@ -22,8 +22,12 @@ jest.mock("../../utils/logger", () => ({
 import { graphqlRequest } from "../../utils/graphqlClient";
 import { useAuthenticatedQuery } from "../../utils/queryConfig";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
-const mockUseAuthenticatedQuery = useAuthenticatedQuery as jest.MockedFunction<typeof useAuthenticatedQuery>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
+const mockUseAuthenticatedQuery = useAuthenticatedQuery as jest.MockedFunction<
+  typeof useAuthenticatedQuery
+>;
 
 const createGqlTransfer = (overrides = {}) => ({
   transferId: 1,
@@ -43,7 +47,10 @@ const createGqlTransfer = (overrides = {}) => ({
 describe("useTransferFetchGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseAuthenticatedQuery.mockReturnValue({ data: undefined, isLoading: false } as any);
+    mockUseAuthenticatedQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+    } as any);
   });
 
   describe("hook configuration", () => {
@@ -70,11 +77,15 @@ describe("useTransferFetchGql", () => {
     it("should call graphqlRequest with Transfers query", async () => {
       renderHook(() => useTransferFetchGql());
 
-      mockGraphqlRequest.mockResolvedValue({ transfers: [createGqlTransfer()] });
+      mockGraphqlRequest.mockResolvedValue({
+        transfers: [createGqlTransfer()],
+      });
       await capturedQueryFn!();
 
       expect(mockGraphqlRequest).toHaveBeenCalledWith(
-        expect.objectContaining({ query: expect.stringContaining("transfers") }),
+        expect.objectContaining({
+          query: expect.stringContaining("transfers"),
+        }),
       );
     });
 

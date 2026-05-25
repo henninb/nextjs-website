@@ -11,7 +11,9 @@ import {
   transformToTrendsData,
   TrendsFilters,
 } from "../../hooks/useSpendingTrends";
-import useSpendingTrends, { useCurrentMonthKPIs } from "../../hooks/useSpendingTrends";
+import useSpendingTrends, {
+  useCurrentMonthKPIs,
+} from "../../hooks/useSpendingTrends";
 import Transaction from "../../model/Transaction";
 import {
   createFetchMock,
@@ -596,7 +598,11 @@ const createSpendingQueryClient = () =>
 
 const createSpendingWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useSpendingTrends hook", () => {
@@ -648,7 +654,9 @@ describe("useSpendingTrends hook", () => {
     const { result } = renderHook(() => useSpendingTrends(), {
       wrapper: createSpendingWrapper(queryClient),
     });
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });
 
@@ -683,6 +691,8 @@ describe("useCurrentMonthKPIs hook", () => {
     const { result } = renderHook(() => useCurrentMonthKPIs(), {
       wrapper: createSpendingWrapper(queryClient),
     });
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

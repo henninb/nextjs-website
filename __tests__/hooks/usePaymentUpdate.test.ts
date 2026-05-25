@@ -29,7 +29,12 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
-  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 // Mock validation utilities

@@ -119,12 +119,12 @@ describe("app/furnace/page", () => {
   it("renders the furnace reference content and external resources", () => {
     render(<FurnacePage />);
 
-    expect(
-      screen.getByText("Armstrong Furnace Reference"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Armstrong Furnace Reference")).toBeInTheDocument();
     expect(screen.getByText("Model: G1D93AU090D16C-1A")).toBeInTheDocument();
     expect(screen.getByText("Technical Specifications")).toBeInTheDocument();
-    expect(screen.getByText("Troubleshooting & Error Codes")).toBeInTheDocument();
+    expect(
+      screen.getByText("Troubleshooting & Error Codes"),
+    ).toBeInTheDocument();
     expect(
       screen.getByText("Maintenance Schedule & DIY Procedures"),
     ).toBeInTheDocument();
@@ -136,6 +136,9 @@ describe("app/furnace/page", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /product literature/i }),
-    ).toHaveAttribute("href", "https://www.armstrongair.com/owners/literature/");
+    ).toHaveAttribute(
+      "href",
+      "https://www.armstrongair.com/owners/literature/",
+    );
   });
 });

@@ -223,7 +223,10 @@ export default function RegisterPage() {
             label="First Name"
             name="firstName"
             autoComplete="given-name"
-            slotProps={{ htmlInput: { "data-testid": "input-firstName" }, formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } } }}
+            slotProps={{
+              htmlInput: { "data-testid": "input-firstName" },
+              formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } },
+            }}
             value={firstName}
             onChange={(e) => {
               const v = e.target.value;
@@ -244,7 +247,10 @@ export default function RegisterPage() {
             label="Last Name"
             name="lastName"
             autoComplete="family-name"
-            slotProps={{ htmlInput: { "data-testid": "input-lastName" }, formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } } }}
+            slotProps={{
+              htmlInput: { "data-testid": "input-lastName" },
+              formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } },
+            }}
             value={lastName}
             onChange={(e) => {
               const v = e.target.value;
@@ -266,13 +272,17 @@ export default function RegisterPage() {
             name="email"
             type="email"
             autoComplete="email"
-            slotProps={{ htmlInput: { "data-testid": "input-email" }, formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } }, input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailIcon />
-                </InputAdornment>
-              ),
-            } }}
+            slotProps={{
+              htmlInput: { "data-testid": "input-email" },
+              formHelperText: { sx: { ml: 0, mt: 0.5, lineHeight: 1.25 } },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon />
+                  </InputAdornment>
+                ),
+              },
+            }}
             value={email}
             onChange={(e) => {
               const v = e.target.value;
@@ -299,24 +309,27 @@ export default function RegisterPage() {
               setPassword(e.target.value);
               setPasswordValidation(validatePassword(e.target.value));
             }}
-            slotProps={{ htmlInput: { "data-testid": "input-password" }, input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockIcon />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    data-testid="toggle-password-visibility"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            } }}
+            slotProps={{
+              htmlInput: { "data-testid": "input-password" },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      data-testid="toggle-password-visibility"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           {password && (
             <Box sx={{ mt: 1, mb: 2 }}>
@@ -390,24 +403,27 @@ export default function RegisterPage() {
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            slotProps={{ htmlInput: { "data-testid": "input-confirmPassword" }, input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockIcon />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle confirm password visibility"
-                    data-testid="toggle-confirm-password-visibility"
-                    onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  >
-                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            } }}
+            slotProps={{
+              htmlInput: { "data-testid": "input-confirmPassword" },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      data-testid="toggle-confirm-password-visibility"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           {errorMessage && (
             <Box sx={{ mt: 2 }}>

@@ -345,7 +345,11 @@ const createPendingQueryClient = () =>
 
 const createPendingWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("usePendingTransactionFetch hook - renderHook tests", () => {
@@ -397,6 +401,8 @@ describe("usePendingTransactionFetch hook - renderHook tests", () => {
       wrapper: createPendingWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

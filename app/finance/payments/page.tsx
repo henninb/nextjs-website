@@ -19,7 +19,6 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
-import Spinner from "../../../components/Spinner";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -33,7 +32,6 @@ import useAccountFetch from "../../../hooks/useAccountFetch";
 import useParameterFetch from "../../../hooks/useParameterFetch";
 import Account from "../../../model/Account";
 import usePaymentUpdate from "../../../hooks/usePaymentUpdate";
-import FinanceLayout from "../../../layouts/FinanceLayout";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -50,9 +48,9 @@ import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 import { z } from "zod";
 
 const PaymentCacheSchema = z.object({
-  transactionDate: z.union([z.string(), z.date()]).transform((v) =>
-    typeof v === "string" ? new Date(v) : v,
-  ),
+  transactionDate: z
+    .union([z.string(), z.date()])
+    .transform((v) => (typeof v === "string" ? new Date(v) : v)),
   destinationAccount: z.string().max(100),
   sourceAccount: z.string().max(100),
   activeStatus: z.boolean(),
@@ -282,13 +280,6 @@ export default function Payments() {
       );
     } catch (error) {
       handleError(error, `Add Payment error: ${error}`, false);
-      if (
-        !navigator.onLine ||
-        (getErrorMessage(error) &&
-          getErrorMessage(error).includes("Failed to fetch"))
-      ) {
-        // Handle offline error if needed.
-      }
     }
   };
 
@@ -433,359 +424,339 @@ export default function Payments() {
   }
 
   return (
-    <div>
-      <>
-        <PageHeader
-          title="Payment Management"
-          subtitle="Track and manage payments between accounts with automated transaction processing"
-          actions={
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<EventRepeatIcon />}
-                onClick={() => setShowBatchModal(true)}
-              >
-                Batch
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  setPaymentData(
-                    cacheEnabled
-                      ? lastSubmittedPayment || initialPaymentData
-                      : initialPaymentData,
-                  );
-                  setFormErrors({});
-                  setPaymentMode("payBill");
-                  setShowModalAdd(true);
-                }}
-                sx={{ backgroundColor: "primary.main" }}
-              >
-                Add Payment
-              </Button>
-            </Box>
-          }
-        />
-        {showSpinner ? (
-          <LoadingState
-            variant="card"
-            message="Loading payments and accounts..."
-          />
-        ) : (
-          <div>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-                {fetchedPayments && fetchedPayments.length > 0 ? (
-                  <DataGridBase
-                    rows={fetchedPayments?.filter((row) => row != null) || []}
-                    columns={columns}
-                    getRowId={(row: Payment) =>
-                      row.paymentId ??
-                      `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
-                    }
-                    checkboxSelection={false}
-                    rowSelection={false}
-                    paginationModel={paginationModel}
-                    onPaginationModelChange={(newModel) =>
-                      setPaginationModel(newModel)
-                    }
-                    pageSizeOptions={[25, 50, 100]}
-                    autoHeight
-                    disableColumnResize={false}
-                    processRowUpdate={async (
-                      newRow: Payment,
-                      oldRow: Payment,
-                    ): Promise<Payment> => {
-                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                        return oldRow;
-                      }
-
-                      try {
-                        await updatePayment({
-                          oldPayment: oldRow,
-                          newPayment: newRow,
-                        });
-                        const when = formatDateForDisplay(
-                          newRow.transactionDate,
-                        );
-                        handleSuccess(
-                          `Payment updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
-                        );
-                        return { ...newRow };
-                      } catch (error) {
-                        handleError(
-                          error,
-                          `Update Payment error: ${error}`,
-                          false,
-                        );
-                        return oldRow;
-                      }
-                    }}
-                    sx={{
-                      "& .MuiDataGrid-cell": {
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      },
-                    }}
-                  />
-                ) : (
-                  <EmptyState
-                    title="No Payments Found"
-                    message="No payments have been recorded yet. Create your first payment to get started."
-                    dataType="payments"
-                    variant="create"
-                    actionLabel="Add Payment"
-                    onAction={() => {
-                      setPaymentData(
-                        lastSubmittedPayment || initialPaymentData,
-                      );
-                      setFormErrors({});
-                      setPaymentMode("payBill");
-                      setShowModalAdd(true);
-                    }}
-                    onRefresh={() => {
-                      refetchPayments();
-                      refetchAccounts();
-                      refetchParameters();
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-            <div>
-              <SnackbarBaseline
-                message={message}
-                state={showSnackbar}
-                handleSnackbarClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-              />
-            </div>
-          </div>
-        )}
-        <ConfirmDialog
-          open={showModalDelete}
-          onClose={() => setShowModalDelete(false)}
-          onConfirm={handleDeleteRow}
-          title={modalTitles.confirmDeletion}
-          message={modalBodies.confirmDeletion(
-            "payment",
-            selectedPayment?.paymentId ?? "",
-          )}
-          confirmText="Delete"
-          cancelText="Cancel"
-        />
-
-        <BatchPaymentModal
-          open={showBatchModal}
-          onClose={() => setShowBatchModal(false)}
-          accounts={isSuccessAccounts ? fetchedAccounts : []}
-          defaultSourceAccount={defaultPaymentMethod}
-          onBatchSuccess={(count, total) =>
-            handleSuccess(
-              `Batch complete: ${count} payment${count !== 1 ? "s" : ""} totaling ${currencyFormat(total)} submitted.`,
-            )
-          }
-          onBatchError={(error, msg) => handleError(error, msg, false)}
-        />
-
-        <FormDialog
-          open={showModalAdd}
-          onClose={() => setShowModalAdd(false)}
-          onSubmit={() => paymentData && handleAddRow(paymentData)}
-          title={modalTitles.addNew("payment")}
-          submitText={
-            paymentData?.amount !== null &&
-            paymentData?.amount !== undefined &&
-            parseFloat(String(paymentData.amount)) >= 0
-              ? `Pay ${currencyFormat(paymentData.amount)}`
-              : "Add Payment"
-          }
-        >
-          <Box sx={{ mb: 2, mt: 1 }}>
-            <Typography variant="body2" sx={{ mb: 1, color: "text.secondary" }}>
-              Payment Type
-            </Typography>
-            <ToggleButtonGroup
-              value={paymentMode}
-              exclusive
-              onChange={(event, newMode) => {
-                if (newMode !== null) {
-                  setPaymentMode(newMode);
-                  setPaymentData((prev) => ({
-                    ...prev,
-                    sourceAccount: "",
-                    destinationAccount: "",
-                  }));
-                }
-              }}
-              fullWidth
-              size="small"
+    <>
+      <PageHeader
+        title="Payment Management"
+        subtitle="Track and manage payments between accounts with automated transaction processing"
+        actions={
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<EventRepeatIcon />}
+              onClick={() => setShowBatchModal(true)}
             >
-              <ToggleButton value="payBill" aria-label="Pay Bill">
-                Pay Bill
-              </ToggleButton>
-              <ToggleButton
-                value="balanceTransfer"
-                aria-label="Balance Transfer"
-              >
-                Balance Transfer
-              </ToggleButton>
-            </ToggleButtonGroup>
+              Batch
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setPaymentData(
+                  cacheEnabled
+                    ? lastSubmittedPayment || initialPaymentData
+                    : initialPaymentData,
+                );
+                setFormErrors({});
+                setPaymentMode("payBill");
+                setShowModalAdd(true);
+              }}
+              sx={{ backgroundColor: "primary.main" }}
+            >
+              Add Payment
+            </Button>
           </Box>
-          <TextField
-            label="Transaction Date"
-            fullWidth
-            margin="normal"
-            type="date"
-            value={formatDateForInput(paymentData.transactionDate)}
-            onChange={(e) => {
-              const normalizedDate = normalizeTransactionDate(e.target.value);
-              setPaymentData((prev) => ({
-                ...prev,
-                transactionDate: normalizedDate,
-              }));
-            }}
-            slotProps={{
-              inputLabel: { shrink: true },
-            }}
+        }
+      />
+      {showSpinner ? (
+        <LoadingState
+          variant="card"
+          message="Loading payments and accounts..."
+        />
+      ) : (
+        <>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
+              {fetchedPayments && fetchedPayments.length > 0 ? (
+                <DataGridBase
+                  rows={fetchedPayments?.filter((row) => row != null) || []}
+                  columns={columns}
+                  getRowId={(row: Payment) =>
+                    row.paymentId ??
+                    `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
+                  }
+                  checkboxSelection={false}
+                  rowSelection={false}
+                  paginationModel={paginationModel}
+                  onPaginationModelChange={(newModel) =>
+                    setPaginationModel(newModel)
+                  }
+                  pageSizeOptions={[25, 50, 100]}
+                  autoHeight
+                  disableColumnResize={false}
+                  processRowUpdate={async (
+                    newRow: Payment,
+                    oldRow: Payment,
+                  ): Promise<Payment> => {
+                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                      return oldRow;
+                    }
+
+                    try {
+                      await updatePayment({
+                        oldPayment: oldRow,
+                        newPayment: newRow,
+                      });
+                      const when = formatDateForDisplay(newRow.transactionDate);
+                      handleSuccess(
+                        `Payment updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
+                      );
+                      return { ...newRow };
+                    } catch (error) {
+                      handleError(
+                        error,
+                        `Update Payment error: ${error}`,
+                        false,
+                      );
+                      return oldRow;
+                    }
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-cell": {
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  title="No Payments Found"
+                  message="No payments have been recorded yet. Create your first payment to get started."
+                  dataType="payments"
+                  variant="create"
+                  actionLabel="Add Payment"
+                  onAction={() => {
+                    setPaymentData(lastSubmittedPayment || initialPaymentData);
+                    setFormErrors({});
+                    setPaymentMode("payBill");
+                    setShowModalAdd(true);
+                  }}
+                  onRefresh={() => {
+                    refetchPayments();
+                    refetchAccounts();
+                    refetchParameters();
+                  }}
+                />
+              )}
+            </Box>
+          </Box>
+          <SnackbarBaseline
+            message={message}
+            state={showSnackbar}
+            handleSnackbarClose={handleSnackbarClose}
+            severity={snackbarSeverity}
           />
-          <Autocomplete
-            options={
-              isSuccessAccounts
-                ? fetchedAccounts.filter((account) =>
-                    paymentMode === "payBill"
-                      ? account.accountType === "debit"
-                      : account.accountType === "credit",
-                  )
-                : []
-            }
-            getOptionLabel={(account: Account) =>
-              account.accountNameOwner || ""
-            }
-            isOptionEqualToValue={(option, value) =>
-              option.accountNameOwner === value?.accountNameOwner
-            }
-            value={
-              isSuccessAccounts
-                ? fetchedAccounts.find(
-                    (account) =>
-                      account.accountNameOwner === paymentData.sourceAccount,
-                  ) || null
-                : null
-            }
-            onChange={(event, newValue) =>
-              setPaymentData((prev) => ({
-                ...prev,
-                sourceAccount: newValue ? newValue.accountNameOwner : "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Source Account"
-                fullWidth
-                margin="normal"
-                placeholder="Select or search an account"
-              />
-            )}
-          />
-          <Autocomplete
-            options={
-              isSuccessAccounts
-                ? fetchedAccounts.filter((account) =>
-                    paymentMode === "payBill"
-                      ? account.accountType === "credit"
-                      : account.accountType === "credit",
-                  )
-                : []
-            }
-            getOptionLabel={(account: Account) =>
-              account.accountNameOwner || ""
-            }
-            isOptionEqualToValue={(option, value) =>
-              option.accountNameOwner === value?.accountNameOwner
-            }
-            value={
-              paymentData.destinationAccount && isSuccessAccounts
-                ? fetchedAccounts.find(
-                    (account) =>
-                      account.accountNameOwner ===
-                      paymentData.destinationAccount,
-                  ) || null
-                : null
-            }
-            onChange={(event, newValue) =>
-              setPaymentData((prev) => ({
-                ...prev,
-                destinationAccount: newValue ? newValue.accountNameOwner : "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Destination Account"
-                fullWidth
-                margin="normal"
-                placeholder="Select or search an account"
-              />
-            )}
-          />
-          <USDAmountInput
-            label="Amount"
-            value={paymentData?.amount ? paymentData.amount : ""}
-            onChange={(value) => {
-              setPaymentData((prev: Payment) => ({
-                ...prev,
-                amount:
-                  typeof value === "string" ? parseFloat(value) || 0 : value,
-              }));
-            }}
-            onBlur={() => {
-              // Format amount properly on blur
-              const currentValue = parseFloat(
-                String(paymentData?.amount || ""),
-              );
-              if (!isNaN(currentValue)) {
-                setPaymentData((prev: Payment) => ({
+        </>
+      )}
+      <ConfirmDialog
+        open={showModalDelete}
+        onClose={() => setShowModalDelete(false)}
+        onConfirm={handleDeleteRow}
+        title={modalTitles.confirmDeletion}
+        message={modalBodies.confirmDeletion(
+          "payment",
+          selectedPayment?.paymentId ?? "",
+        )}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <BatchPaymentModal
+        open={showBatchModal}
+        onClose={() => setShowBatchModal(false)}
+        accounts={isSuccessAccounts ? fetchedAccounts : []}
+        defaultSourceAccount={defaultPaymentMethod}
+        onBatchSuccess={(count, total) =>
+          handleSuccess(
+            `Batch complete: ${count} payment${count !== 1 ? "s" : ""} totaling ${currencyFormat(total)} submitted.`,
+          )
+        }
+        onBatchError={(error, msg) => handleError(error, msg, false)}
+      />
+
+      <FormDialog
+        open={showModalAdd}
+        onClose={() => setShowModalAdd(false)}
+        onSubmit={() => paymentData && handleAddRow(paymentData)}
+        title={modalTitles.addNew("payment")}
+        submitText={
+          paymentData?.amount !== null &&
+          paymentData?.amount !== undefined &&
+          parseFloat(String(paymentData.amount)) >= 0
+            ? `Pay ${currencyFormat(paymentData.amount)}`
+            : "Add Payment"
+        }
+      >
+        <Box sx={{ mb: 2, mt: 1 }}>
+          <Typography variant="body2" sx={{ mb: 1, color: "text.secondary" }}>
+            Payment Type
+          </Typography>
+          <ToggleButtonGroup
+            value={paymentMode}
+            exclusive
+            onChange={(event, newMode) => {
+              if (newMode !== null) {
+                setPaymentMode(newMode);
+                setPaymentData((prev) => ({
                   ...prev,
-                  amount: Number(currentValue.toFixed(2)),
+                  sourceAccount: "",
+                  destinationAccount: "",
                 }));
               }
             }}
             fullWidth
-            margin="normal"
-            error={!!formErrors.amount}
-            helperText={formErrors.amount}
-          />
-          <Box sx={{ mt: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={cacheEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setCacheEnabled(checked);
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem(
-                        PAYMENTS_CACHE_ENABLED_KEY,
-                        String(checked),
-                      );
-                      if (!checked) {
-                        setLastSubmittedPayment(null);
-                        localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);
-                      }
-                    }
-                  }}
-                  size="small"
-                />
-              }
-              label="Remember field data"
+            size="small"
+          >
+            <ToggleButton value="payBill" aria-label="Pay Bill">
+              Pay Bill
+            </ToggleButton>
+            <ToggleButton value="balanceTransfer" aria-label="Balance Transfer">
+              Balance Transfer
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+        <TextField
+          label="Transaction Date"
+          fullWidth
+          margin="normal"
+          type="date"
+          value={formatDateForInput(paymentData.transactionDate)}
+          onChange={(e) => {
+            const normalizedDate = normalizeTransactionDate(e.target.value);
+            setPaymentData((prev) => ({
+              ...prev,
+              transactionDate: normalizedDate,
+            }));
+          }}
+          slotProps={{
+            inputLabel: { shrink: true },
+          }}
+        />
+        <Autocomplete
+          options={
+            isSuccessAccounts
+              ? fetchedAccounts.filter((account) =>
+                  paymentMode === "payBill"
+                    ? account.accountType === "debit"
+                    : account.accountType === "credit",
+                )
+              : []
+          }
+          getOptionLabel={(account: Account) => account.accountNameOwner || ""}
+          isOptionEqualToValue={(option, value) =>
+            option.accountNameOwner === value?.accountNameOwner
+          }
+          value={
+            isSuccessAccounts
+              ? fetchedAccounts.find(
+                  (account) =>
+                    account.accountNameOwner === paymentData.sourceAccount,
+                ) || null
+              : null
+          }
+          onChange={(event, newValue) =>
+            setPaymentData((prev) => ({
+              ...prev,
+              sourceAccount: newValue ? newValue.accountNameOwner : "",
+            }))
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Source Account"
+              fullWidth
+              margin="normal"
+              placeholder="Select or search an account"
             />
-          </Box>
-        </FormDialog>
-      </>
-    </div>
+          )}
+        />
+        <Autocomplete
+          options={
+            isSuccessAccounts
+              ? fetchedAccounts.filter(
+                  (account) => account.accountType === "credit",
+                )
+              : []
+          }
+          getOptionLabel={(account: Account) => account.accountNameOwner || ""}
+          isOptionEqualToValue={(option, value) =>
+            option.accountNameOwner === value?.accountNameOwner
+          }
+          value={
+            paymentData.destinationAccount && isSuccessAccounts
+              ? fetchedAccounts.find(
+                  (account) =>
+                    account.accountNameOwner === paymentData.destinationAccount,
+                ) || null
+              : null
+          }
+          onChange={(event, newValue) =>
+            setPaymentData((prev) => ({
+              ...prev,
+              destinationAccount: newValue ? newValue.accountNameOwner : "",
+            }))
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Destination Account"
+              fullWidth
+              margin="normal"
+              placeholder="Select or search an account"
+            />
+          )}
+        />
+        <USDAmountInput
+          label="Amount"
+          value={paymentData?.amount ? paymentData.amount : ""}
+          onChange={(value) => {
+            setPaymentData((prev: Payment) => ({
+              ...prev,
+              amount:
+                typeof value === "string" ? parseFloat(value) || 0 : value,
+            }));
+          }}
+          onBlur={() => {
+            // Format amount properly on blur
+            const currentValue = parseFloat(String(paymentData?.amount || ""));
+            if (!isNaN(currentValue)) {
+              setPaymentData((prev: Payment) => ({
+                ...prev,
+                amount: Number(currentValue.toFixed(2)),
+              }));
+            }
+          }}
+          fullWidth
+          margin="normal"
+          error={!!formErrors.amount}
+          helperText={formErrors.amount}
+        />
+        <Box sx={{ mt: 2 }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={cacheEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setCacheEnabled(checked);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem(
+                      PAYMENTS_CACHE_ENABLED_KEY,
+                      String(checked),
+                    );
+                    if (!checked) {
+                      setLastSubmittedPayment(null);
+                      localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);
+                    }
+                  }
+                }}
+                size="small"
+              />
+            }
+            label="Remember field data"
+          />
+        </Box>
+      </FormDialog>
+    </>
   );
 }

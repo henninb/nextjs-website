@@ -106,6 +106,5 @@ export default function useAccountFetchGql() {
     },
   );
 
-
   return queryResult;
 }

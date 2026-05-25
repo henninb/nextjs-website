@@ -8,7 +8,10 @@ import {
   createTestPayment,
   simulateNetworkError,
 } from "../../testHelpers";
-import usePaymentInsert, { setupNewPayment, insertPayment } from "../../hooks/usePaymentInsert";
+import usePaymentInsert, {
+  setupNewPayment,
+  insertPayment,
+} from "../../hooks/usePaymentInsert";
 import { validateInsert } from "../../utils/hookValidation";
 
 // Mock the useAuth hook
@@ -48,7 +51,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -192,7 +200,11 @@ const createPaymentInsertQueryClient = () =>
 
 const createPaymentInsertWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("usePaymentInsert hook", () => {
@@ -201,7 +213,8 @@ describe("usePaymentInsert hook", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockValidateInsert.mockImplementation((data: unknown) => data);
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: true,
       loading: false,
@@ -271,7 +284,8 @@ describe("usePaymentInsert hook", () => {
   });
 
   it("throws when user is not logged in", async () => {
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: false,
       loading: false,
@@ -296,7 +310,9 @@ describe("usePaymentInsert hook", () => {
       result.current.mutate({ payload: payment });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

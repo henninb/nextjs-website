@@ -1,4 +1,6 @@
-import useDescriptionDelete, { deleteDescription } from "../../hooks/useDescriptionDelete";
+import useDescriptionDelete, {
+  deleteDescription,
+} from "../../hooks/useDescriptionDelete";
 import Description from "../../model/Description";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -54,9 +56,8 @@ import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 import { validateDelete } from "../../utils/hookValidation";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -163,7 +164,9 @@ describe("useDescriptionDelete - deleteDescription", () => {
 
       for (const name of names) {
         jest.clearAllMocks();
-        mockFetchWithErrorHandling.mockResolvedValue({ status: 204 } as Response);
+        mockFetchWithErrorHandling.mockResolvedValue({
+          status: 204,
+        } as Response);
         mockParseResponse.mockResolvedValue(null);
         mockValidateDelete.mockImplementation(() => {});
         mockSanitizeDescription.mockImplementation((v) => v);
@@ -315,7 +318,11 @@ const createDescDeleteHookQueryClient = () =>
 
 const createDescDeleteHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useDescriptionDelete hook", () => {

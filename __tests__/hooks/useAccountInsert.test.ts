@@ -40,7 +40,12 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
-  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 // Mock validation utilities
@@ -51,7 +56,10 @@ jest.mock("../../utils/validation", () => ({
   ValidationError: jest.fn(),
 }));
 
-import useAccountInsert, { setupNewAccount, insertAccount } from "../../hooks/useAccountInsert";
+import useAccountInsert, {
+  setupNewAccount,
+  insertAccount,
+} from "../../hooks/useAccountInsert";
 import { validateInsert } from "../../utils/hookValidation";
 import { DataValidator } from "../../utils/validation";
 
@@ -663,7 +671,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useAccountInsert hook - renderHook tests", () => {
@@ -672,7 +684,8 @@ describe("useAccountInsert hook - renderHook tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (validateInsert as jest.Mock).mockImplementation((data) => data);
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: true,
       loading: false,
@@ -691,7 +704,10 @@ describe("useAccountInsert hook - renderHook tests", () => {
     const existingAccount = createTestAccount({ accountNameOwner: "existing" });
     queryClient.setQueryData(["account"], [existingAccount]);
 
-    const newAccount = createTestAccount({ accountNameOwner: "new_account", accountId: 999 });
+    const newAccount = createTestAccount({
+      accountNameOwner: "new_account",
+      accountId: 999,
+    });
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 201,
@@ -703,13 +719,17 @@ describe("useAccountInsert hook - renderHook tests", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ payload: createTestAccount({ accountNameOwner: "new_account" }) });
+      await result.current.mutateAsync({
+        payload: createTestAccount({ accountNameOwner: "new_account" }),
+      });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Account[]>(["account"]);
-    expect(cached).toContainEqual(expect.objectContaining({ accountNameOwner: "new_account" }));
+    expect(cached).toContainEqual(
+      expect.objectContaining({ accountNameOwner: "new_account" }),
+    );
   });
 
   it("onError puts mutation into error state", async () => {
@@ -736,7 +756,8 @@ describe("useAccountInsert hook - renderHook tests", () => {
   });
 
   it("throws when user is not logged in", async () => {
-    const mockUseAuth = jest.requireMock("../../components/AuthProvider").useAuth as jest.Mock;
+    const mockUseAuth = jest.requireMock("../../components/AuthProvider")
+      .useAuth as jest.Mock;
     mockUseAuth.mockImplementation(() => ({
       isAuthenticated: false,
       loading: false,
@@ -754,7 +775,9 @@ describe("useAccountInsert hook - renderHook tests", () => {
       result.current.mutate({ payload: createTestAccount() });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 3000,
+    });
     expect(result.current.error?.message).toContain("User must be logged in");
   });
 });

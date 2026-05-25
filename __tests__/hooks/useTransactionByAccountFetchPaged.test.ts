@@ -94,7 +94,9 @@ describe("useTransactionByAccountFetchPaged - fetchTransactionsByAccountPaged", 
       await fetchTransactionsByAccountPaged("checking_john", 0, 50);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/transaction/account/select/checking_john/paged"),
+        expect.stringContaining(
+          "/api/transaction/account/select/checking_john/paged",
+        ),
         expect.objectContaining({ method: "GET" }),
       );
     });
@@ -140,14 +142,21 @@ describe("useTransactionByAccountFetchPaged - fetchTransactionsByAccountPaged", 
     });
 
     it("should return page response with transactions", async () => {
-      const page = createPageResponse([createTestTransaction(), createTestTransaction()]);
+      const page = createPageResponse([
+        createTestTransaction(),
+        createTestTransaction(),
+      ]);
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
         status: 200,
         json: jest.fn().mockResolvedValue(page),
       });
 
-      const result = await fetchTransactionsByAccountPaged("checking_john", 0, 50);
+      const result = await fetchTransactionsByAccountPaged(
+        "checking_john",
+        0,
+        50,
+      );
 
       expect(result).toStrictEqual(page);
       expect(result?.content).toHaveLength(2);
@@ -159,7 +168,11 @@ describe("useTransactionByAccountFetchPaged - fetchTransactionsByAccountPaged", 
         status: 204,
       });
 
-      const result = await fetchTransactionsByAccountPaged("checking_john", 0, 50);
+      const result = await fetchTransactionsByAccountPaged(
+        "checking_john",
+        0,
+        50,
+      );
 
       expect(result).toBeNull();
     });
@@ -270,7 +283,11 @@ const createPagedQueryClient = () =>
 
 const createPagedWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useTransactionByAccountFetchPaged hook", () => {
@@ -307,6 +324,8 @@ describe("useTransactionByAccountFetchPaged hook", () => {
       () => useTransactionByAccountFetchPaged("checking_john", 0, 50),
       { wrapper: createPagedWrapper(queryClient) },
     );
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

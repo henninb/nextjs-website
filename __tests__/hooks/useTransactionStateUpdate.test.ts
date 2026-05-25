@@ -41,9 +41,8 @@ jest.mock("../../utils/logger", () => ({
 import { fetchWithErrorHandling, parseResponse } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
 const mockParseResponse = parseResponse as jest.MockedFunction<
   typeof parseResponse
 >;
@@ -93,7 +92,9 @@ describe("useTransactionStateUpdate hook", () => {
   describe("state transitions", () => {
     it("should update transaction state to cleared", async () => {
       const queryClient = createTestQueryClient();
-      const transaction = createTestTransaction({ transactionState: "cleared" });
+      const transaction = createTestTransaction({
+        transactionState: "cleared",
+      });
       mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
       mockParseResponse.mockResolvedValue(transaction);
 
@@ -162,7 +163,9 @@ describe("useTransactionStateUpdate hook", () => {
 
     it("should update transaction state to pending", async () => {
       const queryClient = createTestQueryClient();
-      const transaction = createTestTransaction({ transactionState: "pending" });
+      const transaction = createTestTransaction({
+        transactionState: "pending",
+      });
       mockFetchWithErrorHandling.mockResolvedValue({ status: 200 } as Response);
       mockParseResponse.mockResolvedValue(transaction);
 
@@ -186,8 +189,14 @@ describe("useTransactionStateUpdate hook", () => {
       const accountKey = ["account", "checking_john"];
 
       const existingTransactions = [
-        createTestTransaction({ guid: "test-guid-123", transactionState: "outstanding" }),
-        createTestTransaction({ guid: "other-guid", transactionState: "cleared" }),
+        createTestTransaction({
+          guid: "test-guid-123",
+          transactionState: "outstanding",
+        }),
+        createTestTransaction({
+          guid: "other-guid",
+          transactionState: "cleared",
+        }),
       ];
       queryClient.setQueryData(accountKey, existingTransactions);
 
@@ -210,8 +219,11 @@ describe("useTransactionStateUpdate hook", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      const cachedData = queryClient.getQueryData<typeof existingTransactions>(accountKey);
-      const updatedInCache = cachedData?.find((t) => t.guid === "test-guid-123");
+      const cachedData =
+        queryClient.getQueryData<typeof existingTransactions>(accountKey);
+      const updatedInCache = cachedData?.find(
+        (t) => t.guid === "test-guid-123",
+      );
       expect(updatedInCache?.transactionState).toBe("cleared");
     });
 
@@ -220,8 +232,14 @@ describe("useTransactionStateUpdate hook", () => {
       const accountKey = ["account", "checking_john"];
 
       const existingTransactions = [
-        createTestTransaction({ guid: "target-guid", transactionState: "outstanding" }),
-        createTestTransaction({ guid: "other-guid", transactionState: "cleared" }),
+        createTestTransaction({
+          guid: "target-guid",
+          transactionState: "outstanding",
+        }),
+        createTestTransaction({
+          guid: "other-guid",
+          transactionState: "cleared",
+        }),
       ];
       queryClient.setQueryData(accountKey, existingTransactions);
 
@@ -244,7 +262,8 @@ describe("useTransactionStateUpdate hook", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      const cachedData = queryClient.getQueryData<typeof existingTransactions>(accountKey);
+      const cachedData =
+        queryClient.getQueryData<typeof existingTransactions>(accountKey);
       const otherTx = cachedData?.find((t) => t.guid === "other-guid");
       expect(otherTx?.transactionState).toBe("cleared");
     });
@@ -298,7 +317,9 @@ describe("useTransactionStateUpdate hook", () => {
 
     it("should handle network errors", async () => {
       const queryClient = createTestQueryClient();
-      mockFetchWithErrorHandling.mockRejectedValue(new Error("Network request failed"));
+      mockFetchWithErrorHandling.mockRejectedValue(
+        new Error("Network request failed"),
+      );
 
       const { result } = renderHook(
         () => useTransactionStateUpdate("checking_john"),

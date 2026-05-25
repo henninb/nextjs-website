@@ -34,9 +34,11 @@ describe("useAccountUsageTracking", () => {
     jest.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
       return localStorageMock[key] ?? null;
     });
-    jest.spyOn(Storage.prototype, "setItem").mockImplementation((key, value) => {
-      localStorageMock[key] = value;
-    });
+    jest
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation((key, value) => {
+        localStorageMock[key] = value;
+      });
     jest.spyOn(Storage.prototype, "removeItem").mockImplementation((key) => {
       delete localStorageMock[key];
     });
@@ -66,7 +68,9 @@ describe("useAccountUsageTracking", () => {
       const { result } = renderHook(() => useAccountUsageTracking());
 
       expect(result.current.accountUsage).toHaveLength(1);
-      expect(result.current.accountUsage[0].accountNameOwner).toBe("checking_john");
+      expect(result.current.accountUsage[0].accountNameOwner).toBe(
+        "checking_john",
+      );
       expect(result.current.accountUsage[0].visitCount).toBe(5);
     });
 
@@ -106,7 +110,9 @@ describe("useAccountUsageTracking", () => {
       });
 
       expect(result.current.accountUsage).toHaveLength(1);
-      expect(result.current.accountUsage[0].accountNameOwner).toBe("checking_john");
+      expect(result.current.accountUsage[0].accountNameOwner).toBe(
+        "checking_john",
+      );
       expect(result.current.accountUsage[0].visitCount).toBe(1);
     });
 
@@ -182,7 +188,9 @@ describe("useAccountUsageTracking", () => {
       });
 
       expect(result.current.accountUsage).toHaveLength(1);
-      expect(result.current.accountUsage[0].accountNameOwner).toBe("savings_john");
+      expect(result.current.accountUsage[0].accountNameOwner).toBe(
+        "savings_john",
+      );
     });
 
     it("should do nothing when removing nonexistent account", () => {
@@ -207,9 +215,11 @@ describe("useAccountUsageTracking", () => {
       });
 
       jest.clearAllMocks();
-      jest.spyOn(Storage.prototype, "setItem").mockImplementation((key, value) => {
-        localStorageMock[key] = value;
-      });
+      jest
+        .spyOn(Storage.prototype, "setItem")
+        .mockImplementation((key, value) => {
+          localStorageMock[key] = value;
+        });
 
       act(() => {
         result.current.removeAccount("checking_john");

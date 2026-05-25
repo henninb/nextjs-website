@@ -89,29 +89,31 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           size="small"
-          slotProps={{ input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    fontSize: "1.1rem",
-                  }}
-                />
-              </InputAdornment>
-            ),
-            endAdornment: searchTerm && (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={() => onSearchChange("")}
-                  aria-label="Clear search"
-                >
-                  <ClearIcon fontSize="small" />
-                </IconButton>
-              </InputAdornment>
-            ),
-          } }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: "1.1rem",
+                    }}
+                  />
+                </InputAdornment>
+              ),
+              endAdornment: searchTerm && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => onSearchChange("")}
+                    aria-label="Clear search"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
           sx={{
             minWidth: "300px",
             flexGrow: 1,

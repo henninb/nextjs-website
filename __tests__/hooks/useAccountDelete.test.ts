@@ -29,7 +29,12 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
-  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 // Mock the validation utilities since we're testing in isolation
@@ -264,7 +269,11 @@ const createAcctDeleteQueryClient = () =>
 
 const createAcctDeleteWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useAccountDelete hook", () => {
@@ -283,7 +292,9 @@ describe("useAccountDelete hook", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    const { InputSanitizer: san } = jest.requireMock("../../utils/validation/sanitization");
+    const { InputSanitizer: san } = jest.requireMock(
+      "../../utils/validation/sanitization",
+    );
     (san.sanitizeAccountName as jest.Mock).mockImplementation((v: string) => v);
     (validateDelete as jest.Mock).mockImplementation(() => {});
   });
@@ -328,6 +339,8 @@ describe("useAccountDelete hook", () => {
       result.current.mutate({ oldRow: hookTestAccount });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 4000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 4000,
+    });
   }, 8000);
 });

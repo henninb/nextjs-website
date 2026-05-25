@@ -99,19 +99,11 @@ describe("hookValidation", () => {
       const testData = { name: "invalid" };
 
       expect(() =>
-        validateInsert(
-          testData,
-          mockFailValidator,
-          "testOperation",
-        ),
+        validateInsert(testData, mockFailValidator, "testOperation"),
       ).toThrow(HookValidationError);
 
       expect(() =>
-        validateInsert(
-          testData,
-          mockFailValidator,
-          "testOperation",
-        ),
+        validateInsert(testData, mockFailValidator, "testOperation"),
       ).toThrow("testOperation validation failed: Validation failed");
     });
 
@@ -119,11 +111,7 @@ describe("hookValidation", () => {
       const testData = { name: "invalid" };
 
       try {
-        validateInsert(
-          testData,
-          mockFailValidator,
-          "testOperation",
-        );
+        validateInsert(testData, mockFailValidator, "testOperation");
         fail("Should have thrown");
       } catch (error) {
         expect(error).toBeInstanceOf(HookValidationError);
@@ -152,11 +140,7 @@ describe("hookValidation", () => {
       const newData = { name: "invalid" };
 
       expect(() =>
-        validateUpdate(
-          newData,
-          mockFailValidator,
-          "updateOperation",
-        ),
+        validateUpdate(newData, mockFailValidator, "updateOperation"),
       ).toThrow(HookValidationError);
     });
   });
@@ -165,11 +149,7 @@ describe("hookValidation", () => {
     it("should return data when identifier is valid", () => {
       const testData = { id: "valid-id", name: "test" };
 
-      const result = validateDelete(
-        testData,
-        "id",
-        "deleteOperation",
-      );
+      const result = validateDelete(testData, "id", "deleteOperation");
 
       expect(result).toEqual(testData);
     });
@@ -177,29 +157,29 @@ describe("hookValidation", () => {
     it("should throw when identifier is missing", () => {
       const testData = { name: "test" };
 
-      expect(() =>
-        validateDelete(testData, "id", "deleteOperation"),
-      ).toThrow(HookValidationError);
+      expect(() => validateDelete(testData, "id", "deleteOperation")).toThrow(
+        HookValidationError,
+      );
 
-      expect(() =>
-        validateDelete(testData, "id", "deleteOperation"),
-      ).toThrow("deleteOperation: Invalid id provided");
+      expect(() => validateDelete(testData, "id", "deleteOperation")).toThrow(
+        "deleteOperation: Invalid id provided",
+      );
     });
 
     it("should throw when identifier is empty string", () => {
       const testData = { id: "", name: "test" };
 
-      expect(() =>
-        validateDelete(testData, "id", "deleteOperation"),
-      ).toThrow(HookValidationError);
+      expect(() => validateDelete(testData, "id", "deleteOperation")).toThrow(
+        HookValidationError,
+      );
     });
 
     it("should throw when identifier is whitespace-only string", () => {
       const testData = { id: "   ", name: "test" };
 
-      expect(() =>
-        validateDelete(testData, "id", "deleteOperation"),
-      ).toThrow(HookValidationError);
+      expect(() => validateDelete(testData, "id", "deleteOperation")).toThrow(
+        HookValidationError,
+      );
     });
 
     it("should include validation error details", () => {
@@ -281,48 +261,42 @@ describe("hookValidation", () => {
     });
 
     it("should trim whitespace from account names", () => {
-      const result = validateAccountName(
-        "  account_name  ",
-        "testOperation",
-      );
+      const result = validateAccountName("  account_name  ", "testOperation");
       expect(result).toBe("account_name");
     });
 
     it("should throw when account name is empty", () => {
-      expect(() =>
-        validateAccountName("", "testOperation"),
-      ).toThrow(HookValidationError);
+      expect(() => validateAccountName("", "testOperation")).toThrow(
+        HookValidationError,
+      );
 
-      expect(() =>
-        validateAccountName("", "testOperation"),
-      ).toThrow("testOperation: Account name is required");
+      expect(() => validateAccountName("", "testOperation")).toThrow(
+        "testOperation: Account name is required",
+      );
     });
 
     it("should throw when account name is whitespace-only", () => {
-      expect(() =>
-        validateAccountName("   ", "testOperation"),
-      ).toThrow(HookValidationError);
+      expect(() => validateAccountName("   ", "testOperation")).toThrow(
+        HookValidationError,
+      );
     });
 
     it("should throw when account name exceeds 100 characters", () => {
       const longName = "a".repeat(101);
 
-      expect(() =>
-        validateAccountName(longName, "testOperation"),
-      ).toThrow(HookValidationError);
+      expect(() => validateAccountName(longName, "testOperation")).toThrow(
+        HookValidationError,
+      );
 
-      expect(() =>
-        validateAccountName(longName, "testOperation"),
-      ).toThrow("testOperation: Account name too long");
+      expect(() => validateAccountName(longName, "testOperation")).toThrow(
+        "testOperation: Account name too long",
+      );
     });
 
     it("should accept account name of exactly 100 characters", () => {
       const maxLengthName = "a".repeat(100);
 
-      const result = validateAccountName(
-        maxLengthName,
-        "testOperation",
-      );
+      const result = validateAccountName(maxLengthName, "testOperation");
       expect(result).toBe(maxLengthName);
     });
   });
@@ -345,31 +319,31 @@ describe("hookValidation", () => {
     });
 
     it("should throw on non-integer IDs", () => {
-      expect(() =>
-        validateNumericId(12.5, "id", "testOp"),
-      ).toThrow(HookValidationError);
+      expect(() => validateNumericId(12.5, "id", "testOp")).toThrow(
+        HookValidationError,
+      );
     });
 
     it("should throw on NaN", () => {
-      expect(() =>
-        validateNumericId(NaN, "id", "testOp"),
-      ).toThrow(HookValidationError);
+      expect(() => validateNumericId(NaN, "id", "testOp")).toThrow(
+        HookValidationError,
+      );
 
-      expect(() =>
-        validateNumericId("not-a-number", "id", "testOp"),
-      ).toThrow(HookValidationError);
+      expect(() => validateNumericId("not-a-number", "id", "testOp")).toThrow(
+        HookValidationError,
+      );
     });
 
     it("should use custom field name in error message", () => {
-      expect(() =>
-        validateNumericId(-1, "customId", "testOp"),
-      ).toThrow("testOp: Invalid customId");
+      expect(() => validateNumericId(-1, "customId", "testOp")).toThrow(
+        "testOp: Invalid customId",
+      );
     });
 
     it("should use default field name when not provided", () => {
-      expect(() =>
-        validateNumericId(-1, undefined as any, "testOp"),
-      ).toThrow("testOp: Invalid ID");
+      expect(() => validateNumericId(-1, undefined as any, "testOp")).toThrow(
+        "testOp: Invalid ID",
+      );
     });
   });
 
@@ -397,13 +371,13 @@ describe("hookValidation", () => {
     });
 
     it("should throw on non-array values", () => {
-      expect(() =>
-        validateNonEmptyArray(null as any, "testOp"),
-      ).toThrow(HookValidationError);
+      expect(() => validateNonEmptyArray(null as any, "testOp")).toThrow(
+        HookValidationError,
+      );
 
-      expect(() =>
-        validateNonEmptyArray("not-array" as any, "testOp"),
-      ).toThrow(HookValidationError);
+      expect(() => validateNonEmptyArray("not-array" as any, "testOp")).toThrow(
+        HookValidationError,
+      );
     });
   });
 
@@ -425,13 +399,13 @@ describe("hookValidation", () => {
     });
 
     it("should throw on invalid date strings", () => {
-      expect(() =>
-        validateDateRange("invalid-date", "testOp"),
-      ).toThrow(HookValidationError);
+      expect(() => validateDateRange("invalid-date", "testOp")).toThrow(
+        HookValidationError,
+      );
 
-      expect(() =>
-        validateDateRange("invalid-date", "testOp"),
-      ).toThrow("testOp: Invalid date");
+      expect(() => validateDateRange("invalid-date", "testOp")).toThrow(
+        "testOp: Invalid date",
+      );
     });
 
     it("should throw when date is too far in the past", () => {

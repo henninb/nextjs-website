@@ -339,13 +339,10 @@ export default async function proxy(request) {
         );
       }
 
-      return new NextResponse(
-        JSON.stringify({ error: "Bad Gateway" }),
-        {
-          status: 502,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      return new NextResponse(JSON.stringify({ error: "Bad Gateway" }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // This should never be reached for /api/* or /graphql requests

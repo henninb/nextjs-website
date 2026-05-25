@@ -397,18 +397,20 @@ export default function Layout({ children }: LayoutProps) {
         anchor="left"
         open={isOpen}
         onClose={toggleDrawer(false)}
-        slotProps={{ paper: {
-          sx: {
-            width: 320,
-            height: "100vh",
-            maxHeight: "100vh",
-            overflow: "hidden",
-            backgroundColor: theme.palette.background.paper,
-            borderRight: `1px solid ${theme.palette.divider}`,
-            boxShadow:
-              "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
+        slotProps={{
+          paper: {
+            sx: {
+              width: 320,
+              height: "100vh",
+              maxHeight: "100vh",
+              overflow: "hidden",
+              backgroundColor: theme.palette.background.paper,
+              borderRight: `1px solid ${theme.palette.divider}`,
+              boxShadow:
+                "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
+            },
           },
-        } }}
+        }}
       >
         <Box
           sx={{
@@ -461,9 +463,11 @@ export default function Layout({ children }: LayoutProps) {
                   </ListItemIcon>
                   <ListItemText
                     primary={text}
-                    slotProps={{ primary: {
-                      sx: { fontWeight: 500, fontSize: "0.875rem" },
-                    } }}
+                    slotProps={{
+                      primary: {
+                        sx: { fontWeight: 500, fontSize: "0.875rem" },
+                      },
+                    }}
                   />
                 </ListItemButton>
               </ListItem>

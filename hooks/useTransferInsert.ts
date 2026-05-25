@@ -101,12 +101,7 @@ export default function useTransferInsert() {
             transferId: newTransfer.transferId,
           });
 
-          addToList(
-            queryClient,
-            QueryKeys.transfer(),
-            newTransfer,
-            "start",
-          );
+          addToList(queryClient, QueryKeys.transfer(), newTransfer, "start");
         }
       },
       onError: (error) => {

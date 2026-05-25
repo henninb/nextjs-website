@@ -19,7 +19,9 @@ jest.mock("../../utils/logger", () => ({
 
 import { graphqlRequest } from "../../utils/graphqlClient";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -31,7 +33,11 @@ const createTestQueryClient = () =>
 
 const createWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children as any);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children as any,
+    );
   };
 
 const createTestTransfer = (overrides: Partial<Transfer> = {}): Transfer => ({
@@ -76,7 +82,10 @@ describe("useTransferUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    const updated = await result.current.mutateAsync({ oldTransfer, newTransfer });
+    const updated = await result.current.mutateAsync({
+      oldTransfer,
+      newTransfer,
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(updated.amount).toBe(750);
@@ -104,7 +113,10 @@ describe("useTransferUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldTransfer: existingTransfers[0], newTransfer });
+    await result.current.mutateAsync({
+      oldTransfer: existingTransfers[0],
+      newTransfer,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Transfer[]>(["transferGQL"]);
@@ -123,7 +135,10 @@ describe("useTransferUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldTransfer: transfer, newTransfer: transfer });
+    await result.current.mutateAsync({
+      oldTransfer: transfer,
+      newTransfer: transfer,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const cached = queryClient.getQueryData<Transfer[]>(["transferGQL"]);
@@ -140,13 +155,18 @@ describe("useTransferUpdateGql", () => {
 
     const transfer = createTestTransfer();
     await expect(
-      result.current.mutateAsync({ oldTransfer: transfer, newTransfer: transfer }),
+      result.current.mutateAsync({
+        oldTransfer: transfer,
+        newTransfer: transfer,
+      }),
     ).rejects.toThrow("GraphQL error");
   });
 
   it("should convert transactionDate to YYYY-MM-DD format", async () => {
     const queryClient = createTestQueryClient();
-    const transfer = createTestTransfer({ transactionDate: new Date("2024-06-15T12:00:00Z") });
+    const transfer = createTestTransfer({
+      transactionDate: new Date("2024-06-15T12:00:00Z"),
+    });
     mockGraphqlRequest.mockResolvedValue({
       updateTransfer: createGqlTransferResponse(transfer),
     });
@@ -155,7 +175,10 @@ describe("useTransferUpdateGql", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await result.current.mutateAsync({ oldTransfer: transfer, newTransfer: transfer });
+    await result.current.mutateAsync({
+      oldTransfer: transfer,
+      newTransfer: transfer,
+    });
 
     expect(mockGraphqlRequest).toHaveBeenCalledWith(
       expect.objectContaining({

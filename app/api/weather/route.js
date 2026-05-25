@@ -51,7 +51,10 @@ export async function GET(req) {
       JSON.stringify({ error: "Rate limit exceeded. Try again later." }),
       {
         status: 429,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       },
     );
   }
@@ -87,7 +90,10 @@ export async function GET(req) {
         JSON.stringify({ error: "Upstream weather API error" }),
         {
           status: 502,
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
         },
       );
     }
@@ -121,7 +127,10 @@ export async function GET(req) {
       JSON.stringify({ error: "Failed to fetch weather data" }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       },
     );
   }

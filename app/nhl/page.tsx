@@ -113,7 +113,12 @@ export default function HockeyPage() {
   if (loading) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+        }}
       >
         <CircularProgress />
       </Box>
@@ -123,7 +128,14 @@ export default function HockeyPage() {
   if (error && (!data || data.length === 0)) {
     return (
       <Box
-        sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "200px", p: 4 }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+          p: 4,
+        }}
       >
         <div style={{ marginBottom: "16px", textAlign: "center" }}>
           <strong>Error loading hockey scores:</strong> {error}

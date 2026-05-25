@@ -69,12 +69,7 @@ export default function useCategoryInsert() {
             categoryName: newCategory.categoryName,
           });
 
-          addToList(
-            queryClient,
-            QueryKeys.category(),
-            newCategory,
-            "start",
-          );
+          addToList(queryClient, QueryKeys.category(), newCategory, "start");
         }
       },
       onError: (error) => {

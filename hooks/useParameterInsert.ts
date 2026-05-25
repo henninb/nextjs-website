@@ -71,12 +71,7 @@ export default function useParameterInsert() {
             parameterName: newParameter.parameterName,
           });
 
-          addToList(
-            queryClient,
-            QueryKeys.parameter(),
-            newParameter,
-            "start",
-          );
+          addToList(queryClient, QueryKeys.parameter(), newParameter, "start");
         }
       },
       onError: (error) => {

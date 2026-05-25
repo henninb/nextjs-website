@@ -1,4 +1,6 @@
-import useFamilyMemberDelete, { deleteFamilyMember } from "../../hooks/useFamilyMemberDelete";
+import useFamilyMemberDelete, {
+  deleteFamilyMember,
+} from "../../hooks/useFamilyMemberDelete";
 import { FamilyMember, FamilyRelationship } from "../../model/FamilyMember";
 import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
@@ -39,17 +41,15 @@ jest.mock("../../utils/logger", () => ({
   })),
 }));
 
-import {
-  fetchWithErrorHandling,
-} from "../../utils/fetchUtils";
+import { fetchWithErrorHandling } from "../../utils/fetchUtils";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockFetchWithErrorHandling = fetchWithErrorHandling as jest.MockedFunction<
-  typeof fetchWithErrorHandling
->;
-const mockSanitizeNumericId = InputSanitizer.sanitizeNumericId as jest.MockedFunction<
-  typeof InputSanitizer.sanitizeNumericId
->;
+const mockFetchWithErrorHandling =
+  fetchWithErrorHandling as jest.MockedFunction<typeof fetchWithErrorHandling>;
+const mockSanitizeNumericId =
+  InputSanitizer.sanitizeNumericId as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeNumericId
+  >;
 
 const createTestFamilyMember = (
   overrides: Partial<FamilyMember> = {},
@@ -270,7 +270,11 @@ const createFamilyMemberDeleteHookQueryClient = () =>
 
 const createFamilyMemberDeleteHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useFamilyMemberDelete hook", () => {

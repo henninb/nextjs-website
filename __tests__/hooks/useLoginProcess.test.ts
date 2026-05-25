@@ -19,8 +19,9 @@ jest.mock("../../utils/fetchUtils", () => {
   const actual = jest.requireActual("../../utils/fetchUtils");
   return {
     ...actual,
-    fetchWithErrorHandling: jest.fn((...args: Parameters<typeof actual.fetchWithErrorHandling>) =>
-      actual.fetchWithErrorHandling(...args),
+    fetchWithErrorHandling: jest.fn(
+      (...args: Parameters<typeof actual.fetchWithErrorHandling>) =>
+        actual.fetchWithErrorHandling(...args),
     ),
   };
 });
@@ -62,7 +63,12 @@ jest.mock("../../utils/logger", () => {
   return {
     createHookLogger: jest.fn(() => logger),
     __mockLogger: logger,
-    logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    logger: {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    },
   };
 });
 
@@ -214,7 +220,9 @@ describe("processLogin", () => {
   it("throws when fetchWithErrorHandling returns non-204 success response", async () => {
     // fetchWithErrorHandling returns ok:true, status:200 — not caught by its internal error handler
     // This exercises processLogin lines 46-53: the defensive non-204 success branch
-    const { fetchWithErrorHandling } = jest.requireMock("../../utils/fetchUtils") as {
+    const { fetchWithErrorHandling } = jest.requireMock(
+      "../../utils/fetchUtils",
+    ) as {
       fetchWithErrorHandling: jest.Mock;
     };
     fetchWithErrorHandling.mockResolvedValueOnce({
@@ -223,7 +231,9 @@ describe("processLogin", () => {
       json: jest.fn().mockResolvedValue({ error: "Unexpected success format" }),
     });
 
-    await expect(processLogin(baseUser)).rejects.toThrow("Unexpected success format");
+    await expect(processLogin(baseUser)).rejects.toThrow(
+      "Unexpected success format",
+    );
   });
 });
 
@@ -238,7 +248,11 @@ const createLoginQueryClient = () =>
 
 const createLoginWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useLoginProcess hook", () => {
@@ -275,7 +289,9 @@ describe("useLoginProcess hook", () => {
     await act(async () => {
       await result.current.loginMutation.mutateAsync(hookLoginUser);
     });
-    await waitFor(() => expect(result.current.loginMutation.isSuccess).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isSuccess).toBe(true),
+    );
   });
 
   it("onError puts loginMutation into error state and sets errorMessage", async () => {
@@ -296,7 +312,9 @@ describe("useLoginProcess hook", () => {
         // expected
       }
     });
-    await waitFor(() => expect(result.current.loginMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.loginMutation.isError).toBe(true),
+    );
     expect(result.current.errorMessage).toBe("Invalid credentials");
   });
 });

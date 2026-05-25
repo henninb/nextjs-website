@@ -111,12 +111,7 @@ export default function usePaymentInsert() {
             paymentId: newPayment.paymentId,
           });
 
-          addToList(
-            queryClient,
-            QueryKeys.payment(),
-            newPayment,
-            "start",
-          );
+          addToList(queryClient, QueryKeys.payment(), newPayment, "start");
         }
       },
       onError: (error) => {

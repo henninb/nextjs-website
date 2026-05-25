@@ -96,26 +96,41 @@ export interface ParsedTransactionRow {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FORMAT_A = /^Transaction Details for Row \d+/i;
-const FORMAT_B = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\S/;
+const FORMAT_B =
+  /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\S/;
 /** Single-date single-line debit: "MM/DD/YY    DESCRIPTION    $AMOUNT". Must come after FORMAT_B. */
 const FORMAT_G = /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+(?!\d{1,2}\/\d{1,2}\/\d)\S/;
-const FORMAT_C = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i;
+const FORMAT_C =
+  /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i;
 /** MM-DD-YYYY with dashes and a 4-digit year — distinct from Formats A/B/C. */
 const FORMAT_D = /^\d{2}-\d{2}-\d{4}$/;
 /** "Pending (MM-DD-YYYY)" pending transaction — Target card statement. */
 const FORMAT_H = /^Pending\s*\(\d{2}-\d{2}-\d{4}\)/i;
 /** "Tuesday, Apr 28 -" — weekday+date day-section header with amount on follow-on lines. */
-const FORMAT_I = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s*-?$/i;
+const FORMAT_I =
+  /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s*-?$/i;
 /** "MMM DD, YYYY" — comma + full year distinguishes it from Format C's "MMM DD". */
-const FORMAT_E = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s*\d{4}$/i;
+const FORMAT_E =
+  /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s*\d{4}$/i;
 /** "MMM DD    STATUS" — Amex-style: date + reward/status on same line (must precede FORMAT_C). */
-const FORMAT_J = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}[\s\t]+\S/i;
+const FORMAT_J =
+  /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}[\s\t]+\S/i;
 /** Discover Card: abbreviated day-of-week on its own line, followed by "Month Day" then "Invalid Date Month Day" artifact. */
 const FORMAT_K = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i;
 
 const MONTH_IDX: Record<string, number> = {
-  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  jan: 0,
+  feb: 1,
+  mar: 2,
+  apr: 3,
+  may: 4,
+  jun: 5,
+  jul: 6,
+  aug: 7,
+  sep: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
 };
 
 /** Returns true when a line begins a new transaction block in any format. */
@@ -138,7 +153,7 @@ function isTransactionHeader(line: string): boolean {
 
 /** Parse MM/DD/YY or MM/DD/YYYY into a Date; appends to errors on failure. */
 function parseDateStr(dateStr: string, errors: string[]): Date | null {
-  const parts = dateStr.split('/');
+  const parts = dateStr.split("/");
   if (parts.length !== 3) {
     errors.push(`Cannot parse date: "${dateStr}"`);
     return null;
@@ -158,7 +173,9 @@ function parseDateStr(dateStr: string, errors: string[]): Date | null {
  * paste sessions).
  */
 function parseMonthDay(line: string, errors: string[]): Date | null {
-  const m = line.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})$/i);
+  const m = line.match(
+    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})$/i,
+  );
   if (!m) {
     errors.push(`Cannot parse date: "${line}"`);
     return null;
@@ -166,10 +183,11 @@ function parseMonthDay(line: string, errors: string[]): Date | null {
   const month = MONTH_IDX[m[1].toLowerCase()];
   const day = parseInt(m[2], 10);
   const now = new Date();
-  const year = new Date(now.getFullYear(), month, day) >
+  const year =
+    new Date(now.getFullYear(), month, day) >
     new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-    ? now.getFullYear() - 1
-    : now.getFullYear();
+      ? now.getFullYear() - 1
+      : now.getFullYear();
   return new Date(year, month, day);
 }
 
@@ -182,7 +200,11 @@ function parseDateMonthDayYear(line: string, errors: string[]): Date | null {
     errors.push(`Cannot parse date: "${line}"`);
     return null;
   }
-  const d = new Date(parseInt(m[3], 10), MONTH_IDX[m[1].toLowerCase()], parseInt(m[2], 10));
+  const d = new Date(
+    parseInt(m[3], 10),
+    MONTH_IDX[m[1].toLowerCase()],
+    parseInt(m[2], 10),
+  );
   if (!isNaN(d.getTime())) return d;
   errors.push(`Cannot parse date: "${line}"`);
   return null;
@@ -193,7 +215,9 @@ function parseDateMonthDayYear(line: string, errors: string[]): Date | null {
  * Year is inferred like Format C (current year unless result would be >30 days in the future).
  */
 function parseDateWeekdayMonthDay(line: string, errors: string[]): Date | null {
-  const m = line.match(/,\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/i);
+  const m = line.match(
+    /,\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/i,
+  );
   if (!m) {
     errors.push(`Cannot parse date: "${line}"`);
     return null;
@@ -227,7 +251,11 @@ function parseDateDashed(dateStr: string, errors: string[]): Date | null {
     errors.push(`Cannot parse date: "${dateStr}"`);
     return null;
   }
-  const d = new Date(parseInt(m[3], 10), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+  const d = new Date(
+    parseInt(m[3], 10),
+    parseInt(m[1], 10) - 1,
+    parseInt(m[2], 10),
+  );
   if (!isNaN(d.getTime())) return d;
   errors.push(`Cannot parse date: "${dateStr}"`);
   return null;
@@ -245,16 +273,19 @@ function parseDateDashed(dateStr: string, errors: string[]): Date | null {
  *   "60.21"                → 60.21
  *   "+$135.19" (credit acct) → -135.19  (credit/refund on a credit account)
  */
-function parseFirstAmount(line: string, isCreditAccount = false): number | null {
+function parseFirstAmount(
+  line: string,
+  isCreditAccount = false,
+): number | null {
   const trimmed = line.trim();
   const match = trimmed.match(/([+]?-?\$-?|[+]?-?\$|^[+]?-?)([\d,]+\.?\d*)/);
   if (!match) return null;
-  const digits = match[2].replace(/,/g, '');
+  const digits = match[2].replace(/,/g, "");
   const num = parseFloat(digits);
   if (isNaN(num)) return null;
   const sign = match[1];
-  if (sign.includes('-')) return -Math.abs(num);
-  if (sign.includes('+') && isCreditAccount) return -Math.abs(num);
+  if (sign.includes("-")) return -Math.abs(num);
+  if (sign.includes("+") && isCreditAccount) return -Math.abs(num);
   return num;
 }
 
@@ -270,10 +301,13 @@ function parseFirstAmount(line: string, isCreditAccount = false): number | null 
  * Pass `accountType: 'credit'` so that amounts prefixed with `+$` (credits /
  * refunds on credit-card statements) are stored as negative numbers.
  */
-export function parseTransactionPaste(raw: string, accountType?: string): ParsedTransactionRow[] {
-  const isCreditAccount = accountType === 'credit';
-  const isDebitAccount = accountType === 'debit';
-  const lines = raw.split('\n').map((l) => l.trim());
+export function parseTransactionPaste(
+  raw: string,
+  accountType?: string,
+): ParsedTransactionRow[] {
+  const isCreditAccount = accountType === "credit";
+  const isDebitAccount = accountType === "debit";
+  const lines = raw.split("\n").map((l) => l.trim());
   const rows: ParsedTransactionRow[] = [];
   let i = 0;
 
@@ -294,7 +328,7 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         /^Transaction Details for Row \d+[\s\t]+(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*?)$/i,
       );
       let date: Date | null = null;
-      let description = '';
+      let description = "";
       // undefined = not detected (scan follow-on lines); null/number = inline amount
       let inlineAmount: number | null | undefined = undefined;
 
@@ -302,61 +336,96 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         date = parseDateStr(m[1], errors);
         const descTail = m[2].trim();
         // Format F: "DESCRIPTION\t$26.78" or "DESCRIPTION    $26.78" — amount on same line
-        const inlineAmtMatch = descTail.match(/^(.*?)\s+(-?\$[\d,]+\.?\d*)\s*$/);
+        const inlineAmtMatch = descTail.match(
+          /^(.*?)\s+(-?\$[\d,]+\.?\d*)\s*$/,
+        );
         if (inlineAmtMatch) {
           description = inlineAmtMatch[1].trim();
           inlineAmount = parseFirstAmount(inlineAmtMatch[2], isCreditAccount);
-          if (inlineAmount === null) errors.push('No amount found');
+          if (inlineAmount === null) errors.push("No amount found");
         } else {
           description = descTail;
         }
-        if (!description) errors.push('Description is empty');
+        if (!description) errors.push("Description is empty");
       } else {
-        errors.push('Header did not match expected format');
+        errors.push("Header did not match expected format");
       }
 
       i++;
       if (inlineAmount !== undefined) {
-        rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: inlineAmount, parseErrors: errors });
+        rows.push({
+          id: crypto.randomUUID(),
+          date,
+          description,
+          notes: "",
+          amount: inlineAmount,
+          parseErrors: errors,
+        });
       } else {
-        const amount = scanForAmount(lines, i, errors, (next) => {
-          if (/^#/.test(next)) return 'skip'; // card-suffix line
-          return 'try';
-        }, isCreditAccount);
+        const amount = scanForAmount(
+          lines,
+          i,
+          errors,
+          (next) => {
+            if (/^#/.test(next)) return "skip"; // card-suffix line
+            return "try";
+          },
+          isCreditAccount,
+        );
         i = amount.nextIndex;
-        rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+        rows.push({
+          id: crypto.randomUUID(),
+          date,
+          description,
+          notes: "",
+          amount: amount.value,
+          parseErrors: errors,
+        });
       }
 
-    // ── Format B ────────────────────────────────────────────────────────────
+      // ── Format B ────────────────────────────────────────────────────────────
     } else if (FORMAT_B.test(line)) {
       const m = line.match(
         /^(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+(.*?)$/,
       );
       let date: Date | null = null;
-      let description = '';
+      let description = "";
       if (m) {
         date = parseDateStr(m[1], errors);
         description = m[2].trim();
-        if (!description) errors.push('Description is empty');
+        if (!description) errors.push("Description is empty");
       } else {
-        errors.push('Header did not match expected format');
+        errors.push("Header did not match expected format");
       }
 
       i++;
-      const amount = scanForAmount(lines, i, errors, (next) => {
-        if (/^#/.test(next)) return 'skip'; // reference line
-        return 'try';
-      }, isCreditAccount);
+      const amount = scanForAmount(
+        lines,
+        i,
+        errors,
+        (next) => {
+          if (/^#/.test(next)) return "skip"; // reference line
+          return "try";
+        },
+        isCreditAccount,
+      );
       i = amount.nextIndex;
 
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount: amount.value,
+        parseErrors: errors,
+      });
 
-    // ── Format G ────────────────────────────────────────────────────────────
+      // ── Format G ────────────────────────────────────────────────────────────
     } else if (FORMAT_G.test(line)) {
       // "MM/DD/YY    DESCRIPTION    $AMOUNT    [optional trailing text]"
       const m = line.match(/^(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*)/);
       let date: Date | null = null;
-      let description = '';
+      let description = "";
       let amount: number | null = null;
 
       if (m) {
@@ -369,23 +438,30 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
           amount = parseFirstAmount(amtMatch[2], isCreditAccount);
         } else {
           description = rest.trim();
-          errors.push('No amount found');
+          errors.push("No amount found");
         }
-        if (!description) errors.push('Description is empty');
+        if (!description) errors.push("Description is empty");
       } else {
-        errors.push('Header did not match expected format');
+        errors.push("Header did not match expected format");
       }
 
       i++;
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount,
+        parseErrors: errors,
+      });
 
-    // ── Format D ────────────────────────────────────────────────────────────
+      // ── Format D ────────────────────────────────────────────────────────────
     } else if (FORMAT_D.test(line)) {
       const date = parseDateDashed(line, errors);
       i++;
 
       // Skip the blank/space separator line, then read the single data line
-      let description = '';
+      let description = "";
       let amount: number | null = null;
 
       while (i < lines.length && !isTransactionHeader(lines[i])) {
@@ -403,12 +479,19 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         break; // entire block is on this one line
       }
 
-      if (!description) errors.push('Description is empty');
-      if (amount === null) errors.push('No amount found');
+      if (!description) errors.push("Description is empty");
+      if (amount === null) errors.push("No amount found");
 
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount,
+        parseErrors: errors,
+      });
 
-    // ── Format E ────────────────────────────────────────────────────────────
+      // ── Format E ────────────────────────────────────────────────────────────
     } else if (FORMAT_E.test(line)) {
       const date = parseDateMonthDayYear(line, errors);
       i++;
@@ -422,7 +505,7 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
       }
 
       // Read description — next non-empty line
-      let description = '';
+      let description = "";
       while (i < lines.length && !isTransactionHeader(lines[i])) {
         const next = lines[i].trim();
         i++;
@@ -430,27 +513,37 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         description = next;
         break;
       }
-      if (!description) errors.push('Description is empty');
+      if (!description) errors.push("Description is empty");
 
       // Scan for first line that starts with $ or -$ (skips promo text and stops after amount)
-      const amount = scanForAmount(lines, i, errors, (next) =>
-        /^[+]?-?\$/.test(next) ? 'try' : 'skip',
+      const amount = scanForAmount(
+        lines,
+        i,
+        errors,
+        (next) => (/^[+]?-?\$/.test(next) ? "try" : "skip"),
         isCreditAccount,
       );
       i = amount.nextIndex;
 
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount: amount.value,
+        parseErrors: errors,
+      });
 
-    // ── Format H ────────────────────────────────────────────────────────────
+      // ── Format H ────────────────────────────────────────────────────────────
     } else if (FORMAT_H.test(line)) {
       // "Pending (MM-DD-YYYY)     DESCRIPTION    TYPE    [CARD]    $AMOUNT"
       const dateMatch = line.match(/\((\d{2}-\d{2}-\d{4})\)/);
       const date = dateMatch ? parseDateDashed(dateMatch[1], errors) : null;
-      if (!dateMatch) errors.push('No date found');
+      if (!dateMatch) errors.push("No date found");
 
       // Everything after the closing paren is the data portion
-      const rest = line.replace(/^Pending\s*\(\d{2}-\d{2}-\d{4}\)\s*/i, '');
-      let description = '';
+      const rest = line.replace(/^Pending\s*\(\d{2}-\d{2}-\d{4}\)\s*/i, "");
+      let description = "";
       let amount: number | null = null;
 
       if (rest) {
@@ -459,19 +552,26 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         amount = parseFirstAmount(rest, isCreditAccount);
       }
 
-      if (!description) errors.push('Description is empty');
-      if (amount === null) errors.push('No amount found');
+      if (!description) errors.push("Description is empty");
+      if (amount === null) errors.push("No amount found");
 
       i++;
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount,
+        parseErrors: errors,
+      });
 
-    // ── Format I ────────────────────────────────────────────────────────────
+      // ── Format I ────────────────────────────────────────────────────────────
     } else if (FORMAT_I.test(line)) {
       const date = parseDateWeekdayMonthDay(line, errors);
       i++;
 
       // Read description: next non-empty, non-header line
-      let rawDescription = '';
+      let rawDescription = "";
       while (i < lines.length && !isTransactionHeader(lines[i])) {
         const next = lines[i].trim();
         i++;
@@ -481,32 +581,49 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
       }
 
       const description = cleanACHDescription(rawDescription) || rawDescription;
-      if (!description) errors.push('Description is empty');
+      if (!description) errors.push("Description is empty");
 
       // Find ", Amount:$X.XX" line; skip ", Balance:..." and "arrow_drop_down"
       let amount: number | null = null;
       while (i < lines.length && !isTransactionHeader(lines[i])) {
         const next = lines[i].trim();
         i++;
-        if (!next || /^arrow_drop_down$/i.test(next) || /^,\s*Balance:/i.test(next)) continue;
+        if (
+          !next ||
+          /^arrow_drop_down$/i.test(next) ||
+          /^,\s*Balance:/i.test(next)
+        )
+          continue;
         if (/^,\s*Amount:/i.test(next)) {
-          amount = parseFirstAmount(next.replace(/^,\s*Amount:\s*/i, ''), isCreditAccount);
+          amount = parseFirstAmount(
+            next.replace(/^,\s*Amount:\s*/i, ""),
+            isCreditAccount,
+          );
           break;
         }
       }
-      if (amount === null) errors.push('No amount found');
+      if (amount === null) errors.push("No amount found");
 
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount,
+        parseErrors: errors,
+      });
 
-    // ── Format J ────────────────────────────────────────────────────────────
+      // ── Format J ────────────────────────────────────────────────────────────
     } else if (FORMAT_J.test(line)) {
       // Header is "MMM DD    STATUS" — extract just the date prefix
-      const datePrefix = line.match(/^((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2})/i)![1];
+      const datePrefix = line.match(
+        /^((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2})/i,
+      )![1];
       const date = parseMonthDay(datePrefix, errors);
       i++;
 
       // Read description: first non-empty, non-footer line
-      let description = '';
+      let description = "";
       while (i < lines.length && !isTransactionHeader(lines[i])) {
         const next = lines[i].trim();
         i++;
@@ -514,18 +631,31 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         description = next;
         break;
       }
-      if (!description) errors.push('Description is empty');
+      if (!description) errors.push("Description is empty");
 
       // Scan for amount; cardholder full name will fail to parse and be skipped naturally
-      const amount = scanForAmount(lines, i, errors, (next) => {
-        if (/^Show Transaction$/i.test(next)) return 'stop';
-        return 'try';
-      }, isCreditAccount);
+      const amount = scanForAmount(
+        lines,
+        i,
+        errors,
+        (next) => {
+          if (/^Show Transaction$/i.test(next)) return "stop";
+          return "try";
+        },
+        isCreditAccount,
+      );
       i = amount.nextIndex;
 
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount: amount.value,
+        parseErrors: errors,
+      });
 
-    // ── Format K — Discover Card ─────────────────────────────────────────────
+      // ── Format K — Discover Card ─────────────────────────────────────────────
     } else if (FORMAT_K.test(line)) {
       // Skip the abbreviated day-of-week line; next line is "Month Day"
       i++;
@@ -535,7 +665,7 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         date = parseMonthDay(lines[i], errors);
         i++;
       } else {
-        errors.push('Expected Month Day line after day-of-week');
+        errors.push("Expected Month Day line after day-of-week");
       }
 
       // Skip "Invalid Date Month Day" artifact produced by Discover's website
@@ -544,7 +674,7 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
       }
 
       // Read description
-      let descriptionK = '';
+      let descriptionK = "";
       while (i < lines.length && !isTransactionHeader(lines[i])) {
         const next = lines[i].trim();
         i++;
@@ -552,11 +682,17 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         descriptionK = next;
         break;
       }
-      if (!descriptionK) errors.push('Description is empty');
+      if (!descriptionK) errors.push("Description is empty");
 
       // First $ amount is the transaction amount; category and running balance lines that
       // follow are naturally skipped once scanForAmount returns.
-      const amountK = scanForAmount(lines, i, errors, () => 'try', isCreditAccount);
+      const amountK = scanForAmount(
+        lines,
+        i,
+        errors,
+        () => "try",
+        isCreditAccount,
+      );
       i = amountK.nextIndex;
 
       // Consume the non-$ category name line and running balance line so the main
@@ -569,9 +705,16 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         if (/^\$/.test(next)) break; // running balance consumed
       }
 
-      rows.push({ id: crypto.randomUUID(), date, description: descriptionK, notes: '', amount: amountK.value, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description: descriptionK,
+        notes: "",
+        amount: amountK.value,
+        parseErrors: errors,
+      });
 
-    // ── Format C ────────────────────────────────────────────────────────────
+      // ── Format C ────────────────────────────────────────────────────────────
     } else {
       const date = parseMonthDay(line, errors);
       i++;
@@ -582,7 +725,7 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
       }
 
       // Read description: first non-empty, non-footer line
-      let description = '';
+      let description = "";
       while (i < lines.length && !isTransactionHeader(lines[i])) {
         const next = lines[i].trim();
         i++;
@@ -590,17 +733,30 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
         description = next;
         break;
       }
-      if (!description) errors.push('Description is empty');
+      if (!description) errors.push("Description is empty");
 
       // Scan for amount: skip cardholder initials (exactly 2 uppercase) and "Show Transaction"
-      const amount = scanForAmount(lines, i, errors, (next) => {
-        if (/^Show Transaction$/i.test(next)) return 'stop';
-        if (/^[A-Z]{2}$/.test(next)) return 'skip'; // MH, LH, etc.
-        return 'try';
-      }, isCreditAccount);
+      const amount = scanForAmount(
+        lines,
+        i,
+        errors,
+        (next) => {
+          if (/^Show Transaction$/i.test(next)) return "stop";
+          if (/^[A-Z]{2}$/.test(next)) return "skip"; // MH, LH, etc.
+          return "try";
+        },
+        isCreditAccount,
+      );
       i = amount.nextIndex;
 
-      rows.push({ id: crypto.randomUUID(), date, description, notes: '', amount: amount.value, parseErrors: errors });
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description,
+        notes: "",
+        amount: amount.value,
+        parseErrors: errors,
+      });
     }
   }
 
@@ -612,14 +768,14 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
   // Remove bank website UI artifacts ("Show image for X, Opens a dialog").
   for (const row of rows) {
     if (/^ONLINE TRANSFER\b/i.test(row.description)) {
-      row.notes = row.description.slice('ONLINE TRANSFER'.length).trim();
-      row.description = 'ONLINE TRANSFER';
+      row.notes = row.description.slice("ONLINE TRANSFER".length).trim();
+      row.description = "ONLINE TRANSFER";
     }
     row.description = row.description
-      .replace(/Show image for[^,]+,\s*Opens a dialog/gi, '')
-      .replace(/,\s*Opens a dialog\b[^,]*/gi, '')
+      .replace(/Show image for[^,]+,\s*Opens a dialog/gi, "")
+      .replace(/,\s*Opens a dialog\b[^,]*/gi, "")
       .trim();
-    row.description = row.description.replace(US_STATE_SUFFIX, '');
+    row.description = row.description.replace(US_STATE_SUFFIX, "");
   }
 
   // On debit accounts these descriptions are always withdrawals — override any positive amount
@@ -630,8 +786,11 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
       /^Foreign Currency Purchase\b/i,
     ];
     for (const row of rows) {
-      if (row.amount !== null && row.amount > 0 &&
-          DEBIT_WITHDRAWAL_PATTERNS.some((p) => p.test(row.description))) {
+      if (
+        row.amount !== null &&
+        row.amount > 0 &&
+        DEBIT_WITHDRAWAL_PATTERNS.some((p) => p.test(row.description))
+      ) {
         row.amount = -row.amount;
       }
     }
@@ -642,7 +801,7 @@ export function parseTransactionPaste(raw: string, accountType?: string): Parsed
 
 // ─── Internal scanner ─────────────────────────────────────────────────────────
 
-type LineDecision = 'try' | 'skip' | 'stop';
+type LineDecision = "try" | "skip" | "stop";
 
 /**
  * Advance through lines starting at index `start`, stopping at the next
@@ -663,12 +822,12 @@ function scanForAmount(
     if (!next) continue;
 
     const decision = classify(next);
-    if (decision === 'stop') break;
-    if (decision === 'skip') continue;
+    if (decision === "stop") break;
+    if (decision === "skip") continue;
 
     const parsed = parseFirstAmount(next, isCreditAccount);
     if (parsed !== null) return { value: parsed, nextIndex: i };
   }
-  errors.push('No amount found');
+  errors.push("No amount found");
   return { value: null, nextIndex: i };
 }

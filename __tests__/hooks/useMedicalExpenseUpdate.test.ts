@@ -42,9 +42,10 @@ import { updateMedicalExpense } from "../../hooks/useMedicalExpenseUpdate";
 import useMedicalExpenseUpdate from "../../hooks/useMedicalExpenseUpdate";
 import { InputSanitizer } from "../../utils/validation/sanitization";
 
-const mockSanitizeNumericId = InputSanitizer.sanitizeNumericId as jest.MockedFunction<
-  typeof InputSanitizer.sanitizeNumericId
->;
+const mockSanitizeNumericId =
+  InputSanitizer.sanitizeNumericId as jest.MockedFunction<
+    typeof InputSanitizer.sanitizeNumericId
+  >;
 
 const createTestMedicalExpense = (
   overrides: Partial<MedicalExpense> = {},
@@ -189,7 +190,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useMedicalExpenseUpdate hook - renderHook tests", () => {

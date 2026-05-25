@@ -22,8 +22,12 @@ jest.mock("../../utils/logger", () => ({
 import { graphqlRequest } from "../../utils/graphqlClient";
 import { usePublicQuery } from "../../utils/queryConfig";
 
-const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<typeof graphqlRequest>;
-const mockUsePublicQuery = usePublicQuery as jest.MockedFunction<typeof usePublicQuery>;
+const mockGraphqlRequest = graphqlRequest as jest.MockedFunction<
+  typeof graphqlRequest
+>;
+const mockUsePublicQuery = usePublicQuery as jest.MockedFunction<
+  typeof usePublicQuery
+>;
 
 const createGqlPayment = (overrides = {}) => ({
   paymentId: 1,
@@ -43,7 +47,10 @@ const createGqlPayment = (overrides = {}) => ({
 describe("usePaymentFetchGql", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUsePublicQuery.mockReturnValue({ data: undefined, isLoading: false } as any);
+    mockUsePublicQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+    } as any);
   });
 
   describe("hook configuration", () => {

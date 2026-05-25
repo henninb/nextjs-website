@@ -286,7 +286,7 @@ if (typeof global.Response !== "undefined" && !global.Response.json) {
     const body = JSON.stringify(data);
     const headers = Object.assign(
       { "content-type": "application/json" },
-      (init && init.headers) ? init.headers : {},
+      init && init.headers ? init.headers : {},
     );
     return new global.Response(body, { ...init, headers });
   };

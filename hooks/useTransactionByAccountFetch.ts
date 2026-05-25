@@ -63,6 +63,5 @@ export default function useTransactionByAccountFetch(accountNameOwner: string) {
     },
   );
 
-
   return queryResult;
 }

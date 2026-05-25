@@ -56,7 +56,13 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
       <Card elevation={2}>
         <CardContent>
           <Box
-            sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", py: 4 }}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              py: 4,
+            }}
           >
             <CircularProgress size={getSpinnerSize()} sx={{ mb: 2 }} />
             {showMessage && (
@@ -73,7 +79,13 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   // Default spinner variant
   return (
     <Box
-      sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", py: 4 }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        py: 4,
+      }}
     >
       <CircularProgress size={getSpinnerSize()} />
       {showMessage && (

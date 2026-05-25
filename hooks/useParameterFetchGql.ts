@@ -50,6 +50,5 @@ export default function useParameterFetchGql() {
     return mapped;
   });
 
-
   return queryResult;
 }

@@ -312,7 +312,10 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={3}
-            sx={{ justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" } }}
+            sx={{
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", sm: "center" },
+            }}
           >
             <Box>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>

@@ -165,7 +165,9 @@ describe("usePaymentRequiredFetch - fetchPaymentRequiredData", () => {
     it("should handle network errors", async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error("Network failure"));
 
-      await expect(fetchPaymentRequiredData()).rejects.toThrow("Network failure");
+      await expect(fetchPaymentRequiredData()).rejects.toThrow(
+        "Network failure",
+      );
     });
 
     it("should handle JSON parse failure gracefully", async () => {
@@ -229,7 +231,11 @@ const createPaymentRequiredQueryClient = () =>
 
 const createPaymentRequiredWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("usePaymentRequiredFetch hook", () => {
@@ -241,7 +247,14 @@ describe("usePaymentRequiredFetch hook", () => {
 
   it("returns payment required data on successful fetch", async () => {
     const payments = [
-      { accountNameOwner: "visa_john", accountType: "credit", moniker: "0001", outstanding: 250, future: 0, cleared: 0 },
+      {
+        accountNameOwner: "visa_john",
+        accountType: "credit",
+        moniker: "0001",
+        outstanding: 250,
+        future: 0,
+        cleared: 0,
+      },
     ];
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -266,6 +279,8 @@ describe("usePaymentRequiredFetch hook", () => {
     const { result } = renderHook(() => usePaymentRequiredFetch(), {
       wrapper: createPaymentRequiredWrapper(queryClient),
     });
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 });

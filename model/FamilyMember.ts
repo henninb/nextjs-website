@@ -19,7 +19,8 @@ export const FamilyRelationship = {
   Dependent: "dependent",
   Other: "other",
 } as const;
-export type FamilyRelationship = typeof FamilyRelationship[keyof typeof FamilyRelationship];
+export type FamilyRelationship =
+  (typeof FamilyRelationship)[keyof typeof FamilyRelationship];
 
 export interface FamilyMemberCreateRequest {
   memberName: string;

@@ -29,7 +29,12 @@ jest.mock("../../utils/logger", () => ({
     warn: jest.fn(),
     error: jest.fn(),
   })),
-  logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 import React from "react";
@@ -505,9 +510,9 @@ describe("updateAccount", () => {
         json: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(updateAccount(mockOldAccount, renamedAccount)).rejects.toThrow(
-        "Rename failed: No data returned",
-      );
+      await expect(
+        updateAccount(mockOldAccount, renamedAccount),
+      ).rejects.toThrow("Rename failed: No data returned");
     });
 
     it("throws when standard update returns no data", async () => {
@@ -517,9 +522,9 @@ describe("updateAccount", () => {
         json: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(updateAccount(mockOldAccount, mockNewAccount)).rejects.toThrow(
-        "Update failed: No data returned",
-      );
+      await expect(
+        updateAccount(mockOldAccount, mockNewAccount),
+      ).rejects.toThrow("Update failed: No data returned");
     });
   });
 });
@@ -535,7 +540,11 @@ const createHookQueryClient = () =>
 
 const createHookWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useAccountUpdate hook - renderHook tests", () => {
@@ -552,10 +561,18 @@ describe("useAccountUpdate hook - renderHook tests", () => {
 
   it("onSuccess calls updateInList updating the account in cache", async () => {
     const queryClient = createHookQueryClient();
-    const existing = createTestAccount({ accountId: 123, accountNameOwner: "test_account", moniker: "0000" });
+    const existing = createTestAccount({
+      accountId: 123,
+      accountNameOwner: "test_account",
+      moniker: "0000",
+    });
     queryClient.setQueryData(["account"], [existing]);
 
-    const updated = createTestAccount({ accountId: 123, accountNameOwner: "test_account", moniker: "9999" });
+    const updated = createTestAccount({
+      accountId: 123,
+      accountNameOwner: "test_account",
+      moniker: "9999",
+    });
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -588,8 +605,15 @@ describe("useAccountUpdate hook - renderHook tests", () => {
       wrapper: createHookWrapper(queryClient),
     });
 
-    const oldRow = createTestAccount({ accountId: 1, accountNameOwner: "test_account" });
-    const newRow = createTestAccount({ accountId: 1, accountNameOwner: "test_account", moniker: "new" });
+    const oldRow = createTestAccount({
+      accountId: 1,
+      accountNameOwner: "test_account",
+    });
+    const newRow = createTestAccount({
+      accountId: 1,
+      accountNameOwner: "test_account",
+      moniker: "new",
+    });
 
     await act(async () => {
       try {

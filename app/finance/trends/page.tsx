@@ -218,10 +218,12 @@ const TrendsPage = () => {
                   onChange={(e) =>
                     handleDateRangeChange(e.target.value as number)
                   }
-                  slotProps={{ input: {
-                    tabIndex: 0,
-                    "aria-label": "Date Range",
-                  } }}
+                  slotProps={{
+                    input: {
+                      tabIndex: 0,
+                      "aria-label": "Date Range",
+                    },
+                  }}
                 >
                   <MenuItem value={6}>6 months</MenuItem>
                   <MenuItem value={12}>12 months</MenuItem>
@@ -242,9 +244,11 @@ const TrendsPage = () => {
                     {...params}
                     label="Accounts"
                     placeholder="All accounts"
-                    slotProps={{ htmlInput: {
-                      "aria-label": "Accounts",
-                    } }}
+                    slotProps={{
+                      htmlInput: {
+                        "aria-label": "Accounts",
+                      },
+                    }}
                   />
                 )}
               />
@@ -262,9 +266,11 @@ const TrendsPage = () => {
                     {...params}
                     label="Categories"
                     placeholder="All categories"
-                    slotProps={{ htmlInput: {
-                      "aria-label": "Categories",
-                    } }}
+                    slotProps={{
+                      htmlInput: {
+                        "aria-label": "Categories",
+                      },
+                    }}
                   />
                 )}
               />
@@ -276,10 +282,12 @@ const TrendsPage = () => {
                   <Switch
                     checked={!filters.includeTransfers}
                     onChange={(e) => handleTransferToggle(!e.target.checked)}
-                    slotProps={{ input: {
-                      tabIndex: 0,
-                      "aria-label": "Exclude transfers",
-                    } }}
+                    slotProps={{
+                      input: {
+                        tabIndex: 0,
+                        "aria-label": "Exclude transfers",
+                      },
+                    }}
                   />
                 }
                 label="Exclude transfers"
@@ -371,7 +379,12 @@ const TrendsPage = () => {
           <Card>
             <CardContent>
               <Box
-                sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
               >
                 <Typography variant="h6" component="h2">
                   Monthly Spending Trend
@@ -411,7 +424,12 @@ const TrendsPage = () => {
           <Card>
             <CardContent>
               <Box
-                sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
               >
                 <Typography variant="h6" component="h2">
                   Spending by Category
@@ -422,9 +440,11 @@ const TrendsPage = () => {
                       checked={stackedView}
                       onChange={(e) => setStackedView(e.target.checked)}
                       size="small"
-                      slotProps={{ input: {
-                        "aria-label": "Stacked view",
-                      } }}
+                      slotProps={{
+                        input: {
+                          "aria-label": "Stacked view",
+                        },
+                      }}
                     />
                   }
                   label="Stacked view"
@@ -475,7 +495,14 @@ const TrendsPage = () => {
                 {trendsData.topCategories.map((category) => (
                   <Box
                     key={category.category}
-                    sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1, bgcolor: "grey.50", borderRadius: 1 }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 1,
+                      bgcolor: "grey.50",
+                      borderRadius: 1,
+                    }}
                   >
                     <Typography variant="body1">{category.category}</Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -505,7 +532,14 @@ const TrendsPage = () => {
                 {trendsData.categoryChanges.slice(0, 5).map((change) => (
                   <Box
                     key={change.category}
-                    sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1, bgcolor: "grey.50", borderRadius: 1 }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 1,
+                      bgcolor: "grey.50",
+                      borderRadius: 1,
+                    }}
                   >
                     <Typography variant="body1">{change.category}</Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

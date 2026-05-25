@@ -5,7 +5,10 @@
 
 jest.mock("../../utils/cacheUtils", () => ({
   QueryKeys: {
-    validationAmount: jest.fn((account: string) => ["validationAmount", account]),
+    validationAmount: jest.fn((account: string) => [
+      "validationAmount",
+      account,
+    ]),
   },
 }));
 
@@ -422,7 +425,11 @@ const createValidationFetchQueryClient = () =>
 
 const createValidationFetchWrapper = (queryClient: QueryClient) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+    return React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
   };
 
 describe("useValidationAmountFetch hook", () => {
@@ -433,7 +440,13 @@ describe("useValidationAmountFetch hook", () => {
   });
 
   it("returns validation amount on successful fetch", async () => {
-    const mockAmount = { validationId: 1, amount: 250, transactionState: "cleared", activeStatus: true, validationDate: "2024-01-01" };
+    const mockAmount = {
+      validationId: 1,
+      amount: 250,
+      transactionState: "cleared",
+      activeStatus: true,
+      validationDate: "2024-01-01",
+    };
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -441,9 +454,12 @@ describe("useValidationAmountFetch hook", () => {
     });
 
     const queryClient = createValidationFetchQueryClient();
-    const { result } = renderHook(() => useValidationAmountFetch("checking_john"), {
-      wrapper: createValidationFetchWrapper(queryClient),
-    });
+    const { result } = renderHook(
+      () => useValidationAmountFetch("checking_john"),
+      {
+        wrapper: createValidationFetchWrapper(queryClient),
+      },
+    );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toMatchObject({ validationId: 1, amount: 250 });
@@ -457,11 +473,16 @@ describe("useValidationAmountFetch hook", () => {
     });
 
     const queryClient = createValidationFetchQueryClient();
-    const { result } = renderHook(() => useValidationAmountFetch("checking_john"), {
-      wrapper: createValidationFetchWrapper(queryClient),
-    });
+    const { result } = renderHook(
+      () => useValidationAmountFetch("checking_john"),
+      {
+        wrapper: createValidationFetchWrapper(queryClient),
+      },
+    );
 
-    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    await waitFor(() => expect(result.current.isError).toBe(true), {
+      timeout: 5000,
+    });
   });
 
   it("is disabled when accountNameOwner is empty", () => {

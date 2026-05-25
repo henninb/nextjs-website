@@ -157,7 +157,11 @@ export default function TemperaturePage() {
                     color: theme.palette.primary.main,
                   }}
                 />
-                <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{ fontWeight: 600 }}
+                >
                   Fahrenheit to Celsius
                 </Typography>
               </Box>
@@ -170,11 +174,14 @@ export default function TemperaturePage() {
                   onChange={(e) => setFahrenheitValue(Number(e.target.value))}
                   label="Temperature in Fahrenheit"
                   sx={{ mb: 2 }}
-                  slotProps={{ htmlInput: { min: -500, max: 500 }, input: {
-                    endAdornment: (
-                      <Typography color="text.secondary">°F</Typography>
-                    ),
-                  } }}
+                  slotProps={{
+                    htmlInput: { min: -500, max: 500 },
+                    input: {
+                      endAdornment: (
+                        <Typography color="text.secondary">°F</Typography>
+                      ),
+                    },
+                  }}
                 />
                 <Button
                   fullWidth
@@ -241,7 +248,11 @@ export default function TemperaturePage() {
                     color: theme.palette.secondary.main,
                   }}
                 />
-                <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{ fontWeight: 600 }}
+                >
                   Celsius to Fahrenheit
                 </Typography>
               </Box>
@@ -254,11 +265,14 @@ export default function TemperaturePage() {
                   onChange={(e) => setCelsiusValue(Number(e.target.value))}
                   label="Temperature in Celsius"
                   sx={{ mb: 2 }}
-                  slotProps={{ htmlInput: { min: -500, max: 500 }, input: {
-                    endAdornment: (
-                      <Typography color="text.secondary">°C</Typography>
-                    ),
-                  } }}
+                  slotProps={{
+                    htmlInput: { min: -500, max: 500 },
+                    input: {
+                      endAdornment: (
+                        <Typography color="text.secondary">°C</Typography>
+                      ),
+                    },
+                  }}
                 />
                 <Button
                   fullWidth
@@ -304,7 +318,12 @@ export default function TemperaturePage() {
       <Divider sx={{ my: 4 }} />
 
       <Box sx={{ textAlign: "center", mb: 4 }}>
-        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h4"
+          component="h2"
+          gutterBottom
+          sx={{ fontWeight: 600 }}
+        >
           Current Weather in Minneapolis
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -343,7 +362,11 @@ export default function TemperaturePage() {
                       mb: 1,
                     }}
                   />
-                  <Typography variant="h4" sx={{ fontWeight: 700 }} color="primary">
+                  <Typography
+                    variant="h4"
+                    sx={{ fontWeight: 700 }}
+                    color="primary"
+                  >
                     {weatherData.imperial.temp}°F
                   </Typography>
                   <Typography
@@ -376,7 +399,11 @@ export default function TemperaturePage() {
                       mb: 1,
                     }}
                   />
-                  <Typography variant="h4" sx={{ fontWeight: 700 }} color="primary">
+                  <Typography
+                    variant="h4"
+                    sx={{ fontWeight: 700 }}
+                    color="primary"
+                  >
                     {weatherData.imperial.windChill}°F
                   </Typography>
                   <Typography
@@ -412,7 +439,11 @@ export default function TemperaturePage() {
                       mb: 1,
                     }}
                   />
-                  <Typography variant="h4" sx={{ fontWeight: 700 }} color="primary">
+                  <Typography
+                    variant="h4"
+                    sx={{ fontWeight: 700 }}
+                    color="primary"
+                  >
                     {weatherData.imperial.pressure}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

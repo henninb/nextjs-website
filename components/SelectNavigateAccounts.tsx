@@ -153,7 +153,8 @@ export default function SelectNavigateAccounts({
                   "& .MuiOutlinedInput-root": {
                     backgroundColor: "transparent",
                     "& fieldset": {
-                      borderColor: theme?.palette?.divider || "rgba(255, 255, 255, 0.23)",
+                      borderColor:
+                        theme?.palette?.divider || "rgba(255, 255, 255, 0.23)",
                     },
                     "&:hover fieldset": {
                       borderColor: theme?.palette?.primary?.main || "#3b82f6",
@@ -163,7 +164,9 @@ export default function SelectNavigateAccounts({
                     },
                   },
                   "& .MuiInputLabel-root": {
-                    color: theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)",
+                    color:
+                      theme?.palette?.text?.secondary ||
+                      "rgba(255, 255, 255, 0.7)",
                   },
                   "& .MuiInputBase-input": {
                     color: theme?.palette?.text?.primary || "#fff",
@@ -181,7 +184,8 @@ export default function SelectNavigateAccounts({
               sx={{
                 display: "block",
                 mb: 1,
-                color: theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)",
+                color:
+                  theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)",
                 fontSize: "0.75rem",
               }}
             >
@@ -215,14 +219,17 @@ export default function SelectNavigateAccounts({
                       justifyContent: "flex-start",
                       flex: 1,
                       backgroundColor: "transparent",
-                      borderColor: theme?.palette?.divider || "rgba(255, 255, 255, 0.23)",
+                      borderColor:
+                        theme?.palette?.divider || "rgba(255, 255, 255, 0.23)",
                       color: theme?.palette?.text?.primary || "#fff",
                       "& .MuiChip-label": {
                         paddingLeft: "8px",
                         paddingRight: "8px",
                       },
                       "&:hover": {
-                        backgroundColor: theme?.palette?.action?.hover || "rgba(255, 255, 255, 0.08)",
+                        backgroundColor:
+                          theme?.palette?.action?.hover ||
+                          "rgba(255, 255, 255, 0.08)",
                         borderColor: theme?.palette?.primary?.main || "#3b82f6",
                       },
                     }}
@@ -236,7 +243,9 @@ export default function SelectNavigateAccounts({
                       width: "20px",
                       height: "20px",
                       padding: "2px",
-                      color: theme?.palette?.text?.secondary || "rgba(255, 255, 255, 0.7)",
+                      color:
+                        theme?.palette?.text?.secondary ||
+                        "rgba(255, 255, 255, 0.7)",
                       "&:hover": {
                         backgroundColor: "error.light",
                         color: "error.contrastText",
