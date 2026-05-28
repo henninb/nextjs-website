@@ -2,22 +2,14 @@
 import { getErrorMessage } from "../../../types";
 import React, { useState, useEffect } from "react";
 import { GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Button,
-  Link,
-  TextField,
-  Typography,
-  Autocomplete,
-  FormControlLabel,
-  Checkbox,
-} from "@mui/material";
+import { Box, Button, TextField, Typography, Autocomplete } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
 import LoadingState from "../../../components/LoadingState";
+import ContentContainer from "../../../components/ContentContainer";
 import USDAmountInput from "../../../components/USDAmountInput";
 import useFetchTransfer from "../../../hooks/useTransferFetch";
 import useTransferInsert from "../../../hooks/useTransferInsert";
@@ -37,8 +29,12 @@ import {
   formatDateForDisplay,
 } from "../../../components/Common";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
+import { useSpinnerEffect } from "../../../hooks/useSpinnerEffect";
+import { useLocalStorageCache } from "../../../hooks/useLocalStorageCache";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
-import { createDeleteColumn } from "../../../utils/createDeleteColumn";
+import { createDeleteColumn, createAccountLinkColumn } from "../../../utils/createDeleteColumn";
+import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
+import { validateAmountAndAccounts } from "../../../utils/validateTransfer";
 import { z } from "zod";
 
 const TransferCacheSchema = z.object({
@@ -61,34 +57,6 @@ const initialTransferData: Transfer = {
   transactionDate: new Date(),
   amount: 0.0,
   activeStatus: true,
-};
-
-// Helper functions for localStorage operations
-const getLastTransferFromStorage = (): Transfer | null => {
-  if (typeof window === "undefined") return null;
-  try {
-    const stored = localStorage.getItem(LAST_TRANSFER_STORAGE_KEY);
-    if (!stored) return null;
-    const result = TransferCacheSchema.safeParse(JSON.parse(stored));
-    if (!result.success) {
-      console.warn("Discarding invalid transfer cache:", result.error.issues);
-      localStorage.removeItem(LAST_TRANSFER_STORAGE_KEY);
-      return null;
-    }
-    return result.data as Transfer;
-  } catch (error) {
-    console.error("Error reading last transfer from localStorage:", error);
-    return null;
-  }
-};
-
-const saveLastTransferToStorage = (transfer: Transfer): void => {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LAST_TRANSFER_STORAGE_KEY, JSON.stringify(transfer));
-  } catch (error) {
-    console.error("Error saving last transfer to localStorage:", error);
-  }
 };
 
 export default function Transfers() {
@@ -115,38 +83,31 @@ export default function Transfers() {
     setShowSnackbar,
     setSnackbarSeverity,
   } = useFinancePageState(TRANSFERS_CACHE_ENABLED_KEY);
+
   const [formErrors, setFormErrors] = useState<{
     amount?: string;
     accounts?: string;
   }>({});
   const [transferData, setTransferData] =
     useState<Transfer>(initialTransferData);
-
-  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
-    null,
-  );
-
-  const [lastSubmittedTransfer, setLastSubmittedTransfer] =
-    useState<Transfer | null>(null);
-  // Initialize last transfer from localStorage on mount (only if cache is enabled)
-  useEffect(() => {
-    if (localStorage.getItem(TRANSFERS_CACHE_ENABLED_KEY) === "true") {
-      const storedTransfer = getLastTransferFromStorage();
-      if (storedTransfer) {
-        setLastSubmittedTransfer(storedTransfer);
-      }
-    }
-  }, []);
-
-  const [availableSourceAccounts, setAvailableSourceAccounts] = useState<
-    Account[]
-  >([]);
+  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
+  const [availableSourceAccounts, setAvailableSourceAccounts] = useState<Account[]>([]);
   const [availableDestinationAccounts, setAvailableDestinationAccounts] =
     useState<Account[]>([]);
   const [selectedSourceAccount, setSelectedSourceAccount] =
     useState<Account | null>(null);
   const [selectedDestinationAccount, setSelectedDestinationAccount] =
     useState<Account | null>(null);
+
+  const {
+    lastValue: lastSubmittedTransfer,
+    setLastValue: setLastSubmittedTransfer,
+    save: saveTransfer,
+  } = useLocalStorageCache<Transfer>({
+    storageKey: LAST_TRANSFER_STORAGE_KEY,
+    cacheEnabledKey: TRANSFERS_CACHE_ENABLED_KEY,
+    schema: TransferCacheSchema,
+  });
 
   const { mutateAsync: insertTransfer } = useTransferInsert();
   const { mutateAsync: deleteTransfer } = useTransferDelete();
@@ -170,29 +131,13 @@ export default function Transfers() {
   const transfersToDisplay =
     fetchedTransfers?.filter((row) => row != null) || [];
 
-  useEffect(() => {
-    if (
-      isFetchingAccounts ||
-      isFetchingTransfers ||
-      loading ||
-      (!loading && !isAuthenticated)
-    ) {
-      setShowSpinner(true);
-      return;
-    }
-    if (isSuccessTransfers && isSuccessAccounts) {
-      setShowSpinner(false);
-    }
-  }, [
-    isSuccessTransfers,
-    isSuccessAccounts,
-    errorTransfers,
-    errorAccounts,
-    isFetchingAccounts,
-    isFetchingTransfers,
+  useSpinnerEffect(
+    setShowSpinner,
+    isFetchingAccounts || isFetchingTransfers,
+    isSuccessTransfers && isSuccessAccounts,
     loading,
     isAuthenticated,
-  ]);
+  );
 
   useEffect(() => {
     if (isSuccessAccounts) {
@@ -283,19 +228,7 @@ export default function Transfers() {
   };
 
   const handleAddRow = async (newData: Transfer) => {
-    // UI validations: amount >= 0 and source != destination
-    const errs: { amount?: string; accounts?: string } = {};
-    const amt = parseFloat(String(newData?.amount ?? 0));
-    if (isNaN(amt) || amt < 0) {
-      errs.amount = "Amount cannot be negative";
-    }
-    if (
-      newData?.sourceAccount &&
-      newData?.destinationAccount &&
-      newData.sourceAccount === newData.destinationAccount
-    ) {
-      errs.accounts = "Source and destination must be different";
-    }
+    const errs = validateAmountAndAccounts(newData?.amount, newData?.sourceAccount, newData?.destinationAccount);
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       setMessage(errs.accounts || errs.amount || "Validation failed");
@@ -316,7 +249,7 @@ export default function Transfers() {
       await insertTransfer({ payload: insertThisValue });
       if (cacheEnabled) {
         setLastSubmittedTransfer(newData);
-        saveLastTransferToStorage(newData);
+        saveTransfer(newData);
       }
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
@@ -344,32 +277,8 @@ export default function Transfers() {
         return normalizeTransactionDate(params);
       },
     },
-    {
-      field: "sourceAccount",
-      headerName: "Source Account",
-      flex: 2,
-      minWidth: 200,
-      renderCell: (params) => {
-        return (
-          <Link href={`/finance/transactions/${params.row.sourceAccount}`}>
-            {params.value}
-          </Link>
-        );
-      },
-    },
-    {
-      field: "destinationAccount",
-      headerName: "Destination Account",
-      flex: 2,
-      minWidth: 200,
-      renderCell: (params) => {
-        return (
-          <Link href={`/finance/transactions/${params.row.destinationAccount}`}>
-            {params.value}
-          </Link>
-        );
-      },
-    },
+    createAccountLinkColumn("sourceAccount", "Source Account"),
+    createAccountLinkColumn("destinationAccount", "Destination Account"),
     {
       field: "amount",
       headerName: "Amount",
@@ -386,7 +295,6 @@ export default function Transfers() {
     }),
   ];
 
-  // Handle error states first
   if (errorTransfers || errorAccounts) {
     return (
       <>
@@ -440,91 +348,71 @@ export default function Transfers() {
         />
       ) : (
         <>
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-              {transfersToDisplay && transfersToDisplay.length > 0 ? (
-                <DataGridBase
-                  rows={transfersToDisplay}
-                  columns={columns}
-                  getRowId={(row: Transfer) =>
-                    row.transferId ??
-                    `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
-                  }
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  processRowUpdate={async (
-                    newRow: Transfer,
-                    oldRow: Transfer,
-                  ): Promise<Transfer> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
-                    }
-                    try {
-                      await updateTransfer({
-                        oldTransfer: oldRow,
-                        newTransfer: newRow,
-                      });
-                      const when = formatDateForDisplay(newRow.transactionDate);
-                      handleSuccess(
-                        `Transfer updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
-                      );
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Update Transfer error: ${error}`,
-                        false,
-                      );
-                      return oldRow;
-                    }
-                  }}
-                  autoHeight
-                  disableColumnResize={false}
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                />
-              ) : (
-                <EmptyState
-                  title="No Transfers Found"
-                  message="No transfers have been created yet. Create your first transfer to move funds between accounts."
-                  dataType="transfers"
-                  variant="create"
-                  actionLabel="Add Transfer"
-                  onAction={() => {
-                    setTransferData(
-                      lastSubmittedTransfer || initialTransferData,
-                    );
-                    setFormErrors({});
-                    setSelectedSourceAccount(null);
-                    setSelectedDestinationAccount(null);
-                    setShowModalAdd(true);
-                  }}
-                  onRefresh={() => {
-                    refetchTransfers();
-                    refetchAccounts();
-                  }}
-                />
-              )}
-            </Box>
-          </Box>
-          <SnackbarBaseline
-            message={message}
-            state={showSnackbar}
-            handleSnackbarClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-          />
+          <ContentContainer>
+            {transfersToDisplay && transfersToDisplay.length > 0 ? (
+              <DataGridBase
+                rows={transfersToDisplay}
+                columns={columns}
+                getRowId={(row: Transfer) =>
+                  row.transferId ??
+                  `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
+                }
+                checkboxSelection={false}
+                rowSelection={false}
+                paginationModel={paginationModel}
+                onPaginationModelChange={(newModel) =>
+                  setPaginationModel(newModel)
+                }
+                pageSizeOptions={[25, 50, 100]}
+                processRowUpdate={createProcessRowUpdate<Transfer>(
+                  (newRow, oldRow) => updateTransfer({ oldTransfer: oldRow, newTransfer: newRow }),
+                  "Transfer updated.",
+                  "Update Transfer failure.",
+                  handleSuccess,
+                  handleError,
+                )}
+                autoHeight
+                disableColumnResize={false}
+                sx={{
+                  "& .MuiDataGrid-cell": {
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
+                }}
+              />
+            ) : (
+              <EmptyState
+                title="No Transfers Found"
+                message="No transfers have been created yet. Create your first transfer to move funds between accounts."
+                dataType="transfers"
+                variant="create"
+                actionLabel="Add Transfer"
+                onAction={() => {
+                  setTransferData(
+                    lastSubmittedTransfer || initialTransferData,
+                  );
+                  setFormErrors({});
+                  setSelectedSourceAccount(null);
+                  setSelectedDestinationAccount(null);
+                  setShowModalAdd(true);
+                }}
+                onRefresh={() => {
+                  refetchTransfers();
+                  refetchAccounts();
+                }}
+              />
+            )}
+          </ContentContainer>
         </>
       )}
+
+      <SnackbarBaseline
+        message={message}
+        state={showSnackbar}
+        handleSnackbarClose={handleSnackbarClose}
+        severity={snackbarSeverity}
+      />
 
       <ConfirmDialog
         open={showModalDelete}
@@ -619,13 +507,11 @@ export default function Transfers() {
               amount:
                 typeof value === "string" ? parseFloat(value) || 0 : value,
             }));
-            // Clear amount error when user starts typing
             if (formErrors.amount) {
               setFormErrors((prev) => ({ ...prev, amount: undefined }));
             }
           }}
           onBlur={() => {
-            // Ensure value is properly formatted when user leaves the field
             const currentValue = parseFloat(String(transferData?.amount || ""));
             if (!isNaN(currentValue)) {
               setTransferData((prev: Transfer) => ({

@@ -2,20 +2,14 @@
 import { getErrorMessage } from "../../../types";
 import React, { useState, useEffect } from "react";
 import { GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  FormControlLabel,
-  Checkbox,
-} from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
 import LoadingState from "../../../components/LoadingState";
+import ContentContainer from "../../../components/ContentContainer";
 import useParameterFetch from "../../../hooks/useParameterFetch";
 import useParameterInsert from "../../../hooks/useParameterInsert";
 import useParameterDelete from "../../../hooks/useParameterDelete";
@@ -26,8 +20,11 @@ import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
+import { useSpinnerEffect } from "../../../hooks/useSpinnerEffect";
+import { useLocalStorageCache } from "../../../hooks/useLocalStorageCache";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 import { createDeleteColumn } from "../../../utils/createDeleteColumn";
+import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
 
 const CONFIGURATION_CACHE_ENABLED_KEY = "finance_cache_enabled_configuration";
 const CONFIGURATION_CACHE_DATA_KEY = "finance_cached_data_configuration";
@@ -56,15 +53,19 @@ export default function Configuration() {
     setShowSnackbar,
     setSnackbarSeverity,
   } = useFinancePageState(CONFIGURATION_CACHE_ENABLED_KEY);
+
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
-  const [selectedParameter, setSelectedParameter] = useState<Parameter | null>(
-    null,
-  );
+  const [selectedParameter, setSelectedParameter] = useState<Parameter | null>(null);
   const [formErrors, setFormErrors] = useState<{
     parameterName?: string;
     parameterValue?: string;
   }>({});
   const [offlineRows, setOfflineRows] = useState<Parameter[]>([]);
+
+  const { save: saveParameter, getStored } = useLocalStorageCache<Parameter>({
+    storageKey: CONFIGURATION_CACHE_DATA_KEY,
+    cacheEnabledKey: CONFIGURATION_CACHE_ENABLED_KEY,
+  });
 
   const {
     data: fetchedParameters,
@@ -77,28 +78,15 @@ export default function Configuration() {
   const { mutateAsync: insertParameter } = useParameterInsert();
   const { mutateAsync: updateParameter } = useParameterUpdate();
   const { mutateAsync: deleteParameter } = useParameterDelete();
-  useEffect(() => {
-    if (isFetchingParameters || loading || (!loading && !isAuthenticated)) {
-      setShowSpinner(true);
-      return;
-    }
-    if (isSuccessParameters) {
-      setShowSpinner(false);
-    }
-  }, [
-    isSuccessParameters,
-    isErrorParameters,
-    isFetchingParameters,
-    loading,
-    isAuthenticated,
-  ]);
+
+  useSpinnerEffect(setShowSpinner, isFetchingParameters, isSuccessParameters, loading, isAuthenticated);
 
   useEffect(() => {
     const storedRows = localStorage.getItem("offlineParameters");
     if (storedRows) {
       setOfflineRows(JSON.parse(storedRows));
     }
-  }, []); // ✅ Run only once on mount
+  }, []);
 
   useEffect(() => {
     const syncOfflineRows = async () => {
@@ -117,7 +105,7 @@ export default function Configuration() {
         if (remainingRows.length !== offlineRows.length) {
           setOfflineRows((prevRows) =>
             prevRows.filter((row) => remainingRows.includes(row)),
-          ); // ✅ Ensures state is updated correctly
+          );
           localStorage.setItem(
             "offlineParameters",
             JSON.stringify(remainingRows),
@@ -128,11 +116,10 @@ export default function Configuration() {
 
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
-  }, [insertParameter]); // ✅ Remove `offlineRows` from dependencies
+  }, [insertParameter]);
 
   const handleDeleteRow = async () => {
     if (!selectedParameter) return;
-
     if (!selectedParameter?.parameterId) return;
 
     const isOfflineRow = offlineRows.some(
@@ -148,7 +135,6 @@ export default function Configuration() {
         "offlineParameters",
         JSON.stringify(updatedOfflineRows),
       );
-
       handleSuccess("Offline parameter deleted successfully.");
     } else {
       try {
@@ -186,12 +172,7 @@ export default function Configuration() {
 
     try {
       await insertParameter({ payload: newData });
-      if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(
-          CONFIGURATION_CACHE_DATA_KEY,
-          JSON.stringify(newData),
-        );
-      }
+      if (cacheEnabled) saveParameter(newData);
       setParameterData((prev: Parameter | null) =>
         prev?.parameterId ? prev : { ...newData, parameterId: 0 },
       );
@@ -209,7 +190,7 @@ export default function Configuration() {
         const newOfflineRow = { ...newData, parameterId: 0 };
         const updatedOfflineRows = [...offlineRows, newOfflineRow];
 
-        setOfflineRows(updatedOfflineRows as [Parameter]); // 🔹 Ensure UI updates immediately
+        setOfflineRows(updatedOfflineRows as [Parameter]);
         localStorage.setItem(
           "offlineParameters",
           JSON.stringify(updatedOfflineRows),
@@ -222,16 +203,7 @@ export default function Configuration() {
   };
 
   const handleOpenAddModal = () => {
-    if (cacheEnabled && typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(CONFIGURATION_CACHE_DATA_KEY);
-        setParameterData(stored ? JSON.parse(stored) : null);
-      } catch {
-        setParameterData(null);
-      }
-    } else {
-      setParameterData(null);
-    }
+    setParameterData(cacheEnabled ? getStored() : null);
     setFormErrors({});
     setShowModalAdd(true);
   };
@@ -255,7 +227,6 @@ export default function Configuration() {
     }),
   ];
 
-  // Handle error states first
   if (isErrorParameters) {
     return (
       <>
@@ -274,170 +245,139 @@ export default function Configuration() {
   }
 
   return (
-    <div>
-      <>
-        <PageHeader
-          title="System Configuration"
-          subtitle="Manage application settings and parameters that control system behavior and defaults"
-          actions={
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenAddModal()}
-              sx={{ backgroundColor: "primary.main" }}
-            >
-              Add Parameter
-            </Button>
+    <>
+      <PageHeader
+        title="System Configuration"
+        subtitle="Manage application settings and parameters that control system behavior and defaults"
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenAddModal}
+            sx={{ backgroundColor: "primary.main" }}
+          >
+            Add Parameter
+          </Button>
+        }
+      />
+      {showSpinner ? (
+        <LoadingState
+          variant="card"
+          message="Loading configuration parameters..."
+        />
+      ) : (
+        <>
+          <ContentContainer>
+            {(fetchedParameters && fetchedParameters.length > 0) ||
+            offlineRows.length > 0 ? (
+              <DataGridBase
+                rows={[...(fetchedParameters || []), ...offlineRows]}
+                columns={columns}
+                getRowId={(row: Parameter) =>
+                  row.parameterId ||
+                  `fallback-${Date.now()}-${Math.random()}`
+                }
+                checkboxSelection={false}
+                rowSelection={false}
+                paginationModel={paginationModel}
+                onPaginationModelChange={(newModel) =>
+                  setPaginationModel(newModel)
+                }
+                pageSizeOptions={[25, 50, 100]}
+                disableRowSelectionOnClick
+                autoHeight
+                processRowUpdate={createProcessRowUpdate<Parameter>(
+                  (newRow, oldRow) => updateParameter({ oldParameter: oldRow, newParameter: newRow }),
+                  "Parameter updated successfully.",
+                  "Parameter Update failure.",
+                  handleSuccess,
+                  handleError,
+                )}
+              />
+            ) : (
+              <EmptyState
+                title="No Parameters Found"
+                message="No configuration parameters have been set up yet. Create your first parameter to configure system behavior."
+                dataType="parameters"
+                variant="create"
+                actionLabel="Add Parameter"
+                onAction={handleOpenAddModal}
+                onRefresh={() => refetchParameters()}
+              />
+            )}
+          </ContentContainer>
+        </>
+      )}
+
+      <SnackbarBaseline
+        message={message}
+        state={showSnackbar}
+        handleSnackbarClose={handleSnackbarClose}
+        severity={snackbarSeverity}
+      />
+
+      <ConfirmDialog
+        open={showModalDelete}
+        onClose={() => setShowModalDelete(false)}
+        onConfirm={handleDeleteRow}
+        title={modalTitles.confirmDeletion}
+        message={modalBodies.confirmDeletion(
+          "parameter",
+          selectedParameter?.parameterName ?? "",
+        )}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <FormDialog
+        open={showModalAdd}
+        onClose={() => setShowModalAdd(false)}
+        onSubmit={() =>
+          handleAddRow(
+            parameterData ??
+              ({ parameterName: "", parameterValue: "" } as Parameter),
+          )
+        }
+        title={modalTitles.addNew("parameter")}
+        submitText="Add"
+      >
+        <TextField
+          label="Name"
+          fullWidth
+          margin="normal"
+          value={parameterData?.parameterName || ""}
+          error={!!formErrors.parameterName}
+          helperText={formErrors.parameterName}
+          onChange={(e) =>
+            setParameterData(
+              (prev) =>
+                ({
+                  ...prev,
+                  parameterName: e.target.value,
+                }) as Parameter,
+            )
           }
         />
-        {showSpinner ? (
-          <LoadingState
-            variant="card"
-            message="Loading configuration parameters..."
-          />
-        ) : (
-          <div>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-                {(fetchedParameters && fetchedParameters.length > 0) ||
-                offlineRows.length > 0 ? (
-                  <DataGridBase
-                    rows={[...(fetchedParameters || []), ...offlineRows]}
-                    columns={columns}
-                    getRowId={(row: Parameter) =>
-                      row.parameterId ||
-                      `fallback-${Date.now()}-${Math.random()}`
-                    }
-                    checkboxSelection={false}
-                    rowSelection={false}
-                    paginationModel={paginationModel}
-                    onPaginationModelChange={(newModel) =>
-                      setPaginationModel(newModel)
-                    }
-                    pageSizeOptions={[25, 50, 100]}
-                    disableRowSelectionOnClick
-                    autoHeight
-                    processRowUpdate={async (
-                      newRow: Parameter,
-                      oldRow: Parameter,
-                    ): Promise<Parameter> => {
-                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                        return oldRow;
-                      }
-                      try {
-                        await updateParameter({
-                          oldParameter: oldRow,
-                          newParameter: newRow,
-                        });
-                        setParameterData(newRow);
-                        handleSuccess("Parameter updated successfully.");
-
-                        return { ...newRow };
-                      } catch (error) {
-                        handleError(
-                          error,
-                          `Parameter Update failure: ${error}`,
-                          false,
-                        );
-                        return oldRow;
-                      }
-                    }}
-                  />
-                ) : (
-                  <EmptyState
-                    title="No Parameters Found"
-                    message="No configuration parameters have been set up yet. Create your first parameter to configure system behavior."
-                    dataType="parameters"
-                    variant="create"
-                    actionLabel="Add Parameter"
-                    onAction={() => handleOpenAddModal()}
-                    onRefresh={() => refetchParameters()}
-                  />
-                )}
-              </Box>
-            </Box>
-            <SnackbarBaseline
-              message={message}
-              state={showSnackbar}
-              handleSnackbarClose={handleSnackbarClose}
-              severity={snackbarSeverity}
-            />
-          </div>
-        )}
-
-        <ConfirmDialog
-          open={showModalDelete}
-          onClose={() => setShowModalDelete(false)}
-          onConfirm={handleDeleteRow}
-          title={modalTitles.confirmDeletion}
-          message={modalBodies.confirmDeletion(
-            "parameter",
-            selectedParameter?.parameterName ?? "",
-          )}
-          confirmText="Delete"
-          cancelText="Cancel"
+        <TextField
+          label="Value"
+          fullWidth
+          margin="normal"
+          value={parameterData?.parameterValue || ""}
+          error={!!formErrors.parameterValue}
+          helperText={formErrors.parameterValue}
+          onChange={(e) =>
+            setParameterData((prev) =>
+              prev ? { ...prev, parameterValue: e.target.value } : null,
+            )
+          }
         />
-
-        {/* Modal Add Parameter */}
-        <FormDialog
-          open={showModalAdd}
-          onClose={() => setShowModalAdd(false)}
-          onSubmit={() => {
-            if (parameterData) {
-              handleAddRow(parameterData);
-            } else {
-              handleAddRow({
-                parameterName: "",
-                parameterValue: "",
-              } as Parameter);
-            }
-          }}
-          title={modalTitles.addNew("parameter")}
-          submitText="Add"
-        >
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={parameterData?.parameterName || ""}
-            error={!!formErrors.parameterName}
-            helperText={formErrors.parameterName}
-            onChange={(e) =>
-              setParameterData(
-                (prev) =>
-                  ({
-                    ...prev,
-                    parameterName: e.target.value,
-                  }) as Parameter,
-              )
-            }
-          />
-          <TextField
-            label="Value"
-            fullWidth
-            margin="normal"
-            value={parameterData?.parameterValue || ""}
-            error={!!formErrors.parameterValue}
-            helperText={formErrors.parameterValue}
-            onChange={(e) =>
-              setParameterData((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      parameterValue: e.target.value,
-                    }
-                  : null,
-              )
-            }
-          />
-          <CacheToggleCheckbox
-            checked={cacheEnabled}
-            cacheEnabledKey={CONFIGURATION_CACHE_ENABLED_KEY}
-            cacheDataKey={CONFIGURATION_CACHE_DATA_KEY}
-            onChange={setCacheEnabled}
-          />
-        </FormDialog>
-      </>
-    </div>
+        <CacheToggleCheckbox
+          checked={cacheEnabled}
+          cacheEnabledKey={CONFIGURATION_CACHE_ENABLED_KEY}
+          cacheDataKey={CONFIGURATION_CACHE_DATA_KEY}
+          onChange={setCacheEnabled}
+        />
+      </FormDialog>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
@@ -12,7 +11,6 @@ import {
   TextField,
   Switch,
   FormControlLabel,
-  Checkbox,
   Typography,
   Fade,
   Grow,
@@ -23,7 +21,6 @@ import CategoryIcon from "@mui/icons-material/Category";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import WarningIcon from "@mui/icons-material/Warning";
-import FinanceLayout from "../../../layouts/FinanceLayout";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -32,6 +29,8 @@ import LoadingState from "../../../components/LoadingState";
 import EmptyState from "../../../components/EmptyState";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
+import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
+import ContentContainer from "../../../components/ContentContainer";
 import StatCard from "../../../components/StatCard";
 import StatCardSkeleton from "../../../components/StatCardSkeleton";
 import ViewToggle from "../../../components/ViewToggle";
@@ -39,13 +38,13 @@ import CategoryFilterBar, {
   CategoryFilters,
 } from "../../../components/CategoryFilterBar";
 import CategoryCard from "../../../components/CategoryCard";
-import { getErrorMessage } from "../../../types";
 import CategoryCardSkeleton from "../../../components/CategoryCardSkeleton";
-import { useAuth } from "../../../components/AuthProvider";
+import { getErrorMessage } from "../../../types";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
-
+import { coerceActiveStatus } from "../../../utils/coerceActiveStatus";
+import { useLocalStorageCache } from "../../../hooks/useLocalStorageCache";
+import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import Category from "../../../model/Category";
-
 import useCategoryFetchGql from "../../../hooks/useCategoryFetchGql";
 import useCategoryInsertGql from "../../../hooks/useCategoryInsertGql";
 import useCategoryDeleteGql from "../../../hooks/useCategoryDeleteGql";
@@ -56,36 +55,37 @@ const CATEGORIES_NEXT_CACHE_ENABLED_KEY =
 const CATEGORIES_NEXT_CACHE_DATA_KEY = "finance_cached_data_categories_next";
 
 export default function CategoriesNextGen() {
-  const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
-
-  const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState<
-    "error" | "warning" | "info" | "success"
-  >("info");
-  const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setShowModalAdd] = useState(false);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(CATEGORIES_NEXT_CACHE_ENABLED_KEY) === "true";
-  });
-  const [showModalDelete, setShowModalDelete] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 50,
-    page: 0,
-  });
+  const {
+    message,
+    showSnackbar,
+    snackbarSeverity,
+    showSpinner,
+    setShowSpinner,
+    showModalAdd,
+    setShowModalAdd,
+    showModalDelete,
+    setShowModalDelete,
+    paginationModel,
+    setPaginationModel,
+    cacheEnabled,
+    setCacheEnabled,
+    isAuthenticated,
+    loading,
+    handleError,
+    handleSuccess,
+    handleSnackbarClose,
+    setMessage,
+    setShowSnackbar,
+    setSnackbarSeverity,
+  } = useFinancePageState(CATEGORIES_NEXT_CACHE_ENABLED_KEY);
 
   const [categoryData, setCategoryData] = useState<Category | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null,
-  );
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [formErrors, setFormErrors] = useState<{
     categoryName?: string;
     activeStatus?: string;
   }>({});
 
-  // Modern view state
   const [view, setView] = useState<"grid" | "table">(
     () =>
       (typeof window !== "undefined" &&
@@ -96,6 +96,11 @@ export default function CategoriesNextGen() {
   const [filters, setFilters] = useState<CategoryFilters>({
     status: "all",
     usage: "all",
+  });
+
+  const { save, getStored } = useLocalStorageCache<Category>({
+    storageKey: CATEGORIES_NEXT_CACHE_DATA_KEY,
+    cacheEnabledKey: CATEGORIES_NEXT_CACHE_ENABLED_KEY,
   });
 
   const {
@@ -111,18 +116,15 @@ export default function CategoriesNextGen() {
   const { mutateAsync: deleteCategory } = useCategoryDeleteGql();
   const { mutateAsync: updateCategory } = useCategoryUpdateGql();
 
-  // Persist view preference
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("categoryView", view);
     }
   }, [view]);
 
-  // Filtering logic
   const filteredCategories = useMemo(() => {
     let filtered = fetchedCategories?.filter((row) => row != null) || [];
 
-    // Search filter
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter((cat) =>
@@ -130,14 +132,12 @@ export default function CategoriesNextGen() {
       );
     }
 
-    // Status filter
     if (filters.status !== "all") {
       filtered = filtered.filter((cat) =>
         filters.status === "active" ? cat.activeStatus : !cat.activeStatus,
       );
     }
 
-    // Usage filter (KEY FEATURE)
     if (filters.usage !== "all") {
       filtered = filtered.filter((cat) => {
         const isUnused = !cat.categoryCount || cat.categoryCount === 0;
@@ -148,27 +148,16 @@ export default function CategoriesNextGen() {
     return filtered;
   }, [fetchedCategories, searchTerm, filters]);
 
-  // Stats calculation
   const stats = useMemo(() => {
     const all = fetchedCategories || [];
-    const total = all.length;
-    const active = all.filter((cat) => cat.activeStatus).length;
-    const inactive = all.filter((cat) => !cat.activeStatus).length;
-    const unused = all.filter(
-      (cat) => !cat.categoryCount || cat.categoryCount === 0,
-    ).length;
-
-    return { total, active, inactive, unused };
+    return {
+      total: all.length,
+      active: all.filter((cat) => cat.activeStatus).length,
+      inactive: all.filter((cat) => !cat.activeStatus).length,
+      unused: all.filter((cat) => !cat.categoryCount || cat.categoryCount === 0)
+        .length,
+    };
   }, [fetchedCategories]);
-
-  const categoriesToDisplay = filteredCategories;
-
-  useEffect(() => {
-    if (loading) setShowSpinner(true);
-    if (!loading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (isFetchingCategories || loading || (!loading && !isAuthenticated)) {
@@ -200,54 +189,27 @@ export default function CategoriesNextGen() {
     }
   };
 
-  const handleSnackbarClose = () => {
-    setShowSnackbar(false);
-  };
-
-  const handleError = (
-    error: unknown,
-    moduleName: string,
-    throwIt: boolean,
-  ) => {
-    const errorMessage = `${moduleName}: ${getErrorMessage(error)}`;
-
-    setMessage(errorMessage);
-    setSnackbarSeverity("error");
-    setShowSnackbar(true);
-
-    console.error(errorMessage);
-
-    if (throwIt) throw error;
-  };
-
-  const handleSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    setSnackbarSeverity("success");
-    setShowSnackbar(true);
-  };
-
   const handleAddRow = async (newData: Category) => {
     const errs: { categoryName?: string; activeStatus?: string } = {};
     const name = newData?.categoryName || "";
     if (!name || name.trim() === "") {
       errs.categoryName = "Name is required";
-    } else {
-      if (name.length > 50) {
-        errs.categoryName = "Name too long (max 50 characters)";
-      } else if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
-        errs.categoryName =
-          "Name can only contain letters, numbers, hyphens, and underscores (no spaces)";
-      }
+    } else if (name.length > 50) {
+      errs.categoryName = "Name too long (max 50 characters)";
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+      errs.categoryName =
+        "Name can only contain letters, numbers, hyphens, and underscores (no spaces)";
     }
-    // Validate status: must be boolean; allow string 'true'/'false'
-    const statusValue = (newData as any)?.activeStatus;
-    if (typeof statusValue !== "boolean") {
-      if (statusValue === "true" || statusValue === "false") {
-        newData.activeStatus = statusValue === "true";
-      } else if (statusValue !== undefined) {
-        errs.activeStatus = "Status must be true or false";
-      }
+
+    const { coerced, error: statusErr } = coerceActiveStatus(
+      (newData as any)?.activeStatus,
+    );
+    if (statusErr) {
+      errs.activeStatus = statusErr;
+    } else if (coerced !== undefined) {
+      newData.activeStatus = coerced;
     }
+
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       setMessage(errs.categoryName || "Validation failed");
@@ -257,15 +219,8 @@ export default function CategoriesNextGen() {
     }
 
     try {
-      console.log("from handleAddRow: " + JSON.stringify(newData));
       await insertCategory({ category: newData });
-
-      if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(
-          CATEGORIES_NEXT_CACHE_DATA_KEY,
-          JSON.stringify(newData),
-        );
-      }
+      if (cacheEnabled) save(newData);
       handleSuccess("Category added successfully.");
     } catch (error: unknown) {
       handleError(
@@ -279,26 +234,14 @@ export default function CategoriesNextGen() {
   };
 
   const handleOpenAddModal = () => {
-    if (cacheEnabled && typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(CATEGORIES_NEXT_CACHE_DATA_KEY);
-        setCategoryData(stored ? JSON.parse(stored) : null);
-      } catch {
-        setCategoryData(null);
-      }
-    } else {
-      setCategoryData(null);
-    }
+    setCategoryData(cacheEnabled ? getStored() : null);
     setFormErrors({});
     setShowModalAdd(true);
   };
 
   const handleClearFilters = () => {
     setSearchTerm("");
-    setFilters({
-      status: "all",
-      usage: "all",
-    });
+    setFilters({ status: "all", usage: "all" });
   };
 
   const getRowId = (row: Category) =>
@@ -311,13 +254,11 @@ export default function CategoriesNextGen() {
       flex: 2,
       minWidth: 300,
       editable: true,
-      renderCell: (params) => {
-        return (
-          <Link href={`/finance/transactions/category/${params.value}`}>
-            {params.value}
-          </Link>
-        );
-      },
+      renderCell: (params) => (
+        <Link href={`/finance/transactions/category/${params.value}`}>
+          {params.value}
+        </Link>
+      ),
     },
     {
       field: "activeStatus",
@@ -325,9 +266,7 @@ export default function CategoriesNextGen() {
       flex: 0.6,
       minWidth: 100,
       editable: true,
-      renderCell: (params) => {
-        return params.value ? "Active" : "Inactive";
-      },
+      renderCell: (params) => (params.value ? "Active" : "Inactive"),
     },
     {
       field: "",
@@ -379,340 +318,311 @@ export default function CategoriesNextGen() {
   }
 
   return (
-    <div>
-      <>
-        <PageHeader
-          title="Category Management (Next‑Gen)"
-          subtitle="GraphQL-powered category organization for better tracking"
-          actions={
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <Fade in timeout={600}>
-                <Box>
-                  <ViewToggle view={view} onChange={setView} />
-                </Box>
-              </Fade>
-              <Fade in timeout={700}>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenAddModal()}
-                  sx={{ backgroundColor: "primary.main" }}
-                >
-                  Add Category
-                </Button>
-              </Fade>
-            </Box>
-          }
-        />
-
-        {/* Filter Bar */}
-        <Fade in timeout={500}>
-          <Box>
-            <CategoryFilterBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              activeFilters={filters}
-              onFilterChange={setFilters}
-              onClearFilters={handleClearFilters}
-              resultCount={categoriesToDisplay.length}
-              totalCount={fetchedCategories?.length || 0}
-            />
+    <>
+      <PageHeader
+        title="Category Management (Next‑Gen)"
+        subtitle="GraphQL-powered category organization for better tracking"
+        actions={
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <Fade in timeout={600}>
+              <Box>
+                <ViewToggle view={view} onChange={setView} />
+              </Box>
+            </Fade>
+            <Fade in timeout={700}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpenAddModal}
+                sx={{ backgroundColor: "primary.main" }}
+              >
+                Add Category
+              </Button>
+            </Fade>
           </Box>
-        </Fade>
+        }
+      />
 
-        {/* StatCards */}
-        {showSpinner ? (
+      <Fade in timeout={500}>
+        <Box>
+          <CategoryFilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            activeFilters={filters}
+            onFilterChange={setFilters}
+            onClearFilters={handleClearFilters}
+            resultCount={filteredCategories.length}
+            totalCount={fetchedCategories?.length || 0}
+          />
+        </Box>
+      </Fade>
+
+      {showSpinner ? (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(4, 1fr)",
+            },
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          {[0, 1, 2, 3].map((i) => (
+            <Grow in timeout={700 + i * 100} key={i}>
+              <Box>
+                <StatCardSkeleton />
+              </Box>
+            </Grow>
+          ))}
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(4, 1fr)",
+            },
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          <Grow in timeout={700}>
+            <Box>
+              <StatCard
+                icon={<CategoryIcon />}
+                label="Total"
+                value={stats.total}
+                color="primary"
+              />
+            </Box>
+          </Grow>
+          <Grow in timeout={800}>
+            <Box>
+              <StatCard
+                icon={<CheckCircleIcon />}
+                label="Active"
+                value={stats.active}
+                color="success"
+              />
+            </Box>
+          </Grow>
+          <Grow in timeout={900}>
+            <Box>
+              <StatCard
+                icon={<CancelIcon />}
+                label="Inactive"
+                value={stats.inactive}
+                color="warning"
+              />
+            </Box>
+          </Grow>
+          <Grow in timeout={1000}>
+            <Box>
+              <StatCard
+                icon={<WarningIcon />}
+                label="Not Used"
+                value={stats.unused}
+                color="secondary"
+              />
+            </Box>
+          </Grow>
+        </Box>
+      )}
+
+      {showSpinner ? (
+        <LoadingState variant="card" message="Loading categories..." />
+      ) : filteredCategories && filteredCategories.length > 0 ? (
+        view === "grid" ? (
           <Box
             sx={{
               display: "grid",
               gridTemplateColumns: {
                 xs: "1fr",
                 sm: "repeat(2, 1fr)",
-                md: "repeat(4, 1fr)",
+                md: "repeat(3, 1fr)",
+                lg: "repeat(4, 1fr)",
               },
               gap: 2,
-              mb: 3,
             }}
           >
-            {[0, 1, 2, 3].map((i) => (
-              <Grow in timeout={700 + i * 100} key={i}>
+            {filteredCategories.map((category, index) => (
+              <Fade in timeout={600 + index * 100} key={category.categoryId}>
                 <Box>
-                  <StatCardSkeleton />
+                  <CategoryCard
+                    category={category}
+                    onDelete={(cat) => {
+                      setSelectedCategory(cat);
+                      setShowModalDelete(true);
+                    }}
+                  />
                 </Box>
-              </Grow>
+              </Fade>
             ))}
           </Box>
         ) : (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(4, 1fr)",
-              },
-              gap: 2,
-              mb: 3,
-            }}
-          >
-            <Grow in timeout={700}>
-              <Box>
-                <StatCard
-                  icon={<CategoryIcon />}
-                  label="Total"
-                  value={stats.total}
-                  color="primary"
-                />
-              </Box>
-            </Grow>
-            <Grow in timeout={800}>
-              <Box>
-                <StatCard
-                  icon={<CheckCircleIcon />}
-                  label="Active"
-                  value={stats.active}
-                  color="success"
-                />
-              </Box>
-            </Grow>
-            <Grow in timeout={900}>
-              <Box>
-                <StatCard
-                  icon={<CancelIcon />}
-                  label="Inactive"
-                  value={stats.inactive}
-                  color="warning"
-                />
-              </Box>
-            </Grow>
-            <Grow in timeout={1000}>
-              <Box>
-                <StatCard
-                  icon={<WarningIcon />}
-                  label="Not Used"
-                  value={stats.unused}
-                  color="secondary"
-                />
-              </Box>
-            </Grow>
-          </Box>
-        )}
-
-        {/* View Content */}
-        {showSpinner ? (
-          <LoadingState variant="card" message="Loading categories..." />
-        ) : categoriesToDisplay && categoriesToDisplay.length > 0 ? (
-          view === "grid" ? (
-            // Grid View
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
-                },
-                gap: 2,
+          <ContentContainer>
+            <DataGridBase
+              rows={filteredCategories}
+              columns={columns}
+              getRowId={getRowId}
+              checkboxSelection={false}
+              rowSelection={false}
+              paginationModel={paginationModel}
+              onPaginationModelChange={(m) => setPaginationModel(m)}
+              pageSizeOptions={[25, 50, 100]}
+              processRowUpdate={async (
+                newRow: Category,
+                oldRow: Category,
+              ): Promise<Category> => {
+                if (JSON.stringify(newRow) === JSON.stringify(oldRow))
+                  return oldRow;
+                try {
+                  await updateCategory({
+                    oldCategory: oldRow,
+                    newCategory: newRow,
+                  });
+                  handleSuccess("Category updated successfully.");
+                  return { ...newRow };
+                } catch (error: unknown) {
+                  handleError(error, "Update Category failure.", false);
+                  return oldRow;
+                }
               }}
-            >
-              {categoriesToDisplay.map((category, index) => (
-                <Fade in timeout={600 + index * 100} key={category.categoryId}>
-                  <Box>
-                    <CategoryCard
-                      category={category}
-                      onDelete={(cat) => {
-                        setSelectedCategory(cat);
-                        setShowModalDelete(true);
-                      }}
-                    />
-                  </Box>
-                </Fade>
-              ))}
-            </Box>
-          ) : (
-            // Table View
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-                <DataGridBase
-                  rows={categoriesToDisplay}
-                  columns={columns}
-                  getRowId={getRowId}
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(m) => setPaginationModel(m)}
-                  pageSizeOptions={[25, 50, 100]}
-                  processRowUpdate={async (
-                    newRow: Category,
-                    oldRow: Category,
-                  ): Promise<Category> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow))
-                      return oldRow;
-                    try {
-                      await updateCategory({
-                        oldCategory: oldRow,
-                        newCategory: newRow,
-                      });
-                      handleSuccess("Category updated successfully.");
-                      return { ...newRow };
-                    } catch (error: unknown) {
-                      handleError(error, "Update Category failure.", false);
-                      return oldRow;
-                    }
-                  }}
-                  autoHeight
-                  disableColumnResize={false}
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                />
-              </Box>
-            </Box>
-          )
-        ) : (
-          <EmptyState
-            title="No Categories Found"
-            message={
-              searchTerm || filters.status !== "all" || filters.usage !== "all"
-                ? "No categories match your current filters. Try adjusting your search or filter criteria."
-                : "You haven't created any categories yet. Create your first category to organize your transactions."
-            }
-            dataType="categories"
-            variant={
-              searchTerm || filters.status !== "all" || filters.usage !== "all"
-                ? "search"
-                : "create"
-            }
-            actionLabel={
-              searchTerm || filters.status !== "all" || filters.usage !== "all"
-                ? "Clear Filters"
-                : "Add Category"
-            }
-            onAction={() => {
-              if (
-                searchTerm ||
-                filters.status !== "all" ||
-                filters.usage !== "all"
-              ) {
-                handleClearFilters();
-              } else {
-                handleOpenAddModal();
-              }
-            }}
-            onRefresh={() => refetchCategories()}
-          />
-        )}
-
-        <SnackbarBaseline
-          message={message}
-          state={showSnackbar}
-          handleSnackbarClose={handleSnackbarClose}
-          severity={snackbarSeverity}
-        />
-
-        <ConfirmDialog
-          open={showModalDelete}
-          onClose={() => setShowModalDelete(false)}
-          onConfirm={handleDeleteRow}
-          title={modalTitles.confirmDeletion}
-          message={modalBodies.confirmDeletion(
-            "category",
-            selectedCategory?.categoryName ?? "",
-          )}
-          confirmText="Delete"
-          cancelText="Cancel"
-        />
-
-        <FormDialog
-          open={showModalAdd}
-          onClose={() => setShowModalAdd(false)}
-          onSubmit={() => {
-            if (categoryData) {
-              handleAddRow(categoryData);
+              autoHeight
+              disableColumnResize={false}
+              sx={{
+                "& .MuiDataGrid-cell": {
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                },
+              }}
+            />
+          </ContentContainer>
+        )
+      ) : (
+        <EmptyState
+          title="No Categories Found"
+          message={
+            searchTerm || filters.status !== "all" || filters.usage !== "all"
+              ? "No categories match your current filters. Try adjusting your search or filter criteria."
+              : "You haven't created any categories yet. Create your first category to organize your transactions."
+          }
+          dataType="categories"
+          variant={
+            searchTerm || filters.status !== "all" || filters.usage !== "all"
+              ? "search"
+              : "create"
+          }
+          actionLabel={
+            searchTerm || filters.status !== "all" || filters.usage !== "all"
+              ? "Clear Filters"
+              : "Add Category"
+          }
+          onAction={() => {
+            if (
+              searchTerm ||
+              filters.status !== "all" ||
+              filters.usage !== "all"
+            ) {
+              handleClearFilters();
             } else {
-              handleAddRow({
-                categoryId: 0,
-                categoryName: "",
-                activeStatus: true,
-              } as Category);
+              handleOpenAddModal();
             }
           }}
-          title={modalTitles.addNew("category")}
-          submitText="Add"
-        >
-          <TextField
-            label="Name"
-            fullWidth
-            margin="normal"
-            value={categoryData?.categoryName || ""}
-            error={!!formErrors.categoryName}
-            helperText={
-              formErrors.categoryName ||
-              "Lowercase letters, numbers, hyphens, and underscores only (no spaces)"
+          onRefresh={() => refetchCategories()}
+        />
+      )}
+
+      <SnackbarBaseline
+        message={message}
+        state={showSnackbar}
+        handleSnackbarClose={handleSnackbarClose}
+        severity={snackbarSeverity}
+      />
+
+      <ConfirmDialog
+        open={showModalDelete}
+        onClose={() => setShowModalDelete(false)}
+        onConfirm={handleDeleteRow}
+        title={modalTitles.confirmDeletion}
+        message={modalBodies.confirmDeletion(
+          "category",
+          selectedCategory?.categoryName ?? "",
+        )}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <FormDialog
+        open={showModalAdd}
+        onClose={() => setShowModalAdd(false)}
+        onSubmit={() =>
+          handleAddRow(
+            categoryData ?? ({
+              categoryId: 0,
+              categoryName: "",
+              activeStatus: true,
+            } as Category),
+          )
+        }
+        title={modalTitles.addNew("category")}
+        submitText="Add"
+      >
+        <TextField
+          label="Name"
+          fullWidth
+          margin="normal"
+          value={categoryData?.categoryName || ""}
+          error={!!formErrors.categoryName}
+          helperText={
+            formErrors.categoryName ||
+            "Lowercase letters, numbers, hyphens, and underscores only (no spaces)"
+          }
+          onChange={(e) =>
+            setCategoryData((prev) => ({
+              ...prev,
+              categoryId: prev?.categoryId || 0,
+              categoryName: e.target.value,
+              activeStatus: prev?.activeStatus ?? true,
+            }))
+          }
+        />
+        <Box sx={{ mt: 1 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={!!categoryData?.activeStatus}
+                onChange={(e) =>
+                  setCategoryData((prev: Category) => ({
+                    ...prev,
+                    categoryId: prev?.categoryId || 0,
+                    categoryName: prev?.categoryName || "",
+                    activeStatus: e.target.checked,
+                  }))
+                }
+              />
             }
-            onChange={(e) =>
-              setCategoryData((prev) => ({
-                ...prev,
-                categoryId: prev?.categoryId || 0,
-                categoryName: e.target.value,
-                activeStatus: prev?.activeStatus ?? true,
-              }))
-            }
+            label="Status"
           />
-          <Box sx={{ mt: 1 }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={!!categoryData?.activeStatus}
-                  onChange={(e) =>
-                    setCategoryData((prev: Category) => ({
-                      ...prev,
-                      categoryId: prev?.categoryId || 0,
-                      categoryName: prev?.categoryName || "",
-                      activeStatus: e.target.checked,
-                    }))
-                  }
-                />
-              }
-              label="Status"
-            />
-            {formErrors.activeStatus && (
-              <Typography color="error" variant="caption">
-                {formErrors.activeStatus}
-              </Typography>
-            )}
-          </Box>
-          <Box sx={{ mt: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={cacheEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setCacheEnabled(checked);
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem(
-                        CATEGORIES_NEXT_CACHE_ENABLED_KEY,
-                        String(checked),
-                      );
-                      if (!checked) {
-                        localStorage.removeItem(CATEGORIES_NEXT_CACHE_DATA_KEY);
-                      }
-                    }
-                  }}
-                  size="small"
-                />
-              }
-              label="Remember field data"
-            />
-          </Box>
-        </FormDialog>
-      </>
-    </div>
+          {formErrors.activeStatus && (
+            <Typography color="error" variant="caption">
+              {formErrors.activeStatus}
+            </Typography>
+          )}
+        </Box>
+        <CacheToggleCheckbox
+          checked={cacheEnabled}
+          cacheEnabledKey={CATEGORIES_NEXT_CACHE_ENABLED_KEY}
+          cacheDataKey={CATEGORIES_NEXT_CACHE_DATA_KEY}
+          onChange={setCacheEnabled}
+        />
+      </FormDialog>
+    </>
   );
 }

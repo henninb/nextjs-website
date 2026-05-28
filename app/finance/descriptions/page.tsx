@@ -1,23 +1,16 @@
 "use client";
 import { getErrorMessage } from "../../../types";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Link,
-  Button,
-  TextField,
-  Typography,
-  Switch,
-  FormControlLabel,
-  Checkbox,
-} from "@mui/material";
+import { Box, Button, Link, Checkbox } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
 import LoadingState from "../../../components/LoadingState";
+import ContentContainer from "../../../components/ContentContainer";
+import MergeDialog from "../../../components/MergeDialog";
+import NameActiveStatusFormFields from "../../../components/NameActiveStatusFormFields";
 import useFetchDescription from "../../../hooks/useDescriptionFetch";
 import useDescriptionInsert from "../../../hooks/useDescriptionInsert";
 import useDescriptionDelete from "../../../hooks/useDescriptionDelete";
@@ -29,10 +22,14 @@ import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
+import { useSpinnerEffect } from "../../../hooks/useSpinnerEffect";
 import { useRowSelection } from "../../../hooks/useRowSelection";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 import { validateName } from "../../../utils/validateName";
 import { createDeleteColumn } from "../../../utils/createDeleteColumn";
+import { coerceActiveStatus } from "../../../utils/coerceActiveStatus";
+import { useLocalStorageCache } from "../../../hooks/useLocalStorageCache";
+import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
 
 const DESCRIPTIONS_CACHE_ENABLED_KEY = "finance_cache_enabled_descriptions";
 const DESCRIPTIONS_CACHE_DATA_KEY = "finance_cached_data_descriptions";
@@ -61,18 +58,22 @@ export default function Descriptions() {
     setShowSnackbar,
     setSnackbarSeverity,
   } = useFinancePageState(DESCRIPTIONS_CACHE_ENABLED_KEY);
-  const [selectedDescription, setSelectedDescription] =
-    useState<Description | null>(null);
-  const [descriptionData, setDescriptionData] = useState<Description | null>(
-    null,
-  );
+
+  const [selectedDescription, setSelectedDescription] = useState<Description | null>(null);
+  const [descriptionData, setDescriptionData] = useState<Description | null>(null);
   const [formErrors, setFormErrors] = useState<{
     descriptionName?: string;
     activeStatus?: string;
   }>({});
+  const [showModalMerge, setShowModalMerge] = useState(false);
+
+  const { save, getStored } = useLocalStorageCache<Description>({
+    storageKey: DESCRIPTIONS_CACHE_DATA_KEY,
+    cacheEnabledKey: DESCRIPTIONS_CACHE_ENABLED_KEY,
+  });
 
   const {
-    data: fetchedDescrptions,
+    data: fetchedDescriptions,
     isSuccess: isSuccessDescriptions,
     isLoading: isFetchingDescriptions,
     isError: isErrorDescriptions,
@@ -95,33 +96,17 @@ export default function Descriptions() {
     clearSelection,
     isAllSelected,
     isIndeterminate,
-  } = useRowSelection(fetchedDescrptions, getRowId);
+  } = useRowSelection(fetchedDescriptions, getRowId);
 
-  const [showModalMerge, setShowModalMerge] = useState(false);
-  const [mergeName, setMergeName] = useState("");
-  const [mergeError, setMergeError] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (isFetchingDescriptions || loading || (!loading && !isAuthenticated)) {
-      setShowSpinner(true);
-      return;
-    }
-    if (isSuccessDescriptions) {
-      setShowSpinner(false);
-    }
-  }, [isSuccessDescriptions, isFetchingDescriptions, loading, isAuthenticated]);
+  useSpinnerEffect(setShowSpinner, isFetchingDescriptions, isSuccessDescriptions, loading, isAuthenticated);
 
   const handleDeleteRow = async () => {
     if (selectedDescription) {
       try {
         await deleteDescription(selectedDescription);
-        handleSuccess(`Description deleted successfully.`);
+        handleSuccess("Description deleted successfully.");
       } catch (error) {
-        handleError(
-          error,
-          `Delete Description: ${getErrorMessage(error)}`,
-          false,
-        );
+        handleError(error, `Delete Description: ${getErrorMessage(error)}`, false);
       } finally {
         setShowModalDelete(false);
         setSelectedDescription(null);
@@ -131,24 +116,18 @@ export default function Descriptions() {
 
   const handleAddRow = async (newData: Description) => {
     const errs: { descriptionName?: string; activeStatus?: string } = {};
-    const name = newData?.descriptionName || "";
-    if (!name || name.trim() === "") {
-      errs.descriptionName = "Name is required";
-    } else {
-      if (name.length > 255) {
-        errs.descriptionName = "Name too long";
-      } else if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
-        errs.descriptionName = "Name contains invalid characters";
-      }
+    const nameErr = validateName(newData?.descriptionName || "");
+    if (nameErr) errs.descriptionName = nameErr;
+
+    const { coerced, error: statusErr } = coerceActiveStatus(
+      (newData as any)?.activeStatus,
+    );
+    if (statusErr) {
+      errs.activeStatus = statusErr;
+    } else if (coerced !== undefined) {
+      newData.activeStatus = coerced;
     }
-    const statusValue = (newData as any)?.activeStatus;
-    if (typeof statusValue !== "boolean") {
-      if (statusValue === "true" || statusValue === "false") {
-        newData.activeStatus = statusValue === "true";
-      } else if (statusValue !== undefined) {
-        errs.activeStatus = "Status must be true or false";
-      }
-    }
+
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       setMessage(errs.descriptionName || "Validation failed");
@@ -159,38 +138,35 @@ export default function Descriptions() {
 
     try {
       await insertDescription(newData);
-      if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(
-          DESCRIPTIONS_CACHE_DATA_KEY,
-          JSON.stringify(newData),
-        );
-      }
-      handleSuccess(`Description added successfully.`);
+      if (cacheEnabled) save(newData);
+      handleSuccess("Description added successfully.");
       setFormErrors({});
     } catch (error) {
-      handleError(
-        error,
-        `Add Description error: ${getErrorMessage(error)}`,
-        false,
-      );
+      handleError(error, `Add Description error: ${getErrorMessage(error)}`, false);
     } finally {
       setShowModalAdd(false);
     }
   };
 
   const handleOpenAddModal = () => {
-    if (cacheEnabled && typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(DESCRIPTIONS_CACHE_DATA_KEY);
-        setDescriptionData(stored ? JSON.parse(stored) : null);
-      } catch {
-        setDescriptionData(null);
-      }
-    } else {
-      setDescriptionData(null);
-    }
+    setDescriptionData(cacheEnabled ? getStored() : null);
     setFormErrors({});
     setShowModalAdd(true);
+  };
+
+  const handleMerge = async (name: string) => {
+    const selectedNames = (fetchedDescriptions || [])
+      .filter((row) => rowSelection.includes(getRowId(row)))
+      .map((row) => row.descriptionName);
+    try {
+      await mergeDescriptions({ sourceNames: selectedNames, targetName: name.trim() });
+      handleSuccess("Descriptions merged successfully.");
+      setShowModalMerge(false);
+      clearSelection();
+      refetchDescriptions();
+    } catch (error: unknown) {
+      handleError(error, `Merge Descriptions error: ${getErrorMessage(error)}`, false);
+    }
   };
 
   const columns: GridColDef[] = [
@@ -219,13 +195,11 @@ export default function Descriptions() {
       headerName: "Name",
       width: 300,
       editable: true,
-      renderCell: (params) => {
-        return (
-          <Link href={`/finance/transactions/description/${params.value}`}>
-            {params.value}
-          </Link>
-        );
-      },
+      renderCell: (params) => (
+        <Link href={`/finance/transactions/description/${params.value}`}>
+          {params.value}
+        </Link>
+      ),
     },
     {
       field: "activeStatus",
@@ -239,42 +213,6 @@ export default function Descriptions() {
     }),
   ];
 
-  const handleMerge = async () => {
-    const err = validateName(mergeName);
-    if (err) {
-      setMergeError(err);
-      setMessage(err);
-      setSnackbarSeverity("error");
-      setShowSnackbar(true);
-      return;
-    }
-
-    // Map selected ids to description names
-    const selectedNames: string[] = (fetchedDescrptions || [])
-      .filter((row) => rowSelection.includes(getRowId(row)))
-      .map((row) => row.descriptionName);
-
-    try {
-      await mergeDescriptions({
-        sourceNames: selectedNames,
-        targetName: mergeName.trim(),
-      });
-      handleSuccess("Descriptions merged successfully.");
-      setShowModalMerge(false);
-      setMergeName("");
-      setMergeError(undefined);
-      clearSelection();
-      refetchDescriptions();
-    } catch (error: unknown) {
-      handleError(
-        error,
-        `Merge Descriptions error: ${getErrorMessage(error)}`,
-        false,
-      );
-    }
-  };
-
-  // Handle error states first
   if (isErrorDescriptions) {
     return (
       <>
@@ -302,16 +240,13 @@ export default function Descriptions() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => handleOpenAddModal()}
+              onClick={handleOpenAddModal}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Description
             </Button>
             {rowSelection.length > 0 && (
-              <Button
-                variant="outlined"
-                onClick={() => setShowModalMerge(true)}
-              >
+              <Button variant="outlined" onClick={() => setShowModalMerge(true)}>
                 Merge
               </Button>
             )}
@@ -321,167 +256,87 @@ export default function Descriptions() {
       {showSpinner ? (
         <LoadingState variant="card" message="Loading descriptions..." />
       ) : (
-        <>
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-              {fetchedDescrptions && fetchedDescrptions.length > 0 ? (
-                <DataGridBase
-                  rows={fetchedDescrptions?.filter((row) => row != null) || []}
-                  columns={columns}
-                  getRowId={getRowId}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  autoHeight
-                  disableColumnResize={false}
-                  processRowUpdate={async (
-                    newRow: Description,
-                    oldRow: Description,
-                  ): Promise<Description> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
-                    }
-                    try {
-                      await updateDescription({
-                        oldDescription: oldRow,
-                        newDescription: newRow,
-                      });
-                      handleSuccess("Description updated successfully.");
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Update Description error: ${getErrorMessage(error)}`,
-                        false,
-                      );
-                      return oldRow;
-                    }
-                  }}
-                />
-              ) : (
-                <EmptyState
-                  title="No Descriptions Found"
-                  message="You haven't created any descriptions yet. Create your first description to standardize your transaction records."
-                  dataType="descriptions"
-                  variant="create"
-                  actionLabel="Add Description"
-                  onAction={() => handleOpenAddModal()}
-                  onRefresh={() => refetchDescriptions()}
-                />
+        <ContentContainer>
+          {fetchedDescriptions && fetchedDescriptions.length > 0 ? (
+            <DataGridBase
+              rows={fetchedDescriptions.filter((row) => row != null)}
+              columns={columns}
+              getRowId={getRowId}
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
+              pageSizeOptions={[25, 50, 100]}
+              autoHeight
+              disableColumnResize={false}
+              processRowUpdate={createProcessRowUpdate<Description>(
+                (newRow, oldRow) => updateDescription({ oldDescription: oldRow, newDescription: newRow }),
+                "Description updated successfully.",
+                "Update Description failure.",
+                handleSuccess,
+                handleError,
               )}
-            </Box>
-          </Box>
-          <SnackbarBaseline
-            message={message}
-            state={showSnackbar}
-            handleSnackbarClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-          />
-        </>
+            />
+          ) : (
+            <EmptyState
+              title="No Descriptions Found"
+              message="You haven't created any descriptions yet. Create your first description to standardize your transaction records."
+              dataType="descriptions"
+              variant="create"
+              actionLabel="Add Description"
+              onAction={handleOpenAddModal}
+              onRefresh={() => refetchDescriptions()}
+            />
+          )}
+        </ContentContainer>
       )}
+
+      <SnackbarBaseline
+        message={message}
+        state={showSnackbar}
+        handleSnackbarClose={handleSnackbarClose}
+        severity={snackbarSeverity}
+      />
 
       <ConfirmDialog
         open={showModalDelete}
         onClose={() => setShowModalDelete(false)}
         onConfirm={handleDeleteRow}
         title={modalTitles.confirmDeletion}
-        message={modalBodies.confirmDeletion(
-          "description",
-          selectedDescription?.descriptionName ?? "",
-        )}
+        message={modalBodies.confirmDeletion("description", selectedDescription?.descriptionName ?? "")}
         confirmText="Delete"
         cancelText="Cancel"
+      />
+
+      <MergeDialog
+        open={showModalMerge}
+        title="Merge Descriptions"
+        onClose={() => setShowModalMerge(false)}
+        onSubmit={handleMerge}
       />
 
       <FormDialog
         open={showModalAdd}
         onClose={() => setShowModalAdd(false)}
-        onSubmit={() => {
-          if (descriptionData) {
-            handleAddRow(descriptionData);
-          } else {
-            handleAddRow({
-              descriptionName: "",
-              activeStatus: true,
-            } as Description);
-          }
-        }}
+        onSubmit={() =>
+          handleAddRow(descriptionData ?? ({ descriptionName: "", activeStatus: true } as Description))
+        }
         title={modalTitles.addNew("description")}
         submitText="Add"
       >
-        <TextField
-          label="Name"
-          fullWidth
-          margin="normal"
-          value={descriptionData?.descriptionName || ""}
-          error={!!formErrors.descriptionName}
-          helperText={formErrors.descriptionName}
-          onChange={(e) =>
-            setDescriptionData((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    descriptionName: e.target.value,
-                  }
-                : null,
-            )
+        <NameActiveStatusFormFields
+          nameValue={descriptionData?.descriptionName || ""}
+          nameError={formErrors.descriptionName}
+          activeStatus={!!descriptionData?.activeStatus}
+          activeStatusError={formErrors.activeStatus}
+          onNameChange={(value) =>
+            setDescriptionData((prev) => (prev ? { ...prev, descriptionName: value } : null))
           }
-        />
-        <Box sx={{ mt: 1 }}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={!!descriptionData?.activeStatus}
-                onChange={(e) =>
-                  setDescriptionData((prev: Description) => ({
-                    ...prev,
-                    activeStatus: e.target.checked,
-                  }))
-                }
-              />
-            }
-            label="Status"
-          />
-          {formErrors.activeStatus && (
-            <Typography color="error" variant="caption">
-              {formErrors.activeStatus}
-            </Typography>
-          )}
-        </Box>
-        <CacheToggleCheckbox
-          checked={cacheEnabled}
+          onActiveStatusChange={(checked) =>
+            setDescriptionData((prev: Description) => ({ ...prev, activeStatus: checked }))
+          }
+          cacheEnabled={cacheEnabled}
           cacheEnabledKey={DESCRIPTIONS_CACHE_ENABLED_KEY}
           cacheDataKey={DESCRIPTIONS_CACHE_DATA_KEY}
-          onChange={setCacheEnabled}
-        />
-      </FormDialog>
-
-      <FormDialog
-        open={showModalMerge}
-        onClose={() => {
-          setShowModalMerge(false);
-          setMergeError(undefined);
-          setMergeName("");
-        }}
-        onSubmit={handleMerge}
-        title="Merge Descriptions"
-        submitText="Merge"
-        disabled={!!validateName(mergeName)}
-      >
-        <TextField
-          label="New Name"
-          fullWidth
-          margin="normal"
-          value={mergeName}
-          error={!!mergeError}
-          helperText={mergeError}
-          onChange={(e) => {
-            const next = e.target.value;
-            setMergeName(next);
-            setMergeError(validateName(next));
-          }}
+          onCacheChange={setCacheEnabled}
         />
       </FormDialog>
     </>

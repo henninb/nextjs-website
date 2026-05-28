@@ -1,18 +1,15 @@
 "use client";
 import { getErrorMessage } from "../../../types";
 import React, { useState, useEffect } from "react";
-import { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,
-  Link,
   TextField,
   Typography,
   Autocomplete,
   ToggleButton,
   ToggleButtonGroup,
-  FormControlLabel,
-  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
@@ -21,6 +18,7 @@ import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
 import LoadingState from "../../../components/LoadingState";
+import ContentContainer from "../../../components/ContentContainer";
 import USDAmountInput from "../../../components/USDAmountInput";
 import useFetchPayment from "../../../hooks/usePaymentFetch";
 import usePaymentInsert from "../../../hooks/usePaymentInsert";
@@ -42,8 +40,12 @@ import {
   formatDateForDisplay,
 } from "../../../components/Common";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
+import { useSpinnerEffect } from "../../../hooks/useSpinnerEffect";
+import { useLocalStorageCache } from "../../../hooks/useLocalStorageCache";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
-import { createDeleteColumn } from "../../../utils/createDeleteColumn";
+import { createDeleteColumn, createAccountLinkColumn } from "../../../utils/createDeleteColumn";
+import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
+import { validateAmountAndAccounts } from "../../../utils/validateTransfer";
 import { z } from "zod";
 
 const PaymentCacheSchema = z.object({
@@ -70,34 +72,6 @@ const initialPaymentData: Payment = {
   guidDestination: undefined,
 };
 
-// Helper functions for localStorage operations
-const getLastPaymentFromStorage = (): Payment | null => {
-  if (typeof window === "undefined") return null;
-  try {
-    const stored = localStorage.getItem(LAST_PAYMENT_STORAGE_KEY);
-    if (!stored) return null;
-    const result = PaymentCacheSchema.safeParse(JSON.parse(stored));
-    if (!result.success) {
-      console.warn("Discarding invalid payment cache:", result.error.issues);
-      localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);
-      return null;
-    }
-    return result.data as Payment;
-  } catch (error) {
-    console.error("Error reading last payment from localStorage:", error);
-    return null;
-  }
-};
-
-const saveLastPaymentToStorage = (payment: Payment): void => {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LAST_PAYMENT_STORAGE_KEY, JSON.stringify(payment));
-  } catch (error) {
-    console.error("Error saving last payment to localStorage:", error);
-  }
-};
-
 export default function Payments() {
   const {
     message,
@@ -122,6 +96,7 @@ export default function Payments() {
     setShowSnackbar,
     setSnackbarSeverity,
   } = useFinancePageState(PAYMENTS_CACHE_ENABLED_KEY);
+
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment>(initialPaymentData);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -132,17 +107,16 @@ export default function Payments() {
   const [paymentMode, setPaymentMode] = useState<"payBill" | "balanceTransfer">(
     "payBill",
   );
-  const [lastSubmittedPayment, setLastSubmittedPayment] =
-    useState<Payment | null>(null);
-  // Initialize last payment from localStorage on mount (only if cache is enabled)
-  useEffect(() => {
-    if (localStorage.getItem(PAYMENTS_CACHE_ENABLED_KEY) === "true") {
-      const storedPayment = getLastPaymentFromStorage();
-      if (storedPayment) {
-        setLastSubmittedPayment(storedPayment);
-      }
-    }
-  }, []);
+
+  const {
+    lastValue: lastSubmittedPayment,
+    setLastValue: setLastSubmittedPayment,
+    save: savePayment,
+  } = useLocalStorageCache<Payment>({
+    storageKey: LAST_PAYMENT_STORAGE_KEY,
+    cacheEnabledKey: PAYMENTS_CACHE_ENABLED_KEY,
+    schema: PaymentCacheSchema,
+  });
 
   const {
     data: fetchedPayments,
@@ -171,40 +145,19 @@ export default function Payments() {
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
 
-  useEffect(() => {
-    if (
-      isFetchingPayments ||
-      isFetchingAccounts ||
-      isFetchingParameters ||
-      loading ||
-      (!loading && !isAuthenticated)
-    ) {
-      setShowSpinner(true);
-      return;
-    }
-    if (isSuccessPayments && isSuccessAccounts && isSuccessParameters) {
-      setShowSpinner(false);
-    }
-  }, [
-    isSuccessPayments,
-    isSuccessAccounts,
-    isSuccessParameters,
-    errorPayments,
-    errorAccounts,
-    errorParameters,
-    isFetchingPayments,
-    isFetchingAccounts,
-    isFetchingParameters,
+  useSpinnerEffect(
+    setShowSpinner,
+    isFetchingPayments || isFetchingAccounts || isFetchingParameters,
+    isSuccessPayments && isSuccessAccounts && isSuccessParameters,
     loading,
     isAuthenticated,
-  ]);
+  );
 
   const defaultPaymentMethod =
     fetchedParameters?.find(
       (param) => param.parameterName === "payment_account",
     )?.parameterValue || "";
 
-  // Set default sourceAccount when modal opens if not already set.
   useEffect(() => {
     if (
       showModalAdd &&
@@ -245,19 +198,7 @@ export default function Payments() {
   };
 
   const handleAddRow = async (newData: Payment) => {
-    // UI validations: amount >= 0 and source != destination
-    const errs: { amount?: string; accounts?: string } = {};
-    const amt = parseFloat(String(newData?.amount ?? 0));
-    if (isNaN(amt) || amt < 0) {
-      errs.amount = "Amount cannot be negative";
-    }
-    if (
-      newData?.sourceAccount &&
-      newData?.destinationAccount &&
-      newData.sourceAccount === newData.destinationAccount
-    ) {
-      errs.accounts = "Source and destination must be different";
-    }
+    const errs = validateAmountAndAccounts(newData?.amount, newData?.sourceAccount, newData?.destinationAccount);
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       setMessage(errs.accounts || errs.amount || "Validation failed");
@@ -270,7 +211,7 @@ export default function Payments() {
       await insertPayment({ payload: newData });
       if (cacheEnabled) {
         setLastSubmittedPayment(newData);
-        saveLastPaymentToStorage(newData);
+        savePayment(newData);
       }
       setShowModalAdd(false);
       const when = formatDateForDisplay(newData.transactionDate);
@@ -319,32 +260,8 @@ export default function Payments() {
         return normalizeTransactionDate(params);
       },
     },
-    {
-      field: "sourceAccount",
-      headerName: "Source Account",
-      flex: 2,
-      minWidth: 200,
-      renderCell: (params) => {
-        return (
-          <Link href={`/finance/transactions/${params.value}`}>
-            {params.value}
-          </Link>
-        );
-      },
-    },
-    {
-      field: "destinationAccount",
-      headerName: "Destination Account",
-      flex: 2,
-      minWidth: 200,
-      renderCell: (params) => {
-        return (
-          <Link href={`/finance/transactions/${params.value}`}>
-            {params.value}
-          </Link>
-        );
-      },
-    },
+    createAccountLinkColumn("sourceAccount", "Source Account"),
+    createAccountLinkColumn("destinationAccount", "Destination Account"),
     {
       field: "amount",
       headerName: "Amount",
@@ -363,7 +280,6 @@ export default function Payments() {
             onChange={(event) => {
               const newValue = event.target.value;
               let parsedValue = newValue === "" ? null : parseFloat(newValue);
-
               if (parsedValue !== null) {
                 parsedValue = parseFloat(parsedValue.toFixed(2));
               }
@@ -384,7 +300,6 @@ export default function Payments() {
     }),
   ];
 
-  // Handle error states first
   if (errorPayments || errorAccounts || errorParameters) {
     return (
       <>
@@ -447,90 +362,70 @@ export default function Payments() {
         />
       ) : (
         <>
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-              {fetchedPayments && fetchedPayments.length > 0 ? (
-                <DataGridBase
-                  rows={fetchedPayments?.filter((row) => row != null) || []}
-                  columns={columns}
-                  getRowId={(row: Payment) =>
-                    row.paymentId ??
-                    `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
-                  }
-                  checkboxSelection={false}
-                  rowSelection={false}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  autoHeight
-                  disableColumnResize={false}
-                  processRowUpdate={async (
-                    newRow: Payment,
-                    oldRow: Payment,
-                  ): Promise<Payment> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
-                    }
-
-                    try {
-                      await updatePayment({
-                        oldPayment: oldRow,
-                        newPayment: newRow,
-                      });
-                      const when = formatDateForDisplay(newRow.transactionDate);
-                      handleSuccess(
-                        `Payment updated: ${currencyFormat(newRow.amount)} from ${newRow.sourceAccount} to ${newRow.destinationAccount} on ${when}.`,
-                      );
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(
-                        error,
-                        `Update Payment error: ${error}`,
-                        false,
-                      );
-                      return oldRow;
-                    }
-                  }}
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                />
-              ) : (
-                <EmptyState
-                  title="No Payments Found"
-                  message="No payments have been recorded yet. Create your first payment to get started."
-                  dataType="payments"
-                  variant="create"
-                  actionLabel="Add Payment"
-                  onAction={() => {
-                    setPaymentData(lastSubmittedPayment || initialPaymentData);
-                    setFormErrors({});
-                    setPaymentMode("payBill");
-                    setShowModalAdd(true);
-                  }}
-                  onRefresh={() => {
-                    refetchPayments();
-                    refetchAccounts();
-                    refetchParameters();
-                  }}
-                />
-              )}
-            </Box>
-          </Box>
-          <SnackbarBaseline
-            message={message}
-            state={showSnackbar}
-            handleSnackbarClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-          />
+          <ContentContainer>
+            {fetchedPayments && fetchedPayments.length > 0 ? (
+              <DataGridBase
+                rows={fetchedPayments?.filter((row) => row != null) || []}
+                columns={columns}
+                getRowId={(row: Payment) =>
+                  row.paymentId ??
+                  `${row.sourceAccount}-${row.destinationAccount}-${row.amount}-${row.transactionDate}`
+                }
+                checkboxSelection={false}
+                rowSelection={false}
+                paginationModel={paginationModel}
+                onPaginationModelChange={(newModel) =>
+                  setPaginationModel(newModel)
+                }
+                pageSizeOptions={[25, 50, 100]}
+                autoHeight
+                disableColumnResize={false}
+                processRowUpdate={createProcessRowUpdate<Payment>(
+                  (newRow, oldRow) => updatePayment({ oldPayment: oldRow, newPayment: newRow }),
+                  `Payment updated.`,
+                  "Update Payment failure.",
+                  handleSuccess,
+                  handleError,
+                )}
+                sx={{
+                  "& .MuiDataGrid-cell": {
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
+                }}
+              />
+            ) : (
+              <EmptyState
+                title="No Payments Found"
+                message="No payments have been recorded yet. Create your first payment to get started."
+                dataType="payments"
+                variant="create"
+                actionLabel="Add Payment"
+                onAction={() => {
+                  setPaymentData(lastSubmittedPayment || initialPaymentData);
+                  setFormErrors({});
+                  setPaymentMode("payBill");
+                  setShowModalAdd(true);
+                }}
+                onRefresh={() => {
+                  refetchPayments();
+                  refetchAccounts();
+                  refetchParameters();
+                }}
+              />
+            )}
+          </ContentContainer>
         </>
       )}
+
+      <SnackbarBaseline
+        message={message}
+        state={showSnackbar}
+        handleSnackbarClose={handleSnackbarClose}
+        severity={snackbarSeverity}
+      />
+
       <ConfirmDialog
         open={showModalDelete}
         onClose={() => setShowModalDelete(false)}
@@ -700,7 +595,6 @@ export default function Payments() {
             }));
           }}
           onBlur={() => {
-            // Format amount properly on blur
             const currentValue = parseFloat(String(paymentData?.amount || ""));
             if (!isNaN(currentValue)) {
               setPaymentData((prev: Payment) => ({

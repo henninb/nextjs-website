@@ -1,23 +1,16 @@
 "use client";
 import { getErrorMessage } from "../../../types";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Button,
-  Link,
-  TextField,
-  Typography,
-  Switch,
-  FormControlLabel,
-  Checkbox,
-} from "@mui/material";
+import { Box, Button, Link, Checkbox } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
 import LoadingState from "../../../components/LoadingState";
+import ContentContainer from "../../../components/ContentContainer";
+import MergeDialog from "../../../components/MergeDialog";
+import NameActiveStatusFormFields from "../../../components/NameActiveStatusFormFields";
 import useFetchCategory from "../../../hooks/useCategoryFetch";
 import useCategoryInsert from "../../../hooks/useCategoryInsert";
 import useCategoryDelete from "../../../hooks/useCategoryDelete";
@@ -29,10 +22,14 @@ import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
+import { useSpinnerEffect } from "../../../hooks/useSpinnerEffect";
 import { useRowSelection } from "../../../hooks/useRowSelection";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
 import { validateName } from "../../../utils/validateName";
 import { createDeleteColumn } from "../../../utils/createDeleteColumn";
+import { coerceActiveStatus } from "../../../utils/coerceActiveStatus";
+import { useLocalStorageCache } from "../../../hooks/useLocalStorageCache";
+import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
 
 const CATEGORIES_CACHE_ENABLED_KEY = "finance_cache_enabled_categories";
 const CATEGORIES_CACHE_DATA_KEY = "finance_cached_data_categories";
@@ -61,14 +58,19 @@ export default function Categories() {
     setShowSnackbar,
     setSnackbarSeverity,
   } = useFinancePageState(CATEGORIES_CACHE_ENABLED_KEY);
+
   const [categoryData, setCategoryData] = useState<Category | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null,
-  );
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [formErrors, setFormErrors] = useState<{
     categoryName?: string;
     activeStatus?: string;
   }>({});
+  const [showModalMerge, setShowModalMerge] = useState(false);
+
+  const { save, getStored } = useLocalStorageCache<Category>({
+    storageKey: CATEGORIES_CACHE_DATA_KEY,
+    cacheEnabledKey: CATEGORIES_CACHE_ENABLED_KEY,
+  });
 
   const {
     data: fetchedCategories,
@@ -96,25 +98,7 @@ export default function Categories() {
     isIndeterminate,
   } = useRowSelection(fetchedCategories, getRowId);
 
-  const [showModalMerge, setShowModalMerge] = useState(false);
-  const [mergeName, setMergeName] = useState("");
-  const [mergeError, setMergeError] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (isFetchingCategories || loading || (!loading && !isAuthenticated)) {
-      setShowSpinner(true);
-      return;
-    }
-    if (isSuccessCategories) {
-      setShowSpinner(false);
-    }
-  }, [
-    isSuccessCategories,
-    isErrorCategories,
-    isFetchingCategories,
-    loading,
-    isAuthenticated,
-  ]);
+  useSpinnerEffect(setShowSpinner, isFetchingCategories, isSuccessCategories, loading, isAuthenticated);
 
   const handleDeleteRow = async () => {
     if (selectedCategory) {
@@ -132,25 +116,18 @@ export default function Categories() {
 
   const handleAddRow = async (newData: Category) => {
     const errs: { categoryName?: string; activeStatus?: string } = {};
-    const name = newData?.categoryName || "";
-    if (!name || name.trim() === "") {
-      errs.categoryName = "Name is required";
-    } else {
-      if (name.length > 255) {
-        errs.categoryName = "Name too long";
-      } else if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
-        errs.categoryName = "Name contains invalid characters";
-      }
+    const nameErr = validateName(newData?.categoryName || "");
+    if (nameErr) errs.categoryName = nameErr;
+
+    const { coerced, error: statusErr } = coerceActiveStatus(
+      (newData as any)?.activeStatus,
+    );
+    if (statusErr) {
+      errs.activeStatus = statusErr;
+    } else if (coerced !== undefined) {
+      newData.activeStatus = coerced;
     }
-    // Validate status: must be boolean; allow string 'true'/'false'
-    const statusValue = (newData as any)?.activeStatus;
-    if (typeof statusValue !== "boolean") {
-      if (statusValue === "true" || statusValue === "false") {
-        newData.activeStatus = statusValue === "true";
-      } else if (statusValue !== undefined) {
-        errs.activeStatus = "Status must be true or false";
-      }
-    }
+
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       setMessage(errs.categoryName || "Validation failed");
@@ -161,71 +138,33 @@ export default function Categories() {
 
     try {
       await insertCategory({ category: newData });
-
-      if (cacheEnabled && typeof window !== "undefined") {
-        localStorage.setItem(
-          CATEGORIES_CACHE_DATA_KEY,
-          JSON.stringify(newData),
-        );
-      }
+      if (cacheEnabled) save(newData);
       handleSuccess("Category added successfully.");
     } catch (error) {
-      handleError(
-        error,
-        `Add Category error: ${getErrorMessage(error)}`,
-        false,
-      );
+      handleError(error, `Add Category error: ${getErrorMessage(error)}`, false);
     } finally {
       setShowModalAdd(false);
     }
   };
 
   const handleOpenAddModal = () => {
-    if (cacheEnabled && typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(CATEGORIES_CACHE_DATA_KEY);
-        setCategoryData(stored ? JSON.parse(stored) : null);
-      } catch {
-        setCategoryData(null);
-      }
-    } else {
-      setCategoryData(null);
-    }
+    setCategoryData(cacheEnabled ? getStored() : null);
     setFormErrors({});
     setShowModalAdd(true);
   };
 
-  const handleMerge = async () => {
-    const err = validateName(mergeName);
-    if (err) {
-      setMergeError(err);
-      setMessage(err);
-      setSnackbarSeverity("error");
-      setShowSnackbar(true);
-      return;
-    }
-
-    const selectedNames: string[] = (fetchedCategories || [])
+  const handleMerge = async (name: string) => {
+    const selectedNames = (fetchedCategories || [])
       .filter((row) => rowSelection.includes(getRowId(row)))
       .map((row) => row.categoryName);
-
     try {
-      await mergeCategories({
-        sourceNames: selectedNames,
-        targetName: mergeName.trim(),
-      });
+      await mergeCategories({ sourceNames: selectedNames, targetName: name.trim() });
       handleSuccess("Categories merged successfully.");
       setShowModalMerge(false);
-      setMergeName("");
-      setMergeError(undefined);
       clearSelection();
       refetch();
     } catch (error: unknown) {
-      handleError(
-        error,
-        `Merge Categories error: ${getErrorMessage(error)}`,
-        false,
-      );
+      handleError(error, `Merge Categories error: ${getErrorMessage(error)}`, false);
     }
   };
 
@@ -249,9 +188,7 @@ export default function Categories() {
           checked={isRowSelected(getRowId(params.row))}
           onChange={() => handleRowToggle(getRowId(params.row))}
           slotProps={{
-            input: {
-              "aria-label": `Select category ${params.row?.categoryName ?? ""}`,
-            },
+            input: { "aria-label": `Select category ${params.row?.categoryName ?? ""}` },
           }}
         />
       ),
@@ -261,22 +198,18 @@ export default function Categories() {
       headerName: "Name",
       width: 300,
       editable: true,
-      renderCell: (params) => {
-        return (
-          <Link href={`/finance/transactions/category/${params.value}`}>
-            {params.value}
-          </Link>
-        );
-      },
+      renderCell: (params) => (
+        <Link href={`/finance/transactions/category/${params.value}`}>
+          {params.value}
+        </Link>
+      ),
     },
     {
       field: "activeStatus",
       headerName: "Status",
       width: 100,
       editable: true,
-      renderCell: (params) => {
-        return params.value ? "Active" : "Inactive";
-      },
+      renderCell: (params) => (params.value ? "Active" : "Inactive"),
     },
     createDeleteColumn<Category>((row) => {
       setSelectedCategory(row);
@@ -284,7 +217,6 @@ export default function Categories() {
     }),
   ];
 
-  // Handle error states first
   if (isErrorCategories) {
     return (
       <>
@@ -295,7 +227,7 @@ export default function Categories() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => handleOpenAddModal()}
+              onClick={handleOpenAddModal}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Category
@@ -322,16 +254,13 @@ export default function Categories() {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => handleOpenAddModal()}
+              onClick={handleOpenAddModal}
               sx={{ backgroundColor: "primary.main" }}
             >
               Add Category
             </Button>
             {rowSelection.length > 0 && (
-              <Button
-                variant="outlined"
-                onClick={() => setShowModalMerge(true)}
-              >
+              <Button variant="outlined" onClick={() => setShowModalMerge(true)}>
                 Merge
               </Button>
             )}
@@ -341,74 +270,49 @@ export default function Categories() {
       {showSpinner ? (
         <LoadingState variant="card" message="Loading categories..." />
       ) : (
-        <div>
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <Box sx={{ width: "100%", maxWidth: "1200px" }}>
-              {fetchedCategories && fetchedCategories.length > 0 ? (
-                <DataGridBase
-                  rows={fetchedCategories?.filter((row) => row != null) || []}
-                  columns={columns}
-                  getRowId={getRowId}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={(newModel) =>
-                    setPaginationModel(newModel)
-                  }
-                  pageSizeOptions={[25, 50, 100]}
-                  autoHeight
-                  disableColumnResize={false}
-                  sx={{
-                    "& .MuiDataGrid-cell": {
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                    // Hide separators to the right of the select checkbox column
-                    "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-iconSeparator":
-                      {
-                        display: "none",
-                      },
-                    "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-columnSeparator":
-                      {
-                        display: "none",
-                      },
-                    "& .MuiDataGrid-cell[data-field='select']": {
-                      borderRight: "none",
-                    },
-                  }}
-                  processRowUpdate={async (
-                    newRow: Category,
-                    oldRow: Category,
-                  ): Promise<Category> => {
-                    if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                      return oldRow;
-                    }
-                    try {
-                      await updateCategory({
-                        oldCategory: oldRow,
-                        newCategory: newRow,
-                      });
-                      handleSuccess("Category updated successfully.");
-                      return { ...newRow };
-                    } catch (error) {
-                      handleError(error, "Update Category failure.", false);
-                      return oldRow;
-                    }
-                  }}
-                />
-              ) : (
-                <EmptyState
-                  title="No Categories Found"
-                  message="You haven't created any categories yet. Create your first category to organize your transactions."
-                  dataType="categories"
-                  variant="create"
-                  actionLabel="Add Category"
-                  onAction={() => handleOpenAddModal()}
-                  onRefresh={() => refetch()}
-                />
+        <ContentContainer>
+          {fetchedCategories && fetchedCategories.length > 0 ? (
+            <DataGridBase
+              rows={fetchedCategories.filter((row) => row != null)}
+              columns={columns}
+              getRowId={getRowId}
+              paginationModel={paginationModel}
+              onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
+              pageSizeOptions={[25, 50, 100]}
+              autoHeight
+              disableColumnResize={false}
+              sx={{
+                "& .MuiDataGrid-cell": {
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                },
+                "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-iconSeparator":
+                  { display: "none" },
+                "& .MuiDataGrid-columnHeader[data-field='select'] .MuiDataGrid-columnSeparator":
+                  { display: "none" },
+                "& .MuiDataGrid-cell[data-field='select']": { borderRight: "none" },
+              }}
+              processRowUpdate={createProcessRowUpdate<Category>(
+                (newRow, oldRow) => updateCategory({ oldCategory: oldRow, newCategory: newRow }),
+                "Category updated successfully.",
+                "Update Category failure.",
+                handleSuccess,
+                handleError,
               )}
-            </Box>
-          </Box>
-        </div>
+            />
+          ) : (
+            <EmptyState
+              title="No Categories Found"
+              message="You haven't created any categories yet. Create your first category to organize your transactions."
+              dataType="categories"
+              variant="create"
+              actionLabel="Add Category"
+              onAction={handleOpenAddModal}
+              onRefresh={() => refetch()}
+            />
+          )}
+        </ContentContainer>
       )}
 
       <SnackbarBaseline
@@ -423,101 +327,42 @@ export default function Categories() {
         onClose={() => setShowModalDelete(false)}
         onConfirm={handleDeleteRow}
         title={modalTitles.confirmDeletion}
-        message={modalBodies.confirmDeletion(
-          "category",
-          selectedCategory?.categoryName ?? "",
-        )}
+        message={modalBodies.confirmDeletion("category", selectedCategory?.categoryName ?? "")}
         confirmText="Delete"
         cancelText="Cancel"
       />
 
-      <FormDialog
+      <MergeDialog
         open={showModalMerge}
-        onClose={() => {
-          setShowModalMerge(false);
-          setMergeError(undefined);
-          setMergeName("");
-        }}
-        onSubmit={handleMerge}
         title="Merge Categories"
-        submitText="Merge"
-        disabled={!!validateName(mergeName)}
-      >
-        <TextField
-          label="New Name"
-          fullWidth
-          margin="normal"
-          value={mergeName}
-          error={!!mergeError}
-          helperText={mergeError}
-          onChange={(e) => {
-            const next = e.target.value;
-            setMergeName(next);
-            setMergeError(validateName(next));
-          }}
-        />
-      </FormDialog>
+        onClose={() => setShowModalMerge(false)}
+        onSubmit={handleMerge}
+      />
 
       <FormDialog
         open={showModalAdd}
         onClose={() => setShowModalAdd(false)}
-        onSubmit={() => {
-          if (categoryData) {
-            handleAddRow(categoryData);
-          } else {
-            handleAddRow({
-              categoryName: "",
-              activeStatus: true,
-            } as Category);
-          }
-        }}
+        onSubmit={() =>
+          handleAddRow(categoryData ?? ({ categoryName: "", activeStatus: true } as Category))
+        }
         title={modalTitles.addNew("category")}
         submitText="Add"
       >
-        <TextField
-          label="Name"
-          fullWidth
-          margin="normal"
-          value={categoryData?.categoryName || ""}
-          error={!!formErrors.categoryName}
-          helperText={formErrors.categoryName}
-          onChange={(e) =>
-            setCategoryData((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    categoryName: e.target.value,
-                  }
-                : null,
-            )
+        <NameActiveStatusFormFields
+          nameValue={categoryData?.categoryName || ""}
+          nameError={formErrors.categoryName}
+          activeStatus={!!categoryData?.activeStatus}
+          activeStatusError={formErrors.activeStatus}
+          onNameChange={(value) =>
+            setCategoryData((prev) => (prev ? { ...prev, categoryName: value } : null))
           }
-        />
-        <Box sx={{ mt: 1 }}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={!!categoryData?.activeStatus}
-                onChange={(e) =>
-                  setCategoryData((prev: Category) => ({
-                    ...prev,
-                    activeStatus: e.target.checked,
-                  }))
-                }
-              />
-            }
-            label="Status"
-          />
-          {formErrors.activeStatus && (
-            <Typography color="error" variant="caption">
-              {formErrors.activeStatus}
-            </Typography>
-          )}
-        </Box>
-        <CacheToggleCheckbox
-          checked={cacheEnabled}
+          onActiveStatusChange={(checked) =>
+            setCategoryData((prev: Category) => ({ ...prev, activeStatus: checked }))
+          }
+          cacheEnabled={cacheEnabled}
           cacheEnabledKey={CATEGORIES_CACHE_ENABLED_KEY}
           cacheDataKey={CATEGORIES_CACHE_DATA_KEY}
-          onChange={setCacheEnabled}
+          onCacheChange={setCacheEnabled}
         />
       </FormDialog>
     </>
