@@ -39,6 +39,7 @@ import {
   getCategoryWithAI,
   createManualMetadata,
 } from "../utils/ai/categorization";
+import { inferTransactionType } from "../utils/inferTransactionType";
 import { parseTransactionPaste } from "../utils/parseTransactionPaste";
 import useTransactionInsert from "../hooks/useTransactionInsert";
 import { normalizeTransactionDate, formatDateForInput } from "./Common";
@@ -128,7 +129,7 @@ export default function PasteTransactionsDialog({
       notes: p.notes,
       amount: p.amount !== null ? String(p.amount) : "",
       category: "",
-      transactionType: "expense" as TransactionType,
+      transactionType: inferTransactionType(p.description, p.amount, accountType),
       parseErrors: p.parseErrors,
       removed: false,
       selected: true,
