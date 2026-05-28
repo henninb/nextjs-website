@@ -5,8 +5,6 @@ import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,
-  IconButton,
-  Tooltip,
   Link,
   TextField,
   Typography,
@@ -15,7 +13,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -40,6 +38,7 @@ import {
 } from "../../../components/Common";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { createDeleteColumn } from "../../../utils/createDeleteColumn";
 import { z } from "zod";
 
 const TransferCacheSchema = z.object({
@@ -381,26 +380,10 @@ export default function Transfers() {
       editable: true,
       renderCell: (params) => currencyFormat(params.value),
     },
-    {
-      field: "",
-      headerName: "Actions",
-      width: 100,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Tooltip title="Delete this row">
-          <IconButton
-            aria-label="Delete this row"
-            onClick={() => {
-              setSelectedTransfer(params.row);
-              setShowModalDelete(true);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
+    createDeleteColumn<Transfer>((row) => {
+      setSelectedTransfer(row);
+      setShowModalDelete(true);
+    }),
   ];
 
   // Handle error states first
@@ -661,31 +644,15 @@ export default function Transfers() {
             {formErrors.accounts}
           </Typography>
         )}
-        <Box sx={{ mt: 2 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={cacheEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setCacheEnabled(checked);
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem(
-                      TRANSFERS_CACHE_ENABLED_KEY,
-                      String(checked),
-                    );
-                    if (!checked) {
-                      setLastSubmittedTransfer(null);
-                      localStorage.removeItem(LAST_TRANSFER_STORAGE_KEY);
-                    }
-                  }
-                }}
-                size="small"
-              />
-            }
-            label="Remember field data"
-          />
-        </Box>
+        <CacheToggleCheckbox
+          checked={cacheEnabled}
+          cacheEnabledKey={TRANSFERS_CACHE_ENABLED_KEY}
+          cacheDataKey={LAST_TRANSFER_STORAGE_KEY}
+          onChange={(checked) => {
+            setCacheEnabled(checked);
+            if (!checked) setLastSubmittedTransfer(null);
+          }}
+        />
       </FormDialog>
     </>
   );

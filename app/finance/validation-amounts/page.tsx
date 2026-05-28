@@ -2,13 +2,10 @@
 import { getErrorMessage } from "../../../types";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,
-  IconButton,
-  Tooltip,
   TextField,
   Typography,
   FormControl,
@@ -20,7 +17,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -37,32 +34,41 @@ import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
-import { useAuth } from "../../../components/AuthProvider";
+import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { createDeleteColumn } from "../../../utils/createDeleteColumn";
 import { currencyFormat } from "../../../components/Common";
 
 const VALIDATION_CACHE_ENABLED_KEY = "finance_cache_enabled_validation_amounts";
 const VALIDATION_CACHE_DATA_KEY = "finance_cached_data_validation_amounts";
 
 export default function ValidationAmounts() {
-  const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState<
-    "error" | "warning" | "info" | "success"
-  >("info");
-  const [showSpinner, setShowSpinner] = useState(true);
-  const [showModalAdd, setShowModalAdd] = useState(false);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(VALIDATION_CACHE_ENABLED_KEY) === "true";
-  });
-  const [showModalDelete, setShowModalDelete] = useState(false);
+  const {
+    message,
+    showSnackbar,
+    snackbarSeverity,
+    showSpinner,
+    setShowSpinner,
+    showModalAdd,
+    setShowModalAdd,
+    showModalDelete,
+    setShowModalDelete,
+    paginationModel,
+    setPaginationModel,
+    cacheEnabled,
+    setCacheEnabled,
+    isAuthenticated,
+    loading,
+    handleError,
+    handleSuccess,
+    handleSnackbarClose,
+    setMessage,
+    setShowSnackbar,
+    setSnackbarSeverity,
+  } = useFinancePageState(VALIDATION_CACHE_ENABLED_KEY);
+
   const [selectedValidationAmount, setSelectedValidationAmount] =
     useState<ValidationAmount | null>(null);
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 50,
-    page: 0,
-  });
   const [selectedAccount, setSelectedAccount] = useState<string>("");
   const [formData, setFormData] = useState<Partial<ValidationAmount>>({
     validationDate: new Date(),
@@ -89,15 +95,6 @@ export default function ValidationAmounts() {
   const { mutateAsync: insertValidationAmount } = useValidationAmountInsert();
   const { mutateAsync: updateValidationAmount } = useValidationAmountUpdate();
   const { mutateAsync: deleteValidationAmount } = useValidationAmountDelete();
-
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (
@@ -133,34 +130,6 @@ export default function ValidationAmounts() {
         setSelectedValidationAmount(null);
       }
     }
-  };
-
-  const handleSnackbarClose = () => {
-    setShowSnackbar(false);
-  };
-
-  const handleError = (
-    error: unknown,
-    moduleName: string,
-    throwIt: boolean,
-  ) => {
-    const errorMessage = getErrorMessage(error)
-      ? `${moduleName}: ${getErrorMessage(error)}`
-      : `${moduleName}: Failure`;
-
-    setMessage(errorMessage);
-    setSnackbarSeverity("error");
-    setShowSnackbar(true);
-
-    console.error(errorMessage);
-
-    if (throwIt) throw error;
-  };
-
-  const handleSuccess = (successMessage: string) => {
-    setMessage(successMessage);
-    setSnackbarSeverity("success");
-    setShowSnackbar(true);
   };
 
   const validateForm = (): boolean => {
@@ -350,26 +319,10 @@ export default function ValidationAmounts() {
       renderCell: (params) =>
         params.value ? params.value.toLocaleDateString("en-US") : "",
     },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 100,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Tooltip title="Delete this row">
-          <IconButton
-            aria-label="Delete this row"
-            onClick={() => {
-              setSelectedValidationAmount(params.row);
-              setShowModalDelete(true);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
+    createDeleteColumn<ValidationAmount>((row) => {
+      setSelectedValidationAmount(row);
+      setShowModalDelete(true);
+    }),
   ];
 
   // Handle error states first
@@ -633,30 +586,12 @@ export default function ValidationAmounts() {
               label="Active Status"
             />
           </Box>
-          <Box sx={{ mt: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={cacheEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setCacheEnabled(checked);
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem(
-                        VALIDATION_CACHE_ENABLED_KEY,
-                        String(checked),
-                      );
-                      if (!checked) {
-                        localStorage.removeItem(VALIDATION_CACHE_DATA_KEY);
-                      }
-                    }
-                  }}
-                  size="small"
-                />
-              }
-              label="Remember field data"
-            />
-          </Box>
+          <CacheToggleCheckbox
+            checked={cacheEnabled}
+            cacheEnabledKey={VALIDATION_CACHE_ENABLED_KEY}
+            cacheDataKey={VALIDATION_CACHE_DATA_KEY}
+            onChange={setCacheEnabled}
+          />
         </FormDialog>
       </>
     </div>

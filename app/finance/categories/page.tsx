@@ -5,18 +5,15 @@ import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,
-  IconButton,
-  Tooltip,
   Link,
   TextField,
   Typography,
-  Alert,
   Switch,
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -32,7 +29,10 @@ import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
+import { useRowSelection } from "../../../hooks/useRowSelection";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { validateName } from "../../../utils/validateName";
+import { createDeleteColumn } from "../../../utils/createDeleteColumn";
 
 const CATEGORIES_CACHE_ENABLED_KEY = "finance_cache_enabled_categories";
 const CATEGORIES_CACHE_DATA_KEY = "finance_cached_data_categories";
@@ -82,7 +82,20 @@ export default function Categories() {
   const { mutateAsync: updateCategory } = useCategoryUpdate();
   const { mutateAsync: deleteCategory } = useCategoryDelete();
   const { mutateAsync: mergeCategories } = useCategoryMerge();
-  const [rowSelection, setRowSelection] = useState<Array<string | number>>([]);
+
+  const getRowId = (row: Category) =>
+    row.categoryId ?? `${row.categoryName}-${row.activeStatus}`;
+
+  const {
+    rowSelection,
+    isRowSelected,
+    handleRowToggle,
+    handleSelectAll,
+    clearSelection,
+    isAllSelected,
+    isIndeterminate,
+  } = useRowSelection(fetchedCategories, getRowId);
+
   const [showModalMerge, setShowModalMerge] = useState(false);
   const [mergeName, setMergeName] = useState("");
   const [mergeError, setMergeError] = useState<string | undefined>(undefined);
@@ -167,42 +180,6 @@ export default function Categories() {
     }
   };
 
-  const getRowId = (row: Category) =>
-    row.categoryId ?? `${row.categoryName}-${row.activeStatus}`;
-
-  const isRowSelected = (rowId: string | number) =>
-    rowSelection.includes(rowId);
-  const handleRowToggle = (rowId: string | number) => {
-    setRowSelection((prev) =>
-      prev.includes(rowId)
-        ? prev.filter((id) => id !== rowId)
-        : [...prev, rowId],
-    );
-  };
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const allRowIds = fetchedCategories?.map((row) => getRowId(row)) || [];
-      setRowSelection(allRowIds);
-    } else {
-      setRowSelection([]);
-    }
-  };
-  const isAllSelected =
-    (fetchedCategories?.length || 0) > 0 &&
-    rowSelection.length === (fetchedCategories?.length || 0);
-  const isIndeterminate =
-    rowSelection.length > 0 &&
-    rowSelection.length < (fetchedCategories?.length || 0);
-
-  const validateName = (name: string): string | undefined => {
-    const trimmed = (name || "").trim();
-    if (!trimmed) return "Name is required";
-    if (trimmed.length > 255) return "Name too long";
-    if (!/^[a-zA-Z0-9 _-]+$/.test(trimmed))
-      return "Name contains invalid characters";
-    return undefined;
-  };
-
   const handleOpenAddModal = () => {
     if (cacheEnabled && typeof window !== "undefined") {
       try {
@@ -241,7 +218,7 @@ export default function Categories() {
       setShowModalMerge(false);
       setMergeName("");
       setMergeError(undefined);
-      setRowSelection([]);
+      clearSelection();
       refetch();
     } catch (error: unknown) {
       handleError(
@@ -301,26 +278,10 @@ export default function Categories() {
         return params.value ? "Active" : "Inactive";
       },
     },
-    {
-      field: "",
-      headerName: "Actions",
-      width: 100,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Tooltip title="Delete this row">
-          <IconButton
-            aria-label="Delete this row"
-            onClick={() => {
-              setSelectedCategory(params.row);
-              setShowModalDelete(true);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
+    createDeleteColumn<Category>((row) => {
+      setSelectedCategory(row);
+      setShowModalDelete(true);
+    }),
   ];
 
   // Handle error states first
@@ -552,30 +513,12 @@ export default function Categories() {
             </Typography>
           )}
         </Box>
-        <Box sx={{ mt: 2 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={cacheEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setCacheEnabled(checked);
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem(
-                      CATEGORIES_CACHE_ENABLED_KEY,
-                      String(checked),
-                    );
-                    if (!checked) {
-                      localStorage.removeItem(CATEGORIES_CACHE_DATA_KEY);
-                    }
-                  }
-                }}
-                size="small"
-              />
-            }
-            label="Remember field data"
-          />
-        </Box>
+        <CacheToggleCheckbox
+          checked={cacheEnabled}
+          cacheEnabledKey={CATEGORIES_CACHE_ENABLED_KEY}
+          cacheDataKey={CATEGORIES_CACHE_DATA_KEY}
+          onChange={setCacheEnabled}
+        />
       </FormDialog>
     </>
   );

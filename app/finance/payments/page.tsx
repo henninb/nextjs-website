@@ -5,8 +5,6 @@ import { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
   Button,
-  IconButton,
-  Tooltip,
   Link,
   TextField,
   Typography,
@@ -17,7 +15,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
@@ -45,6 +43,7 @@ import {
 } from "../../../components/Common";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { createDeleteColumn } from "../../../utils/createDeleteColumn";
 import { z } from "zod";
 
 const PaymentCacheSchema = z.object({
@@ -379,26 +378,10 @@ export default function Payments() {
       },
       valueFormatter: (params: number) => currencyFormat(params),
     },
-    {
-      field: "",
-      headerName: "Actions",
-      width: 100,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: GridRenderCellParams<Payment>) => (
-        <Tooltip title="Delete this row">
-          <IconButton
-            aria-label="Delete this row"
-            onClick={() => {
-              setSelectedPayment(params.row);
-              setShowModalDelete(true);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
+    createDeleteColumn<Payment>((row) => {
+      setSelectedPayment(row);
+      setShowModalDelete(true);
+    }),
   ];
 
   // Handle error states first
@@ -731,31 +714,15 @@ export default function Payments() {
           error={!!formErrors.amount}
           helperText={formErrors.amount}
         />
-        <Box sx={{ mt: 2 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={cacheEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setCacheEnabled(checked);
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem(
-                      PAYMENTS_CACHE_ENABLED_KEY,
-                      String(checked),
-                    );
-                    if (!checked) {
-                      setLastSubmittedPayment(null);
-                      localStorage.removeItem(LAST_PAYMENT_STORAGE_KEY);
-                    }
-                  }
-                }}
-                size="small"
-              />
-            }
-            label="Remember field data"
-          />
-        </Box>
+        <CacheToggleCheckbox
+          checked={cacheEnabled}
+          cacheEnabledKey={PAYMENTS_CACHE_ENABLED_KEY}
+          cacheDataKey={LAST_PAYMENT_STORAGE_KEY}
+          onChange={(checked) => {
+            setCacheEnabled(checked);
+            if (!checked) setLastSubmittedPayment(null);
+          }}
+        />
       </FormDialog>
     </>
   );

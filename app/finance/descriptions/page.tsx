@@ -6,8 +6,6 @@ import {
   Box,
   Link,
   Button,
-  IconButton,
-  Tooltip,
   TextField,
   Typography,
   Switch,
@@ -15,7 +13,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -31,7 +29,10 @@ import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
+import { useRowSelection } from "../../../hooks/useRowSelection";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { validateName } from "../../../utils/validateName";
+import { createDeleteColumn } from "../../../utils/createDeleteColumn";
 
 const DESCRIPTIONS_CACHE_ENABLED_KEY = "finance_cache_enabled_descriptions";
 const DESCRIPTIONS_CACHE_DATA_KEY = "finance_cached_data_descriptions";
@@ -82,7 +83,20 @@ export default function Descriptions() {
   const { mutateAsync: updateDescription } = useDescriptionUpdate();
   const { mutateAsync: deleteDescription } = useDescriptionDelete();
   const { mutateAsync: mergeDescriptions } = useDescriptionMerge();
-  const [rowSelection, setRowSelection] = useState<Array<string | number>>([]);
+
+  const getRowId = (row: Description) =>
+    row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
+
+  const {
+    rowSelection,
+    isRowSelected,
+    handleRowToggle,
+    handleSelectAll,
+    clearSelection,
+    isAllSelected,
+    isIndeterminate,
+  } = useRowSelection(fetchedDescrptions, getRowId);
+
   const [showModalMerge, setShowModalMerge] = useState(false);
   const [mergeName, setMergeName] = useState("");
   const [mergeError, setMergeError] = useState<string | undefined>(undefined);
@@ -179,36 +193,6 @@ export default function Descriptions() {
     setShowModalAdd(true);
   };
 
-  const isRowSelected = (rowId: string | number) =>
-    rowSelection.includes(rowId);
-
-  const getRowId = (row: Description) =>
-    row.descriptionId ?? `${row.descriptionName}-${row.activeStatus}`;
-
-  const handleRowToggle = (rowId: string | number) => {
-    setRowSelection((prev) =>
-      prev.includes(rowId)
-        ? prev.filter((id) => id !== rowId)
-        : [...prev, rowId],
-    );
-  };
-
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const allRowIds = fetchedDescrptions?.map((row) => getRowId(row)) || [];
-      setRowSelection(allRowIds);
-    } else {
-      setRowSelection([]);
-    }
-  };
-
-  const isAllSelected =
-    (fetchedDescrptions?.length ?? 0) > 0 &&
-    rowSelection.length === (fetchedDescrptions?.length ?? 0);
-  const isIndeterminate =
-    rowSelection.length > 0 &&
-    rowSelection.length < (fetchedDescrptions?.length || 0);
-
   const columns: GridColDef[] = [
     {
       field: "select",
@@ -249,34 +233,11 @@ export default function Descriptions() {
       width: 75,
       editable: true,
     },
-    {
-      field: "",
-      headerName: "Actions",
-      width: 100,
-      renderCell: (params) => (
-        <Tooltip title="Delete this row">
-          <IconButton
-            aria-label="Delete this row"
-            onClick={() => {
-              setSelectedDescription(params.row);
-              setShowModalDelete(true);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
+    createDeleteColumn<Description>((row) => {
+      setSelectedDescription(row);
+      setShowModalDelete(true);
+    }),
   ];
-
-  const validateName = (name: string): string | undefined => {
-    const trimmed = (name || "").trim();
-    if (!trimmed) return "Name is required";
-    if (trimmed.length > 255) return "Name too long";
-    if (!/^[a-zA-Z0-9 _-]+$/.test(trimmed))
-      return "Name contains invalid characters";
-    return undefined;
-  };
 
   const handleMerge = async () => {
     const err = validateName(mergeName);
@@ -302,7 +263,7 @@ export default function Descriptions() {
       setShowModalMerge(false);
       setMergeName("");
       setMergeError(undefined);
-      setRowSelection([]);
+      clearSelection();
       refetchDescriptions();
     } catch (error: unknown) {
       handleError(
@@ -489,30 +450,12 @@ export default function Descriptions() {
             </Typography>
           )}
         </Box>
-        <Box sx={{ mt: 2 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={cacheEnabled}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setCacheEnabled(checked);
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem(
-                      DESCRIPTIONS_CACHE_ENABLED_KEY,
-                      String(checked),
-                    );
-                    if (!checked) {
-                      localStorage.removeItem(DESCRIPTIONS_CACHE_DATA_KEY);
-                    }
-                  }
-                }}
-                size="small"
-              />
-            }
-            label="Remember field data"
-          />
-        </Box>
+        <CacheToggleCheckbox
+          checked={cacheEnabled}
+          cacheEnabledKey={DESCRIPTIONS_CACHE_ENABLED_KEY}
+          cacheDataKey={DESCRIPTIONS_CACHE_DATA_KEY}
+          onChange={setCacheEnabled}
+        />
       </FormDialog>
 
       <FormDialog

@@ -5,16 +5,13 @@ import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,
-  IconButton,
-  Tooltip,
   TextField,
   Typography,
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Spinner from "../../../components/Spinner";
+import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
 import EmptyState from "../../../components/EmptyState";
@@ -24,13 +21,13 @@ import useParameterInsert from "../../../hooks/useParameterInsert";
 import useParameterDelete from "../../../hooks/useParameterDelete";
 import Parameter from "../../../model/Parameter";
 import useParameterUpdate from "../../../hooks/useParameterUpdate";
-import FinanceLayout from "../../../layouts/FinanceLayout";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { modalTitles, modalBodies } from "../../../utils/modalMessages";
+import { createDeleteColumn } from "../../../utils/createDeleteColumn";
 
 const CONFIGURATION_CACHE_ENABLED_KEY = "finance_cache_enabled_configuration";
 const CONFIGURATION_CACHE_DATA_KEY = "finance_cached_data_configuration";
@@ -252,24 +249,10 @@ export default function Configuration() {
       width: 300,
       editable: true,
     },
-    {
-      field: "",
-      headerName: "Actions",
-      width: 100,
-      renderCell: (params) => (
-        <Tooltip title="Delete this row">
-          <IconButton
-            aria-label="Delete this row"
-            onClick={() => {
-              setSelectedParameter(params.row as Parameter);
-              setShowModalDelete(true);
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
+    createDeleteColumn<Parameter>((row) => {
+      setSelectedParameter(row);
+      setShowModalDelete(true);
+    }),
   ];
 
   // Handle error states first
@@ -447,30 +430,12 @@ export default function Configuration() {
               )
             }
           />
-          <Box sx={{ mt: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={cacheEnabled}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setCacheEnabled(checked);
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem(
-                        CONFIGURATION_CACHE_ENABLED_KEY,
-                        String(checked),
-                      );
-                      if (!checked) {
-                        localStorage.removeItem(CONFIGURATION_CACHE_DATA_KEY);
-                      }
-                    }
-                  }}
-                  size="small"
-                />
-              }
-              label="Remember field data"
-            />
-          </Box>
+          <CacheToggleCheckbox
+            checked={cacheEnabled}
+            cacheEnabledKey={CONFIGURATION_CACHE_ENABLED_KEY}
+            cacheDataKey={CONFIGURATION_CACHE_DATA_KEY}
+            onChange={setCacheEnabled}
+          />
         </FormDialog>
       </>
     </div>
