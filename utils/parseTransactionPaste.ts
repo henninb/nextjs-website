@@ -89,6 +89,17 @@ export interface ParsedTransactionRow {
 //   Restaurants                ← category shown on site — ignored (AI will categorize)
 //   $204.82                    ← running balance — ignored
 //
+// Format L — Chase website copy-paste (standalone MM/DD/YYYY date):
+//   05/28/2026                 ← standalone date (4-digit year, no trailing text)
+//   Amazon Marketplace, Amazon.com  ← subtitle/page-title line — skip
+//                              ← blank
+//   Amazon Marketplace         ← description (primary merchant name)
+//   Amazon.com                 ← secondary domain line — skip (no leading $)
+//   $24.92                     ← transaction amount
+//
+//   Note: when the date appears as "May 28, 2026" (MMM DD, YYYY) the same
+//   block structure is handled transparently by Format E.
+//
 // Rules shared by all formats:
 //   • Reference / suffix lines starting with '#' are ignored.
 //   • Only the FIRST dollar amount on an amount line is captured.
@@ -117,6 +128,8 @@ const FORMAT_J =
   /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}[\s\t]+\S/i;
 /** Discover Card: abbreviated day-of-week on its own line, followed by "Month Day" then "Invalid Date Month Day" artifact. */
 const FORMAT_K = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i;
+/** Chase website: standalone MM/DD/YYYY date (4-digit year, no trailing content). */
+const FORMAT_L = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
 
 const MONTH_IDX: Record<string, number> = {
   jan: 0,
@@ -145,7 +158,8 @@ function isTransactionHeader(line: string): boolean {
     FORMAT_D.test(line) ||
     FORMAT_H.test(line) ||
     FORMAT_I.test(line) ||
-    FORMAT_K.test(line)
+    FORMAT_K.test(line) ||
+    FORMAT_L.test(line)
   );
 }
 
@@ -711,6 +725,50 @@ export function parseTransactionPaste(
         description: descriptionK,
         notes: "",
         amount: amountK.value,
+        parseErrors: errors,
+      });
+
+      // ── Format L — Chase website ────────────────────────────────────────────
+    } else if (FORMAT_L.test(line)) {
+      // "MM/DD/YYYY" standalone — Chase website copy-paste
+      const date = parseDateStr(line, errors);
+      i++;
+
+      // Skip subtitle line (e.g. "Amazon Marketplace, Amazon.com")
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        break; // consumed
+      }
+
+      // Read description — next non-empty line
+      let descriptionL = "";
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        descriptionL = next;
+        break;
+      }
+      if (!descriptionL) errors.push("Description is empty");
+
+      // Scan for amount; skip non-dollar lines (domain line, etc.)
+      const amountL = scanForAmount(
+        lines,
+        i,
+        errors,
+        (next) => (/^[+]?-?\$/.test(next) ? "try" : "skip"),
+        isCreditAccount,
+      );
+      i = amountL.nextIndex;
+
+      rows.push({
+        id: crypto.randomUUID(),
+        date,
+        description: descriptionL,
+        notes: "",
+        amount: amountL.value,
         parseErrors: errors,
       });
 

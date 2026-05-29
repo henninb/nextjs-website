@@ -1299,6 +1299,146 @@ Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97`;
     });
   });
 
+  // ── Format L ─────────────────────────────────────────────────────────────
+
+  /** Format L block: standalone MM/DD/YYYY date, subtitle, blank, description, domain, amount. */
+  function blockL(
+    date: string,
+    title: string,
+    desc: string,
+    domain: string,
+    amount: string,
+  ): string {
+    return `${date}\n${title}\n\n${desc}\n${domain}\n${amount}`;
+  }
+
+  describe("Format L — Chase website copy-paste", () => {
+    it("should parse a single Format L transaction", () => {
+      const [row] = parseTransactionPaste(
+        blockL(
+          "05/28/2026",
+          "Amazon Marketplace, Amazon.com",
+          "Amazon Marketplace",
+          "Amazon.com",
+          "$50.80",
+        ),
+      );
+      expect(row.description).toBe("Amazon Marketplace");
+      expect(row.amount).toBe(50.8);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it("should parse the date from MM/DD/YYYY format", () => {
+      const [row] = parseTransactionPaste(
+        blockL(
+          "05/28/2026",
+          "Amazon Marketplace, Amazon.com",
+          "Amazon Marketplace",
+          "Amazon.com",
+          "$50.80",
+        ),
+      );
+      expect(row.date).toBeInstanceOf(Date);
+      expect(row.date!.getFullYear()).toBe(2026);
+      expect(row.date!.getMonth()).toBe(4); // May (0-indexed)
+      expect(row.date!.getDate()).toBe(28);
+    });
+
+    it("should skip the subtitle line and domain line", () => {
+      const [row] = parseTransactionPaste(
+        blockL(
+          "05/28/2026",
+          "Amazon Marketplace, Amazon.com",
+          "Amazon Marketplace",
+          "Amazon.com",
+          "$50.80",
+        ),
+      );
+      expect(row.description).toBe("Amazon Marketplace");
+      expect(row.description).not.toContain("Amazon.com");
+    });
+
+    it("should parse multiple consecutive Format L blocks", () => {
+      const raw = [
+        blockL(
+          "05/28/2026",
+          "Amazon Marketplace, Amazon.com",
+          "Amazon Marketplace",
+          "Amazon.com",
+          "$50.80",
+        ),
+        blockL(
+          "05/28/2026",
+          "Amazon Marketplace, Amazon.com",
+          "Amazon Marketplace",
+          "Amazon.com",
+          "$24.92",
+        ),
+      ].join("\n");
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({
+        description: "Amazon Marketplace",
+        amount: 50.8,
+      });
+      expect(rows[1]).toMatchObject({
+        description: "Amazon Marketplace",
+        amount: 24.92,
+      });
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+
+    it("should parse the real-world 2-row Chase sample (Format E + Format L)", () => {
+      const raw = `May 28, 2026
+Amazon Marketplace, Amazon.com
+
+Amazon Marketplace
+Amazon.com
+$50.80
+05/28/2026
+Amazon Marketplace, Amazon.com
+
+Amazon Marketplace
+Amazon.com
+$24.92`;
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(2);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows[0]).toMatchObject({
+        description: "Amazon Marketplace",
+        amount: 50.8,
+      });
+      expect(rows[1]).toMatchObject({
+        description: "Amazon Marketplace",
+        amount: 24.92,
+      });
+      expect(rows[0].date!.getMonth()).toBe(4); // May
+      expect(rows[0].date!.getDate()).toBe(28);
+      expect(rows[0].date!.getFullYear()).toBe(2026);
+      expect(rows[1].date!.getMonth()).toBe(4); // May
+      expect(rows[1].date!.getDate()).toBe(28);
+      expect(rows[1].date!.getFullYear()).toBe(2026);
+    });
+
+    it("should handle Format E (MMM DD, YYYY) Chase layout — subtitle and domain skipped", () => {
+      // The "May 28, 2026" date form is handled transparently by Format E
+      const raw = `May 28, 2026
+Amazon Marketplace, Amazon.com
+
+Amazon Marketplace
+Amazon.com
+$50.80`;
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe("Amazon Marketplace");
+      expect(row.amount).toBe(50.8);
+      expect(row.parseErrors).toHaveLength(0);
+      expect(row.date!.getFullYear()).toBe(2026);
+      expect(row.date!.getMonth()).toBe(4); // May
+      expect(row.date!.getDate()).toBe(28);
+    });
+  });
+
   // ── Mixed formats ─────────────────────────────────────────────────────────
 
   describe("mixed formats in one paste", () => {
