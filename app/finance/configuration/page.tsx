@@ -2,8 +2,17 @@
 import { getErrorMessage } from "../../../types";
 import React, { useState, useEffect } from "react";
 import { GridColDef } from "@mui/x-data-grid";
-import { Box, Button, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  Fade,
+  TextField,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import TuneIcon from "@mui/icons-material/Tune";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
@@ -29,6 +38,14 @@ import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
 
 const CONFIGURATION_CACHE_ENABLED_KEY = "finance_cache_enabled_configuration";
 const CONFIGURATION_CACHE_DATA_KEY = "finance_cached_data_configuration";
+
+const sectionLabelSx = {
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.08em",
+  fontWeight: 600,
+  color: "text.secondary",
+  fontSize: "0.7rem",
+};
 
 export default function Configuration() {
   const {
@@ -93,7 +110,6 @@ export default function Configuration() {
     const syncOfflineRows = async () => {
       if (navigator.onLine && offlineRows.length > 0) {
         let remainingRows: Parameter[] = [];
-
         for (const row of offlineRows) {
           try {
             await insertParameter({ payload: row });
@@ -102,25 +118,19 @@ export default function Configuration() {
             remainingRows.push(row);
           }
         }
-
         if (remainingRows.length !== offlineRows.length) {
           setOfflineRows((prevRows) =>
             prevRows.filter((row) => remainingRows.includes(row)),
           );
-          localStorage.setItem(
-            "offlineParameters",
-            JSON.stringify(remainingRows),
-          );
+          localStorage.setItem("offlineParameters", JSON.stringify(remainingRows));
         }
       }
     };
-
     window.addEventListener("online", syncOfflineRows);
     return () => window.removeEventListener("online", syncOfflineRows);
   }, [insertParameter]);
 
   const handleDeleteRow = async () => {
-    if (!selectedParameter) return;
     if (!selectedParameter?.parameterId) return;
 
     const isOfflineRow = offlineRows.some(
@@ -132,10 +142,7 @@ export default function Configuration() {
         (row) => row.parameterId !== selectedParameter.parameterId,
       );
       setOfflineRows(updatedOfflineRows);
-      localStorage.setItem(
-        "offlineParameters",
-        JSON.stringify(updatedOfflineRows),
-      );
+      localStorage.setItem("offlineParameters", JSON.stringify(updatedOfflineRows));
       handleSuccess("Offline parameter deleted successfully.");
     } else {
       try {
@@ -155,17 +162,12 @@ export default function Configuration() {
     if (!newData?.parameterName || newData.parameterName.trim() === "") {
       errs.parameterName = "Name is required";
     }
-    if (
-      !newData?.parameterValue ||
-      newData.parameterValue.toString().trim() === ""
-    ) {
+    if (!newData?.parameterValue || newData.parameterValue.toString().trim() === "") {
       errs.parameterValue = "Value is required";
     }
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
-      setMessage(
-        errs.parameterName || errs.parameterValue || "Validation failed",
-      );
+      setMessage(errs.parameterName || errs.parameterValue || "Validation failed");
       setSnackbarSeverity("error");
       setShowSnackbar(true);
       return;
@@ -185,18 +187,12 @@ export default function Configuration() {
 
       if (
         !navigator.onLine ||
-        (getErrorMessage(error) &&
-          getErrorMessage(error).includes("Failed to fetch"))
+        (getErrorMessage(error) && getErrorMessage(error).includes("Failed to fetch"))
       ) {
         const newOfflineRow = { ...newData, parameterId: 0 };
         const updatedOfflineRows = [...offlineRows, newOfflineRow];
-
         setOfflineRows(updatedOfflineRows as [Parameter]);
-        localStorage.setItem(
-          "offlineParameters",
-          JSON.stringify(updatedOfflineRows),
-        );
-
+        localStorage.setItem("offlineParameters", JSON.stringify(updatedOfflineRows));
         handleSuccess("Parameter saved offline.");
         setParameterData({ ...newData, parameterId: Math.random() });
       }
@@ -210,30 +206,24 @@ export default function Configuration() {
   };
 
   const columns: GridColDef[] = [
-    {
-      field: "parameterName",
-      headerName: "Name",
-      width: 200,
-      editable: true,
-    },
-    {
-      field: "parameterValue",
-      headerName: "Value",
-      width: 300,
-      editable: true,
-    },
+    { field: "parameterName", headerName: "Name", width: 200, editable: true },
+    { field: "parameterValue", headerName: "Value", width: 300, editable: true },
     createDeleteColumn<Parameter>((row) => {
       setSelectedParameter(row);
       setShowModalDelete(true);
     }),
   ];
 
+  const rawParams = (fetchedParameters || []).filter(
+    (p) => !isBonusParam(p.parameterName),
+  );
+
   if (isErrorParameters) {
     return (
       <>
         <PageHeader
-          title="System Configuration"
-          subtitle="Manage application settings and parameters that control system behavior and defaults"
+          title="Configuration"
+          subtitle="Manage spending bonuses and system parameters"
         />
         <ErrorDisplay
           error={errorParameters}
@@ -248,72 +238,103 @@ export default function Configuration() {
   return (
     <>
       <PageHeader
-        title="System Configuration"
-        subtitle="Manage application settings and parameters that control system behavior and defaults"
-        actions={
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenAddModal}
-            sx={{ backgroundColor: "primary.main" }}
-          >
-            Add Parameter
-          </Button>
-        }
+        title="Configuration"
+        subtitle="Manage spending bonuses and system parameters"
       />
+
       {showSpinner ? (
-        <LoadingState
-          variant="card"
-          message="Loading configuration parameters..."
-        />
+        <LoadingState variant="card" message="Loading configuration..." />
       ) : (
-        <>
-          <ContentContainer>
-            <SpendingBonusConfig
-              onError={handleError}
-              onSuccess={handleSuccess}
-            />
-          </ContentContainer>
-          <ContentContainer>
-            {(fetchedParameters && fetchedParameters.filter(p => !isBonusParam(p.parameterName)).length > 0) ||
-            offlineRows.length > 0 ? (
-              <DataGridBase
-                rows={[...(fetchedParameters || []).filter(p => !isBonusParam(p.parameterName)), ...offlineRows]}
-                columns={columns}
-                getRowId={(row: Parameter) =>
-                  row.parameterId ||
-                  `fallback-${Date.now()}-${Math.random()}`
-                }
-                checkboxSelection={false}
-                rowSelection={false}
-                paginationModel={paginationModel}
-                onPaginationModelChange={(newModel) =>
-                  setPaginationModel(newModel)
-                }
-                pageSizeOptions={[25, 50, 100]}
-                disableRowSelectionOnClick
-                autoHeight
-                processRowUpdate={createProcessRowUpdate<Parameter>(
-                  (newRow, oldRow) => updateParameter({ oldParameter: oldRow, newParameter: newRow }),
-                  "Parameter updated successfully.",
-                  "Parameter Update failure.",
-                  handleSuccess,
-                  handleError,
+        <Fade in={true} timeout={400}>
+          <Box>
+            <ContentContainer>
+              {/* Spending Bonuses section */}
+              <Box sx={{ mb: 4 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
+                  <EmojiEventsIcon sx={{ fontSize: "1rem", color: "text.secondary" }} />
+                  <Typography variant="caption" sx={sectionLabelSx}>
+                    Spending Bonuses
+                  </Typography>
+                </Box>
+                <SpendingBonusConfig
+                  onError={handleError}
+                  onSuccess={handleSuccess}
+                />
+              </Box>
+
+              <Divider sx={{ mb: 4 }} />
+
+              {/* System Parameters section */}
+              <Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 2,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <TuneIcon sx={{ fontSize: "1rem", color: "text.secondary" }} />
+                    <Typography variant="caption" sx={sectionLabelSx}>
+                      System Parameters
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenAddModal}
+                    sx={{ backgroundColor: "primary.main" }}
+                  >
+                    Add Parameter
+                  </Button>
+                </Box>
+
+                {rawParams.length > 0 || offlineRows.length > 0 ? (
+                  <DataGridBase
+                    rows={[...rawParams, ...offlineRows]}
+                    columns={columns}
+                    getRowId={(row: Parameter) =>
+                      row.parameterId || `fallback-${Date.now()}-${Math.random()}`
+                    }
+                    checkboxSelection={false}
+                    rowSelection={false}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
+                    pageSizeOptions={[25, 50, 100]}
+                    disableRowSelectionOnClick
+                    autoHeight
+                    processRowUpdate={createProcessRowUpdate<Parameter>(
+                      (newRow, oldRow) =>
+                        updateParameter({ oldParameter: oldRow, newParameter: newRow }),
+                      "Parameter updated successfully.",
+                      "Parameter Update failure.",
+                      handleSuccess,
+                      handleError,
+                    )}
+                  />
+                ) : (
+                  <EmptyState
+                    title="No Parameters Found"
+                    message="No system parameters configured yet."
+                    dataType="parameters"
+                    variant="create"
+                    actionLabel="Add Parameter"
+                    onAction={handleOpenAddModal}
+                    onRefresh={() => refetchParameters()}
+                  />
                 )}
-              />
-            ) : (
-              <EmptyState
-                title="No Parameters Found"
-                message="No configuration parameters have been set up yet. Create your first parameter to configure system behavior."
-                dataType="parameters"
-                variant="create"
-                actionLabel="Add Parameter"
-                onAction={handleOpenAddModal}
-                onRefresh={() => refetchParameters()}
-              />
-            )}
-          </ContentContainer>
-        </>
+              </Box>
+            </ContentContainer>
+          </Box>
+        </Fade>
       )}
 
       <SnackbarBaseline
@@ -341,8 +362,7 @@ export default function Configuration() {
         onClose={() => setShowModalAdd(false)}
         onSubmit={() =>
           handleAddRow(
-            parameterData ??
-              ({ parameterName: "", parameterValue: "" } as Parameter),
+            parameterData ?? ({ parameterName: "", parameterValue: "" } as Parameter),
           )
         }
         title={modalTitles.addNew("parameter")}
@@ -357,11 +377,7 @@ export default function Configuration() {
           helperText={formErrors.parameterName}
           onChange={(e) =>
             setParameterData(
-              (prev) =>
-                ({
-                  ...prev,
-                  parameterName: e.target.value,
-                }) as Parameter,
+              (prev) => ({ ...prev, parameterName: e.target.value }) as Parameter,
             )
           }
         />

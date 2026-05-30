@@ -246,22 +246,7 @@ export default function SpendingBonusConfig({ onError, onSuccess }: Props) {
 
   return (
     <Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Spending Bonuses
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Track credit card spend-to-earn bonus offers
-          </Typography>
-        </Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
