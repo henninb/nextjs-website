@@ -40,6 +40,8 @@ import useAccountFetch from "../../../../hooks/useAccountFetch";
 import useCategoryFetch from "../../../../hooks/useCategoryFetch";
 import useDescriptionFetch from "../../../../hooks/useDescriptionFetch";
 import useAccountUsageTracking from "../../../../hooks/useAccountUsageTracking";
+import useParameterFetch from "../../../../hooks/useParameterFetch";
+import SpendingBonusTracker from "../../../../components/SpendingBonusTracker";
 import {
   getCategoryWithAI,
   createManualMetadata,
@@ -287,6 +289,27 @@ export default function TransactionsByAccount({
     error: errorDescriptions,
     refetch: refetchDescriptions,
   } = useDescriptionFetch();
+
+  const { data: fetchedParameters } = useParameterFetch();
+
+  const bonusConfig = useMemo(() => {
+    if (!fetchedParameters || !validAccountNameOwner) return null;
+    const startDate = fetchedParameters.find(
+      (p) => p.parameterName === `bonus_start_date_${validAccountNameOwner}`,
+    )?.parameterValue;
+    const target = fetchedParameters.find(
+      (p) => p.parameterName === `bonus_target_${validAccountNameOwner}`,
+    )?.parameterValue;
+    const reward = fetchedParameters.find(
+      (p) => p.parameterName === `bonus_reward_${validAccountNameOwner}`,
+    )?.parameterValue;
+    if (!startDate || !target || !reward) return null;
+    return {
+      startDate,
+      targetAmount: parseFloat(target),
+      bonusAmount: parseFloat(reward),
+    };
+  }, [fetchedParameters, validAccountNameOwner]);
 
   const { mutateAsync: updateTransaction } = useTransactionUpdate();
   const { mutateAsync: deleteTransaction } = useTransactionDelete();
@@ -1477,6 +1500,47 @@ export default function TransactionsByAccount({
                       </Grow>
                     )}
                   </Box>
+                </Box>
+              </Fade>
+            )}
+
+            {/* Spending Bonus Tracker */}
+            {bonusConfig && (
+              <Fade in={true} timeout={850}>
+                <Box
+                  sx={{
+                    maxWidth: "1400px",
+                    margin: "0 auto",
+                    mb: 4,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1.5,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 600,
+                        color: "text.secondary",
+                        fontSize: "0.7rem",
+                      }}
+                    >
+                      Bonus Progress
+                    </Typography>
+                  </Box>
+                  <SpendingBonusTracker
+                    accountNameOwner={validAccountNameOwner}
+                    startDate={bonusConfig.startDate}
+                    targetAmount={bonusConfig.targetAmount}
+                    bonusAmount={bonusConfig.bonusAmount}
+                  />
                 </Box>
               </Fade>
             )}

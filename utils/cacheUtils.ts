@@ -248,6 +248,10 @@ export const QueryKeys = {
   totals: (accountName: string) => ["totals", accountName] as const,
   totalsPerAccount: () => ["totalsPerAccount"] as const,
 
+  // Bonus progress keys
+  bonusProgress: (accountName: string) =>
+    ["bonusProgress", accountName] as const,
+
   // Spending trends
   spendingTrends: () => ["spendingTrends"] as const,
 
