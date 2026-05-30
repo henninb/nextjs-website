@@ -303,11 +303,15 @@ export default function TransactionsByAccount({
     const reward = fetchedParameters.find(
       (p) => p.parameterName === `bonus_reward_${validAccountNameOwner}`,
     )?.parameterValue;
+    const windowDays = fetchedParameters.find(
+      (p) => p.parameterName === `bonus_window_days_${validAccountNameOwner}`,
+    )?.parameterValue;
     if (!startDate || !target || !reward) return null;
     return {
       startDate,
       targetAmount: parseFloat(target),
       bonusAmount: parseFloat(reward),
+      windowDays: windowDays ? parseInt(windowDays) : 90,
     };
   }, [fetchedParameters, validAccountNameOwner]);
 
@@ -1540,6 +1544,7 @@ export default function TransactionsByAccount({
                     startDate={bonusConfig.startDate}
                     targetAmount={bonusConfig.targetAmount}
                     bonusAmount={bonusConfig.bonusAmount}
+                    windowDays={bonusConfig.windowDays}
                   />
                 </Box>
               </Fade>

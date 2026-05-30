@@ -11,12 +11,14 @@ export const fetchAccountBonusProgress = async (
   startDate: string,
   targetAmount: number,
   bonusAmount: number,
+  windowDays: number = 90,
 ): Promise<BonusProgress> => {
   const sanitizedAccount = InputSanitizer.sanitizeAccountName(accountNameOwner);
   const params = new URLSearchParams({
     startDate,
     targetAmount: String(targetAmount),
     bonusAmount: String(bonusAmount),
+    windowDays: String(windowDays),
   });
 
   log.debug("Fetching bonus progress", { accountNameOwner: sanitizedAccount });
@@ -48,6 +50,7 @@ export default function useAccountBonusProgress(
   startDate: string,
   targetAmount: number,
   bonusAmount: number,
+  windowDays: number = 90,
 ) {
   return useAuthenticatedQuery(
     QueryKeys.bonusProgress(accountNameOwner),
@@ -57,6 +60,7 @@ export default function useAccountBonusProgress(
         startDate,
         targetAmount,
         bonusAmount,
+        windowDays,
       ),
     {
       staleTime: 5 * 60 * 1000,

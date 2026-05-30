@@ -21,6 +21,7 @@ type Props = {
   startDate: string;
   targetAmount: number;
   bonusAmount: number;
+  windowDays?: number;
 };
 
 export default function SpendingBonusTracker({
@@ -28,6 +29,7 @@ export default function SpendingBonusTracker({
   startDate,
   targetAmount,
   bonusAmount,
+  windowDays = 90,
 }: Props) {
   const theme = useTheme();
   const { data, isLoading, isError } = useAccountBonusProgress(
@@ -35,6 +37,7 @@ export default function SpendingBonusTracker({
     startDate,
     targetAmount,
     bonusAmount,
+    windowDays,
   );
 
   const barColor =
