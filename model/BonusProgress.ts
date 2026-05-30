@@ -1,6 +1,7 @@
 export default interface BonusProgress {
   accountNameOwner: string;
   spent: number;
+  spentPending: number;
   target: number;
   remaining: number;
   percentComplete: number;

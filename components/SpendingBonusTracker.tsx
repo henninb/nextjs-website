@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   Typography,
-  LinearProgress,
   Chip,
   Skeleton,
   alpha,
@@ -40,14 +39,24 @@ export default function SpendingBonusTracker({
     windowDays,
   );
 
-  const barColor =
-    data?.bonusEarned
+  const clearedPct = Math.min(data?.percentComplete ?? 0, 100);
+  const pendingPct =
+    targetAmount > 0
+      ? Math.min(
+          ((data?.spentPending ?? 0) / targetAmount) * 100,
+          100 - clearedPct,
+        )
+      : 0;
+
+  const barColor = data?.bonusEarned
+    ? theme.palette.success.main
+    : clearedPct >= 75
       ? theme.palette.success.main
-      : (data?.percentComplete ?? 0) >= 75
-        ? theme.palette.success.main
-        : (data?.percentComplete ?? 0) >= 40
-          ? theme.palette.primary.main
-          : theme.palette.warning.main;
+      : clearedPct >= 40
+        ? theme.palette.primary.main
+        : theme.palette.warning.main;
+
+  const pendingColor = theme.palette.warning.main;
 
   if (isError) return null;
 
@@ -76,6 +85,7 @@ export default function SpendingBonusTracker({
       }}
     >
       <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+        {/* Header */}
         <Box
           sx={{
             display: "flex",
@@ -140,14 +150,13 @@ export default function SpendingBonusTracker({
                 fontWeight: 700,
                 fontSize: "0.65rem",
                 height: "20px",
-                "& .MuiChip-icon": {
-                  color: theme.palette.success.contrastText,
-                },
+                "& .MuiChip-icon": { color: theme.palette.success.contrastText },
               }}
             />
           )}
         </Box>
 
+        {/* Progress bar + stats */}
         {isLoading ? (
           <>
             <Skeleton variant="rectangular" height={8} sx={{ borderRadius: 1, mb: 1 }} />
@@ -155,45 +164,86 @@ export default function SpendingBonusTracker({
           </>
         ) : (
           <>
-            <LinearProgress
-              variant="determinate"
-              value={data?.percentComplete ?? 0}
+            {/* Two-zone bar: cleared (solid) + pending (ghost) */}
+            <Box
               sx={{
+                position: "relative",
                 height: 8,
                 borderRadius: 4,
                 mb: 1,
                 backgroundColor: alpha(barColor, 0.15),
-                "& .MuiLinearProgress-bar": {
-                  borderRadius: 4,
-                  backgroundColor: barColor,
-                },
+                overflow: "hidden",
               }}
-            />
+            >
+              {/* Ghost segment for pending spend */}
+              {pendingPct > 0 && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: `${clearedPct}%`,
+                    top: 0,
+                    bottom: 0,
+                    width: `${pendingPct}%`,
+                    backgroundColor: alpha(pendingColor, 0.4),
+                  }}
+                />
+              )}
+              {/* Solid segment for cleared spend */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${clearedPct}%`,
+                  borderRadius: "4px 0 0 4px",
+                  backgroundColor: barColor,
+                  transition: "width 0.6s ease",
+                }}
+              />
+            </Box>
+
+            {/* Amounts row */}
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
+                alignItems: "flex-start",
               }}
             >
-              <Typography
-                variant="caption"
-                sx={{ fontWeight: 600, color: barColor, fontSize: "0.75rem" }}
-              >
-                {currencyFormat(data?.spent ?? 0)}
+              <Box>
                 <Typography
-                  component="span"
                   variant="caption"
-                  color="text.secondary"
-                  sx={{ fontWeight: 400 }}
+                  sx={{ fontWeight: 600, color: barColor, fontSize: "0.75rem" }}
                 >
-                  {" "}/ {currencyFormat(targetAmount)}
+                  {currencyFormat(data?.spent ?? 0)}
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: 400 }}
+                  >
+                    {" "}/ {currencyFormat(targetAmount)}
+                  </Typography>
                 </Typography>
-              </Typography>
+                {(data?.spentPending ?? 0) > 0 && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: "block",
+                      fontSize: "0.65rem",
+                      color: pendingColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    +{currencyFormat(data?.spentPending ?? 0)} pending
+                  </Typography>
+                )}
+              </Box>
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontSize: "0.7rem" }}
+                sx={{ fontSize: "0.7rem", textAlign: "right" }}
               >
                 {data?.bonusEarned
                   ? "Goal reached!"
