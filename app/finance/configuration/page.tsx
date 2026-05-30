@@ -16,6 +16,7 @@ import useParameterDelete from "../../../hooks/useParameterDelete";
 import Parameter from "../../../model/Parameter";
 import useParameterUpdate from "../../../hooks/useParameterUpdate";
 import PageHeader from "../../../components/PageHeader";
+import SpendingBonusConfig, { isBonusParam } from "../../../components/SpendingBonusConfig";
 import DataGridBase from "../../../components/DataGridBase";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
@@ -268,10 +269,16 @@ export default function Configuration() {
       ) : (
         <>
           <ContentContainer>
-            {(fetchedParameters && fetchedParameters.length > 0) ||
+            <SpendingBonusConfig
+              onError={handleError}
+              onSuccess={handleSuccess}
+            />
+          </ContentContainer>
+          <ContentContainer>
+            {(fetchedParameters && fetchedParameters.filter(p => !isBonusParam(p.parameterName)).length > 0) ||
             offlineRows.length > 0 ? (
               <DataGridBase
-                rows={[...(fetchedParameters || []), ...offlineRows]}
+                rows={[...(fetchedParameters || []).filter(p => !isBonusParam(p.parameterName)), ...offlineRows]}
                 columns={columns}
                 getRowId={(row: Parameter) =>
                   row.parameterId ||
