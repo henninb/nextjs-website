@@ -155,10 +155,7 @@ export default function Accounts() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModelAdd, setShowModelAdd] = useState(false);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(ACCOUNTS_CACHE_ENABLED_KEY) === "true";
-  });
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(false);
   const [showModelDelete, setShowModelDelete] = useState(false);
   const [showModelDeactivate, setShowModelDeactivate] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
@@ -245,6 +242,10 @@ export default function Accounts() {
     loading,
     isAuthenticated,
   ]);
+
+  useEffect(() => {
+    setCacheEnabled(localStorage.getItem(ACCOUNTS_CACHE_ENABLED_KEY) === "true");
+  }, []);
 
   // Load view preference from localStorage
   useEffect(() => {
