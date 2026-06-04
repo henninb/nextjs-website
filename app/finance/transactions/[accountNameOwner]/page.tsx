@@ -1,6 +1,7 @@
 "use client";
 export const runtime = "edge";
 import { getErrorMessage } from "../../../../types";
+import { isFetchError } from "../../../../utils/fetchUtils";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -718,7 +719,11 @@ export default function TransactionsByAccount({
         await deleteTransaction({ oldRow: selectedTransaction });
         handleSuccess(`Transaction deleted successfully.`);
       } catch (error) {
-        handleError(error, `Delete Transaction failure: ${error}`, false);
+        if (isFetchError(error) && error.status === 409) {
+          handleError(error, "This transaction belongs to a transfer. Delete the transfer instead.", false);
+        } else {
+          handleError(error, `Delete Transaction failure: ${getErrorMessage(error)}`, false);
+        }
       } finally {
         setShowModalDelete(false);
         setSelectedTransaction(null);
