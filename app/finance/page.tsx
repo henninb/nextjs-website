@@ -109,12 +109,12 @@ function computeCurrentDueDate(account: Account): Date | null {
   }
 
   function buildDueDate(cYear: number, cMonth: number): Date {
-    let d: Date;
     if (billingGracePeriodDays) {
-      d = new Date(cYear, cMonth, billingStatementCloseDay!);
-      d.setDate(d.getDate() + billingGracePeriodDays);
+      const closeDate = applyWeekendShift(new Date(cYear, cMonth, billingStatementCloseDay!));
+      closeDate.setDate(closeDate.getDate() + billingGracePeriodDays);
+      return closeDate;
     } else if (billingDueDaySameMonth) {
-      d = new Date(cYear, cMonth, billingDueDaySameMonth);
+      return applyWeekendShift(new Date(cYear, cMonth, billingDueDaySameMonth));
     } else {
       let dMonth = cMonth + 1;
       let dYear = cYear;
@@ -122,9 +122,8 @@ function computeCurrentDueDate(account: Account): Date | null {
         dMonth = 0;
         dYear = cYear + 1;
       }
-      d = new Date(dYear, dMonth, billingDueDayNextMonth!);
+      return applyWeekendShift(new Date(dYear, dMonth, billingDueDayNextMonth!));
     }
-    return applyWeekendShift(d);
   }
 
   let dueDate = buildDueDate(closeYear, closeMonth);
