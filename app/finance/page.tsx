@@ -546,9 +546,10 @@ export default function Accounts() {
       headerAlign: "left",
       align: "left",
       renderCell: (params) => {
-        return params.row.validationDate
-          ? formatDateTimeForDisplay(params.row.validationDate)
-          : "";
+        const val = params.row.validationDate;
+        if (!val) return "";
+        const ms = typeof val === "number" && val < 1e10 ? val * 1000 : val;
+        return formatDateTimeForDisplay(ms);
       },
     },
     {
