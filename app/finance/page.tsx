@@ -114,7 +114,7 @@ function computeCurrentDueDate(account: Account): Date | null {
       closeDate.setDate(closeDate.getDate() + billingGracePeriodDays);
       return closeDate;
     } else if (billingDueDaySameMonth) {
-      return applyWeekendShift(new Date(cYear, cMonth, billingDueDaySameMonth));
+      return new Date(cYear, cMonth, billingDueDaySameMonth);
     } else {
       let dMonth = cMonth + 1;
       let dYear = cYear;
@@ -122,7 +122,7 @@ function computeCurrentDueDate(account: Account): Date | null {
         dMonth = 0;
         dYear = cYear + 1;
       }
-      return applyWeekendShift(new Date(dYear, dMonth, billingDueDayNextMonth!));
+      return new Date(dYear, dMonth, billingDueDayNextMonth!);
     }
   }
 

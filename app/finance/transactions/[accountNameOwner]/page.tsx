@@ -505,23 +505,9 @@ export default function TransactionsByAccount({
       const closeMonth = nextClose.getMonth();
       const closeYear = nextClose.getFullYear();
       if (currentAccount.billingDueDaySameMonth != null) {
-        nextDue = applyWeekendShift(
-          new Date(
-            closeYear,
-            closeMonth,
-            currentAccount.billingDueDaySameMonth,
-          ),
-          currentAccount.billingCycleWeekendShift,
-        );
+        nextDue = new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth);
       } else if (currentAccount.billingDueDayNextMonth != null) {
-        nextDue = applyWeekendShift(
-          new Date(
-            closeYear,
-            closeMonth + 1,
-            currentAccount.billingDueDayNextMonth,
-          ),
-          currentAccount.billingCycleWeekendShift,
-        );
+        nextDue = new Date(closeYear, closeMonth + 1, currentAccount.billingDueDayNextMonth);
       } else if (currentAccount.billingGracePeriodDays != null) {
         nextDue = new Date(nextClose);
         nextDue.setDate(
@@ -535,23 +521,9 @@ export default function TransactionsByAccount({
       const closeMonth = prevClose.getMonth();
       const closeYear = prevClose.getFullYear();
       if (currentAccount.billingDueDaySameMonth != null) {
-        prevDue = applyWeekendShift(
-          new Date(
-            closeYear,
-            closeMonth,
-            currentAccount.billingDueDaySameMonth,
-          ),
-          currentAccount.billingCycleWeekendShift,
-        );
+        prevDue = new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth);
       } else if (currentAccount.billingDueDayNextMonth != null) {
-        prevDue = applyWeekendShift(
-          new Date(
-            closeYear,
-            closeMonth + 1,
-            currentAccount.billingDueDayNextMonth,
-          ),
-          currentAccount.billingCycleWeekendShift,
-        );
+        prevDue = new Date(closeYear, closeMonth + 1, currentAccount.billingDueDayNextMonth);
       } else if (currentAccount.billingGracePeriodDays != null) {
         prevDue = new Date(prevClose);
         prevDue.setDate(
