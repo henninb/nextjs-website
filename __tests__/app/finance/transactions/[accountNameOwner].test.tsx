@@ -44,6 +44,7 @@ jest.mock("../../../../hooks/useTransactionUpdate");
 jest.mock("../../../../hooks/useTransactionInsert");
 jest.mock("../../../../hooks/useTransactionDelete");
 jest.mock("../../../../hooks/useValidationAmountInsert");
+jest.mock("../../../../hooks/useParameterFetch");
 jest.mock("../../../../hooks/useAccountUsageTracking", () => ({
   __esModule: true,
   default: () => ({
@@ -213,6 +214,7 @@ import * as useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import * as useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import * as useTransactionDelete from "../../../../hooks/useTransactionDelete";
 import * as useValidationAmountInsert from "../../../../hooks/useValidationAmountInsert";
+import * as useParameterFetch from "../../../../hooks/useParameterFetch";
 jest.mock("../../../../components/AuthProvider");
 
 const mockTransactionData = [
@@ -347,6 +349,14 @@ describe("AccountTransactions Component", () => {
 
     (useValidationAmountInsert.default as jest.Mock).mockReturnValue({
       mutateAsync: jest.fn(),
+    });
+
+    (useParameterFetch.default as jest.Mock).mockReturnValue({
+      data: [],
+      isSuccess: true,
+      isLoading: false,
+      isFetching: false,
+      error: null,
     });
   });
 

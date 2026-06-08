@@ -99,6 +99,13 @@ jest.mock("../../../utils/security/secureUUID", () => ({
   generateSecureUUID: jest.fn(() => "test-uuid-123"),
 }));
 
+// Mock SpendingBonusConfig — it calls useAccountFetch which requires QueryClientProvider
+jest.mock("../../../components/SpendingBonusConfig", () => ({
+  __esModule: true,
+  default: () => null,
+  isBonusParam: jest.fn(() => false),
+}));
+
 import ConfigurationPage from "../../../app/finance/configuration/page";
 import useParameterFetchMock from "../../../hooks/useParameterFetch";
 import { useAuth as useAuthMock } from "../../../components/AuthProvider";
@@ -812,7 +819,7 @@ describe("pages/finance/configuration", () => {
       );
 
       // The component should render without errors when offline parameters exist
-      expect(screen.getByText("System Configuration")).toBeInTheDocument();
+      expect(screen.getByText("Configuration")).toBeInTheDocument();
 
       // This tests that the component can handle multiple offline parameters gracefully
     });
