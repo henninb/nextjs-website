@@ -12,7 +12,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress,
   Alert,
   Paper,
   Divider,
@@ -32,7 +31,6 @@ import USDAmountInput from "../../../components/USDAmountInput";
 import useFetchTransfer from "../../../hooks/useTransferFetch";
 import useTransferInsert from "../../../hooks/useTransferInsert";
 import useTransferDelete from "../../../hooks/useTransferDelete";
-import useTransactionDelete from "../../../hooks/useTransactionDelete";
 import Transfer from "../../../model/Transfer";
 import Transaction from "../../../model/Transaction";
 import useAccountFetch from "../../../hooks/useAccountFetch";
@@ -54,8 +52,6 @@ import { createAccountLinkColumn } from "../../../utils/createDeleteColumn";
 import { modalTitles } from "../../../utils/modalMessages";
 import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
 import { validateAmountAndAccounts } from "../../../utils/validateTransfer";
-import { fetchWithErrorHandling, parseResponse } from "../../../utils/fetchUtils";
-import { InputSanitizer } from "../../../utils/validation/sanitization";
 import { z } from "zod";
 
 const TransferCacheSchema = z.object({
@@ -116,7 +112,6 @@ export default function Transfers() {
     source: Transaction | null;
     destination: Transaction | null;
   }>({ source: null, destination: null });
-  const [isFetchingLinked, setIsFetchingLinked] = useState(false);
   const [availableSourceAccounts, setAvailableSourceAccounts] = useState<Account[]>([]);
   const [availableDestinationAccounts, setAvailableDestinationAccounts] =
     useState<Account[]>([]);
@@ -138,7 +133,6 @@ export default function Transfers() {
   const { mutateAsync: insertTransfer } = useTransferInsert();
   const { mutateAsync: deleteTransfer } = useTransferDelete();
   const { mutateAsync: updateTransfer } = useTransferUpdate();
-  const { mutateAsync: deleteTransaction } = useTransactionDelete();
 
   const {
     data: fetchedAccounts,
@@ -236,60 +230,48 @@ export default function Transfers() {
     }));
   };
 
-  const handleDeleteClick = async (row: Transfer) => {
+  const handleDeleteClick = (row: Transfer) => {
     setSelectedTransfer(row);
-    setLinkedTransactions({ source: null, destination: null });
+    // Derive linked transaction details from the transfer record — no API call needed
+    setLinkedTransactions({
+      source: row.guidSource
+        ? ({
+            guid: row.guidSource,
+            accountNameOwner: row.sourceAccount,
+            description: "transfer withdrawal",
+            amount: -Math.abs(row.amount),
+            transactionDate: row.transactionDate,
+          } as Transaction)
+        : null,
+      destination: row.guidDestination
+        ? ({
+            guid: row.guidDestination,
+            accountNameOwner: row.destinationAccount,
+            description: "transfer deposit",
+            amount: Math.abs(row.amount),
+            transactionDate: row.transactionDate,
+          } as Transaction)
+        : null,
+    });
     setShowModalDelete(true);
-
-    if (row.guidSource && row.guidDestination) {
-      setIsFetchingLinked(true);
-      try {
-        const sanitizedSource = InputSanitizer.sanitizeGuid(row.guidSource);
-        const sanitizedDest = InputSanitizer.sanitizeGuid(row.guidDestination);
-        const [sourceRes, destRes] = await Promise.all([
-          fetchWithErrorHandling(`/api/transaction/${sanitizedSource}`),
-          fetchWithErrorHandling(`/api/transaction/${sanitizedDest}`),
-        ]);
-        const [sourceTx, destTx] = await Promise.all([
-          parseResponse<Transaction>(sourceRes),
-          parseResponse<Transaction>(destRes),
-        ]);
-        setLinkedTransactions({ source: sourceTx, destination: destTx });
-      } catch {
-        setLinkedTransactions({ source: null, destination: null });
-      } finally {
-        setIsFetchingLinked(false);
-      }
-    }
   };
 
   const handleDeleteRow = async () => {
     if (!selectedTransfer) return;
     try {
-      // Delete transfer first — t_transfer holds FK references to t_transaction guids, so transactions cannot be deleted while the transfer row exists
+      // Backend (TransferService.deleteById) handles cascade: deletes transfer then both linked transactions
       await deleteTransfer({ oldRow: selectedTransfer });
-
-      if (linkedTransactions.source) {
-        await deleteTransaction({ oldRow: linkedTransactions.source });
-      }
-      if (linkedTransactions.destination) {
-        await deleteTransaction({ oldRow: linkedTransactions.destination });
-      }
-
       const when = formatDateForDisplay(selectedTransfer.transactionDate);
       const amt = currencyFormat(selectedTransfer.amount);
-      const txCount = [linkedTransactions.source, linkedTransactions.destination].filter(Boolean).length;
-      const txSuffix = txCount > 0 ? ` and ${txCount} linked transaction${txCount !== 1 ? "s" : ""}` : "";
       handleSuccess(
-        `Deleted transfer: ${amt} from ${selectedTransfer.sourceAccount} to ${selectedTransfer.destinationAccount} on ${when}${txSuffix}.`,
+        `Deleted transfer: ${amt} from ${selectedTransfer.sourceAccount} to ${selectedTransfer.destinationAccount} on ${when} and 2 linked transactions.`,
       );
     } catch (error) {
-      handleError(error, `Cascade delete error: ${error}`, false);
+      handleError(error, `Delete transfer error: ${error}`, false);
     } finally {
       setShowModalDelete(false);
       setSelectedTransfer(null);
       setLinkedTransactions({ source: null, destination: null });
-      setIsFetchingLinked(false);
     }
   };
 
@@ -509,16 +491,10 @@ export default function Transfers() {
           Cascade Delete Confirmation
         </DialogTitle>
         <DialogContent>
-          {isFetchingLinked ? (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, py: 2 }}>
-              <CircularProgress size={20} />
-              <Typography variant="body2">Looking up linked transaction records...</Typography>
-            </Box>
-          ) : (
-            <>
-              <Alert severity="error" sx={{ mb: 2 }}>
-                The following <strong>3 records</strong> will be permanently deleted. This action cannot be undone.
-              </Alert>
+          <>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              The following <strong>3 records</strong> will be permanently deleted. This action cannot be undone.
+            </Alert>
 
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
                 Transfer Record (1)
@@ -599,8 +575,7 @@ export default function Transfers() {
                   </Box>
                 </Paper>
               )}
-            </>
-          )}
+          </>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
@@ -616,7 +591,6 @@ export default function Transfers() {
           <Button
             variant="contained"
             color="error"
-            disabled={isFetchingLinked}
             onClick={handleDeleteRow}
           >
             Delete All 3 Records
