@@ -19,7 +19,7 @@ const defaultFilters: TransactionFilters = {
     "onetime",
     "monthly",
     "annually",
-    "bi_annually",
+    "biannually",
     "fortnightly",
     "quarterly",
     "undefined",

@@ -483,10 +483,10 @@ describe("TransactionCard", () => {
       expect(screen.getByText("Fortnightly")).toBeInTheDocument();
     });
 
-    it("should display 'Bi-Annually' for bi_annually reoccurring type", () => {
+    it("should display 'Bi-Annually' for biannually reoccurring type", () => {
       const biAnnualTransaction = {
         ...mockTransaction,
-        reoccurringType: "bi_annually" as const,
+        reoccurringType: "biannually" as const,
       };
 
       renderWithTheme(<TransactionCard transaction={biAnnualTransaction} />);

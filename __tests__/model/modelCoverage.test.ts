@@ -220,7 +220,7 @@ describe("model module coverage", () => {
     const reoccurringTypes = [
       "monthly",
       "annually",
-      "bi_annually",
+      "biannually",
       "fortnightly",
       "quarterly",
       "onetime",
@@ -241,7 +241,7 @@ describe("model module coverage", () => {
 
     expect(accountTypes).toContain("credit");
     expect(imageFormats).toContain("jpeg");
-    expect(reoccurringTypes).toContain("bi_annually");
+    expect(reoccurringTypes).toContain("biannually");
     expect(transactionStates).toContain("outstanding");
     expect(transactionTypes).toContain("transfer");
   });

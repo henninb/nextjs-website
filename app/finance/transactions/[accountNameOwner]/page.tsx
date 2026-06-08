@@ -148,7 +148,7 @@ export default function TransactionsByAccount({
         "onetime",
         "monthly",
         "annually",
-        "bi_annually",
+        "biannually",
         "fortnightly",
         "quarterly",
         "undefined",
@@ -607,7 +607,7 @@ export default function TransactionsByAccount({
         "onetime",
         "monthly",
         "annually",
-        "bi_annually",
+        "biannually",
         "fortnightly",
         "quarterly",
         "undefined",
@@ -983,7 +983,7 @@ export default function TransactionsByAccount({
           { value: "fortnightly", label: "Fortnightly" },
           { value: "monthly", label: "Monthly" },
           { value: "quarterly", label: "Quarterly" },
-          { value: "bi_annually", label: "Bi-Annually" },
+          { value: "biannually", label: "Bi-Annually" },
           { value: "annually", label: "Annually" },
         ],
         editable: true,
@@ -994,7 +994,7 @@ export default function TransactionsByAccount({
             fortnightly: "Fortnightly",
             monthly: "Monthly",
             quarterly: "Quarterly",
-            bi_annually: "Bi-Annually",
+            biannually: "Bi-Annually",
             annually: "Annually",
           };
           return valueMap[params.value] || params.value || "undefined";
@@ -2006,7 +2006,7 @@ export default function TransactionsByAccount({
               <MenuItem value="fortnightly">Fortnightly</MenuItem>
               <MenuItem value="monthly">Monthly</MenuItem>
               <MenuItem value="quarterly">Quarterly</MenuItem>
-              <MenuItem value="bi_annually">Bi-Annually</MenuItem>
+              <MenuItem value="biannually">Bi-Annually</MenuItem>
               <MenuItem value="annually">Annually</MenuItem>
             </Select>
           </FormControl>

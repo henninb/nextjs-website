@@ -130,7 +130,7 @@ const reoccurringTypeEnum = z.enum(
     "fortnightly",
     "monthly",
     "quarterly",
-    "bi_annually",
+    "biannually",
     "annually",
     "undefined",
   ],

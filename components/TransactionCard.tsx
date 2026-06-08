@@ -177,7 +177,7 @@ const TransactionCard: React.FC<TransactionCardProps> = React.memo(
           return "Quarterly";
         case "fortnightly":
           return "Fortnightly";
-        case "bi_annually":
+        case "biannually":
           return "Bi-Annually";
         case "undefined":
           return "Undefined";

@@ -1,7 +1,7 @@
 export type ReoccurringType =
   | "monthly"
   | "annually"
-  | "bi_annually"
+  | "biannually"
   | "fortnightly"
   | "quarterly"
   | "onetime"
