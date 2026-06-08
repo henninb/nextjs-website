@@ -28,6 +28,7 @@ import * as useTransferInsert from "../../../hooks/useTransferInsert";
 import * as useTransferDelete from "../../../hooks/useTransferDelete";
 import * as useTransferUpdate from "../../../hooks/useTransferUpdate";
 import * as useAccountFetch from "../../../hooks/useAccountFetch";
+import * as useTransactionDelete from "../../../hooks/useTransactionDelete";
 import * as AuthProvider from "../../../components/AuthProvider";
 
 jest.mock("next/navigation", () => ({
@@ -41,6 +42,7 @@ jest.mock("../../../hooks/useTransferInsert");
 jest.mock("../../../hooks/useTransferDelete");
 jest.mock("../../../hooks/useTransferUpdate");
 jest.mock("../../../hooks/useAccountFetch");
+jest.mock("../../../hooks/useTransactionDelete");
 jest.mock("../../../components/AuthProvider");
 // Ensure MUI Modal always renders children in tests
 jest.mock("@mui/material/Modal", () => ({
@@ -166,6 +168,10 @@ describe("Transfers Component", () => {
     (useTransferDelete.default as jest.Mock).mockReturnValue({
       mutateAsync: jest.fn().mockResolvedValue({}),
     });
+
+    (useTransactionDelete.default as jest.Mock).mockReturnValue({
+      mutateAsync: jest.fn().mockResolvedValue({}),
+    });
   });
 
   it("renders transfer management heading", () => {
@@ -257,7 +263,7 @@ describe("Transfers Component", () => {
     if (!deleteButton) throw new Error("Delete button not found");
 
     fireEvent.click(deleteButton);
-    expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cascade Delete Confirmation/i)).toBeInTheDocument();
   });
 
   it("renders transfer amount with currency formatting", () => {
@@ -307,7 +313,7 @@ describe("Transfers Component", () => {
     if (!deleteButton) throw new Error("Delete button not found");
 
     fireEvent.click(deleteButton);
-    expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cascade Delete Confirmation/i)).toBeInTheDocument();
 
     // Click cancel - find button in modal
     const cancelButtons = screen.getAllByRole("button", { name: /cancel/i });
@@ -321,7 +327,7 @@ describe("Transfers Component", () => {
       fireEvent.click(cancelButtons[0]);
     }
 
-    expect(screen.queryByText(/Confirm Deletion/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Cascade Delete Confirmation/i)).not.toBeInTheDocument();
   });
 
   it("confirms delete and calls delete mutation", async () => {
@@ -338,20 +344,11 @@ describe("Transfers Component", () => {
     if (!deleteButton) throw new Error("Delete button not found");
 
     fireEvent.click(deleteButton);
-    expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cascade Delete Confirmation/i)).toBeInTheDocument();
 
-    // Get all delete buttons and click the one in the modal (not the one in the data grid)
-    const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
-    const modalDeleteButton = deleteButtons.find((btn) =>
-      btn.closest('[data-testid="modal"]'),
-    );
-
-    if (modalDeleteButton) {
-      fireEvent.click(modalDeleteButton);
-    } else {
-      // Fallback: click the last delete button (should be modal)
-      fireEvent.click(deleteButtons[deleteButtons.length - 1]);
-    }
+    // Click "Delete All 3 Records" button inside the modal
+    const confirmButton = screen.getByRole("button", { name: /delete all 3 records/i });
+    fireEvent.click(confirmButton);
 
     expect(mockDeleteTransfer).toHaveBeenCalled();
   });

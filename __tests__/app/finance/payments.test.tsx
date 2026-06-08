@@ -152,6 +152,11 @@ jest.mock("../../../hooks/usePaymentUpdate", () => ({
   __esModule: true,
   default: () => ({ mutateAsync: updatePaymentMock }),
 }));
+const deleteTransactionMock = jest.fn().mockResolvedValue({});
+jest.mock("../../../hooks/useTransactionDelete", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: deleteTransactionMock }),
+}));
 jest.mock("../../../hooks/useAccountFetch", () => ({
   __esModule: true,
   default: jest.fn(),
@@ -513,16 +518,16 @@ describe("pages/finance/payments", () => {
       const delBtn = actionsCell.querySelector("button");
       if (!delBtn) throw new Error("Delete button not found");
       fireEvent.click(delBtn);
-      expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+      expect(screen.getByText(/Cascade Delete Confirmation/i)).toBeInTheDocument();
       const deleteButton = await screen.findByRole("button", {
-        name: /^delete$/i,
+        name: /delete all 3 records/i,
         hidden: true,
       });
       fireEvent.click(deleteButton);
       expect(deletePaymentMock).toHaveBeenCalled();
       expect(
         await screen.findByText(
-          /Payment deleted:\s+\$20\.50 from Chase to Amex on .*\./i,
+          /Deleted payment:.*\$20\.50 from Chase to Amex on/i,
         ),
       ).toBeInTheDocument();
     });
@@ -557,7 +562,7 @@ describe("pages/finance/payments", () => {
       const deleteButton = actionsCell.querySelector("button");
       fireEvent.click(deleteButton!);
 
-      expect(screen.getByText(/Confirm Deletion/i)).toBeInTheDocument();
+      expect(screen.getByText(/Cascade Delete Confirmation/i)).toBeInTheDocument();
 
       const cancelButton = await screen.findByRole("button", {
         name: /cancel/i,
@@ -566,7 +571,7 @@ describe("pages/finance/payments", () => {
       fireEvent.click(cancelButton);
 
       await waitForElementToBeRemoved(() =>
-        screen.queryByText(/Confirm Deletion/i),
+        screen.queryByText(/Cascade Delete Confirmation/i),
       );
       expect(deletePaymentMock).not.toHaveBeenCalled();
     });
