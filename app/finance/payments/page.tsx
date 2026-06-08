@@ -10,8 +10,20 @@ import {
   Autocomplete,
   ToggleButton,
   ToggleButtonGroup,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Alert,
+  Paper,
+  Divider,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CacheToggleCheckbox from "../../../components/CacheToggleCheckbox";
 import EventRepeatIcon from "@mui/icons-material/EventRepeat";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
@@ -23,14 +35,15 @@ import USDAmountInput from "../../../components/USDAmountInput";
 import useFetchPayment from "../../../hooks/usePaymentFetch";
 import usePaymentInsert from "../../../hooks/usePaymentInsert";
 import usePaymentDelete from "../../../hooks/usePaymentDelete";
+import useTransactionDelete from "../../../hooks/useTransactionDelete";
 import Payment from "../../../model/Payment";
+import Transaction from "../../../model/Transaction";
 import useAccountFetch from "../../../hooks/useAccountFetch";
 import useParameterFetch from "../../../hooks/useParameterFetch";
 import Account from "../../../model/Account";
 import usePaymentUpdate from "../../../hooks/usePaymentUpdate";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
-import ConfirmDialog from "../../../components/ConfirmDialog";
 import FormDialog from "../../../components/FormDialog";
 import BatchPaymentModal from "../../../components/BatchPaymentModal";
 import {
@@ -42,8 +55,10 @@ import {
 import { useFinancePageState } from "../../../hooks/useFinancePageState";
 import { useSpinnerEffect } from "../../../hooks/useSpinnerEffect";
 import { useLocalStorageCache } from "../../../hooks/useLocalStorageCache";
-import { modalTitles, modalBodies } from "../../../utils/modalMessages";
-import { createDeleteColumn, createAccountLinkColumn } from "../../../utils/createDeleteColumn";
+import { modalTitles } from "../../../utils/modalMessages";
+import { createAccountLinkColumn } from "../../../utils/createDeleteColumn";
+import { fetchWithErrorHandling, parseResponse } from "../../../utils/fetchUtils";
+import { InputSanitizer } from "../../../utils/validation/sanitization";
 import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
 import { validateAmountAndAccounts } from "../../../utils/validateTransfer";
 import { z } from "zod";
@@ -100,6 +115,11 @@ export default function Payments() {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [paymentData, setPaymentData] = useState<Payment>(initialPaymentData);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [linkedTransactions, setLinkedTransactions] = useState<{
+    source: Transaction | null;
+    destination: Transaction | null;
+  }>({ source: null, destination: null });
+  const [isFetchingLinked, setIsFetchingLinked] = useState(false);
   const [formErrors, setFormErrors] = useState<{
     amount?: string;
     accounts?: string;
@@ -144,6 +164,7 @@ export default function Payments() {
   const { mutateAsync: insertPayment } = usePaymentInsert();
   const { mutateAsync: deletePayment } = usePaymentDelete();
   const { mutateAsync: updatePayment } = usePaymentUpdate();
+  const { mutateAsync: deleteTransaction } = useTransactionDelete();
 
   useSpinnerEffect(
     setShowSpinner,
@@ -179,21 +200,60 @@ export default function Payments() {
     paymentData.sourceAccount,
   ]);
 
-  const handleDeleteRow = async () => {
-    if (selectedPayment) {
+  const handleDeleteClick = async (row: Payment) => {
+    setSelectedPayment(row);
+    setLinkedTransactions({ source: null, destination: null });
+    setShowModalDelete(true);
+
+    if (row.guidSource && row.guidDestination) {
+      setIsFetchingLinked(true);
       try {
-        await deletePayment({ oldRow: selectedPayment });
-        const when = formatDateForDisplay(selectedPayment.transactionDate);
-        const amt = currencyFormat(selectedPayment.amount);
-        handleSuccess(
-          `Payment deleted: ${amt} from ${selectedPayment.sourceAccount} to ${selectedPayment.destinationAccount} on ${when}.`,
-        );
-      } catch (error) {
-        handleError(error, `Delete Payment error: ${error}`, false);
+        const sanitizedSource = InputSanitizer.sanitizeGuid(row.guidSource);
+        const sanitizedDest = InputSanitizer.sanitizeGuid(row.guidDestination);
+        const [sourceRes, destRes] = await Promise.all([
+          fetchWithErrorHandling(`/api/transaction/${sanitizedSource}`),
+          fetchWithErrorHandling(`/api/transaction/${sanitizedDest}`),
+        ]);
+        const [sourceTx, destTx] = await Promise.all([
+          parseResponse<Transaction>(sourceRes),
+          parseResponse<Transaction>(destRes),
+        ]);
+        setLinkedTransactions({ source: sourceTx, destination: destTx });
+      } catch {
+        setLinkedTransactions({ source: null, destination: null });
       } finally {
-        setShowModalDelete(false);
-        setSelectedPayment(null);
+        setIsFetchingLinked(false);
       }
+    }
+  };
+
+  const handleDeleteRow = async () => {
+    if (!selectedPayment) return;
+    try {
+      // Delete payment first — t_payment holds FK references to t_transaction guids
+      await deletePayment({ oldRow: selectedPayment });
+
+      if (linkedTransactions.source) {
+        await deleteTransaction({ oldRow: linkedTransactions.source });
+      }
+      if (linkedTransactions.destination) {
+        await deleteTransaction({ oldRow: linkedTransactions.destination });
+      }
+
+      const when = formatDateForDisplay(selectedPayment.transactionDate);
+      const amt = currencyFormat(selectedPayment.amount);
+      const txCount = [linkedTransactions.source, linkedTransactions.destination].filter(Boolean).length;
+      const txSuffix = txCount > 0 ? ` and ${txCount} linked transaction${txCount !== 1 ? "s" : ""}` : "";
+      handleSuccess(
+        `Deleted payment: ${amt} from ${selectedPayment.sourceAccount} to ${selectedPayment.destinationAccount} on ${when}${txSuffix}.`,
+      );
+    } catch (error) {
+      handleError(error, `Cascade delete error: ${error}`, false);
+    } finally {
+      setShowModalDelete(false);
+      setSelectedPayment(null);
+      setLinkedTransactions({ source: null, destination: null });
+      setIsFetchingLinked(false);
     }
   };
 
@@ -294,10 +354,23 @@ export default function Payments() {
       },
       valueFormatter: (params: number) => currencyFormat(params),
     },
-    createDeleteColumn<Payment>((row) => {
-      setSelectedPayment(row);
-      setShowModalDelete(true);
-    }),
+    {
+      field: "",
+      headerName: "Actions",
+      width: 100,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Tooltip title="Delete this payment and its linked transactions">
+          <IconButton
+            aria-label="Delete this payment and its linked transactions"
+            onClick={() => handleDeleteClick(params.row as Payment)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
   ];
 
   if (errorPayments || errorAccounts || errorParameters) {
@@ -426,18 +499,136 @@ export default function Payments() {
         severity={snackbarSeverity}
       />
 
-      <ConfirmDialog
+      <Dialog
         open={showModalDelete}
-        onClose={() => setShowModalDelete(false)}
-        onConfirm={handleDeleteRow}
-        title={modalTitles.confirmDeletion}
-        message={modalBodies.confirmDeletion(
-          "payment",
-          selectedPayment?.paymentId ?? "",
-        )}
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
+        onClose={() => {
+          setShowModalDelete(false);
+          setSelectedPayment(null);
+          setLinkedTransactions({ source: null, destination: null });
+        }}
+        maxWidth="sm"
+        fullWidth
+        transitionDuration={0}
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <WarningAmberIcon color="error" />
+          Cascade Delete Confirmation
+        </DialogTitle>
+        <DialogContent>
+          {isFetchingLinked ? (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, py: 2 }}>
+              <CircularProgress size={20} />
+              <Typography variant="body2">Looking up linked transaction records...</Typography>
+            </Box>
+          ) : (
+            <>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                The following <strong>3 records</strong> will be permanently deleted. This action cannot be undone.
+              </Alert>
+
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Payment Record (1)
+              </Typography>
+              <Paper variant="outlined" sx={{ p: 1.5, mb: 2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px", fontSize: "0.875rem" }}>
+                  <Typography variant="caption" color="text.secondary">ID</Typography>
+                  <Typography variant="body2">{selectedPayment?.paymentId}</Typography>
+                  <Typography variant="caption" color="text.secondary">Date</Typography>
+                  <Typography variant="body2">{selectedPayment ? formatDateForDisplay(selectedPayment.transactionDate) : ""}</Typography>
+                  <Typography variant="caption" color="text.secondary">From</Typography>
+                  <Typography variant="body2">{selectedPayment?.sourceAccount}</Typography>
+                  <Typography variant="caption" color="text.secondary">To</Typography>
+                  <Typography variant="body2">{selectedPayment?.destinationAccount}</Typography>
+                  <Typography variant="caption" color="text.secondary">Amount</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedPayment ? currencyFormat(selectedPayment.amount) : ""}</Typography>
+                </Box>
+              </Paper>
+
+              <Divider sx={{ my: 1.5 }} />
+
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Linked Transaction Records (2)
+              </Typography>
+
+              {linkedTransactions.source || linkedTransactions.destination ? (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                  {linkedTransactions.source && (
+                    <Paper variant="outlined" sx={{ p: 1.5 }}>
+                      <Typography variant="caption" color="primary" sx={{ fontWeight: 600, display: "block", mb: 0.5 }}>
+                        Withdrawal Transaction
+                      </Typography>
+                      <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px", fontSize: "0.875rem" }}>
+                        <Typography variant="caption" color="text.secondary">Account</Typography>
+                        <Typography variant="body2">{linkedTransactions.source.accountNameOwner}</Typography>
+                        <Typography variant="caption" color="text.secondary">Description</Typography>
+                        <Typography variant="body2">{linkedTransactions.source.description}</Typography>
+                        <Typography variant="caption" color="text.secondary">Amount</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{currencyFormat(linkedTransactions.source.amount)}</Typography>
+                        <Typography variant="caption" color="text.secondary">Date</Typography>
+                        <Typography variant="body2">{formatDateForDisplay(linkedTransactions.source.transactionDate)}</Typography>
+                        <Typography variant="caption" color="text.secondary">GUID</Typography>
+                        <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{linkedTransactions.source.guid}</Typography>
+                      </Box>
+                    </Paper>
+                  )}
+                  {linkedTransactions.destination && (
+                    <Paper variant="outlined" sx={{ p: 1.5 }}>
+                      <Typography variant="caption" color="success.main" sx={{ fontWeight: 600, display: "block", mb: 0.5 }}>
+                        Deposit Transaction
+                      </Typography>
+                      <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px", fontSize: "0.875rem" }}>
+                        <Typography variant="caption" color="text.secondary">Account</Typography>
+                        <Typography variant="body2">{linkedTransactions.destination.accountNameOwner}</Typography>
+                        <Typography variant="caption" color="text.secondary">Description</Typography>
+                        <Typography variant="body2">{linkedTransactions.destination.description}</Typography>
+                        <Typography variant="caption" color="text.secondary">Amount</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{currencyFormat(linkedTransactions.destination.amount)}</Typography>
+                        <Typography variant="caption" color="text.secondary">Date</Typography>
+                        <Typography variant="body2">{formatDateForDisplay(linkedTransactions.destination.transactionDate)}</Typography>
+                        <Typography variant="caption" color="text.secondary">GUID</Typography>
+                        <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{linkedTransactions.destination.guid}</Typography>
+                      </Box>
+                    </Paper>
+                  )}
+                </Box>
+              ) : (
+                <Paper variant="outlined" sx={{ p: 1.5 }}>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px" }}>
+                    <Typography variant="caption" color="text.secondary">Withdrawal Account</Typography>
+                    <Typography variant="body2">{selectedPayment?.sourceAccount}</Typography>
+                    <Typography variant="caption" color="text.secondary">Withdrawal GUID</Typography>
+                    <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{selectedPayment?.guidSource ?? "—"}</Typography>
+                    <Typography variant="caption" color="text.secondary">Deposit Account</Typography>
+                    <Typography variant="body2">{selectedPayment?.destinationAccount}</Typography>
+                    <Typography variant="caption" color="text.secondary">Deposit GUID</Typography>
+                    <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{selectedPayment?.guidDestination ?? "—"}</Typography>
+                  </Box>
+                </Paper>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setShowModalDelete(false);
+              setSelectedPayment(null);
+              setLinkedTransactions({ source: null, destination: null });
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={isFetchingLinked}
+            onClick={handleDeleteRow}
+          >
+            Delete All 3 Records
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <BatchPaymentModal
         open={showBatchModal}
