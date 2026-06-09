@@ -49,16 +49,14 @@ const localDateString = z
   .or(z.date());
 
 // Common field validations
+// #12/#13: pattern and max-length match the backend ALPHA_UNDERSCORE_PATTERN + @Size(max=40)
 const accountNameOwner = z
   .string()
-  .min(1, "Account name is required")
-  .max(
-    FINANCIAL_LIMITS.MAX_STRING_LENGTH,
-    `Account name cannot exceed ${FINANCIAL_LIMITS.MAX_STRING_LENGTH} characters`,
-  )
+  .min(3, "Account name must be at least 3 characters")
+  .max(40, "Account name cannot exceed 40 characters")
   .regex(
-    /^[a-zA-Z0-9_-]+$/,
-    "Account name can only contain letters, numbers, underscores, and hyphens",
+    /^[a-z-]*_[a-z]*$/,
+    "Account name must be lowercase with an underscore separator (e.g., checking_brian)",
   );
 
 const financialAmount = z
@@ -214,13 +212,28 @@ export const TransactionSchema = z.object({
   dueDate: z.string().optional(),
 });
 
+// #11/#14: Payment amount must be positive and fit within backend NUMERIC(8,2) — max 999,999.99
+const paymentAmount = z
+  .number()
+  .min(0.01, "Payment amount must be at least $0.01")
+  .max(999999.99, "Payment amount cannot exceed $999,999.99")
+  .refine(
+    (val) => {
+      const decimalPlaces = (val.toString().split(".")[1] || "").length;
+      return decimalPlaces <= FINANCIAL_LIMITS.MAX_DECIMAL_PLACES;
+    },
+    {
+      message: `Amount must have at most ${FINANCIAL_LIMITS.MAX_DECIMAL_PLACES} decimal places`,
+    },
+  );
+
 // Payment validation schema
 export const PaymentSchema = z.object({
   paymentId: z.number().int().min(0).optional(),
   sourceAccount: accountNameOwner,
   destinationAccount: accountNameOwner,
   transactionDate: localDateString, // Backend expects YYYY-MM-DD format (LocalDate)
-  amount: financialAmount,
+  amount: paymentAmount,
   guidSource: z
     .string()
     .uuid("Source ID must be a valid UUID format")

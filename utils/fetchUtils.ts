@@ -66,6 +66,9 @@ export class FetchError extends Error {
     if (this.status === 404) {
       return "The requested resource was not found.";
     }
+    if (this.status === 409) {
+      return "A duplicate record already exists with the same accounts, date, and amount. Please check for an existing entry.";
+    }
     if (this.isServerError) {
       return "Server error. Please try again later.";
     }

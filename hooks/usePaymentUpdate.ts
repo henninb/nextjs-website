@@ -58,14 +58,18 @@ export const updatePayment = async (
 
   const endpoint = `/api/payment/${sanitizedPaymentId}`;
 
+  // #16: GUIDs are system-managed on the backend and must never be overwritten from
+  // client payloads — sending them would risk orphaning the linked transactions.
+  const { guidSource: _gs, guidDestination: _gd, ...payloadToUpdate } = validatedData;
+
   console.log(
     "[usePaymentUpdate] FINAL PAYLOAD TO API:",
-    JSON.stringify(validatedData),
+    JSON.stringify(payloadToUpdate),
   );
 
   const response = await fetchWithErrorHandling(endpoint, {
     method: "PUT",
-    body: JSON.stringify(validatedData),
+    body: JSON.stringify(payloadToUpdate),
   });
 
   return parseResponse<Payment>(response) as Promise<Payment>;

@@ -5,6 +5,8 @@ import { GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Button,
+  Checkbox,
+  FormControlLabel,
   TextField,
   Typography,
   Autocomplete,
@@ -772,6 +774,21 @@ export default function Payments() {
           margin="normal"
           error={!!formErrors.amount}
           helperText={formErrors.amount}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={paymentData.activeStatus ?? true}
+              onChange={(e) =>
+                setPaymentData((prev) => ({
+                  ...prev,
+                  activeStatus: e.target.checked,
+                }))
+              }
+            />
+          }
+          label="Active"
+          sx={{ mt: 1 }}
         />
         <CacheToggleCheckbox
           checked={cacheEnabled}

@@ -63,11 +63,12 @@ export class InputSanitizer {
   static sanitizeAccountName(input: string): string {
     if (typeof input !== "string") return "";
 
+    // #12/#13: match backend ALPHA_UNDERSCORE_PATTERN — lowercase letters, hyphens, underscore only; max 40
     return input
       .trim()
-      .replace(/[^a-zA-Z0-9_-]/g, "") // Only allow alphanumeric, underscore, hyphen
+      .replace(/[^a-zA-Z_-]/g, "") // Only allow letters, underscore, hyphen (no digits — backend rejects them)
       .toLowerCase()
-      .substring(0, 255); // Limit length
+      .substring(0, 40);
   }
 
   /**

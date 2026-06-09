@@ -109,7 +109,7 @@ describe("usePaymentInsert business logic", () => {
       });
     });
 
-    it("handles missing optional fields", async () => {
+    it("handles missing optional fields — activeStatus defaults to true", async () => {
       const minimalPayment = createTestPayment({
         sourceAccount: "savings",
         destinationAccount: "loan",
@@ -123,6 +123,21 @@ describe("usePaymentInsert business logic", () => {
       expect(result.guidSource).toBeNull();
       expect(result.guidDestination).toBeNull();
       expect(result.activeStatus).toBe(true);
+    });
+
+    it("respects activeStatus: false from payload (#18 — soft-delete toggle)", async () => {
+      // #18: the insert hook must forward the caller-supplied activeStatus rather than hardcoding true
+      const inactivePayment = createTestPayment({
+        sourceAccount: "checking",
+        destinationAccount: "credit",
+        transactionDate: new Date("2025-01-15T12:00:00Z"),
+        amount: 50,
+        activeStatus: false,
+      });
+
+      const result = await setupNewPayment(inactivePayment);
+
+      expect(result.activeStatus).toBe(false);
     });
   });
 

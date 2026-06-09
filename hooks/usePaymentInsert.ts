@@ -28,7 +28,8 @@ export const setupNewPayment = async (payload: Payment) => {
     destinationAccount: payload.destinationAccount,
     guidSource: null,
     guidDestination: null,
-    activeStatus: true,
+    // #18: pass the caller-supplied activeStatus so the form toggle is respected
+    activeStatus: payload.activeStatus ?? true,
     owner: payload.owner,
   };
 };

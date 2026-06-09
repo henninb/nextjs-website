@@ -78,6 +78,21 @@ describe("fetchUtils", () => {
       expect(error.isServerError).toBe(false);
       expect(error.isAuthError).toBe(false);
     });
+
+    // #15: 409 Conflict should surface a user-friendly duplicate-record message
+    it("should return duplicate-record message for 409 Conflict", () => {
+      const error = new FetchError("Conflict", 409, "Conflict");
+
+      expect(error.getUserMessage()).toContain("duplicate");
+      expect(error.getUserMessage()).toContain("already exists");
+    });
+
+    it("409 isClientError should be true", () => {
+      const error = new FetchError("Conflict", 409, "Conflict");
+
+      expect(error.isClientError).toBe(true);
+      expect(error.isServerError).toBe(false);
+    });
   });
 
   describe("handleFetchError", () => {

@@ -160,8 +160,8 @@ describe("Input Validation and Sanitization", () => {
       const invalidPayment = {
         paymentId: 1,
         accountNameOwner: "test_account",
-        sourceAccount: "account1",
-        destinationAccount: "account1", // Same as source
+        sourceAccount: "checking_test",
+        destinationAccount: "checking_test", // Same as source
         transactionDate: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
         amount: 100.0,
         activeStatus: true,
@@ -178,10 +178,75 @@ describe("Input Validation and Sanitization", () => {
       const validPayment = {
         paymentId: 1,
         accountNameOwner: "test_account",
-        sourceAccount: "account1",
-        destinationAccount: "account2",
+        sourceAccount: "checking_test",
+        destinationAccount: "credit_test",
         transactionDate: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
         amount: 100.0,
+        activeStatus: true,
+      };
+
+      const result = DataValidator.validatePayment(validPayment);
+      expect(result.success).toBe(true);
+    });
+
+    // #11: payment amount must be at least $0.01
+    it("should reject payment amount below minimum ($0.01)", () => {
+      const invalidPayment = {
+        paymentId: 1,
+        sourceAccount: "checking_test",
+        destinationAccount: "credit_test",
+        transactionDate: new Date().toISOString().split("T")[0],
+        amount: 0.0,
+        activeStatus: true,
+      };
+
+      const result = DataValidator.validatePayment(invalidPayment);
+      expect(result.success).toBe(false);
+      expect(result.errors?.some((err) => err.field === "amount")).toBe(true);
+    });
+
+    // #14: payment amount must not exceed backend NUMERIC(8,2) = 999,999.99
+    it("should reject payment amount above maximum ($999,999.99)", () => {
+      const invalidPayment = {
+        paymentId: 1,
+        sourceAccount: "checking_test",
+        destinationAccount: "credit_test",
+        transactionDate: new Date().toISOString().split("T")[0],
+        amount: 1000000.0,
+        activeStatus: true,
+      };
+
+      const result = DataValidator.validatePayment(invalidPayment);
+      expect(result.success).toBe(false);
+      expect(result.errors?.some((err) => err.field === "amount")).toBe(true);
+    });
+
+    // #12/#13: account names must match name_owner format (lowercase with underscore)
+    it("should reject account name without underscore separator", () => {
+      const invalidPayment = {
+        paymentId: 1,
+        sourceAccount: "checkingtest", // missing underscore
+        destinationAccount: "credit_test",
+        transactionDate: new Date().toISOString().split("T")[0],
+        amount: 100.0,
+        activeStatus: true,
+      };
+
+      const result = DataValidator.validatePayment(invalidPayment);
+      expect(result.success).toBe(false);
+      expect(
+        result.errors?.some((err) => err.field === "sourceAccount"),
+      ).toBe(true);
+    });
+
+    // #11/#14: boundary check — $999,999.99 is exactly the max and must pass
+    it("should accept payment at maximum valid amount ($999,999.99)", () => {
+      const validPayment = {
+        paymentId: 1,
+        sourceAccount: "checking_test",
+        destinationAccount: "credit_test",
+        transactionDate: new Date().toISOString().split("T")[0],
+        amount: 999999.99,
         activeStatus: true,
       };
 

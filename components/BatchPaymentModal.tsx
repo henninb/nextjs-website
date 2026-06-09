@@ -461,7 +461,7 @@ export default function BatchPaymentModal({
             <Typography variant="caption" color="text.secondary">
               {businessDays.length} business days in{" "}
               {MONTH_NAMES[selectedMonth]} {selectedYear}
-              {" — "}weekends &amp; US federal holidays excluded
+              {" — "}weekends &amp; US federal holidays excluded (UI only — backend accepts any date)
             </Typography>
           </Stack>
         )}

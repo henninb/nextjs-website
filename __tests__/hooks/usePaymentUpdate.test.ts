@@ -312,7 +312,8 @@ describe("updatePayment", () => {
   });
 
   describe("Request Payload Validation", () => {
-    it("should include all required fields in request payload", async () => {
+    it("should include required fields but strip guidSource and guidDestination from request payload", async () => {
+      // #16: GUIDs are system-managed on the backend and must not be sent in updates
       const oldPayment = createTestPayment({
         paymentId: 123,
         sourceAccount: "source123",
@@ -335,11 +336,12 @@ describe("updatePayment", () => {
 
       expect(requestBody).toHaveProperty("sourceAccount");
       expect(requestBody).toHaveProperty("destinationAccount");
-      expect(requestBody).toHaveProperty("guidSource");
-      expect(requestBody).toHaveProperty("guidDestination");
       expect(requestBody).toHaveProperty("activeStatus");
       expect(requestBody).toHaveProperty("transactionDate");
       expect(requestBody).toHaveProperty("amount");
+      // GUIDs must be stripped — backend manages these to prevent orphaned transactions
+      expect(requestBody).not.toHaveProperty("guidSource");
+      expect(requestBody).not.toHaveProperty("guidDestination");
     });
 
     it("should send complete newPayment in request", async () => {
@@ -428,15 +430,16 @@ describe("updatePayment", () => {
       expect(requestBody.transactionDate).toContain("2023-12-01");
     });
 
-    it("should handle very large payment amounts", async () => {
+    it("should handle maximum valid payment amount (999999.99)", async () => {
+      // #11: payment amounts are capped at 999,999.99 by backend NUMERIC(8,2)
       const oldPayment = createTestPayment({
         paymentId: 123,
-        amount: 999999999.99,
+        amount: 999998.00,
       });
 
       const newPayment = createTestPayment({
         ...oldPayment,
-        amount: 1000000000.0,
+        amount: 999999.99,
       });
 
       global.fetch = createFetchMock(newPayment);
