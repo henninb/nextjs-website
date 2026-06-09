@@ -7,7 +7,6 @@ import useCategoryFetch from "../hooks/useCategoryFetch";
 import useDescriptionFetch from "../hooks/useDescriptionFetch";
 import useParameterFetch from "../hooks/useParameterFetch";
 import usePaymentFetch from "../hooks/usePaymentFetch";
-import usePendingTransactionFetch from "../hooks/usePendingTransactionFetch";
 import useTransactionByAccountFetch from "../hooks/useTransactionByAccountFetch";
 import useTransferFetch from "../hooks/useTransferFetch";
 import useAccountInsert from "../hooks/useAccountInsert";
@@ -15,7 +14,6 @@ import useCategoryInsert from "../hooks/useCategoryInsert";
 import useDescriptionInsert from "../hooks/useDescriptionInsert";
 import useParameterInsert from "../hooks/useParameterInsert";
 import usePaymentInsert from "../hooks/usePaymentInsert";
-import usePendingTransactionInsert from "../hooks/usePendingTransactionInsert";
 import useTransactionInsert from "../hooks/useTransactionInsert";
 import useTransferInsert from "../hooks/useTransferInsert";
 
@@ -56,12 +54,6 @@ const BackupRestore: React.FC = () => {
     refetch: refetchPayments,
   } = usePaymentFetch();
   const {
-    data: pendingTransactions,
-    isError: isErrorPendingTransactions,
-    error: errorPendingTransactions,
-    refetch: refetchPendingTransactions,
-  } = usePendingTransactionFetch();
-  const {
     data: transactions,
     isError: isErrorTransactions,
     error: errorTransactions,
@@ -79,8 +71,6 @@ const BackupRestore: React.FC = () => {
   const { mutateAsync: insertDescription } = useDescriptionInsert();
   const { mutateAsync: insertParameter } = useParameterInsert();
   const { mutateAsync: insertPayment } = usePaymentInsert();
-  const { mutateAsync: insertPendingTransaction } =
-    usePendingTransactionInsert();
   const { mutateAsync: insertTransaction } = useTransactionInsert();
   const { mutateAsync: insertTransfer } = useTransferInsert();
 
@@ -94,7 +84,6 @@ const BackupRestore: React.FC = () => {
         descriptions,
         parameters,
         payments,
-        pendingTransactions,
         transactions,
         transfers,
       };
@@ -172,11 +161,6 @@ const BackupRestore: React.FC = () => {
           await insertPayment({ payload: item });
         }
       }
-      if (backupData.pendingTransactions) {
-        for (const item of backupData.pendingTransactions) {
-          await insertPendingTransaction({ pendingTransaction: item });
-        }
-      }
       if (backupData.transactions) {
         for (const item of backupData.transactions) {
           await insertTransaction(item);
@@ -208,7 +192,6 @@ const BackupRestore: React.FC = () => {
     isErrorDescriptions ||
     isErrorParameters ||
     isErrorPayments ||
-    isErrorPendingTransactions ||
     isErrorTransactions ||
     isErrorTransfers;
 
@@ -225,7 +208,6 @@ const BackupRestore: React.FC = () => {
             errorDescriptions ||
             errorParameters ||
             errorPayments ||
-            errorPendingTransactions ||
             errorTransactions ||
             errorTransfers
           }
@@ -237,7 +219,6 @@ const BackupRestore: React.FC = () => {
             if (errorDescriptions) refetchDescriptions();
             if (errorParameters) refetchParameters();
             if (errorPayments) refetchPayments();
-            if (errorPendingTransactions) refetchPendingTransactions();
             if (errorTransactions) refetchTransactions();
             if (errorTransfers) refetchTransfers();
           }}

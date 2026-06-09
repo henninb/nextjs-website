@@ -37,7 +37,6 @@ import { ReoccurringType } from "../../../../model/ReoccurringType";
 import { TransactionState } from "../../../../model/TransactionState";
 import { AccountType } from "../../../../model/AccountType";
 import { TransactionType } from "../../../../model/TransactionType";
-import usePendingTransactions from "../../../../hooks/usePendingTransactionFetch";
 import Spinner from "../../../../components/Spinner";
 import SnackbarBaseline from "../../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../../components/ErrorDisplay";
@@ -45,10 +44,6 @@ import LoadingState from "../../../../components/LoadingState";
 import ConfirmDialog from "../../../../components/ConfirmDialog";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import { currencyFormat } from "../../../../components/Common";
-import usePendingTransactionDeleteAll from "../../../../hooks/usePendingTransactionDeleteAll";
-import usePendingTransactionDelete from "../../../../hooks/usePendingTransactionDelete";
-import PendingTransaction from "../../../../model/PendingTransaction";
-import usePendingTransactionUpdate from "../../../../hooks/usePendingTransactionUpdate";
 import useAccountFetch from "../../../../hooks/useAccountFetch";
 import { useAuth } from "../../../../components/AuthProvider";
 import { generateSecureUUID } from "../../../../utils/security/secureUUID";
@@ -60,7 +55,7 @@ import useCategoryFetch from "../../../../hooks/useCategoryFetch";
 export default function TransactionImporter() {
   const [inputText, setInputText] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoadingTable, setIsLoadingTable] = useState(true); // Loading state for table only
+  const [isLoadingTable, setIsLoadingTable] = useState(false);
   const [message, setMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
   const [accountFilter, setAccountFilter] = useState<string>(""); // For filtering by account
@@ -68,20 +63,11 @@ export default function TransactionImporter() {
   const [formatErrors, setFormatErrors] = useState<string[]>([]);
   const [isValidating, setIsValidating] = useState(false);
   const [loadingRows, setLoadingRows] = useState<Set<string>>(new Set()); // Track loading rows by guid
-  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if this is the first load
   const [aiCategorizingRows, setAiCategorizingRows] = useState<Set<string>>(
     new Set(),
   ); // Track rows being AI-categorized
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
-
-  const {
-    data: fetchedPendingTransactions,
-    isSuccess: isPendingTransactionsLoaded,
-    isFetching: isFetchingPendingTransactions,
-    error: errorPendingTransactions,
-    refetch: refetchPendingTransactions,
-  } = usePendingTransactions();
 
   const {
     data: fetchedAccounts,
@@ -94,12 +80,6 @@ export default function TransactionImporter() {
     useCategoryFetch();
 
   const { mutateAsync: insertTransaction } = useTransactionInsert();
-  const { mutateAsync: deleteAllPendingTransactions } =
-    usePendingTransactionDeleteAll();
-  const { mutateAsync: deletePendingTransaction } =
-    usePendingTransactionDelete();
-  const { mutateAsync: updatePendingTransaction } =
-    usePendingTransactionUpdate();
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -108,82 +88,6 @@ export default function TransactionImporter() {
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
-
-  useEffect(() => {
-    if (isFetchingPendingTransactions || isLoadingAccounts) {
-      setIsLoadingTable(true);
-      return;
-    }
-    // Don't set isLoadingTable to false here - let the GUID generation useEffect handle it
-    // Otherwise we'll hide the spinner before the async GUID generation completes
-  }, [isFetchingPendingTransactions, isLoadingAccounts]);
-
-  useEffect(() => {
-    // Only sync from fetchedPendingTransactions on initial load
-    // After that, we manage transactions state locally to avoid refreshes
-    if (
-      isPendingTransactionsLoaded &&
-      fetchedPendingTransactions &&
-      isInitialLoad
-    ) {
-      if (fetchedPendingTransactions.length === 0) {
-        setTransactions([]);
-        setIsLoadingTable(false);
-        setIsInitialLoad(false);
-        return;
-      }
-
-      const generateTransactionsWithGUID = async () => {
-        setIsLoadingTable(true);
-
-        // Get available categories for AI categorization
-        const availableCategories = isSuccessCategories
-          ? fetchedCategories.map((c) => c.categoryName)
-          : [];
-
-        // FAST LOAD: Use rule-based categorization only (no AI delays)
-        // Users can trigger AI categorization on-demand by clicking the button in Source column
-        const transactionsWithGUID: Transaction[] = await Promise.all(
-          fetchedPendingTransactions.map(async (transaction) => {
-            // Use fast rule-based categorization
-            const category = getCategoryFromDescription(
-              transaction.description || "",
-            );
-
-            return {
-              ...transaction,
-              guid: await generateSecureUUID(),
-              reoccurringType: "onetime" as ReoccurringType,
-              transactionState: "outstanding" as TransactionState,
-              transactionType: undefined as unknown as TransactionType,
-              category,
-              categoryMetadata: {
-                source: "rule-based" as const,
-                timestamp: new Date(),
-                fallbackReason:
-                  "Initial load - click AI button to use AI categorization",
-              },
-              accountType: "debit" as AccountType,
-              activeStatus: true,
-              notes: "imported",
-            };
-          }),
-        );
-
-        setTransactions(transactionsWithGUID);
-        setIsLoadingTable(false);
-        setIsInitialLoad(false); // Mark initial load as complete
-      };
-
-      generateTransactionsWithGUID();
-    }
-  }, [
-    isPendingTransactionsLoaded,
-    fetchedPendingTransactions,
-    isInitialLoad,
-    isSuccessCategories,
-    fetchedCategories,
-  ]);
 
   if (loading || (!loading && !isAuthenticated)) {
     return null;
@@ -229,57 +133,17 @@ export default function TransactionImporter() {
     }
   };
 
-  const handleDeletePendingTransaction = async (
-    pendingTransactionId: any,
-    guid: string,
-  ) => {
-    try {
-      // Optimistically remove from local state
-      setTransactions((prev) => prev.filter((t) => t.guid !== guid));
-
-      await deletePendingTransaction(pendingTransactionId);
-
-      setMessage("Transaction removed successfully");
-      setShowSnackbar(true);
-    } catch (error) {
-      handleError(error, "handleDeleteRow", false);
-      // On error, refetch to restore correct state
-      setIsInitialLoad(true); // Allow resync from server
-      refetchPendingTransactions();
-      if (
-        !navigator.onLine ||
-        (getErrorMessage(error) &&
-          getErrorMessage(error).includes("Failed to fetch"))
-      ) {
-        // offline error handling
-      }
-    }
+  const handleDeleteTransaction = (guid: string) => {
+    setTransactions((prev) => prev.filter((t) => t.guid !== guid));
+    setMessage("Transaction removed from list");
+    setShowSnackbar(true);
   };
 
-  const handleDeleteAllPendingTransactions = async () => {
+  const handleDeleteAllTransactions = () => {
     setShowDeleteAllDialog(false);
-    setIsDeletingAll(true);
-    setIsLoadingTable(true);
-
-    try {
-      await deleteAllPendingTransactions();
-
-      // Reset state and trigger full refresh from server
-      setTransactions([]);
-      setIsInitialLoad(true);
-      await refetchPendingTransactions();
-
-      setMessage("All pending transactions have been deleted.");
-      setShowSnackbar(true);
-    } catch (error: unknown) {
-      console.error("Error deleting pending transactions: ", error);
-      setMessage(
-        `Error deleting pending transactions: ${getErrorMessage(error)}`,
-      );
-      setShowSnackbar(true);
-    } finally {
-      setIsDeletingAll(false);
-    }
+    setTransactions([]);
+    setMessage("All transactions cleared.");
+    setShowSnackbar(true);
   };
 
   const handleSnackbarClose = () => setShowSnackbar(false);
@@ -453,12 +317,6 @@ export default function TransactionImporter() {
 
   const columns: GridColDef[] = [
     {
-      field: "pendingTransactionId",
-      headerName: "Id",
-      width: 100,
-      hideable: true,
-    },
-    {
       field: "transactionDate",
       headerName: "Date",
       type: "date",
@@ -594,18 +452,11 @@ export default function TransactionImporter() {
                         setLoadingRows((prev) => new Set(prev).add(guid));
                         try {
                           await handleInsertTransaction(params.row);
-                          // Optimistically remove from local state
                           setTransactions((prev) =>
                             prev.filter((t) => t.guid !== guid),
                           );
-                          await deletePendingTransaction(
-                            params.row.pendingTransactionId,
-                          );
                         } catch (error) {
                           console.error("Error accepting transaction:", error);
-                          // On error, refetch to restore correct state
-                          setIsInitialLoad(true); // Allow resync from server
-                          refetchPendingTransactions();
                         } finally {
                           setLoadingRows((prev) => {
                             const next = new Set(prev);
@@ -624,24 +475,7 @@ export default function TransactionImporter() {
                     <IconButton
                       color="error"
                       size="small"
-                      onClick={async () => {
-                        const guid = params.row.guid;
-                        setLoadingRows((prev) => new Set(prev).add(guid));
-                        try {
-                          await handleDeletePendingTransaction(
-                            params.row.pendingTransactionId,
-                            guid,
-                          );
-                        } catch (error) {
-                          console.error("Error deleting transaction:", error);
-                        } finally {
-                          setLoadingRows((prev) => {
-                            const next = new Set(prev);
-                            next.delete(guid);
-                            return next;
-                          });
-                        }
-                      }}
+                      onClick={() => handleDeleteTransaction(params.row.guid)}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -656,15 +490,15 @@ export default function TransactionImporter() {
   ];
 
   // Handle error states first
-  if (errorPendingTransactions || errorAccounts) {
+  if (errorAccounts) {
     return (
       <>
         <Typography variant="h6">Transaction Import</Typography>
         <ErrorDisplay
-          error={errorPendingTransactions || errorAccounts}
+          error={errorAccounts}
           variant="card"
           showRetry={true}
-          onRetry={() => refetchPendingTransactions()}
+          onRetry={() => {}}
         />
       </>
     );
@@ -886,7 +720,7 @@ export default function TransactionImporter() {
                       ) : null
                     }
                   >
-                    {isDeletingAll ? "Deleting..." : "Delete All Pending"}
+                    {isDeletingAll ? "Deleting..." : "Clear All"}
                   </Button>
                 )
               }
@@ -952,77 +786,38 @@ export default function TransactionImporter() {
                   </Typography>
                 </Box>
 
-                {/* Loading state for table */}
-                {isLoadingTable ? (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      minHeight: 400,
-                      flexDirection: "column",
-                      gap: 2,
+                <Box sx={{ width: "100%", overflowX: "auto" }}>
+                  <DataGrid
+                    rows={filteredTransactions}
+                    columns={columns}
+                    processRowUpdate={(
+                      newRow: Transaction,
+                      oldRow: Transaction,
+                    ): Transaction => {
+                      if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
+                        return oldRow;
+                      }
+                      setTransactions((prev) =>
+                        prev.map((t) => (t.guid === newRow.guid ? newRow : t)),
+                      );
+                      return newRow;
                     }}
-                  >
-                    <CircularProgress size={48} />
-                    <Typography variant="body2" color="text.secondary">
-                      Loading transactions...
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box sx={{ width: "100%", overflowX: "auto" }}>
-                    <DataGrid
-                      rows={filteredTransactions}
-                      columns={columns}
-                      processRowUpdate={async (
-                        newRow: PendingTransaction,
-                        oldRow: PendingTransaction,
-                      ): Promise<PendingTransaction> => {
-                        if (JSON.stringify(newRow) === JSON.stringify(oldRow)) {
-                          return oldRow;
-                        }
-                        try {
-                          await updatePendingTransaction({
-                            oldPendingTransaction: oldRow,
-                            newPendingTransaction: newRow,
-                          });
-                          setMessage(
-                            "PendingTransaction updated successfully.",
-                          );
-                          setShowSnackbar(true);
-
-                          return { ...newRow };
-                        } catch (error) {
-                          handleError(
-                            error,
-                            "Update PendingTransaction failure.",
-                            false,
-                          );
-                          throw error;
-                        }
-                      }}
-                      initialState={{
-                        columns: {
-                          columnVisibilityModel: {
-                            pendingTransactionId: false, // This will hide the column by default
-                          },
-                        },
-                        sorting: {
-                          sortModel: [
-                            { field: "transactionDate", sort: "desc" }, // Newest dates first
-                          ],
-                        },
-                      }}
-                      getRowId={(row) => row.guid}
-                      autoHeight
-                      sx={{
-                        "& .MuiDataGrid-root": {
-                          border: "none",
-                        },
-                      }}
-                    />
-                  </Box>
-                )}
+                    initialState={{
+                      sorting: {
+                        sortModel: [
+                          { field: "transactionDate", sort: "desc" }, // Newest dates first
+                        ],
+                      },
+                    }}
+                    getRowId={(row) => row.guid}
+                    autoHeight
+                    sx={{
+                      "& .MuiDataGrid-root": {
+                        border: "none",
+                      },
+                    }}
+                  />
+                </Box>
               </div>
             </CardContent>
           </Card>
@@ -1034,11 +829,11 @@ export default function TransactionImporter() {
         />
         <ConfirmDialog
           open={showDeleteAllDialog}
-          title="Delete All Pending Transactions"
-          message={`Are you sure you want to delete all ${transactions.length} pending transaction(s)? This action cannot be undone.`}
-          onConfirm={handleDeleteAllPendingTransactions}
+          title="Clear All Transactions"
+          message={`Are you sure you want to clear all ${transactions.length} transaction(s) from the list?`}
+          onConfirm={handleDeleteAllTransactions}
           onClose={() => setShowDeleteAllDialog(false)}
-          confirmText="Delete All"
+          confirmText="Clear All"
           cancelText="Cancel"
         />
       </>

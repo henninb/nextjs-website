@@ -417,10 +417,6 @@ describe("cacheUtils", () => {
       ]);
     });
 
-    it("should provide pending transaction keys", () => {
-      expect(QueryKeys.pendingTransaction()).toEqual(["pendingTransaction"]);
-    });
-
     it("should provide medical expense keys", () => {
       expect(QueryKeys.medicalExpense()).toEqual(["medicalExpense"]);
     });

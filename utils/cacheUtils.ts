@@ -229,9 +229,6 @@ export const QueryKeys = {
   transactionByDescription: (description: string) =>
     ["transaction", "description", description] as const,
 
-  // Pending transaction keys
-  pendingTransaction: () => ["pendingTransaction"] as const,
-
   // Medical expense keys
   medicalExpense: () => ["medicalExpense"] as const,
 

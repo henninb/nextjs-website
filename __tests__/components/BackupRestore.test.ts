@@ -102,7 +102,6 @@ export const createBackupData = (data: {
   descriptions?: any[];
   parameters?: any[];
   payments?: any[];
-  pendingTransactions?: any[];
   transactions?: any[];
   transfers?: any[];
 }) => {
@@ -112,7 +111,6 @@ export const createBackupData = (data: {
     descriptions: data.descriptions || [],
     parameters: data.parameters || [],
     payments: data.payments || [],
-    pendingTransactions: data.pendingTransactions || [],
     transactions: data.transactions || [],
     transfers: data.transfers || [],
   };
@@ -171,7 +169,6 @@ export const validateBackupData = (
     "descriptions",
     "parameters",
     "payments",
-    "pendingTransactions",
     "transactions",
     "transfers",
   ];
@@ -223,7 +220,6 @@ export const processRestoreOperations = async (
     insertDescription?: (item: any) => Promise<void>;
     insertParameter?: (item: any) => Promise<void>;
     insertPayment?: (item: any) => Promise<void>;
-    insertPendingTransaction?: (item: any) => Promise<void>;
     insertTransaction?: (item: any) => Promise<void>;
     insertTransfer?: (item: any) => Promise<void>;
   },
@@ -296,19 +292,6 @@ export const processRestoreOperations = async (
       }
     }
 
-    // Restore pending transactions
-    if (backupData.pendingTransactions && operations.insertPendingTransaction) {
-      for (const item of backupData.pendingTransactions) {
-        try {
-          await operations.insertPendingTransaction(item);
-        } catch (error) {
-          errors.push(
-            `Failed to restore pending transaction: ${error instanceof Error ? error.message : "Unknown error"}`,
-          );
-        }
-      }
-    }
-
     // Restore transactions
     if (backupData.transactions && operations.insertTransaction) {
       for (const item of backupData.transactions) {
@@ -358,7 +341,6 @@ export const countBackupEntities = (backupData: any): number => {
     "descriptions",
     "parameters",
     "payments",
-    "pendingTransactions",
     "transactions",
     "transfers",
   ].reduce((total, prop) => {
@@ -392,7 +374,6 @@ describe("BackupRestore Business Logic (Isolated)", () => {
         descriptions: [],
         parameters: [],
         payments,
-        pendingTransactions: [],
         transactions: [],
         transfers: [],
       });
@@ -417,7 +398,6 @@ describe("BackupRestore Business Logic (Isolated)", () => {
         descriptions: [],
         parameters: [],
         payments: [],
-        pendingTransactions: [],
         transactions: [],
         transfers: [],
       });
@@ -490,7 +470,6 @@ describe("BackupRestore Business Logic (Isolated)", () => {
         descriptions: [],
         parameters: [],
         payments: [],
-        pendingTransactions: [],
         transactions: [],
         transfers: [],
       };
@@ -707,14 +686,13 @@ describe("BackupRestore Business Logic (Isolated)", () => {
           createTestPayment(),
           createTestPayment(),
         ],
-        pendingTransactions: [],
         transactions: [createTestTransaction()],
         transfers: [createTestTransfer()],
       };
 
       const count = countBackupEntities(backupData);
 
-      expect(count).toBe(9); // 2 + 1 + 0 + 1 + 3 + 0 + 1 + 1
+      expect(count).toBe(9); // 2 + 1 + 0 + 1 + 3 + 1 + 1
     });
 
     it("should handle empty backup data", () => {
@@ -724,7 +702,6 @@ describe("BackupRestore Business Logic (Isolated)", () => {
         descriptions: [],
         parameters: [],
         payments: [],
-        pendingTransactions: [],
         transactions: [],
         transfers: [],
       };

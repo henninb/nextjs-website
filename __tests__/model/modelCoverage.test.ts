@@ -4,7 +4,6 @@ import type Description from "../../model/Description";
 import type Parameter from "../../model/Parameter";
 import type Payment from "../../model/Payment";
 import type PaymentRequired from "../../model/PaymentRequired";
-import type PendingTransaction from "../../model/PendingTransaction";
 import type ReceiptImage from "../../model/ReceiptImage";
 import type Totals from "../../model/Totals";
 import type Transaction from "../../model/Transaction";
@@ -26,7 +25,6 @@ describe("model module coverage", () => {
     expect(require("../../model/Parameter")).toBeDefined();
     expect(require("../../model/Payment")).toBeDefined();
     expect(require("../../model/PaymentRequired")).toBeDefined();
-    expect(require("../../model/PendingTransaction")).toBeDefined();
     expect(require("../../model/ReceiptImage")).toBeDefined();
     expect(require("../../model/ReoccurringType")).toBeDefined();
     expect(require("../../model/SportsGame")).toBeDefined();
@@ -110,15 +108,6 @@ describe("model module coverage", () => {
       outstanding: 100,
       cleared: 75,
       validationDate: "2024-03-01",
-    };
-    const pendingTransaction: PendingTransaction = {
-      pendingTransactionId: 5,
-      owner: "owner",
-      accountNameOwner: "Checking - owner",
-      transactionDate: new Date("2024-03-01"),
-      description: "Pending purchase",
-      amount: 42.75,
-      reviewStatus: "pending",
     };
     const receiptImage: ReceiptImage = {
       receiptImageId: 6,
@@ -204,7 +193,6 @@ describe("model module coverage", () => {
     expect(parameter.parameterValue).toBe("America/Chicago");
     expect(payment.amount).toBe(125.5);
     expect(paymentRequired.outstanding).toBe(100);
-    expect(pendingTransaction.reviewStatus).toBe("pending");
     expect(receiptImage.imageFormatType).toBe("png");
     expect(totals.totalsCleared).toBe(800);
     expect(transaction.categoryMetadata?.source).toBe("manual");
