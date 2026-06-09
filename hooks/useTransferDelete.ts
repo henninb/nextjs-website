@@ -4,7 +4,7 @@ import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { validateDelete } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { removeFromList, QueryKeys } from "../utils/cacheUtils";
+import { QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useTransferDelete");
@@ -59,14 +59,7 @@ export default function useTransferDelete() {
         log.debug("Transfer deleted successfully", {
           transferId: variables.oldRow.transferId,
         });
-
-        // Remove from cache using transferId as identifier
-        removeFromList(
-          queryClient,
-          QueryKeys.transfer(),
-          variables.oldRow,
-          "transferId",
-        );
+        queryClient.invalidateQueries({ queryKey: QueryKeys.transfer() });
       },
       onError: (error) => {
         log.error("Delete failed", error);

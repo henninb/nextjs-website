@@ -234,12 +234,27 @@ export const PaymentSchema = z.object({
   dateUpdated: dateString.optional(),
 });
 
+// Transfer amount is capped by backend NUMERIC(8,2) — max 999,999.99, min 0.01
+const transferAmount = z
+  .number()
+  .min(0.01, "Transfer amount must be greater than zero")
+  .max(999999.99, "Transfer amount cannot exceed $999,999.99")
+  .refine(
+    (val) => {
+      const decimalPlaces = (val.toString().split(".")[1] || "").length;
+      return decimalPlaces <= FINANCIAL_LIMITS.MAX_DECIMAL_PLACES;
+    },
+    {
+      message: `Amount must have at most ${FINANCIAL_LIMITS.MAX_DECIMAL_PLACES} decimal places`,
+    },
+  );
+
 // Transfer validation schema (if needed)
 export const TransferSchema = z.object({
   transferId: z.number().int().min(0).optional(),
   sourceAccount: accountNameOwner,
   destinationAccount: accountNameOwner,
-  amount: financialAmount,
+  amount: transferAmount,
   transactionDate: localDateString, // Backend expects YYYY-MM-DD format (LocalDate)
   guidSource: z
     .string()

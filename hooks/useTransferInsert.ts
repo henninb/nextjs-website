@@ -4,7 +4,7 @@ import { DataValidator } from "../utils/validation";
 import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { validateInsert } from "../utils/hookValidation";
-import { addToList, QueryKeys } from "../utils/cacheUtils";
+import { QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 import { useAuth } from "../components/AuthProvider";
 
@@ -100,8 +100,7 @@ export default function useTransferInsert() {
           log.debug("Transfer inserted successfully", {
             transferId: newTransfer.transferId,
           });
-
-          addToList(queryClient, QueryKeys.transfer(), newTransfer, "start");
+          queryClient.invalidateQueries({ queryKey: QueryKeys.transfer() });
         }
       },
       onError: (error) => {

@@ -5,7 +5,7 @@ import { useStandardMutation } from "../utils/queryConfig";
 import { fetchWithErrorHandling, parseResponse } from "../utils/fetchUtils";
 import { validateUpdate } from "../utils/hookValidation";
 import { InputSanitizer } from "../utils/validation/sanitization";
-import { updateInList, QueryKeys } from "../utils/cacheUtils";
+import { QueryKeys } from "../utils/cacheUtils";
 import { createHookLogger } from "../utils/logger";
 
 const log = createHookLogger("useTransferUpdate");
@@ -79,14 +79,7 @@ export default function useTransferUpdate() {
         log.debug("Transfer updated successfully", {
           transferId: updatedTransfer.transferId,
         });
-
-        // Update transfer in cache using transferId as stable identifier
-        updateInList(
-          queryClient,
-          QueryKeys.transfer(),
-          updatedTransfer,
-          "transferId",
-        );
+        queryClient.invalidateQueries({ queryKey: QueryKeys.transfer() });
       },
       onError: (error) => {
         log.error("Update failed", error);

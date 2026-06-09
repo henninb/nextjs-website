@@ -28,7 +28,7 @@ import EmptyState from "../../../components/EmptyState";
 import LoadingState from "../../../components/LoadingState";
 import ContentContainer from "../../../components/ContentContainer";
 import USDAmountInput from "../../../components/USDAmountInput";
-import useFetchTransfer from "../../../hooks/useTransferFetch";
+import useTransferFetchPaged from "../../../hooks/useTransferFetchPaged";
 import useTransferInsert from "../../../hooks/useTransferInsert";
 import useTransferDelete from "../../../hooks/useTransferDelete";
 import Transfer from "../../../model/Transfer";
@@ -52,6 +52,7 @@ import { createAccountLinkColumn } from "../../../utils/createDeleteColumn";
 import { modalTitles } from "../../../utils/modalMessages";
 import { createProcessRowUpdate } from "../../../utils/createProcessRowUpdate";
 import { validateAmountAndAccounts } from "../../../utils/validateTransfer";
+import { FetchError } from "../../../utils/fetchUtils";
 import { z } from "zod";
 
 const TransferCacheSchema = z.object({
@@ -142,15 +143,16 @@ export default function Transfers() {
     refetch: refetchAccounts,
   } = useAccountFetch();
   const {
-    data: fetchedTransfers,
+    data: transferPage,
     isSuccess: isSuccessTransfers,
     isFetching: isFetchingTransfers,
     error: errorTransfers,
     refetch: refetchTransfers,
-  } = useFetchTransfer();
+  } = useTransferFetchPaged(paginationModel.page, paginationModel.pageSize);
 
   const transfersToDisplay =
-    fetchedTransfers?.filter((row) => row != null) || [];
+    transferPage?.content?.filter((row) => row != null) || [];
+  const totalTransfers = transferPage?.totalElements ?? 0;
 
   useSpinnerEffect(
     setShowSpinner,
@@ -306,7 +308,15 @@ export default function Transfers() {
       );
       setFormErrors({});
     } catch (error) {
-      handleError(error, `Add Transfer error: ${error}`, false);
+      if (error instanceof FetchError && error.status === 409) {
+        handleError(
+          error,
+          `A transfer with the same source account, destination account, date, and amount already exists.`,
+          false,
+        );
+      } else {
+        handleError(error, `Add Transfer error: ${error}`, false);
+      }
     }
   };
 
@@ -386,11 +396,17 @@ export default function Transfers() {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => {
-              setTransferData(
-                cacheEnabled
-                  ? lastSubmittedTransfer || initialTransferData
-                  : initialTransferData,
+              const accountNames = new Set(
+                (fetchedAccounts || []).map((a) => a.accountNameOwner),
               );
+              const cached = cacheEnabled ? lastSubmittedTransfer : null;
+              const cacheIsValid =
+                cached &&
+                cached.sourceAccount &&
+                cached.destinationAccount &&
+                accountNames.has(cached.sourceAccount) &&
+                accountNames.has(cached.destinationAccount);
+              setTransferData(cacheIsValid ? cached : initialTransferData);
               setFormErrors({});
               setSelectedSourceAccount(null);
               setSelectedDestinationAccount(null);
@@ -420,6 +436,8 @@ export default function Transfers() {
                 }
                 checkboxSelection={false}
                 rowSelection={false}
+                paginationMode="server"
+                rowCount={totalTransfers}
                 paginationModel={paginationModel}
                 onPaginationModelChange={(newModel) =>
                   setPaginationModel(newModel)
@@ -518,6 +536,9 @@ export default function Transfers() {
 
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
                 Linked Transaction Records (2)
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                Values shown are derived from the transfer record and may differ from the current transaction state if edited separately.
               </Typography>
 
               {linkedTransactions.source || linkedTransactions.destination ? (
@@ -628,6 +649,7 @@ export default function Transfers() {
           }}
           slotProps={{
             inputLabel: { shrink: true },
+            htmlInput: { min: "2000-01-02" },
           }}
         />
 
