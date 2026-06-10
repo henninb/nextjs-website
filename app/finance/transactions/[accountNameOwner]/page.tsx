@@ -30,7 +30,9 @@ import ErrorDisplay from "../../../../components/ErrorDisplay";
 import EmptyState from "../../../../components/EmptyState";
 import LoadingState from "../../../../components/LoadingState";
 import USDAmountInput from "../../../../components/USDAmountInput";
-import useTransactionByAccountFetchPaged from "../../../../hooks/useTransactionByAccountFetchPaged";
+import useTransactionByAccountFetchPaged, {
+  TransactionPageFilters,
+} from "../../../../hooks/useTransactionByAccountFetchPaged";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import useTransactionDelete from "../../../../hooks/useTransactionDelete";
@@ -180,6 +182,18 @@ export default function TransactionsByAccount({
     );
   });
 
+  // Debounce search query — only hit the server after 400ms of inactivity
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset to page 0 whenever search or filters change
+  useEffect(() => {
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+  }, [debouncedSearch, transactionFilters]);
+
   const router = useRouter();
   const accountNameOwner = unwrappedParams.accountNameOwner;
   const validAccountNameOwner =
@@ -187,6 +201,63 @@ export default function TransactionsByAccount({
 
   const TRANSACTIONS_CACHE_ENABLED_KEY = `finance_cache_enabled_transactions_${validAccountNameOwner}`;
   const TRANSACTIONS_CACHE_DATA_KEY = `finance_cached_data_transactions_${validAccountNameOwner}`;
+
+  // Build server-side filter params from current filter state
+  const serverFilters = useMemo((): TransactionPageFilters => {
+    const f: TransactionPageFilters = {};
+
+    if (debouncedSearch) f.search = debouncedSearch;
+
+    // States — only send if not all states selected (all = no filter needed)
+    const allStates = ["cleared", "outstanding", "future"];
+    if (transactionFilters.states.size < allStates.length) {
+      f.states = Array.from(transactionFilters.states);
+    }
+
+    // Transaction types
+    const allTypes = ["expense", "income", "transfer", "undefined"];
+    if (transactionFilters.types.size < allTypes.length) {
+      f.transactionTypes = Array.from(transactionFilters.types).filter(
+        (t) => t !== "undefined",
+      );
+    }
+
+    // Reoccurring types
+    const allReoccurring = [
+      "onetime",
+      "monthly",
+      "annually",
+      "biannually",
+      "fortnightly",
+      "quarterly",
+      "undefined",
+    ];
+    if (transactionFilters.reoccurring.size < allReoccurring.length) {
+      f.reoccurringTypes = Array.from(transactionFilters.reoccurring).filter(
+        (r) => r !== "undefined",
+      );
+    }
+
+    // Date range
+    if (transactionFilters.dateRange.start) {
+      f.startDate = transactionFilters.dateRange.start
+        .toISOString()
+        .split("T")[0];
+    }
+    if (transactionFilters.dateRange.end) {
+      f.endDate = transactionFilters.dateRange.end.toISOString().split("T")[0];
+    }
+
+    // Amount range — send only when user has narrowed from the initial wide defaults
+    if (transactionFilters.amountRange.min > -10000) {
+      f.minAmount = transactionFilters.amountRange.min;
+    }
+    if (transactionFilters.amountRange.max < 10000) {
+      f.maxAmount = transactionFilters.amountRange.max;
+    }
+
+    return f;
+  }, [debouncedSearch, transactionFilters]);
 
   const {
     data: transactionPage,
@@ -199,6 +270,7 @@ export default function TransactionsByAccount({
     validAccountNameOwner,
     paginationModel.page,
     paginationModel.pageSize,
+    serverFilters,
   );
 
   // Extract transactions from paginated response - memoize to avoid infinite re-renders
@@ -1071,63 +1143,11 @@ export default function TransactionsByAccount({
     }));
   }, [amountBounds]);
 
-  // Apply client-side filters and search on the current page
-  // Note: With server-side pagination, this only filters the current page of results
-  const filteredTransactions = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-
-    return (fetchedTransactions || []).filter((row) => {
-      if (!row) return false;
-
-      // State filter
-      if (!transactionFilters.states.has(row.transactionState)) return false;
-
-      // Type filter
-      const rowType = row.transactionType || ("undefined" as any);
-      if (!transactionFilters.types.has(rowType)) return false;
-
-      // Reoccurring filter
-      if (!transactionFilters.reoccurring.has(row.reoccurringType))
-        return false;
-
-      // Date range filter
-      if (
-        transactionFilters.dateRange.start ||
-        transactionFilters.dateRange.end
-      ) {
-        const transactionDate = new Date(row.transactionDate);
-        if (transactionFilters.dateRange.start) {
-          if (transactionDate < transactionFilters.dateRange.start)
-            return false;
-        }
-        if (transactionFilters.dateRange.end) {
-          if (transactionDate > transactionFilters.dateRange.end) return false;
-        }
-      }
-
-      // Amount range filter
-      const amount = row.amount ?? 0;
-      if (
-        amount < transactionFilters.amountRange.min ||
-        amount > transactionFilters.amountRange.max
-      ) {
-        return false;
-      }
-
-      // Search query filter
-      if (!q) return true;
-      const haystack =
-        `${row.description || ""} ${row.category || ""} ${row.notes || ""}`.toLowerCase();
-      if (haystack.includes(q)) return true;
-      // Also allow search by simple date string and amount
-      const dateStr = formatDateForDisplay(row.transactionDate)
-        ?.toString()
-        .toLowerCase();
-      if (dateStr && dateStr.includes(q)) return true;
-      const amtStr = (row.amount ?? "").toString();
-      return amtStr.includes(q);
-    });
-  }, [fetchedTransactions, searchQuery, transactionFilters]);
+  // All filtering is now server-side — fetchedTransactions is already the filtered result
+  const filteredTransactions = useMemo(
+    () => fetchedTransactions || [],
+    [fetchedTransactions],
+  );
 
   // Handle error states first
   if (
