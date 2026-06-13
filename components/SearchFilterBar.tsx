@@ -18,7 +18,7 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutlined";
 import BoltIcon from "@mui/icons-material/Bolt";
 import PaymentIcon from "@mui/icons-material/Payment";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import ScheduleIcon from "@mui/icons-material/Schedule";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 type FilterState = {
@@ -31,7 +31,7 @@ type FilterState = {
     | "hasFuture"
     | "hasCleared"
     | "zeroBalance";
-  accountNamePattern: "all" | "checking" | "banking";
+  accountNamePattern: "all" | "checking" | "banking" | "investments";
 };
 
 type SearchFilterBarProps = {
@@ -88,13 +88,13 @@ export default function SearchFilterBar({
       color: theme.palette.warning.main,
     },
     {
-      label: "Future Scheduled",
-      icon: <ScheduleIcon sx={{ fontSize: "1rem" }} />,
+      label: "Investments",
+      icon: <TrendingUpIcon sx={{ fontSize: "1rem" }} />,
       filters: {
         accountType: "all" as const,
-        activeStatus: "active" as const,
-        balanceStatus: "hasFuture" as const,
-        accountNamePattern: "all" as const,
+        activeStatus: "all" as const,
+        balanceStatus: "all" as const,
+        accountNamePattern: "investments" as const,
       },
       color: theme.palette.info.main,
     },

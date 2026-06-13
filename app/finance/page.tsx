@@ -181,7 +181,7 @@ export default function Accounts() {
       | "hasFuture"
       | "hasCleared"
       | "zeroBalance";
-    accountNamePattern: "all" | "checking" | "banking";
+    accountNamePattern: "all" | "checking" | "banking" | "investments";
   }>({
     accountType: "all",
     activeStatus: "all",
@@ -308,7 +308,12 @@ export default function Accounts() {
         (activeFilters.accountNamePattern === "banking" &&
           (account.accountNameOwner.toLowerCase().includes("checking") ||
             account.accountNameOwner.toLowerCase().includes("savings") ||
-            account.accountNameOwner.toLowerCase().includes("mmarket")));
+            account.accountNameOwner.toLowerCase().includes("mmarket"))) ||
+        (activeFilters.accountNamePattern === "investments" &&
+          (account.accountNameOwner.toLowerCase().includes("hsa") ||
+            account.accountNameOwner.toLowerCase().includes("brokerage") ||
+            account.accountNameOwner.toLowerCase().includes("pension") ||
+            account.accountNameOwner.toLowerCase().includes("401k")));
 
       return (
         matchesSearch &&
