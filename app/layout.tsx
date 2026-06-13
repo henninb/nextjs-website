@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* PX event handler - must be defined before PX script loads */}
         <Script
@@ -105,7 +105,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/icon?family=Material+Icons"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ErrorBoundary>
           <Providers>
             <Layout>
