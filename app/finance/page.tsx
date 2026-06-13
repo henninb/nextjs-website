@@ -38,7 +38,7 @@ import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account from "../../model/Account";
 import { AccountType } from "../../model/AccountType";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
-import { currencyFormat, noNaN, formatDateTimeForDisplay } from "../../components/Common";
+import { currencyFormat, noNaN, formatDateTimeForDisplay, formatDateForDisplay } from "../../components/Common";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import FormDialog from "../../components/FormDialog";
@@ -549,7 +549,7 @@ export default function Accounts() {
         const val = params.row.validationDate;
         if (!val) return "";
         const ms = typeof val === "number" && val < 1e10 ? val * 1000 : val;
-        return formatDateTimeForDisplay(ms);
+        return formatDateForDisplay(new Date(ms));
       },
     },
     {
