@@ -1148,7 +1148,7 @@ export default function TransactionsByAccount({
                   <Tooltip title={`${multiplier}x · $${dollarValue} value`}>
                     <Box sx={{ textAlign: "right", lineHeight: 1.3 }}>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {points.toLocaleString()}
+                        {points.toLocaleString("en-US")}
                       </Typography>
                       <Typography
                         variant="caption"
@@ -1417,7 +1417,7 @@ export default function TransactionsByAccount({
                 gridTemplateColumns: {
                   xs: "1fr",
                   sm: "repeat(2, 1fr)",
-                  md: `repeat(${4 + (selectedTotal !== null ? 1 : 0) + (rewardsConfig && totalPoints > 0 ? 1 : 0)}, 1fr)`,
+                  md: `repeat(${4 + (selectedTotal !== null ? 1 : 0) + (rewardsConfig ? 1 : 0)}, 1fr)`,
                 },
                 gap: 2,
                 maxWidth: "1400px",
@@ -1501,7 +1501,7 @@ export default function TransactionsByAccount({
                     <StatCard
                       icon={<WorkspacePremiumIcon />}
                       label={`Points · $${(totalPoints * rewardsConfig.cpp).toFixed(0)} value`}
-                      value={`${totalPoints.toLocaleString()} pts`}
+                      value={`${totalPoints.toLocaleString("en-US")} pts`}
                       color="info"
                     />
                   </Box>
