@@ -174,17 +174,21 @@ export default function TransactionsByAccount({
     Array<string | number>
   >([]);
 
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
     const ownerKey =
       typeof unwrappedParams?.accountNameOwner === "string"
         ? unwrappedParams.accountNameOwner
         : "";
-    return (
-      localStorage.getItem(`finance_cache_enabled_transactions_${ownerKey}`) ===
-      "true"
-    );
-  });
+    try {
+      setCacheEnabled(
+        localStorage.getItem(`finance_cache_enabled_transactions_${ownerKey}`) === "true"
+      );
+    } catch {
+      // localStorage may not be available
+    }
+  }, [unwrappedParams?.accountNameOwner]);
 
   // Debounce search query — only hit the server after 400ms of inactivity
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");

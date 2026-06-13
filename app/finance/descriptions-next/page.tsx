@@ -67,10 +67,15 @@ export default function DescriptionsNextGen() {
   >("info");
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY) === "true";
-  });
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      setCacheEnabled(localStorage.getItem(DESCRIPTIONS_NEXT_CACHE_ENABLED_KEY) === "true");
+    } catch {
+      // localStorage may not be available
+    }
+  }, []);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 50,

@@ -103,10 +103,15 @@ export default function PaymentsNextGen() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [lastSubmittedPayment, setLastSubmittedPayment] =
     useState<Payment | null>(null);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY) === "true";
-  });
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      setCacheEnabled(localStorage.getItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY) === "true");
+    } catch {
+      // localStorage may not be available
+    }
+  }, []);
 
   // Initialize last payment from localStorage on mount (only if cache is enabled)
   useEffect(() => {

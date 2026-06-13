@@ -18,10 +18,16 @@ export function useFinancePageState(cacheEnabledKey?: string) {
     pageSize: 50,
     page: 0,
   });
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined" || !cacheEnabledKey) return false;
-    return localStorage.getItem(cacheEnabledKey) === "true";
-  });
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!cacheEnabledKey) return;
+    try {
+      setCacheEnabled(localStorage.getItem(cacheEnabledKey) === "true");
+    } catch {
+      // localStorage may not be available
+    }
+  }, [cacheEnabledKey]);
 
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();

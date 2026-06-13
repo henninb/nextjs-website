@@ -109,10 +109,15 @@ export default function TransfersNextGen() {
 
   const [lastSubmittedTransfer, setLastSubmittedTransfer] =
     useState<Transfer | null>(null);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(TRANSFERS_NEXT_CACHE_ENABLED_KEY) === "true";
-  });
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      setCacheEnabled(localStorage.getItem(TRANSFERS_NEXT_CACHE_ENABLED_KEY) === "true");
+    } catch {
+      // localStorage may not be available
+    }
+  }, []);
 
   // Initialize last transfer from localStorage on mount (only if cache is enabled)
   useEffect(() => {

@@ -47,12 +47,15 @@ export default function ConfigurationNextGen() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [showModalAdd, setShowModalAdd] = useState(false);
-  const [cacheEnabled, setCacheEnabled] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return (
-      localStorage.getItem(CONFIGURATION_NEXT_CACHE_ENABLED_KEY) === "true"
-    );
-  });
+  const [cacheEnabled, setCacheEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      setCacheEnabled(localStorage.getItem(CONFIGURATION_NEXT_CACHE_ENABLED_KEY) === "true");
+    } catch {
+      // localStorage may not be available
+    }
+  }, []);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [parameterData, setParameterData] = useState<Parameter | null>(null);
   const [selectedParameter, setSelectedParameter] = useState<Parameter | null>(
