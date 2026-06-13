@@ -248,7 +248,7 @@ export default function Layout({ children }: LayoutProps) {
       }}
     >
       <AppBar
-        position="static"
+        position="fixed"
         elevation={0}
         sx={{
           backgroundColor: alpha(theme.palette.background.paper, 0.9),
@@ -504,6 +504,7 @@ export default function Layout({ children }: LayoutProps) {
           </List>
         </Box>
       </Drawer>
+      <Toolbar />
       {children}
       {isFinancePage && isAuthenticated && (
         <SessionExpiryWarning
