@@ -1112,7 +1112,7 @@ export default function TransactionsByAccount({
         ? [
             {
               field: "points",
-              headerName: "Points",
+              headerName: "Rewards ($)",
               flex: 0.7,
               minWidth: 100,
               headerAlign: "right" as const,
@@ -1142,22 +1142,12 @@ export default function TransactionsByAccount({
                     (c: string) => cat === c || cat.includes(c),
                   );
                 const multiplier = is3x ? 3 : is2x ? 2 : 1;
-                const points = Math.round(amount * multiplier);
-                const dollarValue = (points * rewardsConfig.cpp).toFixed(2);
+                const rewardsCurrency = (amount * multiplier * rewardsConfig.cpp).toFixed(2);
                 return (
-                  <Tooltip title={`${multiplier}x · $${dollarValue} value`}>
-                    <Box sx={{ textAlign: "right", lineHeight: 1.3 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {points.toLocaleString("en-US")}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ fontSize: "0.65rem" }}
-                      >
-                        ${dollarValue}
-                      </Typography>
-                    </Box>
+                  <Tooltip title={`${multiplier}x rate`}>
+                    <Typography variant="body2" sx={{ fontWeight: 500, textAlign: "right" }}>
+                      ${rewardsCurrency}
+                    </Typography>
                   </Tooltip>
                 );
               },
@@ -1253,7 +1243,7 @@ export default function TransactionsByAccount({
           (c: string) => cat === c || cat.includes(c),
         );
       const multiplier = is3x ? 3 : is2x ? 2 : 1;
-      return sum + Math.round(amount * multiplier);
+      return sum + amount * multiplier * rewardsConfig.cpp;
     }, 0);
   }, [rewardsConfig, filteredTransactions]);
 
@@ -1494,14 +1484,14 @@ export default function TransactionsByAccount({
                 </Grow>
               )}
 
-              {/* Points Card - only for credit accounts with rewards config */}
+              {/* Rewards Card - only for credit accounts with rewards config */}
               {rewardsConfig && totalPoints > 0 && (
                 <Grow in={true} timeout={1150}>
                   <Box>
                     <StatCard
                       icon={<WorkspacePremiumIcon />}
-                      label={`Points · $${(totalPoints * rewardsConfig.cpp).toFixed(0)} value`}
-                      value={`${totalPoints.toLocaleString("en-US")} pts`}
+                      label="Rewards"
+                      value={`$${totalPoints.toFixed(2)}`}
                       color="info"
                     />
                   </Box>
