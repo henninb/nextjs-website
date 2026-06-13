@@ -36,18 +36,33 @@ done
 if command -v vercel >/dev/null 2>&1; then
   VERCEL="vercel"
 elif command -v npx >/dev/null 2>&1; then
+  log "vercel not installed globally; using npx (slow). Run: npm i -g vercel"
   VERCEL="npx --yes vercel@latest"
 else
   err "vercel CLI not found. Install with: npm i -g vercel"
   exit 1
 fi
 
+TIMEOUT_CMD=""
+if command -v timeout >/dev/null 2>&1; then
+  TIMEOUT_CMD="timeout 30"
+fi
+
 log "Using: $VERCEL"
 log "Fetching latest $LIMIT deployments..."
 printf '\n'
 
-if [ -n "$PROJECT" ]; then
-  $VERCEL ls "$PROJECT" 2>&1 | head -n $(( LIMIT + 5 ))
+SCOPE=""
+if [ -f ".vercel/project.json" ] && command -v jq >/dev/null 2>&1; then
+  SCOPE=$(jq -r '.orgId // empty' .vercel/project.json 2>/dev/null || true)
+fi
+
+if [ -n "$PROJECT" ] && [ -n "$SCOPE" ]; then
+  $TIMEOUT_CMD $VERCEL ls "$PROJECT" --scope "$SCOPE" 2>&1 | head -n $(( LIMIT + 5 ))
+elif [ -n "$PROJECT" ]; then
+  $TIMEOUT_CMD $VERCEL ls "$PROJECT" 2>&1 | head -n $(( LIMIT + 5 ))
+elif [ -n "$SCOPE" ]; then
+  $TIMEOUT_CMD $VERCEL ls --scope "$SCOPE" 2>&1 | head -n $(( LIMIT + 5 ))
 else
-  $VERCEL ls 2>&1 | head -n $(( LIMIT + 5 ))
+  $TIMEOUT_CMD $VERCEL ls 2>&1 | head -n $(( LIMIT + 5 ))
 fi

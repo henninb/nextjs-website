@@ -689,7 +689,7 @@ export default function TransactionsByAccount({
       if (row.transactionType === "income" || row.transactionType === "transfer")
         return sum;
       const cat = (row.category ?? "").toLowerCase();
-      if (cat === "payment" || cat === "returns") return sum;
+      if (cat === "payment" || cat === "returns" || cat === "bill_pay") return sum;
       const amount = Math.abs(row.amount ?? 0);
       const is3x = rewardsConfig.categories3x.some(
         (c: string) => cat === c || cat.includes(c),
@@ -1180,7 +1180,7 @@ export default function TransactionsByAccount({
                   );
                 }
                 const cat = (row.category ?? "").toLowerCase();
-                if (cat === "payment" || cat === "returns") {
+                if (cat === "payment" || cat === "returns" || cat === "bill_pay") {
                   return (
                     <Typography variant="body2" color="text.disabled">
                       —
@@ -1288,7 +1288,7 @@ export default function TransactionsByAccount({
       )
         return sum;
       const cat = (row.category ?? "").toLowerCase();
-      if (cat === "payment" || cat === "returns") return sum;
+      if (cat === "payment" || cat === "returns" || cat === "bill_pay") return sum;
       const amount = Math.abs(row.amount ?? 0);
       const is3x = rewardsConfig.categories3x.some(
         (c: string) => cat === c || cat.includes(c),
