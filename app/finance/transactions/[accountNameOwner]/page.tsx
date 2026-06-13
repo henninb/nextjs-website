@@ -504,7 +504,6 @@ export default function TransactionsByAccount({
   );
 
   const rewardsConfig = useMemo(() => {
-    if (currentAccount?.accountType !== "credit") return null;
     if (!fetchedParameters || !validAccountNameOwner) return null;
 
     const raw3x = fetchedParameters.find(
@@ -530,7 +529,7 @@ export default function TransactionsByAccount({
         : [],
       cpp: cppValue ? parseFloat(cppValue) : 0.01,
     };
-  }, [fetchedParameters, validAccountNameOwner, currentAccount]);
+  }, [fetchedParameters, validAccountNameOwner]);
 
   const isCreditCard = useMemo(
     () =>
