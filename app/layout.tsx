@@ -68,10 +68,6 @@ export default function RootLayout({
           src="https://henninb.github.io/human-challenge/human-challenge.js"
           strategy="afterInteractive"
         />
-        <Script
-          src="https://henninb.github.io/human-challenge/hello.js"
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   );
