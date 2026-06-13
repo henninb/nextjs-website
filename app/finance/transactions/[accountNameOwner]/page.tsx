@@ -32,7 +32,10 @@ import LoadingState from "../../../../components/LoadingState";
 import USDAmountInput from "../../../../components/USDAmountInput";
 import useTransactionByAccountFetchPaged, {
   TransactionPageFilters,
+  fetchTransactionsByAccountPaged,
 } from "../../../../hooks/useTransactionByAccountFetchPaged";
+import { useAuthenticatedQuery } from "../../../../utils/queryConfig";
+import { getAccountKey } from "../../../../utils/cacheUtils";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import useTransactionDelete from "../../../../hooks/useTransactionDelete";
@@ -645,8 +648,11 @@ export default function TransactionsByAccount({
 
     const prevDueFuture = prevDue && prevDue >= today ? prevDue : null;
 
+    const toIso = (d: Date) => d.toISOString().slice(0, 10);
+
     return {
       nextClose,
+      prevClose,
       nextDue,
       daysUntilClose: nextClose ? daysUntil(nextClose) : null,
       daysUntilDue: nextDue ? daysUntil(nextDue) : null,
@@ -654,8 +660,49 @@ export default function TransactionsByAccount({
       nextDueFormatted: nextDue ? formatDate(nextDue) : null,
       prevDueFormatted: prevDueFuture ? formatDate(prevDueFuture) : null,
       daysUntilPrevDue: prevDueFuture ? daysUntil(prevDueFuture) : null,
+      cycleStartDate: prevClose ? toIso(prevClose) : null,
+      cycleEndDate: nextClose ? toIso(nextClose) : null,
     };
   }, [isCreditCard, currentAccount]);
+
+  const { data: cycleTransactionPage } = useAuthenticatedQuery(
+    [
+      ...getAccountKey(validAccountNameOwner),
+      "cycle",
+      creditCardDates?.cycleStartDate,
+      creditCardDates?.cycleEndDate,
+    ],
+    () =>
+      fetchTransactionsByAccountPaged(validAccountNameOwner, 0, 500, {
+        startDate: creditCardDates?.cycleStartDate ?? undefined,
+        endDate: creditCardDates?.cycleEndDate ?? undefined,
+      }),
+    {
+      enabled: !!rewardsConfig && !!creditCardDates?.cycleStartDate && !!creditCardDates?.cycleEndDate,
+      staleTime: 5 * 60 * 1000,
+    },
+  );
+
+  const cycleRewards = useMemo(() => {
+    if (!rewardsConfig || !cycleTransactionPage?.content) return null;
+    const total = cycleTransactionPage.content.reduce((sum, row) => {
+      if (row.transactionType === "income" || row.transactionType === "transfer")
+        return sum;
+      const amount = Math.abs(row.amount ?? 0);
+      const cat = (row.category ?? "").toLowerCase();
+      const is3x = rewardsConfig.categories3x.some(
+        (c: string) => cat === c || cat.includes(c),
+      );
+      const is2x =
+        !is3x &&
+        rewardsConfig.categories2x.some(
+          (c: string) => cat === c || cat.includes(c),
+        );
+      const multiplier = is3x ? 3 : is2x ? 2 : 1;
+      return sum + amount * multiplier * rewardsConfig.cpp;
+    }, 0);
+    return total;
+  }, [rewardsConfig, cycleTransactionPage]);
 
   const handleOpenAddModal = () => {
     if (cacheEnabled && typeof window !== "undefined") {
@@ -1605,6 +1652,20 @@ export default function TransactionsByAccount({
                                 ? "secondary"
                                 : "warning"
                             }
+                          />
+                        </Box>
+                      </Grow>
+                    )}
+
+                    {/* Cycle Rewards - total rewards earned in the current billing cycle */}
+                    {cycleRewards != null && cycleRewards > 0 && (
+                      <Grow in={true} timeout={1300}>
+                        <Box>
+                          <StatCard
+                            icon={<WorkspacePremiumIcon />}
+                            label="Cycle Rewards"
+                            value={`$${cycleRewards.toFixed(2)}`}
+                            color="info"
                           />
                         </Box>
                       </Grow>
