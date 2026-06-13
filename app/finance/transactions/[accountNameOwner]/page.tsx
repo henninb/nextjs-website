@@ -89,6 +89,7 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AlarmIcon from "@mui/icons-material/Alarm";
 import PaymentIcon from "@mui/icons-material/Payment";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import Fade from "@mui/material/Fade";
 import Grow from "@mui/material/Grow";
 import TransactionFilterBar, {
@@ -501,6 +502,35 @@ export default function TransactionsByAccount({
       ) ?? null,
     [fetchedAccounts, validAccountNameOwner],
   );
+
+  const rewardsConfig = useMemo(() => {
+    if (currentAccount?.accountType !== "credit") return null;
+    if (!fetchedParameters || !validAccountNameOwner) return null;
+
+    const raw3x = fetchedParameters.find(
+      (p) =>
+        p.parameterName === `rewards_3x_categories_${validAccountNameOwner}`,
+    )?.parameterValue;
+    const raw2x = fetchedParameters.find(
+      (p) =>
+        p.parameterName === `rewards_2x_categories_${validAccountNameOwner}`,
+    )?.parameterValue;
+    const cppValue = fetchedParameters.find(
+      (p) => p.parameterName === `rewards_cpp_${validAccountNameOwner}`,
+    )?.parameterValue;
+
+    if (!raw3x && !raw2x) return null;
+
+    return {
+      categories3x: raw3x
+        ? raw3x.split(",").map((c: string) => c.trim().toLowerCase())
+        : [],
+      categories2x: raw2x
+        ? raw2x.split(",").map((c: string) => c.trim().toLowerCase())
+        : [],
+      cpp: cppValue ? parseFloat(cppValue) : 0.01,
+    };
+  }, [fetchedParameters, validAccountNameOwner, currentAccount]);
 
   const isCreditCard = useMemo(
     () =>
@@ -1079,6 +1109,62 @@ export default function TransactionsByAccount({
         minWidth: 120,
         editable: true,
       },
+      ...(rewardsConfig
+        ? [
+            {
+              field: "points",
+              headerName: "Points",
+              flex: 0.7,
+              minWidth: 100,
+              headerAlign: "right" as const,
+              align: "right" as const,
+              sortable: false,
+              filterable: false,
+              renderCell: (params: GridRenderCellParams<Transaction>) => {
+                const row = params.row;
+                if (
+                  row.transactionType === "income" ||
+                  row.transactionType === "transfer"
+                ) {
+                  return (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  );
+                }
+                const amount = Math.abs(row.amount ?? 0);
+                const cat = (row.category ?? "").toLowerCase();
+                const is3x = rewardsConfig.categories3x.some(
+                  (c: string) => cat === c || cat.includes(c),
+                );
+                const is2x =
+                  !is3x &&
+                  rewardsConfig.categories2x.some(
+                    (c: string) => cat === c || cat.includes(c),
+                  );
+                const multiplier = is3x ? 3 : is2x ? 2 : 1;
+                const points = Math.round(amount * multiplier);
+                const dollarValue = (points * rewardsConfig.cpp).toFixed(2);
+                return (
+                  <Tooltip title={`${multiplier}x · $${dollarValue} value`}>
+                    <Box sx={{ textAlign: "right", lineHeight: 1.3 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {points.toLocaleString()}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: "0.65rem" }}
+                      >
+                        ${dollarValue}
+                      </Typography>
+                    </Box>
+                  </Tooltip>
+                );
+              },
+            },
+          ]
+        : []),
       {
         field: "",
         headerName: "Actions",
@@ -1132,7 +1218,7 @@ export default function TransactionsByAccount({
         },
       },
     ],
-    [updateTransaction, handleError],
+    [updateTransaction, handleError, rewardsConfig],
   );
 
   // Update filter amount range when data changes
@@ -1148,6 +1234,29 @@ export default function TransactionsByAccount({
     () => fetchedTransactions || [],
     [fetchedTransactions],
   );
+
+  const totalPoints = useMemo(() => {
+    if (!rewardsConfig || !filteredTransactions) return 0;
+    return filteredTransactions.reduce((sum, row) => {
+      if (
+        row.transactionType === "income" ||
+        row.transactionType === "transfer"
+      )
+        return sum;
+      const amount = Math.abs(row.amount ?? 0);
+      const cat = (row.category ?? "").toLowerCase();
+      const is3x = rewardsConfig.categories3x.some(
+        (c: string) => cat === c || cat.includes(c),
+      );
+      const is2x =
+        !is3x &&
+        rewardsConfig.categories2x.some(
+          (c: string) => cat === c || cat.includes(c),
+        );
+      const multiplier = is3x ? 3 : is2x ? 2 : 1;
+      return sum + Math.round(amount * multiplier);
+    }, 0);
+  }, [rewardsConfig, filteredTransactions]);
 
   // Handle error states first
   if (
@@ -1309,10 +1418,7 @@ export default function TransactionsByAccount({
                 gridTemplateColumns: {
                   xs: "1fr",
                   sm: "repeat(2, 1fr)",
-                  md:
-                    selectedTotal !== null
-                      ? "repeat(5, 1fr)"
-                      : "repeat(4, 1fr)",
+                  md: `repeat(${4 + (selectedTotal !== null ? 1 : 0) + (rewardsConfig && totalPoints > 0 ? 1 : 0)}, 1fr)`,
                 },
                 gap: 2,
                 maxWidth: "1400px",
@@ -1384,6 +1490,20 @@ export default function TransactionsByAccount({
                       value={currencyFormat(noNaN(selectedTotal))}
                       color="secondary"
                       highlighted={true}
+                    />
+                  </Box>
+                </Grow>
+              )}
+
+              {/* Points Card - only for credit accounts with rewards config */}
+              {rewardsConfig && totalPoints > 0 && (
+                <Grow in={true} timeout={1150}>
+                  <Box>
+                    <StatCard
+                      icon={<WorkspacePremiumIcon />}
+                      label={`Points · $${(totalPoints * rewardsConfig.cpp).toFixed(0)} value`}
+                      value={`${totalPoints.toLocaleString()} pts`}
+                      color="info"
                     />
                   </Box>
                 </Grow>
