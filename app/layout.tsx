@@ -1,4 +1,5 @@
 import "../styles/index.css";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Providers } from "./providers";
 import Layout from "../components/Layout";
 import ErrorBoundary from "../components/ErrorBoundary";
@@ -31,13 +32,15 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        <ErrorBoundary>
-          <Providers>
-            <Layout>
-              <ErrorBoundary>{children}</ErrorBoundary>
-            </Layout>
-          </Providers>
-        </ErrorBoundary>
+        <AppRouterCacheProvider>
+          <ErrorBoundary>
+            <Providers>
+              <Layout>
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </Layout>
+            </Providers>
+          </ErrorBoundary>
+        </AppRouterCacheProvider>
         <Script
           id="px-init"
           strategy="beforeInteractive"
