@@ -87,13 +87,7 @@ export default function DescriptionsNextGen() {
     activeStatus?: string;
   }>({});
 
-  // Modern view state
-  const [view, setView] = useState<"grid" | "table">(
-    () =>
-      (typeof window !== "undefined" &&
-        (localStorage.getItem("descriptionView") as "grid" | "table")) ||
-      "table",
-  );
+  const [view, setView] = useState<"grid" | "table">("table");
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<DescriptionFilters>({
     status: "all",
@@ -113,10 +107,20 @@ export default function DescriptionsNextGen() {
   const { mutateAsync: deleteDescription } = useDescriptionDeleteGql();
   const { mutateAsync: updateDescription } = useDescriptionUpdateGql();
 
-  // Persist view preference
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("descriptionView") as "grid" | "table";
+      if (saved) setView(saved);
+    } catch {
+      // localStorage may not be available
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
       localStorage.setItem("descriptionView", view);
+    } catch {
+      // localStorage may not be available
     }
   }, [view]);
 

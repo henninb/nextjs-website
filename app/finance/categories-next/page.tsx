@@ -86,12 +86,7 @@ export default function CategoriesNextGen() {
     activeStatus?: string;
   }>({});
 
-  const [view, setView] = useState<"grid" | "table">(
-    () =>
-      (typeof window !== "undefined" &&
-        (localStorage.getItem("categoryView") as "grid" | "table")) ||
-      "table",
-  );
+  const [view, setView] = useState<"grid" | "table">("table");
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<CategoryFilters>({
     status: "all",
@@ -117,8 +112,19 @@ export default function CategoriesNextGen() {
   const { mutateAsync: updateCategory } = useCategoryUpdateGql();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("categoryView") as "grid" | "table";
+      if (saved) setView(saved);
+    } catch {
+      // localStorage may not be available
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
       localStorage.setItem("categoryView", view);
+    } catch {
+      // localStorage may not be available
     }
   }, [view]);
 

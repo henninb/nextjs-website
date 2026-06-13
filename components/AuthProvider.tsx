@@ -42,14 +42,16 @@ const useProvideAuth = () => {
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [showSessionWarning, setShowSessionWarning] = useState(false);
   const [sessionMinutesRemaining, setSessionMinutesRemaining] = useState(0);
-  const [stayLoggedIn, setStayLoggedInState] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(STAY_LOGGED_IN_KEY) === "true";
-    } catch {
-      return false;
-    }
-  });
+  const [stayLoggedIn, setStayLoggedInState] = useState<boolean>(false);
   const router = useRouter();
+
+  useEffect(() => {
+    try {
+      setStayLoggedInState(localStorage.getItem(STAY_LOGGED_IN_KEY) === "true");
+    } catch {
+      // localStorage may not be available
+    }
+  }, []);
   const pathname = usePathname();
   const { logoutNow } = useLogout();
 

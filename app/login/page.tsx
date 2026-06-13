@@ -27,30 +27,25 @@ import ErrorDisplay from "../../components/ErrorDisplay";
 import SnackbarBaseline from "../../components/SnackbarBaseline";
 
 export default function LoginPage() {
-  // Initialize email from localStorage immediately
-  const [email, setEmail] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("savedUsername")?.trim() || "";
-    }
-    return "";
-  });
+  const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
-  const [rememberUsername, setRememberUsername] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return !!localStorage.getItem("savedUsername");
+  const [rememberUsername, setRememberUsername] = useState<boolean>(false);
+  const [stayLoggedIn, setStayLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("savedUsername")?.trim() || "";
+      setEmail(saved);
+      setRememberUsername(!!saved);
+      setStayLoggedIn(localStorage.getItem("stayLoggedIn") === "true");
+    } catch {
+      // localStorage may not be available
     }
-    return false;
-  });
-  const [stayLoggedIn, setStayLoggedIn] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("stayLoggedIn") === "true";
-    }
-    return false;
-  });
+  }, []);
 
   const { login } = useAuth();
   const router = useRouter();
