@@ -313,7 +313,10 @@ export default function Accounts() {
           (account.accountNameOwner.toLowerCase().includes("hsa") ||
             account.accountNameOwner.toLowerCase().includes("brokerage") ||
             account.accountNameOwner.toLowerCase().includes("pension") ||
-            account.accountNameOwner.toLowerCase().includes("401k")));
+            account.accountNameOwner.toLowerCase().includes("401k") ||
+            account.accountNameOwner.toLowerCase().includes("alight") ||
+            account.accountNameOwner.toLowerCase().includes("mercer") ||
+            account.accountNameOwner.toLowerCase().includes("wex")));
 
       return (
         matchesSearch &&
