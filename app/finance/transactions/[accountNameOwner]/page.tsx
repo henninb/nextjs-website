@@ -688,8 +688,9 @@ export default function TransactionsByAccount({
     const total = cycleTransactionPage.content.reduce((sum, row) => {
       if (row.transactionType === "income" || row.transactionType === "transfer")
         return sum;
-      const amount = Math.abs(row.amount ?? 0);
       const cat = (row.category ?? "").toLowerCase();
+      if (cat === "payment" || cat === "returns") return sum;
+      const amount = Math.abs(row.amount ?? 0);
       const is3x = rewardsConfig.categories3x.some(
         (c: string) => cat === c || cat.includes(c),
       );
@@ -1178,8 +1179,15 @@ export default function TransactionsByAccount({
                     </Typography>
                   );
                 }
-                const amount = Math.abs(row.amount ?? 0);
                 const cat = (row.category ?? "").toLowerCase();
+                if (cat === "payment" || cat === "returns") {
+                  return (
+                    <Typography variant="body2" color="text.disabled">
+                      —
+                    </Typography>
+                  );
+                }
+                const amount = Math.abs(row.amount ?? 0);
                 const is3x = rewardsConfig.categories3x.some(
                   (c: string) => cat === c || cat.includes(c),
                 );
@@ -1279,8 +1287,9 @@ export default function TransactionsByAccount({
         row.transactionType === "transfer"
       )
         return sum;
-      const amount = Math.abs(row.amount ?? 0);
       const cat = (row.category ?? "").toLowerCase();
+      if (cat === "payment" || cat === "returns") return sum;
+      const amount = Math.abs(row.amount ?? 0);
       const is3x = rewardsConfig.categories3x.some(
         (c: string) => cat === c || cat.includes(c),
       );
