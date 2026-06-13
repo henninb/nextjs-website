@@ -387,6 +387,8 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
       ];
       queryClient.setQueryData(["transfer"], existingTransfers);
 
+      const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
       function wrapper({ children }: { children: React.ReactNode }) {
         return React.createElement(
           QueryClientProvider,
@@ -405,10 +407,10 @@ describe("useTransferUpdate Modern Endpoint (TDD)", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
-      expect(cacheData).toHaveLength(2);
-      expect(cacheData?.[0].amount).toBe(150.0); // Updated
-      expect(cacheData?.[1]).toStrictEqual(existingTransfers[1]); // Unchanged
+      // Hook uses invalidateQueries (not setQueryData) to signal stale data
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: ["transfer"] }),
+      );
     });
   });
 });

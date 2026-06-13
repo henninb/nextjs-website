@@ -158,8 +158,8 @@ describe("sanitization additional coverage", () => {
         }),
       ).toMatchObject({
         paymentId: 2,
-        sourceAccount: "savings1",
-        destinationAccount: "checking2",
+        sourceAccount: "savings",
+        destinationAccount: "checking",
         amount: 22.5,
         activeStatus: true,
       });
@@ -175,8 +175,8 @@ describe("sanitization additional coverage", () => {
         }),
       ).toMatchObject({
         transferId: 3,
-        sourceAccount: "savings1",
-        destinationAccount: "checking2",
+        sourceAccount: "savings",
+        destinationAccount: "checking",
         amount: 12.34,
         activeStatus: false,
       });

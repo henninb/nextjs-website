@@ -23,7 +23,7 @@ jest.mock("@mui/x-data-grid", () => ({
     </div>
   ),
 }));
-import * as useFetchTransfer from "../../../hooks/useTransferFetch";
+import * as useTransferFetchPaged from "../../../hooks/useTransferFetchPaged";
 import * as useTransferInsert from "../../../hooks/useTransferInsert";
 import * as useTransferDelete from "../../../hooks/useTransferDelete";
 import * as useTransferUpdate from "../../../hooks/useTransferUpdate";
@@ -37,7 +37,7 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
-jest.mock("../../../hooks/useTransferFetch");
+jest.mock("../../../hooks/useTransferFetchPaged");
 jest.mock("../../../hooks/useTransferInsert");
 jest.mock("../../../hooks/useTransferDelete");
 jest.mock("../../../hooks/useTransferUpdate");
@@ -143,11 +143,12 @@ describe("Transfers Component", () => {
       loading: false,
     });
 
-    (useFetchTransfer.default as jest.Mock).mockReturnValue({
-      data: mockTransferData,
+    (useTransferFetchPaged.default as jest.Mock).mockReturnValue({
+      data: { content: mockTransferData, totalElements: mockTransferData.length },
       isSuccess: true,
       isFetching: false,
       error: null,
+      refetch: jest.fn(),
     });
 
     (useAccountFetch.default as jest.Mock).mockReturnValue({
@@ -196,11 +197,12 @@ describe("Transfers Component", () => {
   });
 
   it("shows spinner while loading", () => {
-    (useFetchTransfer.default as jest.Mock).mockReturnValue({
+    (useTransferFetchPaged.default as jest.Mock).mockReturnValue({
       data: null,
       isSuccess: false,
       isFetching: true,
       error: null,
+      refetch: jest.fn(),
     });
 
     render(<Transfers />, { wrapper: createWrapper() });
@@ -212,11 +214,12 @@ describe("Transfers Component", () => {
   });
 
   it("displays error state when transfer fetch fails", () => {
-    (useFetchTransfer.default as jest.Mock).mockReturnValue({
+    (useTransferFetchPaged.default as jest.Mock).mockReturnValue({
       data: null,
       isSuccess: false,
       isFetching: false,
       error: new Error("Failed to fetch transfers"),
+      refetch: jest.fn(),
     });
 
     render(<Transfers />, { wrapper: createWrapper() });
@@ -239,11 +242,12 @@ describe("Transfers Component", () => {
   });
 
   it("shows empty state when no transfers exist", () => {
-    (useFetchTransfer.default as jest.Mock).mockReturnValue({
-      data: [],
+    (useTransferFetchPaged.default as jest.Mock).mockReturnValue({
+      data: { content: [], totalElements: 0 },
       isSuccess: true,
       isFetching: false,
       error: null,
+      refetch: jest.fn(),
     });
 
     render(<Transfers />, { wrapper: createWrapper() });

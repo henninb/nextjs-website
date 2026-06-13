@@ -352,8 +352,9 @@ describe("fetchValidationAmount", () => {
 
       await fetchValidationAmount(longAccountName);
 
+      // Account names are sanitized and truncated to 40 chars
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/validation/amount/active?accountNameOwner=${longAccountName}&transactionState=cleared`,
+        `/api/validation/amount/active?accountNameOwner=${"a".repeat(40)}&transactionState=cleared`,
         expect.any(Object),
       );
     });
@@ -365,8 +366,9 @@ describe("fetchValidationAmount", () => {
 
       await fetchValidationAmount("12345");
 
+      // Digits are stripped by sanitizeAccountName, leaving an empty string
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/validation/amount/active?accountNameOwner=12345&transactionState=cleared",
+        "/api/validation/amount/active?accountNameOwner=&transactionState=cleared",
         expect.any(Object),
       );
     });

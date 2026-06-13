@@ -624,9 +624,8 @@ describe("pages/finance/payments", () => {
       const saveButton = screen.getByRole("button", { name: /pay \$0\.00/i });
       fireEvent.click(saveButton);
 
-      await waitFor(() => {
-        expect(insertPaymentMock).toHaveBeenCalled();
-      });
+      // Zero amount fails validation (must be > 0), so insert is not called
+      expect(insertPaymentMock).not.toHaveBeenCalled();
     });
 
     it("validates amount with negative values", () => {
@@ -696,12 +695,8 @@ describe("pages/finance/payments", () => {
       });
       fireEvent.click(saveButton);
 
-      // Invalid input converts to 0, which is valid (non-negative), so insert is called
-      expect(insertPaymentMock).toHaveBeenCalledWith({
-        payload: expect.objectContaining({
-          amount: 0,
-        }),
-      });
+      // Invalid input converts to 0, which fails validation (must be > 0)
+      expect(insertPaymentMock).not.toHaveBeenCalled();
     });
 
     it("formats amount properly on blur", () => {
@@ -918,6 +913,7 @@ describe("pages/finance/payments", () => {
     });
 
     it("handles network failure during payment insertion", async () => {
+      insertPaymentMock.mockReset();
       insertPaymentMock.mockRejectedValueOnce(new Error("Network error"));
 
       mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });

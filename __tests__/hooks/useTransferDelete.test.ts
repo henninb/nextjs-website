@@ -310,6 +310,8 @@ describe("useTransferDelete Modern Endpoint (TDD)", () => {
       ];
       queryClient.setQueryData(["transfer"], existingTransfers);
 
+      const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
       function wrapper({ children }: { children: React.ReactNode }) {
         return React.createElement(
           QueryClientProvider,
@@ -327,9 +329,10 @@ describe("useTransferDelete Modern Endpoint (TDD)", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
-      expect(cacheData).toHaveLength(1);
-      expect(cacheData?.[0].transferId).toBe(2); // Only second transfer remains
+      // Hook uses invalidateQueries (not setQueryData) to signal stale data
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: ["transfer"] }),
+      );
     });
 
     it("should handle empty cache after deletion", async () => {
@@ -346,6 +349,8 @@ describe("useTransferDelete Modern Endpoint (TDD)", () => {
       ];
       queryClient.setQueryData(["transfer"], existingTransfers);
 
+      const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
       function wrapper({ children }: { children: React.ReactNode }) {
         return React.createElement(
           QueryClientProvider,
@@ -363,9 +368,10 @@ describe("useTransferDelete Modern Endpoint (TDD)", () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      const cacheData = queryClient.getQueryData<Transfer[]>(["transfer"]);
-      expect(cacheData).toHaveLength(0);
-      expect(cacheData).toStrictEqual([]);
+      // Hook uses invalidateQueries (not setQueryData) to signal stale data
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: ["transfer"] }),
+      );
     });
   });
 });

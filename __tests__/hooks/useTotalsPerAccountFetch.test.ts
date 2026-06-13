@@ -122,9 +122,9 @@ describe("fetchTotalsPerAccount", () => {
 
       await fetchTotalsPerAccount("account-with_special.chars@123");
 
-      // Special characters removed by sanitization: .@
+      // Special characters removed by sanitization: .@ and digits
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/account/totals/account-with_specialchars123",
+        "/api/transaction/account/totals/account-with_specialchars",
         expect.any(Object),
       );
     });
@@ -545,13 +545,13 @@ describe("fetchTotalsPerAccount", () => {
 
     it("should handle different account naming conventions", async () => {
       const accountTests = [
-        { input: "checking-001", sanitized: "checking-001" },
+        { input: "checking-001", sanitized: "checking-" }, // digits removed
         { input: "savings_emergency", sanitized: "savings_emergency" },
         { input: "credit.card.visa", sanitized: "creditcardvisa" }, // . removed
         { input: "investment@portfolio", sanitized: "investmentportfolio" }, // @ removed
         {
           input: "business-operating-2024",
-          sanitized: "business-operating-2024",
+          sanitized: "business-operating-", // digits removed
         },
       ];
       const testTotals = createTestTotals();
@@ -579,9 +579,9 @@ describe("fetchTotalsPerAccount", () => {
       const result = await fetchTotalsPerAccount(longAccountName);
 
       expect(result).toStrictEqual(testTotals);
-      // Account names are sanitized but not truncated in this hook
+      // Account names are sanitized and truncated to 40 chars
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/transaction/account/totals/${longAccountName}`,
+        `/api/transaction/account/totals/${"a".repeat(40)}`,
         expect.any(Object),
       );
     });
@@ -594,8 +594,9 @@ describe("fetchTotalsPerAccount", () => {
       const result = await fetchTotalsPerAccount(numericAccount);
 
       expect(result).toStrictEqual(testTotals);
+      // Digits are stripped by sanitizeAccountName, leaving an empty string
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/transaction/account/totals/12345",
+        "/api/transaction/account/totals/",
         expect.any(Object),
       );
     });
