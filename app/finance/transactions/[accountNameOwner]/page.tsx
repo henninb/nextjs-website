@@ -10,6 +10,7 @@ import TextField from "@mui/material/TextField";
 import {
   Box,
   Button,
+  Collapse,
   IconButton,
   Typography,
   Tooltip,
@@ -93,6 +94,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AlarmIcon from "@mui/icons-material/Alarm";
 import PaymentIcon from "@mui/icons-material/Payment";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Fade from "@mui/material/Fade";
 import Grow from "@mui/material/Grow";
 import TransactionFilterBar, {
@@ -143,6 +145,10 @@ export default function TransactionsByAccount({
 
   // View state for grid/table toggle
   const [view, setView] = useState<"grid" | "table">("table");
+
+  // Collapsible section state — start minimized
+  const [showBillingCycle, setShowBillingCycle] = useState(false);
+  const [showBonusProgress, setShowBonusProgress] = useState(false);
 
   // Local UI filters/search
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -1570,11 +1576,15 @@ export default function TransactionsByAccount({
                   }}
                 >
                   <Box
+                    onClick={() => setShowBillingCycle((v) => !v)}
                     sx={{
                       display: "flex",
                       alignItems: "center",
                       gap: 1,
-                      mb: 1.5,
+                      mb: showBillingCycle ? 1.5 : 0,
+                      cursor: "pointer",
+                      userSelect: "none",
+                      "&:hover": { opacity: 0.75 },
                     }}
                   >
                     <CreditCardIcon
@@ -1588,102 +1598,113 @@ export default function TransactionsByAccount({
                         fontWeight: 600,
                         color: "text.secondary",
                         fontSize: "0.7rem",
+                        flex: 1,
                       }}
                     >
                       Credit Card Billing Cycle
                     </Typography>
+                    <ExpandMoreIcon
+                      sx={{
+                        fontSize: "1rem",
+                        color: "text.secondary",
+                        transform: showBillingCycle ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 0.2s",
+                      }}
+                    />
                   </Box>
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: {
-                        xs: "1fr",
-                        sm: "repeat(2, 1fr)",
-                        md: "repeat(4, 1fr)",
-                      },
-                      gap: 2,
-                    }}
-                  >
-                    {/* Next Close Date */}
-                    {creditCardDates.nextCloseFormatted && (
-                      <Grow in={true} timeout={900}>
-                        <Box>
-                          <StatCard
-                            icon={<CalendarTodayIcon />}
-                            label={
-                              creditCardDates.daysUntilClose != null
-                                ? `Next Close · ${creditCardDates.daysUntilClose}d away`
-                                : "Next Close"
-                            }
-                            value={creditCardDates.nextCloseFormatted}
-                            color={
-                              (creditCardDates.daysUntilClose ?? 99) <= 7
-                                ? "warning"
-                                : "primary"
-                            }
-                          />
-                        </Box>
-                      </Grow>
-                    )}
+                  <Collapse in={showBillingCycle}>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "1fr",
+                          sm: "repeat(2, 1fr)",
+                          md: "repeat(4, 1fr)",
+                        },
+                        gap: 2,
+                      }}
+                    >
+                      {/* Next Close Date */}
+                      {creditCardDates.nextCloseFormatted && (
+                        <Grow in={true} timeout={900}>
+                          <Box>
+                            <StatCard
+                              icon={<CalendarTodayIcon />}
+                              label={
+                                creditCardDates.daysUntilClose != null
+                                  ? `Next Close · ${creditCardDates.daysUntilClose}d away`
+                                  : "Next Close"
+                              }
+                              value={creditCardDates.nextCloseFormatted}
+                              color={
+                                (creditCardDates.daysUntilClose ?? 99) <= 7
+                                  ? "warning"
+                                  : "primary"
+                              }
+                            />
+                          </Box>
+                        </Grow>
+                      )}
 
-                    {/* Next Due Date */}
-                    {creditCardDates.nextDueFormatted && (
-                      <Grow in={true} timeout={1000}>
-                        <Box>
-                          <StatCard
-                            icon={<AlarmIcon />}
-                            label={
-                              creditCardDates.daysUntilDue != null
-                                ? `Next Due · ${creditCardDates.daysUntilDue}d away`
-                                : "Next Due"
-                            }
-                            value={creditCardDates.nextDueFormatted}
-                            color={
-                              (creditCardDates.daysUntilDue ?? 99) <= 7
-                                ? "warning"
-                                : "info"
-                            }
-                          />
-                        </Box>
-                      </Grow>
-                    )}
+                      {/* Next Due Date */}
+                      {creditCardDates.nextDueFormatted && (
+                        <Grow in={true} timeout={1000}>
+                          <Box>
+                            <StatCard
+                              icon={<AlarmIcon />}
+                              label={
+                                creditCardDates.daysUntilDue != null
+                                  ? `Next Due · ${creditCardDates.daysUntilDue}d away`
+                                  : "Next Due"
+                              }
+                              value={creditCardDates.nextDueFormatted}
+                              color={
+                                (creditCardDates.daysUntilDue ?? 99) <= 7
+                                  ? "warning"
+                                  : "info"
+                              }
+                            />
+                          </Box>
+                        </Grow>
+                      )}
 
-                    {/* Current Statement Due (previous cycle due date still in the future) */}
-                    {creditCardDates.prevDueFormatted && (
-                      <Grow in={true} timeout={1200}>
-                        <Box>
-                          <StatCard
-                            icon={<PaymentIcon />}
-                            label={
-                              creditCardDates.daysUntilPrevDue != null
-                                ? `Current Due · ${creditCardDates.daysUntilPrevDue}d away`
-                                : "Current Due"
-                            }
-                            value={creditCardDates.prevDueFormatted}
-                            color={
-                              (creditCardDates.daysUntilPrevDue ?? 99) <= 7
-                                ? "secondary"
-                                : "warning"
-                            }
-                          />
-                        </Box>
-                      </Grow>
-                    )}
+                      {/* Current Statement Due (previous cycle due date still in the future) */}
+                      {creditCardDates.prevDueFormatted && (
+                        <Grow in={true} timeout={1200}>
+                          <Box>
+                            <StatCard
+                              icon={<PaymentIcon />}
+                              label={
+                                creditCardDates.daysUntilPrevDue != null
+                                  ? `Current Due · ${creditCardDates.daysUntilPrevDue}d away`
+                                  : "Current Due"
+                              }
+                              value={creditCardDates.prevDueFormatted}
+                              color={
+                                (creditCardDates.daysUntilPrevDue ?? 99) <= 7
+                                  ? "secondary"
+                                  : "warning"
+                              }
+                            />
+                          </Box>
+                        </Grow>
+                      )}
 
-                    {/* Cycle Rewards - total rewards earned in the current billing cycle */}
-                    {cycleRewards != null && cycleRewards > 0 && (
-                      <Grow in={true} timeout={1300}>
-                        <Box>
-                          <StatCard
-                            icon={<WorkspacePremiumIcon />}
-                            label="Cycle Rewards"
-                            value={`$${cycleRewards.toFixed(2)}`}
-                            color="info"
-                          />
-                        </Box>
-                      </Grow>
-                    )}
-                  </Box>
+                      {/* Cycle Rewards - total rewards earned in the current billing cycle */}
+                      {cycleRewards != null && cycleRewards > 0 && (
+                        <Grow in={true} timeout={1300}>
+                          <Box>
+                            <StatCard
+                              icon={<WorkspacePremiumIcon />}
+                              label="Cycle Rewards"
+                              value={`$${cycleRewards.toFixed(2)}`}
+                              color="info"
+                            />
+                          </Box>
+                        </Grow>
+                      )}
+                    </Box>
+                  </Collapse>
                 </Box>
               </Fade>
             )}
@@ -1699,11 +1720,15 @@ export default function TransactionsByAccount({
                   }}
                 >
                   <Box
+                    onClick={() => setShowBonusProgress((v) => !v)}
                     sx={{
                       display: "flex",
                       alignItems: "center",
                       gap: 1,
-                      mb: 1.5,
+                      mb: showBonusProgress ? 1.5 : 0,
+                      cursor: "pointer",
+                      userSelect: "none",
+                      "&:hover": { opacity: 0.75 },
                     }}
                   >
                     <Typography
@@ -1714,18 +1739,29 @@ export default function TransactionsByAccount({
                         fontWeight: 600,
                         color: "text.secondary",
                         fontSize: "0.7rem",
+                        flex: 1,
                       }}
                     >
                       Bonus Progress
                     </Typography>
+                    <ExpandMoreIcon
+                      sx={{
+                        fontSize: "1rem",
+                        color: "text.secondary",
+                        transform: showBonusProgress ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 0.2s",
+                      }}
+                    />
                   </Box>
-                  <SpendingBonusTracker
-                    accountNameOwner={validAccountNameOwner}
-                    startDate={bonusConfig.startDate}
-                    targetAmount={bonusConfig.targetAmount}
-                    bonusAmount={bonusConfig.bonusAmount}
-                    windowDays={bonusConfig.windowDays}
-                  />
+                  <Collapse in={showBonusProgress}>
+                    <SpendingBonusTracker
+                      accountNameOwner={validAccountNameOwner}
+                      startDate={bonusConfig.startDate}
+                      targetAmount={bonusConfig.targetAmount}
+                      bonusAmount={bonusConfig.bonusAmount}
+                      windowDays={bonusConfig.windowDays}
+                    />
+                  </Collapse>
                 </Box>
               </Fade>
             )}
