@@ -213,6 +213,9 @@ export default function PasteTransactionsDialog({
   const handleInsert = async (): Promise<void> => {
     const toInsert = rows.filter((r) => !r.removed && r.selected);
 
+    // Clear any insert errors from a previous attempt
+    setRows((prev) => prev.map((r) => ({ ...r, insertError: undefined })));
+
     setStep("inserting");
     setInsertProgress(0);
     setInsertedCount(0);
@@ -220,6 +223,7 @@ export default function PasteTransactionsDialog({
 
     let inserted = 0;
     let failed = 0;
+    const succeededIds = new Set<string>();
 
     for (let idx = 0; idx < toInsert.length; idx++) {
       const row = toInsert[idx];
@@ -249,6 +253,7 @@ export default function PasteTransactionsDialog({
           isImportTransaction: true,
         });
         inserted++;
+        succeededIds.add(row.id);
       } catch (error) {
         failed++;
         const msg = error instanceof Error ? error.message : String(error);
@@ -267,8 +272,20 @@ export default function PasteTransactionsDialog({
       }
     }
 
-    setStep("done");
-    if (inserted > 0) onComplete();
+    if (failed > 0) {
+      // Remove successfully inserted rows so the review table shows only failures
+      if (succeededIds.size > 0) {
+        setRows((prev) =>
+          prev.map((r) => (succeededIds.has(r.id) ? { ...r, removed: true } : r)),
+        );
+      }
+      // Go back to review so the user can patch and retry
+      setStep("review");
+      if (inserted > 0) onComplete();
+    } else {
+      setStep("done");
+      onComplete();
+    }
   };
 
   // Derived state for review step
@@ -388,6 +405,14 @@ export default function PasteTransactionsDialog({
         {/* ── Step: review ────────────────────────────────────────────── */}
         {step === "review" && (
           <Box>
+            {failedCount > 0 && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {failedCount} transaction{failedCount !== 1 ? "s" : ""} failed
+                to insert — fix the highlighted rows below and try again.
+                {insertedCount > 0 &&
+                  ` (${insertedCount} inserted successfully and removed from this list.)`}
+              </Alert>
+            )}
             {ambiguousCount > 0 && (
               <Alert severity="warning" sx={{ mb: 2 }}>
                 {ambiguousCount} row{ambiguousCount !== 1 ? "s" : ""} could not
@@ -435,6 +460,7 @@ export default function PasteTransactionsDialog({
                       const hasFieldError =
                         isAmountInvalid || isDateInvalid || isDescInvalid;
                       const hasParseWarning = row.parseErrors.length > 0;
+                      const hasInsertError = !!row.insertError;
 
                       return (
                         <TableRow
@@ -451,7 +477,7 @@ export default function PasteTransactionsDialog({
                                 ? undefined
                                 : undefined,
                             "& td": {
-                              backgroundColor: hasFieldError
+                              backgroundColor: hasInsertError || hasFieldError
                                 ? "rgba(211,47,47,0.08)"
                                 : hasParseWarning
                                   ? "rgba(237,108,2,0.08)"
@@ -471,7 +497,11 @@ export default function PasteTransactionsDialog({
 
                           {/* Status icon */}
                           <TableCell>
-                            {hasFieldError ? (
+                            {hasInsertError ? (
+                              <Tooltip title={`Insert failed: ${row.insertError}`}>
+                                <ErrorIcon fontSize="small" color="error" />
+                              </Tooltip>
+                            ) : hasFieldError ? (
                               <Tooltip title="Row has invalid fields — fix before inserting">
                                 <ErrorIcon fontSize="small" color="error" />
                               </Tooltip>

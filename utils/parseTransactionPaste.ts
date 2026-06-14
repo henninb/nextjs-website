@@ -441,11 +441,13 @@ export function parseTransactionPaste(
 
       // ── Format G ────────────────────────────────────────────────────────────
     } else if (FORMAT_G.test(line)) {
-      // "MM/DD/YY    DESCRIPTION    $AMOUNT    [optional trailing text]"
+      // "MM/DD/YY    DESCRIPTION    $AMOUNT"  (inline amount)
+      // OR "MM/DD/YY    DESCRIPTION" with amount on a follow-on line (Wells Fargo style)
       const m = line.match(/^(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*)/);
       let date: Date | null = null;
       let description = "";
       let amount: number | null = null;
+      let hasInlineAmount = false;
 
       if (m) {
         date = parseDateStr(m[1], errors);
@@ -455,9 +457,9 @@ export function parseTransactionPaste(
         if (amtMatch) {
           description = amtMatch[1].trim();
           amount = parseFirstAmount(amtMatch[2], isCreditAccount);
+          hasInlineAmount = true;
         } else {
           description = rest.trim();
-          errors.push("No amount found");
         }
         if (!description) errors.push("Description is empty");
       } else {
@@ -465,15 +467,39 @@ export function parseTransactionPaste(
       }
 
       i++;
-      rows.push({
-        id: crypto.randomUUID(),
-        date,
-        description,
-        notes: "",
-        cardholder: "",
-        amount,
-        parseErrors: errors,
-      });
+      if (hasInlineAmount) {
+        rows.push({
+          id: crypto.randomUUID(),
+          date,
+          description,
+          notes: "",
+          cardholder: "",
+          amount,
+          parseErrors: errors,
+        });
+      } else {
+        // No inline amount — scan follow-on lines (e.g. Wells Fargo: "#...card" then "$X.XX")
+        const scanned = scanForAmount(
+          lines,
+          i,
+          errors,
+          (next) => {
+            if (/^#/.test(next)) return "skip"; // card-suffix line
+            return "try";
+          },
+          isCreditAccount,
+        );
+        i = scanned.nextIndex;
+        rows.push({
+          id: crypto.randomUUID(),
+          date,
+          description,
+          notes: "",
+          cardholder: "",
+          amount: scanned.value,
+          parseErrors: errors,
+        });
+      }
 
       // ── Format D ────────────────────────────────────────────────────────────
     } else if (FORMAT_D.test(line)) {

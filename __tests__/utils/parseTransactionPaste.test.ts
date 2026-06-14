@@ -1041,6 +1041,16 @@ Posted Transactions
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
 
+    it("should parse Wells Fargo style: date+desc header, card suffix, amount on follow-on lines", () => {
+      const raw = `6/12/26    MERCY HOSPITAL CAFETERIA\n#...1193\n$9.60\nTransaction Details for Row 3    06/12/26    BILL'S SUPERETTE #8\n#...1193\n$11.86`;
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({ description: "MERCY HOSPITAL CAFETERIA", amount: 9.60 });
+      expect(rows[0].parseErrors).toHaveLength(0);
+      expect(rows[1]).toMatchObject({ description: "BILL'S SUPERETTE #8", amount: 11.86 });
+      expect(rows[1].parseErrors).toHaveLength(0);
+    });
+
     it("should flag a row when no amount is found", () => {
       const raw = "04/24/26    BANK REWARDS CREDIT";
       const [row] = parseTransactionPaste(raw);
