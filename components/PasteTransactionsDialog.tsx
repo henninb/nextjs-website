@@ -86,6 +86,7 @@ export default function PasteTransactionsDialog({
 }: PasteTransactionsDialogProps): React.ReactElement {
   const [step, setStep] = useState<DialogStep>("paste");
   const [rawText, setRawText] = useState("");
+  const [cardholderName, setCardholderName] = useState("");
   const [rows, setRows] = useState<EditableRow[]>([]);
   const [categorizingProgress, setCategorizingProgress] = useState(0);
   const [insertProgress, setInsertProgress] = useState(0);
@@ -98,6 +99,7 @@ export default function PasteTransactionsDialog({
   const resetState = useCallback(() => {
     setStep("paste");
     setRawText("");
+    setCardholderName("");
     setRows([]);
     setCategorizingProgress(0);
     setInsertProgress(0);
@@ -122,11 +124,16 @@ export default function PasteTransactionsDialog({
       return;
     }
 
+    const trimmedCardholder = cardholderName.trim();
     const editable: EditableRow[] = parsed.map((p) => ({
       id: p.id,
       date: p.date ? formatDateForInput(p.date) : "",
       description: p.description,
-      notes: p.notes,
+      notes: trimmedCardholder
+        ? p.notes
+          ? `${trimmedCardholder} - ${p.notes}`
+          : trimmedCardholder
+        : p.notes,
       amount: p.amount !== null ? String(p.amount) : "",
       category: "",
       transactionType: inferTransactionType(p.description, p.amount, accountType),
@@ -181,7 +188,7 @@ export default function PasteTransactionsDialog({
 
     setRows(categorized);
     setStep("review");
-  }, [rawText, categories, accountNameOwner]);
+  }, [rawText, cardholderName, categories, accountNameOwner]);
 
   const handleRowChange = useCallback(
     (id: string, field: keyof EditableRow, value: unknown) => {
@@ -321,6 +328,15 @@ export default function PasteTransactionsDialog({
                 {parseErrorMessage}
               </Alert>
             )}
+            <TextField
+              label="Cardholder Name (optional)"
+              placeholder="e.g. Margaret or Brian"
+              size="small"
+              fullWidth
+              value={cardholderName}
+              onChange={(e) => setCardholderName(e.target.value)}
+              sx={{ mb: 2 }}
+            />
             <TextField
               multiline
               minRows={8}
