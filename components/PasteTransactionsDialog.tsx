@@ -87,12 +87,16 @@ export default function PasteTransactionsDialog({
   const [step, setStep] = useState<DialogStep>("paste");
   const [rawText, setRawText] = useState("");
   const [cardholderName, setCardholderName] = useState("");
+  const cardholderNameRef = React.useRef("");
   const [rows, setRows] = useState<EditableRow[]>([]);
   const [categorizingProgress, setCategorizingProgress] = useState(0);
   const [insertProgress, setInsertProgress] = useState(0);
   const [insertedCount, setInsertedCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
   const [parseErrorMessage, setParseErrorMessage] = useState("");
+
+  // Keep ref in sync on every render so handleParse always reads the latest value
+  cardholderNameRef.current = cardholderName;
 
   const { mutateAsync: insertTransaction } = useTransactionInsert();
 
@@ -124,16 +128,17 @@ export default function PasteTransactionsDialog({
       return;
     }
 
-    const trimmedCardholder = cardholderName.trim();
+    // Use ref for fresh value (avoids stale-closure issues with useCallback)
+    const manualCardholder = cardholderNameRef.current.trim();
     const editable: EditableRow[] = parsed.map((p) => ({
       id: p.id,
       date: p.date ? formatDateForInput(p.date) : "",
       description: p.description,
-      notes: trimmedCardholder
-        ? p.notes
-          ? `${trimmedCardholder} - ${p.notes}`
-          : trimmedCardholder
-        : p.notes,
+      notes: (() => {
+        const who = manualCardholder || p.cardholder;
+        if (!who) return p.notes;
+        return p.notes ? `${who} - ${p.notes}` : who;
+      })(),
       amount: p.amount !== null ? String(p.amount) : "",
       category: "",
       transactionType: inferTransactionType(p.description, p.amount, accountType),
@@ -188,7 +193,7 @@ export default function PasteTransactionsDialog({
 
     setRows(categorized);
     setStep("review");
-  }, [rawText, cardholderName, categories, accountNameOwner]);
+  }, [rawText, categories, accountNameOwner]);
 
   const handleRowChange = useCallback(
     (id: string, field: keyof EditableRow, value: unknown) => {

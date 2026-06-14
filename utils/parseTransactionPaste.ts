@@ -8,6 +8,8 @@ export interface ParsedTransactionRow {
   description: string;
   /** Remainder of an "ONLINE TRANSFER" description, or empty string. */
   notes: string;
+  /** First name of the cardholder extracted from the statement text, or empty string. */
+  cardholder: string;
   /** Dollar amount (negative for refunds/credits), or null if unparseable. */
   amount: number | null;
   /** Non-empty means the row needs manual review before inserting. */
@@ -372,6 +374,7 @@ export function parseTransactionPaste(
           date,
           description,
           notes: "",
+          cardholder: "",
           amount: inlineAmount,
           parseErrors: errors,
         });
@@ -392,6 +395,7 @@ export function parseTransactionPaste(
           date,
           description,
           notes: "",
+          cardholder: "",
           amount: amount.value,
           parseErrors: errors,
         });
@@ -430,6 +434,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: "",
         amount: amount.value,
         parseErrors: errors,
       });
@@ -465,6 +470,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: "",
         amount,
         parseErrors: errors,
       });
@@ -501,6 +507,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: "",
         amount,
         parseErrors: errors,
       });
@@ -510,12 +517,15 @@ export function parseTransactionPaste(
       const date = parseDateMonthDayYear(line, errors);
       i++;
 
-      // Skip cardholder name — always the first non-empty line after the date
+      // Capture cardholder first name — always the first non-empty line after the date
+      let cardholderE = "";
       while (i < lines.length && !isTransactionHeader(lines[i])) {
         const next = lines[i].trim();
         i++;
         if (!next) continue;
-        break; // consumed
+        const firstWord = next.split(/\s+/)[0];
+        cardholderE = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+        break;
       }
 
       // Read description — next non-empty line
@@ -544,6 +554,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: cardholderE,
         amount: amount.value,
         parseErrors: errors,
       });
@@ -575,6 +586,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: "",
         amount,
         parseErrors: errors,
       });
@@ -623,6 +635,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: "",
         amount,
         parseErrors: errors,
       });
@@ -647,13 +660,19 @@ export function parseTransactionPaste(
       }
       if (!description) errors.push("Description is empty");
 
-      // Scan for amount; cardholder full name will fail to parse and be skipped naturally
+      // Scan for amount; capture cardholder full name (e.g. "Margaret J Henning") if encountered
+      let cardholderJ = "";
       const amount = scanForAmount(
         lines,
         i,
         errors,
         (next) => {
           if (/^Show Transaction$/i.test(next)) return "stop";
+          // Detect a person's name: "Firstname [Middle] Lastname" — no $ or digits
+          if (/^[A-Z][a-z]+\s+[A-Z]/.test(next) && !/[$\d]/.test(next)) {
+            cardholderJ = next.split(/\s+/)[0];
+            return "skip";
+          }
           return "try";
         },
         isCreditAccount,
@@ -665,6 +684,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: cardholderJ,
         amount: amount.value,
         parseErrors: errors,
       });
@@ -724,6 +744,7 @@ export function parseTransactionPaste(
         date,
         description: descriptionK,
         notes: "",
+        cardholder: "",
         amount: amountK.value,
         parseErrors: errors,
       });
@@ -768,6 +789,7 @@ export function parseTransactionPaste(
         date,
         description: descriptionL,
         notes: "",
+        cardholder: "",
         amount: amountL.value,
         parseErrors: errors,
       });
@@ -812,6 +834,7 @@ export function parseTransactionPaste(
         date,
         description,
         notes: "",
+        cardholder: "",
         amount: amount.value,
         parseErrors: errors,
       });
