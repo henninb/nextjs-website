@@ -31,7 +31,6 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import CategoryIcon from "@mui/icons-material/Category";
 import DescriptionIcon from "@mui/icons-material/Description";
 import SettingsIcon from "@mui/icons-material/Settings";
-import ImportExportIcon from "@mui/icons-material/ImportExport";
 import SportsBaseballIcon from "@mui/icons-material/SportsBaseball";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SportsFootballIcon from "@mui/icons-material/SportsFootball";
@@ -118,11 +117,6 @@ const financeLinks = [
     text: "Configuration NextGen",
     href: "/finance/configuration-next",
     icon: <SettingsIcon />,
-  },
-  {
-    text: "Import",
-    href: "/finance/transactions/import",
-    icon: <ImportExportIcon />,
   },
   {
     text: "Backup/Restore",
@@ -297,27 +291,6 @@ export default function Layout({ children }: LayoutProps) {
                   }}
                 >
                   <HomeIcon
-                    sx={{
-                      color: theme.palette.primary.main,
-                    }}
-                  />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Import Transactions" arrow>
-                <IconButton
-                  href="/finance/transactions/import"
-                  aria-label="import transactions"
-                  sx={{
-                    borderRadius: 2,
-                    p: 1.5,
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      transform: "scale(1.05)",
-                    },
-                  }}
-                >
-                  <ImportExportIcon
                     sx={{
                       color: theme.palette.primary.main,
                     }}
