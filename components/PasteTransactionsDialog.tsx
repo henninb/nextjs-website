@@ -411,6 +411,7 @@ export default function PasteTransactionsDialog({
                     <TableCell sx={{ width: 32 }} />
                     <TableCell>Date</TableCell>
                     <TableCell>Description</TableCell>
+                    <TableCell>Notes</TableCell>
                     <TableCell>Category</TableCell>
                     <TableCell align="right">Amount</TableCell>
                     <TableCell>Type</TableCell>
@@ -512,6 +513,18 @@ export default function PasteTransactionsDialog({
                               }
                               error={isDescInvalid}
                               sx={{ minWidth: 180 }}
+                            />
+                          </TableCell>
+
+                          {/* Notes */}
+                          <TableCell>
+                            <TextField
+                              size="small"
+                              value={row.notes}
+                              onChange={(e) =>
+                                handleRowChange(row.id, "notes", e.target.value)
+                              }
+                              sx={{ minWidth: 140 }}
                             />
                           </TableCell>
 
