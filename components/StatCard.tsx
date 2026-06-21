@@ -14,6 +14,7 @@ type StatCardProps = {
   icon: React.ReactNode;
   label: string;
   value: string | number;
+  subtitle?: string;
   color?: "primary" | "success" | "warning" | "info" | "secondary";
   trend?: {
     value: number;
@@ -26,6 +27,7 @@ export default function StatCard({
   icon,
   label,
   value,
+  subtitle,
   color = "primary",
   trend,
   highlighted = false,
@@ -189,6 +191,15 @@ export default function StatCard({
               </Typography>
             )}
           </Box>
+          {subtitle && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: "0.65rem", mt: 0.25, display: "block" }}
+            >
+              {subtitle}
+            </Typography>
+          )}
         </Box>
       </CardContent>
     </Card>

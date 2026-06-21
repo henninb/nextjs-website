@@ -1558,6 +1558,11 @@ export default function TransactionsByAccount({
                       icon={<WorkspacePremiumIcon />}
                       label="Rewards"
                       value={`$${totalPoints.toFixed(2)}`}
+                      subtitle={
+                        creditCardDates?.prevClose && creditCardDates?.nextClose
+                          ? `${creditCardDates.prevClose.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${creditCardDates.nextClose.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                          : undefined
+                      }
                       color="info"
                     />
                   </Box>
