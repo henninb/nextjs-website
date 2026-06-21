@@ -1550,14 +1550,14 @@ export default function TransactionsByAccount({
                 </Grow>
               )}
 
-              {/* Rewards Card - only for credit accounts with rewards config */}
-              {rewardsConfig && totalPoints > 0 && (
+              {/* Rewards Card - shows current billing cycle rewards */}
+              {rewardsConfig && cycleRewards != null && cycleRewards > 0 && (
                 <Grow in={true} timeout={1150}>
                   <Box>
                     <StatCard
                       icon={<WorkspacePremiumIcon />}
                       label="Rewards"
-                      value={`$${totalPoints.toFixed(2)}`}
+                      value={`$${cycleRewards.toFixed(2)}`}
                       subtitle={
                         creditCardDates?.prevClose && creditCardDates?.nextClose
                           ? `${creditCardDates.prevClose.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${creditCardDates.nextClose.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
@@ -1695,19 +1695,6 @@ export default function TransactionsByAccount({
                         </Grow>
                       )}
 
-                      {/* Cycle Rewards - total rewards earned in the current billing cycle */}
-                      {cycleRewards != null && cycleRewards > 0 && (
-                        <Grow in={true} timeout={1300}>
-                          <Box>
-                            <StatCard
-                              icon={<WorkspacePremiumIcon />}
-                              label="Cycle Rewards"
-                              value={`$${cycleRewards.toFixed(2)}`}
-                              color="info"
-                            />
-                          </Box>
-                        </Grow>
-                      )}
                     </Box>
                   </Collapse>
                 </Box>
