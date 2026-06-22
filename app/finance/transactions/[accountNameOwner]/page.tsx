@@ -519,6 +519,10 @@ export default function TransactionsByAccount({
   const rewardsConfig = useMemo(() => {
     if (!fetchedParameters || !validAccountNameOwner) return null;
 
+    const raw6x = fetchedParameters.find(
+      (p) =>
+        p.parameterName === `rewards_6x_categories_${validAccountNameOwner}`,
+    )?.parameterValue;
     const raw3x = fetchedParameters.find(
       (p) =>
         p.parameterName === `rewards_3x_categories_${validAccountNameOwner}`,
@@ -531,9 +535,12 @@ export default function TransactionsByAccount({
       (p) => p.parameterName === `rewards_cpp_${validAccountNameOwner}`,
     )?.parameterValue;
 
-    if (!raw3x && !raw2x) return null;
+    if (!raw6x && !raw3x && !raw2x) return null;
 
     return {
+      categories6x: raw6x
+        ? raw6x.split(",").map((c: string) => c.trim().toLowerCase())
+        : [],
       categories3x: raw3x
         ? raw3x.split(",").map((c: string) => c.trim().toLowerCase())
         : [],
@@ -701,15 +708,21 @@ export default function TransactionsByAccount({
       const cat = (row.category ?? "").toLowerCase();
       if (cat === "payment" || cat === "returns" || cat === "bill_pay") return sum;
       const amount = Math.abs(row.amount ?? 0);
-      const is3x = rewardsConfig.categories3x.some(
+      const is6x = rewardsConfig.categories6x.some(
         (c: string) => cat === c || cat.includes(c),
       );
+      const is3x =
+        !is6x &&
+        rewardsConfig.categories3x.some(
+          (c: string) => cat === c || cat.includes(c),
+        );
       const is2x =
+        !is6x &&
         !is3x &&
         rewardsConfig.categories2x.some(
           (c: string) => cat === c || cat.includes(c),
         );
-      const multiplier = is3x ? 3 : is2x ? 2 : 1;
+      const multiplier = is6x ? 6 : is3x ? 3 : is2x ? 2 : 1;
       return sum + amount * multiplier * rewardsConfig.cpp;
     }, 0);
     return total;
@@ -1198,15 +1211,21 @@ export default function TransactionsByAccount({
                   );
                 }
                 const amount = Math.abs(row.amount ?? 0);
-                const is3x = rewardsConfig.categories3x.some(
+                const is6x = rewardsConfig.categories6x.some(
                   (c: string) => cat === c || cat.includes(c),
                 );
+                const is3x =
+                  !is6x &&
+                  rewardsConfig.categories3x.some(
+                    (c: string) => cat === c || cat.includes(c),
+                  );
                 const is2x =
+                  !is6x &&
                   !is3x &&
                   rewardsConfig.categories2x.some(
                     (c: string) => cat === c || cat.includes(c),
                   );
-                const multiplier = is3x ? 3 : is2x ? 2 : 1;
+                const multiplier = is6x ? 6 : is3x ? 3 : is2x ? 2 : 1;
                 const rewardsCurrency = (amount * multiplier * rewardsConfig.cpp).toFixed(2);
                 return (
                   <Tooltip title={`${multiplier}x rate`}>
@@ -1300,15 +1319,21 @@ export default function TransactionsByAccount({
       const cat = (row.category ?? "").toLowerCase();
       if (cat === "payment" || cat === "returns" || cat === "bill_pay") return sum;
       const amount = Math.abs(row.amount ?? 0);
-      const is3x = rewardsConfig.categories3x.some(
+      const is6x = rewardsConfig.categories6x.some(
         (c: string) => cat === c || cat.includes(c),
       );
+      const is3x =
+        !is6x &&
+        rewardsConfig.categories3x.some(
+          (c: string) => cat === c || cat.includes(c),
+        );
       const is2x =
+        !is6x &&
         !is3x &&
         rewardsConfig.categories2x.some(
           (c: string) => cat === c || cat.includes(c),
         );
-      const multiplier = is3x ? 3 : is2x ? 2 : 1;
+      const multiplier = is6x ? 6 : is3x ? 3 : is2x ? 2 : 1;
       return sum + amount * multiplier * rewardsConfig.cpp;
     }, 0);
   }, [rewardsConfig, filteredTransactions]);
