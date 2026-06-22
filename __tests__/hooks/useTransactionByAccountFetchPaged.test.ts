@@ -56,6 +56,7 @@ const createTestTransaction = () => ({
   notes: "",
   activeStatus: true,
   transactionId: 1,
+  cashback: 3.00,
 });
 
 const createPageResponse = (transactions = [createTestTransaction()]) => ({

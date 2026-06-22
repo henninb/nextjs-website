@@ -24,4 +24,5 @@ export default interface Transaction {
   receiptImage?: ReceiptImage;
   dueDate?: string;
   categoryMetadata?: TransactionCategoryMetadata;
+  cashback?: number;
 }

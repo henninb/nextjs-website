@@ -292,6 +292,10 @@ export default function TransactionsByAccount({
     () => transactionPage?.content || [],
     [transactionPage],
   );
+  const hasRewards = useMemo(
+    () => fetchedTransactions.some((t) => t.cashback != null),
+    [fetchedTransactions],
+  );
   const {
     data: fetchedTotals,
     isSuccess: isSuccessTotals,
@@ -516,41 +520,6 @@ export default function TransactionsByAccount({
     [fetchedAccounts, validAccountNameOwner],
   );
 
-  const rewardsConfig = useMemo(() => {
-    if (!fetchedParameters || !validAccountNameOwner) return null;
-
-    const raw6x = fetchedParameters.find(
-      (p) =>
-        p.parameterName === `rewards_6x_categories_${validAccountNameOwner}`,
-    )?.parameterValue;
-    const raw3x = fetchedParameters.find(
-      (p) =>
-        p.parameterName === `rewards_3x_categories_${validAccountNameOwner}`,
-    )?.parameterValue;
-    const raw2x = fetchedParameters.find(
-      (p) =>
-        p.parameterName === `rewards_2x_categories_${validAccountNameOwner}`,
-    )?.parameterValue;
-    const cppValue = fetchedParameters.find(
-      (p) => p.parameterName === `rewards_cpp_${validAccountNameOwner}`,
-    )?.parameterValue;
-
-    if (!raw6x && !raw3x && !raw2x) return null;
-
-    return {
-      categories6x: raw6x
-        ? raw6x.split(",").map((c: string) => c.trim().toLowerCase())
-        : [],
-      categories3x: raw3x
-        ? raw3x.split(",").map((c: string) => c.trim().toLowerCase())
-        : [],
-      categories2x: raw2x
-        ? raw2x.split(",").map((c: string) => c.trim().toLowerCase())
-        : [],
-      cpp: cppValue ? parseFloat(cppValue) : 0.01,
-    };
-  }, [fetchedParameters, validAccountNameOwner]);
-
   const isCreditCard = useMemo(
     () =>
       !!(
@@ -695,38 +664,18 @@ export default function TransactionsByAccount({
         endDate: creditCardDates?.cycleEndDate ?? undefined,
       }),
     {
-      enabled: !!rewardsConfig && !!creditCardDates?.cycleStartDate && !!creditCardDates?.cycleEndDate,
+      enabled: hasRewards && !!creditCardDates?.cycleStartDate && !!creditCardDates?.cycleEndDate,
       staleTime: 5 * 60 * 1000,
     },
   );
 
   const cycleRewards = useMemo(() => {
-    if (!rewardsConfig || !cycleTransactionPage?.content) return null;
-    const total = cycleTransactionPage.content.reduce((sum, row) => {
-      if (row.transactionType === "income" || row.transactionType === "transfer")
-        return sum;
-      const cat = (row.category ?? "").toLowerCase();
-      if (cat === "payment" || cat === "returns" || cat === "bill_pay") return sum;
-      const amount = Math.abs(row.amount ?? 0);
-      const is6x = rewardsConfig.categories6x.some(
-        (c: string) => cat === c || cat.includes(c),
-      );
-      const is3x =
-        !is6x &&
-        rewardsConfig.categories3x.some(
-          (c: string) => cat === c || cat.includes(c),
-        );
-      const is2x =
-        !is6x &&
-        !is3x &&
-        rewardsConfig.categories2x.some(
-          (c: string) => cat === c || cat.includes(c),
-        );
-      const multiplier = is6x ? 6 : is3x ? 3 : is2x ? 2 : 1;
-      return sum + amount * multiplier * rewardsConfig.cpp;
-    }, 0);
-    return total;
-  }, [rewardsConfig, cycleTransactionPage]);
+    if (!cycleTransactionPage?.content) return null;
+    return cycleTransactionPage.content.reduce(
+      (sum, t) => sum + (t.cashback ?? 0),
+      0,
+    );
+  }, [cycleTransactionPage]);
 
   const handleOpenAddModal = () => {
     if (cacheEnabled && typeof window !== "undefined") {
@@ -1179,10 +1128,10 @@ export default function TransactionsByAccount({
         minWidth: 120,
         editable: true,
       },
-      ...(rewardsConfig
+      ...(hasRewards
         ? [
             {
-              field: "points",
+              field: "cashback",
               headerName: "Rewards ($)",
               flex: 0.7,
               minWidth: 100,
@@ -1191,48 +1140,18 @@ export default function TransactionsByAccount({
               sortable: false,
               filterable: false,
               renderCell: (params: GridRenderCellParams<Transaction>) => {
-                const row = params.row;
-                if (
-                  row.transactionType === "income" ||
-                  row.transactionType === "transfer"
-                ) {
+                const cashback = params.row.cashback;
+                if (cashback == null) {
                   return (
                     <Typography variant="body2" color="text.disabled">
                       —
                     </Typography>
                   );
                 }
-                const cat = (row.category ?? "").toLowerCase();
-                if (cat === "payment" || cat === "returns" || cat === "bill_pay") {
-                  return (
-                    <Typography variant="body2" color="text.disabled">
-                      —
-                    </Typography>
-                  );
-                }
-                const amount = Math.abs(row.amount ?? 0);
-                const is6x = rewardsConfig.categories6x.some(
-                  (c: string) => cat === c || cat.includes(c),
-                );
-                const is3x =
-                  !is6x &&
-                  rewardsConfig.categories3x.some(
-                    (c: string) => cat === c || cat.includes(c),
-                  );
-                const is2x =
-                  !is6x &&
-                  !is3x &&
-                  rewardsConfig.categories2x.some(
-                    (c: string) => cat === c || cat.includes(c),
-                  );
-                const multiplier = is6x ? 6 : is3x ? 3 : is2x ? 2 : 1;
-                const rewardsCurrency = (amount * multiplier * rewardsConfig.cpp).toFixed(2);
                 return (
-                  <Tooltip title={`${multiplier}x rate`}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, textAlign: "right" }}>
-                      ${rewardsCurrency}
-                    </Typography>
-                  </Tooltip>
+                  <Typography variant="body2" sx={{ fontWeight: 500, textAlign: "right" }}>
+                    ${cashback.toFixed(2)}
+                  </Typography>
                 );
               },
             },
@@ -1291,7 +1210,7 @@ export default function TransactionsByAccount({
         },
       },
     ],
-    [updateTransaction, handleError, rewardsConfig],
+    [updateTransaction, handleError, hasRewards],
   );
 
   // Update filter amount range when data changes
@@ -1307,36 +1226,6 @@ export default function TransactionsByAccount({
     () => fetchedTransactions || [],
     [fetchedTransactions],
   );
-
-  const totalPoints = useMemo(() => {
-    if (!rewardsConfig || !filteredTransactions) return 0;
-    return filteredTransactions.reduce((sum, row) => {
-      if (
-        row.transactionType === "income" ||
-        row.transactionType === "transfer"
-      )
-        return sum;
-      const cat = (row.category ?? "").toLowerCase();
-      if (cat === "payment" || cat === "returns" || cat === "bill_pay") return sum;
-      const amount = Math.abs(row.amount ?? 0);
-      const is6x = rewardsConfig.categories6x.some(
-        (c: string) => cat === c || cat.includes(c),
-      );
-      const is3x =
-        !is6x &&
-        rewardsConfig.categories3x.some(
-          (c: string) => cat === c || cat.includes(c),
-        );
-      const is2x =
-        !is6x &&
-        !is3x &&
-        rewardsConfig.categories2x.some(
-          (c: string) => cat === c || cat.includes(c),
-        );
-      const multiplier = is6x ? 6 : is3x ? 3 : is2x ? 2 : 1;
-      return sum + amount * multiplier * rewardsConfig.cpp;
-    }, 0);
-  }, [rewardsConfig, filteredTransactions]);
 
   // Handle error states first
   if (
@@ -1498,7 +1387,7 @@ export default function TransactionsByAccount({
                 gridTemplateColumns: {
                   xs: "1fr",
                   sm: "repeat(2, 1fr)",
-                  md: `repeat(${4 + (selectedTotal !== null ? 1 : 0) + (rewardsConfig ? 1 : 0)}, 1fr)`,
+                  md: `repeat(${4 + (selectedTotal !== null ? 1 : 0) + (hasRewards ? 1 : 0)}, 1fr)`,
                 },
                 gap: 2,
                 maxWidth: "1400px",
@@ -1576,7 +1465,7 @@ export default function TransactionsByAccount({
               )}
 
               {/* Rewards Card - shows current billing cycle rewards */}
-              {rewardsConfig && cycleRewards != null && cycleRewards > 0 && (
+              {hasRewards && cycleRewards != null && cycleRewards > 0 && (
                 <Grow in={true} timeout={1150}>
                   <Box>
                     <StatCard
