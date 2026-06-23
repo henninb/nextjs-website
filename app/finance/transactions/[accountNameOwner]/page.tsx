@@ -335,7 +335,7 @@ export default function TransactionsByAccount({
       amount: 0.0,
       transactionState: "outstanding" as TransactionState,
       transactionType: undefined as unknown as TransactionType, // Default to undefined - will be set intentionally by user
-      guid: "pending-uuid", // Will be replaced with server-generated UUID
+      guid: crypto.randomUUID(),
       description: "",
       category: "",
       accountType: accountType,
@@ -691,7 +691,7 @@ export default function TransactionsByAccount({
             ...parsed,
             accountNameOwner: validAccountNameOwner,
             accountType: prev.accountType,
-            guid: "pending-uuid",
+            guid: crypto.randomUUID(),
           }));
         } else {
           setTransactionData(initialTransactionData);
