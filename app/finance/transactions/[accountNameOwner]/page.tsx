@@ -826,26 +826,11 @@ export default function TransactionsByAccount({
 
   const handleCloneRow = async (): Promise<void> => {
     try {
-      // Generate a secure UUID from the server before cloning
-      const uuidResponse = await fetch("/api/uuid/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!uuidResponse.ok) {
-        throw new Error(`UUID generation failed: ${uuidResponse.status}`);
-      }
-
-      const { uuid } = await uuidResponse.json();
-
       const result = await insertTransaction({
         accountNameOwner: validAccountNameOwner,
         newRow: {
           ...selectedTransaction,
           accountNameOwner: validAccountNameOwner,
-          guid: uuid, // Use the server-generated UUID
         } as Transaction,
         isFutureTransaction: true,
         isImportTransaction: false,
@@ -865,30 +850,9 @@ export default function TransactionsByAccount({
     newData: Transaction,
   ): Promise<Transaction | null> => {
     try {
-      // Generate a secure UUID from the server before inserting
-      const uuidResponse = await fetch("/api/uuid/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!uuidResponse.ok) {
-        throw new Error(`UUID generation failed: ${uuidResponse.status}`);
-      }
-
-      const { uuid } = await uuidResponse.json();
-
-      // Replace the pending UUID with the server-generated one
-      const transactionWithUuid = {
-        ...newData,
-        accountNameOwner: validAccountNameOwner,
-        guid: uuid,
-      };
-
       const result = await insertTransaction({
         accountNameOwner: validAccountNameOwner,
-        newRow: transactionWithUuid,
+        newRow: { ...newData, accountNameOwner: validAccountNameOwner },
         isFutureTransaction: false,
         isImportTransaction: false,
       });
@@ -1908,6 +1872,10 @@ export default function TransactionsByAccount({
           }}
           onSubmit={async () => {
             if (transactionData) {
+              if (!transactionData.transactionType) {
+                handleError(new Error("Transaction type is required"), "Validation", false);
+                return;
+              }
               let dataToInsert = transactionData;
               if (adjustmentMode) {
                 const clearedTotal = fetchedTotals?.totalsCleared ?? 0;

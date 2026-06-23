@@ -24,7 +24,7 @@ export const DEFAULT_QUERY_CONFIG = {
  * Default configuration for all mutations in the application
  */
 export const DEFAULT_MUTATION_CONFIG = {
-  retry: 1, // Single retry on failure
+  retry: 0, // No retry — POST/PUT/DELETE are not idempotent; retrying can create phantom duplicates
 } as const;
 
 /**
