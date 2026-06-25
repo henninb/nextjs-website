@@ -171,6 +171,7 @@ export const UserSchema = z.object({
 // Account validation schema
 export const AccountSchema = z.object({
   accountId: z.number().int().positive().optional(),
+  owner: z.string().min(1).max(100).optional(),
   accountNameOwner,
   accountType: accountTypeEnum,
   activeStatus: z.boolean().default(true),

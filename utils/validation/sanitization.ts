@@ -430,6 +430,9 @@ export const sanitize = {
 
   account: (data: Record<string, unknown>) => ({
     accountId: data.accountId ? parseInt(String(data.accountId)) : undefined,
+    owner: data.owner
+      ? InputSanitizer.sanitizeText(String(data.owner))
+      : undefined,
     accountNameOwner: InputSanitizer.sanitizeAccountName(
       String(data.accountNameOwner ?? ""),
     ),
