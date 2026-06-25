@@ -574,6 +574,31 @@ export default function Accounts() {
       },
     },
     {
+      field: "taxBucket",
+      headerName: "Tax Bucket",
+      width: 120,
+      editable: true,
+      type: "singleSelect",
+      valueOptions: [
+        { value: "pretax", label: "Pre-tax" },
+        { value: "taxable", label: "Taxable" },
+        { value: "roth", label: "Roth" },
+      ],
+      valueGetter: (value: string | null | undefined) => value ?? "",
+      renderCell: (params) => {
+        switch (params.value) {
+          case "pretax":
+            return "Pre-tax";
+          case "roth":
+            return "Roth";
+          case "taxable":
+            return "Taxable";
+          default:
+            return "";
+        }
+      },
+    },
+    {
       field: "",
       headerName: "Actions",
       width: 150,
