@@ -35,7 +35,7 @@ import useAccountInsert from "../../hooks/useAccountInsert";
 import useAccountDelete from "../../hooks/useAccountDelete";
 import useAccountDeactivate from "../../hooks/useAccountDeactivate";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
-import Account from "../../model/Account";
+import Account, { TaxBucket } from "../../model/Account";
 import { AccountType } from "../../model/AccountType";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN, formatDateTimeForDisplay, formatDateForDisplay } from "../../components/Common";
@@ -144,6 +144,7 @@ const AccountCacheSchema = z.object({
   accountNameOwner: z.string().regex(/^[a-zA-Z0-9_-]+$/),
   accountType: z.enum(["debit", "credit"]),
   moniker: z.string().regex(/^[a-zA-Z0-9]+$/),
+  taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
 });
 
 const ACCOUNTS_CACHE_ENABLED_KEY = "finance_cache_enabled_accounts";
@@ -1039,6 +1040,24 @@ export default function Accounts() {
                 error={!!formErrors.accountType}
                 helperText={formErrors.accountType}
                 onKeyDown={handleAccountTypeKeyDown}
+              />
+            )}
+          />
+          <Autocomplete
+            options={["pretax", "taxable", "roth"]}
+            value={accountData?.taxBucket || null}
+            onChange={(event, newValue) =>
+              setAccountData((prev: Account) => ({
+                ...prev,
+                taxBucket: (newValue || undefined) as TaxBucket | undefined,
+              }))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Tax Bucket"
+                fullWidth
+                margin="normal"
               />
             )}
           />

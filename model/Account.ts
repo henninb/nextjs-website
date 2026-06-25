@@ -1,5 +1,7 @@
 import { AccountType } from "./AccountType";
 
+export type TaxBucket = "pretax" | "taxable" | "roth";
+
 export default interface Account {
   accountId?: number;
   owner?: string;
@@ -19,4 +21,5 @@ export default interface Account {
   billingDueDaySameMonth?: number;
   billingDueDayNextMonth?: number;
   billingCycleWeekendShift?: string;
+  taxBucket?: TaxBucket;
 }

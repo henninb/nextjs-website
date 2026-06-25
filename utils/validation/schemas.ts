@@ -186,6 +186,7 @@ export const AccountSchema = z.object({
   validationDate: dateString.optional(),
   dateAdded: dateString.optional(),
   dateUpdated: dateString.optional(),
+  taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
 });
 
 // Transaction validation schema

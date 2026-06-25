@@ -1,10 +1,22 @@
 import fs from "fs";
 import path from "path";
-import matter from "gray-matter";
+import { parse } from "yaml";
 import { BlogPost } from "../model/BlogPost";
 
-// Path to our blog posts
 const postsDirectory = path.join(process.cwd(), "content/blog");
+
+function parseFrontmatter(fileContent: string): {
+  data: Record<string, unknown>;
+  content: string;
+} {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(
+    fileContent,
+  );
+  if (!match) {
+    return { data: {}, content: fileContent };
+  }
+  return { data: parse(match[1]) as Record<string, unknown>, content: match[2] };
+}
 
 export function getAllPostSlugs() {
   const fileNames = fs.readdirSync(postsDirectory);
@@ -22,18 +34,17 @@ export function getPostBySlug(slug: string): BlogPost {
   const fullPath = path.join(postsDirectory, `${slug}.mdx`);
   const fileContents = fs.readFileSync(fullPath, "utf8");
 
-  // Use gray-matter to parse the post metadata section
-  const { data, content } = matter(fileContents);
+  const { data, content } = parseFrontmatter(fileContents);
 
   return {
     slug,
-    title: data.title,
-    date: data.date,
-    excerpt: data.excerpt || "",
+    title: data.title as string,
+    date: data.date as string,
+    excerpt: (data.excerpt as string) || "",
     content,
-    author: data.author || "",
-    tags: data.tags || [],
-    coverImage: data.coverImage || "",
+    author: (data.author as string) || "",
+    tags: (data.tags as string[]) || [],
+    coverImage: (data.coverImage as string) || "",
   };
 }
 
@@ -41,7 +52,6 @@ export function getAllPosts(): BlogPost[] {
   const slugs = getAllPostSlugs();
   const posts = slugs
     .map(({ params }) => getPostBySlug(params.slug))
-    // Sort posts by date
     .sort((post1, post2) =>
       new Date(post1.date) > new Date(post2.date) ? -1 : 1,
     );

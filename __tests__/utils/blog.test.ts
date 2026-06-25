@@ -1,6 +1,5 @@
 const readdirSync = jest.fn();
 const readFileSync = jest.fn();
-const matter = jest.fn();
 
 jest.mock("fs", () => ({
   __esModule: true,
@@ -10,16 +9,12 @@ jest.mock("fs", () => ({
   },
 }));
 
-jest.mock("gray-matter", () => ({
-  __esModule: true,
-  default: (...args: unknown[]) => matter(...args),
-}));
-
 describe("blog utils", () => {
   const originalCwd = process.cwd;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
     process.cwd = jest.fn(() => "/workspace") as typeof process.cwd;
   });
 
@@ -45,14 +40,9 @@ describe("blog utils", () => {
   });
 
   it("reads a post by slug and applies optional front matter defaults", () => {
-    readFileSync.mockReturnValue("---\ntitle: Test\n---\ncontent");
-    matter.mockReturnValue({
-      data: {
-        title: "Test title",
-        date: "2026-05-10",
-      },
-      content: "Rendered content",
-    });
+    readFileSync.mockReturnValue(
+      "---\ntitle: Test title\ndate: '2026-05-10'\n---\nRendered content",
+    );
 
     const { getPostBySlug } = require("../../utils/blog");
 
@@ -70,37 +60,17 @@ describe("blog utils", () => {
       "/workspace/content/blog/test-post.mdx",
       "utf8",
     );
-    expect(matter).toHaveBeenCalledWith("---\ntitle: Test\n---\ncontent");
   });
 
   it("returns posts sorted by newest date first", () => {
     readdirSync.mockReturnValue(["older.mdx", "newer.mdx"]);
     readFileSync
-      .mockReturnValueOnce("older contents")
-      .mockReturnValueOnce("newer contents");
-    matter
-      .mockReturnValueOnce({
-        data: {
-          title: "Older",
-          date: "2024-01-01",
-          excerpt: "older excerpt",
-          author: "Author A",
-          tags: ["history"],
-          coverImage: "/older.png",
-        },
-        content: "Older content",
-      })
-      .mockReturnValueOnce({
-        data: {
-          title: "Newer",
-          date: "2025-01-01",
-          excerpt: "newer excerpt",
-          author: "Author B",
-          tags: ["current"],
-          coverImage: "/newer.png",
-        },
-        content: "Newer content",
-      });
+      .mockReturnValueOnce(
+        "---\ntitle: Older\ndate: '2024-01-01'\nexcerpt: older excerpt\nauthor: Author A\ntags:\n  - history\ncoverImage: /older.png\n---\nOlder content",
+      )
+      .mockReturnValueOnce(
+        "---\ntitle: Newer\ndate: '2025-01-01'\nexcerpt: newer excerpt\nauthor: Author B\ntags:\n  - current\ncoverImage: /newer.png\n---\nNewer content",
+      );
 
     const { getAllPosts } = require("../../utils/blog");
 

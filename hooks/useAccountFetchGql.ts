@@ -1,5 +1,5 @@
 import { graphqlRequest } from "../utils/graphqlClient";
-import Account from "../model/Account";
+import Account, { TaxBucket } from "../model/Account";
 import { useAuthenticatedQuery } from "../utils/queryConfig";
 import { createHookLogger } from "../utils/logger";
 
@@ -20,6 +20,7 @@ type AccountsQueryResult = {
     validationDate?: string | null;
     dateAdded?: string | null;
     dateUpdated?: string | null;
+    taxBucket?: string | null;
   }[];
 };
 
@@ -39,6 +40,7 @@ const ACCOUNTS_QUERY = /* GraphQL */ `
       validationDate
       dateAdded
       dateUpdated
+      taxBucket
     }
   }
 `;
@@ -85,6 +87,7 @@ export default function useAccountFetchGql() {
           : undefined,
         dateAdded: a.dateAdded ? new Date(a.dateAdded) : undefined,
         dateUpdated: a.dateUpdated ? new Date(a.dateUpdated) : undefined,
+        taxBucket: (a.taxBucket as TaxBucket) ?? undefined,
       }));
 
       log.debug("Final mapped accounts", {

@@ -453,6 +453,9 @@ export const sanitize = {
     dateUpdated: data.dateUpdated
       ? InputSanitizer.sanitizeDate(data.dateUpdated as string | Date)
       : undefined,
+    taxBucket: data.taxBucket
+      ? InputSanitizer.sanitizeText(String(data.taxBucket))
+      : undefined,
   }),
 
   transaction: (data: Record<string, unknown>) => ({
