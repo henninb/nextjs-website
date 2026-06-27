@@ -277,6 +277,24 @@ export default function BatchPaymentModal({
       ),
     );
 
+  const toggleHoliday = (dayNum: number) => {
+    const date = new Date(Date.UTC(selectedYear, selectedMonth, dayNum));
+    setDays((prev) => {
+      const exists = prev.some((d) => d.date.getUTCDate() === dayNum);
+      if (exists) {
+        return prev.filter((d) => d.date.getUTCDate() !== dayNum);
+      }
+      const newEntry: DayEntry = {
+        date,
+        selected: true,
+        amounts: [...defaultAmounts],
+      };
+      return [...prev, newEntry].sort(
+        (a, b) => a.date.getTime() - b.date.getTime(),
+      );
+    });
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
     setProgress(0);
@@ -539,45 +557,56 @@ export default function BatchPaymentModal({
                   const isWeekend = dow === 0 || dow === 6;
                   const holidayName = holidayMap.get(isoDate);
                   const isBusiness = !isWeekend && !holidayName;
+                  const isHoliday = !!holidayName;
+                  const isClickable = isBusiness || isHoliday;
                   const entry = dayEntryMap.get(dayNum);
                   const isSelected = entry?.selected ?? false;
+                  const isHolidayIncluded = isHoliday && !!entry;
 
                   let tooltip = "";
-                  if (holidayName) tooltip = holidayName;
+                  if (holidayName)
+                    tooltip = isHolidayIncluded
+                      ? `${holidayName} (included — click to remove)`
+                      : `${holidayName} — click to include`;
                   else if (isWeekend) tooltip = "Weekend";
 
                   const cell = (
                     <Box
                       key={ci}
-                      onClick={() => isBusiness && toggleDay(dayNum)}
+                      onClick={() => {
+                        if (isBusiness) toggleDay(dayNum);
+                        else if (isHoliday) toggleHoliday(dayNum);
+                      }}
                       sx={{
                         height: 44,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         borderRadius: 1,
-                        cursor: isBusiness ? "pointer" : "default",
+                        cursor: isClickable ? "pointer" : "default",
                         bgcolor: isSelected
                           ? "primary.main"
-                          : holidayName
+                          : isHoliday
                             ? "warning.light"
                             : isWeekend
                               ? "action.disabledBackground"
                               : "transparent",
                         color: isSelected
                           ? "primary.contrastText"
-                          : isBusiness
+                          : isClickable
                             ? "text.primary"
                             : "text.disabled",
                         border:
-                          isBusiness && !isSelected ? "1px solid" : "none",
-                        borderColor: "divider",
+                          isClickable && !isSelected ? "1px solid" : "none",
+                        borderColor: isHoliday ? "warning.main" : "divider",
                         transition: "background-color 0.15s, color 0.15s",
-                        "&:hover": isBusiness
+                        "&:hover": isClickable
                           ? {
                               bgcolor: isSelected
                                 ? "primary.dark"
-                                : "action.selected",
+                                : isHoliday
+                                  ? "warning.main"
+                                  : "action.selected",
                             }
                           : {},
                       }}
@@ -641,10 +670,12 @@ export default function BatchPaymentModal({
                     height: 14,
                     borderRadius: 0.5,
                     bgcolor: "warning.light",
+                    border: "1px solid",
+                    borderColor: "warning.main",
                   }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  Holiday
+                  Holiday (click to include)
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>

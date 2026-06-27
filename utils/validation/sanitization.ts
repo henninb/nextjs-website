@@ -446,7 +446,7 @@ export const sanitize = {
     cleared: InputSanitizer.sanitizeAmount(data.cleared as number | string),
     dateClosed: data.dateClosed
       ? InputSanitizer.sanitizeDate(data.dateClosed as string | Date)
-      : new Date(0).toISOString(), // Default to January 1, 1970 for non-closed accounts
+      : new Date(0).toISOString(),
     validationDate: data.validationDate
       ? InputSanitizer.sanitizeDate(data.validationDate as string | Date)
       : undefined,
