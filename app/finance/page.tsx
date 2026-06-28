@@ -42,6 +42,7 @@ import {
   isAssetAccount,
   isLiabilityAccount,
   isCreditCardAccount,
+  formatAccountTypeLabel,
 } from "../../model/AccountTypeUtils";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN, formatDateTimeForDisplay, formatDateForDisplay } from "../../components/Common";
@@ -354,24 +355,6 @@ export default function Accounts() {
     });
   };
 
-  const handleAccountTypeKeyDown = (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (event.key === "Tab") {
-      const inputValue = (event.currentTarget.value || "").toLowerCase();
-      const match = accountTypeOptions.find((option) =>
-        option.startsWith(inputValue),
-      );
-      if (match) {
-        event.preventDefault(); // Prevent default tab behavior
-        setAccountData((prev: Account) => ({
-          ...prev,
-          accountType: match as AccountType,
-        }));
-      }
-    }
-  };
-
   const handleDeleteRow = async () => {
     if (selectedAccount) {
       try {
@@ -519,7 +502,18 @@ export default function Accounts() {
         );
       },
     },
-    { field: "accountType", headerName: "Type", width: 150, editable: true },
+    {
+      field: "accountType",
+      headerName: "Type",
+      width: 150,
+      editable: true,
+      type: "singleSelect",
+      valueOptions: ALL_ACCOUNT_TYPES.map((type) => ({
+        value: type,
+        label: formatAccountTypeLabel(type),
+      })),
+      renderCell: (params) => formatAccountTypeLabel(params.value as string),
+    },
     { field: "moniker", headerName: "Moniker", width: 150, editable: true },
     {
       field: "future",
@@ -1056,7 +1050,6 @@ export default function Accounts() {
             }
           />
           <Autocomplete
-            freeSolo
             options={accountTypeOptions}
             groupBy={(option) =>
               isAssetAccount(option)
@@ -1065,17 +1058,12 @@ export default function Accounts() {
                   ? "Liability"
                   : "Other"
             }
-            value={accountData?.accountType || ""}
+            getOptionLabel={(option) => formatAccountTypeLabel(option)}
+            value={accountData?.accountType || null}
             onChange={(event, newValue) =>
               setAccountData((prev: Account) => ({
                 ...prev,
                 accountType: (newValue || "") as AccountType,
-              }))
-            }
-            onInputChange={(event, newInputValue) =>
-              setAccountData((prev: Account) => ({
-                ...prev,
-                accountType: (newInputValue || "") as AccountType,
               }))
             }
             renderInput={(params) => (
@@ -1086,7 +1074,6 @@ export default function Accounts() {
                 margin="normal"
                 error={!!formErrors.accountType}
                 helperText={formErrors.accountType}
-                onKeyDown={handleAccountTypeKeyDown}
               />
             )}
           />

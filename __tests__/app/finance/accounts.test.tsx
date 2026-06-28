@@ -347,7 +347,7 @@ describe("pages/finance/index (Accounts)", () => {
     expect(screen.getByText(/Account type is required/i)).toBeInTheDocument();
   });
 
-  it("shows error when Account Type is invalid", () => {
+  it("shows error when Account Type is not selected", () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
     mockUseAccountFetch.mockReturnValue({
       data: [
@@ -383,16 +383,12 @@ describe("pages/finance/index (Accounts)", () => {
     render(<AccountsPage />, { wrapper: createWrapper() });
     fireEvent.click(screen.getByRole("button", { name: /add account/i }));
     fireEvent.change(screen.getByRole("textbox", { name: /account$/i }), {
-      target: { value: "X" },
+      target: { value: "checking_brian" },
     });
-    fireEvent.change(screen.getByLabelText(/account type/i), {
-      target: { value: "invalid_type" },
-    });
+    // Account type dropdown is a restricted Autocomplete — leave it unselected
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertAccountMock).not.toHaveBeenCalled();
-    expect(
-      screen.getByText(/Invalid account type/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Account type is required/i)).toBeInTheDocument();
   });
 
   it("shows error when Moniker has invalid characters", () => {

@@ -26,3 +26,17 @@ export const isLiabilityAccount = (type: AccountType | string): boolean =>
 
 export const isCreditCardAccount = (type: AccountType | string): boolean =>
   CREDIT_CARD_ACCOUNT_TYPES.includes(type as AccountType);
+
+const ACRONYMS: Record<string, string> = { ira: "IRA", hsa: "HSA", fsa: "FSA" };
+const LOWER_WORDS = new Set(["of"]);
+
+export const formatAccountTypeLabel = (type: string): string =>
+  type
+    .split("_")
+    .map((word, i) =>
+      ACRONYMS[word] ??
+      (LOWER_WORDS.has(word) && i > 0
+        ? word
+        : word.charAt(0).toUpperCase() + word.slice(1)),
+    )
+    .join(" ");
