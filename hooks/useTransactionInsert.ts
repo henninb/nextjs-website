@@ -46,7 +46,7 @@ export const setupNewTransaction = async (
     transactionType: payload.transactionType || "undefined",
     transactionState: payload.transactionState || "outstanding",
     activeStatus: true,
-    accountType: payload.accountType || "debit",
+    accountType: payload.accountType || "undefined",
     reoccurringType: payload.reoccurringType || "onetime",
     accountNameOwner: payload.accountNameOwner || "",
   };

@@ -187,7 +187,7 @@ if (!global.fetch) {
                     {
                       accountId: 1,
                       accountNameOwner: "Checking Account",
-                      accountType: "Debit",
+                      accountType: "debit",
                       activeStatus: true,
                       moniker: "CHK",
                       outstanding: 0,
@@ -201,7 +201,7 @@ if (!global.fetch) {
                     {
                       accountId: 2,
                       accountNameOwner: "Savings Account",
-                      accountType: "Debit",
+                      accountType: "debit",
                       activeStatus: true,
                       moniker: "SAV",
                       outstanding: 0,

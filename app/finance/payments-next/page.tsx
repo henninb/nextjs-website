@@ -37,6 +37,7 @@ import {
 
 import Payment from "../../../model/Payment";
 import Account from "../../../model/Account";
+import { isAssetAccount, isLiabilityAccount } from "../../../model/AccountTypeUtils";
 
 import usePaymentFetchGql from "../../../hooks/usePaymentFetchGql";
 import usePaymentInsertGql from "../../../hooks/usePaymentInsertGql";
@@ -461,7 +462,7 @@ export default function PaymentsNextGen() {
 
           <Autocomplete
             options={(fetchedAccounts || []).filter(
-              (a) => a.accountType.toLowerCase() === "debit",
+              (a) => isAssetAccount(a.accountType),
             )}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
             isOptionEqualToValue={(o, v) =>
@@ -493,7 +494,7 @@ export default function PaymentsNextGen() {
 
           <Autocomplete
             options={(fetchedAccounts || []).filter(
-              (a) => a.accountType.toLowerCase() === "credit",
+              (a) => isLiabilityAccount(a.accountType),
             )}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
             isOptionEqualToValue={(o, v) =>

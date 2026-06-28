@@ -781,3 +781,29 @@ describe("useAccountInsert hook - renderHook tests", () => {
     expect(result.current.error?.message).toContain("User must be logged in");
   });
 });
+
+describe("New account type coverage", () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it.each([
+    ["brokerage"],
+    ["savings"],
+    ["mortgage"],
+    ["retirement_401k"],
+    ["checking"],
+  ])("insertAccount accepts accountType %s", async (accountType) => {
+    const account = createTestAccount({ accountType });
+    global.fetch = createFetchMock(account, { status: 201 });
+
+    const { insertAccount: insert } = await import(
+      "../../hooks/useAccountInsert"
+    );
+    const result = await insert(account);
+
+    expect(result).toStrictEqual(account);
+  });
+});

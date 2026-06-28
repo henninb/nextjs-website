@@ -37,6 +37,12 @@ import useAccountDeactivate from "../../hooks/useAccountDeactivate";
 import useTotalsFetch from "../../hooks/useTotalsFetch";
 import Account, { TaxBucket } from "../../model/Account";
 import { AccountType } from "../../model/AccountType";
+import {
+  ALL_ACCOUNT_TYPES,
+  isAssetAccount,
+  isLiabilityAccount,
+  isCreditCardAccount,
+} from "../../model/AccountTypeUtils";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
 import { currencyFormat, noNaN, formatDateTimeForDisplay, formatDateForDisplay } from "../../components/Common";
 import FinanceLayout from "../../layouts/FinanceLayout";
@@ -57,7 +63,7 @@ import { modalTitles, modalBodies } from "../../utils/modalMessages";
 import { z } from "zod";
 
 function computeCurrentDueDate(account: Account): Date | null {
-  if (account.accountType !== "credit") return null;
+  if (!isCreditCardAccount(account.accountType)) return null;
 
   const {
     billingStatementCloseDay,
@@ -142,7 +148,15 @@ function computeCurrentDueDate(account: Account): Date | null {
 
 const AccountCacheSchema = z.object({
   accountNameOwner: z.string().regex(/^[a-zA-Z0-9_-]+$/),
-  accountType: z.enum(["debit", "credit"]),
+  accountType: z.enum([
+    "debit", "credit", "checking", "savings", "credit_card", "certificate", "money_market",
+    "brokerage", "retirement_401k", "retirement_ira", "retirement_roth", "pension",
+    "hsa", "fsa", "medical_savings",
+    "mortgage", "auto_loan", "student_loan", "personal_loan", "line_of_credit",
+    "utility", "prepaid", "gift_card",
+    "business_checking", "business_savings", "business_credit",
+    "cash", "escrow", "trust",
+  ] as const),
   moniker: z.string().regex(/^[a-zA-Z0-9]+$/),
   taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
 });
@@ -173,7 +187,7 @@ export default function Accounts() {
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilters, setActiveFilters] = useState<{
-    accountType: "all" | "debit" | "credit";
+    accountType: "all" | "asset" | "liability";
     activeStatus: "all" | "active" | "inactive";
     balanceStatus:
       | "all"
@@ -211,7 +225,7 @@ export default function Accounts() {
   const { mutateAsync: deleteAccount } = useAccountDelete();
   const { mutateAsync: deactivateAccount } = useAccountDeactivate();
 
-  const accountTypeOptions = ["debit", "credit"];
+  const accountTypeOptions = ALL_ACCOUNT_TYPES;
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -276,7 +290,8 @@ export default function Accounts() {
       // Account type filter
       const matchesType =
         activeFilters.accountType === "all" ||
-        account.accountType.toLowerCase() === activeFilters.accountType;
+        (activeFilters.accountType === "asset" && isAssetAccount(account.accountType)) ||
+        (activeFilters.accountType === "liability" && isLiabilityAccount(account.accountType));
 
       // Active status filter
       const matchesStatus =
@@ -433,8 +448,8 @@ export default function Accounts() {
       errs.accountType = "Account type is required";
     } else {
       const typeNorm = String(newData.accountType).toLowerCase();
-      if (!accountTypeOptions.includes(typeNorm)) {
-        errs.accountType = "Account type must be debit or credit";
+      if (!accountTypeOptions.includes(typeNorm as AccountType)) {
+        errs.accountType = "Invalid account type";
       }
     }
 
@@ -1043,6 +1058,13 @@ export default function Accounts() {
           <Autocomplete
             freeSolo
             options={accountTypeOptions}
+            groupBy={(option) =>
+              isAssetAccount(option)
+                ? "Asset"
+                : isLiabilityAccount(option)
+                  ? "Liability"
+                  : "Other"
+            }
             value={accountData?.accountType || ""}
             onChange={(event, newValue) =>
               setAccountData((prev: Account) => ({

@@ -41,6 +41,7 @@ import Transaction from "../../../model/Transaction";
 import useAccountFetch from "../../../hooks/useAccountFetch";
 import useParameterFetch from "../../../hooks/useParameterFetch";
 import Account from "../../../model/Account";
+import { isAssetAccount, isLiabilityAccount } from "../../../model/AccountTypeUtils";
 import usePaymentUpdate from "../../../hooks/usePaymentUpdate";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
@@ -682,8 +683,8 @@ export default function Payments() {
             isSuccessAccounts
               ? fetchedAccounts.filter((account) =>
                   paymentMode === "payBill"
-                    ? account.accountType === "debit"
-                    : account.accountType === "credit",
+                    ? isAssetAccount(account.accountType)
+                    : isLiabilityAccount(account.accountType),
                 )
               : []
           }
@@ -719,7 +720,7 @@ export default function Payments() {
           options={
             isSuccessAccounts
               ? fetchedAccounts.filter(
-                  (account) => account.accountType === "credit",
+                  (account) => isLiabilityAccount(account.accountType),
                 )
               : []
           }

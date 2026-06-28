@@ -35,6 +35,7 @@ import Transfer from "../../../model/Transfer";
 import Transaction from "../../../model/Transaction";
 import useAccountFetch from "../../../hooks/useAccountFetch";
 import Account from "../../../model/Account";
+import { isAssetAccount } from "../../../model/AccountTypeUtils";
 import useTransferUpdate from "../../../hooks/useTransferUpdate";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
@@ -165,10 +166,10 @@ export default function Transfers() {
   useEffect(() => {
     if (isSuccessAccounts) {
       setAvailableSourceAccounts(
-        fetchedAccounts.filter((account) => account.accountType === "debit"),
+        fetchedAccounts.filter((account) => isAssetAccount(account.accountType)),
       );
       setAvailableDestinationAccounts(
-        fetchedAccounts.filter((account) => account.accountType === "debit"),
+        fetchedAccounts.filter((account) => isAssetAccount(account.accountType)),
       );
     }
   }, [isSuccessAccounts, fetchedAccounts]);
@@ -178,14 +179,14 @@ export default function Transfers() {
       setAvailableDestinationAccounts(
         (fetchedAccounts || []).filter(
           (account) =>
-            account.accountType === "debit" &&
+            isAssetAccount(account.accountType) &&
             account.accountNameOwner !== selectedSourceAccount.accountNameOwner,
         ),
       );
     } else if (isSuccessAccounts) {
       setAvailableDestinationAccounts(
         (fetchedAccounts || []).filter(
-          (account) => account.accountType === "debit",
+          (account) => isAssetAccount(account.accountType),
         ),
       );
     }
@@ -196,7 +197,7 @@ export default function Transfers() {
       setAvailableSourceAccounts(
         (fetchedAccounts || []).filter(
           (account) =>
-            account.accountType === "debit" &&
+            isAssetAccount(account.accountType) &&
             account.accountNameOwner !==
               selectedDestinationAccount.accountNameOwner,
         ),
@@ -204,7 +205,7 @@ export default function Transfers() {
     } else if (isSuccessAccounts) {
       setAvailableSourceAccounts(
         (fetchedAccounts || []).filter(
-          (account) => account.accountType === "debit",
+          (account) => isAssetAccount(account.accountType),
         ),
       );
     }

@@ -386,12 +386,12 @@ describe("pages/finance/index (Accounts)", () => {
       target: { value: "X" },
     });
     fireEvent.change(screen.getByLabelText(/account type/i), {
-      target: { value: "checking" },
+      target: { value: "invalid_type" },
     });
     fireEvent.click(screen.getByRole("button", { name: /^add$/i }));
     expect(insertAccountMock).not.toHaveBeenCalled();
     expect(
-      screen.getByText(/Account type must be debit or credit/i),
+      screen.getByText(/Invalid account type/i),
     ).toBeInTheDocument();
   });
 
@@ -563,8 +563,8 @@ describe("pages/finance/index (Accounts)", () => {
 
       render(<AccountsPage />, { wrapper: createWrapper() });
 
-      expect(screen.getByText("Debit")).toBeInTheDocument();
-      expect(screen.getByText("Credit")).toBeInTheDocument();
+      expect(screen.getByText("Asset")).toBeInTheDocument();
+      expect(screen.getByText("Liability")).toBeInTheDocument();
       expect(screen.getByText("Zero Balance")).toBeInTheDocument();
     });
 
@@ -817,6 +817,126 @@ describe("pages/finance/index (Accounts)", () => {
       expect(screen.getAllByText("$25.00").length).toBeGreaterThan(0);
       expect(screen.getAllByText("$100.00").length).toBeGreaterThan(0);
       expect(screen.getAllByText("$50.00").length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Account Type Coverage in Grid View", () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 1,
+            accountNameOwner: "fidelity-brokerage_brian",
+            accountType: "brokerage",
+            activeStatus: true,
+            moniker: "FIDE",
+            outstanding: 0,
+            future: 0,
+            cleared: 45000,
+          },
+          {
+            accountId: 2,
+            accountNameOwner: "wfargo-savings_brian",
+            accountType: "savings",
+            activeStatus: true,
+            moniker: "WF",
+            outstanding: 0,
+            future: 0,
+            cleared: 5000,
+          },
+          {
+            accountId: 3,
+            accountNameOwner: "bofa-mortgage_brian",
+            accountType: "mortgage",
+            activeStatus: true,
+            moniker: "BOFA",
+            outstanding: 0,
+            future: 1200,
+            cleared: 0,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockUseTotalsFetch.mockReturnValue({
+        data: {
+          totals: 51200,
+          totalsCleared: 50000,
+          totalsOutstanding: 0,
+          totalsFuture: 1200,
+        },
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+    });
+
+    it("renders brokerage, savings, and mortgage accounts with correct type badges", () => {
+      render(<AccountsPage />, { wrapper: createWrapper() });
+
+      fireEvent.click(screen.getByLabelText(/grid view/i));
+
+      expect(screen.getByText("fidelity-brokerage_brian")).toBeInTheDocument();
+      expect(screen.getByText("wfargo-savings_brian")).toBeInTheDocument();
+      expect(screen.getByText("bofa-mortgage_brian")).toBeInTheDocument();
+      expect(screen.getByText("brokerage")).toBeInTheDocument();
+      expect(screen.getByText("savings")).toBeInTheDocument();
+      expect(screen.getByText("mortgage")).toBeInTheDocument();
+    });
+
+    it("Asset filter includes brokerage and savings but excludes mortgage", () => {
+      render(<AccountsPage />, { wrapper: createWrapper() });
+
+      fireEvent.click(screen.getByLabelText(/grid view/i));
+      fireEvent.click(screen.getByText("Asset"));
+
+      expect(screen.getByText("fidelity-brokerage_brian")).toBeInTheDocument();
+      expect(screen.getByText("wfargo-savings_brian")).toBeInTheDocument();
+      expect(screen.queryByText("bofa-mortgage_brian")).not.toBeInTheDocument();
+    });
+
+    it("Liability filter includes mortgage but excludes brokerage and savings", () => {
+      render(<AccountsPage />, { wrapper: createWrapper() });
+
+      fireEvent.click(screen.getByLabelText(/grid view/i));
+      fireEvent.click(screen.getByText("Liability"));
+
+      expect(screen.getByText("bofa-mortgage_brian")).toBeInTheDocument();
+      expect(screen.queryByText("fidelity-brokerage_brian")).not.toBeInTheDocument();
+      expect(screen.queryByText("wfargo-savings_brian")).not.toBeInTheDocument();
+    });
+
+    it("retirement_401k account renders as asset type", () => {
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            accountId: 4,
+            accountNameOwner: "vanguard-401k_brian",
+            accountType: "retirement_401k",
+            activeStatus: true,
+            moniker: "VAN",
+            outstanding: 0,
+            future: 0,
+            cleared: 120000,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+
+      render(<AccountsPage />, { wrapper: createWrapper() });
+
+      fireEvent.click(screen.getByLabelText(/grid view/i));
+      fireEvent.click(screen.getByText("Asset"));
+
+      expect(screen.getByText("vanguard-401k_brian")).toBeInTheDocument();
+      expect(screen.getByText("retirement_401k")).toBeInTheDocument();
     });
   });
 });

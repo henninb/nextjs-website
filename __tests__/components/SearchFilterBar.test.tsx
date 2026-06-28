@@ -91,8 +91,8 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    expect(screen.getByText("Debit")).toBeInTheDocument();
-    expect(screen.getByText("Credit")).toBeInTheDocument();
+    expect(screen.getByText("Asset")).toBeInTheDocument();
+    expect(screen.getByText("Liability")).toBeInTheDocument();
   });
 
   it("renders quick filter presets", () => {
@@ -108,7 +108,7 @@ describe("SearchFilterBar", () => {
 
     expect(screen.getByText("Payment Required")).toBeInTheDocument();
     expect(screen.getByText("Needs Attention")).toBeInTheDocument();
-    expect(screen.getByText("Future Scheduled")).toBeInTheDocument();
+    expect(screen.getByText("Investments")).toBeInTheDocument();
     expect(screen.getByText("Banking")).toBeInTheDocument();
   });
 
@@ -137,10 +137,10 @@ describe("SearchFilterBar", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Debit"));
+    fireEvent.click(screen.getByText("Asset"));
     expect(mockOnFilterChange).toHaveBeenCalledWith({
       ...defaultFilters,
-      accountType: "debit",
+      accountType: "asset",
     });
   });
 
@@ -215,7 +215,7 @@ describe("SearchFilterBar", () => {
       <SearchFilterBar
         searchTerm=""
         onSearchChange={mockOnSearchChange}
-        activeFilters={{ ...defaultFilters, accountType: "debit" }}
+        activeFilters={{ ...defaultFilters, accountType: "asset" }}
         onFilterChange={mockOnFilterChange}
         onClearFilters={mockOnClearFilters}
       />,

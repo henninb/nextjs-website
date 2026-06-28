@@ -12,11 +12,15 @@ import {
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
+import HomeIcon from "@mui/icons-material/Home";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useRouter } from "next/navigation";
 import Account from "../model/Account";
+import { isAssetAccount } from "../model/AccountTypeUtils";
 
 type AccountCardProps = {
   account: Account;
@@ -60,8 +64,21 @@ export default function AccountCard({
     router.push(`/finance/transactions/${account.accountNameOwner}`);
   };
 
-  const isDebit = account.accountType.toLowerCase() === "debit";
+  const isAsset = isAssetAccount(account.accountType);
   const isActive = account.activeStatus;
+
+  const getAccountIcon = () => {
+    const type = account.accountType;
+    if (["brokerage", "retirement_401k", "retirement_ira", "retirement_roth", "pension"].includes(type))
+      return <TrendingUpIcon fontSize="small" />;
+    if (["mortgage", "auto_loan", "student_loan"].includes(type))
+      return <HomeIcon fontSize="small" />;
+    if (["savings", "checking", "money_market", "certificate"].includes(type))
+      return <AccountBalanceIcon fontSize="small" />;
+    return isAsset
+      ? <AccountBalanceWalletIcon fontSize="small" />
+      : <CreditCardIcon fontSize="small" />;
+  };
 
   const formatCurrency = (value: number) =>
     value?.toLocaleString("en-US", {
@@ -120,19 +137,15 @@ export default function AccountCard({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: isDebit
+                backgroundColor: isAsset
                   ? `${theme.palette.primary.main}20`
                   : `${theme.palette.secondary.main}20`,
-                color: isDebit
+                color: isAsset
                   ? theme.palette.primary.main
                   : theme.palette.secondary.main,
               }}
             >
-              {isDebit ? (
-                <AccountBalanceWalletIcon fontSize="small" />
-              ) : (
-                <CreditCardIcon fontSize="small" />
-              )}
+              {getAccountIcon()}
             </Box>
             <Chip
               label={account.accountType}
@@ -140,10 +153,10 @@ export default function AccountCard({
               sx={{
                 textTransform: "capitalize",
                 fontWeight: 600,
-                backgroundColor: isDebit
+                backgroundColor: isAsset
                   ? `${theme.palette.primary.main}20`
                   : `${theme.palette.secondary.main}20`,
-                color: isDebit
+                color: isAsset
                   ? theme.palette.primary.main
                   : theme.palette.secondary.main,
               }}

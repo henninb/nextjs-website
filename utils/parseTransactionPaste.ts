@@ -1,3 +1,5 @@
+import { isAssetAccount, isLiabilityAccount } from "../model/AccountTypeUtils";
+
 /** Represents one transaction row extracted from raw pasted bank statement text. */
 export interface ParsedTransactionRow {
   /** Stable client-side identifier for React keys and editable state. */
@@ -321,8 +323,8 @@ export function parseTransactionPaste(
   raw: string,
   accountType?: string,
 ): ParsedTransactionRow[] {
-  const isCreditAccount = accountType === "credit";
-  const isDebitAccount = accountType === "debit";
+  const isCreditAccount = accountType ? isLiabilityAccount(accountType) : false;
+  const isDebitAccount = accountType ? isAssetAccount(accountType) : false;
   const lines = raw.split("\n").map((l) => l.trim());
   const rows: ParsedTransactionRow[] = [];
   let i = 0;

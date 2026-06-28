@@ -37,6 +37,7 @@ import {
 
 import Transfer from "../../../model/Transfer";
 import Account from "../../../model/Account";
+import { isAssetAccount } from "../../../model/AccountTypeUtils";
 
 import useTransferFetchGql from "../../../hooks/useTransferFetchGql";
 import useTransferInsertGql from "../../../hooks/useTransferInsertGql";
@@ -218,9 +219,8 @@ export default function TransfersNextGen() {
         firstFewAccounts: fetchedAccounts.slice(0, 3),
       });
 
-      // Filter for debit accounts only (case-insensitive for GraphQL/REST API compatibility)
       const debitAccounts = fetchedAccounts.filter(
-        (a) => a.accountType.toLowerCase() === "debit",
+        (a) => isAssetAccount(a.accountType),
       );
       console.log("[TransfersNextGen] Account filtering results:", {
         totalAccounts: fetchedAccounts.length,
@@ -244,14 +244,14 @@ export default function TransfersNextGen() {
       setAvailableDestinationAccounts(
         (fetchedAccounts || []).filter(
           (a) =>
-            a.accountType.toLowerCase() === "debit" &&
+            isAssetAccount(a.accountType) &&
             a.accountNameOwner !== selectedSourceAccount.accountNameOwner,
         ),
       );
     } else if (isSuccessAccounts) {
       setAvailableDestinationAccounts(
         (fetchedAccounts || []).filter(
-          (a) => a.accountType.toLowerCase() === "debit",
+          (a) => isAssetAccount(a.accountType),
         ),
       );
     }
@@ -262,14 +262,14 @@ export default function TransfersNextGen() {
       setAvailableSourceAccounts(
         (fetchedAccounts || []).filter(
           (a) =>
-            a.accountType.toLowerCase() === "debit" &&
+            isAssetAccount(a.accountType) &&
             a.accountNameOwner !== selectedDestinationAccount.accountNameOwner,
         ),
       );
     } else if (isSuccessAccounts) {
       setAvailableSourceAccounts(
         (fetchedAccounts || []).filter(
-          (a) => a.accountType.toLowerCase() === "debit",
+          (a) => isAssetAccount(a.accountType),
         ),
       );
     }

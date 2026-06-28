@@ -22,7 +22,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 type FilterState = {
-  accountType: "all" | "debit" | "credit";
+  accountType: "all" | "asset" | "liability";
   activeStatus: "all" | "active" | "inactive";
   balanceStatus:
     | "all"
@@ -69,7 +69,7 @@ export default function SearchFilterBar({
       label: "Payment Required",
       icon: <PaymentIcon sx={{ fontSize: "1rem" }} />,
       filters: {
-        accountType: "credit" as const,
+        accountType: "liability" as const,
         activeStatus: "active" as const,
         balanceStatus: "hasActivity" as const,
         accountNamePattern: "all" as const,
@@ -124,7 +124,7 @@ export default function SearchFilterBar({
     onFilterChange(filters);
   };
 
-  const handleAccountTypeFilter = (type: "all" | "debit" | "credit") => {
+  const handleAccountTypeFilter = (type: "all" | "asset" | "liability") => {
     onFilterChange({
       ...activeFilters,
       accountType: type,
@@ -266,11 +266,11 @@ export default function SearchFilterBar({
 
         {/* Account Type Filters */}
         <Chip
-          label="Debit"
-          onClick={() => handleAccountTypeFilter("debit")}
-          color={activeFilters.accountType === "debit" ? "primary" : "default"}
+          label="Asset"
+          onClick={() => handleAccountTypeFilter("asset")}
+          color={activeFilters.accountType === "asset" ? "primary" : "default"}
           variant={
-            activeFilters.accountType === "debit" ? "filled" : "outlined"
+            activeFilters.accountType === "asset" ? "filled" : "outlined"
           }
           size="small"
           sx={{
@@ -280,11 +280,11 @@ export default function SearchFilterBar({
           }}
         />
         <Chip
-          label="Credit"
-          onClick={() => handleAccountTypeFilter("credit")}
-          color={activeFilters.accountType === "credit" ? "primary" : "default"}
+          label="Liability"
+          onClick={() => handleAccountTypeFilter("liability")}
+          color={activeFilters.accountType === "liability" ? "primary" : "default"}
           variant={
-            activeFilters.accountType === "credit" ? "filled" : "outlined"
+            activeFilters.accountType === "liability" ? "filled" : "outlined"
           }
           size="small"
           sx={{

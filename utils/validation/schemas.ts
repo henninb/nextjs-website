@@ -107,8 +107,16 @@ const notes = z
   .default("");
 
 // Enum validations
-const accountTypeEnum = z.enum(["credit", "debit"], {
-  message: "Account type must be either credit or debit",
+const accountTypeEnum = z.enum([
+  "debit", "credit", "checking", "savings", "credit_card", "certificate", "money_market",
+  "brokerage", "retirement_401k", "retirement_ira", "retirement_roth", "pension",
+  "hsa", "fsa", "medical_savings",
+  "mortgage", "auto_loan", "student_loan", "personal_loan", "line_of_credit",
+  "utility", "prepaid", "gift_card",
+  "business_checking", "business_savings", "business_credit",
+  "cash", "escrow", "trust",
+] as const, {
+  message: "Invalid account type",
 });
 
 const transactionStateEnum = z.enum(["cleared", "outstanding", "future"], {

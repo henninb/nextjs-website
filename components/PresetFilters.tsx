@@ -6,7 +6,7 @@ import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 
 type FilterState = {
-  accountType: "all" | "debit" | "credit";
+  accountType: "all" | "asset" | "liability";
   activeStatus: "all" | "active" | "inactive";
   balanceStatus:
     | "all"
@@ -33,7 +33,7 @@ export default function PresetFilters({
       label: "Payment Required",
       icon: <PaymentIcon sx={{ fontSize: "1rem" }} />,
       filters: {
-        accountType: "credit" as const,
+        accountType: "liability" as const,
         activeStatus: "active" as const,
         balanceStatus: "hasActivity" as const,
       },

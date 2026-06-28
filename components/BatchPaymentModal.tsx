@@ -32,6 +32,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Account from "../model/Account";
+import { isAssetAccount, isLiabilityAccount } from "../model/AccountTypeUtils";
 import Payment from "../model/Payment";
 import { currencyFormat, formatDateForDisplay } from "./Common";
 import usePaymentInsert from "../hooks/usePaymentInsert";
@@ -386,7 +387,7 @@ export default function BatchPaymentModal({
             </Box>
 
             <Autocomplete
-              options={accounts.filter((a) => a.accountType === "debit")}
+              options={accounts.filter((a) => isAssetAccount(a.accountType))}
               getOptionLabel={(a: Account) => a.accountNameOwner || ""}
               isOptionEqualToValue={(o, v) =>
                 o.accountNameOwner === v?.accountNameOwner
@@ -397,14 +398,14 @@ export default function BatchPaymentModal({
               }
               onChange={(_, v) => setSourceAccount(v?.accountNameOwner || "")}
               renderInput={(params) => (
-                <TextField {...params} label="Source Account (Debit)" />
+                <TextField {...params} label="Source Account" />
               )}
             />
 
             <Autocomplete
               options={accounts.filter(
                 (a) =>
-                  a.accountType === "credit" &&
+                  isLiabilityAccount(a.accountType) &&
                   a.accountNameOwner !== sourceAccount,
               )}
               getOptionLabel={(a: Account) => a.accountNameOwner || ""}

@@ -1,5 +1,6 @@
 import { graphqlRequest } from "../utils/graphqlClient";
 import Account, { TaxBucket } from "../model/Account";
+import { AccountType } from "../model/AccountType";
 import { useAuthenticatedQuery } from "../utils/queryConfig";
 import { createHookLogger } from "../utils/logger";
 
@@ -75,7 +76,7 @@ export default function useAccountFetchGql() {
         accountId: a.accountId,
         owner: a.owner ?? undefined,
         accountNameOwner: a.accountNameOwner,
-        accountType: (a.accountType as any) ?? "undefined",
+        accountType: (a.accountType as AccountType) ?? "undefined",
         activeStatus: !!a.activeStatus,
         moniker: a.moniker,
         outstanding: a.outstanding,

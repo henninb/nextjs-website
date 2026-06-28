@@ -326,7 +326,7 @@ export default function TransactionsByAccount({
     const currentAccount = fetchedAccounts?.find(
       (account) => account.accountNameOwner === validAccountNameOwner,
     );
-    const accountType = currentAccount?.accountType || ("debit" as AccountType);
+    const accountType = currentAccount?.accountType || ("undefined" as AccountType);
 
     return {
       transactionDate: new Date(),
@@ -2195,7 +2195,7 @@ export default function TransactionsByAccount({
           open={showModalPaste}
           onClose={() => setShowModalPaste(false)}
           accountNameOwner={validAccountNameOwner}
-          accountType={currentAccount?.accountType ?? "debit"}
+          accountType={currentAccount?.accountType ?? "undefined"}
           categories={
             isSuccessCategories
               ? fetchedCategories.map((c) => c.categoryName)

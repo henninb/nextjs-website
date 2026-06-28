@@ -12,6 +12,7 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { useAuth } from "../components/AuthProvider";
 import Transaction from "../model/Transaction";
+import { CREDIT_CARD_ACCOUNT_TYPES } from "../model/AccountTypeUtils";
 import {
   aggregateMonthlySpend,
   diffMoM,
@@ -139,7 +140,7 @@ export const transformToTrendsData = (
 ): SpendingTrendsData => {
   // Apply default filters for spending trends: credit accounts only, exclude payments
   const defaultFilters: SpendingFilters = {
-    accountTypeFilter: ["credit"],
+    accountTypeFilter: CREDIT_CARD_ACCOUNT_TYPES,
     excludePayments: true,
     includeTransfers: false, // Maintain existing default
     includeRefunds: true, // Maintain existing default

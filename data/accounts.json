@@ -2,7 +2,7 @@
   {
     "accountId": 1,
     "accountNameOwner": "wfargo-savings_brian",
-    "accountType": "debit",
+    "accountType": "savings",
     "activeStatus": true,
     "moniker": "0000",
     "outstanding": 1500.25,
@@ -24,7 +24,7 @@
   {
     "accountId": 3,
     "accountNameOwner": "barclay-savings_brian",
-    "accountType": "debit",
+    "accountType": "savings",
     "activeStatus": true,
     "moniker": "0000",
     "outstanding": 5000.75,
@@ -41,6 +41,28 @@
     "outstanding": 5.75,
     "future": 10.24,
     "cleared": 4.75,
+    "validationDate": "2024-10-31"
+  },
+  {
+    "accountId": 5,
+    "accountNameOwner": "fidelity-brokerage_brian",
+    "accountType": "brokerage",
+    "activeStatus": true,
+    "moniker": "FIDE",
+    "outstanding": 0.0,
+    "future": 0.0,
+    "cleared": 45000.0,
+    "validationDate": "2024-10-31"
+  },
+  {
+    "accountId": 6,
+    "accountNameOwner": "bofa-mortgage_brian",
+    "accountType": "mortgage",
+    "activeStatus": true,
+    "moniker": "BOFA",
+    "outstanding": 0.0,
+    "future": 1200.0,
+    "cleared": 285000.0,
     "validationDate": "2024-10-31"
   }
 ]
