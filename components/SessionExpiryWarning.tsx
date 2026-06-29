@@ -28,7 +28,6 @@ export default function SessionExpiryWarning({
       aria-labelledby="session-expiry-dialog-title"
       transitionDuration={0}
       keepMounted={false}
-      disablePortal
       hideBackdrop
     >
       <DialogTitle id="session-expiry-dialog-title">

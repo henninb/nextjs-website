@@ -34,7 +34,6 @@ export default function ConfirmDialog({
       aria-labelledby="confirm-dialog-title"
       transitionDuration={0}
       keepMounted={false}
-      disablePortal
       hideBackdrop
     >
       <DialogTitle id="confirm-dialog-title">{title}</DialogTitle>
