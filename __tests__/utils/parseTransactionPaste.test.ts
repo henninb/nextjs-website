@@ -1470,13 +1470,17 @@ $50.80`;
       expect(row.amount).toBe(25.0);
     });
 
-    it("should have no date and flag the row as pending for manual review", () => {
+    it("should default the date to today and flag the row as pending for review", () => {
       const [row] = parseTransactionPaste(
         blockM("WIDGET CO FEE ABCDEF", "Temporary Transactions", "$25.00", "$1,005.81"),
       );
-      expect(row.date).toBeNull();
+      const today = new Date();
+      expect(row.date).toBeInstanceOf(Date);
+      expect(row.date!.getFullYear()).toBe(today.getFullYear());
+      expect(row.date!.getMonth()).toBe(today.getMonth());
+      expect(row.date!.getDate()).toBe(today.getDate());
       expect(row.parseErrors).toContain(
-        "Transaction is pending — enter a posting date manually",
+        "Transaction is pending — confirm the posting date",
       );
     });
 
@@ -1508,7 +1512,7 @@ $50.80`;
         description: "CURBSIDE HAULING SVC",
         amount: 49.01,
       });
-      rows.forEach((r) => expect(r.date).toBeNull());
+      rows.forEach((r) => expect(r.date).toBeInstanceOf(Date));
     });
   });
 

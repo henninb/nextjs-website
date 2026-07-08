@@ -107,7 +107,7 @@ export interface ParsedTransactionRow {
 // Format M — Bank of America pending-transactions table export:
 //   Expand transaction for Transaction date: Pending DESCRIPTION Pending    Expand transactionDESCRIPTION    Type TYPE
 //   $AMOUNT    $BALANCE
-//   ↑ no real posting date exists yet (still pending) — flagged for manual review
+//   ↑ no real posting date exists yet (still pending) — defaults to today, flagged for review
 //   ↑ balance is the second $ value on the amount line — ignored
 //
 // Rules shared by all formats:
@@ -844,7 +844,8 @@ export function parseTransactionPaste(
         errors.push("Header did not match expected format");
       }
       if (!descriptionM) errors.push("Description is empty");
-      errors.push("Transaction is pending — enter a posting date manually");
+      // No posting date exists yet — default to today and flag for the user to confirm/adjust.
+      errors.push("Transaction is pending — confirm the posting date");
 
       i++;
       let amountM: number | null = null;
@@ -859,7 +860,7 @@ export function parseTransactionPaste(
 
       rows.push({
         id: crypto.randomUUID(),
-        date: null,
+        date: new Date(),
         description: descriptionM,
         notes: "",
         cardholder: "",
