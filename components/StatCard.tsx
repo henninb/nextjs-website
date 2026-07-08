@@ -21,6 +21,7 @@ type StatCardProps = {
     direction: "up" | "down";
   };
   highlighted?: boolean;
+  onClick?: () => void;
 };
 
 export default function StatCard({
@@ -31,6 +32,7 @@ export default function StatCard({
   color = "primary",
   trend,
   highlighted = false,
+  onClick,
 }: StatCardProps) {
   const theme = useTheme();
 
@@ -56,14 +58,35 @@ export default function StatCard({
 
   return (
     <Card
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      aria-label={onClick ? `${label} breakdown` : undefined}
       sx={{
         height: "100%",
+        cursor: onClick ? "pointer" : undefined,
         transition: "all 0.3s ease-in-out",
         "&:hover": {
           transform: "translateY(-4px)",
           boxShadow:
             "0 12px 24px -4px rgba(0, 0, 0, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.3)",
         },
+        "&:focus-visible": onClick
+          ? {
+              outline: `2px solid ${cardColor}`,
+              outlineOffset: "2px",
+            }
+          : undefined,
         background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${alpha(cardColor, 0.05)} 100%)`,
         border: highlighted
           ? `2px solid ${cardColor}`

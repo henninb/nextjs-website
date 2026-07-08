@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import StatCard from "../../components/StatCard";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
@@ -174,5 +174,44 @@ describe("StatCard", () => {
     expect(labelElement).toBeInTheDocument();
     const styles = window.getComputedStyle(labelElement);
     expect(styles.textTransform).toBe("uppercase");
+  });
+
+  it("calls onClick when clicked", () => {
+    const onClick = jest.fn();
+    render(
+      <StatCard
+        icon={<AccountBalanceIcon />}
+        label="Cleared"
+        value="$100"
+        onClick={onClick}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /cleared breakdown/i }));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClick when activated with Enter key", () => {
+    const onClick = jest.fn();
+    render(
+      <StatCard
+        icon={<AccountBalanceIcon />}
+        label="Cleared"
+        value="$100"
+        onClick={onClick}
+      />,
+    );
+
+    const card = screen.getByRole("button", { name: /cleared breakdown/i });
+    fireEvent.keyDown(card, { key: "Enter" });
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("is not a button when onClick is not provided", () => {
+    render(
+      <StatCard icon={<AccountBalanceIcon />} label="Cleared" value="$100" />,
+    );
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

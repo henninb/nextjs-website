@@ -45,10 +45,18 @@ import {
   formatAccountTypeLabel,
 } from "../../model/AccountTypeUtils";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
-import { currencyFormat, noNaN, formatDateTimeForDisplay, formatDateForDisplay } from "../../components/Common";
+import {
+  currencyFormat,
+  noNaN,
+  formatDateTimeForDisplay,
+  formatDateForDisplay,
+} from "../../components/Common";
 import FinanceLayout from "../../layouts/FinanceLayout";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import FormDialog from "../../components/FormDialog";
+import TotalsBreakdownModal, {
+  BreakdownRow,
+} from "../../components/TotalsBreakdownModal";
 import PageHeader from "../../components/PageHeader";
 import ActionBar from "../../components/ActionBar";
 import DataGridBase from "../../components/DataGridBase";
@@ -117,7 +125,9 @@ function computeCurrentDueDate(account: Account): Date | null {
 
   function buildDueDate(cYear: number, cMonth: number): Date {
     if (billingGracePeriodDays) {
-      const closeDate = applyWeekendShift(new Date(cYear, cMonth, billingStatementCloseDay!));
+      const closeDate = applyWeekendShift(
+        new Date(cYear, cMonth, billingStatementCloseDay!),
+      );
       closeDate.setDate(closeDate.getDate() + billingGracePeriodDays);
       return closeDate;
     } else if (billingDueDaySameMonth) {
@@ -150,13 +160,35 @@ function computeCurrentDueDate(account: Account): Date | null {
 const AccountCacheSchema = z.object({
   accountNameOwner: z.string().regex(/^[a-zA-Z0-9_-]+$/),
   accountType: z.enum([
-    "debit", "credit", "checking", "savings", "credit_card", "certificate", "money_market",
-    "brokerage", "retirement_401k", "retirement_ira", "retirement_roth", "pension",
-    "hsa", "fsa", "medical_savings",
-    "mortgage", "auto_loan", "student_loan", "personal_loan", "line_of_credit",
-    "utility", "prepaid", "gift_card",
-    "business_checking", "business_savings", "business_credit",
-    "cash", "escrow", "trust",
+    "debit",
+    "credit",
+    "checking",
+    "savings",
+    "credit_card",
+    "certificate",
+    "money_market",
+    "brokerage",
+    "retirement_401k",
+    "retirement_ira",
+    "retirement_roth",
+    "pension",
+    "hsa",
+    "fsa",
+    "medical_savings",
+    "mortgage",
+    "auto_loan",
+    "student_loan",
+    "personal_loan",
+    "line_of_credit",
+    "utility",
+    "prepaid",
+    "gift_card",
+    "business_checking",
+    "business_savings",
+    "business_credit",
+    "cash",
+    "escrow",
+    "trust",
   ] as const),
   moniker: z.string().regex(/^[a-zA-Z0-9]+$/),
   taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
@@ -205,6 +237,9 @@ export default function Accounts() {
     accountNamePattern: "all",
   });
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [breakdownField, setBreakdownField] = useState<
+    "totals" | "cleared" | "outstanding" | "future" | null
+  >(null);
 
   const {
     data: fetchedAccounts,
@@ -220,6 +255,44 @@ export default function Accounts() {
     error: errorTotals,
     refetch: refetchTotals,
   } = useTotalsFetch();
+
+  const breakdownRows: BreakdownRow[] = useMemo(() => {
+    if (!fetchedAccounts || !breakdownField) return [];
+    return fetchedAccounts
+      .map((account) => ({
+        accountNameOwner: account.accountNameOwner,
+        amount:
+          breakdownField === "totals"
+            ? noNaN(account.cleared) +
+              noNaN(account.outstanding) +
+              noNaN(account.future)
+            : noNaN(account[breakdownField]),
+      }))
+      .filter((row) => row.amount !== 0)
+      .sort((a, b) => b.amount - a.amount);
+  }, [fetchedAccounts, breakdownField]);
+
+  const breakdownConfig: Record<
+    "totals" | "cleared" | "outstanding" | "future",
+    { title: string; total: number }
+  > = {
+    totals: {
+      title: "Total Breakdown",
+      total: noNaN(fetchedTotals?.totals ?? 0),
+    },
+    cleared: {
+      title: "Cleared Breakdown",
+      total: noNaN(fetchedTotals?.totalsCleared ?? 0),
+    },
+    outstanding: {
+      title: "Outstanding Breakdown",
+      total: noNaN(fetchedTotals?.totalsOutstanding ?? 0),
+    },
+    future: {
+      title: "Future Breakdown",
+      total: noNaN(fetchedTotals?.totalsFuture ?? 0),
+    },
+  };
 
   const { mutateAsync: insertAccount } = useAccountInsert();
   const { mutateAsync: updateAccount } = useAccountUpdate();
@@ -259,7 +332,9 @@ export default function Accounts() {
   ]);
 
   useEffect(() => {
-    setCacheEnabled(localStorage.getItem(ACCOUNTS_CACHE_ENABLED_KEY) === "true");
+    setCacheEnabled(
+      localStorage.getItem(ACCOUNTS_CACHE_ENABLED_KEY) === "true",
+    );
   }, []);
 
   // Load view preference from localStorage
@@ -291,8 +366,10 @@ export default function Accounts() {
       // Account type filter
       const matchesType =
         activeFilters.accountType === "all" ||
-        (activeFilters.accountType === "asset" && isAssetAccount(account.accountType)) ||
-        (activeFilters.accountType === "liability" && isLiabilityAccount(account.accountType));
+        (activeFilters.accountType === "asset" &&
+          isAssetAccount(account.accountType)) ||
+        (activeFilters.accountType === "liability" &&
+          isLiabilityAccount(account.accountType));
 
       // Active status filter
       const matchesStatus =
@@ -789,6 +866,7 @@ export default function Accounts() {
                     label="Total"
                     value={currencyFormat(noNaN(fetchedTotals?.totals ?? 0))}
                     color="primary"
+                    onClick={() => setBreakdownField("totals")}
                   />
                 </Box>
               </Grow>
@@ -809,6 +887,7 @@ export default function Accounts() {
                       activeFilters.balanceStatus === "hasCleared" ||
                       activeFilters.balanceStatus === "hasActivity"
                     }
+                    onClick={() => setBreakdownField("cleared")}
                   />
                 </Box>
               </Grow>
@@ -829,6 +908,7 @@ export default function Accounts() {
                       activeFilters.balanceStatus === "hasOutstanding" ||
                       activeFilters.balanceStatus === "hasActivity"
                     }
+                    onClick={() => setBreakdownField("outstanding")}
                   />
                 </Box>
               </Grow>
@@ -849,6 +929,7 @@ export default function Accounts() {
                       activeFilters.balanceStatus === "hasFuture" ||
                       activeFilters.balanceStatus === "hasActivity"
                     }
+                    onClick={() => setBreakdownField("future")}
                   />
                 </Box>
               </Grow>
@@ -1134,6 +1215,14 @@ export default function Accounts() {
             />
           </Box>
         </FormDialog>
+
+        <TotalsBreakdownModal
+          open={breakdownField !== null}
+          onClose={() => setBreakdownField(null)}
+          title={breakdownField ? breakdownConfig[breakdownField].title : ""}
+          rows={breakdownRows}
+          total={breakdownField ? breakdownConfig[breakdownField].total : 0}
+        />
       </>
     </div>
   );
