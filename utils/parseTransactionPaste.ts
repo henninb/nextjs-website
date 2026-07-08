@@ -104,6 +104,12 @@ export interface ParsedTransactionRow {
 //   Note: when the date appears as "May 28, 2026" (MMM DD, YYYY) the same
 //   block structure is handled transparently by Format E.
 //
+// Format M — Bank of America pending-transactions table export:
+//   Expand transaction for Transaction date: Pending DESCRIPTION Pending    Expand transactionDESCRIPTION    Type TYPE
+//   $AMOUNT    $BALANCE
+//   ↑ no real posting date exists yet (still pending) — flagged for manual review
+//   ↑ balance is the second $ value on the amount line — ignored
+//
 // Rules shared by all formats:
 //   • Reference / suffix lines starting with '#' are ignored.
 //   • Only the FIRST dollar amount on an amount line is captured.
@@ -134,6 +140,8 @@ const FORMAT_J =
 const FORMAT_K = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i;
 /** Chase website: standalone MM/DD/YYYY date (4-digit year, no trailing content). */
 const FORMAT_L = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+/** Bank of America pending-transactions table export. */
+const FORMAT_M = /^Expand transaction for Transaction date:/i;
 
 const MONTH_IDX: Record<string, number> = {
   jan: 0,
@@ -163,7 +171,8 @@ function isTransactionHeader(line: string): boolean {
     FORMAT_H.test(line) ||
     FORMAT_I.test(line) ||
     FORMAT_K.test(line) ||
-    FORMAT_L.test(line)
+    FORMAT_L.test(line) ||
+    FORMAT_M.test(line)
   );
 }
 
@@ -819,6 +828,42 @@ export function parseTransactionPaste(
         notes: "",
         cardholder: "",
         amount: amountL.value,
+        parseErrors: errors,
+      });
+
+      // ── Format M — Bank of America pending transaction ───────────────────────
+    } else if (FORMAT_M.test(line)) {
+      // "Expand transaction for Transaction date: Pending DESC Pending    Expand transactionDESC    Type TYPE"
+      const m = line.match(
+        /^Expand transaction for Transaction date:\s+Pending\s+(.+?)\s+Pending\s+Expand transaction.+?Type\s+.+$/i,
+      );
+      let descriptionM = "";
+      if (m) {
+        descriptionM = m[1].trim();
+      } else {
+        errors.push("Header did not match expected format");
+      }
+      if (!descriptionM) errors.push("Description is empty");
+      errors.push("Transaction is pending — enter a posting date manually");
+
+      i++;
+      let amountM: number | null = null;
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        i++;
+        if (!next) continue;
+        amountM = parseFirstAmount(next, isCreditAccount);
+        break;
+      }
+      if (amountM === null) errors.push("No amount found");
+
+      rows.push({
+        id: crypto.randomUUID(),
+        date: null,
+        description: descriptionM,
+        notes: "",
+        cardholder: "",
+        amount: amountM,
         parseErrors: errors,
       });
 

@@ -1449,6 +1449,69 @@ $50.80`;
     });
   });
 
+  // ── Format M ─────────────────────────────────────────────────────────────
+
+  /** Format M block: Bank of America pending-transactions table export. */
+  function blockM(
+    desc: string,
+    type: string,
+    amount: string,
+    balance: string,
+  ): string {
+    return `Expand transaction for Transaction date: Pending ${desc} Pending    Expand transaction${desc}    Type ${type}\n${amount}    ${balance}`;
+  }
+
+  describe("Format M — Bank of America pending transactions", () => {
+    it("should parse a single Format M transaction", () => {
+      const [row] = parseTransactionPaste(
+        blockM("WIDGET CO FEE ABCDEF", "Temporary Transactions", "$25.00", "$1,005.81"),
+      );
+      expect(row.description).toBe("WIDGET CO FEE ABCDEF");
+      expect(row.amount).toBe(25.0);
+    });
+
+    it("should have no date and flag the row as pending for manual review", () => {
+      const [row] = parseTransactionPaste(
+        blockM("WIDGET CO FEE ABCDEF", "Temporary Transactions", "$25.00", "$1,005.81"),
+      );
+      expect(row.date).toBeNull();
+      expect(row.parseErrors).toContain(
+        "Transaction is pending — enter a posting date manually",
+      );
+    });
+
+    it("should ignore the running balance and only take the first dollar amount", () => {
+      const [row] = parseTransactionPaste(
+        blockM("SAMPLE AIRLINE XY QRSTUV", "Temporary Transactions", "$488.40", "$980.81"),
+      );
+      expect(row.amount).toBe(488.4);
+    });
+
+    it("should parse multiple consecutive Format M blocks", () => {
+      const raw = [
+        blockM("SAMPLE AIRLINE XY QRSTUV", "Temporary Transactions", "$488.40", "$980.81"),
+        blockM("SAMPLE AIRLINE XY QRSTUV", "Temporary Transactions", "$443.40", "$492.41"),
+        blockM("CURBSIDE HAULING SVC", "Temporary Transactions", "$49.01", "$49.01"),
+      ].join("\n");
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(3);
+      expect(rows[0]).toMatchObject({
+        description: "SAMPLE AIRLINE XY QRSTUV",
+        amount: 488.4,
+      });
+      expect(rows[1]).toMatchObject({
+        description: "SAMPLE AIRLINE XY QRSTUV",
+        amount: 443.4,
+      });
+      expect(rows[2]).toMatchObject({
+        description: "CURBSIDE HAULING SVC",
+        amount: 49.01,
+      });
+      rows.forEach((r) => expect(r.date).toBeNull());
+    });
+  });
+
   // ── Mixed formats ─────────────────────────────────────────────────────────
 
   describe("mixed formats in one paste", () => {
