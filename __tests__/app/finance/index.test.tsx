@@ -238,18 +238,24 @@ describe("Accounts Component", () => {
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it("handles account type tab completion", () => {
+  it("selects account type from the restricted Autocomplete options", () => {
     render(<Accounts />, { wrapper: createWrapper() });
 
     // Open modal
     const addButton = screen.getByText("Add Account");
     fireEvent.click(addButton);
 
+    // Account Type is a restricted (non-freeSolo) Autocomplete: typing
+    // filters the option list, but the value is only set by selecting
+    // an option - typing text alone (even an exact match + Tab) does not
+    // commit a value.
     const typeInput = screen.getByLabelText("Account Type");
     fireEvent.change(typeInput, { target: { value: "deb" } });
-    fireEvent.keyDown(typeInput, { key: "Tab" });
 
-    expect(typeInput.value).toBe("debit");
+    const debitOption = screen.getByRole("option", { name: "Debit" });
+    fireEvent.click(debitOption);
+
+    expect(typeInput.value).toBe("Debit");
   });
 
   it("displays error state when fetching fails", () => {

@@ -902,8 +902,12 @@ describe("pages/finance/index (Accounts)", () => {
       fireEvent.click(screen.getByText("Liability"));
 
       expect(screen.getByText("bofa-mortgage_brian")).toBeInTheDocument();
-      expect(screen.queryByText("fidelity-brokerage_brian")).not.toBeInTheDocument();
-      expect(screen.queryByText("wfargo-savings_brian")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("fidelity-brokerage_brian"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("wfargo-savings_brian"),
+      ).not.toBeInTheDocument();
     });
 
     it("retirement_401k account renders as asset type", () => {
@@ -933,6 +937,110 @@ describe("pages/finance/index (Accounts)", () => {
 
       expect(screen.getByText("vanguard-401k_brian")).toBeInTheDocument();
       expect(screen.getByText("retirement_401k")).toBeInTheDocument();
+    });
+  });
+
+  describe("Payment Required Filter - Utility Account Override", () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+      mockUseAccountFetch.mockReturnValue({
+        data: [
+          {
+            // Inactive, zero-balance utility account: fails the preset's
+            // activeStatus/balanceStatus criteria on its own, so it only
+            // shows up because of the utility bypass.
+            accountId: 1,
+            accountNameOwner: "centerpoint_brian",
+            accountType: "utility",
+            activeStatus: false,
+            moniker: "CNP",
+            outstanding: 0,
+            future: 0,
+            cleared: 0,
+          },
+          {
+            // Genuinely matches the Payment Required preset on its own.
+            accountId: 2,
+            accountNameOwner: "chase-credit_brian",
+            accountType: "credit_card",
+            activeStatus: true,
+            moniker: "CHASE",
+            outstanding: 150,
+            future: 0,
+            cleared: 0,
+          },
+          {
+            // Liability type, but inactive with no activity - should still
+            // be excluded; only utility accounts bypass the criteria.
+            accountId: 3,
+            accountNameOwner: "closed-loan_brian",
+            accountType: "personal_loan",
+            activeStatus: false,
+            moniker: "LOAN",
+            outstanding: 0,
+            future: 0,
+            cleared: 0,
+          },
+          {
+            // Non-liability, non-utility account - never matches.
+            accountId: 4,
+            accountNameOwner: "chase-checking_brian",
+            accountType: "checking",
+            activeStatus: true,
+            moniker: "CHK",
+            outstanding: 0,
+            future: 0,
+            cleared: 500,
+          },
+        ],
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+      mockUseTotalsFetch.mockReturnValue({
+        data: {
+          totals: 650,
+          totalsCleared: 500,
+          totalsOutstanding: 150,
+          totalsFuture: 0,
+        },
+        isSuccess: true,
+        isFetching: false,
+        error: null,
+        refetch: jest.fn(),
+      });
+    });
+
+    it("always includes utility accounts under the Payment Required preset, regardless of other criteria", () => {
+      render(<AccountsPage />, { wrapper: createWrapper() });
+
+      fireEvent.click(screen.getByLabelText(/grid view/i));
+      fireEvent.click(screen.getByText("Payment Required"));
+
+      // Utility account bypasses the active/balance criteria and always shows
+      expect(screen.getByText("centerpoint_brian")).toBeInTheDocument();
+      // Liability account that genuinely matches the preset still shows
+      expect(screen.getByText("chase-credit_brian")).toBeInTheDocument();
+      // Non-utility liability account that fails the preset criteria stays excluded
+      expect(screen.queryByText("closed-loan_brian")).not.toBeInTheDocument();
+      // Non-liability, non-utility account stays excluded
+      expect(
+        screen.queryByText("chase-checking_brian"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("does not apply the utility bypass to a manual Liability filter", () => {
+      render(<AccountsPage />, { wrapper: createWrapper() });
+
+      fireEvent.click(screen.getByLabelText(/grid view/i));
+      fireEvent.click(screen.getByText("Liability"));
+
+      // The manual "Liability" chip is a different filter shape than the
+      // Payment Required preset, so the utility bypass must not apply here.
+      expect(screen.queryByText("centerpoint_brian")).not.toBeInTheDocument();
+      expect(screen.getByText("chase-credit_brian")).toBeInTheDocument();
+      expect(screen.getByText("closed-loan_brian")).toBeInTheDocument();
     });
   });
 });

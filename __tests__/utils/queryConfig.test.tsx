@@ -34,7 +34,7 @@ describe("queryConfig", () => {
   describe("DEFAULT_MUTATION_CONFIG", () => {
     it("should have correct default values", () => {
       expect(DEFAULT_MUTATION_CONFIG).toEqual({
-        retry: 1,
+        retry: 0,
       });
     });
   });

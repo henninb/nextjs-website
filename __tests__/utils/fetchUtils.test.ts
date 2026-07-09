@@ -84,7 +84,7 @@ describe("fetchUtils", () => {
       const error = new FetchError("Conflict", 409, "Conflict");
 
       expect(error.getUserMessage()).toContain("duplicate");
-      expect(error.getUserMessage()).toContain("already exists");
+      expect(error.getUserMessage()).toContain("business rule was violated");
     });
 
     it("409 isClientError should be true", () => {

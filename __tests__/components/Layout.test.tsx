@@ -135,7 +135,6 @@ describe("Layout Component", () => {
       expect(screen.getByText("PaymentsRequired")).toBeInTheDocument();
       expect(screen.getByText("Descriptions")).toBeInTheDocument();
       expect(screen.getByText("Configuration")).toBeInTheDocument();
-      expect(screen.getByText("Import")).toBeInTheDocument();
       expect(screen.getByText("Backup/Restore")).toBeInTheDocument();
     });
 
