@@ -350,11 +350,26 @@ export default function Accounts() {
     localStorage.setItem("finance-accounts-view", viewMode);
   }, [viewMode]);
 
+  // The "Payment Required" quick filter (see SearchFilterBar's quickFilters)
+  // always sets this exact combination. Utility accounts (e.g. electric, gas,
+  // water) never carry a "liability" accountType, but bills for them still
+  // require payment, so they must always show up under this preset
+  // regardless of any other criteria.
+  const isPaymentRequiredPreset =
+    activeFilters.accountType === "liability" &&
+    activeFilters.activeStatus === "active" &&
+    activeFilters.balanceStatus === "hasActivity" &&
+    activeFilters.accountNamePattern === "all";
+
   // Filter accounts based on search and filters
   const filteredAccounts = useMemo(() => {
     if (!fetchedAccounts) return [];
 
     return fetchedAccounts.filter((account) => {
+      if (isPaymentRequiredPreset && account.accountType === "utility") {
+        return true;
+      }
+
       // Search filter
       const matchesSearch =
         searchTerm === "" ||
