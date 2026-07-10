@@ -921,6 +921,9 @@ export function parseTransactionPaste(
   // Trim "ONLINE TRANSFER" descriptions: keep those two words, move the rest to notes.
   // Strip trailing US state abbreviations from all descriptions.
   // Remove bank website UI artifacts ("Show image for X, Opens a dialog").
+  // Collapse Target store/terminal noise ("TARGET 1144 COON RAPIDS MN", "TARGET.COM 800-591-")
+  // down to a single clean merchant name.
+  const TARGET_DESCRIPTION = /^TARGET\b/i;
   for (const row of rows) {
     if (/^ONLINE TRANSFER\b/i.test(row.description)) {
       row.notes = row.description.slice("ONLINE TRANSFER".length).trim();
@@ -931,6 +934,9 @@ export function parseTransactionPaste(
       .replace(/,\s*Opens a dialog\b[^,]*/gi, "")
       .trim();
     row.description = row.description.replace(US_STATE_SUFFIX, "");
+    if (TARGET_DESCRIPTION.test(row.description)) {
+      row.description = "Target";
+    }
   }
 
   // On debit accounts these descriptions are always withdrawals — override any positive amount

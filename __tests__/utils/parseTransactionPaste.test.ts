@@ -1136,7 +1136,7 @@ TARGET 1144 COON RAPIDS MN    Sale    **3370    $59.83`;
         amount: -348.0,
       });
       expect(rows[3]).toMatchObject({
-        description: "TARGET 1144 COON RAPIDS",
+        description: "Target",
         amount: 59.83,
       });
       expect(rows[0].date!.getDate()).toBe(27);
@@ -1150,6 +1150,27 @@ Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97`;
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(1);
       expect(rows[0].description).toBe("TGT.COM 912003433044748");
+    });
+
+    it("should normalize store-number/terminal Target descriptions to a clean merchant name", () => {
+      const raw = `Date Sort    Description    Type Sort    Card    Amount Sort
+Pending (07-10-2026)     TARGET 1144 080 5661    Sale        $47.50
+07-03-2026
+
+TARGET 2025 ANDOVER MN    Sale    **3370    $28.50
+07-01-2026
+
+TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(3);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows[0]).toMatchObject({ description: "Target", amount: 47.5 });
+      expect(rows[1]).toMatchObject({ description: "Target", amount: 28.5 });
+      expect(rows[2]).toMatchObject({ description: "Target", amount: 30.99 });
+      expect(rows[0].date!.getDate()).toBe(10);
+      expect(rows[1].date!.getDate()).toBe(3);
+      expect(rows[2].date!.getDate()).toBe(1);
     });
   });
 
