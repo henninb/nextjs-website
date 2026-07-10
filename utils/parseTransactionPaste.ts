@@ -921,9 +921,10 @@ export function parseTransactionPaste(
   // Trim "ONLINE TRANSFER" descriptions: keep those two words, move the rest to notes.
   // Strip trailing US state abbreviations from all descriptions.
   // Remove bank website UI artifacts ("Show image for X, Opens a dialog").
-  // Collapse Target store/terminal noise ("TARGET 1144 COON RAPIDS MN", "TARGET.COM 800-591-")
-  // down to a single clean merchant name.
-  const TARGET_DESCRIPTION = /^TARGET\b/i;
+  // Collapse Target descriptions to "Target [store#] [City]", or "Target.com" when online —
+  // drops terminal/register noise ("TARGET 1144 080 5661" → "Target 1144").
+  const TARGET_ONLINE = /^TARGET\.?COM\b/i;
+  const TARGET_STORE = /^TARGET\b\s*(.*)$/i;
   for (const row of rows) {
     if (/^ONLINE TRANSFER\b/i.test(row.description)) {
       row.notes = row.description.slice("ONLINE TRANSFER".length).trim();
@@ -934,8 +935,31 @@ export function parseTransactionPaste(
       .replace(/,\s*Opens a dialog\b[^,]*/gi, "")
       .trim();
     row.description = row.description.replace(US_STATE_SUFFIX, "");
-    if (TARGET_DESCRIPTION.test(row.description)) {
-      row.description = "Target";
+
+    if (TARGET_ONLINE.test(row.description)) {
+      row.description = "Target.com";
+    } else {
+      const storeMatch = row.description.match(TARGET_STORE);
+      if (storeMatch) {
+        const tokens = storeMatch[1].trim().split(/\s+/).filter(Boolean);
+        let idx = 0;
+        let storeNumber = "";
+        if (tokens[0] && /^\d{3,6}$/.test(tokens[0])) {
+          storeNumber = tokens[0];
+          idx = 1;
+        }
+        const cityTokens: string[] = [];
+        while (idx < tokens.length && /^[A-Za-z]+$/.test(tokens[idx])) {
+          cityTokens.push(tokens[idx]);
+          idx++;
+        }
+        const city = cityTokens
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(" ");
+        row.description = ["Target", storeNumber, city]
+          .filter(Boolean)
+          .join(" ");
+      }
     }
   }
 

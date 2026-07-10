@@ -1136,7 +1136,7 @@ TARGET 1144 COON RAPIDS MN    Sale    **3370    $59.83`;
         amount: -348.0,
       });
       expect(rows[3]).toMatchObject({
-        description: "Target",
+        description: "Target 1144 Coon Rapids",
         amount: 59.83,
       });
       expect(rows[0].date!.getDate()).toBe(27);
@@ -1165,12 +1165,29 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(3);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
-      expect(rows[0]).toMatchObject({ description: "Target", amount: 47.5 });
-      expect(rows[1]).toMatchObject({ description: "Target", amount: 28.5 });
-      expect(rows[2]).toMatchObject({ description: "Target", amount: 30.99 });
+      expect(rows[0]).toMatchObject({
+        description: "Target 1144",
+        amount: 47.5,
+      });
+      expect(rows[1]).toMatchObject({
+        description: "Target 2025 Andover",
+        amount: 28.5,
+      });
+      expect(rows[2]).toMatchObject({
+        description: "Target 1144 Coon Rapids",
+        amount: 30.99,
+      });
       expect(rows[0].date!.getDate()).toBe(10);
       expect(rows[1].date!.getDate()).toBe(3);
       expect(rows[2].date!.getDate()).toBe(1);
+    });
+
+    it("should normalize online Target.com purchases to \"Target.com\"", () => {
+      const [row] = parseTransactionPaste(
+        blockD("03-09-2026", "TARGET.COM 800-591- CREDIT", "-$2.25", "Return", ""),
+      );
+      expect(row.description).toBe("Target.com");
+      expect(row.amount).toBe(-2.25);
     });
   });
 
