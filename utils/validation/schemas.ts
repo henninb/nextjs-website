@@ -177,26 +177,47 @@ export const UserSchema = z.object({
 });
 
 // Account validation schema
-export const AccountSchema = z.object({
-  accountId: z.number().int().positive().optional(),
-  owner: z.string().min(1).max(100).optional(),
-  accountNameOwner,
-  accountType: accountTypeEnum,
-  activeStatus: z.boolean().default(true),
-  moniker: z
-    .string()
-    .min(1, "Moniker is required")
-    .max(20, "Moniker cannot exceed 20 characters")
-    .regex(/^[a-zA-Z0-9]+$/, "Moniker can only contain letters and numbers"),
-  outstanding: financialAmount.default(0),
-  future: financialAmount.default(0),
-  cleared: financialAmount.default(0),
-  dateClosed: dateString.optional(),
-  validationDate: dateString.optional(),
-  dateAdded: dateString.optional(),
-  dateUpdated: dateString.optional(),
-  taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
-});
+export const AccountSchema = z
+  .object({
+    accountId: z.number().int().positive().optional(),
+    owner: z.string().min(1).max(100).optional(),
+    accountNameOwner,
+    accountType: accountTypeEnum,
+    activeStatus: z.boolean().default(true),
+    moniker: z
+      .string()
+      .min(1, "Moniker is required")
+      .max(20, "Moniker cannot exceed 20 characters")
+      .regex(/^[a-zA-Z0-9]+$/, "Moniker can only contain letters and numbers"),
+    outstanding: financialAmount.default(0),
+    future: financialAmount.default(0),
+    cleared: financialAmount.default(0),
+    dateClosed: dateString.optional(),
+    validationDate: dateString.optional(),
+    dateAdded: dateString.optional(),
+    dateUpdated: dateString.optional(),
+    billingStatementCloseDay: z.number().int().min(1).max(31).optional(),
+    billingGracePeriodDays: z.number().int().min(1).max(60).optional(),
+    billingDueDaySameMonth: z.number().int().min(1).max(31).optional(),
+    billingDueDayNextMonth: z.number().int().min(1).max(31).optional(),
+    billingCycleWeekendShift: z
+      .enum(["back", "forward", "back_sat_only"])
+      .optional(),
+    taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
+  })
+  .refine(
+    (data) =>
+      [
+        data.billingGracePeriodDays,
+        data.billingDueDaySameMonth,
+        data.billingDueDayNextMonth,
+      ].filter((v) => v !== undefined).length <= 1,
+    {
+      message:
+        "Only one of billingGracePeriodDays, billingDueDaySameMonth, or billingDueDayNextMonth may be set",
+      path: ["billingGracePeriodDays"],
+    },
+  );
 
 // Transaction validation schema
 export const TransactionSchema = z.object({

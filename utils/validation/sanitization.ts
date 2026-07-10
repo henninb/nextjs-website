@@ -456,6 +456,29 @@ export const sanitize = {
     dateUpdated: data.dateUpdated
       ? InputSanitizer.sanitizeDate(data.dateUpdated as string | Date)
       : undefined,
+    billingStatementCloseDay:
+      data.billingStatementCloseDay !== undefined &&
+      data.billingStatementCloseDay !== null
+        ? parseInt(String(data.billingStatementCloseDay))
+        : undefined,
+    billingGracePeriodDays:
+      data.billingGracePeriodDays !== undefined &&
+      data.billingGracePeriodDays !== null
+        ? parseInt(String(data.billingGracePeriodDays))
+        : undefined,
+    billingDueDaySameMonth:
+      data.billingDueDaySameMonth !== undefined &&
+      data.billingDueDaySameMonth !== null
+        ? parseInt(String(data.billingDueDaySameMonth))
+        : undefined,
+    billingDueDayNextMonth:
+      data.billingDueDayNextMonth !== undefined &&
+      data.billingDueDayNextMonth !== null
+        ? parseInt(String(data.billingDueDayNextMonth))
+        : undefined,
+    billingCycleWeekendShift: data.billingCycleWeekendShift
+      ? InputSanitizer.sanitizeText(String(data.billingCycleWeekendShift))
+      : undefined,
     taxBucket: data.taxBucket
       ? InputSanitizer.sanitizeText(String(data.taxBucket))
       : undefined,
