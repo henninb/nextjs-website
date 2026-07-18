@@ -32,7 +32,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Account from "../model/Account";
-import { isAssetAccount, isLiabilityAccount } from "../model/AccountTypeUtils";
+import { isAssetAccount, isPayableAccount } from "../model/AccountTypeUtils";
 import Payment from "../model/Payment";
 import { currencyFormat, formatDateForDisplay } from "./Common";
 import usePaymentInsert from "../hooks/usePaymentInsert";
@@ -405,7 +405,7 @@ export default function BatchPaymentModal({
             <Autocomplete
               options={accounts.filter(
                 (a) =>
-                  isLiabilityAccount(a.accountType) &&
+                  isPayableAccount(a.accountType) &&
                   a.accountNameOwner !== sourceAccount,
               )}
               getOptionLabel={(a: Account) => a.accountNameOwner || ""}
@@ -480,7 +480,8 @@ export default function BatchPaymentModal({
             <Typography variant="caption" color="text.secondary">
               {businessDays.length} business days in{" "}
               {MONTH_NAMES[selectedMonth]} {selectedYear}
-              {" — "}weekends &amp; US federal holidays excluded (UI only — backend accepts any date)
+              {" — "}weekends &amp; US federal holidays excluded (UI only —
+              backend accepts any date)
             </Typography>
           </Stack>
         )}

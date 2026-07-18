@@ -41,7 +41,11 @@ import Transaction from "../../../model/Transaction";
 import useAccountFetch from "../../../hooks/useAccountFetch";
 import useParameterFetch from "../../../hooks/useParameterFetch";
 import Account from "../../../model/Account";
-import { isAssetAccount, isLiabilityAccount } from "../../../model/AccountTypeUtils";
+import {
+  isAssetAccount,
+  isLiabilityAccount,
+  isPayableAccount,
+} from "../../../model/AccountTypeUtils";
 import usePaymentUpdate from "../../../hooks/usePaymentUpdate";
 import PageHeader from "../../../components/PageHeader";
 import DataGridBase from "../../../components/DataGridBase";
@@ -243,7 +247,11 @@ export default function Payments() {
   };
 
   const handleAddRow = async (newData: Payment) => {
-    const errs = validateAmountAndAccounts(newData?.amount, newData?.sourceAccount, newData?.destinationAccount);
+    const errs = validateAmountAndAccounts(
+      newData?.amount,
+      newData?.sourceAccount,
+      newData?.destinationAccount,
+    );
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       setMessage(errs.accounts || errs.amount || "Validation failed");
@@ -439,7 +447,8 @@ export default function Payments() {
                 autoHeight
                 disableColumnResize={false}
                 processRowUpdate={createProcessRowUpdate<Payment>(
-                  (newRow, oldRow) => updatePayment({ oldPayment: oldRow, newPayment: newRow }),
+                  (newRow, oldRow) =>
+                    updatePayment({ oldPayment: oldRow, newPayment: newRow }),
                   `Payment updated.`,
                   "Update Payment failure.",
                   handleSuccess,
@@ -502,88 +511,252 @@ export default function Payments() {
         <DialogContent>
           <>
             <Alert severity="error" sx={{ mb: 2 }}>
-              The following <strong>3 records</strong> will be permanently deleted. This action cannot be undone.
+              The following <strong>3 records</strong> will be permanently
+              deleted. This action cannot be undone.
             </Alert>
 
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Payment Record (1)
-              </Typography>
-              <Paper variant="outlined" sx={{ p: 1.5, mb: 2 }}>
-                <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px", fontSize: "0.875rem" }}>
-                  <Typography variant="caption" color="text.secondary">ID</Typography>
-                  <Typography variant="body2">{selectedPayment?.paymentId}</Typography>
-                  <Typography variant="caption" color="text.secondary">Date</Typography>
-                  <Typography variant="body2">{selectedPayment ? formatDateForDisplay(selectedPayment.transactionDate) : ""}</Typography>
-                  <Typography variant="caption" color="text.secondary">From</Typography>
-                  <Typography variant="body2">{selectedPayment?.sourceAccount}</Typography>
-                  <Typography variant="caption" color="text.secondary">To</Typography>
-                  <Typography variant="body2">{selectedPayment?.destinationAccount}</Typography>
-                  <Typography variant="caption" color="text.secondary">Amount</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedPayment ? currencyFormat(selectedPayment.amount) : ""}</Typography>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                mb: 1,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              Payment Record (1)
+            </Typography>
+            <Paper variant="outlined" sx={{ p: 1.5, mb: 2 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "auto 1fr",
+                  gap: "2px 12px",
+                  fontSize: "0.875rem",
+                }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  ID
+                </Typography>
+                <Typography variant="body2">
+                  {selectedPayment?.paymentId}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Date
+                </Typography>
+                <Typography variant="body2">
+                  {selectedPayment
+                    ? formatDateForDisplay(selectedPayment.transactionDate)
+                    : ""}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  From
+                </Typography>
+                <Typography variant="body2">
+                  {selectedPayment?.sourceAccount}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  To
+                </Typography>
+                <Typography variant="body2">
+                  {selectedPayment?.destinationAccount}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Amount
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {selectedPayment
+                    ? currencyFormat(selectedPayment.amount)
+                    : ""}
+                </Typography>
+              </Box>
+            </Paper>
+
+            <Divider sx={{ my: 1.5 }} />
+
+            <Typography
+              variant="subtitle2"
+              sx={{
+                mb: 1,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              Linked Transaction Records (2)
+            </Typography>
+
+            {linkedTransactions.source || linkedTransactions.destination ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                {linkedTransactions.source && (
+                  <Paper variant="outlined" sx={{ p: 1.5 }}>
+                    <Typography
+                      variant="caption"
+                      color="primary"
+                      sx={{ fontWeight: 600, display: "block", mb: 0.5 }}
+                    >
+                      Withdrawal Transaction
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: "auto 1fr",
+                        gap: "2px 12px",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <Typography variant="caption" color="text.secondary">
+                        Account
+                      </Typography>
+                      <Typography variant="body2">
+                        {linkedTransactions.source.accountNameOwner}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Description
+                      </Typography>
+                      <Typography variant="body2">
+                        {linkedTransactions.source.description}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Amount
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {currencyFormat(linkedTransactions.source.amount)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Date
+                      </Typography>
+                      <Typography variant="body2">
+                        {formatDateForDisplay(
+                          linkedTransactions.source.transactionDate,
+                        )}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        GUID
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "monospace",
+                          fontSize: "0.75rem",
+                          wordBreak: "break-all",
+                        }}
+                      >
+                        {linkedTransactions.source.guid}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                )}
+                {linkedTransactions.destination && (
+                  <Paper variant="outlined" sx={{ p: 1.5 }}>
+                    <Typography
+                      variant="caption"
+                      color="success.main"
+                      sx={{ fontWeight: 600, display: "block", mb: 0.5 }}
+                    >
+                      Deposit Transaction
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: "auto 1fr",
+                        gap: "2px 12px",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <Typography variant="caption" color="text.secondary">
+                        Account
+                      </Typography>
+                      <Typography variant="body2">
+                        {linkedTransactions.destination.accountNameOwner}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Description
+                      </Typography>
+                      <Typography variant="body2">
+                        {linkedTransactions.destination.description}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Amount
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {currencyFormat(linkedTransactions.destination.amount)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Date
+                      </Typography>
+                      <Typography variant="body2">
+                        {formatDateForDisplay(
+                          linkedTransactions.destination.transactionDate,
+                        )}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        GUID
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: "monospace",
+                          fontSize: "0.75rem",
+                          wordBreak: "break-all",
+                        }}
+                      >
+                        {linkedTransactions.destination.guid}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                )}
+              </Box>
+            ) : (
+              <Paper variant="outlined" sx={{ p: 1.5 }}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "auto 1fr",
+                    gap: "2px 12px",
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Withdrawal Account
+                  </Typography>
+                  <Typography variant="body2">
+                    {selectedPayment?.sourceAccount}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Withdrawal GUID
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: "monospace",
+                      fontSize: "0.75rem",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {selectedPayment?.guidSource ?? "—"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Deposit Account
+                  </Typography>
+                  <Typography variant="body2">
+                    {selectedPayment?.destinationAccount}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Deposit GUID
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: "monospace",
+                      fontSize: "0.75rem",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {selectedPayment?.guidDestination ?? "—"}
+                  </Typography>
                 </Box>
               </Paper>
-
-              <Divider sx={{ my: 1.5 }} />
-
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Linked Transaction Records (2)
-              </Typography>
-
-              {linkedTransactions.source || linkedTransactions.destination ? (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                  {linkedTransactions.source && (
-                    <Paper variant="outlined" sx={{ p: 1.5 }}>
-                      <Typography variant="caption" color="primary" sx={{ fontWeight: 600, display: "block", mb: 0.5 }}>
-                        Withdrawal Transaction
-                      </Typography>
-                      <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px", fontSize: "0.875rem" }}>
-                        <Typography variant="caption" color="text.secondary">Account</Typography>
-                        <Typography variant="body2">{linkedTransactions.source.accountNameOwner}</Typography>
-                        <Typography variant="caption" color="text.secondary">Description</Typography>
-                        <Typography variant="body2">{linkedTransactions.source.description}</Typography>
-                        <Typography variant="caption" color="text.secondary">Amount</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{currencyFormat(linkedTransactions.source.amount)}</Typography>
-                        <Typography variant="caption" color="text.secondary">Date</Typography>
-                        <Typography variant="body2">{formatDateForDisplay(linkedTransactions.source.transactionDate)}</Typography>
-                        <Typography variant="caption" color="text.secondary">GUID</Typography>
-                        <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{linkedTransactions.source.guid}</Typography>
-                      </Box>
-                    </Paper>
-                  )}
-                  {linkedTransactions.destination && (
-                    <Paper variant="outlined" sx={{ p: 1.5 }}>
-                      <Typography variant="caption" color="success.main" sx={{ fontWeight: 600, display: "block", mb: 0.5 }}>
-                        Deposit Transaction
-                      </Typography>
-                      <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px", fontSize: "0.875rem" }}>
-                        <Typography variant="caption" color="text.secondary">Account</Typography>
-                        <Typography variant="body2">{linkedTransactions.destination.accountNameOwner}</Typography>
-                        <Typography variant="caption" color="text.secondary">Description</Typography>
-                        <Typography variant="body2">{linkedTransactions.destination.description}</Typography>
-                        <Typography variant="caption" color="text.secondary">Amount</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{currencyFormat(linkedTransactions.destination.amount)}</Typography>
-                        <Typography variant="caption" color="text.secondary">Date</Typography>
-                        <Typography variant="body2">{formatDateForDisplay(linkedTransactions.destination.transactionDate)}</Typography>
-                        <Typography variant="caption" color="text.secondary">GUID</Typography>
-                        <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{linkedTransactions.destination.guid}</Typography>
-                      </Box>
-                    </Paper>
-                  )}
-                </Box>
-              ) : (
-                <Paper variant="outlined" sx={{ p: 1.5 }}>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "2px 12px" }}>
-                    <Typography variant="caption" color="text.secondary">Withdrawal Account</Typography>
-                    <Typography variant="body2">{selectedPayment?.sourceAccount}</Typography>
-                    <Typography variant="caption" color="text.secondary">Withdrawal GUID</Typography>
-                    <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{selectedPayment?.guidSource ?? "—"}</Typography>
-                    <Typography variant="caption" color="text.secondary">Deposit Account</Typography>
-                    <Typography variant="body2">{selectedPayment?.destinationAccount}</Typography>
-                    <Typography variant="caption" color="text.secondary">Deposit GUID</Typography>
-                    <Typography variant="body2" sx={{ fontFamily: "monospace", fontSize: "0.75rem", wordBreak: "break-all" }}>{selectedPayment?.guidDestination ?? "—"}</Typography>
-                  </Box>
-                </Paper>
-              )}
+            )}
           </>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -597,11 +770,7 @@ export default function Payments() {
           >
             Cancel
           </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleDeleteRow}
-          >
+          <Button variant="contained" color="error" onClick={handleDeleteRow}>
             Delete All 3 Records
           </Button>
         </DialogActions>
@@ -719,8 +888,10 @@ export default function Payments() {
         <Autocomplete
           options={
             isSuccessAccounts
-              ? fetchedAccounts.filter(
-                  (account) => isLiabilityAccount(account.accountType),
+              ? fetchedAccounts.filter((account) =>
+                  paymentMode === "payBill"
+                    ? isPayableAccount(account.accountType)
+                    : isLiabilityAccount(account.accountType),
                 )
               : []
           }

@@ -37,7 +37,10 @@ import {
 
 import Payment from "../../../model/Payment";
 import Account from "../../../model/Account";
-import { isAssetAccount, isLiabilityAccount } from "../../../model/AccountTypeUtils";
+import {
+  isAssetAccount,
+  isPayableAccount,
+} from "../../../model/AccountTypeUtils";
 
 import usePaymentFetchGql from "../../../hooks/usePaymentFetchGql";
 import usePaymentInsertGql from "../../../hooks/usePaymentInsertGql";
@@ -108,7 +111,9 @@ export default function PaymentsNextGen() {
 
   useEffect(() => {
     try {
-      setCacheEnabled(localStorage.getItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY) === "true");
+      setCacheEnabled(
+        localStorage.getItem(PAYMENTS_NEXT_CACHE_ENABLED_KEY) === "true",
+      );
     } catch {
       // localStorage may not be available
     }
@@ -461,8 +466,8 @@ export default function PaymentsNextGen() {
           />
 
           <Autocomplete
-            options={(fetchedAccounts || []).filter(
-              (a) => isAssetAccount(a.accountType),
+            options={(fetchedAccounts || []).filter((a) =>
+              isAssetAccount(a.accountType),
             )}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
             isOptionEqualToValue={(o, v) =>
@@ -493,8 +498,8 @@ export default function PaymentsNextGen() {
           />
 
           <Autocomplete
-            options={(fetchedAccounts || []).filter(
-              (a) => isLiabilityAccount(a.accountType),
+            options={(fetchedAccounts || []).filter((a) =>
+              isPayableAccount(a.accountType),
             )}
             getOptionLabel={(a: Account) => a.accountNameOwner || ""}
             isOptionEqualToValue={(o, v) =>
