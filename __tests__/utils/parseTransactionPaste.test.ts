@@ -490,6 +490,41 @@ describe("parseTransactionPaste", () => {
       expect(parseTransactionPaste(raw2)[0].parseErrors).toHaveLength(0);
     });
 
+    it("should drop the Type/Card/Amount tail even when columns are tab- or single-space-separated", () => {
+      // Some exports use a single tab (or single space) between columns instead of
+      // the 2+-space padding other exports use — the plain 2+-space split misses this.
+      const tabSeparated =
+        "03-10-2026\n \nGENERAL STORE 9999 SPRINGFIELD XX\tSale\t**9999\t$23.69";
+      const singleSpaceSeparated =
+        "03-10-2026\n \nGENERAL STORE 9999 SPRINGFIELD XX Sale **9999 $23.69";
+
+      for (const raw of [tabSeparated, singleSpaceSeparated]) {
+        const [row] = parseTransactionPaste(raw);
+        expect(row.description).toBe("GENERAL STORE 9999 SPRINGFIELD XX");
+        expect(row.description).not.toContain("Sale");
+        expect(row.amount).toBe(23.69);
+        expect(row.parseErrors).toHaveLength(0);
+      }
+    });
+
+    it("should not mistake a Type-like word inside the description for the real Type field", () => {
+      const raw =
+        "03-09-2026\n \nGENERAL STORE.COM 800-555- CREDIT\tReturn\t\t-$2.25";
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe("GENERAL STORE.COM 800-555- CREDIT");
+      expect(row.amount).toBe(-2.25);
+    });
+
+    it("should strip the trailing state code and Sale/Type word from Target descriptions with tab-separated columns", () => {
+      const raw =
+        "03-10-2026\n \nTARGET 1144 SPRINGFIELD IL\tSale\t**3370\t$11.43";
+      const [row] = parseTransactionPaste(raw);
+      expect(row.description).toBe("Target 1144 Springfield");
+      expect(row.description).not.toContain("Sale");
+      expect(row.description).not.toContain("Il");
+      expect(row.amount).toBe(11.43);
+    });
+
     it("should parse multiple consecutive Format D blocks", () => {
       const raw = [
         blockD("03-10-2026", "GENERAL STORE 9999 SPRINGFIELD XX", "$23.69"),
@@ -788,6 +823,65 @@ $5,551.83`;
       expect(rows[0].date!.getMonth()).toBe(3); // April
       expect(rows[0].date!.getDate()).toBe(12);
       expect(rows[2].date!.getDate()).toBe(7);
+    });
+
+    it("should parse a Citi sample where description precedes the cardholder line", () => {
+      const raw = `Apr 12, 2026
+FUEL STOP #0372 RIVERTON TX
+JANE DOE
+$60.29
+Apr 13, 2026
+WAREHOUSE CLUB #1234 LAKEVIEW FL
+Eligible for Citi® Flex Pay
+JANE DOE
+$226.11
+$2,240.14
+Apr 14, 2026
+FUEL STOP #0480 CEDARVILLE NV
+JOHN SMITH
+$52.31
+$2,014.03
+Apr 14, 2026
+SUNSHINE CAR RENTAL METROPOLIS AZ
+Eligible for Citi® Flex Pay
+JANE DOE
+$748.49
+$1,961.72
+Apr 15, 2026
+FUEL STOP #0480 CEDARVILLE NV
+JANE DOE
+$30.06
+$1,213.23`;
+
+      const rows = parseTransactionPaste(raw, "credit");
+      expect(rows).toHaveLength(5);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+
+      expect(rows[0]).toMatchObject({
+        description: "FUEL STOP #0372 RIVERTON",
+        cardholder: "Jane",
+        amount: 60.29,
+      });
+      expect(rows[1]).toMatchObject({
+        description: "WAREHOUSE CLUB #1234 LAKEVIEW",
+        cardholder: "Jane",
+        amount: 226.11,
+      });
+      expect(rows[2]).toMatchObject({
+        description: "FUEL STOP #0480 CEDARVILLE",
+        cardholder: "John",
+        amount: 52.31,
+      });
+      expect(rows[3]).toMatchObject({
+        description: "SUNSHINE CAR RENTAL METROPOLIS",
+        cardholder: "Jane",
+        amount: 748.49,
+      });
+      expect(rows[4]).toMatchObject({
+        description: "FUEL STOP #0480 CEDARVILLE",
+        cardholder: "Jane",
+        amount: 30.06,
+      });
     });
   });
 
@@ -1979,13 +2073,69 @@ $36.45    $12,204.24`;
         amount: 50,
       });
       expect(rows[1]).toMatchObject({
-        description: "JOHN 'S DISCOUNT FOODS RIVERSIDE XX",
+        description: "JOHN'S DISCOUNT FOODS RIVERSIDE XX",
         amount: 44.55,
       });
       expect(rows[4]).toMatchObject({
         description: "BRAKES PLUS 112233 SPRINGFIELD XX",
         amount: 36.45,
       });
+    });
+
+    it("should drop an embedded XXX-XXXXXXX phone number but keep a standard XXX-XXX-XXXX number", () => {
+      const raw = [
+        blockB(
+          "07/23/26",
+          "CITY LICENSE BOARD 651-1234567 MN",
+          "#1234567FXXYYZZ001",
+          "$1.83    $37,783.49",
+        ),
+        blockB(
+          "07/20/26",
+          "SOME HOTEL CHAIN 212-5551212 NY",
+          "#1234567FXXYYZZ002",
+          "$930.73    $37,454.62",
+        ),
+        blockB(
+          "04/13/26",
+          "WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 XX",
+          "#1234567FXXYYZZ003",
+          "$50.00    $12,345.67",
+        ),
+      ].join("\n");
+
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(3);
+      expect(rows[0].description).toBe("CITY LICENSE BOARD");
+      expect(rows[1].description).toBe("SOME HOTEL CHAIN");
+      // XXX-XXX-XXXX (two hyphens) is a different shape and is left intact.
+      expect(rows[2].description).toBe(
+        "WEBPAY*LAKEWOOD-DISTRICT 555-867-5309 XX",
+      );
+    });
+
+    it("should drop a short parenthetical location/register code and tighten a stray apostrophe space", () => {
+      const [row] = parseTransactionPaste(
+        blockB(
+          "07/21/26",
+          "ANN 'S CORNER SHOP #3 (Q) LAKEVIEW MN",
+          "#1234567FXXYYZZ001",
+          "$15.36    $37,499.53",
+        ),
+      );
+      expect(row.description).toBe("ANN'S CORNER SHOP #3 LAKEVIEW");
+    });
+
+    it('should normalize "TARGET STORE T-####" descriptions, dropping the word STORE', () => {
+      const [row] = parseTransactionPaste(
+        blockB(
+          "07/22/26",
+          "TARGET STORE T-9942 RIVERTON TX",
+          "#1234567FXXYYZZ001",
+          "$26.76    $37,544.32",
+        ),
+      );
+      expect(row.description).toBe("Target T9942 Riverton");
     });
 
     it("should parse the 7-row Format C sample", () => {

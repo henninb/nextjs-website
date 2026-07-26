@@ -77,12 +77,24 @@ export interface ParsedTransactionRow {
 //   $46.37
 //
 // Format E — Citi-style card view (MMM DD, YYYY date, cardholder on own line):
+//   Two block orderings are supported (auto-detected by peeking at the first
+//   non-empty line after the date — a 2-3 word all-letter line is a name):
+//
+//   Old order:
 //   Apr 12, 2026
-//   KARI HENNING               ← cardholder name — skip
-//   COSTCO WHSE #0372 COON RAPIDS MN
+//   JANE DOE                   ← cardholder name — skip
+//   WAREHOUSE CLUB #1234 SPRINGFIELD XX
 //   Eligible for Citi® Flex Pay  ← optional promo text — skip
 //   $122.84                    ← transaction amount
 //   $1,110.74                  ← running balance — ignore (only first $ taken)
+//
+//   New order (Citi website — description appears before the cardholder line):
+//   Apr 12, 2026
+//   WAREHOUSE CLUB #1234 SPRINGFIELD XX
+//   Eligible for Citi® Flex Pay  ← optional promo text — skip
+//   JANE DOE                   ← cardholder name — skip
+//   $122.84                    ← transaction amount
+//   $2,240.14                  ← running balance — ignore (only first $ taken)
 //
 // Format K — Discover Card website copy-paste:
 //   Tue                        ← abbreviated day-of-week (Mon/Tue/.../Sun)
@@ -316,6 +328,32 @@ function parseFirstAmount(
   return num;
 }
 
+/** Known "Type" column values on tabular card exports (Format D / Format H). */
+const TXN_TYPE_WORD =
+  "(?:Sale|Return|Payment|Credit|Refund|Purchase|Adjustment|Withdrawal|Deposit|Fee)";
+const DATA_LINE_TAIL = new RegExp(
+  `\\s+${TXN_TYPE_WORD}\\b\\s*(\\*{0,2}[\\dXx]{2,6})?\\s*(-?\\$[\\d,]+\\.?\\d*)\\s*$`,
+  "i",
+);
+
+/**
+ * Strip the trailing "TYPE  [**CARD]  $AMOUNT" tail from a tabular data line,
+ * returning just the description prefix (or "" if no such tail is found).
+ *
+ * Anchored to the END of the line so a type keyword that also happens to
+ * appear inside the description itself (e.g. "STORE.COM 800-555- CREDIT")
+ * isn't mistaken for the real Type field — only a match that reaches all the
+ * way to the end of the string (through an optional card suffix and the
+ * amount) counts.
+ *
+ * Tolerates single-space or tab column separators, not just the 2+-space
+ * padding some exports use — this is what a plain `\s{2,}` split misses.
+ */
+function stripDataLineTail(line: string): string {
+  const tail = line.match(DATA_LINE_TAIL);
+  return tail ? line.slice(0, tail.index).trim() : "";
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
@@ -422,6 +460,16 @@ export function parseTransactionPaste(
       if (m) {
         date = parseDateStr(m[1], errors);
         description = m[2].trim();
+        // Wells Fargo artifacts: drop embedded phone numbers ("651-2012732",
+        // "212-2531234"), short parenthetical location/register codes ("(G)"),
+        // and tighten a stray space before a trailing-apostrophe contraction
+        // ("BILL 'S SUPERETTE" → "BILL'S SUPERETTE").
+        description = description
+          .replace(/\s*\b\d{3}-\d{7}\b\s*/g, " ")
+          .replace(/\s*\([A-Z]{1,2}\)/g, "")
+          .replace(/(\w)\s+'(S)\b/gi, "$1'$2")
+          .replace(/\s{2,}/g, " ")
+          .trim();
         if (!description) errors.push("Description is empty");
       } else {
         errors.push("Header did not match expected format");
@@ -527,9 +575,15 @@ export function parseTransactionPaste(
         if (!next) continue; // blank separator — skip
 
         // Data line: "DESCRIPTION    Sale/Return    **XXXX    $AMOUNT"
-        // Description = everything before the first 2+-space separator
-        const firstField = next.match(/^(.+?)\s{2,}/);
-        description = firstField ? firstField[1].trim() : next.trim();
+        // Description = everything before the Type/Card/Amount tail (falls
+        // back to the 2+-space split for lines with no recognized Type word).
+        const tailStripped = stripDataLineTail(next);
+        if (tailStripped) {
+          description = tailStripped;
+        } else {
+          const firstField = next.match(/^(.+?)\s{2,}/);
+          description = firstField ? firstField[1].trim() : next.trim();
+        }
 
         // Amount = first dollar-sign value anywhere on the line
         amount = parseFirstAmount(next, isCreditAccount);
@@ -554,25 +608,69 @@ export function parseTransactionPaste(
       const date = parseDateMonthDayYear(line, errors);
       i++;
 
-      // Capture cardholder first name — always the first non-empty line after the date
-      let cardholderE = "";
-      while (i < lines.length && !isTransactionHeader(lines[i])) {
-        const next = lines[i].trim();
-        i++;
-        if (!next) continue;
-        const firstWord = next.split(/\s+/)[0];
-        cardholderE = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
-        break;
-      }
+      // A standalone person's name: 2-3 all-letter words (e.g. "JANE DOE").
+      // Distinguishes the cardholder line from a merchant description, which
+      // typically has digits/# (store numbers) or more than 3 words.
+      const NAME_LINE = /^[A-Za-z]+(?:\s+[A-Za-z]+){1,2}$/;
+      const PROMO_LINE = /^Eligible for\b/i;
 
-      // Read description — next non-empty line
+      let peekIdx = i;
+      while (peekIdx < lines.length && !lines[peekIdx].trim()) peekIdx++;
+      const firstNonEmpty = peekIdx < lines.length ? lines[peekIdx].trim() : "";
+      // Old order (some Citi views, and Chase's "subtitle" line reuses this slot to
+      // get skipped): DATE → CARDHOLDER/SUBTITLE → DESCRIPTION → [PROMO] → AMOUNT
+      // New order (Citi website): DATE → DESCRIPTION → [PROMO] → CARDHOLDER → AMOUNT
+      // A real merchant description in the new order never contains a comma, so a
+      // comma (e.g. Chase's "Amazon Marketplace, Amazon.com") falls back to old order.
+      const oldOrder =
+        NAME_LINE.test(firstNonEmpty) || firstNonEmpty.includes(",");
+
+      let cardholderE = "";
       let description = "";
-      while (i < lines.length && !isTransactionHeader(lines[i])) {
-        const next = lines[i].trim();
-        i++;
-        if (!next) continue;
-        description = next;
-        break;
+
+      if (oldOrder) {
+        // Capture cardholder first name — first non-empty line after the date
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          i++;
+          if (!next) continue;
+          const firstWord = next.split(/\s+/)[0];
+          cardholderE =
+            firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+          break;
+        }
+
+        // Read description — next non-empty line
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          i++;
+          if (!next) continue;
+          description = next;
+          break;
+        }
+      } else {
+        // Read description — first non-empty line after the date
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          i++;
+          if (!next) continue;
+          description = next;
+          break;
+        }
+
+        // Skip optional promo text, capture the cardholder name if present,
+        // and stop once the amount line is reached (leave it for the scan below).
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          if (/^[+]?-?\$/.test(next)) break;
+          i++;
+          if (!next || PROMO_LINE.test(next)) continue;
+          if (NAME_LINE.test(next)) {
+            const firstWord = next.split(/\s+/)[0];
+            cardholderE =
+              firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+          }
+        }
       }
       if (!description) errors.push("Description is empty");
 
@@ -609,8 +707,13 @@ export function parseTransactionPaste(
       let amount: number | null = null;
 
       if (rest) {
-        const firstField = rest.match(/^(.+?)\s{2,}/);
-        description = firstField ? firstField[1].trim() : rest.trim();
+        const tailStripped = stripDataLineTail(rest);
+        if (tailStripped) {
+          description = tailStripped;
+        } else {
+          const firstField = rest.match(/^(.+?)\s{2,}/);
+          description = firstField ? firstField[1].trim() : rest.trim();
+        }
         amount = parseFirstAmount(rest, isCreditAccount);
       }
 
@@ -943,10 +1046,15 @@ export function parseTransactionPaste(
       if (storeMatch) {
         const tokens = storeMatch[1].trim().split(/\s+/).filter(Boolean);
         let idx = 0;
+        if (tokens[0] && /^STORE$/i.test(tokens[0])) idx = 1; // "TARGET STORE T-3380 ..." — drop the word "STORE"
         let storeNumber = "";
-        if (tokens[0] && /^\d{3,6}$/.test(tokens[0])) {
-          storeNumber = tokens[0];
-          idx = 1;
+        if (tokens[idx] && /^\d{3,6}$/.test(tokens[idx])) {
+          storeNumber = tokens[idx];
+          idx++;
+        } else if (tokens[idx] && /^[A-Za-z]-\d{3,6}$/.test(tokens[idx])) {
+          // "T-3380" → "T3380"
+          storeNumber = tokens[idx].replace("-", "").toUpperCase();
+          idx++;
         }
         const cityTokens: string[] = [];
         while (idx < tokens.length && /^[A-Za-z]+$/.test(tokens[idx])) {
