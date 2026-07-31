@@ -28,6 +28,9 @@ const nextConfig = {
   // Disable all experimental features that might interfere with HMR
   experimental: {
     // Completely disable experimental optimizations for stability
+    // useTypeScriptCli: required since we're on typescript@7, which no longer
+    // exposes the compiler API Next.js's default type-checking path expects
+    useTypeScriptCli: true,
   },
 
   // Configure allowed development origins to prevent cross-origin warnings

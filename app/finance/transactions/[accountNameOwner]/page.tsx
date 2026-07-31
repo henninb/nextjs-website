@@ -75,6 +75,10 @@ import {
 } from "../../../../components/Common";
 import PageHeader from "../../../../components/PageHeader";
 import DataGridBase from "../../../../components/DataGridBase";
+import {
+  TwoMonthDatePickerField,
+  TwoMonthDateEditCell,
+} from "../../../../components/TwoMonthDatePicker";
 import ReceiptLightbox, {
   buildImageSrc,
 } from "../../../../components/ReceiptLightbox";
@@ -911,6 +915,7 @@ export default function TransactionsByAccount({
         renderCell: (params) => {
           return formatDateForDisplay(params.value);
         },
+        renderEditCell: (params) => <TwoMonthDateEditCell {...params} />,
         valueGetter: (params: string) => {
           return normalizeTransactionDate(params);
         },
@@ -1915,23 +1920,16 @@ export default function TransactionsByAccount({
             }
             label="Adjustment Mode"
           />
-          <TextField
+          <TwoMonthDatePickerField
             label="Transaction Date"
             fullWidth
             margin="normal"
-            type="date"
-            value={formatDateForInput(
-              transactionData?.transactionDate || new Date(),
-            )}
-            onChange={(e) => {
-              const normalizedDate = normalizeTransactionDate(e.target.value);
+            value={transactionData?.transactionDate || new Date()}
+            onChange={(date) => {
               setTransactionData((prev: Transaction) => ({
                 ...prev,
-                transactionDate: normalizedDate,
+                transactionDate: date,
               }));
-            }}
-            slotProps={{
-              inputLabel: { shrink: true },
             }}
           />
 
