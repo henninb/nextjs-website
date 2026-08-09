@@ -15,20 +15,20 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.2.0",
-    "@mui/material": "^9.2.0",
-    "@mui/material-nextjs": "^9.1.1",
-    "@mui/x-data-grid": "^9.10.1",
+    "@mui/icons-material": "^9.3.1",
+    "@mui/material": "^9.3.1",
+    "@mui/material-nextjs": "^9.3.0",
+    "@mui/x-data-grid": "^9.11.0",
     "@opennextjs/cloudflare": "^1.20.2",
     "@tanstack/react-query": "^5.101.4",
     "astronomy-engine": "^2.1.19",
     "date-fns": "^4.4.0",
-    "next": "^16.2.12",
+    "next": "^16.3.0",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "recharts": "^3.10.1",
-    "styled-components": "^6.4.4",
+    "styled-components": "^6.5.1",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
@@ -36,18 +36,18 @@
     "node": "20.19.x || >=22.12.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^16.2.12",
-    "@swc/core": "^1.15.46",
+    "@next/bundle-analyzer": "^16.3.0",
+    "@swc/core": "^1.15.47",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@types/jest": "^30.0.0",
-    "@types/node": "26.1.1",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/node": "26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@types/styled-components": "^5.1.36",
     "@types/validator": "^13.15.10",
-    "baseline-browser-mapping": "^2.11.3",
+    "baseline-browser-mapping": "^2.11.13",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "msw": "^2.15.0",
@@ -77,5 +77,12 @@
     "workerDirectory": [
       "public"
     ]
+  },
+  "allowScripts": {
+    "@swc/core@1.15.47": true,
+    "esbuild@0.28.1": true,
+    "workerd@1.20260722.1": true,
+    "msw@2.15.0": true,
+    "unrs-resolver@1.12.2": true
   }
 }
