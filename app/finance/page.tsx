@@ -42,6 +42,7 @@ import {
   isAssetAccount,
   isLiabilityAccount,
   isCreditCardAccount,
+  isInvestmentAccount,
   formatAccountTypeLabel,
 } from "../../model/AccountTypeUtils";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
@@ -419,10 +420,13 @@ export default function Accounts() {
             account.accountNameOwner.toLowerCase().includes("savings") ||
             account.accountNameOwner.toLowerCase().includes("mmarket"))) ||
         (activeFilters.accountNamePattern === "investments" &&
-          (account.accountNameOwner.toLowerCase().includes("hsa") ||
+          (isInvestmentAccount(account.accountType) ||
+            account.accountNameOwner.toLowerCase().includes("hsa") ||
             account.accountNameOwner.toLowerCase().includes("brokerage") ||
             account.accountNameOwner.toLowerCase().includes("pension") ||
             account.accountNameOwner.toLowerCase().includes("401k") ||
+            account.accountNameOwner.toLowerCase().includes("ira") ||
+            account.accountNameOwner.toLowerCase().includes("roth") ||
             account.accountNameOwner.toLowerCase().includes("alight") ||
             account.accountNameOwner.toLowerCase().includes("mercer") ||
             account.accountNameOwner.toLowerCase().includes("wex")));

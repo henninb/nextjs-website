@@ -39,6 +39,17 @@ export const CREDIT_CARD_ACCOUNT_TYPES: AccountType[] = [
   "credit_card",
 ];
 
+export const INVESTMENT_ACCOUNT_TYPES: AccountType[] = [
+  "brokerage",
+  "retirement_401k",
+  "retirement_ira",
+  "retirement_roth",
+  "pension",
+  "hsa",
+  "fsa",
+  "medical_savings",
+];
+
 // Liabilities plus accounts (like utility billers) that don't carry a debt
 // balance but are still valid targets for a payment.
 export const PAYABLE_ACCOUNT_TYPES: AccountType[] = [
@@ -60,6 +71,9 @@ export const isLiabilityAccount = (type: AccountType | string): boolean =>
 
 export const isCreditCardAccount = (type: AccountType | string): boolean =>
   CREDIT_CARD_ACCOUNT_TYPES.includes(type as AccountType);
+
+export const isInvestmentAccount = (type: AccountType | string): boolean =>
+  INVESTMENT_ACCOUNT_TYPES.includes(type as AccountType);
 
 export const isPayableAccount = (type: AccountType | string): boolean =>
   PAYABLE_ACCOUNT_TYPES.includes(type as AccountType);
