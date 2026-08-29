@@ -1581,6 +1581,80 @@ $50.80`;
     });
   });
 
+  // ── Format L (US Bank sub-shape) ────────────────────────────────────────
+
+  describe("Format L — US Bank website copy-paste", () => {
+    it("should parse a block with a blank line before the description", () => {
+      const raw = "08/28/2026\n\nLyft\n$59.97";
+      const [row] = parseTransactionPaste(raw, "credit");
+      expect(row.description).toBe("Lyft");
+      expect(row.amount).toBe(59.97);
+      expect(row.parseErrors).toHaveLength(0);
+      expect(row.date!.getFullYear()).toBe(2026);
+      expect(row.date!.getMonth()).toBe(7); // Aug (0-indexed)
+      expect(row.date!.getDate()).toBe(28);
+    });
+
+    it("should parse a block with no blank line before the description", () => {
+      const raw = "08/25/2026\nCity of Ramsey\n$0.41";
+      const [row] = parseTransactionPaste(raw, "credit");
+      expect(row.description).toBe("City of Ramsey");
+      expect(row.amount).toBe(0.41);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it("should ignore a trailing 'Posted' status line", () => {
+      const raw = "08/28/2026\nConnexus Residential\n$37.18\nPosted\n08/28/2026\n\nLyft\n$13.18";
+      const rows = parseTransactionPaste(raw, "credit");
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({
+        description: "Connexus Residential",
+        amount: 37.18,
+      });
+      expect(rows[1]).toMatchObject({ description: "Lyft", amount: 13.18 });
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+
+    it("should preserve negative amounts for credits/adjustments", () => {
+      const raw = "08/13/2026\n\nCredit Adjustment\n-$1.00";
+      const [row] = parseTransactionPaste(raw, "credit");
+      expect(row.description).toBe("Credit Adjustment");
+      expect(row.amount).toBe(-1);
+    });
+
+    it("should parse the real-world US Bank paste sample end-to-end", () => {
+      const raw = `08/28/2026
+
+Lyft
+$59.97
+08/28/2026
+
+Lyft
+$14.99
+08/28/2026
+Connexus Residential
+$37.18
+Posted
+08/25/2026
+City of Ramsey
+$0.41
+08/13/2026
+
+Credit Adjustment
+-$1.00`;
+      const rows = parseTransactionPaste(raw, "credit");
+      expect(rows).toHaveLength(5);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows.map((r) => [r.description, r.amount])).toEqual([
+        ["Lyft", 59.97],
+        ["Lyft", 14.99],
+        ["Connexus Residential", 37.18],
+        ["City of Ramsey", 0.41],
+        ["Credit Adjustment", -1],
+      ]);
+    });
+  });
+
   // ── Format M ─────────────────────────────────────────────────────────────
 
   /** Format M block: Bank of America pending-transactions table export. */

@@ -105,7 +105,12 @@ export interface ParsedTransactionRow {
 //   Restaurants                ← category shown on site — ignored (AI will categorize)
 //   $204.82                    ← running balance — ignored
 //
-// Format L — Chase website copy-paste (standalone MM/DD/YYYY date):
+// Format L — Chase or US Bank website copy-paste (standalone MM/DD/YYYY date).
+//   Both sites share the same bare "MM/DD/YYYY" header, so the sub-shape is
+//   auto-detected by counting the non-blank lines that appear before the
+//   first $ amount line:
+//
+//   Chase (3 non-blank lines before the amount):
 //   05/28/2026                 ← standalone date (4-digit year, no trailing text)
 //   Amazon Marketplace, Amazon.com  ← subtitle/page-title line — skip
 //                              ← blank
@@ -113,8 +118,15 @@ export interface ParsedTransactionRow {
 //   Amazon.com                 ← secondary domain line — skip (no leading $)
 //   $24.92                     ← transaction amount
 //
+//   US Bank (exactly 1 non-blank line before the amount):
+//   08/28/2026
+//                              ← blank (optional — sometimes absent)
+//   Lyft                       ← description
+//   $59.97                     ← transaction amount
+//   Posted                     ← optional trailing status line — ignored
+//
 //   Note: when the date appears as "May 28, 2026" (MMM DD, YYYY) the same
-//   block structure is handled transparently by Format E.
+//   Chase block structure is handled transparently by Format E.
 //
 // Format M — Bank of America pending-transactions table export:
 //   Expand transaction for Transaction date: Pending DESCRIPTION Pending    Expand transactionDESCRIPTION    Type TYPE
@@ -889,28 +901,47 @@ export function parseTransactionPaste(
         parseErrors: errors,
       });
 
-      // ── Format L — Chase website ────────────────────────────────────────────
+      // ── Format L — Chase / US Bank website ──────────────────────────────────
     } else if (FORMAT_L.test(line)) {
-      // "MM/DD/YYYY" standalone — Chase website copy-paste
+      // "MM/DD/YYYY" standalone — Chase or US Bank website copy-paste
       const date = parseDateStr(line, errors);
       i++;
 
-      // Skip subtitle line (e.g. "Amazon Marketplace, Amazon.com")
-      while (i < lines.length && !isTransactionHeader(lines[i])) {
-        const next = lines[i].trim();
-        i++;
-        if (!next) continue;
-        break; // consumed
+      // Peek ahead to count non-blank lines before the first $ amount line —
+      // Chase has 3 (subtitle, description, domain-line); US Bank has just 1
+      // (description). This tells the two shapes apart without a distinct header.
+      const peekedLines: string[] = [];
+      let peekIdx = i;
+      while (peekIdx < lines.length && !isTransactionHeader(lines[peekIdx])) {
+        const next = lines[peekIdx].trim();
+        if (/^[+]?-?\$/.test(next)) break;
+        if (next) peekedLines.push(next);
+        peekIdx++;
       }
 
-      // Read description — next non-empty line
       let descriptionL = "";
-      while (i < lines.length && !isTransactionHeader(lines[i])) {
-        const next = lines[i].trim();
-        i++;
-        if (!next) continue;
-        descriptionL = next;
-        break;
+      if (peekedLines.length <= 1) {
+        // US Bank format: date → [blank] → description → $amount → [Posted]
+        descriptionL = peekedLines[0] || "";
+        i = peekIdx;
+      } else {
+        // Chase format: date → subtitle → blank → description → domain-line → $amount
+        // Skip subtitle line (e.g. "Amazon Marketplace, Amazon.com")
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          i++;
+          if (!next) continue;
+          break; // consumed
+        }
+
+        // Read description — next non-empty line
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          i++;
+          if (!next) continue;
+          descriptionL = next;
+          break;
+        }
       }
       if (!descriptionL) errors.push("Description is empty");
 
