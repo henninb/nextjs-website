@@ -134,6 +134,18 @@ export interface ParsedTransactionRow {
 //   ↑ no real posting date exists yet (still pending) — defaults to today, flagged for review
 //   ↑ balance is the second $ value on the amount line — ignored
 //
+// Format N — Amex website "Activity" table view (bare "MMM D" header, same as
+// Format C, but distinguished by a "Supplementary card member" / "Card member"
+// label line before the cardholder's full name):
+//   Select TIRES PLUS, Aug 27, 52.93 USD   ← hidden row label — ignored (not a header)
+//   Aug 27
+//   Pending                    ← optional reward/status line: "Pending", "Credit",
+//                                 "3% Cash Back", or absent entirely — discarded
+//   TIRES PLUS                 ← description (always the last line before the anchor)
+//   Supplementary card member  ← anchor line — distinguishes this from Format C
+//   Matthew J Henning          ← cardholder full name — first name captured
+//   $52.93                     ← transaction amount
+//
 // Rules shared by all formats:
 //   • Reference / suffix lines starting with '#' are ignored.
 //   • Only the FIRST dollar amount on an amount line is captured.
@@ -648,7 +660,8 @@ export function parseTransactionPaste(
           if (!next) continue;
           const firstWord = next.split(/\s+/)[0];
           cardholderE =
-            firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+            firstWord.charAt(0).toUpperCase() +
+            firstWord.slice(1).toLowerCase();
           break;
         }
 
@@ -680,7 +693,8 @@ export function parseTransactionPaste(
           if (NAME_LINE.test(next)) {
             const firstWord = next.split(/\s+/)[0];
             cardholderE =
-              firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+              firstWord.charAt(0).toUpperCase() +
+              firstWord.slice(1).toLowerCase();
           }
         }
       }
@@ -1002,50 +1016,121 @@ export function parseTransactionPaste(
         parseErrors: errors,
       });
 
-      // ── Format C ────────────────────────────────────────────────────────────
+      // ── Format C / Format N ─────────────────────────────────────────────────
     } else {
-      const date = parseMonthDay(line, errors);
-      i++;
-
-      // Skip optional status line ("Pending", "Posted", etc.)
-      if (i < lines.length && /^(Pending|Posted)\s*$/i.test(lines[i])) {
-        i++;
+      // Both share the same bare "MMM D" header. Format N (Amex website
+      // Activity table) additionally carries a "Supplementary card member" /
+      // "Card member" label line before the cardholder's full name — peek
+      // ahead for that anchor to tell the two apart.
+      const CARD_MEMBER_LINE = /\bcard member\b/i;
+      let anchorIdx = -1;
+      let peekIdx = i + 1;
+      while (peekIdx < lines.length && !isTransactionHeader(lines[peekIdx])) {
+        const peeked = lines[peekIdx].trim();
+        if (CARD_MEMBER_LINE.test(peeked)) {
+          anchorIdx = peekIdx;
+          break;
+        }
+        if (/^[+]?-?\$/.test(peeked)) break; // amount reached — not Format N
+        peekIdx++;
       }
 
-      // Read description: first non-empty, non-footer line
-      let description = "";
-      while (i < lines.length && !isTransactionHeader(lines[i])) {
-        const next = lines[i].trim();
+      if (anchorIdx !== -1) {
+        // ── Format N — Amex website Activity table view ───────────────────
+        const date = parseMonthDay(line, errors);
         i++;
-        if (!next || /^Show Transaction$/i.test(next)) continue;
-        description = next;
-        break;
+
+        // Everything between the date and the "card member" anchor is a
+        // reward/status line ("Pending", "3% Cash Back", "Credit") followed
+        // by the real description — take the LAST non-blank line as the
+        // description regardless of how many status lines precede it.
+        const preAnchorLines: string[] = [];
+        while (i < anchorIdx) {
+          const next = lines[i].trim();
+          i++;
+          if (next) preAnchorLines.push(next);
+        }
+        const descriptionN = preAnchorLines[preAnchorLines.length - 1] || "";
+        if (!descriptionN) errors.push("Description is empty");
+
+        i = anchorIdx + 1; // skip the "Supplementary card member" line itself
+
+        // Cardholder's full name — next non-empty line; keep first name only
+        let cardholderN = "";
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          i++;
+          if (!next) continue;
+          const firstWord = next.split(/\s+/)[0];
+          cardholderN =
+            firstWord.charAt(0).toUpperCase() +
+            firstWord.slice(1).toLowerCase();
+          break;
+        }
+
+        const amount = scanForAmount(
+          lines,
+          i,
+          errors,
+          () => "try",
+          isCreditAccount,
+        );
+        i = amount.nextIndex;
+
+        rows.push({
+          id: crypto.randomUUID(),
+          date,
+          description: descriptionN,
+          notes: "",
+          cardholder: cardholderN,
+          amount: amount.value,
+          parseErrors: errors,
+        });
+      } else {
+        // ── Format C — mobile/app card view ────────────────────────────────
+        const date = parseMonthDay(line, errors);
+        i++;
+
+        // Skip optional status line ("Pending", "Posted", etc.)
+        if (i < lines.length && /^(Pending|Posted)\s*$/i.test(lines[i])) {
+          i++;
+        }
+
+        // Read description: first non-empty, non-footer line
+        let description = "";
+        while (i < lines.length && !isTransactionHeader(lines[i])) {
+          const next = lines[i].trim();
+          i++;
+          if (!next || /^Show Transaction$/i.test(next)) continue;
+          description = next;
+          break;
+        }
+        if (!description) errors.push("Description is empty");
+
+        // Scan for amount: skip cardholder initials (exactly 2 uppercase) and "Show Transaction"
+        const amount = scanForAmount(
+          lines,
+          i,
+          errors,
+          (next) => {
+            if (/^Show Transaction$/i.test(next)) return "stop";
+            if (/^[A-Z]{2}$/.test(next)) return "skip"; // MH, LH, etc.
+            return "try";
+          },
+          isCreditAccount,
+        );
+        i = amount.nextIndex;
+
+        rows.push({
+          id: crypto.randomUUID(),
+          date,
+          description,
+          notes: "",
+          cardholder: "",
+          amount: amount.value,
+          parseErrors: errors,
+        });
       }
-      if (!description) errors.push("Description is empty");
-
-      // Scan for amount: skip cardholder initials (exactly 2 uppercase) and "Show Transaction"
-      const amount = scanForAmount(
-        lines,
-        i,
-        errors,
-        (next) => {
-          if (/^Show Transaction$/i.test(next)) return "stop";
-          if (/^[A-Z]{2}$/.test(next)) return "skip"; // MH, LH, etc.
-          return "try";
-        },
-        isCreditAccount,
-      );
-      i = amount.nextIndex;
-
-      rows.push({
-        id: crypto.randomUUID(),
-        date,
-        description,
-        notes: "",
-        cardholder: "",
-        amount: amount.value,
-        parseErrors: errors,
-      });
     }
   }
 

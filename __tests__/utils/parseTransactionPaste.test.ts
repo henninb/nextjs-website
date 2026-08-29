@@ -1139,9 +1139,15 @@ Posted Transactions
       const raw = `6/12/26    MERCY HOSPITAL CAFETERIA\n#...1193\n$9.60\nTransaction Details for Row 3    06/12/26    BILL'S SUPERETTE #8\n#...1193\n$11.86`;
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(2);
-      expect(rows[0]).toMatchObject({ description: "MERCY HOSPITAL CAFETERIA", amount: 9.60 });
+      expect(rows[0]).toMatchObject({
+        description: "MERCY HOSPITAL CAFETERIA",
+        amount: 9.6,
+      });
       expect(rows[0].parseErrors).toHaveLength(0);
-      expect(rows[1]).toMatchObject({ description: "BILL'S SUPERETTE #8", amount: 11.86 });
+      expect(rows[1]).toMatchObject({
+        description: "BILL'S SUPERETTE #8",
+        amount: 11.86,
+      });
       expect(rows[1].parseErrors).toHaveLength(0);
     });
 
@@ -1276,9 +1282,15 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
       expect(rows[2].date!.getDate()).toBe(1);
     });
 
-    it("should normalize online Target.com purchases to \"Target.com\"", () => {
+    it('should normalize online Target.com purchases to "Target.com"', () => {
       const [row] = parseTransactionPaste(
-        blockD("03-09-2026", "TARGET.COM 800-591- CREDIT", "-$2.25", "Return", ""),
+        blockD(
+          "03-09-2026",
+          "TARGET.COM 800-591- CREDIT",
+          "-$2.25",
+          "Return",
+          "",
+        ),
       );
       expect(row.description).toBe("Target.com");
       expect(row.amount).toBe(-2.25);
@@ -1438,6 +1450,149 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
       expect(row.description).toBe("ONLINE SHOP 987654321");
       expect(row.amount).toBe(19.99);
       expect(row.parseErrors).toHaveLength(0);
+    });
+  });
+
+  // ── Format N ─────────────────────────────────────────────────────────────
+
+  /**
+   * Format N block: Amex website Activity table view — bare "MMM D" date,
+   * optional status line, description, "Supplementary card member" anchor,
+   * cardholder full name, amount.
+   */
+  function blockN(
+    date: string,
+    status: string | null,
+    desc: string,
+    cardholderFullName: string,
+    amount: string,
+  ): string {
+    const statusLine = status ? `${status}\n` : "";
+    return `Select ${desc}, ${date}\n${date}\n${statusLine}${desc}\nSupplementary card member\n${cardholderFullName}\n${amount}`;
+  }
+
+  describe("Format N — Amex website Activity table view", () => {
+    it("should parse a block with a status line and drop it from the description", () => {
+      const [row] = parseTransactionPaste(
+        blockN(
+          "Aug 25",
+          "3% Cash Back",
+          "BP#9275504ANOKA BP ANOKA MN",
+          "Lillian A Henning",
+          "$60.66",
+        ),
+        "credit",
+      );
+      expect(row.description).toBe("BP#9275504ANOKA BP ANOKA");
+      expect(row.amount).toBe(60.66);
+      expect(row.cardholder).toBe("Lillian");
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it("should parse a block with no status line at all", () => {
+      const [row] = parseTransactionPaste(
+        blockN(
+          "Aug 23",
+          null,
+          "SIERRA #0129 0000041COON RAPIDS MN",
+          "Lillian A Henning",
+          "$8.21",
+        ),
+        "credit",
+      );
+      expect(row.description).toBe("SIERRA #0129 0000041COON RAPIDS");
+      expect(row.amount).toBe(8.21);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it("should handle a 'Pending' status line", () => {
+      const [row] = parseTransactionPaste(
+        blockN(
+          "Aug 27",
+          "Pending",
+          "TIRES PLUS",
+          "Matthew J Henning",
+          "$52.93",
+        ),
+        "credit",
+      );
+      expect(row.description).toBe("TIRES PLUS");
+      expect(row.amount).toBe(52.93);
+      expect(row.cardholder).toBe("Matthew");
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it("should handle a 'Credit' status line and preserve a negative amount", () => {
+      const [row] = parseTransactionPaste(
+        blockN(
+          "Aug 24",
+          "Credit",
+          "ELECTRONIC PAYMENT RECEIVED-THANK",
+          "Brian J Henning",
+          "-$253.03",
+        ),
+        "credit",
+      );
+      expect(row.description).toBe("ELECTRONIC PAYMENT RECEIVED-THANK");
+      expect(row.amount).toBe(-253.03);
+      expect(row.cardholder).toBe("Brian");
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it("should parse a comma-containing negative amount", () => {
+      const [row] = parseTransactionPaste(
+        blockN(
+          "Aug 21",
+          "Credit",
+          "ELECTRONIC PAYMENT RECEIVED-THANK",
+          "Brian J Henning",
+          "-$1,334.00",
+        ),
+        "credit",
+      );
+      expect(row.amount).toBe(-1334);
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
+    it("should parse multiple consecutive Format N blocks, mixing status and no-status rows", () => {
+      const raw = [
+        blockN(
+          "Aug 27",
+          "Pending",
+          "TIRES PLUS",
+          "Matthew J Henning",
+          "$52.93",
+        ),
+        blockN(
+          "Aug 25",
+          "3% Cash Back",
+          "BP#9275504ANOKA BP ANOKA MN",
+          "Lillian A Henning",
+          "$60.66",
+        ),
+        blockN(
+          "Aug 23",
+          null,
+          "TARGET T-1144 000001COON RAPIDS MN",
+          "Lillian A Henning",
+          "$5.40",
+        ),
+      ].join("\n\n");
+      const rows = parseTransactionPaste(raw, "credit");
+      expect(rows).toHaveLength(3);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows[0]).toMatchObject({
+        description: "TIRES PLUS",
+        amount: 52.93,
+      });
+      expect(rows[1]).toMatchObject({
+        description: "BP#9275504ANOKA BP ANOKA",
+        amount: 60.66,
+      });
+      expect(rows[2]).toMatchObject({
+        description: "Target T1144",
+        amount: 5.4,
+      });
     });
   });
 
@@ -1604,7 +1759,8 @@ $50.80`;
     });
 
     it("should ignore a trailing 'Posted' status line", () => {
-      const raw = "08/28/2026\nConnexus Residential\n$37.18\nPosted\n08/28/2026\n\nLyft\n$13.18";
+      const raw =
+        "08/28/2026\nConnexus Residential\n$37.18\nPosted\n08/28/2026\n\nLyft\n$13.18";
       const rows = parseTransactionPaste(raw, "credit");
       expect(rows).toHaveLength(2);
       expect(rows[0]).toMatchObject({
@@ -1670,7 +1826,12 @@ Credit Adjustment
   describe("Format M — Bank of America pending transactions", () => {
     it("should parse a single Format M transaction", () => {
       const [row] = parseTransactionPaste(
-        blockM("WIDGET CO FEE ABCDEF", "Temporary Transactions", "$25.00", "$1,005.81"),
+        blockM(
+          "WIDGET CO FEE ABCDEF",
+          "Temporary Transactions",
+          "$25.00",
+          "$1,005.81",
+        ),
       );
       expect(row.description).toBe("WIDGET CO FEE ABCDEF");
       expect(row.amount).toBe(25.0);
@@ -1678,7 +1839,12 @@ Credit Adjustment
 
     it("should default the date to today and flag the row as pending for review", () => {
       const [row] = parseTransactionPaste(
-        blockM("WIDGET CO FEE ABCDEF", "Temporary Transactions", "$25.00", "$1,005.81"),
+        blockM(
+          "WIDGET CO FEE ABCDEF",
+          "Temporary Transactions",
+          "$25.00",
+          "$1,005.81",
+        ),
       );
       const today = new Date();
       expect(row.date).toBeInstanceOf(Date);
@@ -1692,16 +1858,36 @@ Credit Adjustment
 
     it("should ignore the running balance and only take the first dollar amount", () => {
       const [row] = parseTransactionPaste(
-        blockM("SAMPLE AIRLINE XY QRSTUV", "Temporary Transactions", "$488.40", "$980.81"),
+        blockM(
+          "SAMPLE AIRLINE XY QRSTUV",
+          "Temporary Transactions",
+          "$488.40",
+          "$980.81",
+        ),
       );
       expect(row.amount).toBe(488.4);
     });
 
     it("should parse multiple consecutive Format M blocks", () => {
       const raw = [
-        blockM("SAMPLE AIRLINE XY QRSTUV", "Temporary Transactions", "$488.40", "$980.81"),
-        blockM("SAMPLE AIRLINE XY QRSTUV", "Temporary Transactions", "$443.40", "$492.41"),
-        blockM("CURBSIDE HAULING SVC", "Temporary Transactions", "$49.01", "$49.01"),
+        blockM(
+          "SAMPLE AIRLINE XY QRSTUV",
+          "Temporary Transactions",
+          "$488.40",
+          "$980.81",
+        ),
+        blockM(
+          "SAMPLE AIRLINE XY QRSTUV",
+          "Temporary Transactions",
+          "$443.40",
+          "$492.41",
+        ),
+        blockM(
+          "CURBSIDE HAULING SVC",
+          "Temporary Transactions",
+          "$49.01",
+          "$49.01",
+        ),
       ].join("\n");
 
       const rows = parseTransactionPaste(raw);
