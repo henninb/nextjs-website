@@ -79,10 +79,12 @@
     ]
   },
   "allowScripts": {
-    "@swc/core@1.15.47": true,
     "esbuild@0.28.1": true,
-    "workerd@1.20260722.1": true,
     "msw@2.15.0": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "@parcel/watcher@2.6.0": true,
+    "@swc/core@1.16.2": true,
+    "workerd@1.20260730.1": true,
+    "workerd@1.20260911.1": true
   }
 }
