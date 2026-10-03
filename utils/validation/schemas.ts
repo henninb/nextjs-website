@@ -107,17 +107,42 @@ const notes = z
   .default("");
 
 // Enum validations
-const accountTypeEnum = z.enum([
-  "debit", "credit", "checking", "savings", "credit_card", "certificate", "money_market",
-  "brokerage", "retirement_401k", "retirement_ira", "retirement_roth", "pension",
-  "hsa", "fsa", "medical_savings",
-  "mortgage", "auto_loan", "student_loan", "personal_loan", "line_of_credit",
-  "utility", "prepaid", "gift_card",
-  "business_checking", "business_savings", "business_credit",
-  "cash", "escrow", "trust",
-] as const, {
-  message: "Invalid account type",
-});
+const accountTypeEnum = z.enum(
+  [
+    "debit",
+    "credit",
+    "checking",
+    "savings",
+    "credit_card",
+    "certificate",
+    "money_market",
+    "brokerage",
+    "retirement_401k",
+    "retirement_ira",
+    "retirement_roth",
+    "pension",
+    "hsa",
+    "fsa",
+    "medical_savings",
+    "mortgage",
+    "auto_loan",
+    "student_loan",
+    "personal_loan",
+    "line_of_credit",
+    "utility",
+    "prepaid",
+    "gift_card",
+    "business_checking",
+    "business_savings",
+    "business_credit",
+    "cash",
+    "escrow",
+    "trust",
+  ] as const,
+  {
+    message: "Invalid account type",
+  },
+);
 
 const transactionStateEnum = z.enum(["cleared", "outstanding", "future"], {
   message: "Transaction state must be cleared, outstanding, or future",
@@ -197,6 +222,12 @@ export const AccountSchema = z
     dateAdded: dateString.optional(),
     dateUpdated: dateString.optional(),
     billingStatementCloseDay: z.number().int().min(1).max(31).optional(),
+    billingStatementCloseBusinessDay: z
+      .number()
+      .int()
+      .min(1)
+      .max(23)
+      .optional(),
     billingGracePeriodDays: z.number().int().min(1).max(60).optional(),
     billingDueDaySameMonth: z.number().int().min(1).max(31).optional(),
     billingDueDayNextMonth: z.number().int().min(1).max(31).optional(),
@@ -216,6 +247,16 @@ export const AccountSchema = z
       message:
         "Only one of billingGracePeriodDays, billingDueDaySameMonth, or billingDueDayNextMonth may be set",
       path: ["billingGracePeriodDays"],
+    },
+  )
+  .refine(
+    (data) =>
+      data.billingStatementCloseDay === undefined ||
+      data.billingStatementCloseBusinessDay === undefined,
+    {
+      message:
+        "Only one of billingStatementCloseDay or billingStatementCloseBusinessDay may be set",
+      path: ["billingStatementCloseBusinessDay"],
     },
   );
 

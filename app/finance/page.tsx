@@ -71,19 +71,22 @@ import AccountCardSkeleton from "../../components/AccountCardSkeleton";
 import { useAuth } from "../../components/AuthProvider";
 import { modalTitles, modalBodies } from "../../utils/modalMessages";
 import { z } from "zod";
+import { nthBusinessDayOfMonth } from "../../utils/billingDates";
 
 function computeCurrentDueDate(account: Account): Date | null {
   if (!isCreditCardAccount(account.accountType)) return null;
 
   const {
     billingStatementCloseDay,
+    billingStatementCloseBusinessDay,
     billingDueDaySameMonth,
     billingDueDayNextMonth,
     billingGracePeriodDays,
     billingCycleWeekendShift,
   } = account;
 
-  if (!billingStatementCloseDay) return null;
+  if (!billingStatementCloseDay && !billingStatementCloseBusinessDay)
+    return null;
   if (
     !billingDueDaySameMonth &&
     !billingDueDayNextMonth &&
@@ -98,7 +101,14 @@ function computeCurrentDueDate(account: Account): Date | null {
 
   let closeYear = year;
   let closeMonth = month;
-  if (day < billingStatementCloseDay) {
+  const thisMonthCloseDay = billingStatementCloseBusinessDay
+    ? nthBusinessDayOfMonth(
+        year,
+        month,
+        billingStatementCloseBusinessDay,
+      ).getDate()
+    : billingStatementCloseDay!;
+  if (day < thisMonthCloseDay) {
     closeMonth = month - 1;
     if (closeMonth < 0) {
       closeMonth = 11;
@@ -126,9 +136,9 @@ function computeCurrentDueDate(account: Account): Date | null {
 
   function buildDueDate(cYear: number, cMonth: number): Date {
     if (billingGracePeriodDays) {
-      const closeDate = applyWeekendShift(
-        new Date(cYear, cMonth, billingStatementCloseDay!),
-      );
+      const closeDate = billingStatementCloseBusinessDay
+        ? nthBusinessDayOfMonth(cYear, cMonth, billingStatementCloseBusinessDay)
+        : applyWeekendShift(new Date(cYear, cMonth, billingStatementCloseDay!));
       closeDate.setDate(closeDate.getDate() + billingGracePeriodDays);
       return closeDate;
     } else if (billingDueDaySameMonth) {

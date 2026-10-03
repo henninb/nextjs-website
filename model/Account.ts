@@ -17,6 +17,7 @@ export default interface Account {
   dateAdded?: Date;
   dateUpdated?: Date;
   billingStatementCloseDay?: number;
+  billingStatementCloseBusinessDay?: number;
   billingGracePeriodDays?: number;
   billingDueDaySameMonth?: number;
   billingDueDayNextMonth?: number;

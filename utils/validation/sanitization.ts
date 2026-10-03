@@ -461,6 +461,11 @@ export const sanitize = {
       data.billingStatementCloseDay !== null
         ? parseInt(String(data.billingStatementCloseDay))
         : undefined,
+    billingStatementCloseBusinessDay:
+      data.billingStatementCloseBusinessDay !== undefined &&
+      data.billingStatementCloseBusinessDay !== null
+        ? parseInt(String(data.billingStatementCloseBusinessDay))
+        : undefined,
     billingGracePeriodDays:
       data.billingGracePeriodDays !== undefined &&
       data.billingGracePeriodDays !== null

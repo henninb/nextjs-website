@@ -37,6 +37,7 @@ import useTransactionByAccountFetchPaged, {
 } from "../../../../hooks/useTransactionByAccountFetchPaged";
 import { useAuthenticatedQuery } from "../../../../utils/queryConfig";
 import { getAccountKey } from "../../../../utils/cacheUtils";
+import { nthBusinessDayOfMonth } from "../../../../utils/billingDates";
 import useTransactionUpdate from "../../../../hooks/useTransactionUpdate";
 import useTransactionInsert from "../../../../hooks/useTransactionInsert";
 import useTransactionDelete from "../../../../hooks/useTransactionDelete";
@@ -193,7 +194,9 @@ export default function TransactionsByAccount({
         : "";
     try {
       setCacheEnabled(
-        localStorage.getItem(`finance_cache_enabled_transactions_${ownerKey}`) === "true"
+        localStorage.getItem(
+          `finance_cache_enabled_transactions_${ownerKey}`,
+        ) === "true",
       );
     } catch {
       // localStorage may not be available
@@ -330,7 +333,8 @@ export default function TransactionsByAccount({
     const currentAccount = fetchedAccounts?.find(
       (account) => account.accountNameOwner === validAccountNameOwner,
     );
-    const accountType = currentAccount?.accountType || ("undefined" as AccountType);
+    const accountType =
+      currentAccount?.accountType || ("undefined" as AccountType);
 
     return {
       transactionDate: new Date(),
@@ -529,6 +533,7 @@ export default function TransactionsByAccount({
       !!(
         currentAccount &&
         (currentAccount.billingStatementCloseDay != null ||
+          currentAccount.billingStatementCloseBusinessDay != null ||
           currentAccount.billingGracePeriodDays != null ||
           currentAccount.billingDueDaySameMonth != null ||
           currentAccount.billingDueDayNextMonth != null)
@@ -561,9 +566,31 @@ export default function TransactionsByAccount({
     today.setHours(0, 0, 0, 0);
 
     const closeDay = currentAccount.billingStatementCloseDay;
+    const closeBusinessDay = currentAccount.billingStatementCloseBusinessDay;
     let nextClose: Date | null = null;
     let prevClose: Date | null = null;
-    if (closeDay != null) {
+    if (closeBusinessDay != null) {
+      const thisMonth = nthBusinessDayOfMonth(
+        today.getFullYear(),
+        today.getMonth(),
+        closeBusinessDay,
+      );
+      if (thisMonth > today) {
+        nextClose = thisMonth;
+        prevClose = nthBusinessDayOfMonth(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          closeBusinessDay,
+        );
+      } else {
+        nextClose = nthBusinessDayOfMonth(
+          today.getFullYear(),
+          today.getMonth() + 1,
+          closeBusinessDay,
+        );
+        prevClose = thisMonth;
+      }
+    } else if (closeDay != null) {
       const thisMonth = new Date(
         today.getFullYear(),
         today.getMonth(),
@@ -599,9 +626,17 @@ export default function TransactionsByAccount({
       const closeMonth = nextClose.getMonth();
       const closeYear = nextClose.getFullYear();
       if (currentAccount.billingDueDaySameMonth != null) {
-        nextDue = new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth);
+        nextDue = new Date(
+          closeYear,
+          closeMonth,
+          currentAccount.billingDueDaySameMonth,
+        );
       } else if (currentAccount.billingDueDayNextMonth != null) {
-        nextDue = new Date(closeYear, closeMonth + 1, currentAccount.billingDueDayNextMonth);
+        nextDue = new Date(
+          closeYear,
+          closeMonth + 1,
+          currentAccount.billingDueDayNextMonth,
+        );
       } else if (currentAccount.billingGracePeriodDays != null) {
         nextDue = new Date(nextClose);
         nextDue.setDate(
@@ -615,9 +650,17 @@ export default function TransactionsByAccount({
       const closeMonth = prevClose.getMonth();
       const closeYear = prevClose.getFullYear();
       if (currentAccount.billingDueDaySameMonth != null) {
-        prevDue = new Date(closeYear, closeMonth, currentAccount.billingDueDaySameMonth);
+        prevDue = new Date(
+          closeYear,
+          closeMonth,
+          currentAccount.billingDueDaySameMonth,
+        );
       } else if (currentAccount.billingDueDayNextMonth != null) {
-        prevDue = new Date(closeYear, closeMonth + 1, currentAccount.billingDueDayNextMonth);
+        prevDue = new Date(
+          closeYear,
+          closeMonth + 1,
+          currentAccount.billingDueDayNextMonth,
+        );
       } else if (currentAccount.billingGracePeriodDays != null) {
         prevDue = new Date(prevClose);
         prevDue.setDate(
@@ -668,7 +711,10 @@ export default function TransactionsByAccount({
         endDate: creditCardDates?.cycleEndDate ?? undefined,
       }),
     {
-      enabled: hasRewards && !!creditCardDates?.cycleStartDate && !!creditCardDates?.cycleEndDate,
+      enabled:
+        hasRewards &&
+        !!creditCardDates?.cycleStartDate &&
+        !!creditCardDates?.cycleEndDate,
       staleTime: 5 * 60 * 1000,
     },
   );
@@ -817,9 +863,17 @@ export default function TransactionsByAccount({
         handleSuccess(`Transaction deleted successfully.`);
       } catch (error) {
         if (isFetchError(error) && error.status === 409) {
-          handleError(error, "This transaction belongs to a transfer. Delete the transfer instead.", false);
+          handleError(
+            error,
+            "This transaction belongs to a transfer. Delete the transfer instead.",
+            false,
+          );
         } else {
-          handleError(error, `Delete Transaction failure: ${getErrorMessage(error)}`, false);
+          handleError(
+            error,
+            `Delete Transaction failure: ${getErrorMessage(error)}`,
+            false,
+          );
         }
       } finally {
         setShowModalDelete(false);
@@ -1118,7 +1172,10 @@ export default function TransactionsByAccount({
                   );
                 }
                 return (
-                  <Typography variant="body2" sx={{ fontWeight: 500, textAlign: "right" }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, textAlign: "right" }}
+                  >
                     ${cashback.toFixed(2)}
                   </Typography>
                 );
@@ -1495,7 +1552,9 @@ export default function TransactionsByAccount({
                       sx={{
                         fontSize: "1rem",
                         color: "text.secondary",
-                        transform: showBillingCycle ? "rotate(180deg)" : "rotate(0deg)",
+                        transform: showBillingCycle
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
                         transition: "transform 0.2s",
                       }}
                     />
@@ -1577,7 +1636,6 @@ export default function TransactionsByAccount({
                           </Box>
                         </Grow>
                       )}
-
                     </Box>
                   </Collapse>
                 </Box>
@@ -1623,7 +1681,9 @@ export default function TransactionsByAccount({
                       sx={{
                         fontSize: "1rem",
                         color: "text.secondary",
-                        transform: showBonusProgress ? "rotate(180deg)" : "rotate(0deg)",
+                        transform: showBonusProgress
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
                         transition: "transform 0.2s",
                       }}
                     />
@@ -1878,7 +1938,11 @@ export default function TransactionsByAccount({
           onSubmit={async () => {
             if (transactionData) {
               if (!transactionData.transactionType) {
-                handleError(new Error("Transaction type is required"), "Validation", false);
+                handleError(
+                  new Error("Transaction type is required"),
+                  "Validation",
+                  false,
+                );
                 return;
               }
               let dataToInsert = transactionData;
