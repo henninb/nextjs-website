@@ -11,7 +11,7 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import User, { SafeUser } from "../model/User";
 import useLogout from "../hooks/useLogoutProcess";
-import { initCsrfToken } from "../utils/csrf";
+import { initCsrfToken, getCsrfHeaders, clearCsrfToken } from "../utils/csrf";
 import { logger } from "../utils/logger";
 
 const SESSION_DURATION = 60 * 60 * 1000; // 1 hour
@@ -100,11 +100,24 @@ const useProvideAuth = () => {
   }, []);
 
   const extendSession = useCallback(async () => {
-    try {
-      const res = await fetch("/api/refresh", {
+    // Spring Security requires a CSRF token on POST /api/refresh
+    const postRefresh = async () =>
+      fetch("/api/refresh", {
         method: "POST",
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+          ...(await getCsrfHeaders()),
+        },
       });
+
+    try {
+      let res = await postRefresh();
+      if (res.status === 403) {
+        // Cached CSRF token may be stale — fetch a fresh one and retry once
+        clearCsrfToken();
+        res = await postRefresh();
+      }
       if (res.ok) {
         setSessionExpiry(Date.now() + SESSION_DURATION);
         setShowSessionWarning(false);
