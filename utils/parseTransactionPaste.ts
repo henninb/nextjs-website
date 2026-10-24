@@ -77,8 +77,9 @@ export interface ParsedTransactionRow {
 //   $46.37
 //
 // Format E — Citi-style card view (MMM DD, YYYY date, cardholder on own line):
-//   Two block orderings are supported (auto-detected by peeking at the first
-//   non-empty line after the date — a 2-3 word all-letter line is a name):
+//   Two block orderings are supported (auto-detected by peeking at the line
+//   just before the amount — a 2-3 word all-letter line there is the cardholder,
+//   which means new order):
 //
 //   Old order:
 //   Apr 12, 2026
@@ -90,8 +91,9 @@ export interface ParsedTransactionRow {
 //
 //   New order (Citi website — description appears before the cardholder line):
 //   Apr 12, 2026
+//   undefined                  ← Citi rendering artifact (optional) — skip
 //   WAREHOUSE CLUB #1234 SPRINGFIELD XX
-//   Eligible for Citi® Flex Pay  ← optional promo text — skip
+//   Citi® Flex Pay Eligible    ← optional promo text, any "Flex Pay" wording — skip
 //   JANE DOE                   ← cardholder name — skip
 //   $122.84                    ← transaction amount
 //   $2,240.14                  ← running balance — ignore (only first $ taken)
@@ -639,67 +641,55 @@ export function parseTransactionPaste(
       // Distinguishes the cardholder line from a merchant description, which
       // typically has digits/# (store numbers) or more than 3 words.
       const NAME_LINE = /^[A-Za-z]+(?:\s+[A-Za-z]+){1,2}$/;
-      const PROMO_LINE = /^Eligible for\b/i;
+      const PROMO_LINE = /flex pay/i;
+      // Citi's website renders a literal "undefined" line after the date on some rows.
+      const ARTIFACT_LINE = /^undefined$/i;
 
-      let peekIdx = i;
-      while (peekIdx < lines.length && !lines[peekIdx].trim()) peekIdx++;
-      const firstNonEmpty = peekIdx < lines.length ? lines[peekIdx].trim() : "";
+      // Collect the meaningful lines between the date and the amount line,
+      // dropping blanks, promo text, and rendering artifacts.
+      const blockLines: string[] = [];
+      while (i < lines.length && !isTransactionHeader(lines[i])) {
+        const next = lines[i].trim();
+        if (/^[+]?-?\$/.test(next)) break;
+        i++;
+        if (!next || PROMO_LINE.test(next) || ARTIFACT_LINE.test(next))
+          continue;
+        blockLines.push(next);
+      }
+
+      const toFirstName = (nameLine: string): string => {
+        const firstWord = nameLine.split(/\s+/)[0];
+        return (
+          firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase()
+        );
+      };
+
+      // New order (Citi website): DATE → DESCRIPTION → [PROMO] → CARDHOLDER → AMOUNT
       // Old order (some Citi views, and Chase's "subtitle" line reuses this slot to
       // get skipped): DATE → CARDHOLDER/SUBTITLE → DESCRIPTION → [PROMO] → AMOUNT
-      // New order (Citi website): DATE → DESCRIPTION → [PROMO] → CARDHOLDER → AMOUNT
-      // A real merchant description in the new order never contains a comma, so a
-      // comma (e.g. Chase's "Amazon Marketplace, Amazon.com") falls back to old order.
-      const oldOrder =
-        NAME_LINE.test(firstNonEmpty) || firstNonEmpty.includes(",");
+      // The order is decided by the line just before the amount: a name there means
+      // new order. This keeps name-like merchants ("Holiday Inn", "Costco Gas") in the
+      // description slot. A comma in the first line (e.g. Chase's "Amazon Marketplace,
+      // Amazon.com") always means old order — real Citi merchants never contain one.
+      const first = blockLines[0] || "";
+      const last = blockLines[blockLines.length - 1] || "";
+      const newOrder =
+        !first.includes(",") &&
+        (blockLines.length === 1 ||
+          (blockLines.length >= 2 && NAME_LINE.test(last)) ||
+          !NAME_LINE.test(first));
 
       let cardholderE = "";
       let description = "";
 
-      if (oldOrder) {
-        // Capture cardholder first name — first non-empty line after the date
-        while (i < lines.length && !isTransactionHeader(lines[i])) {
-          const next = lines[i].trim();
-          i++;
-          if (!next) continue;
-          const firstWord = next.split(/\s+/)[0];
-          cardholderE =
-            firstWord.charAt(0).toUpperCase() +
-            firstWord.slice(1).toLowerCase();
-          break;
-        }
-
-        // Read description — next non-empty line
-        while (i < lines.length && !isTransactionHeader(lines[i])) {
-          const next = lines[i].trim();
-          i++;
-          if (!next) continue;
-          description = next;
-          break;
+      if (newOrder) {
+        description = first;
+        if (blockLines.length >= 2 && NAME_LINE.test(last)) {
+          cardholderE = toFirstName(last);
         }
       } else {
-        // Read description — first non-empty line after the date
-        while (i < lines.length && !isTransactionHeader(lines[i])) {
-          const next = lines[i].trim();
-          i++;
-          if (!next) continue;
-          description = next;
-          break;
-        }
-
-        // Skip optional promo text, capture the cardholder name if present,
-        // and stop once the amount line is reached (leave it for the scan below).
-        while (i < lines.length && !isTransactionHeader(lines[i])) {
-          const next = lines[i].trim();
-          if (/^[+]?-?\$/.test(next)) break;
-          i++;
-          if (!next || PROMO_LINE.test(next)) continue;
-          if (NAME_LINE.test(next)) {
-            const firstWord = next.split(/\s+/)[0];
-            cardholderE =
-              firstWord.charAt(0).toUpperCase() +
-              firstWord.slice(1).toLowerCase();
-          }
-        }
+        cardholderE = toFirstName(first);
+        description = blockLines[1] || "";
       }
       if (!description) errors.push("Description is empty");
 

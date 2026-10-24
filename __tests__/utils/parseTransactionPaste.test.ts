@@ -883,6 +883,62 @@ $1,213.23`;
         amount: 30.06,
       });
     });
+
+    it("should skip Citi 'undefined' artifacts and 'Citi® Flex Pay Eligible' promo lines", () => {
+      const raw = `Posted Total
+Posted Total
+$944.53
+Oct 21, 2026
+ERACTOLL 58Q1JV TOLLPASSCUSTOMN
+JANE DOE
+$13.53
+$1,457.06
+Oct 19, 2026
+undefined
+Costco
+
+Citi® Flex Pay Eligible
+JANE DOE
+$123.19
+$1,443.53
+Oct 19, 2026
+undefined
+Costco Gas
+JANE DOE
+$61.27
+$1,320.34
+Oct 16, 2026
+undefined
+BILL'S Superette
+JOHN SMITH
+$51.12
+$1,256.92
+Oct 09, 2026
+Love's Travel Stops
+JOHN SMITH
+$45.50
+$721.86
+Oct 07, 2026
+undefined
+Holiday Inn
+
+Citi® Flex Pay Eligible
+JANE DOE
+$117.34
+$655.44`;
+
+      const rows = parseTransactionPaste(raw, "credit");
+      expect(rows).toHaveLength(6);
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+      expect(rows.map((r) => [r.description, r.cardholder, r.amount])).toEqual([
+        ["ERACTOLL 58Q1JV TOLLPASSCUSTOMN", "Jane", 13.53],
+        ["Costco", "Jane", 123.19],
+        ["Costco Gas", "Jane", 61.27],
+        ["BILL'S Superette", "John", 51.12],
+        ["Love's Travel Stops", "John", 45.5],
+        ["Holiday Inn", "Jane", 117.34],
+      ]);
+    });
   });
 
   // ── Format F ─────────────────────────────────────────────────────────────
