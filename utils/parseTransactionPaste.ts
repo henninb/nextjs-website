@@ -122,6 +122,7 @@ export interface ParsedTransactionRow {
 //   08/28/2026
 //                              ← blank (optional — sometimes absent)
 //   Lyft                       ← description
+//   ExtendPay eligible         ← optional promo text — skip
 //   $59.97                     ← transaction amount
 //   Posted                     ← optional trailing status line — ignored
 //
@@ -176,6 +177,8 @@ const FORMAT_J =
 const FORMAT_K = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s*$/i;
 /** Chase website: standalone MM/DD/YYYY date (4-digit year, no trailing content). */
 const FORMAT_L = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+/** US Bank promo text interleaved in transaction blocks (e.g. "ExtendPay eligible"). */
+const US_BANK_PROMO = /extendpay/i;
 /** Bank of America pending-transactions table export. */
 const FORMAT_M = /^Expand transaction for Transaction date:/i;
 
@@ -929,7 +932,7 @@ export function parseTransactionPaste(
       while (peekIdx < lines.length && !isTransactionHeader(lines[peekIdx])) {
         const next = lines[peekIdx].trim();
         if (/^[+]?-?\$/.test(next)) break;
-        if (next) peekedLines.push(next);
+        if (next && !US_BANK_PROMO.test(next)) peekedLines.push(next);
         peekIdx++;
       }
 

@@ -1809,6 +1809,43 @@ Credit Adjustment
         ["Credit Adjustment", -1],
       ]);
     });
+
+    it("should skip 'ExtendPay eligible' promo lines and the ExtendPay banner", () => {
+      const raw = `Split large expenses into fixed monthly payments.
+Explore ExtendPay
+Posted
+10/23/2026
+
+Lyft
+ExtendPay eligible
+$106.22
+10/23/2026
+
+Lyft
+$74.91
+10/22/2026
+
+Lyft
+ExtendPay eligible
+$106.40
+10/14/2026
+
+Lyft
+ExtendPay eligible
+$116.90`;
+      const rows = parseTransactionPaste(raw, "credit");
+      expect(rows).toHaveLength(4);
+      rows.forEach((r) => {
+        expect(r.parseErrors).toHaveLength(0);
+        expect(r.notes).toBe("");
+      });
+      expect(rows.map((r) => [r.description, r.amount])).toEqual([
+        ["Lyft", 106.22],
+        ["Lyft", 74.91],
+        ["Lyft", 106.4],
+        ["Lyft", 116.9],
+      ]);
+    });
   });
 
   // ── Format M ─────────────────────────────────────────────────────────────
