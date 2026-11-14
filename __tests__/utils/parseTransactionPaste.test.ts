@@ -1030,6 +1030,30 @@ $655.44`;
       });
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
+
+    it("should parse the Wells Fargo 'Expand RowN' header variant", () => {
+      const raw = [
+        "Posted Transactions",
+        "￼",
+        "Expand Row1    11/13/26    ONLINE TRANSFER FROM DOE J REF #AB1234CDEF SAMPLE SAVINGS UTILITY FOR 11/13    $1.00    ",
+        "Expand Row2\t11/12/26\tCOFFEE SHOP\t$4.50",
+      ].join("\n");
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({
+        description: "ONLINE TRANSFER",
+        notes: "FROM DOE J REF #AB1234CDEF SAMPLE SAVINGS UTILITY FOR 11/13",
+        amount: 1.0,
+      });
+      expect(rows[0].date?.getFullYear()).toBe(2026);
+      expect(rows[0].date?.getMonth()).toBe(10);
+      expect(rows[0].date?.getDate()).toBe(13);
+      expect(rows[1]).toMatchObject({
+        description: "COFFEE SHOP",
+        amount: 4.5,
+      });
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
   });
 
   // ── Format G ─────────────────────────────────────────────────────────────

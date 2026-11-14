@@ -28,6 +28,8 @@ export interface ParsedTransactionRow {
 // Format F — labeled row header with inline amount (debit account detail view):
 //   Transaction Details for Row N    MM/DD/YY    DESCRIPTION    $26.78
 //   (amount is on the same header line, separated by 2+ spaces — no follow-on lines)
+//   Wells Fargo's newer view uses "Expand Row1" in place of "Transaction Details for Row N":
+//   Expand Row1    11/13/26    ONLINE TRANSFER FROM ... FOR 11/13    $1.00
 //   Detected as Format A by header regex; handler checks for inline amount.
 //
 // Format B — plain double-date header (checking/debit statement):
@@ -155,7 +157,8 @@ export interface ParsedTransactionRow {
 //   • Negative amounts (refunds) are preserved.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const FORMAT_A = /^Transaction Details for Row \d+/i;
+/** "Transaction Details for Row N" or Wells Fargo's newer "Expand Row1" prefix. */
+const FORMAT_A = /^(?:Transaction Details for|Expand) Row\s*\d+/i;
 const FORMAT_B =
   /^\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\d{1,2}\/\d{1,2}\/\d{2,4}[\s\t]+\S/;
 /** Single-date single-line debit: "MM/DD/YY    DESCRIPTION    $AMOUNT". Must come after FORMAT_B. */
@@ -419,7 +422,7 @@ export function parseTransactionPaste(
     // Format A: amount on a follow-on line.  Format F: amount on the header line.
     if (FORMAT_A.test(line)) {
       const m = line.match(
-        /^Transaction Details for Row \d+[\s\t]+(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*?)$/i,
+        /^(?:Transaction Details for|Expand) Row\s*\d+[\s\t]+(\d{1,2}\/\d{1,2}\/\d{2,4})[\s\t]+(.*?)$/i,
       );
       let date: Date | null = null;
       let description = "";
