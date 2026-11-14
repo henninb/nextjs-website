@@ -6,9 +6,9 @@ export interface ParsedTransactionRow {
   id: string;
   /** Parsed date, or null if the date field could not be read. */
   date: Date | null;
-  /** Merchant / description text from the header line. "ONLINE TRANSFER" descriptions are trimmed to those two words. */
+  /** Merchant / description text from the header line. "ONLINE TRANSFER" / "ATM WITHDRAWAL" descriptions are trimmed to those two words; Wells Fargo ACH IDs are moved to notes. */
   description: string;
-  /** Remainder of an "ONLINE TRANSFER" description, or empty string. */
+  /** Remainder of an "ONLINE TRANSFER" / "ATM WITHDRAWAL" / ACH-style description, or empty string. */
   notes: string;
   /** First name of the cardholder extracted from the statement text, or empty string. */
   cardholder: string;
@@ -22,7 +22,7 @@ export interface ParsedTransactionRow {
 //
 // Format A — labeled row header (credit card detail view):
 //   Transaction Details for Row N    MM/DD/YY    DESCRIPTION
-//   #...1193
+//   #...9999
 //   $60.21
 //
 // Format F — labeled row header with inline amount (debit account detail view):
@@ -46,7 +46,7 @@ export interface ParsedTransactionRow {
 //   Pending              ← optional status line
 //   ALDI
 //
-//   MH                   ← cardholder initials — exactly 2 uppercase letters
+//   JD                   ← cardholder initials — exactly 2 uppercase letters
 //   $1.89
 //
 //   Show Transaction     ← block footer
@@ -54,7 +54,7 @@ export interface ParsedTransactionRow {
 // Format D — tabular single-line export (MM-DD-YYYY date, all fields on one data line):
 //   03-10-2026
 //
-//   TARGET 1144 COON RAPIDS MN    Sale    **3370    $23.69
+//   TARGET 1234 PINE HOLLOW MN    Sale    **0000    $23.69
 //   03-09-2026
 //
 //   TARGET.COM 800-591- CREDIT    Return        -$2.25
@@ -74,8 +74,8 @@ export interface ParsedTransactionRow {
 // Format J — Amex-style: date + reward/status on same header line, full cardholder name below:
 //   320261330792487268        ← transaction ID — ignored (not a format header)
 //   May 11    3% Cash Back    ← date + reward type on the same line
-//   BILL'S SUPERETTE #8 RAMSEY MN
-//   Margaret J Henning        ← cardholder full name — skipped (not 2-letter initials)
+//   JOE'S MARKET #8 LAKEVIEW MN
+//   Jane A Doe        ← cardholder full name — skipped (not 2-letter initials)
 //   $46.37
 //
 // Format E — Citi-style card view (MMM DD, YYYY date, cardholder on own line):
@@ -104,7 +104,7 @@ export interface ParsedTransactionRow {
 //   Tue                        ← abbreviated day-of-week (Mon/Tue/.../Sun)
 //   May 19                     ← Month Day
 //   Invalid Date May 19        ← Discover artifact — skip
-//   STONE ARCH SAINT PAUL MN  ← description
+//   CORNER BISTRO SPRINGFIELD IL  ← description
 //   $66.08                     ← transaction amount
 //   Restaurants                ← category shown on site — ignored (AI will categorize)
 //   $204.82                    ← running balance — ignored
@@ -148,7 +148,7 @@ export interface ParsedTransactionRow {
 //                                 "3% Cash Back", or absent entirely — discarded
 //   TIRES PLUS                 ← description (always the last line before the anchor)
 //   Supplementary card member  ← anchor line — distinguishes this from Format C
-//   Matthew J Henning          ← cardholder full name — first name captured
+//   Mark T Sample          ← cardholder full name — first name captured
 //   $52.93                     ← transaction amount
 //
 // Rules shared by all formats:
@@ -313,6 +313,32 @@ function cleanACHDescription(desc: string): string {
   const coMatch = desc.match(/\bCO:\s+(.+?)\s+Entry Class Code:/i);
   if (coMatch) return coMatch[1].trim();
   return desc;
+}
+
+/** A reference/ID token: 6+ chars containing at least one digit (e.g. "261106", "0-2809070C"). */
+const ID_TOKEN = /^(?=.*\d)[A-Z0-9-]{6,}$/i;
+
+/**
+ * Split a Wells Fargo ACH-style description into a short merchant name and notes.
+ * These lines look like "ORIGINATOR [ENTRY TYPE] <ID> <ID> <PERSON NAME>", e.g.
+ * "ACME CORP PAYROLL 261106 261106000000 JANE DOE" → "ACME CORP PAYROLL" + notes.
+ * Splits at the first run of 2+ consecutive ID tokens; a lone number (e.g. a
+ * store number like "BRAKES PLUS 112233 SPRINGFIELD") is left alone.
+ */
+function splitAchStyleDescription(desc: string): {
+  description: string;
+  notes: string;
+} {
+  const tokens = desc.split(/\s+/).filter(Boolean);
+  for (let k = 1; k < tokens.length - 1; k++) {
+    if (ID_TOKEN.test(tokens[k]) && ID_TOKEN.test(tokens[k + 1])) {
+      return {
+        description: tokens.slice(0, k).join(" "),
+        notes: tokens.slice(k).join(" "),
+      };
+    }
+  }
+  return { description: desc, notes: "" };
 }
 
 /** Parse MM-DD-YYYY (dashes, 4-digit year) into a Date; appends to errors on failure. */
@@ -495,7 +521,7 @@ export function parseTransactionPaste(
         // Wells Fargo artifacts: drop embedded phone numbers ("651-2012732",
         // "212-2531234"), short parenthetical location/register codes ("(G)"),
         // and tighten a stray space before a trailing-apostrophe contraction
-        // ("BILL 'S SUPERETTE" → "BILL'S SUPERETTE").
+        // ("JOE 'S MARKET" → "JOE'S MARKET").
         description = description
           .replace(/\s*\b\d{3}-\d{7}\b\s*/g, " ")
           .replace(/\s*\([A-Z]{1,2}\)/g, "")
@@ -557,13 +583,16 @@ export function parseTransactionPaste(
         errors.push("Header did not match expected format");
       }
 
+      const achSplit = splitAchStyleDescription(description);
+      description = achSplit.description;
+
       i++;
       if (hasInlineAmount) {
         rows.push({
           id: crypto.randomUUID(),
           date,
           description,
-          notes: "",
+          notes: achSplit.notes,
           cardholder: "",
           amount,
           parseErrors: errors,
@@ -585,7 +614,7 @@ export function parseTransactionPaste(
           id: crypto.randomUUID(),
           date,
           description,
-          notes: "",
+          notes: achSplit.notes,
           cardholder: "",
           amount: scanned.value,
           parseErrors: errors,
@@ -822,7 +851,7 @@ export function parseTransactionPaste(
       }
       if (!description) errors.push("Description is empty");
 
-      // Scan for amount; capture cardholder full name (e.g. "Margaret J Henning") if encountered
+      // Scan for amount; capture cardholder full name (e.g. "Jane A Doe") if encountered
       let cardholderJ = "";
       const amount = scanForAmount(
         lines,
@@ -1110,7 +1139,7 @@ export function parseTransactionPaste(
           errors,
           (next) => {
             if (/^Show Transaction$/i.test(next)) return "stop";
-            if (/^[A-Z]{2}$/.test(next)) return "skip"; // MH, LH, etc.
+            if (/^[A-Z]{2}$/.test(next)) return "skip"; // JD, AS, etc.
             return "try";
           },
           isCreditAccount,
@@ -1133,17 +1162,19 @@ export function parseTransactionPaste(
   const US_STATE_SUFFIX =
     /\s+(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC|US)$/;
 
-  // Trim "ONLINE TRANSFER" descriptions: keep those two words, move the rest to notes.
+  // Trim "ONLINE TRANSFER" / "ATM WITHDRAWAL" descriptions: keep those two words, move the rest to notes.
   // Strip trailing US state abbreviations from all descriptions.
   // Remove bank website UI artifacts ("Show image for X, Opens a dialog").
   // Collapse Target descriptions to "Target [store#] [City]", or "Target.com" when online —
-  // drops terminal/register noise ("TARGET 1144 080 5661" → "Target 1144").
+  // drops terminal/register noise ("TARGET 1234 000 0000" → "Target 1234").
   const TARGET_ONLINE = /^TARGET\.?COM\b/i;
   const TARGET_STORE = /^TARGET\b\s*(.*)$/i;
   for (const row of rows) {
-    if (/^ONLINE TRANSFER\b/i.test(row.description)) {
-      row.notes = row.description.slice("ONLINE TRANSFER".length).trim();
-      row.description = "ONLINE TRANSFER";
+    for (const prefix of ["ONLINE TRANSFER", "ATM WITHDRAWAL"]) {
+      if (new RegExp(`^${prefix}\\b`, "i").test(row.description)) {
+        row.notes = row.description.slice(prefix.length).trim();
+        row.description = prefix;
+      }
     }
     row.description = row.description
       .replace(/Show image for[^,]+,\s*Opens a dialog/gi, "")

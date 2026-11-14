@@ -46,7 +46,7 @@ function blockC(
   date: string,
   desc: string,
   amount: string,
-  initials = "MH",
+  initials = "JD",
   pending = false,
 ): string {
   const statusLine = pending ? "Pending" : "";
@@ -268,7 +268,7 @@ describe("parseTransactionPaste", () => {
 
   describe("Format C — mobile/app card view", () => {
     it("should parse a pending transaction", () => {
-      const raw = blockC("Apr 16", "FOOD MART", "$1.89", "MH", true);
+      const raw = blockC("Apr 16", "FOOD MART", "$1.89", "JD", true);
       const [row] = parseTransactionPaste(raw);
 
       expect(row.description).toBe("FOOD MART");
@@ -281,7 +281,7 @@ describe("parseTransactionPaste", () => {
         "Apr 13",
         "SAM'S CORNER MART #5 RIVERSIDE XX",
         "$44.45",
-        "MH",
+        "JD",
         false,
       );
       const [row] = parseTransactionPaste(raw);
@@ -308,49 +308,64 @@ describe("parseTransactionPaste", () => {
     });
 
     it("should infer the previous year when the date would be > 30 days in the future", () => {
-      // Pick a date 60 days from now — should fall back to last year
-      const future = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
-      const monthAbbrevs = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-      const dateStr = `${monthAbbrevs[future.getMonth()]} ${future.getDate()}`;
+      // Pin the clock so the result does not depend on when the suite runs.
+      jest.useFakeTimers({ now: new Date(2026, 5, 15) }); // Jun 15, 2026
+      try {
+        const [row] = parseTransactionPaste(
+          blockC("Aug 14", "FUTURE MERCHANT", "$9.99"),
+        );
+        expect(row.date!.getFullYear()).toBe(2025);
+        expect(row.date!.getMonth()).toBe(7); // August
+        expect(row.date!.getDate()).toBe(14);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
 
-      const [row] = parseTransactionPaste(
-        blockC(dateStr, "FUTURE MERCHANT", "$9.99"),
-      );
-      expect(row.date!.getFullYear()).toBe(new Date().getFullYear() - 1);
+    it("should keep the current year for a date within 30 days in the future", () => {
+      jest.useFakeTimers({ now: new Date(2026, 5, 15) }); // Jun 15, 2026
+      try {
+        const [row] = parseTransactionPaste(
+          blockC("Jul 10", "NEAR FUTURE MERCHANT", "$9.99"),
+        );
+        expect(row.date!.getFullYear()).toBe(2026);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it("should assign December dates to the previous year when pasting in January", () => {
+      jest.useFakeTimers({ now: new Date(2027, 0, 5) }); // Jan 5, 2027
+      try {
+        const [row] = parseTransactionPaste(
+          blockC("Dec 28", "YEAR END MERCHANT", "$9.99"),
+        );
+        expect(row.date!.getFullYear()).toBe(2026);
+        expect(row.date!.getMonth()).toBe(11); // December
+      } finally {
+        jest.useRealTimers();
+      }
     });
 
     it('should skip the "Pending" status line', () => {
-      const raw = "Apr 16\nPending\nFOOD MART\n\nMH\n$1.89\n\nShow Transaction";
+      const raw = "Apr 16\nPending\nFOOD MART\n\nJD\n$1.89\n\nShow Transaction";
       const [row] = parseTransactionPaste(raw);
 
       expect(row.description).toBe("FOOD MART");
       expect(row.parseErrors).toHaveLength(0);
     });
 
-    it("should skip the cardholder initials line (MH)", () => {
+    it("should skip the cardholder initials line (JD)", () => {
       const [row] = parseTransactionPaste(
-        blockC("Apr 16", "FOOD MART", "$1.89", "MH"),
+        blockC("Apr 16", "FOOD MART", "$1.89", "JD"),
       );
       expect(row.amount).toBe(1.89);
       expect(row.parseErrors).toHaveLength(0);
     });
 
-    it("should skip the cardholder initials line (LH)", () => {
+    it("should skip the cardholder initials line (AS)", () => {
       const [row] = parseTransactionPaste(
-        blockC("Apr 12", "GENERAL STORE 011445SPRINGFIELD XX", "$5.40", "LH"),
+        blockC("Apr 12", "GENERAL STORE 011445SPRINGFIELD XX", "$5.40", "AS"),
       );
       expect(row.amount).toBe(5.4);
       expect(row.parseErrors).toHaveLength(0);
@@ -368,13 +383,13 @@ describe("parseTransactionPaste", () => {
 
     it("should parse multiple consecutive blocks", () => {
       const raw = [
-        blockC("Apr 16", "FOOD MART", "$1.89", "MH", true),
-        blockC("Apr 16", "GENERAL STORE T9999", "$17.28", "MH", true),
+        blockC("Apr 16", "FOOD MART", "$1.89", "JD", true),
+        blockC("Apr 16", "GENERAL STORE T9999", "$17.28", "JD", true),
         blockC(
           "Apr 13",
           "SAM'S CORNER MART #5 RIVERSIDE XX",
           "$44.45",
-          "MH",
+          "JD",
           false,
         ),
       ].join("\n");
@@ -517,9 +532,9 @@ describe("parseTransactionPaste", () => {
 
     it("should strip the trailing state code and Sale/Type word from Target descriptions with tab-separated columns", () => {
       const raw =
-        "03-10-2026\n \nTARGET 1144 SPRINGFIELD IL\tSale\t**3370\t$11.43";
+        "03-10-2026\n \nTARGET 1234 SPRINGFIELD IL\tSale\t**0000\t$11.43";
       const [row] = parseTransactionPaste(raw);
-      expect(row.description).toBe("Target 1144 Springfield");
+      expect(row.description).toBe("Target 1234 Springfield");
       expect(row.description).not.toContain("Sale");
       expect(row.description).not.toContain("Il");
       expect(row.amount).toBe(11.43);
@@ -771,7 +786,7 @@ GENERAL STORE 9999 SPRINGFIELD XX    Sale    **9999    $18.17    `;
           "WAREHOUSE CLUB #1234 SPRINGFIELD XX",
           "$3.23",
         ),
-        blockC("Apr 16", "FOOD MART", "$1.89", "MH", false),
+        blockC("Apr 16", "FOOD MART", "$1.89", "JD", false),
       ].join("\n");
 
       const rows = parseTransactionPaste(raw);
@@ -909,7 +924,7 @@ $61.27
 $1,320.34
 Oct 16, 2026
 undefined
-BILL'S Superette
+JOE'S Market
 JOHN SMITH
 $51.12
 $1,256.92
@@ -934,7 +949,7 @@ $655.44`;
         ["ERACTOLL 58Q1JV TOLLPASSCUSTOMN", "Jane", 13.53],
         ["Costco", "Jane", 123.19],
         ["Costco Gas", "Jane", 61.27],
-        ["BILL'S Superette", "John", 51.12],
+        ["JOE'S Market", "John", 51.12],
         ["Love's Travel Stops", "John", 45.5],
         ["Holiday Inn", "Jane", 117.34],
       ]);
@@ -1216,16 +1231,16 @@ Posted Transactions
     });
 
     it("should parse Wells Fargo style: date+desc header, card suffix, amount on follow-on lines", () => {
-      const raw = `6/12/26    MERCY HOSPITAL CAFETERIA\n#...1193\n$9.60\nTransaction Details for Row 3    06/12/26    BILL'S SUPERETTE #8\n#...1193\n$11.86`;
+      const raw = `6/12/26    REGIONAL HOSP CAFETERIA\n#...9999\n$9.60\nTransaction Details for Row 3    06/12/26    JOE'S MARKET #8\n#...9999\n$11.86`;
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(2);
       expect(rows[0]).toMatchObject({
-        description: "MERCY HOSPITAL CAFETERIA",
+        description: "REGIONAL HOSP CAFETERIA",
         amount: 9.6,
       });
       expect(rows[0].parseErrors).toHaveLength(0);
       expect(rows[1]).toMatchObject({
-        description: "BILL'S SUPERETTE #8",
+        description: "JOE'S MARKET #8",
         amount: 11.86,
       });
       expect(rows[1].parseErrors).toHaveLength(0);
@@ -1238,6 +1253,49 @@ Posted Transactions
       expect(
         row.parseErrors.some((e) => e.toLowerCase().includes("amount")),
       ).toBe(true);
+    });
+
+    it("should move Wells Fargo ACH reference IDs and payee name into notes", () => {
+      const raw = [
+        "Posted Transactions",
+        "11/10/26    ACME TRAVEL, INC 0-1234567A A1B2C3D4E5F6789 JOHN DOE    $1,234.56    ",
+        "11/06/26    SAMPLE HEALTH SY PAYROLL 261106 261106000000 JANE DOE    $2,000.00    ",
+      ].join("\n");
+      const rows = parseTransactionPaste(raw);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({
+        description: "ACME TRAVEL, INC",
+        notes: "0-1234567A A1B2C3D4E5F6789 JOHN DOE",
+        amount: 1234.56,
+      });
+      expect(rows[1]).toMatchObject({
+        description: "SAMPLE HEALTH SY PAYROLL",
+        notes: "261106 261106000000 JANE DOE",
+        amount: 2000,
+      });
+      rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
+    });
+
+    it("should not split a description containing only a single store number", () => {
+      const [row] = parseTransactionPaste(
+        "11/10/26    BRAKES PLUS 112233 SPRINGFIELD    $41.03",
+      );
+      expect(row).toMatchObject({
+        description: "BRAKES PLUS 112233 SPRINGFIELD",
+        notes: "",
+      });
+    });
+
+    it('should trim "ATM WITHDRAWAL" descriptions and move the rest to notes', () => {
+      const [row] = parseTransactionPaste(
+        "11/09/26    ATM WITHDRAWAL AUTHORIZED ON 11/07 100 Main St Springfield IL 0000123 ATM ID 0000X CARD 0000        $100.00",
+      );
+      expect(row).toMatchObject({
+        description: "ATM WITHDRAWAL",
+        notes:
+          "AUTHORIZED ON 11/07 100 Main St Springfield IL 0000123 ATM ID 0000X CARD 0000",
+        amount: 100,
+      });
     });
   });
 
@@ -1298,7 +1356,7 @@ Pending (04-27-2026)     TGT PLUS 912003433044749    Sale        $86.67
 E-PAYMENT - THANK YOU * MN    Payment        -$348.00
 04-08-2026
 
-TARGET 1144 COON RAPIDS MN    Sale    **3370    $59.83`;
+TARGET 1234 PINE HOLLOW MN    Sale    **0000    $59.83`;
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(4);
@@ -1316,7 +1374,7 @@ TARGET 1144 COON RAPIDS MN    Sale    **3370    $59.83`;
         amount: -348.0,
       });
       expect(rows[3]).toMatchObject({
-        description: "Target 1144 Coon Rapids",
+        description: "Target 1234 Pine Hollow",
         amount: 59.83,
       });
       expect(rows[0].date!.getDate()).toBe(27);
@@ -1334,27 +1392,27 @@ Pending (04-27-2026)     TGT.COM 912003433044748    Sale        $54.97`;
 
     it("should normalize store-number/terminal Target descriptions to a clean merchant name", () => {
       const raw = `Date Sort    Description    Type Sort    Card    Amount Sort
-Pending (07-10-2026)     TARGET 1144 080 5661    Sale        $47.50
+Pending (07-10-2026)     TARGET 1234 000 0000    Sale        $47.50
 07-03-2026
 
-TARGET 2025 ANDOVER MN    Sale    **3370    $28.50
+TARGET 5678 BROOKSIDE MN    Sale    **0000    $28.50
 07-01-2026
 
-TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
+TARGET 1234 PINE HOLLOW MN    Sale    **1111    $30.99`;
 
       const rows = parseTransactionPaste(raw);
       expect(rows).toHaveLength(3);
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
       expect(rows[0]).toMatchObject({
-        description: "Target 1144",
+        description: "Target 1234",
         amount: 47.5,
       });
       expect(rows[1]).toMatchObject({
-        description: "Target 2025 Andover",
+        description: "Target 5678 Brookside",
         amount: 28.5,
       });
       expect(rows[2]).toMatchObject({
-        description: "Target 1144 Coon Rapids",
+        description: "Target 1234 Pine Hollow",
         amount: 30.99,
       });
       expect(rows[0].date!.getDate()).toBe(10);
@@ -1557,15 +1615,15 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
         blockN(
           "Aug 25",
           "3% Cash Back",
-          "BP#9275504ANOKA BP ANOKA MN",
-          "Lillian A Henning",
+          "BP#1234567FAIRVIEW BP FAIRVIEW MN",
+          "Jane A Doe",
           "$60.66",
         ),
         "credit",
       );
-      expect(row.description).toBe("BP#9275504ANOKA BP ANOKA");
+      expect(row.description).toBe("BP#1234567FAIRVIEW BP FAIRVIEW");
       expect(row.amount).toBe(60.66);
-      expect(row.cardholder).toBe("Lillian");
+      expect(row.cardholder).toBe("Jane");
       expect(row.parseErrors).toHaveLength(0);
     });
 
@@ -1574,31 +1632,25 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
         blockN(
           "Aug 23",
           null,
-          "SIERRA #0129 0000041COON RAPIDS MN",
-          "Lillian A Henning",
+          "OUTDOOR GEAR #0129 0000041PINE HOLLOW MN",
+          "Jane A Doe",
           "$8.21",
         ),
         "credit",
       );
-      expect(row.description).toBe("SIERRA #0129 0000041COON RAPIDS");
+      expect(row.description).toBe("OUTDOOR GEAR #0129 0000041PINE HOLLOW");
       expect(row.amount).toBe(8.21);
       expect(row.parseErrors).toHaveLength(0);
     });
 
     it("should handle a 'Pending' status line", () => {
       const [row] = parseTransactionPaste(
-        blockN(
-          "Aug 27",
-          "Pending",
-          "TIRES PLUS",
-          "Matthew J Henning",
-          "$52.93",
-        ),
+        blockN("Aug 27", "Pending", "TIRES PLUS", "Mark T Sample", "$52.93"),
         "credit",
       );
       expect(row.description).toBe("TIRES PLUS");
       expect(row.amount).toBe(52.93);
-      expect(row.cardholder).toBe("Matthew");
+      expect(row.cardholder).toBe("Mark");
       expect(row.parseErrors).toHaveLength(0);
     });
 
@@ -1608,14 +1660,14 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
           "Aug 24",
           "Credit",
           "ELECTRONIC PAYMENT RECEIVED-THANK",
-          "Brian J Henning",
+          "Alex R Sample",
           "-$253.03",
         ),
         "credit",
       );
       expect(row.description).toBe("ELECTRONIC PAYMENT RECEIVED-THANK");
       expect(row.amount).toBe(-253.03);
-      expect(row.cardholder).toBe("Brian");
+      expect(row.cardholder).toBe("Alex");
       expect(row.parseErrors).toHaveLength(0);
     });
 
@@ -1625,7 +1677,7 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
           "Aug 21",
           "Credit",
           "ELECTRONIC PAYMENT RECEIVED-THANK",
-          "Brian J Henning",
+          "Alex R Sample",
           "-$1,334.00",
         ),
         "credit",
@@ -1636,25 +1688,19 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
 
     it("should parse multiple consecutive Format N blocks, mixing status and no-status rows", () => {
       const raw = [
-        blockN(
-          "Aug 27",
-          "Pending",
-          "TIRES PLUS",
-          "Matthew J Henning",
-          "$52.93",
-        ),
+        blockN("Aug 27", "Pending", "TIRES PLUS", "Mark T Sample", "$52.93"),
         blockN(
           "Aug 25",
           "3% Cash Back",
-          "BP#9275504ANOKA BP ANOKA MN",
-          "Lillian A Henning",
+          "BP#1234567FAIRVIEW BP FAIRVIEW MN",
+          "Jane A Doe",
           "$60.66",
         ),
         blockN(
           "Aug 23",
           null,
-          "TARGET T-1144 000001COON RAPIDS MN",
-          "Lillian A Henning",
+          "TARGET T-1234 000001PINE HOLLOW MN",
+          "Jane A Doe",
           "$5.40",
         ),
       ].join("\n\n");
@@ -1666,11 +1712,11 @@ TARGET 1144 COON RAPIDS MN    Sale    **3362    $30.99`;
         amount: 52.93,
       });
       expect(rows[1]).toMatchObject({
-        description: "BP#9275504ANOKA BP ANOKA",
+        description: "BP#1234567FAIRVIEW BP FAIRVIEW",
         amount: 60.66,
       });
       expect(rows[2]).toMatchObject({
-        description: "Target T1144",
+        description: "Target T1234",
         amount: 5.4,
       });
     });
@@ -1831,9 +1877,9 @@ $50.80`;
     });
 
     it("should parse a block with no blank line before the description", () => {
-      const raw = "08/25/2026\nCity of Ramsey\n$0.41";
+      const raw = "08/25/2026\nCity of Springfield\n$0.41";
       const [row] = parseTransactionPaste(raw, "credit");
-      expect(row.description).toBe("City of Ramsey");
+      expect(row.description).toBe("City of Springfield");
       expect(row.amount).toBe(0.41);
       expect(row.parseErrors).toHaveLength(0);
     });
@@ -1872,7 +1918,7 @@ Connexus Residential
 $37.18
 Posted
 08/25/2026
-City of Ramsey
+City of Springfield
 $0.41
 08/13/2026
 
@@ -1885,7 +1931,7 @@ Credit Adjustment
         ["Lyft", 59.97],
         ["Lyft", 14.99],
         ["Connexus Residential", 37.18],
-        ["City of Ramsey", 0.41],
+        ["City of Springfield", 0.41],
         ["Credit Adjustment", -1],
       ]);
     });
@@ -2031,7 +2077,7 @@ $116.90`;
     it("should parse Format A and Format C in the same paste", () => {
       const raw = [
         blockA(1, "04/16/26", "FOOD MART 55555", "#...9999", "$60.21"),
-        blockC("Apr 16", "GENERAL STORE T9999", "$17.28", "MH", true),
+        blockC("Apr 16", "GENERAL STORE T9999", "$17.28", "JD", true),
       ].join("\n");
 
       const rows = parseTransactionPaste(raw);
@@ -2058,7 +2104,7 @@ $116.90`;
           "Apr 13",
           "SAM'S CORNER MART #5 RIVERSIDE XX",
           "$44.45",
-          "MH",
+          "JD",
           false,
         ),
       ].join("\n");
@@ -2082,7 +2128,7 @@ $116.90`;
           "Apr 12",
           "SAM'S CORNER MART #5 RIVERSIDE XX",
           "$7.37",
-          "MH",
+          "JD",
           false,
         ),
       ].join("\n");
@@ -2107,7 +2153,7 @@ $116.90`;
           "Apr 12",
           "SAM'S CORNER MART #5 RIVERSIDE XX",
           "$7.37",
-          "MH",
+          "JD",
           false,
         ),
         blockD("03-10-2026", "GENERAL STORE 9999 SPRINGFIELD XX", "$23.69"),
@@ -2135,7 +2181,7 @@ $116.90`;
           "Apr 12",
           "SAM'S CORNER MART #5 RIVERSIDE XX",
           "$7.37",
-          "MH",
+          "JD",
           false,
         ),
         blockD("03-10-2026", "GENERAL STORE 9999 SPRINGFIELD XX", "$23.69"),
@@ -2170,7 +2216,7 @@ $116.90`;
           "Apr 12",
           "SAM'S CORNER MART #5 RIVERSIDE XX",
           "$7.37",
-          "MH",
+          "JD",
           false,
         ),
         blockD("03-10-2026", "GENERAL STORE 9999 SPRINGFIELD XX", "$23.69"),
@@ -2215,12 +2261,12 @@ $116.90`;
         blockA(
           1,
           "04/16/26",
-          "COSTCO WHSE #0372 COON RAPIDS MN",
+          "WAREHOUSE CLUB #0372 PINE HOLLOW MN",
           "#...9999",
           "$122.84",
         ),
       );
-      expect(row.description).toBe("COSTCO WHSE #0372 COON RAPIDS");
+      expect(row.description).toBe("WAREHOUSE CLUB #0372 PINE HOLLOW");
     });
 
     it("should strip different state codes", () => {
@@ -2315,7 +2361,7 @@ $116.90`;
     });
 
     it("should flag a Format C row when amount is absent", () => {
-      const raw = "Apr 16\nPending\nFOOD MART\n\nMH\n\nShow Transaction";
+      const raw = "Apr 16\nPending\nFOOD MART\n\nJD\n\nShow Transaction";
       const [row] = parseTransactionPaste(raw);
       expect(row.amount).toBeNull();
       expect(
@@ -2520,7 +2566,7 @@ $36.45    $12,204.24`;
 Pending
 FOOD MART
 
-MH
+JD
 $1.89
 
 Show Transaction
@@ -2528,7 +2574,7 @@ Apr 16
 Pending
 GENERAL STORE T9999
 
-MH
+JD
 $17.28
 
 Show Transaction
@@ -2536,35 +2582,35 @@ Apr 15
 Pending
 FOOD MART
 
-MH
+JD
 $34.72
 
 Show Transaction
 Apr 13
 SAM'S CORNER MART #5 RIVERSIDE XX
 
-MH
+JD
 $44.45
 
 Show Transaction
 Apr 12
 SAM'S CORNER MART #5 RIVERSIDE XX
 
-MH
+JD
 $7.37
 
 Show Transaction
 Apr 12
 GENERAL STORE 011445SPRINGFIELD XX
 
-LH
+AS
 $5.40
 
 Show Transaction
 Apr 11
 SAM'S CORNER MART #5 RIVERSIDE XX
 
-MH
+JD
 $0.49
 
 Show Transaction`;
