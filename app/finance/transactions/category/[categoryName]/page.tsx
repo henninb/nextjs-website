@@ -242,7 +242,15 @@ export default function TransactionsByCategory({
         ) : (
           <div>
             <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ width: "fit-content" }}>
+              <Box
+                sx={{
+                  width: "fit-content",
+                  // Keep a wide grid inside the viewport so it scrolls instead of
+                  // overflowing past the left edge of the centered container.
+                  maxWidth: "100%",
+                  minWidth: 0,
+                }}
+              >
                 <DataGridBase
                   rows={filteredTransactions}
                   columns={columns}

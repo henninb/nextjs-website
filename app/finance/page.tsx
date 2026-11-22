@@ -717,8 +717,8 @@ export default function Accounts() {
     },
     {
       field: "creditLimit",
-      headerName: "Credit Limit",
-      width: 150,
+      headerName: "Limit",
+      width: 110,
       type: "number",
       editable: true,
       headerAlign: "right",
@@ -984,7 +984,15 @@ export default function Accounts() {
 
             {/* Data Grid / Grid View */}
             <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Box sx={{ width: viewMode === "grid" ? "100%" : "fit-content" }}>
+              <Box
+                sx={{
+                  width: viewMode === "grid" ? "100%" : "fit-content",
+                  // Keep a wide grid inside the viewport so it scrolls instead of
+                  // overflowing past the left edge of the centered container.
+                  maxWidth: "100%",
+                  minWidth: 0,
+                }}
+              >
                 {filteredAccounts && filteredAccounts.length > 0 ? (
                   viewMode === "table" ? (
                     <DataGridBase
