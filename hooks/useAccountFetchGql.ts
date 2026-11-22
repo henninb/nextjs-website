@@ -22,6 +22,7 @@ type AccountsQueryResult = {
     dateAdded?: string | null;
     dateUpdated?: string | null;
     taxBucket?: string | null;
+    creditLimit?: number | string | null;
   }[];
 };
 
@@ -42,6 +43,7 @@ const ACCOUNTS_QUERY = /* GraphQL */ `
       dateAdded
       dateUpdated
       taxBucket
+      creditLimit
     }
   }
 `;
@@ -89,6 +91,10 @@ export default function useAccountFetchGql() {
         dateAdded: a.dateAdded ? new Date(a.dateAdded) : undefined,
         dateUpdated: a.dateUpdated ? new Date(a.dateUpdated) : undefined,
         taxBucket: (a.taxBucket as TaxBucket) ?? undefined,
+        creditLimit:
+          a.creditLimit !== null && a.creditLimit !== undefined
+            ? Number(a.creditLimit)
+            : undefined,
       }));
 
       log.debug("Final mapped accounts", {

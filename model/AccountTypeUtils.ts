@@ -39,6 +39,15 @@ export const CREDIT_CARD_ACCOUNT_TYPES: AccountType[] = [
   "credit_card",
 ];
 
+// Revolving accounts that carry a credit limit. Must match the backend's
+// AccountService.CREDIT_LIMIT_TYPES.
+export const CREDIT_LIMIT_ACCOUNT_TYPES: AccountType[] = [
+  "credit",
+  "credit_card",
+  "business_credit",
+  "line_of_credit",
+];
+
 export const INVESTMENT_ACCOUNT_TYPES: AccountType[] = [
   "brokerage",
   "retirement_401k",
@@ -71,6 +80,9 @@ export const isLiabilityAccount = (type: AccountType | string): boolean =>
 
 export const isCreditCardAccount = (type: AccountType | string): boolean =>
   CREDIT_CARD_ACCOUNT_TYPES.includes(type as AccountType);
+
+export const supportsCreditLimit = (type: AccountType | string): boolean =>
+  CREDIT_LIMIT_ACCOUNT_TYPES.includes(type as AccountType);
 
 export const isInvestmentAccount = (type: AccountType | string): boolean =>
   INVESTMENT_ACCOUNT_TYPES.includes(type as AccountType);

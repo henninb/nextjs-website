@@ -235,6 +235,11 @@ export const AccountSchema = z
       .enum(["back", "forward", "back_sat_only"])
       .optional(),
     taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
+    creditLimit: z
+      .number()
+      .min(0, "Credit limit cannot be negative")
+      .max(9999999999.99, "Credit limit is too large")
+      .optional(),
   })
   .refine(
     (data) =>

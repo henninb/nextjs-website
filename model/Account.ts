@@ -23,4 +23,5 @@ export default interface Account {
   billingDueDayNextMonth?: number;
   billingCycleWeekendShift?: string;
   taxBucket?: TaxBucket;
+  creditLimit?: number;
 }

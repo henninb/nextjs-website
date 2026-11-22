@@ -43,6 +43,7 @@ import {
   isLiabilityAccount,
   isCreditCardAccount,
   isInvestmentAccount,
+  supportsCreditLimit,
   formatAccountTypeLabel,
 } from "../../model/AccountTypeUtils";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
@@ -203,6 +204,7 @@ const AccountCacheSchema = z.object({
   ] as const),
   moniker: z.string().regex(/^[a-zA-Z0-9]+$/),
   taxBucket: z.enum(["pretax", "taxable", "roth"]).optional(),
+  creditLimit: z.number().min(0).optional(),
 });
 
 const ACCOUNTS_CACHE_ENABLED_KEY = "finance_cache_enabled_accounts";
@@ -714,6 +716,22 @@ export default function Accounts() {
       },
     },
     {
+      field: "creditLimit",
+      headerName: "Credit Limit",
+      width: 150,
+      type: "number",
+      editable: true,
+      headerAlign: "right",
+      align: "right",
+      renderCell: (params) =>
+        supportsCreditLimit(params.row.accountType) && params.value != null
+          ? Number(params.value).toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+            })
+          : "",
+    },
+    {
       field: "",
       headerName: "Actions",
       width: 150,
@@ -980,6 +998,10 @@ export default function Accounts() {
                       pageSizeOptions={[25, 50, 100]}
                       checkboxSelection={false}
                       rowSelection={false}
+                      isCellEditable={(params) =>
+                        params.field !== "creditLimit" ||
+                        supportsCreditLimit(params.row.accountType)
+                      }
                       processRowUpdate={async (
                         newRow: Account,
                         oldRow: Account,
@@ -1174,6 +1196,9 @@ export default function Accounts() {
               setAccountData((prev: Account) => ({
                 ...prev,
                 accountType: (newValue || "") as AccountType,
+                creditLimit: supportsCreditLimit(newValue || "")
+                  ? prev?.creditLimit
+                  : undefined,
               }))
             }
             renderInput={(params) => (
@@ -1219,6 +1244,26 @@ export default function Accounts() {
               }))
             }
           />
+          {accountData?.accountType &&
+            supportsCreditLimit(accountData.accountType) && (
+              <TextField
+                label="Credit Limit"
+                type="number"
+                fullWidth
+                margin="normal"
+                slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                value={accountData?.creditLimit ?? ""}
+                onChange={(e) =>
+                  setAccountData((prev: Account) => ({
+                    ...prev,
+                    creditLimit:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                  }))
+                }
+              />
+            )}
           <Box sx={{ mt: 2 }}>
             <FormControlLabel
               control={

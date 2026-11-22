@@ -7,6 +7,7 @@ import {
   GridRowId,
   GridColDef,
   GridCallbackDetails,
+  GridCellParams,
 } from "@mui/x-data-grid";
 import { SxProps, Theme } from "@mui/material";
 
@@ -27,6 +28,7 @@ type DataGridBaseProps<R extends GridValidRowModel> = {
   ) => void;
   keepNonExistentRowsSelected?: boolean;
   processRowUpdate?: (newRow: R, oldRow: R) => Promise<R> | R;
+  isCellEditable?: (params: GridCellParams<R>) => boolean;
   disableColumnResize?: boolean;
   disableRowSelectionOnClick?: boolean;
   sx?: SxProps<Theme>;

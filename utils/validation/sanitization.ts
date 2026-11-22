@@ -487,6 +487,12 @@ export const sanitize = {
     taxBucket: data.taxBucket
       ? InputSanitizer.sanitizeText(String(data.taxBucket))
       : undefined,
+    creditLimit:
+      data.creditLimit !== undefined &&
+      data.creditLimit !== null &&
+      data.creditLimit !== ""
+        ? InputSanitizer.sanitizeAmount(data.creditLimit as number | string)
+        : undefined,
   }),
 
   transaction: (data: Record<string, unknown>) => ({

@@ -29,6 +29,53 @@ describe("validator direct coverage", () => {
       expect(result.data?.accountNameOwner).toBe("checking_main");
     });
 
+    it("keeps and rounds creditLimit on account data", () => {
+      const result = DataValidator.validateAccount({
+        accountNameOwner: "credit_chase",
+        accountType: "credit_card",
+        activeStatus: true,
+        moniker: "1234",
+        outstanding: 0,
+        future: 0,
+        cleared: 0,
+        creditLimit: "15000.004",
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.creditLimit).toBe(15000);
+    });
+
+    it("omits creditLimit when it is blank", () => {
+      const result = DataValidator.validateAccount({
+        accountNameOwner: "credit_chase",
+        accountType: "credit_card",
+        activeStatus: true,
+        moniker: "1234",
+        outstanding: 0,
+        future: 0,
+        cleared: 0,
+        creditLimit: "",
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.creditLimit).toBeUndefined();
+    });
+
+    it("rejects a negative creditLimit", () => {
+      const result = DataValidator.validateAccount({
+        accountNameOwner: "credit_chase",
+        accountType: "credit_card",
+        activeStatus: true,
+        moniker: "1234",
+        outstanding: 0,
+        future: 0,
+        cleared: 0,
+        creditLimit: -100,
+      });
+
+      expect(result.success).toBe(false);
+    });
+
     it("returns a validation error result when account sanitization throws", () => {
       const result = DataValidator.validateAccount({
         accountNameOwner: "Checking",
@@ -215,7 +262,11 @@ describe("validator direct coverage", () => {
         .mockReturnValue(false);
       const validator = jest.fn().mockReturnValue({ success: true, data: {} });
 
-      hookValidators.validateApiPayload({ input: true }, validator, "hook-name");
+      hookValidators.validateApiPayload(
+        { input: true },
+        validator,
+        "hook-name",
+      );
 
       expect(rateSpy).not.toHaveBeenCalled();
       expect(validator).toHaveBeenCalled();
