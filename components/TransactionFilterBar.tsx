@@ -14,6 +14,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { TransactionState } from "../model/TransactionState";
 import { TransactionType } from "../model/TransactionType";
 import { ReoccurringType } from "../model/ReoccurringType";
+import { isAmountRangeActive } from "../utils/transactionFilters";
 
 export interface TransactionFilters {
   states: Set<TransactionState>;
@@ -38,10 +39,6 @@ interface TransactionFilterBarProps {
   onClearFilters: () => void;
   resultCount?: number;
   totalCount?: number;
-  amountBounds: {
-    min: number;
-    max: number;
-  };
 }
 
 const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
@@ -52,7 +49,6 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
   onClearFilters,
   resultCount,
   totalCount,
-  amountBounds,
 }) => {
   const theme = useTheme();
 
@@ -62,8 +58,7 @@ const TransactionFilterBar: React.FC<TransactionFilterBarProps> = ({
     activeFilters.types.size < 4 ||
     activeFilters.reoccurring.size < 7 ||
     activeFilters.dateRange.preset !== "all" ||
-    activeFilters.amountRange.min !== amountBounds.min ||
-    activeFilters.amountRange.max !== amountBounds.max;
+    isAmountRangeActive(activeFilters.amountRange);
 
   return (
     <Paper

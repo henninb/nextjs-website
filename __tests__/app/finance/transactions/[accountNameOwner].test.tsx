@@ -724,4 +724,43 @@ describe("AccountTransactions Component", () => {
     expect(screen.queryByText("Try again")).not.toBeInTheDocument();
     expect(screen.queryByText("Error")).not.toBeInTheDocument();
   });
+
+  it("does not narrow the server amount filter to the amounts on the current page", async () => {
+    const pagedMock = useTransactionByAccountFetchPaged.default as jest.Mock;
+    pagedMock.mockReturnValue({
+      data: {
+        content: [
+          { ...mockTransactionData[0], guid: "guid-a", amount: -250 },
+          { ...mockTransactionData[0], guid: "guid-b", amount: -40 },
+        ],
+        totalElements: 2,
+      },
+      isSuccess: true,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+    });
+
+    render(
+      <AccountTransactions
+        params={{ accountNameOwner: "Test Account" } as any}
+      />,
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "Test Account" }),
+      ).toBeInTheDocument();
+    });
+
+    // A new transaction outside -250..0 (e.g. a +100 refund) must still be
+    // returned on refetch, so no request may carry an amount filter.
+    expect(pagedMock).toHaveBeenCalled();
+    for (const call of pagedMock.mock.calls) {
+      const filters = call[3] ?? {};
+      expect(filters.minAmount).toBeUndefined();
+      expect(filters.maxAmount).toBeUndefined();
+    }
+  });
 });

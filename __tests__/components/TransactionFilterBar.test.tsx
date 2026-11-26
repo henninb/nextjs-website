@@ -3,6 +3,10 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import TransactionFilterBar, {
   TransactionFilters,
 } from "../../components/TransactionFilterBar";
+import {
+  DEFAULT_AMOUNT_RANGE,
+  isAmountRangeActive,
+} from "../../utils/transactionFilters";
 import { ThemeProvider } from "@mui/material/styles";
 import { createTheme } from "@mui/material/styles";
 
@@ -29,15 +33,7 @@ const defaultFilters: TransactionFilters = {
     end: null,
     preset: "all",
   },
-  amountRange: {
-    min: -1000,
-    max: 1000,
-  },
-};
-
-const defaultAmountBounds = {
-  min: -1000,
-  max: 1000,
+  amountRange: { ...DEFAULT_AMOUNT_RANGE },
 };
 
 describe("TransactionFilterBar", () => {
@@ -54,7 +50,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={defaultFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -75,7 +70,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={defaultFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -97,7 +91,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={defaultFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -119,7 +112,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={defaultFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -139,7 +131,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={defaultFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -168,7 +159,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={activeFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -192,7 +182,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={activeFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -214,7 +203,6 @@ describe("TransactionFilterBar", () => {
           activeFilters={defaultFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -237,7 +225,6 @@ describe("TransactionFilterBar", () => {
           onClearFilters={onClearFilters}
           resultCount={45}
           totalCount={120}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -265,7 +252,6 @@ describe("TransactionFilterBar", () => {
           onClearFilters={onClearFilters}
           resultCount={45}
           totalCount={120}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
@@ -286,12 +272,38 @@ describe("TransactionFilterBar", () => {
           activeFilters={defaultFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
-          amountBounds={defaultAmountBounds}
         />,
       );
 
       const searchInput = screen.getByPlaceholderText(/Search by description/);
       expect(searchInput).toHaveAttribute("type", "text");
+    });
+  });
+
+  describe("Amount range", () => {
+    it("treats the default range as no filter", () => {
+      expect(isAmountRangeActive(DEFAULT_AMOUNT_RANGE)).toBe(false);
+    });
+
+    it("treats a range narrower than the default as active", () => {
+      expect(isAmountRangeActive({ min: -250, max: 10000 })).toBe(true);
+      expect(isAmountRangeActive({ min: -10000, max: 0 })).toBe(true);
+    });
+
+    it("shows 'Clear All' when only the amount range is narrowed", () => {
+      renderWithTheme(
+        <TransactionFilterBar
+          searchTerm=""
+          onSearchChange={jest.fn()}
+          activeFilters={{
+            ...defaultFilters,
+            amountRange: { min: -250, max: 0 },
+          }}
+          onFilterChange={jest.fn()}
+          onClearFilters={jest.fn()}
+        />,
+      );
+      expect(screen.getByText("Clear All")).toBeInTheDocument();
     });
   });
 });

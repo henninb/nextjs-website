@@ -105,6 +105,7 @@ import Grow from "@mui/material/Grow";
 import TransactionFilterBar, {
   TransactionFilters,
 } from "../../../../components/TransactionFilterBar";
+import { DEFAULT_AMOUNT_RANGE } from "../../../../utils/transactionFilters";
 import TransactionCard from "../../../../components/TransactionCard";
 import TransactionCardSkeleton from "../../../../components/TransactionCardSkeleton";
 import ViewToggle from "../../../../components/ViewToggle";
@@ -175,10 +176,7 @@ export default function TransactionsByAccount({
         end: null,
         preset: "all",
       },
-      amountRange: {
-        min: -10000,
-        max: 10000,
-      },
+      amountRange: { ...DEFAULT_AMOUNT_RANGE },
     });
 
   const [rowSelectionModel, setRowSelectionModel] = useState<
@@ -269,13 +267,10 @@ export default function TransactionsByAccount({
       f.endDate = transactionFilters.dateRange.end.toISOString().split("T")[0];
     }
 
-    // Amount range — send only when user has narrowed from the initial wide defaults
-    if (transactionFilters.amountRange.min > -10000) {
-      f.minAmount = transactionFilters.amountRange.min;
-    }
-    if (transactionFilters.amountRange.max < 10000) {
-      f.maxAmount = transactionFilters.amountRange.max;
-    }
+    // Amount range — send only when explicitly narrowed from the defaults
+    const { min, max } = transactionFilters.amountRange;
+    if (min > DEFAULT_AMOUNT_RANGE.min) f.minAmount = min;
+    if (max < DEFAULT_AMOUNT_RANGE.max) f.maxAmount = max;
 
     return f;
   }, [debouncedSearch, transactionFilters]);
@@ -755,20 +750,6 @@ export default function TransactionsByAccount({
     setShowModalAdd(true);
   };
 
-  // Calculate amount bounds from actual data
-  const amountBounds = useMemo(() => {
-    if (!fetchedTransactions || fetchedTransactions.length === 0) {
-      return { min: -10000, max: 10000 };
-    }
-    const amounts = fetchedTransactions
-      .map((t) => t.amount ?? 0)
-      .filter((a) => !isNaN(a));
-    return {
-      min: Math.floor(Math.min(...amounts, 0)),
-      max: Math.ceil(Math.max(...amounts, 0)),
-    };
-  }, [fetchedTransactions]);
-
   const handleClearFilters = useCallback(() => {
     setSearchQuery("");
     setTransactionFilters({
@@ -788,9 +769,9 @@ export default function TransactionsByAccount({
         end: null,
         preset: "all",
       },
-      amountRange: amountBounds,
+      amountRange: { ...DEFAULT_AMOUNT_RANGE },
     });
-  }, [amountBounds]);
+  }, []);
 
   const handleInsertNewValidationData = async (
     accountNameOwner: string,
@@ -1238,14 +1219,6 @@ export default function TransactionsByAccount({
     ],
     [updateTransaction, handleError, hasRewards],
   );
-
-  // Update filter amount range when data changes
-  useEffect(() => {
-    setTransactionFilters((prev) => ({
-      ...prev,
-      amountRange: amountBounds,
-    }));
-  }, [amountBounds]);
 
   // All filtering is now server-side — fetchedTransactions is already the filtered result
   const filteredTransactions = useMemo(
@@ -1712,7 +1685,6 @@ export default function TransactionsByAccount({
                   onClearFilters={handleClearFilters}
                   resultCount={filteredTransactions?.length}
                   totalCount={fetchedTransactions?.length}
-                  amountBounds={amountBounds}
                 />
               </Box>
             </Fade>
