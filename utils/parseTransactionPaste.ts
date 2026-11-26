@@ -474,13 +474,16 @@ export function parseTransactionPaste(
         errors.push("Header did not match expected format");
       }
 
+      const achSplit = splitAchStyleDescription(description);
+      description = achSplit.description;
+
       i++;
       if (inlineAmount !== undefined) {
         rows.push({
           id: crypto.randomUUID(),
           date,
           description,
-          notes: "",
+          notes: achSplit.notes,
           cardholder: "",
           amount: inlineAmount,
           parseErrors: errors,
@@ -501,7 +504,7 @@ export function parseTransactionPaste(
           id: crypto.randomUUID(),
           date,
           description,
-          notes: "",
+          notes: achSplit.notes,
           cardholder: "",
           amount: amount.value,
           parseErrors: errors,
@@ -533,6 +536,9 @@ export function parseTransactionPaste(
         errors.push("Header did not match expected format");
       }
 
+      const achSplit = splitAchStyleDescription(description);
+      description = achSplit.description;
+
       i++;
       const amount = scanForAmount(
         lines,
@@ -550,7 +556,7 @@ export function parseTransactionPaste(
         id: crypto.randomUUID(),
         date,
         description,
-        notes: "",
+        notes: achSplit.notes,
         cardholder: "",
         amount: amount.value,
         parseErrors: errors,

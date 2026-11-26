@@ -1095,11 +1095,7 @@ export default function Accounts() {
                           setShowSnackbar(true);
                           return { ...newRow };
                         } catch (error: unknown) {
-                          handleError(
-                            error,
-                            `Update Account ${getErrorMessage(error)}`,
-                            false,
-                          );
+                          handleError(error, "Update Account", false);
                           return oldRow;
                         }
                       }}

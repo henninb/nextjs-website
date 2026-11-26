@@ -1276,6 +1276,33 @@ Posted Transactions
       rows.forEach((r) => expect(r.parseErrors).toHaveLength(0));
     });
 
+    it.each([
+      [
+        "Expand Row header",
+        "Expand Row1    11/24/26    ACME TRAVEL, INC 0-AB12CD34 1A2B3C4D5E6F7A8 JOHN DOE    $1,052.25",
+      ],
+      [
+        "Transaction Details header",
+        "Transaction Details for Row 1    11/24/26    ACME TRAVEL, INC 0-AB12CD34 1A2B3C4D5E6F7A8 JOHN DOE\n$1,052.25",
+      ],
+      [
+        "two-date header",
+        "11/24/26    11/24/26    ACME TRAVEL, INC 0-AB12CD34 1A2B3C4D5E6F7A8 JOHN DOE\n$1,052.25",
+      ],
+      [
+        "tab-separated deposit column",
+        "Posted Transactions\n11/24/26\tACME TRAVEL, INC 0-AB12CD34 1A2B3C4D5E6F7A8 JOHN DOE\t$1,052.25\t",
+      ],
+    ])("should move ACH IDs into notes for %s layout", (_label, raw) => {
+      const [row] = parseTransactionPaste(raw);
+      expect(row).toMatchObject({
+        description: "ACME TRAVEL, INC",
+        notes: "0-AB12CD34 1A2B3C4D5E6F7A8 JOHN DOE",
+        amount: 1052.25,
+      });
+      expect(row.parseErrors).toHaveLength(0);
+    });
+
     it("should not split a description containing only a single store number", () => {
       const [row] = parseTransactionPaste(
         "11/10/26    BRAKES PLUS 112233 SPRINGFIELD    $41.03",
