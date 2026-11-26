@@ -79,6 +79,12 @@ jest.mock("../../../hooks/useAccountDeactivate", () => ({
   default: () => ({ mutateAsync: deactivateAccountMock }),
 }));
 
+const insertValidationAmountMock = jest.fn().mockResolvedValue({});
+jest.mock("../../../hooks/useValidationAmountInsert", () => ({
+  __esModule: true,
+  default: () => ({ mutateAsync: insertValidationAmountMock }),
+}));
+
 import AccountsPage from "../../../app/finance/page";
 import useAccountFetchMock from "../../../hooks/useAccountFetch";
 import useTotalsFetchMock from "../../../hooks/useTotalsFetch";
@@ -493,6 +499,60 @@ describe("pages/finance/index (Accounts)", () => {
     });
     fireEvent.click(deleteButton);
     expect(deleteAccountMock).toHaveBeenCalled();
+  });
+
+  it("clicking the validation date inserts a cleared validation amount and refetches accounts", async () => {
+    const refetchAccounts = jest.fn().mockResolvedValue({});
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, loading: false });
+    mockUseAccountFetch.mockReturnValue({
+      data: [
+        {
+          accountId: 7,
+          accountNameOwner: "test_checking",
+          accountType: "debit",
+          activeStatus: true,
+          moniker: "0000",
+          outstanding: 10,
+          future: 5,
+          cleared: 123.456,
+          validationDate: new Date("2024-01-01"),
+        },
+      ],
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: refetchAccounts,
+    });
+    mockUseTotalsFetch.mockReturnValue({
+      data: {
+        totals: 138.46,
+        totalsCleared: 123.46,
+        totalsOutstanding: 10,
+        totalsFuture: 5,
+      },
+      isSuccess: true,
+      isFetching: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AccountsPage />, { wrapper: createWrapper() });
+    const cell = screen.getByTestId("cell-0-validation date");
+    fireEvent.click(within(cell).getByRole("button"));
+
+    await waitFor(() => {
+      expect(insertValidationAmountMock).toHaveBeenCalledWith({
+        accountNameOwner: "test_checking",
+        payload: expect.objectContaining({
+          validationId: 0,
+          accountId: 7,
+          amount: 123.46,
+          transactionState: "cleared",
+          activeStatus: true,
+        }),
+      });
+    });
+    await waitFor(() => expect(refetchAccounts).toHaveBeenCalled());
   });
 
   describe("Search and Filtering", () => {

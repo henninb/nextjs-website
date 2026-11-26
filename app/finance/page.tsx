@@ -47,6 +47,8 @@ import {
   formatAccountTypeLabel,
 } from "../../model/AccountTypeUtils";
 import useAccountUpdate from "../../hooks/useAccountUpdate";
+import useValidationAmountInsert from "../../hooks/useValidationAmountInsert";
+import ValidationAmount from "../../model/ValidationAmount";
 import {
   currencyFormat,
   noNaN,
@@ -220,6 +222,9 @@ export default function Accounts() {
   const [showModelDeactivate, setShowModelDeactivate] = useState(false);
   const [accountData, setAccountData] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [validatingAccountId, setValidatingAccountId] = useState<number | null>(
+    null,
+  );
   const [formErrors, setFormErrors] = useState<{
     accountNameOwner?: string;
     accountType?: string;
@@ -268,6 +273,7 @@ export default function Accounts() {
     error: errorTotals,
     refetch: refetchTotals,
   } = useTotalsFetch();
+  const { mutateAsync: insertValidationAmount } = useValidationAmountInsert();
 
   const breakdownRows: BreakdownRow[] = useMemo(() => {
     if (!fetchedAccounts || !breakdownField) return [];
@@ -503,6 +509,49 @@ export default function Accounts() {
     }
   };
 
+  const handleValidateAccount = async (account: Account) => {
+    if (!account?.accountId) {
+      handleError(
+        new Error("Account id missing"),
+        `Validate ${account?.accountNameOwner ?? "account"}`,
+        false,
+      );
+      return;
+    }
+    if (validatingAccountId !== null) return;
+
+    const roundedAmount = Math.round(noNaN(account.cleared) * 100) / 100;
+    const payload: ValidationAmount = {
+      validationId: 0,
+      accountId: account.accountId,
+      activeStatus: true,
+      amount: roundedAmount,
+      transactionState: "cleared",
+      validationDate: new Date(),
+    };
+
+    setValidatingAccountId(account.accountId);
+    try {
+      await insertValidationAmount({
+        accountNameOwner: account.accountNameOwner,
+        payload,
+      });
+      await refetchAccounts();
+      setMessage(
+        `Validated ${account.accountNameOwner} at ${currencyFormat(roundedAmount)}`,
+      );
+      setShowSnackbar(true);
+    } catch (error) {
+      handleError(
+        error,
+        `Insert ValidationAmount failure for ${account.accountNameOwner}`,
+        false,
+      );
+    } finally {
+      setValidatingAccountId(null);
+    }
+  };
+
   const handleSnackbarClose = () => {
     setShowSnackbar(false);
   };
@@ -673,9 +722,29 @@ export default function Accounts() {
       align: "left",
       renderCell: (params) => {
         const val = params.row.validationDate;
-        if (!val) return "";
-        const ms = typeof val === "number" && val < 1e10 ? val * 1000 : val;
-        return formatDateForDisplay(new Date(ms));
+        const ms =
+          val && typeof val === "number" && val < 1e10 ? val * 1000 : val;
+        const label = val ? formatDateForDisplay(new Date(ms)) : "Validate";
+        const isValidating = validatingAccountId === params.row.accountId;
+        return (
+          <Tooltip
+            title={`Validate cleared amount ${currencyFormat(noNaN(params.row.cleared))}`}
+          >
+            <Link
+              component="button"
+              type="button"
+              aria-label={`Validate ${params.row.accountNameOwner}`}
+              disabled={validatingAccountId !== null}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleValidateAccount(params.row as Account);
+              }}
+              sx={{ verticalAlign: "baseline" }}
+            >
+              {isValidating ? "Validating..." : label}
+            </Link>
+          </Tooltip>
+        );
       },
     },
     {
