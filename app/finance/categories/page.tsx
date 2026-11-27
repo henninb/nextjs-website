@@ -3,6 +3,7 @@ import { getErrorMessage } from "../../../types";
 import React, { useState } from "react";
 import { GridColDef } from "@mui/x-data-grid";
 import { Box, Button, Link, Checkbox } from "@mui/material";
+import NextLink from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import SnackbarBaseline from "../../../components/SnackbarBaseline";
 import ErrorDisplay from "../../../components/ErrorDisplay";
@@ -199,7 +200,10 @@ export default function Categories() {
       width: 300,
       editable: true,
       renderCell: (params) => (
-        <Link href={`/finance/transactions/category/${params.value}`}>
+        <Link
+          component={NextLink}
+          href={`/finance/transactions/category/${params.value}`}
+        >
           {params.value}
         </Link>
       ),

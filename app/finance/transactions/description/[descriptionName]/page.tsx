@@ -12,6 +12,7 @@ import useTransactionByDescription from "../../../../../hooks/useTransactionByDe
 import useTransactionUpdate from "../../../../../hooks/useTransactionUpdate";
 import Transaction from "../../../../../model/Transaction";
 import { Link, Box, Stack, Chip, TextField } from "@mui/material";
+import NextLink from "next/link";
 import { currencyFormat } from "../../../../../components/Common";
 import { useAuth } from "../../../../../components/AuthProvider";
 import PageHeader from "../../../../../components/PageHeader";
@@ -143,7 +144,10 @@ export default function TransactionsByDescription({
       editable: true,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+          <Link
+            component={NextLink}
+            href={`/finance/transactions/${params.row.accountNameOwner}`}
+          >
             {params.value}
           </Link>
         );

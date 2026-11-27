@@ -7,6 +7,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Spinner from "../../../components/Spinner";
 import useFetchPaymentRequired from "../../../hooks/usePaymentRequiredFetch";
 import { Link, Box, Typography } from "@mui/material";
+import NextLink from "next/link";
 import { useAuth } from "../../../components/AuthProvider";
 
 export default function PaymentRequiredPage() {
@@ -54,7 +55,10 @@ export default function PaymentRequiredPage() {
       width: 180,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+          <Link
+            component={NextLink}
+            href={`/finance/transactions/${params.row.accountNameOwner}`}
+          >
             {params.value}
           </Link>
         );

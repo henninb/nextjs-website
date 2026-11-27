@@ -15,6 +15,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
+import NextLink from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FinanceLayout from "../../../layouts/FinanceLayout";
@@ -372,7 +373,10 @@ export default function TransfersNextGen() {
       flex: 2,
       minWidth: 200,
       renderCell: (params) => (
-        <Link href={`/finance/transactions/${params.row.sourceAccount}`}>
+        <Link
+          component={NextLink}
+          href={`/finance/transactions/${params.row.sourceAccount}`}
+        >
           {params.value}
         </Link>
       ),
@@ -383,7 +387,10 @@ export default function TransfersNextGen() {
       flex: 2,
       minWidth: 200,
       renderCell: (params) => (
-        <Link href={`/finance/transactions/${params.row.destinationAccount}`}>
+        <Link
+          component={NextLink}
+          href={`/finance/transactions/${params.row.destinationAccount}`}
+        >
           {params.value}
         </Link>
       ),

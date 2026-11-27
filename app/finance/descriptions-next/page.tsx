@@ -18,6 +18,7 @@ import {
   Fade,
   Grow,
 } from "@mui/material";
+import NextLink from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -324,7 +325,10 @@ export default function DescriptionsNextGen() {
       editable: true,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/description/${params.value}`}>
+          <Link
+            component={NextLink}
+            href={`/finance/transactions/description/${params.value}`}
+          >
             {params.value}
           </Link>
         );

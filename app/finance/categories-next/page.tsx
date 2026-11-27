@@ -15,6 +15,7 @@ import {
   Fade,
   Grow,
 } from "@mui/material";
+import NextLink from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CategoryIcon from "@mui/icons-material/Category";
@@ -261,7 +262,10 @@ export default function CategoriesNextGen() {
       minWidth: 300,
       editable: true,
       renderCell: (params) => (
-        <Link href={`/finance/transactions/category/${params.value}`}>
+        <Link
+          component={NextLink}
+          href={`/finance/transactions/category/${params.value}`}
+        >
           {params.value}
         </Link>
       ),

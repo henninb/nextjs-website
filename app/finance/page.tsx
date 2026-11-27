@@ -18,6 +18,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
+import NextLink from "next/link";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BlockIcon from "@mui/icons-material/Block";
@@ -653,7 +654,10 @@ export default function Accounts() {
       editable: true,
       renderCell: (params) => {
         return (
-          <Link href={`/finance/transactions/${params.row.accountNameOwner}`}>
+          <Link
+            component={NextLink}
+            href={`/finance/transactions/${params.row.accountNameOwner}`}
+          >
             {params.value}
           </Link>
         );
